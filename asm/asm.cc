@@ -164,7 +164,7 @@ void Assembler::pushcode()
 	(*t)->next=0;
 }
 
-int Assembler::prepare_str(asm_insn *asm_insn, char *s)
+int Assembler::translate_str(asm_insn *asm_insn, const char *s)
 {
 	return 0;
 }

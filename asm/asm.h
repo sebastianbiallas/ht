@@ -81,7 +81,7 @@ public:
 	virtual	asm_code *encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address);
 			char *get_error_msg();
 	virtual	char *get_name();
-	virtual	int prepare_str(asm_insn *asm_insn, char *s);
+	virtual	int translate_str(asm_insn *asm_insn, const char *s);
 			void set_error_msg(char *format, ...);
 			void set_imm_eval_proc(int (*imm_eval_proc)(void *context, char **s, dword *v), void *imm_eval_context);
 			asm_code *shortest(asm_code *codes);
