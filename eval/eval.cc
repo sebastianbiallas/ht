@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	eval.cc
  *
@@ -35,7 +35,7 @@ int debug_dump_ident;
  *
  */
 
-#define MAX_FUNCNAME_LEN	16
+#define MAX_FUNCNAME_LEN		16
 #define MAX_SYMBOLNAME_LEN	32
 #define MAX_ERRSTR_LEN		64
 
@@ -54,11 +54,6 @@ qword f2i(double f)
 	return to_qword(r);
 }
 
-int get_helpmode()
-{
-	return helpmode;
-}
-
 void set_helpmode(int flag, char *name)
 {
 	helpmode = flag;
@@ -68,11 +63,6 @@ void set_helpmode(int flag, char *name)
      	return;
      }
      strcpy(helpname, name);
-}
-
-eval_scalar *get_helpstring()
-{
-	return &helpstring;
 }
 
 static qword ipow(qword a, qword b)
@@ -1028,7 +1018,7 @@ int func_error(eval_scalar *r, eval_str *s)
 	return 0;
 }
 
-int func_whatis(eval_scalar *r, eval_str *s)
+int func_help_helper(eval_scalar *r, eval_str *s)
 {
 	if (s->len > MAX_FUNCNAME_LEN) return 0;
      char b[MAX_FUNCNAME_LEN+1];
@@ -1036,17 +1026,32 @@ int func_whatis(eval_scalar *r, eval_str *s)
 	set_helpmode(1, b);
      eval_scalar str;
      scalar_create_str_c(&str, "NaF()");
-     int t = func_eval(r, &str.scalar.str);
+     scalar_create_str_c(&helpstring, "");
+     func_eval(r, &str.scalar.str);
+     *r = helpstring;
      scalar_destroy(&str);
 	set_helpmode(0, NULL);
-	return t;
+	return 1;
+}
+
+int func_whatis(eval_scalar *r, eval_str *s)
+{
+     int t = 0;
+	if (s->len != 0) t = func_help_helper(r, s);
+     if ((s->len == 0) || (r->scalar.str.len == 0)) {
+     	char n[MAX_FUNCNAME_LEN+1];
+          bin2str(n, s->value, s->len);
+     	set_eval_error("no such function \"%s\"", n);
+          return 0;
+     }
+     return t;
 }
 
 int func_help(eval_scalar *r)
 {
      eval_scalar str;
      scalar_create_str_c(&str, "");
-     int t = func_whatis(r, &str.scalar.str);
+     int t = func_help_helper(r, &str.scalar.str);
      scalar_destroy(&str);
      return t;
 }
@@ -1312,14 +1317,8 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 	
      if (helpmode) {
 		while (protos->name) {
-              	// FIXME: possible buffer overflow
                char buf[256];
                if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
-/*	               if (protos->desc) {
-		               sprintf(buf, "%s: %s\n", protos->name, protos->desc);
-				} else {
-	          	     sprintf(buf, "%s\n", protos->name);
-	               }*/
                     proto_dump(buf, sizeof buf, protos, 1);
                     strcat(buf, "\n");
      	          eval_scalar s;
@@ -1353,7 +1352,10 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 
 int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params)
 {
-	char fname_short[MAX_FUNCNAME_LEN+1];
+     if (strlen(fname) > MAX_FUNCNAME_LEN) {
+		set_eval_error("invalid function, function name too long");
+     	return 0;
+	}
 	
 	int s;
 	if (g_eval_func_handler) {
@@ -1366,11 +1368,10 @@ int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params)
 	if (get_eval_error(NULL, NULL)) return 0;
 	if (s) return s;
 	
-	fname_short[MAX_FUNCNAME_LEN]=0;
-	strncpy(fname_short, fname, MAX_FUNCNAME_LEN);
-	
-	set_eval_error("unknown function %s", fname_short);
-	return 0;
+     if (!helpmode) {
+		set_eval_error("unknown function %s", fname);
+		return 0;
+	} else return 1;
 }
 
 void *eval_get_context()
