@@ -30,7 +30,6 @@
 - classread/view.cc
     - rename to match PE/ELF/LE,etc.'s structure
     - shared data not freed
-- LE_analy infoline ofs
 - segmented addresses + eval()
 
 +steves
@@ -39,16 +38,17 @@
 	- LE binary search does not work
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 	- dtree leaks now dead nodes
-     - project window is smaller than min_window_size (original size cant
-	be restored after resize)
-
+     
+- text-edit, highlighting bug
+#include
+//#include
+- project window is smaller than min_window_size (original size cant
+  ve restored after resize)
 
 - httext line wrapping
 - new instead of malloc
-- terminal.cc: terminal line buffering
+- terminal.cc: terminal line buffering ?!
 - textviewer: vi-mania: '/' searches, 'n' continues
-
-- FIXED ?: HT crash when only htcfg-header in ht.cfg
 
 - (HT_0_8) features configurable
 - (HT_0_8) directory structure

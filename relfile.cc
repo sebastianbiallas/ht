@@ -132,7 +132,7 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		else
 			k = NULL;
-               
+			
 		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
 			if (k->value >= o+c) break;
 

@@ -31,6 +31,8 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
+     * LE: analyinfoline + goto offset in view... working
+
 	* le_analy/image dup db ? works
 	* more LE relocation address types (experimental)
 	* FIXED: x86_insn_op::user is int[4] but misused as void*[4] in vxd disasm,
