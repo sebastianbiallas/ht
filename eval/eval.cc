@@ -637,6 +637,13 @@ int func_char(eval_scalar *r, eval_int *i)
 	return 1;
 }
 
+int func_dword(eval_scalar *r, eval_int *i)
+{
+	int c = QWORD_GET_LO(i->value);
+	scalar_create_int_c(r, c);
+	return 1;
+}
+
 int func_float(eval_scalar *r, eval_float *p)
 {
 	scalar_create_float(r, p);
@@ -1066,6 +1073,12 @@ eval_func builtin_evalfuncs[]=	{
 	{ "int", (void*)&func_int, {SCALAR_INT}, "converts to integer" },
 	{ "string", (void*)&func_string, {SCALAR_STR}, "converts to string" },
 	{ "float", (void*)&func_float, {SCALAR_FLOAT}, "converts to float" },
+	{ "dword", (void*)&func_dword, {SCALAR_INT}, "converts to dword (4 bytes unsigned)" },
+	{ "word", (void*)&func_dword, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
+	{ "byte", (void*)&func_dword, {SCALAR_INT}, "converts to byte (1 bytes)" },
+	{ "long", (void*)&func_dword, {SCALAR_INT}, "converts to long (4 bytes signed)" },
+	{ "short", (void*)&func_dword, {SCALAR_INT}, "converts to short (2 bytes signed)" },
+
 /*
 	{ "is_int", (void*)&func_is_int, {SCALAR_INT}, "returns non-zero if param is an integer" },
 	{ "is_string", (void*)&func_is_string, {SCALAR_STR}, "returns non-zero if param is a string" },
