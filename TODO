@@ -26,6 +26,7 @@
   (because this is handled via local menu)
 - (HT_0_7) has SYSTEM CONFIG FILE changed ??
 - (HT_0_7) update FILE CONFIG FILE VERSION
+- 1”1 will eval to 1
 
 +reported_but_think_its_ok
 - void ht_disasm_viewer::handlemsg(htmsg *msg):
@@ -33,26 +34,14 @@
                beautiest code alive
 
 +steves
-- file->open project->some_new_project should create some_new_project.htprj (auto add extension)
-- x86 asm:
-	- jmp ecx (HAHA)
-	- cmp ax, -1 vs. cmp ax, 0xffff ????
-	- cmp ax, 0x1ffff works (no errormsg)
-	- cmp al, -1 doesnt work, but cmp al, 0x1ff triggers error (ok)
-- x86 disasm:
-	- 8c 00     ³ mov [eax],es      special_param_ambiguity
-	  66 8c 00  ³ mov [eax],es
-     - is there no shortform of test eax, 1 (simm) ????
-	  there is one for and, or, cmp ....
 - disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
   (like in analyser modes)
-- menus should save last cursor position
 - texteditor: ctrl-y (delete line) doesnt work on last line
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-- 1”1 will eval to 1
+- menus should save last cursor position
 - int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n), bah
 - (HT_0_7) streams
 	save on readonly/locked file
