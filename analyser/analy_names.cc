@@ -21,19 +21,20 @@
 #include "analy_names.h"
 #include "htdebug.h"
 #include "htstring.h"
-#include "string.h"
-#include "stdio.h"
 #include "language.h"
+#include "snprintf.h"
+#include "stdio.h"
+#include "string.h"
 #include "tools.h"
 
 char *import_func_name(const char *dllname, const char *funcname, int ordinal)
 {
 	char res[1024];
 	if (funcname) {
-		sprintf(res, "%s:%s", dllname, funcname);
+		ht_snprintf(res, sizeof res, "%s:%s", dllname, funcname);
 
 	} else {
-		sprintf(res, "%s:%04x", dllname, ordinal);
+		ht_snprintf(res, sizeof res, "%s:%04x", dllname, ordinal);
 	}
 	return ht_strdup(res);
 }
@@ -42,9 +43,9 @@ char *export_func_name(const char *funcname, int ordinal)
 {
 	char res[1024];
 	if (funcname) {
-		sprintf(res, "exp_%s_%x", funcname, ordinal);
+		ht_snprintf(res, sizeof res, "exp_%s_%x", funcname, ordinal);
 	} else {
-		sprintf(res, "exp_%x", ordinal);
+		ht_snprintf(res, sizeof res, "exp_%x", ordinal);
 	}
 	return ht_strdup(res);
 }
@@ -80,15 +81,15 @@ char xref_type_short(int xt)
 }
 
 char *label_prefixes[] = {
-	"unknown_",
-	"loc_",
-	"sub_",
-	"stub_",
-	"wrapper_",
-	"offset_",
-	"data_",
-	"?data_",
-	"str_"
+	"unknown",
+	"loc",
+	"sub",
+	"stub",
+	"wrapper",
+	"offset",
+	"data",
+	"?data",
+	"str"
 };
 
 char *label_prefix(const char *p)

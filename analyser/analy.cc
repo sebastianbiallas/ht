@@ -743,7 +743,7 @@ bool Analyser::addAddressSymbol(Address *address, const char *Prefix, labeltype 
 
 	char	symbol[1024];
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
-	ht_snprintf(symbol, sizeof symbol, "%s%y", prefix, address);
+	ht_snprintf(symbol, sizeof symbol, "%s_%y", prefix, address);
 
 	if (addSymbol(address, symbol, type, infunc)) {
 		return true;
