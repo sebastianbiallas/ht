@@ -1242,7 +1242,7 @@ void ht_text_viewer::draw()
 				start_of_line=false;
 				p.line=pos.line;
 				p.pofs=pos.pofs;
-	               if (!linelen) break;
+				if (!linelen) break;
 			}
 			if (drawmeta) render_meta(x-xofs, y, &pos, metacolor);
 		} else {

@@ -1547,7 +1547,7 @@ Symbol *Analyser::getSymbolByName(const char *label)
 
 const char *Analyser::getSymbolNameByLocation(Location *loc)
 {
-     return (loc) ? ((loc->label) ? loc->label->name : NULL): NULL;
+	return (loc) ? ((loc->label) ? loc->label->name : NULL): NULL;
 }
 
 

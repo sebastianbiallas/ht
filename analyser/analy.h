@@ -362,7 +362,7 @@ public:
 	virtual	const char *	getSegmentNameByAddress(Address *Addr);
 			Symbol *		getSymbolByAddress(Address *Addr);
 			Symbol *		getSymbolByName(const char *label);
-               const char *	getSymbolNameByLocation(Location *loc);
+			const char *	getSymbolNameByLocation(Location *loc);
 			int			getSymbolCount();
 			bool			gotoAddress(Address *Addr, Address *func);
 	virtual	void 		initCodeAnalyser();

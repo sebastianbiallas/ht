@@ -83,11 +83,11 @@ public:
 					UInt64(const SInt64 &s);
 					UInt64(UINT u);
 					UInt64(uint64 u);
-     virtual			~UInt64();
+	virtual			~UInt64();
 
 			void		assign(const UInt64 &u);
 			void		assign(const SInt64 &s);
-               void		assign(UINT u);
+			void		assign(UINT u);
 			void		assign(uint64 u);
 	virtual	int		compareTo(const Object *o) const;
 	virtual	Object *	duplicate();
@@ -97,12 +97,12 @@ public:
 	virtual	void		store(ht_object_stream *s);
 	virtual	int		toString(char *s, int maxlen);
 
-               void		operator =(const UInt64 &u);
+			void		operator =(const UInt64 &u);
 			void		operator +=(const UInt64 &u);
 			void		operator -=(const UInt64 &u);
-               UInt64 &	operator ++();
-               UInt64 	operator ++(int b);
-               
+			UInt64 &	operator ++();
+			UInt64 	operator ++(int b);
+			
 			bool		operator < (const UInt64 &s);
 			bool		operator > (const UInt64 &s);
 			bool		operator <=(const UInt64 &s);

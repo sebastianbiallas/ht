@@ -83,8 +83,8 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
 			if (k->value < o - (MAX_RELOC_TOKEN_LEN+1)) {
-               	/* FIXME: why does this happen ??? it shouldnt !!! */
-               	break;
+				/* FIXME: why does this happen ??? it shouldnt !!! */
+				break;
 			}
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
@@ -119,8 +119,8 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
 			if (k->value < o - (MAX_RELOC_TOKEN_LEN+1)) {
-               	/* FIXME: why does this happen ??? it shouldnt !!! */
-               	break;
+				/* FIXME: why does this happen ??? it shouldnt !!! */
+				break;
 			}
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;

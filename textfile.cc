@@ -552,13 +552,13 @@ lexer_state ht_ltextfile::next_instate(UINT line)
 		bool start_of_line = true;
 		p.line = line;
 		p.pofs = 0;
-          int bufplen = buflen;
+		int bufplen = buflen;
 		while ((lexer->gettoken(bufp, bufplen, p, start_of_line, &state, &toklen))) {
 			bufp += toklen;
 			p.pofs += toklen;
-               bufplen -= toklen;
+			bufplen -= toklen;
 			start_of_line = false;
-               if (!bufplen) break;
+			if (!bufplen) break;
 		}
 	}
 	return state;
@@ -786,7 +786,7 @@ void ht_ltextfile::update_parse(UINT target)
 	if (line) {
 //		instate = next_instate(line-1);
 		e = fetch_line(line);
-          instate = e->instate;
+		instate = e->instate;
 	} else {
 		if (lexer) instate = lexer->getinitstate();
 	}

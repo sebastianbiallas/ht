@@ -51,12 +51,13 @@ ht_mask_ptable le_vxd_header[]=
 	{"reserved",						STATICTAG_EDIT_CHAR("00000044")STATICTAG_EDIT_CHAR("00000045")STATICTAG_EDIT_CHAR("00000046")STATICTAG_EDIT_CHAR("00000047")},
 	{"reserved",						STATICTAG_EDIT_CHAR("00000048")STATICTAG_EDIT_CHAR("00000049")STATICTAG_EDIT_CHAR("0000004a")STATICTAG_EDIT_CHAR("0000004b")},
 	{"reserved",						STATICTAG_EDIT_CHAR("0000004c")STATICTAG_EDIT_CHAR("0000004d")STATICTAG_EDIT_CHAR("0000004e")STATICTAG_EDIT_CHAR("0000004f")},
-     { NULL, NULL }
+	{ NULL, NULL }
 };
 
 ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
+	if (!le_shared->is_vxd) return NULL;
 
 	/* FIXME: */
 	bool le_bigendian = false;
@@ -66,11 +67,11 @@ ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(le_shared->linear_file, 0);
 
-     /* FIXME: */
-     char info[128];
+	/* FIXME: */
+	char info[128];
 	sprintf(info, "* LE VXD descriptor in section 1, offset %d", le_shared->vxd_desc_linear_ofs);
 	m->add_mask(info);
- 	m->add_staticmask_ptable(le_vxd_header, le_shared->vxd_desc_linear_ofs, le_bigendian);
+	m->add_staticmask_ptable(le_vxd_header, le_shared->vxd_desc_linear_ofs, le_bigendian);
 	v->insertsub(m);
 
 	le_shared->v_le_vxd = v;

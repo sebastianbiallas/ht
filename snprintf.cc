@@ -269,7 +269,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 							  fmtqword(buffer, &currlen, maxlen, *q, 2, min, max, flags);
 							  break;
 						  } else
-                                     value = (long)va_arg (args, unsigned int);
+							  value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 2, min, max, flags);
 						  break;
 				    case 'd':

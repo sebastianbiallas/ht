@@ -197,7 +197,7 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 
-     ht_strinputfield *input;
+	ht_strinputfield *input;
 
 	bounds  b2;
 	b2.x = 3 + strlen(label);
@@ -242,7 +242,7 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 	dialog->insert(bcancel);
 
 	if (dialog->run(0)) {
-     	int dsize = input->datasize();
+		int dsize = input->datasize();
 		ht_inputfield_data *data=(ht_inputfield_data*)malloc(dsize);
 		input->databuf_get(data, dsize);
 		bin2str(result, data->text, data->textlen);

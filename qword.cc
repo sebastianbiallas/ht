@@ -40,17 +40,17 @@ sint64 int_to_sint64(int i)
 uint64 sint64_to_uint64(sint64 s)
 {
 	uint64 res;
-     res.lo = s.lo;
-     res.hi = s.hi;
-     return res;
+	res.lo = s.lo;
+	res.hi = s.hi;
+	return res;
 }
 
 sint64 uint64_to_sint64(uint64 u)
 {
 	sint64 res;
-     res.lo = u.lo;
-     res.hi = u.hi;
-     return res;
+	res.lo = u.lo;
+	res.hi = u.hi;
+	return res;
 }
 
 sint64 to_sint64(int i)
@@ -72,17 +72,17 @@ uint64 to_uint64(UINT i)
 sint64 to_sint64(const uint64 &u)
 {
 	sint64 res;
-     res.lo = u.lo;
-     res.hi = u.hi;
-     return res;
+	res.lo = u.lo;
+	res.hi = u.hi;
+	return res;
 }
 
 uint64 to_uint64(const sint64 &s)
 {
 	uint64 res;
-     res.lo = s.lo;
-     res.hi = s.hi;
-     return res;
+	res.lo = s.lo;
+	res.hi = s.hi;
+	return res;
 }
 
 int qword_cmp(uint64 a, uint64 b)
@@ -139,7 +139,7 @@ static uint64 uint64_xor(const uint64 &a, const uint64 &b)
 static uint64 uint64_shl(const uint64 &A, int b)
 {
 	uint64 res;
-     uint64 a = A;
+	uint64 a = A;
 	if (b > 32) {
 		if (b < 64) {
 			a.hi = a.lo;
@@ -159,7 +159,7 @@ static uint64 uint64_shl(const uint64 &A, int b)
 static uint64 uint64_shr(const uint64 &A, int b)
 {
 	uint64 res;
-     uint64 a = A;
+	uint64 a = A;
 	if (b > 32) {
 		if (b < 64) {
 			a.lo = a.hi;
@@ -189,7 +189,7 @@ uint64 qword_mul(uint64 a, uint64 b)
 
 static uint64 uint64_div(const uint64 &a, const uint64 &b)
 {
- 	// FIXME: should ignore sign
+	// FIXME: should ignore sign
 	uint64 null = to_uint64(0);
 	uint64 x = a, y = b, q = null, t = to_uint64(1);
 	bool ycarry = false;
@@ -369,7 +369,7 @@ uint64& operator <<= (uint64 &a, byte b)
 
 uint64 operator ~(const uint64 &a)
 {
- 	uint64 r;
+	uint64 r;
 	r.lo = ~a.lo;
 	r.hi = ~a.hi;
 	return r;
@@ -405,7 +405,7 @@ int sint64_cmp(sint64 a, sint64 b)
 {
 	if ((int)a.hi > (int)b.hi) return 1;
 	if ((int)a.hi < (int)b.hi) return -1;
-     // a.hi == b.hi => both numbers have the same sign
+	// a.hi == b.hi => both numbers have the same sign
 	if (a.lo > b.lo) return 1;
 	if (a.lo < b.lo) return -1;
 	return 0;
@@ -456,7 +456,7 @@ static sint64 sint64_xor(const sint64 &a, const sint64 &b)
 static sint64 sint64_shl(const sint64 &A, int b)
 {
 	sint64 res;
-     sint64 a = A;
+	sint64 a = A;
 	if (b > 32) {
 		if (b < 64) {
 			a.hi = a.lo;
@@ -477,7 +477,7 @@ static sint64 sint64_shr(const sint64 &A, int b)
 {
 	// FIXME: should care about sign
 	sint64 res;
-     sint64 a = A;
+	sint64 a = A;
 	if (b > 32) {
 		if (b < 64) {
 			a.lo = a.hi;
@@ -683,7 +683,7 @@ sint64& operator <<= (sint64 &a, byte b)
 
 sint64 operator ~(const sint64 &a)
 {
- 	sint64 r;
+	sint64 r;
 	r.lo = ~a.lo;
 	r.hi = ~a.hi;
 	return r;

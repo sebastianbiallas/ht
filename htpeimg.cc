@@ -138,7 +138,7 @@ static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
 	UINT i = QWORD_GET_INT(q->value)-1;
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
-     (i < aviewer->pe_shared->sections.section_count)) {
+	(i < aviewer->pe_shared->sections.section_count)) {
 		viewer_pos p;
 		FILEOFS ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
@@ -179,11 +179,11 @@ static int pe_viewer_func_section_str(eval_scalar *result, eval_str *str)
 static int pe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 {
 	if (q->type == SCALAR_STR)
-     	return pe_viewer_func_section_str(result, &q->scalar.str);
+		return pe_viewer_func_section_str(result, &q->scalar.str);
 	else {
-     	eval_int i;
-          scalar_context_int(q, &i);
-     	return pe_viewer_func_section_int(result, &i);
+		eval_int i;
+		scalar_context_int(q, &i);
+		return pe_viewer_func_section_int(result, &i);
 	}
 }
 
@@ -201,10 +201,10 @@ int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist
 {
 	eval_func myfuncs[] = {
 		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT},
-          	"returns address of rva"},
+			"returns address of rva"},
 		{"section", (void*)&pe_viewer_func_section, {SCALAR_ANY},
-          	"returns address of section named param1 if param1 is a string\n"
-          	"returns address of section with index param1 otherwise"},
+			"returns address of section named param1 if param1 is a string\n"
+			"returns address of section with index param1 otherwise"},
 		{NULL}
 	};
 	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
