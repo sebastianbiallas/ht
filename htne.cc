@@ -180,7 +180,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 			rf->finalize();
 			file = rf;
 			own_file = true;
-			LOG("%s: NE: relocations present, relocation layer enabled", file->get_filename());
+			LOG("%s: NE: relocations present, relocation simulation layer enabled", file->get_filename());
 		} else {
 			errorbox("%s: NE relocations seem to be corrupted.", file->get_filename());
 			rf->done();
@@ -222,11 +222,12 @@ void ht_ne::done()
 
 void ht_ne::loc_enum_start()
 {
-	loc_enum=true;
+//	loc_enum=true;
 }
 
 bool ht_ne::loc_enum_next(ht_format_loc *loc)
 {
+#if 0
 	ht_ne_shared_data *sh=(ht_ne_shared_data*)shared_data;
 	if (loc_enum) {
 		loc->name="ne";
@@ -236,6 +237,7 @@ bool ht_ne::loc_enum_next(ht_format_loc *loc)
 		loc_enum=false;
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -251,7 +253,7 @@ bool ht_ne::create_fake_segment()
 	newsegs[i].offset = 0;
 	newsegs[i].size = 0;
 	newsegs[i].flags = NE_DATA;
-	newsegs[i].minalloc = 0;		// 64k
+	newsegs[i].minalloc = 0;		// = 64k
 	ne_shared->fake_segment = i;
 	return true;
 }
@@ -341,7 +343,6 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data*)shared_data;
 	while (1) {
-		rf->insert_reloc(ofs, new ht_ne_reloc_entry(type, flags & NE_RF_ADD, value_seg, value_ofs));
 		if (flags & NE_RF_ADD) break;
 		switch (type & NE_RT_MASK) {
 			case NE_RT_SEG16:
@@ -351,13 +352,14 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 			case NE_RT_OFS32:
 				break;
 			case NE_RT_OFS8:
-			/* FIXME: we would want to read a word (offset) out of
-			   the file, but we can't because there's just one relocated
-			   byte. What's wrong ? */
-			/* unknown relocation record */
+			/* FIXME: we want to read a word (offset) out of the file,
+			   but we can't because there's only one relocated
+			   byte. Maybe I dont understand NE relocs completely. */
 			default:
+			/* unknown relocation record */
 				return false;
 		}
+		rf->insert_reloc(ofs, new ht_ne_reloc_entry(type, flags & NE_RF_ADD, value_seg, value_ofs));
 		char buf[2];
 		file->seek(ofs);
 		file->read(buf, 2);
@@ -386,7 +388,7 @@ ht_ne_entrypoint::ht_ne_entrypoint(UINT Ordinal, UINT Seg, UINT Offset, UINT Fla
 
 ht_ne_entrypoint::~ht_ne_entrypoint()
 {
-        if (name) free(name);
+	   if (name) free(name);
 }
 
 /*
@@ -456,7 +458,7 @@ FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, UINT i)
 
 NEAddress NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i)
 {
-		return (i+1)*0x10000;
+		return NE_MAKE_ADDR(i+1, 0);
 }
 
 UINT NE_get_seg_psize(ht_ne_shared_data *NE_shared, UINT i)
