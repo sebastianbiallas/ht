@@ -7,7 +7,7 @@ version 0.9-trunk:
 	- x86 asm: support for mmx instructions
 	- configure: set -DNO_NATIVE_UNALIGNED_MOVES for platforms
 	  other than x86
-
+	- removed 'include <malloc.h>' from cp-demangle.c
 
 version 0.8.0:
 	- g++ v3 abi demangler
