@@ -133,7 +133,7 @@ int DjgppSystemDisplay::nprint(int x, int y, vcp color, char *str, int strlen, i
 {
 	int n = 0;
 	uint16 *b=buf+x+y*this->w;
-	while (*str && (n<strlen)) {
+	while (*str && (n<strlen) && (x+n<w)) {
 		put_vc(b, (byte)*str, color);
 		b++;
 		str++;
