@@ -48,6 +48,7 @@ int_hash coff_machines[] =
 	{COFF_MACHINE_ALPHA_AXP_64, "Alpha AXP 64"},
 	{COFF_MACHINE_MIPSf, "MIPSf"},
 	{COFF_MACHINE_MIPS16f, "MIPS16f"},
+	{COFF_MACHINE_AMD_HAMMER, "AMD Hammer"},
 	{0, 0}
 };
 
