@@ -83,11 +83,13 @@ branch_enum_t AnalyPPCDisassembler::isBranch(OPCODE *opcode)
 	ppcdis_insn *ppc_insn = (ppcdis_insn *) opcode;
 	if (ppc_insn->name[0]=='b') {
 		if (ppc_insn->name[1]=='l') {
-			if (ppc_insn->name[2]=='r') {
-				return br_return;
-			} else {
+			if (ppc_insn->name[2]==0) {
 				return br_call;
 			}
+			if (ppc_insn->name[2]=='r') {
+				return br_return;
+			}
+			return br_jXX;
 		}
 		if (ppc_insn->name[1]==0) {
 				return br_jump;
