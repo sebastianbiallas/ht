@@ -152,7 +152,10 @@ void eval_dialog()
 						dword hi = QWORD_GET_HI(r.scalar.integer.value);
 						x += sprintf(x, "64bit integer:\n");
 						x += ht_snprintf(x, 64, "hex  %qx\n", &r.scalar.integer.value);
-						x += ht_snprintf(x, 64, "dec  %qd\n", &r.scalar.integer.value);
+						x += ht_snprintf(x, 64, "dec  %qu\n", &r.scalar.integer.value);
+						if (to_sint64(r.scalar.integer.value) < to_sint64(0)) {
+							x += ht_snprintf(x, 64, "sdec %qd\n", &r.scalar.integer.value);
+						}                              
 						x += ht_snprintf(x, 64, "oct  %qo\n", &r.scalar.integer.value);
 						x += sprintf(x, "bin0 ");
 						x += sprint_base2(x, lo, true);
@@ -165,14 +168,14 @@ void eval_dialog()
 						char bb[4];
 						int i = lo;
 						/* big-endian string */
-						x += sprintf(x, "32bit big-endian (e.g. network) string\n\"");
+						x += sprintf(x, "32bit big-endian (e.g. network) string \"");
 						create_foreign_int(bb, i, 4, big_endian);
 						bin2str(x, bb, 4);
 						x += 4;
 						*(x++) = '"';
 						*(x++) = '\n';
 						/* little-endian string */
-						x += sprintf(x, "32bit little-endian (e.g. x86) string\n\"");
+						x += sprintf(x, "32bit little-endian (e.g. x86) string  \"");
 						create_foreign_int(bb, i, 4, little_endian);
 						bin2str(x, bb, 4);
 						x += 4;
