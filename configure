@@ -3877,7 +3877,8 @@ fi
 
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
-		cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_TEXTMODE_X11 1
 _ACEOF
 
@@ -4499,7 +4500,8 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define CURSES_HDR <ncurses.h>
 _ACEOF
  CURSES_LIB=ncurses
@@ -4645,7 +4647,8 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define CURSES_HDR <curses.h>
 _ACEOF
  CURSES_LIB=curses

@@ -104,7 +104,7 @@ if test "x$enable_x11_textmode" = "xyes"; then
 	AC_CHECK_LIB(X11, XOpenDisplay, HAVE_X11=1)
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
-		AC_DEFINE(HAVE_TEXTMODE_X11)
+		AC_DEFINE(HAVE_TEXTMODE_X11, 1, [This system has Xlib support and we shall use it])
 		HT_LIBS="$HT_LIBS -lX11"
 		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
 	fi
@@ -116,9 +116,9 @@ AC_HEADER_STDC
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
 if test "x$NEED_CURSES" = "x1"; then
-	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>) CURSES_LIB=ncurses)
+	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h]) CURSES_LIB=ncurses)
 	if test "x$CURSES_LIB" = "x"; then
-		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>) CURSES_LIB=curses)
+		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>, [This system provides (n)curses.h]) CURSES_LIB=curses)
 		if test "x$CURSES_LIB" = "x"; then
 			   AC_MSG_ERROR([*** (n)curses.h needed ***])
 		fi
