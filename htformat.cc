@@ -2736,17 +2736,17 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_replace: {
-          	sendmsg(cmd_edit_mode_i);
-          	if (edit()) {
-               	bool cancel;
+			sendmsg(cmd_edit_mode_i);
+			if (edit()) {
+				bool cancel;
 				UINT s = get_file()->get_size();
 				UINT repls = replace_dialog(this, search_caps, &cancel);
-                    if (repls) {
+				if (repls) {
 					if (s != get_file()->get_size()) {
 						sendmsg(msg_filesize_changed);
 					}
 					infobox("%d replacement(s) made", repls);
-                    }
+				}
 			}
 			clearmsg(msg);
 			dirtyview();

@@ -1203,7 +1203,7 @@ void ht_text_viewer::draw()
 			text_pos p;
 			p.line=pos.line;
 			p.pofs=pos.pofs;
-               int prev_linelen = -1;
+			int prev_linelen = -1;
 			while ((tok=lexer->gettoken(linep, linelen, p, start_of_line, &state, &toklen)) || (!*linep && (linelen>0))) {
 				UINT k, i;
 				UINT vtoklen=toklen;
@@ -1244,7 +1244,7 @@ void ht_text_viewer::draw()
 				p.line=pos.line;
 				p.pofs=pos.pofs;
 				if (!linelen && !prev_linelen) break;
-                    prev_linelen = linelen;
+				prev_linelen = linelen;
 			}
 			if (drawmeta) render_meta(x-xofs, y, &pos, metacolor);
 		} else {

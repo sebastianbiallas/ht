@@ -83,8 +83,8 @@ screendrawbuf::screendrawbuf(char *title)
 	b.y = 0;
 /*	b.w = screen_info.dwSize.X;
 	b.h = screen_info.dwSize.Y;*/
-     b.w = screen_info.srWindow.Right - screen_info.srWindow.Left + 1;
-     b.h = screen_info.srWindow.Bottom - screen_info.srWindow.Top + 1;
+	b.w = screen_info.srWindow.Right - screen_info.srWindow.Left + 1;
+	b.h = screen_info.srWindow.Bottom - screen_info.srWindow.Top + 1;
 	b_setbounds(&b);
 
 	cursor_visible = true;

@@ -555,14 +555,14 @@ lexer_state ht_ltextfile::next_instate(UINT line)
 		p.line = line;
 		p.pofs = 0;
 		int bufplen = buflen;
-          int prev_bufplen = -1;
+		int prev_bufplen = -1;
 		while ((lexer->gettoken(bufp, bufplen, p, start_of_line, &state, &toklen))) {
 			bufp += toklen;
 			p.pofs += toklen;
 			bufplen -= toklen;
 			start_of_line = false;
 			if (!bufplen && !prev_bufplen) break;
-               prev_bufplen = bufplen;
+			prev_bufplen = bufplen;
 		}
 	}
 	return state;

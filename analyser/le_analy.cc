@@ -348,7 +348,7 @@ FILEOFS LEAnalyser::addressToRealFileofs(Address *Addr)
 		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
 			return INVALID_FILE_OFS;
 		}
-          UINT m;
+		UINT m;
 		FILEOFS oo;
 		if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
 			return INVALID_FILE_OFS;

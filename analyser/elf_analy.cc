@@ -125,7 +125,7 @@ void ElfAnalyser::beginAnalysis()
 
 			validarea->add(secaddr, secend_addr);
 
-               delete secend_addr;
+			delete secend_addr;
 		}
 		delete secaddr;
 		s32++;
@@ -227,7 +227,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 				char *label = name;
 					if (!getSymbolByName(label)) {
 						Address *address = createAddress32(sym.st_value);
-                              if (validAddress(address, scvalid)) {
+						if (validAddress(address, scvalid)) {
 							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 
 							make_valid_name(label, label);
@@ -251,7 +251,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 					char *label = name;
 					if (!getSymbolByName(label)) {
 						Address *address = createAddress32(sym.st_value);
-                              if (validAddress(address, scvalid)) {
+						if (validAddress(address, scvalid)) {
 
 							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 					

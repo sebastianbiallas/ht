@@ -453,8 +453,8 @@ UINT autodetect_file_open_mode(char *filename)
 	if (f) {
 		byte buf[AUTODETECT_SIZE];
 		int c=fread(buf, 1, AUTODETECT_SIZE, f);
-          /* empty files are text files */
-          if (!c) return FOM_TEXT;
+		/* empty files are text files */
+		if (!c) return FOM_TEXT;
 		bool is_bin=false;
 		UINT prob_bin_chars=0;
 		for (int i=0; i<c; i++) {
@@ -2193,9 +2193,9 @@ char *ht_app::func(UINT i, bool execute)
 			return "mode";
 		/* FIXME: experimental */
 		case 9:
-          	if (execute) {
+			if (execute) {
 				create_window_term("make");
-               }
+			}
 			return "make";
 		case 10:
 			if (execute) sendmsg(cmd_quit);
@@ -3028,7 +3028,7 @@ void ht_file_window::add_vstate_history(ht_vstate_history_entry *e)
 void ht_file_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-     	case cmd_vstate_restore: {
+		case cmd_vstate_restore: {
 			if (vstate_history_pos) {
 				vstate_history_pos--;
 				ht_vstate_history_entry *e = (ht_vstate_history_entry*)
@@ -3103,10 +3103,10 @@ void ht_file_window::handlemsg(htmsg *msg)
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_BackSpace: {
-                         sendmsg(cmd_vstate_restore);
-                         clearmsg(msg);
-                         return;
-                    }
+					sendmsg(cmd_vstate_restore);
+					clearmsg(msg);
+					return;
+				}
 			}
 			break;
 	}

@@ -1092,7 +1092,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 	dialog->select_search_mode(lastsearchmodeid);
 	dialog->select_replace_mode(lastreplacemodeid);
 
-     UINT repl_count = 0;
+	UINT repl_count = 0;
 	if (dialog->run(false)) {
 		int smodeid = dialog->get_search_modeid();
 		int rmodeid = dialog->get_replace_modeid();
@@ -1188,7 +1188,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 	}
 	dialog->done();
 	delete dialog;
-     return repl_count;
+	return repl_count;
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
@@ -1235,16 +1235,16 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		}
 		c->file->seek(c->o);
 		if (c->file->read(c->buf, c->z) != c->z)
-              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o+c->repllen-c->len);
 		if (c->file->write(c->buf, c->z) != c->z)
-              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 			
 		if (c->o > c->ofs + c->len) return true;
 		
 		c->file->seek(c->ofs);
 		if (c->file->write(c->repl, c->repllen) != c->repllen)
-               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		free(c->buf);
 	} else if (c->repllen < c->len) {
 /* shrink */
@@ -1252,7 +1252,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
 			if (c->file->write(c->repl, c->repllen) != c->repllen)
-               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		}
 		
 		if (c->z > size - c->o) {
@@ -1260,10 +1260,10 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		}
 		c->file->seek(c->o);
 		if (c->file->read(c->buf, c->z) != c->z)
-              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o - (c->len - c->repllen));
 		if (c->file->write(c->buf, c->z) != c->z)
-              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->o += REPLACE_COPY_BUF_SIZE;
 		
 		if (c->z == REPLACE_COPY_BUF_SIZE) return true;
@@ -1273,7 +1273,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 	} else {
 		c->file->seek(c->ofs);
 		if (c->file->write(c->repl, c->repllen) != c->repllen)
-               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 	}
 	if (c->return_repllen) *c->return_repllen = c->repllen;
 	return false;

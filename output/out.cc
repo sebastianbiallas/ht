@@ -660,21 +660,21 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	ADDRBUF(min)
 	DPRINTF2(", %s)\n", tbuf);
 
-     int res = 0;
+	int res = 0;
 	int cmp = Addr->compareTo(min);
-     
+	
 	DPRINTF2("cmp=%d\n", cmp);
-     /*
-      *	If we have reached |min| and line==0, we're on top
-      */
+	/*
+	 *	If we have reached |min| and line==0, we're on top
+	 */
 	if (cmp<0 || (cmp == 0 && line==0)) {
 		DPRINTF2("geht nicht\n");
 		return 0;
 	}
-     /*
-      *	A simple case: no address-change, only line-changes.
-      *	Go up while line > 0
-      */
+	/*
+	 *	A simple case: no address-change, only line-changes.
+	 *	Go up while line > 0
+	 */
 	while (n && line) {
 		DPRINTF2("simple\n");
 		n--;
@@ -686,10 +686,10 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	DPRINTF2("test2\n");
 
 	/*
-      *	Now it gets complicated. We have to go to an other address.
-      *	First we have to figure out, where we should start to search for
-      *	the previous address.
-      */
+	 *	Now it gets complicated. We have to go to an other address.
+	 *	First we have to figure out, where we should start to search for
+	 *	the previous address.
+	 */
 	int min_length, max_length, min_look_ahead, avg_look_ahead, addr_align;
 	if (analy->disasm) {
 		analy->disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
@@ -697,42 +697,42 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 		min_look_ahead=1;
 		avg_look_ahead=1;
 	}
-     
+	
 	int l = n*avg_look_ahead;
 	if (l < min_look_ahead) l = min_look_ahead;
 
-     /*
-      *	The disassember whats us to go |l| bytes back
-      */
-      
+	/*
+	 *	The disassember whats us to go |l| bytes back
+	 */
+	 
 	Address *search_addr = DUP_ADDR(Addr);
 	if (!search_addr->add(-l) || search_addr->compareTo(min)<0) {
-     	/*
-           *	It isnt possible, to go |l| bytes back. So we start at |min|.
-           */
+		/*
+		 *	It isnt possible, to go |l| bytes back. So we start at |min|.
+		 */
 		delete search_addr;
 		search_addr = DUP_ADDR(min);
 	}
 
-     /*
-      *	|prev| contains the previous "logical" location.
-      *	that is some address, we know to be "atomic".
-      */
-     Location *prev = analy->enumLocationsReverse(Addr);
+	/*
+	 *	|prev| contains the previous "logical" location.
+	 *	that is some address, we know to be "atomic".
+	 */
+	Location *prev = analy->enumLocationsReverse(Addr);
 	if (prev) {
-     	/*
-           *	|prevnext| contains the "end address" of |prev|.
-           *	So we know how long (how much bytes) prev is.
-           */
+		/*
+		 *	|prevnext| contains the "end address" of |prev|.
+		 *	So we know how long (how much bytes) prev is.
+		 */
 		Address *prevnext = DUP_ADDR(prev->addr);
 		if (prevnext->add(getAddrByteLength(prev->addr))) {
 				DPRINTF2("mid-test\n");
 			if (prevnext->compareTo(Addr) > 0) {
 				/*
-                     *   We were in the middle of a location.
-                     *	We solve this situation, by starting a new search
-                     *	with |prev->addr|. This is counted as "one line up".
-                     */
+				 *   We were in the middle of a location.
+				 *	We solve this situation, by starting a new search
+				 *	with |prev->addr|. This is counted as "one line up".
+				 */
 				delete Addr;
 				delete search_addr;
 				delete prevnext;
@@ -766,9 +766,9 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 
 	int search_line = 0;
 	if (search_addr->compareTo(min) < 0) {
-     	/*
-           *	We have to start the search at |min|.
-           */
+		/*
+		 *	We have to start the search at |min|.
+		 */
 		DPRINTF2("search_addr < min\n");
 		delete search_addr;
 		search_addr = DUP_ADDR(min);

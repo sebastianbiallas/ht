@@ -526,12 +526,12 @@ static int loadlocations(ht_object_stream *st, Location *&loc, int l, int r)
 		loc = NULL;
 		return st->get_error();
 	}
-     int m = (l+r)/2;
+	int m = (l+r)/2;
 	loc = (Location *) smalloc0(sizeof(Location));
 
 	if (loadlocations(st, loc->left, l, m-1) != 0) {
-     	return st->get_error();
-     }
+		return st->get_error();
+	}
 
 	loc->addr = (Address *)st->getObject("addr");
 
@@ -560,9 +560,9 @@ static int loadlocations(ht_object_stream *st, Location *&loc, int l, int r)
 		return 1;
 	}
 	if (loadlocations(st, loc->right, m+1, r) != 0) {
-     	return st->get_error();
-     }
-     return st->get_error();
+		return st->get_error();
+	}
+	return st->get_error();
 }
 
 static int loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, int l, int r)
@@ -571,19 +571,19 @@ static int loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, i
 		symbol = NULL;
 		return st->get_error();
 	}
-     int m = (l+r)/2;
+	int m = (l+r)/2;
 	symbol = (Symbol *) smalloc0(sizeof(Symbol));
 
 	if (loadsymbols(analy, st, symbol->left, l, m-1) != 0) {
-     	return st->get_error();
-     }
+		return st->get_error();
+	}
 
 	Address *a;
 	a = (Address *)st->getObject("addr");
-     if (!a) {
+	if (!a) {
 		// FIXME: exception bla..
 		return 1;
-     }
+	}
 	(symbol->location = analy->newLocation(a))->label = symbol;
 	delete a;
 	
@@ -597,9 +597,9 @@ static int loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, i
 		return st->get_error();
 	}
 	if (loadsymbols(analy, st, symbol->right, m+1, r) != 0) {
-     	return st->get_error();
-     }
-     return st->get_error();
+		return st->get_error();
+	}
+	return st->get_error();
 }
 
 static void resolveaddrs(Analyser *a, Location *loc)
@@ -1344,7 +1344,7 @@ Location *Analyser::enumLocationsReverse(Address *Addr)
 {
 	Location *result = NULL;
 	if (locations) analyserenum_addrs_back(locations, Addr, result);
- 	while ((result) && (result->flags & AF_DELETED)) {
+	while ((result) && (result->flags & AF_DELETED)) {
 		Address *a = result->addr;
 		result = NULL;
 		analyserenum_addrs_back(locations, a, result);

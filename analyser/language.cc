@@ -157,7 +157,7 @@ void analy_c_string::render_string(char *result, int maxlen)
 	maxlen--;
 	int Len = MIN(len, maxlen);
 	if (Len) Len--;
-     memcpy(result, string, Len);
+	memcpy(result, string, Len);
 	result[Len]=0;          
 }
 

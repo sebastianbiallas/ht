@@ -51,7 +51,7 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	c.h -= 2;
 	ht_le_aviewer *v = new ht_le_aviewer();
 	v->init(&c, DESC_LE_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, myfile, group, p, le_shared);
-     v->search_caps = SEARCHMODE_VREGEX;
+	v->search_caps = SEARCHMODE_VREGEX;
 
 	c.y -= 2;
 	c.h = 2;
@@ -151,10 +151,10 @@ bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
 {
 	FILEOFS o;
-     if (!get_current_offset(&o)) return false;
-     UINT m;
-     if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;
-     return true;
+	if (!get_current_offset(&o)) return false;
+	UINT m;
+	if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;
+	return true;
 }
 
 void ht_le_aviewer::setAnalyser(Analyser *a)
