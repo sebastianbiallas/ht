@@ -143,10 +143,7 @@ void eval_dialog()
 		
 			insert_history_entry(ehist, b, 0);
 
-			// FIXME: debug
-//               set_helpmode(1);
 			if (eval(&r, b, NULL, NULL, NULL)) {
-//	               set_helpmode(0, NULL);
 				switch (r.type) {
 					case SCALAR_INT: {
 						char *x = b;
@@ -209,7 +206,7 @@ void eval_dialog()
 						// FIXME: endianess/hardware format
 						float ff = ((float)r.scalar.floatnum.value);
 						dword f = *(dword*)&ff;
-						x += sprintf(x, "\n-- IEEE-754, 32 bit (1 s, 8 e+127, 23 m/h) --");
+						x += sprintf(x, "\n-- IEEE-754, 32 bit --");
 						x += sprintf(x, "\nhex   %08x\nbin   ", f);
 						x += sprint_base2(x, f, true);
 						x += sprintf(x, "\nsplit %c1.", (f>>31) ? '-' : '+');
@@ -228,9 +225,7 @@ void eval_dialog()
 				s->isetcursor(pos);
 				sprintf(b, "error at pos %d: %s", pos+1, str);
 			}
-			// FIXME: debug
-//               set_helpmode(0);
-			
+
 			t->settext(b);
 		} else {
 			t->settext(hint);
