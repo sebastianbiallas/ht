@@ -555,7 +555,7 @@ int	ht_file::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_FLUSH_STAT: {
-			UINT m = get_access_mode();
+			UINT m = get_access_mode() & (~FAM_CREATE);
 			set_access_mode(FAM_UNDEFINED);
 			set_access_mode(m);
 			return 0;
