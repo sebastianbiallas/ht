@@ -204,10 +204,12 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 			case SPECIAL_TYPE_PREFIX:
 				switch (c) {
 					case 0x0f:
-						insn.opcode=getbyte();
-						insn.opcodeclass=X86DIS_OPCODE_CLASS_EXT;
-						decode_insn(&x86_insns_ext[insn.opcode]);
-						break;
+						if (insn.opcodeclass == X86DIS_OPCODE_CLASS_STD) {
+							insn.opcode = getbyte();
+							insn.opcodeclass = X86DIS_OPCODE_CLASS_EXT;
+							decode_insn(&x86_insns_ext[insn.opcode]);
+							break;
+						}							    
 					default:
 						invalidate();
 						break;
