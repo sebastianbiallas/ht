@@ -27,7 +27,14 @@
 typedef struct {
 	dword lo;
 	dword hi;
-} qword;
+} uint64;
+
+#define qword uint64
+
+typedef struct {
+	dword lo;
+	dword hi;
+} sint64;
 
 // FIXME: dont work for >32 bit systems
 #define QWORD_SET_HI(q, v) (((q).hi) = (v))
@@ -41,52 +48,97 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
-int qword_cmp(qword a, qword b);
-qword int_to_qword(int i);
-qword qword_add(qword a, qword b);
-qword qword_sub(qword a, qword b);
-qword qword_mul(qword a, qword b);
+int qword_cmp(uint64 a, uint64 b);
+uint64 int_to_qword(int i);
+uint64 sint64_to_uint64(sint64 s);
+uint64 qword_add(uint64 a, uint64 b);
+uint64 qword_sub(uint64 a, uint64 b);
+uint64 qword_mul(uint64 a, uint64 b);
+
+int sint64_cmp(sint64 a, sint64 b);
+sint64 int_to_sint64(int i);
+sint64 uint64_to_sint64(uint64 u);
+sint64 sint64_add(sint64 a, sint64 b);
+sint64 sint64_sub(sint64 a, sint64 b);
+sint64 sint64_mul(sint64 a, sint64 b);
 #ifdef __cplusplus
 }
 #endif
 
 #ifdef __cplusplus
-qword to_qword(int i);
-qword to_qword(UINT i);
+sint64 to_sint64(int i);
+uint64 to_uint64(UINT i);
+sint64 to_sint64(const uint64 &u);
+uint64 to_uint64(const sint64 &s);
+#define to_qword to_uint64
 
-qword operator +(qword a, qword b);
-qword operator ++(qword &a);
-qword operator ++(qword &a, int b);
-qword operator += (qword &a, qword b);
-qword operator - (qword a, qword b);
-qword operator --(qword &a);
-qword operator --(qword &a, int b);
-qword operator -= (qword &a, qword b);
-qword operator *(qword a, qword b);
-qword operator *= (qword &a, qword b);
-qword operator /(qword a, qword b);
-qword operator /= (qword &a, qword b);
-qword operator %(qword a, qword b);
-qword operator %= (qword &a, qword b);
-qword operator &(qword a, qword b);
-qword operator &= (qword &a, qword b);
-qword operator |(qword a, qword b);
-qword operator |= (qword &a, qword b);
-qword operator ^(qword a, qword b);
-qword operator ^= (qword &a, qword b);
-qword operator >>(qword a, byte b);
-qword operator >>=(qword &a, byte b);
-qword operator <<(qword a, byte b);
-qword operator <<=(qword &a, byte b);
-qword operator ~(qword a);
-bool operator < (qword a, qword b);
-bool operator <= (qword a, qword b);
-bool operator > (qword a, qword b);
-bool operator >= (qword a, qword b);
-bool operator == (qword a, qword b);
-bool operator != (qword a, qword b);
-bool operator !(qword a);
-qword operator -(qword a);
+uint64 operator +(const uint64 &a, const uint64 &b);
+uint64& operator ++(uint64 &a);
+uint64 operator ++(const uint64 &a, int b);
+uint64& operator += (uint64 &a, const uint64 &b);
+uint64 operator - (const uint64 &a, const uint64 &b);
+uint64& operator --(uint64 &a);
+uint64 operator --(const uint64 &a, int b);
+uint64& operator -= (uint64 &a, const uint64 &b);
+uint64 operator *(const uint64 &a, const uint64 &b);
+uint64& operator *= (uint64 &a, const uint64 &b);
+uint64 operator /(const uint64 &a, const uint64 &b);
+uint64& operator /= (uint64 &a, const uint64 &b);
+uint64 operator %(const uint64 &a, const uint64 &b);
+uint64& operator %= (uint64 &a, const uint64 &b);
+uint64 operator &(const uint64 &a, const uint64 &b);
+uint64& operator &= (uint64 &a, const uint64 &b);
+uint64 operator |(const uint64 &a, const uint64 &b);
+uint64& operator |= (uint64 &a, const uint64 &b);
+uint64 operator ^(const uint64 &a, const uint64 &b);
+uint64& operator ^= (uint64 &a, const uint64 &b);
+uint64 operator >>(const uint64 &a, byte b);
+uint64& operator >>=(uint64 &a, byte b);
+uint64 operator <<(const uint64 &a, byte b);
+uint64& operator <<=(uint64 &a, byte b);
+uint64 operator ~(const uint64 &a);
+uint64 operator -(const uint64 &a);
+bool operator !(const uint64 &a);
+bool operator < (const uint64 &a, const uint64 &b);
+bool operator <= (const uint64 &a, const uint64 &b);
+bool operator > (const uint64 &a, const uint64 &b);
+bool operator >= (const uint64 &a, const uint64 &b);
+bool operator == (const uint64 &a, const uint64 &b);
+bool operator != (const uint64 &a, const uint64 &b);
+
+sint64 operator +(const sint64 &a, const sint64 &b);
+sint64& operator ++(sint64 &a);
+sint64 operator ++(const sint64 &a, int b);
+sint64& operator += (sint64 &a, const sint64 &b);
+sint64 operator - (const sint64 &a, const sint64 &b);
+sint64& operator --(sint64 &a);
+sint64 operator --(const sint64 &a, int b);
+sint64& operator -= (sint64 &a, const sint64 &b);
+sint64 operator *(const sint64 &a, const sint64 &b);
+sint64& operator *= (sint64 &a, const sint64 &b);
+sint64 operator /(const sint64 &a, const sint64 &b);
+sint64& operator /= (sint64 &a, const sint64 &b);
+sint64 operator %(const sint64 &a, const sint64 &b);
+sint64& operator %= (sint64 &a, const sint64 &b);
+sint64 operator &(const sint64 &a, const sint64 &b);
+sint64& operator &= (sint64 &a, const sint64 &b);
+sint64 operator |(const sint64 &a, const sint64 &b);
+sint64& operator |= (sint64 &a, const sint64 &b);
+sint64 operator ^(const sint64 &a, const sint64 &b);
+sint64& operator ^= (sint64 &a, const sint64 &b);
+sint64 operator >>(const sint64 &a, byte b);
+sint64& operator >>=(sint64 &a, byte b);
+sint64 operator <<(const sint64 &a, byte b);
+sint64& operator <<=(sint64 &a, byte b);
+sint64 operator ~(const sint64 &a);
+sint64 operator -(const sint64 &a);
+bool operator !(const sint64 &a);
+bool operator < (const sint64 &a, const sint64 &b);
+bool operator <= (const sint64 &a, const sint64 &b);
+bool operator > (const sint64 &a, const sint64 &b);
+bool operator >= (const sint64 &a, const sint64 &b);
+bool operator == (const sint64 &a, const sint64 &b);
+bool operator != (const sint64 &a, const sint64 &b);
 
 #endif /* __cplusplus */
 
