@@ -160,8 +160,10 @@ void SIGCHLD_sigaction(int i, siginfo_t *info, void *v)
 	child_pid = -1;
 }
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
 {
+#if 0
+/* disabled, needs fixing */
 	if (child_pid != -1) return EBUSY;
 	int in_fds[2];
 	int out_fds[2];
@@ -198,6 +200,8 @@ int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
 		execl(cmd, cmd, NULL);
 		exit(1);
 	} else return errno;
+#endif
+	return ENOSYS;
 }
 
 bool sys_ipc_is_valid(int handle)
