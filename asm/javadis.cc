@@ -129,7 +129,7 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 			}
 			break;
 		case JOPC_TYPE_LABEL:
-			op->type = JAVA_OPTYPE_LABEL;
+ 			op->type = JAVA_OPTYPE_LABEL;
 			if (widesize) {
 				op->size = 4;
 				// FIXME: sint32

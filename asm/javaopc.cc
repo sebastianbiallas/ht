@@ -238,7 +238,7 @@ javaopc_insn java_insns[256] = {
 {"athrow"},
 // 0xc0-0xcf
 {"checkcast"},
-{"instanceof"},
+{"instanceof", {Cw}},
 {"monitorenter"},
 {"monitorexit"},
 {"wide"},
