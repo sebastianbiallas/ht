@@ -2,31 +2,31 @@
 ==============
 
 version 0.6.1:
-     - sys/djgpp: ff2pstat(...) fixed
-     - got rid of fmt_vaddress
-     - whole new Address class for the analyser. Much more flexible.
-       Enables truly segmented and 64-bit addrs.
-     - submenus
-     - tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
-     - htpehead.cc: directory goto works now, OFSs really are RVAs !
-     - ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
-     - PE/imports,exports,delay-imports based on listbox + quickfinder
-     - projects
-     - view current offset in a different view
-     - x86dis: movzx/movsx param size ambiguity fixed
-     - many bugs fixed
+	- sys/djgpp: ff2pstat(...) fixed
+	- got rid of fmt_vaddress
+	- whole new Address class for the analyser. Much more flexible.
+	  Enables truly segmented and 64-bit addrs.
+	- submenus
+	- tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
+	- htpehead.cc: directory goto works now, OFSs really are RVAs !
+	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
+	- PE/imports,exports,delay-imports based on listbox + quickfinder
+	- projects
+	- view current offset in a different view
+	- x86dis: movzx/movsx param size ambiguity fixed
+	- many bugs fixed
 
 	* FIXED: texteditor: ctrl-y (delete line) doesnt work on last line
 
 	* F4/view mode - ask before forgetting changes
-     * some project tweaks (ask before create, close before open)
+	* some project tweaks (ask before create, close before open)
 	* disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
 	  (like in analyser modes)
 
 	* file->open project->some_new_project does create some_new_project.htprj (auto add extension)
-     * FIXED: mov mem32/16, seg (special_param_ambiguity)
+	* FIXED: mov mem32/16, seg (special_param_ambiguity)
 	* FIXED: x86asm: "jmp/call ecx", invalid opcode table entry
-     * FIXED: is there no shortform of test eax, 1 (simm) ? NO.
+	* FIXED: is there no shortform of test eax, 1 (simm) ? NO.
 	* FIXED: cmp ax, -1 vs. cmp ax, 0xffff ????
 	         cmp al, -1 doesnt work, but cmp al, 0x1ff triggers error (ok)
 	         cmp ax, 0x1ffff works (no errormsg)
@@ -37,31 +37,31 @@ version 0.6.1:
               logical because -1 == 2^32-1 == 0xffffffff (mod 2^32)
               (fixed simmsize() again)
 
-     * fixed x86asm bug (signed immediates)
-     * stream: ht_sys_file, ht_stdio_file, ht_temp_file,
-       tmpnam() not used anymore
-     * stream: interface beautified (use of const)
-     * project add item fixed
+	* fixed x86asm bug (signed immediates)
+	* stream: ht_sys_file, ht_stdio_file, ht_temp_file,
+	  tmpnam() not used anymore
+	* stream: interface beautified (use of const)
+	* project add item fixed
 
-     * automagically goto entrypoint in mz/image
+	* automagically goto entrypoint in mz/image
 	* FIXED: the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
 	* FIXED: filemanger/options title ://reg instead of reg://
-     * streamfile::set_access_mode() if changed
+	* streamfile::set_access_mode() if changed
 	* FIXED: "~case insensitive" in search isnt accessable via alt-c (->copy)
 	* FIXED: new binary/resize/F9/blockop: stream ?? issues
 	* FIXED: scrap "project" menu (kaputtgemergt)
 	* FIXED: int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 
-     * htdisasm: follow
+	* htdisasm: follow
 	* FIXED: some (e.g. search) dialogs say "(moving) - space to switch"
 	  in move (ctrl-f5) mode, although they arent resizeable
 	* "open multiple / change all / f10 / save all -->but not all saved" bug fixed
 
-     * no ia64 in pe32/elf32, no x86 in pe64/elf64
-     * htformat: string eval interface changed heaviliy funcs should
-       now be easily extendable through inheritance and more
-     * htpeimg: evalfunc rva() implemented (proof of concept)
-     * snprintf: %q/%Q removed
+	* no ia64 in pe32/elf32, no x86 in pe64/elf64
+	* htformat: string eval interface changed heaviliy funcs should
+	  now be easily extendable through inheritance and more
+	* htpeimg: evalfunc rva() implemented (proof of concept)
+	* snprintf: %q/%Q removed
 
 	* htanaly.cc: symbols and xrefs dialogs can be now be resized
 	* listbox can resize now !
