@@ -328,9 +328,9 @@ FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
 		}
 		return ofs;
 /*          UINT m;
-          FILEOFS oo;
-          if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
-	          le_shared->linear_file->map_ofs(ofs, &oo, &m);
+		FILEOFS oo;
+		if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
+			le_shared->linear_file->map_ofs(ofs, &oo, &m);
 			return INVALID_FILE_OFS;
 		}
 		return oo;*/
@@ -395,14 +395,14 @@ char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
 	int i;
 	LEAddress na;
 	if (!convertAddressToLEAddress(Addr, &na)) return NULL;
-     if ((na>=0x400000) && (na<0x400080)) {
-      	int h = 34;
-     }
+	if ((na>=0x400000) && (na<0x400080)) {
+		int h = 34;
+	}
 	if (!LE_addr_to_segment(le_shared, na, &i)) return NULL;
 	LEAddress temp;
 /*	bool init = LE_addr_to_ofs(le_shared, na, &temp);
-     if (!init)
-     	return NULL;*/
+	if (!init)
+		return NULL;*/
 /*	if (i == (int)le_shared->fake_segment) {
 		strcpy(segmentname, "faked names");
 	} else {*/
@@ -497,7 +497,7 @@ int	LEAnalyser::queryConfig(int mode)
 Address *LEAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
 	LEAddress a;
-     UINT lofs;
+	UINT lofs;
 	if (/*le_shared->linear_file->unmap_ofs(fileofs, &lofs) &&*/
 	LE_ofs_to_addr(le_shared, /*lofs*/fileofs, &a)) {
 		return createAddressFlat32(a);
