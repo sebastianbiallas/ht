@@ -75,6 +75,7 @@ public:
 /* overwritten */
 	virtual	int  load(ht_object_stream *f);
 	virtual	void store(ht_object_stream *f);
+	virtual	int	toString(char *s, int maxlen);
 	virtual	OBJECT_ID object_id();
 };
 

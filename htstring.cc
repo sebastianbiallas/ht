@@ -22,6 +22,7 @@
 #include "htatom.h"
 #include "htdebug.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -478,6 +479,11 @@ int ht_data_string::load(ht_object_stream *f)
 void ht_data_string::store(ht_object_stream *f)
 {
 	f->putString(value, NULL);
+}
+
+int ht_data_string::toString(char *s, int maxlen)
+{
+	return ht_snprintf(s, maxlen, "%s", value);
 }
 
 OBJECT_ID ht_data_string::object_id()
