@@ -103,7 +103,7 @@ ht_key ht_getkey()
 		if (ht_keypressed()) {
 			r = ht_raw_getkey();
 			r = escseq2rawkey(r);
-#ifndef HAVE_TEXTMODE_X11
+#ifdef HAVE_TEXTMODE_X11
 			if (CTRL_KEY(r2) == r2) r = CTRL_KEY(r);
 			if (SHIFT_KEY(r2) == r2) r = SHIFT_KEY(r);
 #endif
@@ -135,7 +135,7 @@ int ht_raw_getkey()
 		if ((c == -1) || (c == '\e')) c = '\e'; else c = META_KEY(c);
 	}
 	if ((unsigned int)c>=0x100) c = get_modifier(c);
-	fprintf(stderr, "getrawkey() %d/0x%x\n", c, c);
+//	fprintf(stderr, "getrawkey() %d/0x%x\n", c, c);
 	return c;
 }
 

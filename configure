@@ -3877,6 +3877,10 @@ fi
 
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
+		cat >>confdefs.h <<\_ACEOF
+#define HAVE_TEXTMODE_X11 1
+_ACEOF
+
 		HT_LIBS="$HT_LIBS -lX11"
 		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
 	fi

@@ -5,7 +5,7 @@
 #define CURSES_HDR <ncurses.h>
 
 /* Where is the curses header file ? */
-/* #undef HAVE_TEXTMODE_X11 */
+#define HAVE_TEXTMODE_X11 1
 
 /* Define to 1 if you have the `acosh' function. */
 /* #undef HAVE_ACOSH */

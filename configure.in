@@ -104,6 +104,7 @@ if test "x$enable_x11_textmode" = "xyes"; then
 	AC_CHECK_LIB(X11, XOpenDisplay, HAVE_X11=1)
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
+		AC_DEFINE(HAVE_TEXTMODE_X11)
 		HT_LIBS="$HT_LIBS -lX11"
 		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
 	fi
