@@ -478,7 +478,7 @@ void CommentList::appendPostComment(int special)
 	append(new ht_data_uint(special+0x10000000));
 }
 
-char *CommentList::getName(UINT i)
+const char *CommentList::getName(UINT i)
 {
 	ht_data *d = get(i);
 	return d ? ((d->object_id()==ATOM_HT_DATA_UINT) ? comment_lookup(((ht_data_uint*)d)->value): ((ht_data_string*)d)->value) : NULL;
@@ -1048,6 +1048,14 @@ void Analyser::continueAnalysisAt(Address *Addr)
 }
 
 /*
+ *	should return a new instance of an apropriate assembler
+ */
+Assembler *Analyser::createAssembler()
+{
+	return NULL;
+}
+
+/*
  *
  */
 void	Analyser::dataAccess(Address *Addr, taccess access)
@@ -1488,31 +1496,31 @@ Location *Analyser::getLocationContextByAddress(Address *Addr)
 }
 
 /*
- *	findaddrfunc finds the function the Addr belongs to (if possible/applicable).
+ *	finds the function the Addr belongs to (if possible/applicable).
  */
 Location *Analyser::getFunctionByAddress(Address *Addr)
 {
-	Location *a = getLocationByAddress(Addr);
-	if (!a) a = enumLocationsReverse(Addr);
-	while ((a) && (!(a->flags & AF_FUNCTION_SET))) {
-		if (a->flags & AF_FUNCTION_END) return NULL;
-		a = enumLocationsReverse(a->addr);
+	Location *loc = getLocationByAddress(Addr);
+	if (!loc) loc = enumLocationsReverse(Addr);
+	while ((loc) && (!(loc->flags & AF_FUNCTION_SET))) {
+		if (loc->flags & AF_FUNCTION_END) return NULL;
+		loc = enumLocationsReverse(loc->addr);
 	}
-	return (a) ? a->thisfunc : NULL;
+	return (loc) ? loc->thisfunc : NULL;
 }
 
 /*
- *	findaddrlabel searches back to the last label
+ *	searches back to the last location
  */
 Location *Analyser::getPreviousSymbolByAddress(Address *Addr)
 {
-	Location *a = getLocationByAddress(Addr);
-	if (!a) a = enumLocationsReverse(Addr);
-	while ((a) && (!a->label)) {
-		if (a->flags & AF_FUNCTION_END) return NULL;
-		a = enumLocationsReverse(a->addr);
+	Location *loc = getLocationByAddress(Addr);
+	if (!loc) loc = enumLocationsReverse(Addr);
+	while ((loc) && (!loc->label)) {
+		if (loc->flags & AF_FUNCTION_END) return NULL;
+		loc = enumLocationsReverse(loc->addr);
 	}
-	return (a) ? a : NULL;
+	return (loc) ? loc : NULL;
 }
 
 /*
@@ -1537,7 +1545,22 @@ Symbol *Analyser::getSymbolByName(const char *label)
 	return analyserfindlabel(symbols, label);
 }
 
-/*
+const char *Analyser::getSymbolNameByLocation(Location *loc)
+{
+     return (loc) ? ((loc->label) ? loc->label->name : NULL): NULL;
+}
+
+
+/**
+ *	converts |FILEOFS fileaddr| to |Address|
+ */
+Address *Analyser::fileofsToAddress(FILEOFS fileaddr)
+{
+	// abstract / stub
+	return (Address *)invalid_addr->duplicate();
+}
+
+/**
  *	called once every time the analyser has nothing more to do.
  */
 void	Analyser::finish()
@@ -1615,12 +1638,89 @@ void Analyser::freeSymbols(Symbol *labels)
 	}
 }
 
-static void analysergetaddrcount(Location *addr, int *c)
+/*
+ *
+ */
+CommentList *Analyser::getComments(Address *Addr)
+{
+	Location *a = getLocationByAddress(Addr);
+	if (a) {
+		return a->comments;
+	}
+	return NULL;
+}
+
+static char *analy_addr_sym_func2(CPU_ADDR Addr, int *symstrlen, void *analy)
+{
+	Address *a = ((Analyser*)analy)->createAddress();     
+	a->getFromCPUAddress(&Addr);
+	Location *loc = ((Analyser*)analy)->getLocationByAddress(a);
+	delete a;
+	if ((loc) && (loc->label)) {
+		if (symstrlen) *symstrlen = strlen(loc->label->name);
+		return loc->label->name;
+	}
+	return NULL;
+}
+
+/*
+ *
+ */
+const char *Analyser::getDisasmStr(Address *Addr, int &length)
+{
+	if (validAddress(Addr, scinitialized)) {
+		if (disasm) {
+			addr_sym_func = NULL;
+			byte buf[16];
+			int bz = bufPtr(Addr, buf, sizeof(buf));
+			OPCODE *o = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
+			length = disasm->getSize(o);
+			return disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+		} else {
+			return "<no disassembler!>";
+		}
+	} else {
+		return "";
+	}
+}
+
+/*
+ *
+ */
+const char *Analyser::getDisasmStrFormatted(Address *Addr)
+{
+	if (disasm) {
+		addr_sym_func_context = this;
+		addr_sym_func = &analy_addr_sym_func2;
+
+		byte buf[16];
+		int bz = bufPtr(Addr, buf, sizeof(buf));
+		OPCODE *o=disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
+		char *res = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+
+		addr_sym_func_context = NULL;
+		addr_sym_func = NULL;
+
+		return res;
+	} else {
+		return "<no disassembler!>";
+	}
+}
+
+/*
+ *
+ */
+int Analyser::getDisplayMode()
+{
+	return mode;
+}
+
+static void analysergetlocationcount(Location *addr, int *c)
 {
 	if (addr) {
-		analysergetaddrcount(addr->left, c);
+		analysergetlocationcount(addr->left, c);
 		if (!(addr->flags & AF_DELETED)) (*c)++;
-		analysergetaddrcount(addr->right, c);
+		analysergetlocationcount(addr->right, c);
 	}
 }
 
@@ -1630,17 +1730,24 @@ static void analysergetaddrcount(Location *addr, int *c)
 int	Analyser::getLocationCount()
 {
 	int c=0;
-	analysergetaddrcount(locations, &c);
+	analysergetlocationcount(locations, &c);
 	return c;
 }
 
+/*
+ *
+ */
+const char *Analyser::getName()
+{
+	return "generic";
+}
 
-static void analysergetlabelcount(Symbol *l, int *c)
+static void analysergetsymbolcount(Symbol *l, int *c)
 {
 	if (l) {
-		analysergetlabelcount(l->left, c);
+		analysergetsymbolcount(l->left, c);
 		if (l->location) (*c)++;
-		analysergetlabelcount(l->right, c);
+		analysergetsymbolcount(l->right, c);
 	}
 }
 
@@ -1650,9 +1757,18 @@ static void analysergetlabelcount(Symbol *l, int *c)
 int	Analyser::getSymbolCount()
 {
 	int c=0;
-	analysergetlabelcount(symbols, &c);
+	analysergetsymbolcount(symbols, &c);
 	return c;
 }
+
+/*
+ *
+ */
+const char *Analyser::getSegmentNameByAddress(Address *Addr)
+{
+	return NULL;
+}
+
 /*
  *
  */
@@ -1663,9 +1779,22 @@ Symbol *Analyser::getSymbolByAddress(Address *Addr)
 	return (a) ? a->label : NULL;
 }
 
-char *Analyser::getSegmentNameByAddress(Address *Addr)
+/*
+ *
+ */
+const char *Analyser::getType()
 {
-	return NULL;
+	return "generic";
+}
+
+/*
+ *
+ */
+ht_tree *Analyser::getXRefs(Address *Addr)
+{
+	Location *a = getLocationByAddress(Addr);
+	if (!a) return NULL;
+	return a->xrefs;
 }
 
 /*
@@ -1745,9 +1874,25 @@ void Analyser::initDataAnalyser()
 /*
  *
  */
+bool Analyser::isDirty()
+{
+	return dirty;
+}
+
+/*
+ *
+ */
 void	Analyser::log(const char *s)
 {
 	// stub
+}
+
+/*
+ *
+ */
+void Analyser::makeDirty()
+{
+	dirty = true;
 }
 
 /*
@@ -1880,6 +2025,15 @@ void Analyser::pushAddress(Address *Addr, Address *func)
 	}
 }
 
+/*
+ *
+ */
+int	Analyser::queryConfig(int mode)
+{
+	// stub
+	return 0;
+}
+
 static void saveaddrs(ht_object_stream *st, Location *addr)
 {
 	if (addr) {
@@ -1975,15 +2129,6 @@ void Analyser::store(ht_object_stream *st)
 /*
  *
  */
-int	Analyser::queryConfig(int mode)
-{
-	// stub
-	return 0;
-}
-
-/*
- *
- */
 void Analyser::setActive(bool mode)
 {
 	if (mode) {
@@ -1999,6 +2144,14 @@ void Analyser::setActive(bool mode)
 	}
 }
 
+/*
+ *
+ */
+void Analyser::setDisplayMode(int enable, int disable)
+{
+	mode &= ~disable;
+	mode |= enable;
+}
 
 /*
  *
@@ -2048,6 +2201,14 @@ void Analyser::setSymbolTreeOptimizeThreshold(int threshold)
 /*
  *
  */
+void Analyser::toggleDisplayMode(int toggle)
+{
+	mode ^= toggle;
+}
+
+/*
+ *
+ */
 bool	Analyser::validCodeAddress(Address *Addr)
 {
 	Location *a = getLocationByAddress(Addr);
@@ -2071,166 +2232,6 @@ bool	Analyser::validReadAddress(Address *Addr)
 bool	Analyser::validWriteAddress(Address *Addr)
 {
 	return validAddress(Addr, scwrite);
-}
-
-/*
- *
- *		interface only (there's no internal use)
- *
- */
-
-static char *analy_addr_sym_func2(CPU_ADDR Addr, int *symstrlen, void *analy)
-{
-	Address *a = ((Analyser*)analy)->createAddress();     
-	a->getFromCPUAddress(&Addr);
-	Location *loc = ((Analyser*)analy)->getLocationByAddress(a);
-	delete a;
-	if ((loc) && (loc->label)) {
-		if (symstrlen) *symstrlen = strlen(loc->label->name);
-		return loc->label->name;
-	}
-	return NULL;
-}
-
-/*
- *	should return a new instance of an apropriate assembler
- */
-Assembler *Analyser::createAssembler()
-{
-	return NULL;
-}
-
-/*
- *
- */
-CommentList *Analyser::getComments(Address *Addr)
-{
-	Location *a = getLocationByAddress(Addr);
-	if (a) {
-		return a->comments;
-	}
-	return NULL;
-}
-
-/*
- *
- */
-char	*Analyser::getDisasmStr(Address *Addr, int &length)
-{
-	if (validAddress(Addr, scinitialized)) {
-		if (disasm) {
-			addr_sym_func = NULL;
-			byte buf[16];
-			int bz = bufPtr(Addr, buf, sizeof(buf));
-			OPCODE *o = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
-			length = disasm->getSize(o);
-			return disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
-		} else {
-			return "<no disassembler!>";
-		}
-	} else {
-		return "";
-	}
-}
-
-/*
- *
- */
-char	*Analyser::getDisasmStrFormatted(Address *Addr)
-{
-	if (disasm) {
-		addr_sym_func_context = this;
-		addr_sym_func = &analy_addr_sym_func2;
-
-		byte buf[16];
-		int bz = bufPtr(Addr, buf, sizeof(buf));
-		OPCODE *o=disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
-		char *res = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
-
-		addr_sym_func_context = NULL;
-		addr_sym_func = NULL;
-
-		return res;
-	} else {
-		return "<no disassembler!>";
-	}
-}
-
-/*
- *
- */
-const char *Analyser::getName()
-{
-	return "generic";
-}
-
-/*
- *
- */
-const char *Analyser::getType()
-{
-	return "generic";
-}
-
-/*
- *
- */
-ht_tree *Analyser::getXRefs(Address *Addr)
-{
-	Location *a = getLocationByAddress(Addr);
-	if (!a) return NULL;
-	return a->xrefs;
-}
-
-/*
- *
- */
-bool Analyser::isDirty()
-{
-	return dirty;
-}
-
-/*
- *
- */
-void Analyser::makeDirty()
-{
-	dirty = true;
-}
-
-
-/*
- *
- */
-int Analyser::getDisplayMode()
-{
-	return mode;
-}
-
-/*
- *
- */
-void Analyser::setDisplayMode(int enable, int disable)
-{
-	mode &= ~disable;
-	mode |= enable;
-}
-
-/*
- *
- */
-void Analyser::toggleDisplayMode(int toggle)
-{
-	mode ^= toggle;
-}
-
-/*
- *	converts FILEOFS fileaddr to Address
- */
-Address *Analyser::fileofsToAddress(FILEOFS fileaddr)
-{
-	// abstract / stub
-	return (Address *)invalid_addr->duplicate();
 }
 
 /****************************************************************************/

@@ -24,17 +24,10 @@
 - (HT_0_7) update FILE CONFIG FILE VERSION
 - 1”1 will eval to 1
 - [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
-- make virtual OBJECT_ID object_id() const; static ??
-
-+reported_but_think_its_ok
-- void ht_disasm_viewer::handlemsg(htmsg *msg):
-		case msg_filesize_changed: {
-               beautiest code alive
-- listbox scrollbar + scrolling problems
-- eval-function(s) in PE/image "offset(0x401000)" ?????
 
 +steves
 =======
+- claim 2002 copyright
 - !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla

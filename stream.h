@@ -102,35 +102,35 @@ public:
 
 class ht_object_stream: public ht_layer_stream {
 public:
-		   void	init(ht_stream *s);
-	virtual void	done();
+			void		init(ht_stream *s);
+	virtual	void		done();
 	
 /* new */
-	virtual void	*getBinary(int size, char *desc) = 0;
-	virtual void	getBinary(void *p, int size, char *desc) = 0;
-	virtual bool	getBool(char *desc) = 0;
-		   int	getInt(int size, char *desc);
-	virtual int	getIntDec(int size, char *desc) = 0;
-	virtual int	getIntHex(int size, char *desc) = 0;
-	virtual qword	getQWordDec(int size, char *desc) = 0;
-	virtual qword	getQWordHex(int size, char *desc) = 0;
-	virtual Object	*getObject(char *name) = 0;
-	virtual void	getObject(Object *&o, char *name) = 0;
-	virtual void	getSeparator() = 0;
-	virtual char	*getString(char *desc) = 0;
-	virtual UINT	recordStart(UINT size);
-	virtual void	recordEnd(UINT);
-	virtual void	putBinary(void *mem, int size, char *desc) = 0;
-	virtual void	putBool(bool b, char *desc) = 0;
-	virtual void	putInfo(char *info) = 0;
-		   void	putInt(int a, int size, char *desc);
-	virtual void	putIntDec(int a, int size, char *desc) = 0;
-	virtual void	putIntHex(int a, int size, char *desc) = 0;
-	virtual void	putQWordDec(qword a, int size, char *desc) = 0;
-	virtual void	putQWordHex(qword a, int size, char *desc) = 0;
-	virtual void	putObject(Object *obj, char *name) = 0;
-	virtual void	putSeparator() = 0;
-	virtual void	putString(char *string, char *desc) = 0;
+	virtual	void *	getBinary(int size, char *desc) = 0;
+	virtual	void		getBinary(void *p, int size, char *desc) = 0;
+	virtual	bool		getBool(char *desc) = 0;
+			int		getInt(int size, char *desc);
+	virtual	int		getIntDec(int size, char *desc) = 0;
+	virtual	int		getIntHex(int size, char *desc) = 0;
+	virtual	qword	getQWordDec(int size, char *desc) = 0;
+	virtual	qword	getQWordHex(int size, char *desc) = 0;
+	virtual	Object *	getObject(char *name) = 0;
+	virtual	void		getObject(Object *&o, char *name) = 0;
+	virtual	void		getSeparator() = 0;
+	virtual	char *	getString(char *desc) = 0;
+	virtual	UINT		recordStart(UINT size);
+	virtual	void		recordEnd(UINT);
+	virtual	void		putBinary(void *mem, int size, char *desc) = 0;
+	virtual	void		putBool(bool b, char *desc) = 0;
+	virtual	void		putInfo(char *info) = 0;
+			void		putInt(int a, int size, char *desc);
+	virtual	void		putIntDec(int a, int size, char *desc) = 0;
+	virtual	void		putIntHex(int a, int size, char *desc) = 0;
+	virtual	void		putQWordDec(qword a, int size, char *desc) = 0;
+	virtual	void		putQWordHex(qword a, int size, char *desc) = 0;
+	virtual	void		putObject(Object *obj, char *name) = 0;
+	virtual	void		putSeparator() = 0;
+	virtual	void		putString(char *string, char *desc) = 0;
 };
 
 #define PUT_BINARY(st, d, size) st->putBinary(d, size, #d)

@@ -57,24 +57,41 @@ void Object::done()
 #endif
 }
 
-int Object::compareTo(const Object *o) const
+/**
+ *	Standard Object comparator.
+ *	@param obj, object to compare to
+ *	@returns 0 for equality, negative number if |this<obj| and positive number if |this>obj|
+ */
+int Object::compareTo(const Object *obj) const
 {
 	assert(0);
 	return 0;
 }
 
+/**
+ *	Standard Object duplicator.
+ *   @returns copy of object
+ */
 Object *Object::duplicate()
 {
-	Object *o=new Object();
-	o->init();
-	return o;
+	Object *obj = new Object();
+	obj->init();
+	return obj;
 }
 
+/**
+ *	Standard Object idle function.
+ *	Overwrite and register with htidle.cc:register_idle()
+ *	@returns true if working, false if really idle
+ */
 bool Object::idle()
 {
 	return false;
 }
 
+/**
+ *	@returns true if |this| is an object or derived of an object of type |id|.
+ */
 bool Object::instanceOf(OBJECT_ID id)
 {
 	return id == object_id();
@@ -85,20 +102,34 @@ bool Object::instanceOf(Object *o)
 	return instanceOf(o->object_id());
 }
 
+/**
+ *	loads object from object stream.
+ *	@returns ht_stream errorcode
+ */
 int Object::load(ht_object_stream *s)
 {
 	return 0;
 }
 
+/**
+ *	@returns unique object id.
+ */
 OBJECT_ID Object::object_id() const
 {
 	return ATOM_OBJECT;
 }
 
+/**
+ *	stores object.
+ */
 void Object::store(ht_object_stream *s)
 {
 }
 
+/**
+ *   Prints object in string |s|
+ *	@returns number of characters written in s
+ */
 int Object::toString(char *s, int maxlen)
 {
 	OBJECT_ID oid = object_id();

@@ -137,11 +137,11 @@ class Segment: public ht_data {
 	char *name;
 	int caps;
 	
-					Segment(const char *n, Address *s, Address *e, int c, int address_size);
-	virtual	bool		containsAddress(Address *addr) = 0;
-	virtual	char *	getName();
-	virtual	int		getAddressSize();
-	virtual	int		getCapability(int cap);
+						Segment(const char *n, Address *s, Address *e, int c, int address_size);
+	virtual	bool			containsAddress(Address *addr) = 0;
+	virtual	const char *	getName();
+	virtual	int			getAddressSize();
+	virtual	int			getCapability(int cap);
 };
 
 /*
@@ -204,12 +204,12 @@ public:
 
 class CommentList: public ht_clist {
 public:
-	void init();
-	void appendPreComment(const char *s);
-	void appendPreComment(int special);
-	void appendPostComment(const char *s);
-	void appendPostComment(int special);
-	char *getName(UINT i);
+	void			init();
+	void			appendPreComment(const char *s);
+	void			appendPreComment(int special);
+	void			appendPostComment(const char *s);
+	void			appendPostComment(int special);
+	const char *	getName(UINT i);
 };
 
 struct Symbol;
@@ -352,16 +352,17 @@ public:
 			void			freeLocation(Location *loc);
 			void			freeLocations(Location *locs);
 			void			freeComments(Location *loc);
-			void			freeSymbol(Symbol *label);
-			void			freeSymbols(Symbol *labels);
+			void			freeSymbol(Symbol *sym);
+			void			freeSymbols(Symbol *syms);
 			Location *	getLocationByAddress(Address *Addr);
 			Location *	getLocationContextByAddress(Address *Addr);
 			int			getLocationCount();
 			Location *	getFunctionByAddress(Address *Addr);
 			Location *	getPreviousSymbolByAddress(Address *Addr);
-	virtual	char *		getSegmentNameByAddress(Address *Addr);
+	virtual	const char *	getSegmentNameByAddress(Address *Addr);
 			Symbol *		getSymbolByAddress(Address *Addr);
 			Symbol *		getSymbolByName(const char *label);
+               const char *	getSymbolNameByLocation(Location *loc);
 			int			getSymbolCount();
 			bool			gotoAddress(Address *Addr, Address *func);
 	virtual	void 		initCodeAnalyser();
@@ -396,8 +397,8 @@ public:
 	virtual   Assembler *	createAssembler();
 	virtual	Address *		fileofsToAddress(FILEOFS fileofs);
 			CommentList *	getComments(Address *Addr);
-			char *		getDisasmStr(Address *Addr, int &length);
-			char *		getDisasmStrFormatted(Address *Addr);
+			const char *	getDisasmStr(Address *Addr, int &length);
+			const char *	getDisasmStrFormatted(Address *Addr);
 			int			getDisplayMode();
 	virtual   const char *	getName();
 	virtual   const char *	getType();

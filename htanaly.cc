@@ -400,10 +400,10 @@ void AnalyInfoline::done()
 char *AnalyInfoline::gettext()
 {
 	if (valid()) {
-		char *sec = analy->analy->getSegmentNameByAddress(addr);
+		const char *sec = analy->analy->getSegmentNameByAddress(addr);
 		if (fofs != INVALID_FILE_OFS) {
 			Location *a = analy->analy->getFunctionByAddress(addr);
-			char *func = (a) ? ((a->label) ? a->label->name : NULL): NULL;
+			const char *func = analy->analy->getSymbolNameByLocation(a);
 
 			char *d = displayformat;
 			char *ss = s;
@@ -1057,7 +1057,6 @@ bool ht_aviewer::get_hscrollbar_pos(int *pstart, int *psize)
 void ht_aviewer::get_pindicator_str(char *buf)
 {
 	Address *addr;
-//FIXME bufferbla
 	if (analy && getCurrentAddress(&addr)) {
 		FILEOFS o;
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
@@ -1232,7 +1231,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 				gotoAddress(a->addr, this);
 			} else {
 				global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-				errorbox("Address %y doesn't belong to a label.", c);
+				errorbox("Address %y doesn't belong to a symbol.", c);
 			}
 			delete c;
 			clearmsg(msg);
@@ -1637,7 +1636,7 @@ void ht_aviewer::showComments(Address *Addr)
 	if (comment) {
 		int c1 = comment->count();
 		for (int i=0; i < c1; i++) {
-			char *c = comment->getName(i);
+			const char *c = comment->getName(i);
 			int len = strlen(c);
 			if (len) mem_file->write(c, len);
 			if (i+1<c1) mem_file->write((void*)"\n", 1);
@@ -1825,7 +1824,7 @@ restart:
 			xcount++;
 			ht_snprintf(str, sizeof str, "%y", xa);
 			Location *a = analy->getFunctionByAddress(xa);
-			char *func = (a) ? ((a->label) ? a->label->name : NULL): NULL;
+			const char *func = analy->getSymbolNameByLocation(a);
 			if (func) {
 				int d=0;
 				xa->difference(d, a->addr);

@@ -24,19 +24,32 @@
 #include "global.h"
 #include "htdebug.h"
 
+/**
+ *	Macro for creating object build functions
+ */
 #define BUILDER(reg, obj) Object *build_##obj(){return new obj();}
+
+/**
+ *	Registers builder function by object id.
+ */
 #define REGISTER(reg, obj) register_atom(reg, (void*)build_##obj);
+
+/**
+ *	Unregisters builder function by object id.
+ */
 #define UNREGISTER(reg, obj) unregister_atom(reg);
 
 /* actually a str => bigendian-int */
-/* used to define OBJECT_IDs */
-#define MAGICW(magic) (unsigned short)(((unsigned char)magic[0]<<8) | (unsigned char)magic[1])
+/** used to define OBJECT_IDs */
 #define MAGICD(magic) (unsigned long)(((unsigned char)magic[0]<<24) | ((unsigned char)magic[1]<<16) | ((unsigned char)magic[2]<<8) | (unsigned char)magic[3])
 
 #define ATOM_OBJECT MAGICD("OBJ0")
 
 class ht_object_stream;
 
+/**
+ *	This is THE base class.
+ */
 class Object {
 public:
 #ifdef HTDEBUG
