@@ -537,25 +537,24 @@ bool search_bin_process(ht_data *context, ht_text *progress_indicator)
 	ctx->o -= ctx->patlen-1;
 
 	int p = (int)(((double)(ctx->o - ctx->ofs))*100/ctx->len);
-	
+
 	char status[64];
 	ht_snprintf(status, sizeof status, "%d %%", p);
 	progress_indicator->settext(status);
-	
+
 	return true;
 }
 
 /*
  *	CLASS ht_hexascii_search_form
  */
-
 void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_hexascii_search_form");
 
 	bounds c;
-/* ascii string */
+	/* ascii string */
 	c.x=6;
 	c.y=0;
 	c.w=b->w-6;
@@ -563,7 +562,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
 	insert(str);
-/* ascii string label */
+	/* ascii string label */
 	c.x=0;
 	c.w=5;
 	c.h=1;
@@ -571,7 +570,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	strlabel->init(&c, "~ascii", str);
 	insert(strlabel);
 
-/* hex string */
+	/* hex string */
 	c.x=6;
 	c.y=2;
 	c.w=b->w-6;
@@ -580,7 +579,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	hex->init(&c, 64);
 	hex->attach(str);
 	insert(hex);
-/* hex string label */
+	/* hex string label */
 	c.x=0;
 	c.w=5;
 	c.h=1;
@@ -588,7 +587,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	hexlabel->init(&c, "~hex", hex);
 	insert(hexlabel);
 
-/* range start */
+	/* range start */
 	c.x=10;
 	c.y=4;
 	c.w=10;
@@ -596,7 +595,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	range_start=new ht_strinputfield();
 	range_start->init(&c, 10);
 	insert(range_start);
-/* range start label */
+	/* range start label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
@@ -604,7 +603,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	rslabel->init(&c, "~from ofs", range_start);
 	insert(rslabel);
 
-/* range end */
+	/* range end */
 	c.x=10;
 	c.y=6;
 	c.w=10;
@@ -612,14 +611,14 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	range_end=new ht_strinputfield();
 	range_end->init(&c, 10);
 	insert(range_end);
-/* range end label */
+	/* range end label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
 	ht_label *relabel=new ht_label();
 	relabel->init(&c, "~to ofs", range_end);
 	insert(relabel);
-/* options */
+	/* options */
 	c.w=35;
 	c.y=8;
 	c.h=2;
@@ -637,14 +636,13 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_evalstr_search_form
  */
-
 void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_evalstr_search_form");
 
 	bounds c;
-/* string */
+	/* string */
 	c.x=0;
 	c.y=1;
 	c.w=b->w;
@@ -652,7 +650,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
 	insert(str);
-/* string label */
+	/* string label */
 	c.x=0;
 	c.y=0;
 	c.w=23;
@@ -660,7 +658,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	ht_label *strlabel=new ht_label();
 	strlabel->init(&c, "s~earch evaluated string", str);
 	insert(strlabel);
-/* hint */
+	/* hint */
 /*	c.x=0;
 	c.y=2;
 	c.w=b->w-2;
@@ -669,7 +667,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	hint->init(&c, "(example: \"hello\\n\\0\\077\\xd\" 'ho',011b,66o)", 0);
 	insert(hint);*/
 
-/* range start */
+	/* range start */
 	c.x=10;
 	c.y=4;
 	c.w=10;
@@ -677,7 +675,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	range_start=new ht_strinputfield();
 	range_start->init(&c, 10);
 	insert(range_start);
-/* range start label */
+	/* range start label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
@@ -685,7 +683,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	rslabel->init(&c, "~from ofs", range_start);
 	insert(rslabel);
 
-/* range end */
+	/* range end */
 	c.x=10;
 	c.y=6;
 	c.w=10;
@@ -693,14 +691,14 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	range_end=new ht_strinputfield();
 	range_end->init(&c, 10);
 	insert(range_end);
-/* range end label */
+	/* range end label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
 	ht_label *relabel=new ht_label();
 	relabel->init(&c, "~to ofs", range_end);
 	insert(relabel);
-/* options */
+	/* options */
 	c.w = 35;
 	c.y = 8;
 	c.h = 2;
@@ -718,14 +716,13 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_vregex_search_form
  */
-
 void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_text_search_form");
 
 	bounds c;
-/* string */
+	/* string */
 	c.x=0;
 	c.y=1;
 	c.w=b->w;
@@ -733,7 +730,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
 	insert(str);
-/* string label */
+	/* string label */
 	c.x=0;
 	c.y=0;
 	c.w=12;
@@ -742,7 +739,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	strlabel->init(&c, "s~earch regex", str);
 	insert(strlabel);
 
-/* range start */
+	/* range start */
 	c.x=10;
 	c.y=4;
 	c.w=10;
@@ -750,7 +747,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	range_start=new ht_strinputfield();
 	range_start->init(&c, 10);
 	insert(range_start);
-/* range start label */
+	/* range start label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
@@ -758,7 +755,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	rslabel->init(&c, "~from addr", range_start);
 	insert(rslabel);
 
-/* range end */
+	/* range end */
 	c.x=10;
 	c.y=6;
 	c.w=10;
@@ -766,14 +763,14 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	range_end=new ht_strinputfield();
 	range_end->init(&c, 10);
 	insert(range_end);
-/* range end label */
+	/* range end label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
 	ht_label *relabel=new ht_label();
 	relabel->init(&c, "~to addr", range_end);
 	insert(relabel);
-/* options */
+	/* options */
 	c.w = 35;
 	c.y = 8;
 	c.h = 2;
@@ -791,14 +788,13 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_expr_search_form
  */
-
 void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_expr_search_form");
 
 	bounds c;
-/* string */
+	/* string */
 	c.x=0;
 	c.y=1;
 	c.w=b->w;
@@ -806,7 +802,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	str=new ht_strinputfield();
 	str->init(&c, 256, history);
 	insert(str);
-/* string label */
+	/* string label */
 	c.x=0;
 	c.y=0;
 	c.w=17;
@@ -814,7 +810,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	ht_label *strlabel=new ht_label();
 	strlabel->init(&c, "s~earch expression", str);
 	insert(strlabel);
-/* hint */
+	/* hint */
 	c.x=0;
 	c.y=2;
 	c.w=b->w-2;
@@ -823,7 +819,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	hint->init(&c, "stops if expression evaluates to non-zero", align_left);
 	insert(hint);
 
-/* range start */
+	/* range start */
 	c.x=10;
 	c.y=4;
 	c.w=10;
@@ -831,7 +827,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	range_start=new ht_strinputfield();
 	range_start->init(&c, 10);
 	insert(range_start);
-/* range start label */
+	/* range start label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
@@ -839,7 +835,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	rslabel->init(&c, "~from ofs", range_start);
 	insert(rslabel);
 
-/* range end */
+	/* range end */
 	c.x=10;
 	c.y=6;
 	c.w=10;
@@ -847,14 +843,14 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	range_end=new ht_strinputfield();
 	range_end->init(&c, 10);
 	insert(range_end);
-/* range end label */
+	/* range end label */
 	c.x=0;
 	c.w=9;
 	c.h=1;
 	ht_label *relabel=new ht_label();
 	relabel->init(&c, "~to ofs", range_end);
 	insert(relabel);
-/* options */
+	/* options */
 /*	c.w=35;
 	c.y=8;
 	c.h=2;
@@ -871,7 +867,6 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_replace_hexascii_search_form
  */
-
 ht_replace_bin_context::~ht_replace_bin_context()
 {
 	free(repl);
@@ -901,7 +896,7 @@ void ht_replace_hexascii_search_form::init(bounds *b, int options, ht_list *hist
 	VIEW_DEBUG_NAME("ht_replace_hexascii_search_form");
 
 	bounds c;
-/* ascii string */
+	/* ascii string */
 	c.x=6;
 	c.y=0;
 	c.w=40;
@@ -909,7 +904,7 @@ void ht_replace_hexascii_search_form::init(bounds *b, int options, ht_list *hist
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
 	insert(str);
-/* ascii string label */
+	/* ascii string label */
 	c.x=0;
 	c.w=5;
 	c.h=1;
@@ -917,7 +912,7 @@ void ht_replace_hexascii_search_form::init(bounds *b, int options, ht_list *hist
 	strlabel->init(&c, "~ascii", str);
 	insert(strlabel);
 
-/* hex string */
+	/* hex string */
 	c.x=6;
 	c.y=2;
 	c.w=40;
@@ -926,7 +921,7 @@ void ht_replace_hexascii_search_form::init(bounds *b, int options, ht_list *hist
 	hex->init(&c, 64);
 	hex->attach(str);
 	insert(hex);
-/* hex string label */
+	/* hex string label */
 	c.x=0;
 	c.w=5;
 	c.h=1;
@@ -995,14 +990,14 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 		search_pos sstart, send;
 
 		try {
-/* create history entry */
+			/* create history entry */
 			if (s->create_desc) {
 				char hist_desc[1024];
 				s->create_desc(hist_desc, sizeof hist_desc, form);
 				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, form);
 			}
-/* create request */
-		switch (s->search_class) {
+			/* create request */
+			switch (s->search_class) {
 				case SC_PHYSICAL:
 					if (!format->pos_to_offset(*start, &sstart.offset)
 						|| !format->pos_to_offset(*end, &send.offset)) {
@@ -1109,13 +1104,13 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 		ht_search_request *request = NULL;
 		
 		try {
-/* create history entry */
+			/* create history entry */
 			if (s->create_desc) {
 				char hist_desc[1024];
 				s->create_desc(hist_desc, sizeof hist_desc, sform);
 				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, sform);
 			}
-/* search */
+			/* search */
 			start.offset=0;
 			end.offset=0xffffffff;
 			format->get_current_offset(&start.offset);
@@ -1219,7 +1214,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 	
 	ht_replace_bin_context *c = (ht_replace_bin_context*)context;
 	if (c->repllen > c->len) {
-/* grow */
+		/* grow */
 		UINT size = c->file->get_size();
 		c->file->extend(size + c->repllen - c->len);
 		
@@ -1247,7 +1242,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		free(c->buf);
 	} else if (c->repllen < c->len) {
-/* shrink */
+		/* shrink */
 		UINT size = c->file->get_size();
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
@@ -1282,7 +1277,6 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 /*
  *	CLASS ht_search_dialog
  */
-
 void ht_search_dialog::init(bounds *b, const char *title)
 {
 	ht_dialog::init(b, title, FS_KILLER | FS_TITLE | FS_MOVE);
@@ -1389,7 +1383,6 @@ void ht_search_dialog::select_search_mode_bymodeidx()
 /*
  *	CLASS ht_replace_dialog
  */
-
 void ht_replace_dialog::init(bounds *b)
 {
 	ht_search_dialog::init(b, "replace");
@@ -1527,5 +1520,3 @@ ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FI
 	}
 	return NULL;
 }
-
- 

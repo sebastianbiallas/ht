@@ -59,7 +59,6 @@ typedef void (*create_desc_func)(char *buf, int buflen, ht_view *form);
 /*
  *	CLASS ht_fxbin_search_request
  */
- 
 class ht_fxbin_search_request: public ht_search_request {
 public:
 	UINT data_size;
@@ -67,14 +66,13 @@ public:
 	
 			ht_fxbin_search_request(UINT search_class, UINT flags, UINT data_size, byte *data);
 	virtual	~ht_fxbin_search_request();
-/* overwritten */
+	/* overwritten */
 	virtual	Object *duplicate();
 };
 
 /*
  *	CLASS ht_regex_search_request
  */
- 
 class ht_regex_search_exception: public ht_exception {
 protected:
 	char rxerr[128];
@@ -93,21 +91,20 @@ public:
 
 			ht_regex_search_request(UINT search_class, UINT flags, char *regex);
 	virtual	~ht_regex_search_request();
-/* overwritten */
+	/* overwritten */
 	virtual	Object *duplicate();
 };
 
 /*
  *	CLASS ht_expr_search_request
  */
-
 class ht_expr_search_request: public ht_search_request {
 public:
 	char *expr;
 
 			ht_expr_search_request(UINT search_class, UINT flags, char *Expr);
 	virtual	~ht_expr_search_request();
-/* overwritten */
+	/* overwritten */
 	virtual	Object *duplicate();
 };
 
@@ -116,7 +113,6 @@ public:
 /*
  *	CLASS ht_hexascii_search_form
  */
- 
 struct ht_hexascii_search_form_data {
 	ht_strinputfield_data str;
 	ht_hexinputfield_data hex;
@@ -138,7 +134,6 @@ public:
 /*
  *	CLASS ht_evalstr_search_form
  */
-
 struct ht_evalstr_search_form_data {
 	ht_strinputfield_data str;
 	ht_strinputfield_data start;
@@ -159,7 +154,6 @@ public:
 /*
  *	CLASS ht_vregex_search_form
  */
-
 struct ht_vregex_search_form_data {
 	ht_strinputfield_data str;
 	ht_strinputfield_data start;
@@ -180,7 +174,6 @@ public:
 /*
  *	CLASS ht_expr_search_form
  */
-
 struct ht_expr_search_form_data {
 	ht_strinputfield_data str;
 	ht_strinputfield_data start;
@@ -201,7 +194,6 @@ public:
 /*
  *	CLASS ht_replace_hexascii_search_form
  */
- 
 struct ht_replace_hexascii_search_form_data {
 	ht_strinputfield_data str;
 	ht_hexinputfield_data hex;
@@ -217,7 +209,6 @@ public:
 /*
  *	CLASS ht_search_dialog
  */
-
 struct ht_search_dialog_mode {
 	int id;
 	ht_view *view;
@@ -240,9 +231,9 @@ public:
 	
 			void	init(bounds *b, const char *title);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
-/* new */
+	/* new */
 			void insert_search_mode(int id, char *desc, ht_view *v);
 			void select_search_mode(int id);
 			ht_view *get_search_modeform();
@@ -252,7 +243,6 @@ public:
 /*
  *	CLASS ht_replace_dialog
  */
-
 #define MAX_REPLACE_DIALOG_MODES 16
 
 class ht_replace_dialog: public ht_search_dialog {
@@ -270,9 +260,9 @@ public:
 	
 			void	init(bounds *b);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
-/* new */
+	/* new */
 			void insert_replace_mode(int id, char *desc, ht_view *v);
 			void select_replace_mode(int id);
 			ht_view *get_replace_modeform();
@@ -283,7 +273,6 @@ public:
 /*
  *
  */
- 
 #define SEARCHMODE_BIN		1
 #define SEARCHMODE_EVALSTR	2
 #define SEARCHMODE_VREGEX	4
@@ -330,7 +319,6 @@ ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FI
 /*
  *
  */
-
 class ht_replace_bin_context: public ht_data {
 public:
 	ht_streamfile *file;
