@@ -24,6 +24,7 @@
 #include "analy_register.h"
 #include "analy_java.h"
 #include "global.h"
+#include "class.h"
 #include "class_analy.h"
 
 #include "htctrl.h"
@@ -107,7 +108,9 @@ void ClassAnalyser::beginAnalysis()
           ht_data *value;
           while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
                Address *a = createAddress32(cm->start);
-               ht_snprintf(buffer, 1024, "; method %s", cm->name);
+               char buffer2[1024];
+               java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type);
+               ht_snprintf(buffer, 1024, "; %s", buffer2);
                addComment(a, 0, "");
 			addComment(a, 0, ";----------------------------------------------");
                addComment(a, 0, buffer);
@@ -210,6 +213,12 @@ void ClassAnalyser::initCodeAnalyser()
 	Analyser::initCodeAnalyser();
 }
 
+
+int class_token_func(char *result, int maxlen, dword token, void *context)
+{
+	return token_translate(result, maxlen, token, (ht_class_shared_data *)context);
+}
+
 /*
  *
  */
@@ -217,7 +226,7 @@ void ClassAnalyser::initUnasm()
 {
 	DPRINTF("class_analy: ");
 	analy_disasm = new AnalyJavaDisassembler();
-	((AnalyJavaDisassembler*)analy_disasm)->init(this);
+	((AnalyJavaDisassembler*)analy_disasm)->init(this, class_token_func, class_shared);
 }
 
 /*
