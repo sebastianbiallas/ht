@@ -100,10 +100,10 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	VIEW_DEBUG_NAME("ht_coff");
 
 	LOG("%s: COFF: found header at %08x", file->get_filename(), h);
-	coff_shared=new ht_coff_shared_data;
-	coff_shared->hdr_ofs=h;
-	coff_shared->v_image=NULL;
-	coff_shared->v_header=NULL;
+	coff_shared = (ht_coff_shared_data *)malloc(sizeof(*coff_shared));
+	coff_shared->hdr_ofs = h;
+	coff_shared->v_image = NULL;
+	coff_shared->v_header = NULL;
 
 /* headers */
 	file->seek(h);
@@ -143,6 +143,7 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 void ht_coff::done()
 {
 	ht_format_group::done();
+     free(shared_data);
 }
 
 /*
