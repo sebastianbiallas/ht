@@ -3,7 +3,7 @@
 
 version 0.7.0:
 	- whole new Address class for the analyser. Much more flexible.
-	  Enables truly segmented and 64-bit addrs.
+	  Enables segmented and 64-bit addresses.
 	- sys/djgpp: ff2pstat(...) fixed
 	- got rid of fmt_vaddress
 	- submenus
@@ -32,6 +32,10 @@ version 0.7.0:
 	- log-window scrolling fixed
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
+
+     * open info file fixed
+     * ht_hex_sub::last_line_id(...) fixed
+     * LE host_struct's created
 
      * UI file/execute for new sys_ipc_* functions
      * htsys: new function sys_get_caps(), changed if to sys_ipc_exec(...)
