@@ -113,29 +113,32 @@ void scalar_setstr(eval_scalar *s, eval_str *t);
 void scalar_dump(eval_scalar *s);
 #endif
 
-void scalar_create_int(eval_scalar *s, eval_int *t);
-void scalar_create_int_c(eval_scalar *s, int i);
-void scalar_create_int_q(eval_scalar *s, qword q);
-void scalar_create_str(eval_scalar *s, eval_str *t);
-void scalar_create_str_c(eval_scalar *s, char *cstr);
-void scalar_create_float(eval_scalar *s, eval_float *t);
-void scalar_create_float_c(eval_scalar *s, double f);
-void scalar_context_str(eval_scalar *s, eval_str *t);
-void scalar_context_int(eval_scalar *s, eval_int *t);
-void scalar_context_float(eval_scalar *s, eval_float *t);
+void scalar_create_int(eval_scalar *result, const eval_int *t);
+void scalar_create_int_c(eval_scalar *result, const int i);
+void scalar_create_int_q(eval_scalar *result, const qword q);
+void scalar_create_str(eval_scalar *result, const eval_str *t);
+void scalar_create_str_c(eval_scalar *result, const char *cstr);
+void scalar_create_float(eval_scalar *result, const eval_float *t);
+void scalar_create_float_c(eval_scalar *result, const double f);
+
+void scalar_clone(eval_scalar *result, const eval_scalar *s);
+
+void scalar_context_str(const eval_scalar *s, eval_str *t);
+void scalar_context_int(const eval_scalar *s, eval_int *t);
+void scalar_context_float(const eval_scalar *s, eval_float *t);
 void string_concat(eval_str *s, eval_str *a, eval_str *b);
-void scalar_concat(eval_scalar *s, eval_scalar *a, eval_scalar *b);
+void scalar_concat(eval_scalar *s, const eval_scalar *a, const eval_scalar *b);
 void scalar_destroy(eval_scalar *s);
-int string_compare(eval_str *a, eval_str *b);
-int scalar_strop(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
-int scalar_float_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
-int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
+int string_compare(const eval_str *a, const eval_str *b);
+int scalar_strop(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op);
+int scalar_float_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op);
+int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op);
 int scalar_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
 void scalar_negset(eval_scalar *xr, eval_scalar *xa);
 void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc);
 void sprintf_puts(char **b, char *blimit, char *buf);
 int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *s);
-int func_sprintf(eval_scalar *r, eval_str *format, eval_scalarlist *scalars);
+int func_sprintf(eval_scalar *r, const eval_str *format, const eval_scalarlist *scalars);
 
 /*
  *	FUNCTIONS
