@@ -89,11 +89,15 @@ ht_key ht_getkey()
 {
 	UINT r = ht_raw_getkey();
 	ht_key k = K_INVALID;
-	if (r == HT_META_KEY('[')) {		/* ^[ escape sequence */
-		if (ht_keypressed()) {
+	int r2 = UNMETA_KEY(UNCTRL_KEY(UNSHIFT_KEY(r)));
+	if ((HT_META_KEY(r) == r) && ((r2 == '[') || (r2 == 'O'))) {/* escape seq */
+		r2 = r;
+		if (keyb_keypressed()) {
 			r = ht_raw_getkey();
 			r = ht_escseq2rawkey(r);
-		}		    
+			if (CTRL_KEY(r2) == r2) r = CTRL_KEY(r);
+			if (SHIFT_KEY(r2) == r2) r = SHIFT_KEY(r);
+		}
 	}
 	r = get_modifier(r);
 	k = ht_rawkey2key(r);
