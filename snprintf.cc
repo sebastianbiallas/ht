@@ -128,6 +128,7 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
 #define DP_C_LONG    2
 #define DP_C_LDOUBLE 3
 #define DP_C_LLONG   4
+#define DP_C_QWORD   5
 
 #define char_to_int(p) ((p)- '0')
 #ifndef MAX
@@ -243,6 +244,10 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  cflags = DP_C_LDOUBLE;
 						  ch = *format++;
 						  break;
+				    case 'q':
+						  cflags = DP_C_QWORD;
+						  ch = *format++;
+						  break;
 				    default:
 						  break;
 				    }
@@ -258,7 +263,11 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 								value = va_arg (args, long int);
 						  else if (cflags == DP_C_LLONG)
 								value = va_arg (args, LLONG);
-						  else
+						  else if (cflags == DP_C_QWORD) {
+							  qword *q = va_arg (args, qword *);
+							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
+                                     break;
+                                } else
 								value = va_arg (args, int);
 						  fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
 						  break;
@@ -270,7 +279,11 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 								value = (long)va_arg (args, unsigned long int);
 						  else if (cflags == DP_C_LLONG)
 								value = (long)va_arg (args, unsigned LLONG);
-						  else
+						  else if (cflags == DP_C_QWORD) {
+							  qword *q = va_arg (args, qword *);
+							  fmtqword(buffer, &currlen, maxlen, q, 8, min, max, flags);
+                                     break;
+						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 8, min, max, flags);
 						  break;
@@ -282,7 +295,11 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 								value = (long)va_arg (args, unsigned long int);
 						  else if (cflags == DP_C_LLONG)
 								value = (LLONG)va_arg (args, unsigned LLONG);
-						  else
+						  else if (cflags == DP_C_QWORD) {
+							  qword *q = va_arg (args, qword *);
+							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
+                                     break;
+						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
 						  break;
@@ -296,7 +313,11 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 								value = (long)va_arg (args, unsigned long int);
 						  else if (cflags == DP_C_LLONG)
 								value = (LLONG)va_arg (args, unsigned LLONG);
-						  else
+						  else if (cflags == DP_C_QWORD) {
+							  qword *q = va_arg (args, qword *);
+							  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
+                                     break;
+						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 16, min, max, flags);
 						  break;
@@ -340,6 +361,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  strvalue = va_arg (args, char *);
 						  fmtint (buffer, &currlen, maxlen, (long) strvalue, 16, min, max, flags);
 						  break;
+#if 1
 				    case 'q': {
 						  /* qword */
 						  qword *q = va_arg (args, qword *);
@@ -352,6 +374,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
 						  break;
 				    }
+#endif
 				    case 'n':
 						  if (cflags == DP_C_SHORT) {
 								short int *num;
