@@ -165,18 +165,18 @@ void areafindprev(area_s *p, Object *from, Object **res)
 {
 //FIXME ??:
 	if (p) {
-		if (from->compareTo(p->start) < 0) {
-			if (p->left) areafindprev(p->left, from, res);
-		} else if (from->compareTo(p->end) >= 0) {
-			*res = p->start;
+          if (!from || from->compareTo(p->end) >= 0) {
+			*res = p->end;
 			areafindprev(p->right, from, res);
+          } else if (from->compareTo(p->start) < 0) {
+			areafindprev(p->left, from, res);
 		} else *res = from;
-	} else *res = NULL;
+	};
 }
 
 Object *Area::findPrev(Object *from)
 {
-	Object *res;
+	Object *res = NULL;
 	areafindprev(a, from, &res);
 	return res;
 }
