@@ -135,6 +135,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 					}
 					break;
 				}
+				break;
 			}
 			default:
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, image_endianess);
