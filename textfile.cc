@@ -539,23 +539,26 @@ byte *ht_ltextfile::match_lineend_forwd(byte *buf, UINT buflen, int *le_len)
 lexer_state ht_ltextfile::next_instate(UINT line)
 {
 	byte buf[TEXTFILE_MAX_LINELEN+1];
-	lexer_state state=0;
+	lexer_state state = 0;
 
 	UINT buflen;
 	if (!getline(line, 0, buf, TEXTFILE_MAX_LINELEN, &buflen, &state)) return state;
-	buf[buflen]=0;
+	buf[buflen] = 0;
 	
 	if (lexer) {
 		text_pos p;
-		char *bufp=(char*)buf;
+		char *bufp = (char*)buf;
 		UINT toklen;
-		bool start_of_line=true;
-		p.line=line;
-		p.pofs=0;
-		while (lexer->gettoken(bufp, buflen-(bufp-(char*)buf), p, start_of_line, &state, &toklen)) {
-			bufp+=toklen;
-			p.pofs+=toklen;
-			start_of_line=false;
+		bool start_of_line = true;
+		p.line = line;
+		p.pofs = 0;
+          int bufplen = buflen;
+		while ((lexer->gettoken(bufp, bufplen, p, start_of_line, &state, &toklen))) {
+			bufp += toklen;
+			p.pofs += toklen;
+               bufplen -= toklen;
+			start_of_line = false;
+               if (!bufplen) break;
 		}
 	}
 	return state;
@@ -777,24 +780,28 @@ int	ht_ltextfile::truncate(UINT newsize)
 void ht_ltextfile::update_parse(UINT target)
 {
 	ht_ltextfile_line *e;
-	UINT line=first_parse_dirty_line;
+	UINT line = first_parse_dirty_line;
 
 	lexer_state instate=0;
 	if (line) {
-		instate=next_instate(line-1);
+//		instate = next_instate(line-1);
+		e = fetch_line(line);
+          instate = e->instate;
 	} else {
-		if (lexer) instate=lexer->getinitstate();
+		if (lexer) instate = lexer->getinitstate();
 	}
 
 	while (line<=target) {
-		e=fetch_line(line);
+		e = fetch_line(line);
 		if (!e) break;
 //		if (e->instate==instate) break;	/* FIXME: valid simplification ?!... */
-		e->instate=instate;
-		first_parse_dirty_line=line+1;
-		instate=next_instate(line);
+		e->instate = instate;
+		first_parse_dirty_line = line+1;
+		instate = next_instate(line);
 		line++;
 	}
+	e = fetch_line(line);
+	if (e) e->instate = instate;
 }
 
 void ht_ltextfile::update_nofs(UINT target)

@@ -47,7 +47,7 @@ static ht_search_request* create_request_hexascii(text_search_pos *start, text_s
 {
 	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 	
 	ht_fxbin_search_request *request;
 	
@@ -1242,6 +1242,7 @@ void ht_text_viewer::draw()
 				start_of_line=false;
 				p.line=pos.line;
 				p.pofs=pos.pofs;
+	               if (!linelen) break;
 			}
 			if (drawmeta) render_meta(x-xofs, y, &pos, metacolor);
 		} else {
@@ -1790,7 +1791,7 @@ void ht_text_viewer::popup_change_highlight()
 			ht_listbox_data type;
 		} data;
 
-		d->databuf_get(&data);
+		d->databuf_get(&data, sizeof data);
 
 		ht_syntax_lexer *l = (ht_syntax_lexer*)lexers->get(data.type.cursor_id);
 		set_lexer(l, false);
@@ -2583,7 +2584,7 @@ void ht_text_editor::show_protocol()
 	dialog->insert(list);
 	if (dialog->run(false) == button_ok) {
 		ht_listbox_data d;
-		list->databuf_get(&d);
+		list->databuf_get(&d, sizeof d);
 		int a = d.cursor_id;
 		int b = cp;
 		
