@@ -36,10 +36,7 @@
 	- ht_analy::lowest/highest address
 
 +steves
-- (HT_0_7)
-	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
-	- remove experimental code in htapp.cc
-
+- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 - LE binary search does not work
 - Resources in VxDs (like in PE)
 - IPC-djgpp: recognize gui progs and close window !?
