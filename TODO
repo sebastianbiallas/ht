@@ -40,7 +40,6 @@
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla
 - texteditor as dialog-widget should have attachable scrollbar
-- textedit.cc:2498 unneccessary compare (temp)
 - open file: wildcards
 - search
 	- search should prefill start/end ofs from selection (if applicable)

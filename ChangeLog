@@ -16,28 +16,28 @@ version 0.6.1:
 	- x86dis: movzx/movsx param size ambiguity fixed
 	- many bugs fixed
 
-     * FIXED: textedit.cc:2498 unneccesarry compare (temp)
+	* FIXED: textedit.cc:2498 unneccesarry compare (temp)
 
-     * FIXED: texteditor: ctrl-y (delete line) doesnt work on last line
+	* FIXED: texteditor: ctrl-y (delete line) doesnt work on last line
 
-     * F4/view mode - ask before forgetting changes
-     * some project tweaks (ask before create, close before open)
-     * disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
-       (like in analyser modes)
+	* F4/view mode - ask before forgetting changes
+	* some project tweaks (ask before create, close before open)
+	* disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
+	(like in analyser modes)
 
-     * file->open project->some_new_project does create some_new_project.htprj (auto add extension)
-     * FIXED: mov mem32/16, seg (special_param_ambiguity)
-     * FIXED: x86asm: "jmp/call ecx", invalid opcode table entry
-     * FIXED: is there no shortform of test eax, 1 (simm) ? NO.
-     * FIXED: cmp ax, -1 vs. cmp ax, 0xffff ????
-              cmp al, -1 doesnt work, but cmp al, 0x1ff triggers error (ok)
-              cmp ax, 0x1ffff works (no errormsg)
-              ------------------------------------
-              cmp eax, 0-0xffffffff AND cmp eax, -1 work
-              cmp ax,  0-0xffff work, cmp ax, -1 + rest dont
-              cmp al,  0-0xff   work, cmp al, -1 + rest dont
-              logical because -1 == 2^32-1 == 0xffffffff (mod 2^32)
-              (fixed simmsize() again)
+	* file->open project->some_new_project does create some_new_project.htprj (auto add extension)
+	* FIXED: mov mem32/16, seg (special_param_ambiguity)
+	* FIXED: x86asm: "jmp/call ecx", invalid opcode table entry
+	* FIXED: is there no shortform of test eax, 1 (simm) ? NO.
+	* FIXED: cmp ax, -1 vs. cmp ax, 0xffff ????
+	         cmp al, -1 doesnt work, but cmp al, 0x1ff triggers error (ok)
+	         cmp ax, 0x1ffff works (no errormsg)
+	         ------------------------------------
+	         cmp eax, 0-0xffffffff AND cmp eax, -1 work
+	         cmp ax,  0-0xffff work, cmp ax, -1 + rest dont
+	         cmp al,  0-0xff   work, cmp al, -1 + rest dont
+	         logical because -1 == 2^32-1 == 0xffffffff (mod 2^32)
+	         (fixed simmsize() again)
 
 	* fixed x86asm bug (signed immediates)
 	* stream: ht_sys_file, ht_stdio_file, ht_temp_file,
