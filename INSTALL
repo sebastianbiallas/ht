@@ -27,6 +27,6 @@
 	    ht or ./ht
 
 Note: The package 'tex4ht' comes with a program called /usr/bin/ht which
-	 collides with this program's name...
-	 In order to use both programs properly you should rename one of them.
-	 (e.g. mv /usr/bin/ht /usr/bin/ht.alt)
+      conflicts with this program's name...
+      In order to use both programs properly you should rename one of them.
+      (for example: mv /usr/local/bin/ht /usr/local/bin/ht.alt)
