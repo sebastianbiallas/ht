@@ -40,9 +40,20 @@ void yyerror (char *s)
 %left '|'
 %left '^'
 %left '&'
-%nonassoc EVAL_EQ, EVAL_NE, EVAL_STR_EQ, EVAL_STR_NE
-%nonassoc EVAL_LT, EVAL_LE, EVAL_GT, EVAL_GE, EVAL_STR_LT, EVAL_STR_LE, EVAL_STR_GT, EVAL_STR_GE
-%nonassoc EVAL_SHL, EVAL_SHR
+%nonassoc EVAL_EQ
+%nonassoc EVAL_NE
+%nonassoc EVAL_STR_EQ
+%nonassoc EVAL_STR_NE
+%nonassoc EVAL_LT
+%nonassoc EVAL_LE
+%nonassoc EVAL_GT
+%nonassoc EVAL_GE
+%nonassoc EVAL_STR_LT
+%nonassoc EVAL_STR_LE
+%nonassoc EVAL_STR_GT
+%nonassoc EVAL_STR_GE
+%nonassoc EVAL_SHL
+%nonassoc EVAL_SHR
 %left '-' '+'
 %left '*' '/' '%'
 
@@ -51,7 +62,7 @@ void yyerror (char *s)
 
 %%
 
-input:	scalar			{ *(scalar_t*)resultptr=$1; }
+input:	scalar			{ *(eval_scalar*)resultptr=$1; }
 ;
 
 scalar:	  EVAL_INT			{ $$ = $1; }
@@ -109,12 +120,13 @@ scalar:	  EVAL_INT			{ $$ = $1; }
 
 scalarlist_or_null:	/* empty */
 		{
-			scalarlist_t s;
+			eval_scalarlist s;
 			s.count=0;
 			s.scalars=NULL;
 			$$ = s;
 		}
 	| scalarlist			{ $$ = $1; }
+;
 
 scalarlist: scalar			{ scalarlist_set(&$$, &$1); }
 	| scalarlist ',' scalarlist

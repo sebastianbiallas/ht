@@ -1753,7 +1753,7 @@ bool ht_uformat_viewer::edit_input(byte b)
 			return true;
 		}
 		case HT_TAG_EDIT_CHAR: {
-			if ((b>=32) && (b<=0xff)) {
+			if ((char)b>=32) {
 				pwrite(cursor_tag_offset, &b, 1);
 				cursormicroedit_forward();
 				return true;
