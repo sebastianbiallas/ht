@@ -3,7 +3,7 @@
 #define USE_PURE_PARSER
 
 #ifdef USE_PURE_PARSER
-#define YY_DECL int yylex YY_PROTO((YYSTYPE *lvalp))
+#define YY_DECL int yylex (YYSTYPE *lvalp)
 #define YY_LVALP lvalp
 #else
 #define YY_LVALP (&yylval)
