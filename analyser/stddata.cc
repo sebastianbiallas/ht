@@ -165,10 +165,10 @@ static void areafindprev(area_s *p, Object *from, Object **res)
 {
 //FIXME ??:
 	if (p) {
-          if (!from || from->compareTo(p->end) >= 0) {
+		if (!from || from->compareTo(p->end) >= 0) {
 			*res = p->end;
 			areafindprev(p->right, from, res);
-          } else if (from->compareTo(p->start) < 0) {
+		} else if (from->compareTo(p->start) < 0) {
 			areafindprev(p->left, from, res);
 		} else *res = from;
 	};
@@ -235,9 +235,9 @@ static void areadump(int sp, area_s *A)
 {
 	if (A) {
 		for (int i=0; i<sp; i++) printf(" ");
-          char buf[1024];
+		char buf[1024];
 		ht_snprintf(buf, sizeof buf, "%y %y\n", A->start, A->end);
-          printf(buf);
+		printf(buf);
 		++sp;++sp;
 		areadump(sp, A->left);
 		areadump(sp, A->right);

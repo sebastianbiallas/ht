@@ -55,13 +55,13 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	ht_analy_sub *analy=new ht_analy_sub();
 	Address *low = a->createAddress32(0);
 
- 	Address *high = (Address*)class_shared->valid->findPrev(NULL);
-     if (!high) {
-     	high = a->createAddress32(0);
-     } else {
-     	high = (Address *)high->duplicate();
-          high->add(-1);
-     }
+	Address *high = (Address*)class_shared->valid->findPrev(NULL);
+	if (!high) {
+		high = a->createAddress32(0);
+	} else {
+		high = (Address *)high->duplicate();
+		high->add(-1);
+	}
 	analy->init(file, v, a, low, high);
 	delete low;
 	delete high;

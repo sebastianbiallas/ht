@@ -81,16 +81,16 @@ format_viewer_if hthex_if = {
 void ht_hex_viewer::get_pindicator_str(char *buf)
 {
 	FILEOFS o;
-     FILEOFS sel_start, sel_end;
+	FILEOFS sel_start, sel_end;
 	pselect_get(&sel_start, &sel_end);
 	if (get_current_offset(&o)) {
-     	char ttemp[1024];
-          if (sel_end-sel_start > 0) {
-	          ht_snprintf(ttemp, sizeof ttemp, "selection %xh-%xh (%d byte%s)", sel_start, sel_end-1, sel_end-sel_start, sel_end-sel_start==1?"":"s");
-          } else {
-          	ttemp[0]=0;
-          }
-     	// FIXME: sizeof buf
+		char ttemp[1024];
+		if (sel_end-sel_start > 0) {
+			ht_snprintf(ttemp, sizeof ttemp, "selection %xh-%xh (%d byte%s)", sel_start, sel_end-1, sel_end-sel_start, sel_end-sel_start==1?"":"s");
+		} else {
+			ttemp[0]=0;
+		}
+		// FIXME: sizeof buf
 		ht_snprintf(buf, 1024, " %s %xh/%u %s", edit() ? "edit" : "view", o, o, ttemp);
 	} else {
 		strcpy(buf, "?");

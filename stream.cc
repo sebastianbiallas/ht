@@ -484,7 +484,7 @@ bool	ht_file::set_access_mode(UINT am)
 	UINT orig_access_mode = access_mode;
 	bool r = set_access_mode_internal(am);
 	if (!r && !set_access_mode_internal(orig_access_mode))
-     	throw new ht_io_exception("fatal error: couldn't restore file access mode. %s possibly damaged...", get_filename());
+		throw new ht_io_exception("fatal error: couldn't restore file access mode. %s possibly damaged...", get_filename());
 	return r;
 }
 
@@ -646,7 +646,7 @@ void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 	pos=0;
 	dsize=0;
 	access_mode=0;
-     created = false;
+	created = false;
 	if (!set_access_mode(am)) throw new ht_io_exception("unable to open memfile");
 }
 
@@ -734,19 +734,19 @@ int ht_mem_file::seek(FILEOFS o)
 bool	ht_mem_file::set_access_mode(UINT access_mode)
 {
 	if (!created && !(access_mode & FAM_CREATE)) return false;
-     if (ht_stream::set_access_mode(access_mode)) {
-	     if (access_mode & FAM_CREATE) {
-          	created = true;
-               truncate(0);
+	if (ht_stream::set_access_mode(access_mode)) {
+		if (access_mode & FAM_CREATE) {
+			created = true;
+			truncate(0);
 		}
-	     if (access_mode & FAM_APPEND) {
-               if (seek(get_size()) != 0) return false;
-          } else {
-          	if (seek(ofs) != 0) return false;
-          }
-	     return true;
-     }
-     return false;
+		if (access_mode & FAM_APPEND) {
+			if (seek(get_size()) != 0) return false;
+		} else {
+			if (seek(ofs) != 0) return false;
+		}
+		return true;
+	}
+	return false;
 }
 
 UINT ht_mem_file::shrinkbufsize(UINT bufsize)

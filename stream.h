@@ -283,7 +283,7 @@ protected:
 	FILEOFS pos;
 	UINT bufsize, dsize, ibufsize;
 	byte *buf;
-     bool created;
+	bool created;
 
 	virtual UINT	extendbufsize(UINT bufsize);
 	virtual UINT	shrinkbufsize(UINT bufsize);

@@ -605,7 +605,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 			}
 			clearmsg(msg);
 			return;
-          }
+		}
 		case cmd_view_mode_i:
 			if (file /*&& (file==msg->data1.ptr)*/) {
 				UINT size = file->get_size();

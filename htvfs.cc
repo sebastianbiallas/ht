@@ -667,8 +667,8 @@ void ht_vfs_viewer_status::init(bounds *b)
 void ht_vfs_viewer_status::setdata(ht_object_stream *buf)
 {
 	ht_vfs_viewer_status_data d;
-     d.cwd = (char*)buf->getInt(sizeof(char *), NULL);
-     d.cproto = (char*)buf->getInt(sizeof(char *), NULL);
+	d.cwd = (char*)buf->getInt(sizeof(char *), NULL);
+	d.cproto = (char*)buf->getInt(sizeof(char *), NULL);
 	int lcwd=strlen(d.cwd);
 	int lcproto=strlen(d.cproto);
 	char *u=(char*)malloc(lcwd+3+lcproto+1);

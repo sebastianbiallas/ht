@@ -99,23 +99,23 @@ ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	ht_analy_sub *analy=new ht_analy_sub();
 
-     if (low->compareTo(high) < 0) {
+	if (low->compareTo(high) < 0) {
 		analy->init(file, v, p, low, high);
 		v->analy_sub = analy;
 		v->insertsub(analy);
-     } else {
-     	delete analy;
-          v->done();
-          delete v;
-          head->done();          
-          delete head;
-          g->done();
-          delete g;
+	} else {
+		delete analy;
+		v->done();
+		delete v;
+		head->done();          
+		delete head;
+		g->done();
+		delete g;
 		delete high;
 		delete low;
-          return NULL;
-     }
-     
+		return NULL;
+	}
+	
 	delete high;
 	delete low;
 

@@ -28,7 +28,7 @@
 class ClassAnalyser: public Analyser {
 public:
 	ht_class_shared_data 	*class_shared;
-     ht_streamfile			*file;
+	ht_streamfile			*file;
 
 			void		init(ht_class_shared_data *Class_shared, ht_streamfile *File);
 			int 		load(ht_object_stream *f);

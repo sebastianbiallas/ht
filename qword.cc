@@ -364,8 +364,8 @@ bool operator !(qword a) { return qword_cmp(a, to_qword(0)) == 0; }
 qword operator -(qword a)
 {
 	qword r = a;
-     r.lo = ~r.lo;
-     r.hi = ~r.hi;
+	r.lo = ~r.lo;
+	r.hi = ~r.hi;
 	return r+to_qword(1);		// 2s complement - thanks to the academy
 }
 

@@ -112,8 +112,8 @@ branch_enum_t AnalyJavaDisassembler::isBranch(OPCODE *opcode)
 	|| (strcmp("lookupswitch", opcode_str)==0)) {
 		return br_jXX;
 	} else if (strncmp("ret", opcode_str, 3)==0
-     || strncmp("ret", opcode_str+1, 3)==0
-     || strncmp("athrow", opcode_str, 6)==0) {
+	|| strncmp("ret", opcode_str+1, 3)==0
+	|| strncmp("athrow", opcode_str, 6)==0) {
 		return br_return;
 	} else if (strncmp("goto", opcode_str, 4)==0) {
 		return br_jump;

@@ -120,17 +120,17 @@ void show_help()
 {
 #ifdef SPLINE_TEST
 	bounds b;
-     b.x = 0; b.y = 0; b.w = 80; b.h = 23;
+	b.x = 0; b.y = 0; b.w = 80; b.h = 23;
 	ht_window *s=new ht_window();
 	s->init(&b, "spline", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE, 0);
-     b.w = 78;
-     b.h = 21;
+	b.w = 78;
+	b.h = 21;
 /*	MathFuncPlotter *sv = new MathFuncPlotter();
-     sv->init(&b, "test");
-     s->insert(sv);*/
+	sv->init(&b, "test");
+	s->insert(sv);*/
 	ht_spline_view *sv = new ht_spline_view();
-     sv->init(&b, "test");
-     s->insert(sv);
+	sv->init(&b, "test");
+	s->insert(sv);
 	((ht_app*)app)->insert_window(s, AWT_LOG, 0, false, NULL);
 #else
 	((ht_app*)app)->create_window_help("hthelp.info", "Top");

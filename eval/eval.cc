@@ -129,7 +129,7 @@ void integer_dump(int_t *i)
 	printf("%d", i->value);
 }
 
-void float_dump(float_t *f)
+void float_dump(ht_float_t *f)
 {
 	printf("%f", f->value);
 }
@@ -279,7 +279,7 @@ void scalar_create_str_c(scalar_t *s, char *cstr)
 	scalar_create_str(s, &t);
 }
 
-void scalar_create_float(scalar_t *s, float_t *t)
+void scalar_create_float(scalar_t *s, ht_float_t *t)
 {
 	s->type=SCALAR_FLOAT;
 	s->scalar.floatnum=*t;
@@ -345,7 +345,7 @@ void scalar_context_int(scalar_t *s, int_t *t)
 	}					
 }
 
-void scalar_context_float(scalar_t *s, float_t *t)
+void scalar_context_float(scalar_t *s, ht_float_t *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
@@ -447,7 +447,7 @@ int ipow(int a, int b)
 
 int scalar_float_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 {
-	float_t ai, bi;
+	ht_float_t ai, bi;
 	float a, b, r;
 	scalar_context_float(xa, &ai);
 	scalar_context_float(xb, &bi);
@@ -557,7 +557,7 @@ int scalar_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 void scalar_negset(scalar_t *xr, scalar_t *xa)
 {
 	if (xa->type==SCALAR_FLOAT) {
-		float_t a;
+		ht_float_t a;
 		a=xa->scalar.floatnum;
 	
 		xr->type=SCALAR_FLOAT;
@@ -599,20 +599,20 @@ int func_char(scalar_t *r, int_t *i)
 	return 1;
 }
 
-int func_float(scalar_t *r, float_t *p)
+int func_float(scalar_t *r, ht_float_t *p)
 {
 	scalar_create_float(r, p);
 	return 1;
 }
 
-int func_fmax(scalar_t *r, float_t *p1, float_t *p2)
+int func_fmax(scalar_t *r, ht_float_t *p1, ht_float_t *p2)
 {
 	r->type=SCALAR_FLOAT;
 	r->scalar.floatnum.value=(p1->value>p2->value) ? p1->value : p2->value;
 	return 1;
 }
 
-int func_fmin(scalar_t *r, float_t *p1, float_t *p2)
+int func_fmin(scalar_t *r, ht_float_t *p1, ht_float_t *p2)
 {
 	r->type=SCALAR_FLOAT;
 	r->scalar.floatnum.value=(p1->value<p2->value) ? p1->value : p2->value;
@@ -660,7 +660,7 @@ int func_rnd(scalar_t *r)
 	return 1;
 }
 
-int func_round(scalar_t *r, float_t *p)
+int func_round(scalar_t *r, ht_float_t *p)
 {
 	r->type=SCALAR_INT;
 	r->scalar.integer.value=f2i(p->value+0.5);
@@ -749,7 +749,7 @@ int func_substr(scalar_t *r, str_t *p1, int_t *p2, int_t *p3)
 	return 1;
 }
 
-int func_trunc(scalar_t *r, float_t *p)
+int func_trunc(scalar_t *r, ht_float_t *p)
 {
 	r->type=SCALAR_INT;
 	r->scalar.integer.value=f2i(p->value);
@@ -757,14 +757,14 @@ int func_trunc(scalar_t *r, float_t *p)
 	return 1;
 }
 
-#define EVALFUNC_FMATH1(name) int func_##name(scalar_t *r, float_t *p)\
+#define EVALFUNC_FMATH1(name) int func_##name(scalar_t *r, ht_float_t *p)\
 {\
 	r->type=SCALAR_FLOAT;\
 	r->scalar.floatnum.value=name(p->value);\
 	return 1;\
 }
 
-#define EVALFUNC_FMATH1i(name) int func_##name(scalar_t *r, float_t *p)\
+#define EVALFUNC_FMATH1i(name) int func_##name(scalar_t *r, ht_float_t *p)\
 {\
 	r->type=SCALAR_INT;\
 	r->scalar.integer.value=f2i(name(p->value));\
@@ -772,7 +772,7 @@ int func_trunc(scalar_t *r, float_t *p)
 	return 1;\
 }
 
-#define EVALFUNC_FMATH2(name) int func_##name(scalar_t *r, float_t *p1, float_t *p2)\
+#define EVALFUNC_FMATH2(name) int func_##name(scalar_t *r, ht_float_t *p1, ht_float_t *p2)\
 {\
 	r->type=SCALAR_FLOAT;\
 	r->scalar.floatnum.value=name(p1->value, p2->value);\
@@ -894,7 +894,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
 			case 'F':
 			case 'g':
 			case 'G': {
-				float_t f;
+				ht_float_t f;
 				scalar_context_float(s, &f);
 				
 				sprintf(buf, cfmt, f.value);
@@ -982,72 +982,72 @@ int func_error(scalar_t *r, str_t *s)
 
 evalfunc_t builtin_evalfuncs[]=	{
 /* eval */
-	{ "eval", &func_eval, {SCALAR_STR}, "evaluate string" },
+	{ "eval", (void*)&func_eval, {SCALAR_STR}, "evaluate string" },
 /* type juggling */
-	{ "int", &func_int, {SCALAR_INT}, "converts to integer" },
-	{ "string", &func_string, {SCALAR_STR}, "converts to string" },
-	{ "float", &func_float, {SCALAR_FLOAT}, "converts to float" },
+	{ "int", (void*)&func_int, {SCALAR_INT}, "converts to integer" },
+	{ "string", (void*)&func_string, {SCALAR_STR}, "converts to string" },
+	{ "float", (void*)&func_float, {SCALAR_FLOAT}, "converts to float" },
 /*
-	{ "is_int", &func_is_int, {SCALAR_INT}, "returns non-zero if param is an integer" },
-	{ "is_string", &func_is_string, {SCALAR_STR}, "returns non-zero if param is a string" },
-	{ "is_float", &func_is_float, {SCALAR_FLOAT}, "returns non-zero if param is a float" },
+	{ "is_int", (void*)&func_is_int, {SCALAR_INT}, "returns non-zero if param is an integer" },
+	{ "is_string", (void*)&func_is_string, {SCALAR_STR}, "returns non-zero if param is a string" },
+	{ "is_float", (void*)&func_is_float, {SCALAR_FLOAT}, "returns non-zero if param is a float" },
 */
 /* general */
-	{ "error", &func_error, {SCALAR_STR}, "abort with error" },
+	{ "error", (void*)&func_error, {SCALAR_STR}, "abort with error" },
 /* string functions */
-	{ "char", &func_char, {SCALAR_INT}, "return the ascii character (1-char string) specified by p1" },
-	{ "ord", &func_ord, {SCALAR_STR}, "return the ordinal value of p1" },
-	{ "sprintf", &func_sprintf, {SCALAR_STR, SCALAR_VARARGS}, "returns formatted string" },
-	{ "strchr", &func_strchr, {SCALAR_STR, SCALAR_STR}, "returns position of first occurrence of character param2 in param1" },
-	{ "strcmp", &func_strcmp, {SCALAR_STR, SCALAR_STR}, "returns zero for equality, positive number for str1 > str2 and negative number for str1 < str2" },
-	{ "strlen", &func_strlen, {SCALAR_STR}, "returns length of string" },
-	{ "strncmp", &func_strncmp, {SCALAR_STR, SCALAR_STR, SCALAR_INT}, "like strcmp, but considers a maximum of param3 characters" },
-	{ "strstr", &func_strchr, {SCALAR_STR, SCALAR_STR}, "returns position of first occurrence of string param2 in param1" },
-	{ "substr", &func_substr, {SCALAR_STR, SCALAR_INT, SCALAR_INT}, "returns substring from param1, start param2, length param3" },
-/*	{ "stricmp", &func_stricmp, {SCALAR_STR, SCALAR_STR}, "like strcmp but case-insensitive" },
-	{ "strnicmp", &func_strnicmp, {SCALAR_STR, SCALAR_STR}, "" }, */
+	{ "char", (void*)&func_char, {SCALAR_INT}, "return the ascii character (1-char string) specified by p1" },
+	{ "ord", (void*)&func_ord, {SCALAR_STR}, "return the ordinal value of p1" },
+	{ "sprintf", (void*)&func_sprintf, {SCALAR_STR, SCALAR_VARARGS}, "returns formatted string" },
+	{ "strchr", (void*)&func_strchr, {SCALAR_STR, SCALAR_STR}, "returns position of first occurrence of character param2 in param1" },
+	{ "strcmp", (void*)&func_strcmp, {SCALAR_STR, SCALAR_STR}, "returns zero for equality, positive number for str1 > str2 and negative number for str1 < str2" },
+	{ "strlen", (void*)&func_strlen, {SCALAR_STR}, "returns length of string" },
+	{ "strncmp", (void*)&func_strncmp, {SCALAR_STR, SCALAR_STR, SCALAR_INT}, "like strcmp, but considers a maximum of param3 characters" },
+	{ "strstr", (void*)&func_strchr, {SCALAR_STR, SCALAR_STR}, "returns position of first occurrence of string param2 in param1" },
+	{ "substr", (void*)&func_substr, {SCALAR_STR, SCALAR_INT, SCALAR_INT}, "returns substring from param1, start param2, length param3" },
+/*	{ "stricmp", (void*)&func_stricmp, {SCALAR_STR, SCALAR_STR}, "like strcmp but case-insensitive" },
+	{ "strnicmp", (void*)&func_strnicmp, {SCALAR_STR, SCALAR_STR}, "" }, */
 /* math */	
-	{ "pow", &func_pow, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
-	{ "sqrt", &func_sqrt, {SCALAR_FLOAT}, 0 },
+	{ "pow", (void*)&func_pow, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
+	{ "sqrt", (void*)&func_sqrt, {SCALAR_FLOAT}, 0 },
 	
-	{ "fmin", &func_fmin, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
-	{ "fmax", &func_fmax, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
-	{ "min", &func_min, {SCALAR_INT, SCALAR_INT}, 0 },
-	{ "max", &func_max, {SCALAR_INT, SCALAR_INT}, 0 },
+	{ "fmin", (void*)&func_fmin, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
+	{ "fmax", (void*)&func_fmax, {SCALAR_FLOAT, SCALAR_FLOAT}, 0 },
+	{ "min", (void*)&func_min, {SCALAR_INT, SCALAR_INT}, 0 },
+	{ "max", (void*)&func_max, {SCALAR_INT, SCALAR_INT}, 0 },
 	
-	{ "random", &func_random, {SCALAR_INT}, "returns a random integer between 0 and param1-1" },
-	{ "rnd", &func_rnd, {}, "returns a random number between 0 and 1" },
+	{ "random", (void*)&func_random, {SCALAR_INT}, "returns a random integer between 0 and param1-1" },
+	{ "rnd", (void*)&func_rnd, {}, "returns a random number between 0 and 1" },
 
-	{ "exp", &func_exp, {SCALAR_FLOAT}, 0 },
-	{ "log", &func_log, {SCALAR_FLOAT}, 0 },
+	{ "exp", (void*)&func_exp, {SCALAR_FLOAT}, 0 },
+	{ "log", (void*)&func_log, {SCALAR_FLOAT}, 0 },
 	
-	{ "ceil", &func_ceil, {SCALAR_FLOAT}, 0 },
-	{ "floor", &func_floor, {SCALAR_FLOAT}, 0 },
-	{ "round", &func_round, {SCALAR_FLOAT}, 0 },
-	{ "trunc", &func_trunc, {SCALAR_FLOAT}, 0 },
+	{ "ceil", (void*)&func_ceil, {SCALAR_FLOAT}, 0 },
+	{ "floor", (void*)&func_floor, {SCALAR_FLOAT}, 0 },
+	{ "round", (void*)&func_round, {SCALAR_FLOAT}, 0 },
+	{ "trunc", (void*)&func_trunc, {SCALAR_FLOAT}, 0 },
 	
-	{ "sin", &func_sin, {SCALAR_FLOAT}, 0 },
-	{ "cos", &func_cos, {SCALAR_FLOAT}, 0 },
-	{ "tan", &func_tan, {SCALAR_FLOAT}, 0 },
+	{ "sin", (void*)&func_sin, {SCALAR_FLOAT}, 0 },
+	{ "cos", (void*)&func_cos, {SCALAR_FLOAT}, 0 },
+	{ "tan", (void*)&func_tan, {SCALAR_FLOAT}, 0 },
 	
-	{ "asin", &func_asin, {SCALAR_FLOAT}, 0 },
-	{ "acos", &func_acos, {SCALAR_FLOAT}, 0 },
-	{ "atan", &func_atan, {SCALAR_FLOAT}, 0 },
+	{ "asin", (void*)&func_asin, {SCALAR_FLOAT}, 0 },
+	{ "acos", (void*)&func_acos, {SCALAR_FLOAT}, 0 },
+	{ "atan", (void*)&func_atan, {SCALAR_FLOAT}, 0 },
 	
-	{ "sinh", &func_sinh, {SCALAR_FLOAT}, 0 },
-	{ "cosh", &func_cosh, {SCALAR_FLOAT}, 0 },
-	{ "tanh", &func_tanh, {SCALAR_FLOAT}, 0 },
+	{ "sinh", (void*)&func_sinh, {SCALAR_FLOAT}, 0 },
+	{ "cosh", (void*)&func_cosh, {SCALAR_FLOAT}, 0 },
+	{ "tanh", (void*)&func_tanh, {SCALAR_FLOAT}, 0 },
 	
 #ifdef HAVE_ASINH
-	{ "asinh", &func_asinh, {SCALAR_FLOAT}, 0 },
+	{ "asinh", (void*)&func_asinh, {SCALAR_FLOAT}, 0 },
 #endif
 
 #ifdef HAVE_ACOSH
-	{ "acosh", &func_acosh, {SCALAR_FLOAT}, 0 },
+	{ "acosh", (void*)&func_acosh, {SCALAR_FLOAT}, 0 },
 #endif
 
 #ifdef HAVE_ATANH
-	{ "atanh", &func_atanh, {SCALAR_FLOAT}, 0 },
+	{ "atanh", (void*)&func_atanh, {SCALAR_FLOAT}, 0 },
 #endif
 	
 	{ NULL, NULL }

@@ -86,12 +86,12 @@ typedef struct _attrib_info {
 	u2 name;
 	u4 len;
 	union {
-          struct {
+		struct {
 			u2 max_stack;
 			u2 max_locals;
-               u4 len;
-               u4 start;
-          } code;
+			u4 len;
+			u4 start;
+		} code;
 	};
 } attrib_info;
 
@@ -133,14 +133,14 @@ typedef struct _classfile {
 struct ht_class_shared_data {
 	ht_stree	*methods;
 	classfile	*file;
-     Area *valid;
-     Area *initialized;
-     int flags;
-     struct {
-     	char *thisclass;
-          char *superclass;
-          ht_list *interfaces;
-     } classinfo;
+	Area *valid;
+	Area *initialized;
+	int flags;
+	struct {
+		char *thisclass;
+		char *superclass;
+		ht_list *interfaces;
+	} classinfo;
 };
 
 extern ht_class_shared_data *class_read(ht_streamfile *);
@@ -164,9 +164,9 @@ class ClassMethod: public ht_data {
 public:
 	char *name;
 	char *type;
-     ClassAddress start;
-     UINT length;
-     int flags;
+	ClassAddress start;
+	UINT length;
+	int flags;
 				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
 	virtual		~ClassMethod();
 	virtual int	compareTo(Object *o);

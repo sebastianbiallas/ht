@@ -270,7 +270,7 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 	} else if (oid == ATOM_ADDRESS_ALPHA_FLAT_32) {
 		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
-     }
+	}
 	return false;
 }
 

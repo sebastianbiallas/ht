@@ -95,8 +95,8 @@ public:
 		
 		UINT		current_time;
 		int		size;
-          
-          int		dis_style;
+		
+		int		dis_style;
 		
 				void	init(Analyser *analy);
 		virtual	void done();
@@ -109,7 +109,7 @@ public:
 		virtual	void footer();
 				void generateAddr(Address *Addr, OutAddr *oa);
 				int	generateFile(Address *from, Address *to);
-          virtual	ht_stream *getGenerateStream();
+		virtual	ht_stream *getGenerateStream();
 				void	generatePage(Address *from, int lines);
 				OutAddr *getAddr(Address *Addr);
 				OutLine *getLine(Address *Addr, int line);

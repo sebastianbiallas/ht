@@ -153,15 +153,15 @@ char *AnalyserHtOutput::externalLink(char *s, int type1, int type2, int type3, i
 char *AnalyserHtOutput::link(char *s, Address *Addr)
 {
 	// FIXNEW
-     if (Addr->byteSize()==4) {
+	if (Addr->byteSize()==4) {
 		dword d;
 		Addr->putIntoArray((byte*)&d);
 		*(tag_make_ref(tmpbuffer, d, 0, 0, 0, s)) = 0;
-     } else {
+	} else {
 		qword d;
 		Addr->putIntoArray((byte*)&d);
 		*(tag_make_ref(tmpbuffer, d.hi, d.lo, 0, 0, s)) = 0;
-     }
+	}
 	return tmpbuffer;
 }
 

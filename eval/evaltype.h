@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
 	double value;
-} float_t;
+} ht_float_t;
 
 typedef struct {
 	char *value;
@@ -42,7 +42,7 @@ typedef enum {
 typedef union {
 	int_t integer;
 	str_t str;
-	float_t floatnum;
+	ht_float_t floatnum;
 } scalarbody_t;
 
 typedef struct {

@@ -44,13 +44,13 @@
 void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File)
 {
 	class_shared = Class_shared;
-     file = File;
+	file = File;
 
 	Analyser::init();
 
-     initialized->done();
-     delete initialized;
-     initialized = class_shared->initialized;
+	initialized->done();
+	delete initialized;
+	initialized = class_shared->initialized;
 	/////////////
 
 	setLocationTreeOptimizeThreshold(100);
@@ -80,46 +80,46 @@ void	ClassAnalyser::done()
 void ClassAnalyser::beginAnalysis()
 {
 	char buffer[1024];
-     char *b = buffer;
-     
-     *(b++) = ';';  *(b++) = ' ';
-     b = java_demangle_flags(b, class_shared->flags);
-     b += ht_snprintf(b, 1024, "%s %s", (class_shared->flags & jACC_INTERFACE)?"interface":"class", class_shared->classinfo.thisclass);
-     if (class_shared->classinfo.superclass) {
-          b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
-     }
-     if (class_shared->classinfo.interfaces) {
-          b += ht_snprintf(b, 1024, " implements");
-          int count = class_shared->classinfo.interfaces->count();
-          for (int i=0; i<count; i++) {
-	          b += ht_snprintf(b, 1024, " %y%c", class_shared->classinfo.interfaces->get(i), (i+1<count)?',':' ');
-          }
-     }
-     b += ht_snprintf(b, 1024, " {");
+	char *b = buffer;
+	
+	*(b++) = ';';  *(b++) = ' ';
+	b = java_demangle_flags(b, class_shared->flags);
+	b += ht_snprintf(b, 1024, "%s %s", (class_shared->flags & jACC_INTERFACE)?"interface":"class", class_shared->classinfo.thisclass);
+	if (class_shared->classinfo.superclass) {
+		b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
+	}
+	if (class_shared->classinfo.interfaces) {
+		b += ht_snprintf(b, 1024, " implements");
+		int count = class_shared->classinfo.interfaces->count();
+		for (int i=0; i<count; i++) {
+			b += ht_snprintf(b, 1024, " %y%c", class_shared->classinfo.interfaces->get(i), (i+1<count)?',':' ');
+		}
+	}
+	b += ht_snprintf(b, 1024, " {");
 
 	Address *a = createAddress32(0);
-     addComment(a, 0, "");
+	addComment(a, 0, "");
 	addComment(a, 0, ";********************************************************");
 	addComment(a, 0, buffer);
 	addComment(a, 0, ";********************************************************");
-     delete a;
-     if (class_shared->methods) {
-     	ClassMethod *cm = NULL;
-          ht_data *value;
-          while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
-               Address *a = createAddress32(cm->start);
-               char buffer2[1024];
-               java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type, cm->flags);
-               ht_snprintf(buffer, 1024, "; %s", buffer2);
-               addComment(a, 0, "");
+	delete a;
+	if (class_shared->methods) {
+		ClassMethod *cm = NULL;
+		ht_data *value;
+		while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
+			Address *a = createAddress32(cm->start);
+			char buffer2[1024];
+			java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type, cm->flags);
+			ht_snprintf(buffer, 1024, "; %s", buffer2);
+			addComment(a, 0, "");
 			addComment(a, 0, ";----------------------------------------------");
-               addComment(a, 0, buffer);
+			addComment(a, 0, buffer);
 			addComment(a, 0, ";----------------------------------------------");
 			addAddressSymbol(a, cm->name, label_func);
-               pushAddress(a, a);
+			pushAddress(a, a);
 			delete a;
-          }
-     }
+		}
+	}
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 
@@ -281,12 +281,12 @@ int	ClassAnalyser::queryConfig(int mode)
 Address *ClassAnalyser::fileofsToAddress(FILEOFS fileaddr)
 {
 	Address *a = createAddress32(fileaddr);
-     if (validAddress(a, scvalid)) {
-          return a;
-     } else {
-     	delete a;
-          return NULL;
-     }
+	if (validAddress(a, scvalid)) {
+		return a;
+	} else {
+		delete a;
+		return NULL;
+	}
 }
 
 /*
@@ -299,10 +299,10 @@ bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 		case scinitialized:
 		case sccode:
 			return class_shared->initialized->contains(Addr);
-          default:
+		default:
 
-		     return true;
-     }
+			return true;
+	}
 }
 
 

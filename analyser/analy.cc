@@ -497,9 +497,9 @@ void	Analyser::init()
 	locations = NULL;
 	symbols = NULL;
 	symbol_count = location_count = 0;
+	cur_addr_ops = cur_label_ops = 1;
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
-	cur_addr_ops = cur_label_ops = 1;
 	cur_func = NULL;
 	ops_parsed = 0;
 	next_explored = new InvalidAddress();
@@ -1151,13 +1151,13 @@ bool Analyser::deleteXRef(Address *from, Address *to)
 	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return false;
 
 	Location *a = getLocationByAddress(from);
-     if (!a) return false;
+	if (!a) return false;
 	ht_tree *x = a->xrefs;
-     if (!x) return false;
+	if (!x) return false;
 
 	DPRINTF("deleted xref %y->%y\n", from, to);
-     
-     return x->del(to);
+	
+	return x->del(to);
 }
 
 /*
@@ -1542,7 +1542,7 @@ void	Analyser::finish()
 {
 	DPRINTF("the analyser finished (for now).\n");
 	cur_func = NULL;
-     delete addr;
+	delete addr;
 	addr = new InvalidAddress();
 	setActive(false);
 }
@@ -1682,8 +1682,8 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	delete first_explored;
 	delete last_explored;
 	delete next_explored;
-     func = (Address *)func->duplicate();
-     
+	func = (Address *)func->duplicate();
+	
 	if (!validCodeAddress(Addr) || explored->contains(Addr)) {
 		DPRINTF("Address: %y Valid: %d Explored: %d\n", addr, validCodeAddress(addr), explored->contains(addr));
 		do {
@@ -1706,10 +1706,10 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 		}
 	}
 
-     if (func->isValid()) {
-     	cur_func = newLocation(func);
-     	setLocationFunction(cur_func, cur_func);
-     }
+	if (func->isValid()) {
+		cur_func = newLocation(func);
+		setLocationFunction(cur_func, cur_func);
+	}
 	delete func;
 	next_explored = (Address *)explored->findNext(addr);
 	if (!next_explored) {
@@ -1865,11 +1865,11 @@ bool Analyser::popAddress(Address **Addr, Address **func)
 void Analyser::pushAddress(Address *Addr, Address *func)
 {
 	if (validCodeAddress(Addr)) {
-     	if (!func->isValid()) {
-               if (cur_func) {
-               	func = cur_func->addr;
-               }
-          }
+		if (!func->isValid()) {
+			if (cur_func) {
+				func = cur_func->addr;
+			}
+		}
 		DPRINTF("addr %y (from func %y) pushed\n", Addr, func);
 		AddressQueueItem *aqi = new AddressQueueItem(Addr, func);
 		addr_queue->enqueue(aqi);

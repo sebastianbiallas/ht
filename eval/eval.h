@@ -82,7 +82,7 @@ void set_eval_error_ex(int pos, char *format, ...);
 #ifdef EVAL_DEBUG
 
 void integer_dump(int_t *i);
-void float_dump(float_t *f);
+void float_dump(ht_float_t *f);
 void string_dump(str_t *s);
 
 #endif
@@ -118,11 +118,11 @@ void scalar_create_int_c(scalar_t *s, int i);
 void scalar_create_int_q(scalar_t *s, qword q);
 void scalar_create_str(scalar_t *s, str_t *t);
 void scalar_create_str_c(scalar_t *s, char *cstr);
-void scalar_create_float(scalar_t *s, float_t *t);
+void scalar_create_float(scalar_t *s, ht_float_t *t);
 void scalar_create_float_c(scalar_t *s, double f);
 void scalar_context_str(scalar_t *s, str_t *t);
 void scalar_context_int(scalar_t *s, int_t *t);
-void scalar_context_float(scalar_t *s, float_t *t);
+void scalar_context_float(scalar_t *s, ht_float_t *t);
 void string_concat(str_t *s, str_t *a, str_t *b);
 void scalar_concat(scalar_t *s, scalar_t *a, scalar_t *b);
 void scalar_destroy(scalar_t *s);

@@ -122,7 +122,7 @@ void	AnalyserOutput::init(Analyser *Analy)
 	work_buffer_start = (byte*)malloc(WORKBUF_LEN);
 	work_buffer = work_buffer_start;
 	temp_buffer = (byte*)malloc(WORKBUF_LEN);
-     dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
+	dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
 }
 
 void AnalyserOutput::done()
@@ -252,16 +252,16 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				for (int j=labellength; j<LABELINDENT; j++) write(" ");
 				char b[32];
 				sprintf(b, "<< show xrefs (%d) >>", xref_count);
-                    char *t;
-                    if (Addr->byteSize()==4) {
+				char *t;
+				if (Addr->byteSize()==4) {
 					dword d;
 					Addr->putIntoArray((byte*)&d);
 					t = externalLink(b, d, 0, 0, 1, NULL);
-                    } else {
+				} else {
 					qword d;
 					Addr->putIntoArray((byte*)&d);
 					t = externalLink(b, d.hi, d.lo, 0, 1, NULL);
-                    }
+				}
 				write(t);
 			} else {
 				ht_tree *x_tree = cur_addr->xrefs;
@@ -299,12 +299,12 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	bool is_valid_code_addr = analy->validCodeAddress(addr);
 
 /*     char bbuf[1232];
-     addr->stringify(bbuf, 1024, 0);
-     if (strcmp(bbuf, "30:00b2")==0) {
-     	int asf=0;
-     }*/
-     
-     
+	addr->stringify(bbuf, 1024, 0);
+	if (strcmp(bbuf, "30:00b2")==0) {
+		int asf=0;
+	}*/
+	
+	
 	if ((cur_addr && ((cur_addr->type.type == dt_code) || ((cur_addr->type.type == dt_unknown) && (is_valid_code_addr))))
 	|| (!cur_addr && is_valid_code_addr)) {
 		// code
@@ -328,16 +328,16 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			addr_sym_func_context = this;
 			if (analy->mode & ANALY_TRANSLATE_SYMBOLS) addr_sym_func = &analyser_output_addr_sym_func;
 
-               bool s;
-               do {
+			bool s;
+			do {
 				char *x = analy->disasm->str(o, dis_style);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, x);
-                    if ((s = analy->disasm->selectNext(o))) {
-                    	endLine();
-                         beginLine();
-                    }
-               } while (s);
-               
+				if ((s = analy->disasm->selectNext(o))) {
+					endLine();
+					beginLine();
+				}
+			} while (s);
+			
 			bytes_line += analy->disasm->getSize(o);
 			/* deinits for addr-sym transformations */
 			addr_sym_func_context = NULL;
@@ -478,31 +478,31 @@ ht_stream *AnalyserOutput::getGenerateStream()
 int	AnalyserOutput::generateFile(Address *from, Address *to)
 {
 	if (analy->active) return OUTPUT_GENERATE_ERR_ANALYSER_NOT_FINISHED;
-     if (!from->isValid() || !to->isValid()) return OUTPUT_GENERATE_ERR_INVAL;
-     ht_stream *out = getGenerateStream();
-     if (!out) return OUTPUT_GENERATE_ERR_INVAL;
-     header();
-     int line = 0;
-     while (from->compareTo(to) <= 0) {
-     	char buffer[1024];
-          if (getLineString(buffer, sizeof buffer, from, line)) {
-               // write buffer
-               // FIXME: remove strlen
-               UINT wr = strlen(buffer);
-          	if (out->write(buffer, wr) != wr) return OUTPUT_GENERATE_ERR_STREAM;
-               
-               // update address
-               int len;
-	          if (getLineByteLength(&len, from, line)) {
-		     	from->add(len);
-	          }
-               // update line
-          	line++;
-          } else {
-          	line = 0;
-          }
-     }
-     footer();
+	if (!from->isValid() || !to->isValid()) return OUTPUT_GENERATE_ERR_INVAL;
+	ht_stream *out = getGenerateStream();
+	if (!out) return OUTPUT_GENERATE_ERR_INVAL;
+	header();
+	int line = 0;
+	while (from->compareTo(to) <= 0) {
+		char buffer[1024];
+		if (getLineString(buffer, sizeof buffer, from, line)) {
+			// write buffer
+			// FIXME: remove strlen
+			UINT wr = strlen(buffer);
+			if (out->write(buffer, wr) != wr) return OUTPUT_GENERATE_ERR_STREAM;
+			
+			// update address
+			int len;
+			if (getLineByteLength(&len, from, line)) {
+				from->add(len);
+			}
+			// update line
+			line++;
+		} else {
+			line = 0;
+		}
+	}
+	footer();
 	return OUTPUT_GENERATE_ERR_OK;
 }
 
@@ -671,13 +671,13 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 	DPRINTF2("test2\n");
 
 	// complicated cases
-     int min_length, max_length, min_look_ahead, avg_look_ahead, addr_align;
-     if (analy->disasm) {
-     	analy->disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
-     } else {
-     	min_look_ahead=1;
-          avg_look_ahead=1;
-     }
+	int min_length, max_length, min_look_ahead, avg_look_ahead, addr_align;
+	if (analy->disasm) {
+		analy->disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
+	} else {
+		min_look_ahead=1;
+		avg_look_ahead=1;
+	}
 	int l = n*avg_look_ahead;
 	if (l<min_look_ahead) l = min_look_ahead;
 	Address *search_addr = (Address*)(*Addr)->duplicate();

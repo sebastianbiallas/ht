@@ -862,7 +862,7 @@ void ht_aviewer::generateOutputDialog()
 	if (get_current_pos(&cur)) {
 		char str[1024];
 		pos_to_string(cur, str, sizeof str);
-          strcat(str, "+20");
+		strcat(str, "+20");
 		setdatastr(v1, str);
 	}
 	BOUNDS_ASSIGN(b, 13, 11, 9, 2);
@@ -908,20 +908,20 @@ void ht_aviewer::generateOutputDialog()
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
-          	AnalyserOutput *out;
+			AnalyserOutput *out;
 			switch (odd.lp.cursor_id) {
 				case 0:
-                         out = new AnalyserTxtOutput();
-                         ((AnalyserTxtOutput*)out)->init(analy, s);
+					out = new AnalyserTxtOutput();
+					((AnalyserTxtOutput*)out)->init(analy, s);
 					break;
 				case 1:
-                         out = new AnalyserTxtOutput();
-                         ((AnalyserTxtOutput*)out)->init(analy, s);
+					out = new AnalyserTxtOutput();
+					((AnalyserTxtOutput*)out)->init(analy, s);
 					break;
 			}
-               out->generateFile(start_addr, end_addr);
-               out->done();
-               delete out;
+			out->generateFile(start_addr, end_addr);
+			out->done();
+			delete out;
 		}
 		s->done();
 		delete s;
@@ -1843,8 +1843,10 @@ void ht_aviewer::showXRefs(Address *Addr)
 	if (x_tree) {
 		bounds c, b;
 		app->getbounds(&c);
-		UINT bw = b.w = c.w*5/6;
-		UINT bh = b.h = c.h*5/6;
+		UINT bw;
+		bw = b.w = c.w*5/6;
+		UINT bh;
+		bh = b.h = c.h*5/6;
 		center_bounds(&b);
 restart:
 		char str[256];
@@ -1866,16 +1868,16 @@ restart:
 		BOUNDS_ASSIGN(b, 29, bh-4, 11, 2);
 		ht_button *delete_xref;
 		NEW_OBJECT(delete_xref, ht_button, &b, "~Delete", 667);
-          // FIXME: disable button when possible
+		// FIXME: disable button when possible
 		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
 		ht_button *new_xref;
 		NEW_OBJECT(new_xref, ht_button, &b, "~New", 668);
 		char str2[1024];
 		AddrXRef *x;
 		Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
-          int xcount=0;
+		int xcount=0;
 		while (xa) {
-          	xcount++;
+			xcount++;
 			ht_snprintf(str, sizeof str, "%y", xa);
 			Location *a = analy->getFunctionByAddress(xa);
 			char *func = (a) ? ((a->label) ? a->label->name : NULL): NULL;
@@ -1907,7 +1909,7 @@ restart:
 				searchForXRefs(Addr);
 				break;
 			case 667:
-               	if (xcount) analy->deleteXRef(Addr, (Address*)data.cursor_id);
+				if (xcount) analy->deleteXRef(Addr, (Address*)data.cursor_id);
 				break;
 			case 668:
 				break;
@@ -1918,7 +1920,7 @@ restart:
 		dialog->getbounds(&b);
 		dialog->done();
 		delete dialog;
-		if ((r >= 666) || (r <= 668)) goto restart;
+		if ((r >= 666) && (r <= 668)) goto restart;
 	} else {
 		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr)==button_yes) {
 			searchForXRefs(Addr);
@@ -1936,8 +1938,8 @@ bool ht_aviewer::string_to_pos(char *string, viewer_pos *vaddr)
 		int_t i;
 		scalar_context_int(&r, &i);
 		Address *a=analy->createAddress();
-          // FIXME: this is just plain wrong!!
-          dword ii = QWORD_GET_INT(i.value);
+		// FIXME: this is just plain wrong!!
+		dword ii = QWORD_GET_INT(i.value);
 		a->getFromArray((byte*)&ii);
 		if (analy->validAddress(a, scvalid)) {
 			bool res = convertAddressToViewerPos(a, vaddr);

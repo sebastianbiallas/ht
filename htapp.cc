@@ -1877,7 +1877,7 @@ char *ht_app::func(UINT i, bool execute)
 void ht_app::get_stdbounds_file(bounds *b)
 {
 	bounds c;
-     get_stdbounds_tool(&c);
+	get_stdbounds_tool(&c);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = 0;

@@ -29,14 +29,14 @@
 
 class AnalyserTxtOutput: public AnalyserOutput {
 		ht_stream *stream;
-          char tmpbuf[1024];
+		char tmpbuf[1024];
 		int last;
 public:
 				void	init(Analyser *analy, ht_stream *stream);
 		virtual	void done();
 		virtual	void	beginAddr();
 		virtual	void	beginLine();
-          virtual	ht_stream *getGenerateStream();
+		virtual	ht_stream *getGenerateStream();
 		virtual	int	elementLength(char *s);
 		virtual	void	endAddr();
 		virtual	void	endLine();

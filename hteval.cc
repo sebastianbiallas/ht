@@ -34,33 +34,33 @@ extern "C" {
 int sprint_base2(char *x, dword value, bool leading_zeros)
 {
 	char *ix=x;
-     bool draw = leading_zeros;
-     for (int i=0; i<32; i++) {
-     	bool v = value & (1<<(32-i-1));
-     	if (v) draw = true;
-          if (draw) *x++ = v ? '1' : '0';
-     }
-     return x-ix;
+	bool draw = leading_zeros;
+	for (int i=0; i<32; i++) {
+		bool v = value & (1<<(32-i-1));
+		if (v) draw = true;
+		if (draw) *x++ = v ? '1' : '0';
+	}
+	return x-ix;
 }
 
 int sprint_base2_0(char *x, dword value, int zeros)
 {
 	char *ix=x;
-     char vi=0;
+	char vi=0;
 	dword m=0x80000000;
-     while (zeros<32) {m>>=1; zeros++;}
+	while (zeros<32) {m>>=1; zeros++;}
 	do {
 		if (value & m) {
-               while (vi--) *(x++)='0';
-               vi = 0;
-          	*x='1';
+			while (vi--) *(x++)='0';
+			vi = 0;
+			*x='1';
 			x++;
-          } else {
-               vi++;
-          }
+		} else {
+			vi++;
+		}
 		m>>=1;
 	} while (m);
-     if (!value) *(x++)='0';
+	if (!value) *(x++)='0';
 	*x=0;
 	return x-ix;
 }
@@ -68,38 +68,38 @@ int sprint_base2_0(char *x, dword value, int zeros)
 int sprint_basen(char *buffer, int base, qword q)
 {
 	static char *chars="0123456789abcdef";
-     if ((base<2) || (base>16)) return 0;
-     int n = 0;
-     char *b = buffer;
-     while (q != to_qword(0)) {
-     	int c = QWORD_GET_INT(q % to_qword(base));
-          *buffer++ = chars[c];
-          n++;
-     	q /= to_qword(base);
-     }
-     for (int i=0; i < n/2; i++) {
-     	char t = b[i];
-          b[i] = b[n-i-1];
-          b[n-i-1] = t;
-     }
-     return n;
+	if ((base<2) || (base>16)) return 0;
+	int n = 0;
+	char *b = buffer;
+	while (q != to_qword(0)) {
+		int c = QWORD_GET_INT(q % to_qword(base));
+		*buffer++ = chars[c];
+		n++;
+		q /= to_qword(base);
+	}
+	for (int i=0; i < n/2; i++) {
+		char t = b[i];
+		b[i] = b[n-i-1];
+		b[n-i-1] = t;
+	}
+	return n;
 }
 
 int sprintf_basen(char *buffer, const char *format, int base, qword q)
 {
 	int n = 0;
-     while (*format) {
-     	if (*format == '%') {
-          	int i = sprint_basen(buffer, base, q);
-               buffer += i;
-               n += i;
-          } else {
-          	*buffer++ = *format;
-               n++;
-          }
-     	format++;
-     }
-     return n;
+	while (*format) {
+		if (*format == '%') {
+			int i = sprint_basen(buffer, base, q);
+			buffer += i;
+			n += i;
+		} else {
+			*buffer++ = *format;
+			n++;
+		}
+		format++;
+	}
+	return n;
 }
 
 void eval_dialog()
@@ -144,14 +144,14 @@ void eval_dialog()
 				switch (r.type) {
 					case SCALAR_INT: {
 						char *x = b;
-                              // FIXME
+						// FIXME
 						dword lo = QWORD_GET_LO(r.scalar.integer.value);
 						dword hi = QWORD_GET_HI(r.scalar.integer.value);
-                              int i = lo;
+						int i = lo;
 						x += sprintf(x, "64bit integer:\n");
-                              x += sprintf_basen(x, "hex  %\n", 16, r.scalar.integer.value);
-                              x += sprintf_basen(x, "dec  %\n", 10, r.scalar.integer.value);
-                              x += sprintf_basen(x, "oct  %\n", 8, r.scalar.integer.value);
+						x += sprintf_basen(x, "hex  %\n", 16, r.scalar.integer.value);
+						x += sprintf_basen(x, "dec  %\n", 10, r.scalar.integer.value);
+						x += sprintf_basen(x, "oct  %\n", 8, r.scalar.integer.value);
 						x += sprintf(x, "bin0 ");
 						x += sprint_base2(x, lo, true);
 						*(x++) = '\n';
@@ -199,15 +199,15 @@ void eval_dialog()
 					case SCALAR_FLOAT: {
 						char *x=b;
 						x+=sprintf(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
-                              // FIXME: endianess/hardware format
-                              float ff = ((float)r.scalar.floatnum.value);
-                              dword f = *(dword*)&ff;
+						// FIXME: endianess/hardware format
+						float ff = ((float)r.scalar.floatnum.value);
+						dword f = *(dword*)&ff;
 						x += sprintf(x, "\n-- IEEE-754, 32 bit (1 s, 8 e+127, 23 m/h) --");
-                              x += sprintf(x, "\nhex   %08x\nbin   ", f);
+						x += sprintf(x, "\nhex   %08x\nbin   ", f);
 						x += sprint_base2(x, f, true);
-                              x += sprintf(x, "\nsplit %c1.", (f>>31) ? '-' : '+');
+						x += sprintf(x, "\nsplit %c1.", (f>>31) ? '-' : '+');
 						x += sprint_base2_0(x, f&((1<<23)-1), 23);
-                              x += sprintf(x, "b * 2^%d", ((f>>23)&255)-127);
+						x += sprintf(x, "b * 2^%d", ((f>>23)&255)-127);
 						break;
 					}
 					default:

@@ -555,7 +555,7 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 		if ((clazz->cpool[i]->tag == CONSTANT_Long) ||
 		(clazz->cpool[i]->tag == CONSTANT_Double)) {
 				i++;
-          }
+		}
 	}
     cs2 = new ht_collapsable_sub();
     cs2->init(file, g2, 1, "constant pool", 1);
@@ -677,7 +677,7 @@ void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
 		  ht_format_group *g, FILEOFS header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA, f, false, true, 0, g);
-     
+	
 	shared_data = (void*)class_read(f);
 	ht_format_group::init_ifs(ifs);
 }
