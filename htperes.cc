@@ -35,6 +35,7 @@
 #include "log.h"
 #include "pestruct.h"
 #include "stream.h"
+#include "snprintf.h"
 
 #include <string.h>
 
@@ -96,7 +97,6 @@ static void read_resource_dir(void *node, int ofs, int level)
 		peresource_file->seek(peresource_dir_ofs+ofs+sizeof dir+i*8);
 		peresource_file->read(&entry, sizeof entry);
 		create_host_struct(&entry, PE_RESOURCE_DIRECTORY_ENTRY_struct, little_endian);
-		char *rm = peresource_string;
 		if (entry.offset_to_directory & 0x80000000) {
 			bool hasname = entry.name & 0x80000000;
 			PE_RESOURCE_DIRECTORY subdir;
@@ -106,24 +106,26 @@ static void read_resource_dir(void *node, int ofs, int level)
 			if (hasname) {
 				peresource_file->seek(peresource_dir_ofs+entry.name & 0x7fffffff);
 				char *name = getstrw(peresource_file);
-				rm += sprintf(rm, "%s [%d]", name, subdir.name_count+subdir.id_count);
+				ht_snprintf(peresource_string, sizeof peresource_string, "%s [%d]", name, subdir.name_count+subdir.id_count);
 				free(name);
 			} else {
 				char *s = (!level) ? s = matchhash(entry.name & 0xffff, restypes) : NULL;
 				if (s) {
-					rm += sprintf(rm, "ID %04x, %s [%d]", entry.name & 0xffff, s, subdir.name_count+subdir.id_count);
+					ht_snprintf(peresource_string, sizeof peresource_string, "ID %04x, %s [%d]", entry.name & 0xffff, s, subdir.name_count+subdir.id_count);
 				} else {
-					rm += sprintf(rm, "ID %04x [%d]", entry.name & 0xffff, subdir.name_count+subdir.id_count);
+					ht_snprintf(peresource_string, sizeof peresource_string, "ID %04x [%d]", entry.name & 0xffff, subdir.name_count+subdir.id_count);
 				}
 			}
 			void *n = peresource_tree->add_child(node, peresource_string);
 			read_resource_dir(n, entry.offset_to_directory & 0x7fffffff, level+1);
 		} else {
+			char *rm = peresource_string;
+			char *rm_end = rm + sizeof peresource_string;
 			char *s = matchhash((char)entry.name, languages);
 			if (s) {
-				rm += sprintf(rm, "resource, %s (%04x) ", s, entry.name & 0xffff);
+				rm += ht_snprintf(rm, rm_end-rm, "resource, %s (%04x) ", s, entry.name & 0xffff);
 			} else {
-				rm += sprintf(rm, "resource, unknown language (%04x) ", entry.name & 0xffff);
+				rm += ht_snprintf(rm, rm_end-rm, "resource, unknown language (%04x) ", entry.name & 0xffff);
 			}
 
 			PE_RESOURCE_DATA_ENTRY data;
@@ -137,11 +139,11 @@ static void read_resource_dir(void *node, int ofs, int level)
 				xdata = new ht_pe_resource_leaf();
 				xdata->offset = dofs;
 				xdata->size = data.size;
-				rm += sprintf(rm, "offset %08x", dofs);
+				rm += ht_snprintf(rm, rm_end-rm, "offset %08x", dofs);
 			} else {
-				rm += sprintf(rm, "offset ? (rva %08x, currupt)", data.offset_to_data);
+				rm += ht_snprintf(rm, rm_end-rm, "offset ? (rva %08x, currupt)", data.offset_to_data);
 			}
-			sprintf(rm, " size %08x", data.size);
+			ht_snprintf(rm, rm_end-rm, " size %08x", data.size);
 			peresource_tree->add_child(node, peresource_string, xdata);
 		}
 	}
