@@ -60,7 +60,7 @@ enum loadstore_result {
 #define ht_fileconfig_fileversion			2
 
 /*	PROJECT CONFIG FILE VERSION HISTORY
- *	Version 1: HT 0.6.1
+ *	Version 1: HT 0.7.0
  */
 
 #define ht_projectconfig_magic			"HTPR"
@@ -91,3 +91,4 @@ bool init_cfg();
 void done_cfg();
 
 #endif /* !__HTCFG_H__ */
+
