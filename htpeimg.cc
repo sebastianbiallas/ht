@@ -170,7 +170,7 @@ static int pe_viewer_func_section_str(eval_scalar *result, eval_str *str)
 	memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
 	if (pe_section_name_to_section(&aviewer->pe_shared->sections, str2, &section)) {
 		eval_scalar i;
-		scalar_create_int_c(&i, section);
+		scalar_create_int_c(&i, section+1);
 		return pe_viewer_func_section_int(result, &i.scalar.integer);
 	}
 	return 0;
