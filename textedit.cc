@@ -1768,7 +1768,7 @@ void ht_text_viewer::popup_change_highlight()
 		ht_syntax_lexer *l = (ht_syntax_lexer*)lexers->get(i);
 		mode_input->insert_str(i, l->getname());
 		if (lexer && (strcmp(lexer->getname(), l->getname()) == 0)) {
-			selected = i;
+			selected = i+1;
 		}
 	}
 	mode_input->update();

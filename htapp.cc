@@ -153,7 +153,7 @@ bool file_new_dialog(UINT *mode)
 
 		d->databuf_get(&data, sizeof data);
 
-		*mode = (UINT)data.type.cursor_ptr;
+		*mode = mode_input->getID(data.type.cursor_ptr);
 		
 		retval = true;
 	}
@@ -2492,7 +2492,7 @@ void ht_app::handlemsg(htmsg *msg)
 		case cmd_file_exec_cmd: {
 			char cmd[HT_NAME_MAX];
 			cmd[0] = 0;
-			if (inputbox("execute shell command",
+			if (inputbox("execute shell command (experimental!)",
 			(sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
 			: "non-interactive (!) command",
 			cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
@@ -2502,17 +2502,17 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_extend: {
-			ht_streamfile *f=(ht_streamfile *)msg->data1.ptr;
-			UINT s=(UINT)msg->data2.integer;
-			if (confirmbox("really extend %s to offset %08x ?", f->get_filename(), s)==button_ok) {
+			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
+			UINT s = (UINT)msg->data2.integer;
+			if (confirmbox("really extend %s to offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
 				f->extend(s);
 			}
 			clearmsg(msg);
 			return;
 		}
 		case cmd_file_truncate: {
-			ht_streamfile *f=(ht_streamfile *)msg->data1.ptr;
-			UINT s=(UINT)msg->data2.integer;
+			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
+			UINT s = (UINT)msg->data2.integer;
 /*               ht_app_window_entry *e;
 			if ((e=windows->enum_first())) {
 				do {
@@ -2521,7 +2521,7 @@ void ht_app::handlemsg(htmsg *msg)
 					}
 				} while ((e=windows->enum_first()));
 			}*/
-			if (confirmbox("really truncate %s at offset %08x ?", f->get_filename(), s)==button_ok) {
+			if (confirmbox("really truncate %s at offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
 				f->truncate(s);
 			}
 			clearmsg(msg);
@@ -2564,11 +2564,11 @@ void ht_app::handlemsg(htmsg *msg)
 						ht_layer_textfile *file = new ht_layer_textfile();
 						file->init(tfile, true);
 				
-						create_window_file_text(&b, file, "Untitled", true);
+						create_window_file_text(&b, file, "Untitled", false/* because mem_file is underlying, not ht_file, etc.*/);
 						break;
 					}
 					case FOM_BIN: {
-						ht_streamfile_modifier *modfile=new ht_streamfile_modifier();
+						ht_streamfile_modifier *modfile = new ht_streamfile_modifier();
 						modfile->init(mfile, true, 8*1024);
 
 						ht_layer_streamfile *file = new ht_layer_streamfile();
@@ -3048,7 +3048,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 
 			// flush so that cmd_analyser_save get correct mtime
 			file->cntl(FCNTL_FLUSH_STAT);
-			
+
 			Analyser *a;
 			htmsg m;
 			m.msg=msg_get_analyser;

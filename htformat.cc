@@ -2062,7 +2062,8 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 		case 2:
 			if (caps & VC_EDIT) {
 				if (edit()) {
-					if (execute) edit_update();
+					if (execute) app->sendmsg(cmd_file_save);
+//					if (execute) edit_update();
 					return "save";
 				} else {
 					return "~save";
