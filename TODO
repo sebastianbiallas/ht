@@ -37,6 +37,9 @@
 - document commandline options in help
 
 +steves
+- x86asm: "test eax, [2342343]" should yield "test [2342343], eax" 
+          ("test" ist symmetric)
+	  same with "xchg"
 - eval: "-2+1.0" vs. "2+1.0" (difficult)
 - option to open a file without attempting to parse
   'special information' - i.e. to edit it as pure hex.
