@@ -16,6 +16,15 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     * automagically goto entrypoint in mz/image
+	* FIXED: the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
+	* FIXED: filemanger/options title ://reg instead of reg://
+     * streamfile::set_access_mode() if changed
+	* FIXED: "~case insensitive" in search isnt accessable via alt-c (->copy)
+	* FIXED: new binary/resize/F9/blockop: stream ?? issues
+	* FIXED: scrap "project" menu (kaputtgemergt)
+	* FIXED: int ht_pe_header_viewer::ref_sel(LINE_ID *id)
+
      * htdisasm: follow
 	* FIXED: some (e.g. search) dialogs say "(moving) - space to switch"
 	  in move (ctrl-f5) mode, although they arent resizeable

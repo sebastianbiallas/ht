@@ -22,31 +22,25 @@
 - FILEOFS 64+ bits
 (HT_1_0) - freeze/stabilize config file formats / APIs
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
-- [FIXED ?]int ht_pe_header_viewer::ref_sel(LINE_ID *id)
+- [x86] 'jmp 1+2' doenst work but 'mov [1+2], ax'
 
 +steves
-- new binary/resize/F9/blockop: stream ?? issues
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-- filemanger/options title ://reg instead of reg://
 - void ht_disasm_viewer::handlemsg(htmsg *msg):
 		case msg_filesize_changed: {
                beautiest code alive
 - int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n), bah
-- "~case insensitive" in search isnt accessable via alt-c (->copy)
 - (HT_0_7) streams
 	save on readonly/locked file
 	stream::set_layered suspicious
 - exports/dimports in PE32+ broken
 - get rid of globalerror (cause its ugly)
-- [x86] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
 - getbounds rel coords
-- the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
 - disable buttons (disable menu-entries, disable messages)
 - mk(s)temp is posix ??
-- scrap "project" menu (kaputtgemergt)
 - ht_format_viewer::vstate_save(ht_view *focused) remove param ?! (testing...)
   and: goto_offset(ht_view *to_hist or so....
 (LINUX) - registry
