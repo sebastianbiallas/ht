@@ -191,6 +191,8 @@ public:
 	virtual	bool string_to_offset(char *string, FILEOFS *ofs);
 	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
 
+	virtual	bool get_current_real_offset(FILEOFS *ofs);
+
 	/* visual address (viewer pos) functions */
 	virtual	bool get_current_pos(viewer_pos *pos);
 	virtual	bool goto_pos(viewer_pos pos, bool save_vstate);

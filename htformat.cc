@@ -543,6 +543,11 @@ bool ht_format_viewer::get_current_pos(viewer_pos *pos)
 	return false;
 }
 
+bool ht_format_viewer::get_current_real_offset(FILEOFS *ofs)
+{
+	return get_current_offset(ofs);
+}
+
 ht_streamfile *ht_format_viewer::get_file()
 {
 	return file;
@@ -2133,7 +2138,7 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 		case 9: {
 			if (execute) {
 				FILEOFS o;
-				if (get_current_offset(&o)) {
+				if (get_current_real_offset(&o)) {
 					char title[128];
 					ht_snprintf(title, sizeof title, "view offset %08x in...", o);
 					ht_view *v = ((ht_app*)app)->popup_view_list(title);

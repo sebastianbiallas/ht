@@ -1475,7 +1475,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 				if (!getCurrentAddress(&addr)) {
 					addr = new InvalidAddress();
 				}
-				infoline->update(addr, (get_current_offset(&a)) ? a : INVALID_FILE_OFS);
+				infoline->update(addr, (get_current_real_offset(&a)) ? a : INVALID_FILE_OFS);
 				delete addr;
 			}
 			break;
