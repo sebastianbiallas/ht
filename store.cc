@@ -57,7 +57,7 @@ void ht_object_stream_inter::getObject(Object *&o, char *name)
 			}
 		} else {
 			/* object not registered! */
-			assert(0);
+//			assert(0);
 			o = NULL;
 		}
 	} else {
