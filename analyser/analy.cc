@@ -1144,6 +1144,23 @@ void Analyser::deleteSymbol(Address *Addr)
 }
 
 /*
+ *
+ */
+bool Analyser::deleteXRef(Address *from, Address *to)
+{
+	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return false;
+
+	Location *a = getLocationByAddress(from);
+     if (!a) return false;
+	ht_tree *x = a->xrefs;
+     if (!x) return false;
+
+	DPRINTF("deleted xref %y->%y\n", from, to);
+     
+     return x->del(to);
+}
+
+/*
  *	an disabled label will be overwritten as soon as possible,
  *   and never be returned nor saved.
  *	performed this way to preserve the labeltrees structure

@@ -337,6 +337,7 @@ public:
 			void			dataAccess(Address *Addr, taccess access);
 			void			deleteLocation(Address *Addr);
 			void			deleteSymbol(Address *Addr);
+			bool			deleteXRef(Address *from, Address *to);
 			void			disableSymbol(Symbol *label);
 			void			doBranch(branch_enum_t branch, OPCODE *opcode, int len);
 			void			engageCodeanalyser();

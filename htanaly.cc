@@ -1839,16 +1839,16 @@ void ht_aviewer::showSymbols(Address *addr)
 
 void ht_aviewer::showXRefs(Address *Addr)
 {
-	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 	ht_tree *x_tree = analy->getXRefs(Addr);
 	if (x_tree) {
-restart:
 		bounds c, b;
 		app->getbounds(&c);
 		UINT bw = b.w = c.w*5/6;
 		UINT bh = b.h = c.h*5/6;
 		center_bounds(&b);
+restart:
 		char str[256];
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
 		ht_dialog *dialog = new ht_dialog();
 		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE);
@@ -1860,16 +1860,22 @@ restart:
 		b.h = bh-6;
 		ht_text_listbox *list;
 		NEW_OBJECT(list, ht_text_listbox, &b, 3, 2);
-		BOUNDS_ASSIGN(b, 2, bh-4, 30, 2);
+		BOUNDS_ASSIGN(b, 2, bh-4, 26, 2);
 		ht_button *search_for_xrefs;
 		NEW_OBJECT(search_for_xrefs, ht_button, &b, "~Search for more XRefs", 666);
-		BOUNDS_ASSIGN(b, 33, bh-4, 15, 2);
+		BOUNDS_ASSIGN(b, 29, bh-4, 11, 2);
 		ht_button *delete_xref;
 		NEW_OBJECT(delete_xref, ht_button, &b, "~Delete", 667);
+          // FIXME: disable button when possible
+		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
+		ht_button *new_xref;
+		NEW_OBJECT(new_xref, ht_button, &b, "~New", 668);
 		char str2[1024];
 		AddrXRef *x;
 		Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
+          int xcount=0;
 		while (xa) {
+          	xcount++;
 			ht_snprintf(str, sizeof str, "%y", xa);
 			Location *a = analy->getFunctionByAddress(xa);
 			char *func = (a) ? ((a->label) ? a->label->name : NULL): NULL;
@@ -1892,23 +1898,27 @@ restart:
 		dialog->insert(list);
 		dialog->insert(search_for_xrefs);
 		dialog->insert(delete_xref);
+		dialog->insert(new_xref);
 		int r = dialog->run(false);
+		ht_listbox_data data;
+		list->databuf_get(&data);
 		switch (r) {
 			case 666:
 				searchForXRefs(Addr);
 				break;
 			case 667:
+               	if (xcount) analy->deleteXRef(Addr, (Address*)data.cursor_id);
 				break;
-			case button_ok: {
-				ht_listbox_data data;
-				list->databuf_get(&data);
-				gotoAddress((Address*)data.cursor_id, this);
+			case 668:
 				break;
-			}
+			case button_ok:
+				if (xcount) gotoAddress((Address*)data.cursor_id, this);
+				break;
 		}
+		dialog->getbounds(&b);
 		dialog->done();
 		delete dialog;
-		if ((r == 666) || (r == 667)) goto restart;
+		if ((r >= 666) || (r <= 668)) goto restart;
 	} else {
 		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr)==button_yes) {
 			searchForXRefs(Addr);
