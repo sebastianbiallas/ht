@@ -237,7 +237,7 @@ void ht_stree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 			/* set new keying method */
 			compare_keys = new_compare_keys;
 			/* re-sort ltable */
-               qsort_compare_compare_keys = compare_keys;
+			qsort_compare_compare_keys = compare_keys;
 			qsort(ltable, node_count, sizeof *ltable, qsort_compare_keys_tree_node);
 		}
 		/* rebuild tree from ltable and old_tree */
@@ -632,7 +632,7 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 			/* set new keying method */
 			compare_keys = new_compare_keys;
 			/* re-sort ltable */
-               qsort_compare_compare_keys = compare_keys;
+			qsort_compare_compare_keys = compare_keys;
 			qsort(ltable, new_node_count, sizeof *ltable, qsort_compare_keys_tree_node);
 		}
 		/* rebuild tree from ltable and old_tree */
