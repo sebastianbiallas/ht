@@ -116,6 +116,8 @@ ht_key_keycode ht_curses_key_defs[] = {
 	{K_Delete,		KEY_DC},
 	{K_Insert,		KEY_IC},
 	{K_BackSpace,		KEY_BACKSPACE},
+	{K_BackSpace,		8},
+	{K_BackSpace,		127},
 
 	{K_F1,			KEY_F(1)},
 	{K_F2,			KEY_F(2)},
