@@ -236,7 +236,7 @@ K_FIRST = 0,
 
 /* ASCII > 0 */
 
-K_BackSpace		= 1,
+K_Backspace		= 1,
 K_BackTab			= 2,
 
 K_Tab			= '\t',

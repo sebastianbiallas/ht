@@ -138,6 +138,28 @@ void ht_pef::done()
 	free(shared_data);
 }
 
+#define RELOC_BASE		0x10000000
+#define RELOC_STEPPING	0x100000
+#define RELOC_LIMIT		0xffffffff
+			
+/*static uint32 pef_invent_reloc_address(uint si, PEF_SECTION_HEADER *s, uint scount)
+{
+	elf32_addr a=RELOC_BASE;
+	while (a<RELOC_LIMIT-s[si].sh_size) {
+		bool ok=true;
+		for (UINT i=0; i<scount; i++) {
+			if ((s[i].sh_type==ELF_SHT_PROGBITS) && (s[i].sh_addr) &&
+			((a>=s[i].sh_addr) && (a<s[i].sh_addr+s[i].sh_size))) {
+				ok=false;
+				break;
+			}
+		}
+		if (ok) return a;
+		a+=RELOC_STEPPING;
+	}
+	return 0;
+}*/
+
 /*
  *	address conversion routines
  */
@@ -193,12 +215,6 @@ bool pef_addr_is_valid(pef_section_headers *section_headers, PEFAddress addr)
 	return false;
 }
 
-/*bool pef_addr_is_physical(pef_section_headers *section_headers, PEFAddress addr)
-{
-	return false;
-}*/
-
-
 /*
  *	offset conversion routines
  */
@@ -231,8 +247,32 @@ bool pef_ofs_to_section(pef_section_headers *section_headers, dword ofs, int *se
 	return false;
 }
 
-/*bool pef_ofs_to_addr_and_section(pef_section_headers *section_headers, dword ofs,
-	PEFAddress *addr, int *section)
+/*
+ *	ht_pef_reloc_entry
+ */
+#include "relfile.h"
+class ht_pef_reloc_entry: public ht_data {
+public:
+	
+//	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT type, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
+};
+
+/*
+ *	ht_pef_reloc_file
+ */
+
+class ht_pef_reloc_file: public ht_reloc_file {
+protected:
+	ht_pef_shared_data *data;
+/* overwritten */
+	virtual void	reloc_apply(ht_data *reloc, byte *data);
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+public:
+
+void init(ht_streamfile *s, bool own_s, ht_pef_shared_data *d)
 {
-	return false;
-}*/
+	ht_reloc_file::init(s, own_s);
+	data = d;
+}
+
+};

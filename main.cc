@@ -19,6 +19,8 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "analy_register.h"
 #include "asm.h"
@@ -40,8 +42,6 @@
 #include "info/infoview.h"
 #include "log.h"
 #include "stddata.h"
-
-#include <string.h>
 
 char *htcopyrights[]=
 {
@@ -107,8 +107,16 @@ static void done()
 
 static void load_file(char *fn, UINT mode)
 {
-	add_file_history_entry(fn);
-	((ht_app*)app)->create_window_file(fn, mode, true);
+	char cfn[HT_NAME_MAX];
+	char cwd[HT_NAME_MAX];
+
+	cwd[0] = 0;
+	getcwd(cwd, sizeof cwd);
+
+	if (sys_common_canonicalize(cfn, fn, cwd, sys_is_path_delim)==0) {
+		add_file_history_entry(cfn);
+		((ht_app*)app)->create_window_file(cfn, mode, true);
+	}
 }
 
 //#define SPLINE_TEST
@@ -252,7 +260,6 @@ static void params(int argc, char *argv[], bool started)
 			}
 		} else {
 			if (started) {
-				add_file_history_entry(argv[i]);
 				load_file(argv[i], load_mode);
 			}
 		}
@@ -260,7 +267,6 @@ static void params(int argc, char *argv[], bool started)
 	if (escaped_params_start && started) {
 		char **s = &argv[escaped_params_start];
 		while (*s) {
-			add_file_history_entry(*s);
 			load_file(*s, load_mode);
 			s++;
 		}

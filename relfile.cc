@@ -26,18 +26,18 @@
 #define MAX_RELOC_ITEM_LEN 8
 
 /*
- *	CLASS ht_reloc_file
+ *	ht_reloc_file
  */
-
-void	ht_reloc_file::init(ht_streamfile *s, bool os)
+void ht_reloc_file::init(ht_streamfile *s, bool os)
 {
 	ht_layer_streamfile::init(s, os);
 	relocs = new ht_stree();
-	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
+//	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
+	((ht_stree*)relocs)->init(compare_keys_uint);
 	enabled = true;
 }
 
-void	ht_reloc_file::done()
+void ht_reloc_file::done()
 {
 	relocs->destroy();
 	delete relocs;
@@ -46,10 +46,10 @@ void	ht_reloc_file::done()
 
 void ht_reloc_file::finalize()
 {
-	relocs->set_compare_keys(compare_keys_uint);
+//	relocs->set_compare_keys(compare_keys_uint);
 }
 
-int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
+int ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_GET_RELOC: {
@@ -65,12 +65,12 @@ int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
+void ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 {
 	relocs->insert(new ht_data_uint(o), reloc);
 }
 
-UINT	ht_reloc_file::read(void *buf, UINT size)
+UINT ht_reloc_file::read(void *buf, UINT size)
 {
 	FILEOFS o = tell();
 	/* read fine data. */
@@ -83,9 +83,9 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 			k->value = o - (MAX_RELOC_ITEM_LEN+1);
 		else
 			k = NULL;
-			
+
 		/* enum through 'relocs' - the tree that contains all our
-		 * dear relocations - and start some bytes before the current
+		 * dear relocations - starting some bytes before the current
 		 * (stream) offset to get all the relocation items that may
 		 * intersect with our fine read data. */
 		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
@@ -113,7 +113,7 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 			 * we'd have some undefined bytes in b. */
 			memset(b, 0, sizeof b);
 
-			/* never memmove beyond bounds of b. */
+			/* never memmove beyond bounds of b. (maybe you didn't call finalize() ?) */
 			assert(mm+s <= sizeof b);
 
 			/* move read data to b as good as we can. */
@@ -127,7 +127,7 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 	return ret;
 }
 
-UINT	ht_reloc_file::write(const void *buf, UINT size)
+UINT ht_reloc_file::write(const void *buf, UINT size)
 {
 	/* documentation: see read(). */
 	FILEOFS o;
@@ -165,4 +165,3 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 	}
 	return ht_layer_streamfile::write(buf, size);
 }
-

@@ -2276,7 +2276,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 				}
-				case K_BackSpace: {
+				case K_Backspace: {
 					UINT cx=physical_cursorx();
 					if (cx) {
 						if (cx <= textfile->getlinelength(top_line+cursory)) {

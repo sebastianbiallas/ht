@@ -19,6 +19,8 @@ version 0.7-trunk (to be 0.8):
 	- eval: not ('~') and logical-not ('!') operators implemented
 	- disassembler interface (int maxlen, not byte maxlen)
 	- experimental PEF support
+	- fixed bug, causing invalid history entries when specifying files
+	  on the command-line
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

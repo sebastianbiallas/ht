@@ -51,7 +51,7 @@ static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *form
 	if ((ident[ELF_EI_MAG0]!=ELFMAG0) || (ident[ELF_EI_MAG1]!=ELFMAG1) ||
 		(ident[ELF_EI_MAG2]!=ELFMAG2) || (ident[ELF_EI_MAG3]!=ELFMAG3) ) return 0;
 		
-	ht_elf *g=new ht_elf();
+	ht_elf *g = new ht_elf();
 	g->init(b, file, htelf_ifs, format_group, 0);
 	return g;
 }
@@ -73,14 +73,14 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
 	
-	shared_data=elf_shared;
-	elf_shared->header_ofs=header_ofs;
-	elf_shared->shnames=NULL;
-	elf_shared->symtables=0;
-	elf_shared->reloctables=0;
-	elf_shared->v_image=NULL;
-	elf_shared->htrelocs=NULL;
-	elf_shared->fake_undefined_section=0;
+	shared_data = elf_shared;
+	elf_shared->header_ofs = header_ofs;
+	elf_shared->shnames = NULL;
+	elf_shared->symtables = 0;
+	elf_shared->reloctables = 0;
+	elf_shared->v_image = NULL;
+	elf_shared->shrelocs = NULL;
+	elf_shared->fake_undefined_shidx = 0;
 
 	/* read header */
 	file->seek(header_ofs);
@@ -103,7 +103,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			elf_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			file->seek(header_ofs+elf_shared->header32.e_shoff);
 			file->read(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
-			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
+			for (uint i=0; i<elf_shared->sheaders.count; i++) {
 				ELF_SECTION_HEADER32 a = elf_shared->sheaders.sheaders32[i];
 				create_host_struct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
 			}
@@ -113,14 +113,14 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			elf_shared->pheaders.pheaders32=(ELF_PROGRAM_HEADER32*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
 			file->seek(header_ofs+elf_shared->header32.e_phoff);
 			file->read(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
-			for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+			for (uint i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
 			/* create a fake section for undefined symbols */
-//			fake_undefined_symbols();
+			fake_undefined_symbols();
 
 			/* create streamfile layer for relocations */
-			auto_relocate();
+			auto_relocate32();
 			break;
 		}
 		case ELFCLASS64: {
@@ -132,7 +132,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 /* FIXME: 64-bit */
 			file->seek(header_ofs+elf_shared->header64.e_shoff.lo);
 			file->read(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
+			for (uint i=0; i<elf_shared->sheaders.count; i++) {
 				ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
 				create_host_struct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
 			}
@@ -143,7 +143,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 /* FIXME: 64-bit */
 			file->seek(header_ofs+elf_shared->header64.e_phoff.lo);
 			file->read(elf_shared->pheaders.pheaders64, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
-			for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+			for (uint i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders64+i, ELF_PROGRAM_HEADER64_struct, elf_shared->byte_order);
 			}
 			/* create a fake section for undefined symbols */
@@ -165,11 +165,11 @@ void ht_elf::done()
 	ht_format_group::done();
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	if (elf_shared->shnames) {
-		for (UINT i=0; i < elf_shared->sheaders.count; i++)
+		for (uint i=0; i < elf_shared->sheaders.count; i++)
 			free(elf_shared->shnames[i]);
 		free(elf_shared->shnames);
 	}		
-	if (elf_shared->htrelocs) free(elf_shared->htrelocs);
+	if (elf_shared->shrelocs) free(elf_shared->shrelocs);
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32:
 			if (elf_shared->sheaders.sheaders32) free(elf_shared->sheaders.sheaders32);
@@ -183,12 +183,12 @@ void ht_elf::done()
 	free(elf_shared);
 }
 
-UINT ht_elf::find_reloc_section_for(UINT si)
+uint ht_elf::find_reloc_section_for(uint si)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
-	for (UINT i=0; i<elf_shared->sheaders.count; i++) {
+	for (uint i=0; i<elf_shared->sheaders.count; i++) {
 		if (((s->sh_type==ELF_SHT_REL) || (s->sh_type==ELF_SHT_RELA)) &&
 		(s->sh_info==si)) {
 			return i;
@@ -198,99 +198,133 @@ UINT ht_elf::find_reloc_section_for(UINT si)
 	return 0;
 }
 
-#define RELOC_BASE		0x10000000
-#define RELOC_STEPPING	0x100000
-#define RELOC_LIMIT		0xffffffff
-			
-elf32_addr invent_reloc_address(UINT si, ELF_SECTION_HEADER32 *s, UINT sc)
+#define INVENT_BASE	0x100000
+#define INVENT_STEPPING	0x100000
+#define INVENT_LIMIT	0xffffffff
+
+static elf32_addr elf32_invent_address(uint si, ELF_SECTION_HEADER32 *s, uint scount, elf32_addr base = INVENT_BASE)
 {
-	elf32_addr a=RELOC_BASE;
-	while (a<RELOC_LIMIT-s[si].sh_size) {
-		bool ok=true;
-		for (UINT i=0; i<sc; i++) {
-			if ((s[i].sh_type==ELF_SHT_PROGBITS) && (s[i].sh_addr) &&
-			((a>=s[i].sh_addr) && (a<s[i].sh_addr+s[i].sh_size))) {
-				ok=false;
+	elf32_addr a = base;
+	assert(s[si].sh_addr == 0);
+	while (a<INVENT_LIMIT-s[si].sh_size) {
+		bool ok = true;
+		for (uint i=0; i<scount; i++) {
+			if ((a >= s[i].sh_addr)
+			&& (a < s[i].sh_addr+s[i].sh_size)) {
+				ok = false;
 				break;
 			}
 		}
 		if (ok) return a;
-		a+=RELOC_STEPPING;
+		a += INVENT_STEPPING;
 	}
 	return 0;
 }
-	
-void ht_elf::relocate_section(ht_reloc_file *f, UINT si, UINT rsi, elf32_addr a)
+
+void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 {
+	// relocate section si (using section rsi) to address a
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
 
-	FILEOFS h=s[rsi].sh_offset;
-	
-	if (s[rsi].sh_type==ELF_SHT_REL) {
-		UINT relnum=s[rsi].sh_size / sizeof (ELF_REL32);
-		file->seek(h);
-		relnum=1;
-		for (UINT i=0; i<relnum; i++) {
+	FILEOFS h = s[rsi].sh_offset;
+
+	if (s[rsi].sh_type == ELF_SHT_REL) {
+		uint relnum = s[rsi].sh_size / sizeof (ELF_REL32);
+		for (uint i=0; i<relnum; i++) {
 			ELF_REL32 r;
-			file->read(&r, sizeof r);
+			file->seek(h+i*sizeof r);
+			if (file->read(&r, sizeof r) != sizeof r) {
+				LOG("I/O error reading relocations for section %d", si+1);
+				break;
+			}
 			create_host_struct(&r, ELF_REL32_struct, elf_shared->byte_order);
-/* FIXME: offset only works for relocatable files */
-			f->insert_reloc(r.r_offset+s[si].sh_offset, new ht_elf32_reloc_entry(s[rsi].sh_link, r.r_offset, ELF32_R_TYPE(r.r_info), ELF32_R_SYM(r.r_info), 0, (ht_elf_shared_data*)shared_data, f));
+			/* FIXME: offset only works for relocatable files */
+			f->insert_reloc(r.r_offset+s[si].sh_offset,
+				new ht_elf32_reloc_entry(
+					s[rsi].sh_link,
+					r.r_offset+s[si].sh_addr,
+					ELF32_R_TYPE(r.r_info),
+					ELF32_R_SYM(r.r_info),
+					0, (ht_elf_shared_data*)shared_data, f));
 		}
 	}
 }
 
+#define	FAKE_SECTION_BASEADDR	0x4acc0000
 void ht_elf::fake_undefined_symbols()
 {
-/* "resolve" undefined references (create a fake section) */
-	
+	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
+	/* "resolve" undefined references (create a fake section) */
+	elf_shared->fake_undefined_shidx = elf_shared->sheaders.count;
+	elf_shared->sheaders.count++;
+	elf_shared->sheaders.sheaders32 = (ELF_SECTION_HEADER32*)
+		realloc(elf_shared->sheaders.sheaders32, sizeof (ELF_SECTION_HEADER32)* elf_shared->sheaders.count);
+
+	ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
+	s[elf_shared->fake_undefined_shidx].sh_name = 0;
+	s[elf_shared->fake_undefined_shidx].sh_type = ELF_SHT_NOBITS;
+	s[elf_shared->fake_undefined_shidx].sh_flags = ELF_SHF_WRITE | ELF_SHF_ALLOC;
+	s[elf_shared->fake_undefined_shidx].sh_addr = 0;
+	s[elf_shared->fake_undefined_shidx].sh_offset = 0;
+	s[elf_shared->fake_undefined_shidx].sh_size = 64*1024;
+	s[elf_shared->fake_undefined_shidx].sh_link = 0;
+	s[elf_shared->fake_undefined_shidx].sh_info = 0;
+	s[elf_shared->fake_undefined_shidx].sh_addralign = 0;
+	s[elf_shared->fake_undefined_shidx].sh_entsize = 0;
+	elf32_addr a = elf32_invent_address(elf_shared->fake_undefined_shidx,
+		s, elf_shared->sheaders.count, FAKE_SECTION_BASEADDR);
+	s[elf_shared->fake_undefined_shidx].sh_addr = a;
+	LOG("fake section %d", elf_shared->fake_undefined_shidx+1);
 }
 
-void ht_elf::auto_relocate()
+void ht_elf::auto_relocate32()
 {
-	ht_elf32_reloc_file *rf=new ht_elf32_reloc_file();
+	ht_elf32_reloc_file *rf = new ht_elf32_reloc_file();
 	rf->init(file, false, (ht_elf_shared_data*)shared_data);
-	
-	bool reloc_needed=false;
+
+	bool reloc_needed = false;
 
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
 
-	ht_elf_reloc_section *htr=(ht_elf_reloc_section*)malloc(sizeof *htr * elf_shared->sheaders.count);
-	
-/* relocate sections */
-	for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-		htr[i].address=0;
-		htr[i].reloc_shidx=0;
-		if ((s[i].sh_type==ELF_SHT_PROGBITS) && (s[i].sh_addr==0)) {
-			UINT j=find_reloc_section_for(i);
+	elf_shared->shrelocs = (ht_elf_reloc_section32*)malloc(elf_shared->sheaders.count * sizeof (ht_elf_reloc_section32));
+
+	/* relocate sections */
+	for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		elf_shared->shrelocs[i].relocAddr = 0;
+		if ((s[i].sh_type == ELF_SHT_PROGBITS) && (s[i].sh_addr == 0)) {
+			uint j = find_reloc_section_for(i);
 			if (j) {
-				elf32_addr a=invent_reloc_address(i, s, elf_shared->sheaders.count);
+				elf32_addr a = elf32_invent_address(i, s, elf_shared->sheaders.count);
 				if (a) {
-					reloc_needed=true;
-					s[i].sh_addr=a;
-					htr[i].address=a;
-					htr[i].reloc_shidx=j;
+					reloc_needed = true;
+					// update section header entry
+					s[i].sh_addr = a;
+					elf_shared->shrelocs[i].relocAddr = a;
+					elf_shared->shrelocs[i].relocShIdx = j;
 				}
 			}
 		}
 	}
 
-/* apply the actual relocations */
-/*	for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-		if (htr[i].address) {
-			relocate_section(rf, i, htr[i].reloc_shidx, htr[i].address);
+	/* apply relocations to section descriptors */
+	for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		if (elf_shared->shrelocs[i].relocAddr) {
+			LOG("section %d to %08x", i, elf_shared->shrelocs[i].relocAddr);
+			relocate_section(rf, i, elf_shared->shrelocs[i].relocShIdx, elf_shared->shrelocs[i].relocAddr);
 		}
-	}*/
-
-	free(htr);
+	}
 
 	if (reloc_needed) {
-		own_file=true;
-		file=rf;
+		rf->finalize();
+		own_file = true;
+		file = rf;
+		LOG("%s: ELF: relocation layer enabled (invented relocation addresses)", file->get_filename());
 	} else {
+		free(elf_shared->shrelocs);
+		elf_shared->shrelocs = NULL;
 		rf->done();
 		delete rf;
 	}
@@ -298,13 +332,13 @@ void ht_elf::auto_relocate()
 
 bool ht_elf::loc_enum_next(ht_format_loc *loc)
 {
-	ht_elf_shared_data *sh=(ht_elf_shared_data*)shared_data;
+	ht_elf_shared_data *sh = (ht_elf_shared_data*)shared_data;
 	if (loc_enum) {
-		loc->name="elf";
-		loc->start=sh->header_ofs;
-		loc->length=file->get_size()-loc->start;	/* FIXME: ENOTOK */
-		
-		loc_enum=false;
+		loc->name = "elf";
+		loc->start = sh->header_ofs;
+		loc->length = file->get_size()-loc->start;	/* FIXME: ENOTOK */
+
+		loc_enum = false;
 		return true;
 	}
 	return false;
@@ -312,49 +346,48 @@ bool ht_elf::loc_enum_next(ht_format_loc *loc)
 
 void ht_elf::loc_enum_start()
 {
-	loc_enum=true;
+	loc_enum = true;
 }
 
 /*
  *	address conversion routines
  */
-
-bool elf_phys_and_mem_section(elf_section_header *sh, UINT elfclass)
+bool elf_phys_and_mem_section(elf_section_header *sh, uint elfclass)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = (ELF_SECTION_HEADER32*)sh;
-			return ((s->sh_type==ELF_SHT_PROGBITS) && (s->sh_addr!=0));
+			ELF_SECTION_HEADER32 *s = &sh->sheaders32;
+			return (s->sh_type == ELF_SHT_PROGBITS) && s->sh_addr;
 		}
 		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
+			ELF_SECTION_HEADER64 *s = &sh->sheaders64;
 			return ((s->sh_type==ELF_SHT_PROGBITS) && ((s->sh_addr.lo!=0) || (s->sh_addr.hi!=0)));
 		}
 	}
 	return false;
 }
 
-bool elf_valid_section(elf_section_header *sh, UINT elfclass)
+bool elf_valid_section(elf_section_header *sh, uint elfclass)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = (ELF_SECTION_HEADER32*)sh;
+			ELF_SECTION_HEADER32 *s = &sh->sheaders32;
 			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr!=0));
 		}
 		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
+			ELF_SECTION_HEADER64 *s = &sh->sheaders64;
 			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && ((s->sh_addr.lo!=0) || (s->sh_addr.hi!=0)));
 		}
 	}
 	return false;
 }
 
-bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs)
+bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, dword *ofs)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (UINT i=0; i < section_headers->count; i++) {
+			for (uint i=0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr+s->sh_size)) {
 					*ofs = addr.a32 - s->sh_addr + s->sh_offset;
 					return true;
@@ -365,7 +398,7 @@ bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAdd
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			for (UINT i=0; i < section_headers->count; i++) {
+			for (uint i=0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
 					*ofs = qofs.lo;
@@ -379,12 +412,12 @@ bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAdd
 	return false;
 }
 
-bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section)
+bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (UINT i = 0; i < section_headers->count; i++) {
+			for (uint i = 0; i < section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
 					*section = i;
 					return true;
@@ -395,7 +428,7 @@ bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, EL
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			for (UINT i = 0; i < section_headers->count; i++) {
+			for (uint i = 0; i < section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					*section = i;
 					return true;
@@ -408,12 +441,12 @@ bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, EL
 	return false;
 }
 
-bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr)
+bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFAddress addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (UINT i=0; i<section_headers->count; i++) {
+			for (uint i=0; i<section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
@@ -423,7 +456,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFA
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			for (UINT i=0; i<section_headers->count; i++) {
+			for (uint i=0; i<section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
@@ -435,7 +468,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFA
 	return false;
 }
 
-bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr)
+bool elf_addr_is_physical(elf_section_headers *section_headers, uint elfclass, ELFAddress addr)
 {
 	return false;
 }
@@ -445,12 +478,12 @@ bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, E
  *	offset conversion routines
  */
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr)
+bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (UINT i = 0; i < section_headers->count; i++) {
+			for (uint i = 0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (ofs>=s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
 					addr->a32 = ofs - s->sh_offset + s->sh_addr;
 					return true;
@@ -462,7 +495,7 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword 
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			qword qofs = to_qword(ofs);
-			for (UINT i = 0; i < section_headers->count; i++) {
+			for (uint i = 0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					addr->a64 = qofs - s->sh_offset + s->sh_addr;
 					return true;
@@ -475,12 +508,12 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword 
 	return false;
 }
 
-bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, int *section)
+bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, dword ofs, int *section)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s=section_headers->sheaders32;
-			for (UINT i=0; i<section_headers->count; i++) {
+			for (uint i=0; i<section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (ofs >= s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
 					*section = i;
 					return true;
@@ -493,7 +526,7 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dwo
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			qword qofs;
 			qofs.hi = 0; qofs.lo = ofs;
-			for (UINT i=0; i < section_headers->count; i++) {
+			for (uint i=0; i < section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					*section = i;
 					return true;
@@ -506,60 +539,65 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dwo
 	return false;
 }
 
-bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr, int *section)
+bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }
 
 /*
- *	CLASS ht_elf32_reloc_entry
+ *	ht_elf32_reloc_entry
  */
-
-ht_elf32_reloc_entry::ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT t, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
+ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
 {
-	type=t;
-	
-	FILEOFS h=data->sheaders.sheaders32[symtabidx].sh_offset;
-	
+	type = t;
+
+	FILEOFS h = data->sheaders.sheaders32[symtabidx].sh_offset;
+
 	ELF_SYMBOL32 sym;
 	file->seek(h+symbolidx*sizeof (ELF_SYMBOL32));
 	file->read(&sym, sizeof sym);
 	create_host_struct(&sym, ELF_SYMBOL32_struct, data->byte_order);
-	
-	dword A=addend;
-	dword P=offset;
-	dword S=sym.st_value;
+
+	uint32 A = addend;
+	uint32 P = addr;
+	uint32 S;
+	if (sym.st_shndx) {
+		S = sym.st_value;
+	} else if (data->fake_undefined_shidx >= 0) {
+		S = data->sheaders.sheaders32[data->fake_undefined_shidx].sh_addr+
+			4*symbolidx;
+	}
 	switch (type) {
 		case ELF_R_386_32:
-			relocs.r_32=S+A;
+			relocs.r_32 = S+A;
 			break;
 		case ELF_R_386_PC32:
-			relocs.r_pc32=S+A-P;
+			relocs.r_pc32 = S+A-P;
 			break;
 	}
 }
 
 /*
- *	CLASS ht_elf32_reloc_file
+ *	ht_elf32_reloc_file
  */
 
 void	ht_elf32_reloc_file::init(ht_streamfile *s, bool os, ht_elf_shared_data *d)
 {
 	ht_reloc_file::init(s, os);
-	data=d;
+	data = d;
 }
 
 void	ht_elf32_reloc_file::reloc_apply(ht_data *reloc, byte *buf)
 {
 	ht_elf32_reloc_entry *e=(ht_elf32_reloc_entry*)reloc;
-	
-	dword *X=(dword*)buf;
+
 	switch (e->type) {
 		case ELF_R_386_32:
-			*X=e->relocs.r_32;
+			create_foreign_int(buf, e->relocs.r_32, 4, data->byte_order);
 			break;
 		case ELF_R_386_PC32:
-			*X=e->relocs.r_pc32;
+			create_foreign_int(buf, e->relocs.r_pc32, 4, data->byte_order);
+//			create_foreign_int(buf, 0x12345678, 4, data->byte_order);
 			break;
 	}
 }
@@ -569,4 +607,3 @@ bool	ht_elf32_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
 	return false;
 //	ht_elf32_reloc_entry *e=(ht_elf32_reloc_entry*)reloc;
 }
-

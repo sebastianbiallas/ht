@@ -56,7 +56,7 @@ static ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 
 	v->attachInfoline(head);
 
-/* find lowest/highest address */
+	/* find lowest/highest address */
 	Address *low=NULL;
 	Address *high=NULL;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {

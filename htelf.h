@@ -94,9 +94,9 @@ struct elf_program_headers {
 	};
 };
 
-struct ht_elf_reloc_section {
-	elf32_addr address;
-	UINT reloc_shidx;
+struct ht_elf_reloc_section32 {
+	elf32_addr	relocAddr;
+	uint		relocShIdx;
 };
 
 struct ht_elf_shared_data {
@@ -108,13 +108,13 @@ struct ht_elf_shared_data {
 		ELF_HEADER64 header64;
 	};
 	elf_section_headers sheaders;
+	ht_elf_reloc_section32 *shrelocs;
 	char **shnames;
 	elf_program_headers pheaders;
-	UINT symtables;
-	UINT reloctables;
+	uint symtables;
+	uint reloctables;
 	ht_format_viewer *v_image;
-	ht_elf_reloc_section *htrelocs;
-	UINT fake_undefined_section;
+	int fake_undefined_shidx;
 };
 
 /*
@@ -125,7 +125,7 @@ class ht_elf: public ht_format_group {
 protected:
 	bool loc_enum;
 /* new */
-			void auto_relocate();
+			void auto_relocate32();
 			void fake_undefined_symbols();
 			UINT find_reloc_section_for(UINT si);
 			void relocate_section(ht_reloc_file *f, UINT si, UINT rsi, elf32_addr a);
@@ -143,12 +143,12 @@ public:
 
 class ht_elf32_reloc_entry: public ht_data {
 public:
-	UINT	type;
+	uint	type;
 	union {
-		dword r_32;
-		dword r_pc32;
+		uint32 r_32;
+		uint32 r_pc32;
 	} relocs;
-	
+
 	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT type, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
 };
 

@@ -361,7 +361,7 @@ struct ELF_SYMBOL64 {
 #define ELF_R_386_GLOB_DAT		6
 #define ELF_R_386_JMP_SLOT		7
 #define ELF_R_386_RELATIVE		8
-#define ELF_R_386_GOTOFF			9
+#define ELF_R_386_GOTOFF		9
 #define ELF_R_386_GOTPC			10
 
 struct ELF_REL32 {

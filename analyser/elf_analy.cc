@@ -95,11 +95,13 @@ void ElfAnalyser::beginAnalysis()
 	for (UINT i=0; i < elf_shared->sheaders.count; i++) {
 		Address *secaddr;
 		if (c32) {
+//			fprintf(stderr, "desc sec %d, %08x\n", i, s32->sh_addr);
 			secaddr = createAddress32(s32->sh_addr);
 		} else {
 			secaddr = createAddress64(s64->sh_addr);
 		}
 		if (validAddress(secaddr, scvalid)) {
+//			fprintf(stderr, "valid!\n");
 			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 			addComment(secaddr, 0, "");
 			addComment(secaddr, 0, ";******************************************************************");
@@ -133,7 +135,7 @@ void ElfAnalyser::beginAnalysis()
 		s64++;
 	}
 
-/* symbols */
+	/* symbols */
 	if (c32) {
 		for (UINT i=1; i<elf_shared->sheaders.count; i++) {
 			if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM)) {
@@ -176,10 +178,9 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 {
 	char elf_buffer[1024];
 	if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32) {
-
-		FILEOFS h=elf_shared->sheaders.sheaders32[shidx].sh_offset;
-		FILEOFS sto=elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
-		UINT symnum=elf_shared->sheaders.sheaders32[shidx].sh_size / sizeof (ELF_SYMBOL32);
+		FILEOFS h = elf_shared->sheaders.sheaders32[shidx].sh_offset;
+		FILEOFS sto = elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
+		UINT symnum = elf_shared->sheaders.sheaders32[shidx].sh_size / sizeof (ELF_SYMBOL32);
 
 		int *entropy = random_permutation(symnum);
 		for (UINT i=0; i<symnum; i++) {
@@ -225,9 +226,14 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			switch (ELF32_ST_TYPE(sym.st_info)) {
 				case ELF_STT_NOTYPE:
 				case ELF_STT_FUNC: {
-				char *label = name;
+					char *label = name;
 					if (!getSymbolByName(label)) {
-						Address *address = createAddress32(sym.st_value);
+						elf32_addr sym_addr = sym.st_value;
+						if (elf_shared->shrelocs && (sym.st_shndx>0) && (sym.st_shndx<elf_shared->sheaders.count)
+						&& elf_shared->shrelocs[sym.st_shndx].relocAddr) {
+							sym_addr += elf_shared->shrelocs[sym.st_shndx].relocAddr;
+						}
+						Address *address = createAddress32(sym_addr);
 						if (validAddress(address, scvalid)) {
 							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 
@@ -420,7 +426,7 @@ UINT ElfAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 	}*/
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
-	return file->read(buf, size);;
+	return file->read(buf, size);
 }
 
 bool ElfAnalyser::convertAddressToELFAddress(Address *addr, ELFAddress *r)
@@ -707,5 +713,3 @@ bool ElfAnalyser::validAddress(Address *Addr, tsectype action)
 	}
 	return false;
 }
-
-

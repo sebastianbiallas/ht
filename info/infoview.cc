@@ -645,7 +645,8 @@ void ht_info_viewer::handlemsg(htmsg *msg)
 					return;
 				}
 				break;
-			case K_BackSpace: {
+			case K_Alt_Backspace:
+			case K_Backspace: {
 				int c;
 				if ((c = history->count())) {
 					info_history_entry *e = (info_history_entry*)history->get(c-1);

@@ -338,7 +338,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 		d->extract_url(b);
 
 		// FIXME: urls not fully supported...
-		if (strcmp(b, "local:")) {
+		if (strncmp(buf, "local:", 6) == 0) {
 			ht_snprintf(buf, bufsize, "%s", b+6);
 
 			if (hist) insert_history_entry(hist, buf, 0);
@@ -424,7 +424,7 @@ bool file_open_dialog(char **name, UINT *mode)
 		d->extract_url(buf);
 
 		// FIXME: urls not fully supported...
-		if (strcmp(buf, "local:")) {
+		if (strncmp(buf, "local:", 6) == 0) {
 			*name = strdup(buf+6);
 
 			if (hist) insert_history_entry(hist, *name, 0);
@@ -3040,7 +3040,7 @@ ht_vstate_history_entry::~ht_vstate_history_entry()
  *	CLASS ht_file_window
  */
 
-void	ht_file_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *f)
+void ht_file_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *f)
 {
 	ht_window::init(b, desc, framestyle, number);
 	file = f;
@@ -3148,7 +3148,8 @@ void ht_file_window::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_keypressed:
 			switch (msg->data1.integer) {
-				case K_BackSpace: {
+				case K_Alt_Backspace:
+				case K_Backspace: {
 					sendmsg(cmd_vstate_restore);
 					clearmsg(msg);
 					return;

@@ -159,77 +159,38 @@ void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol
  */
 static int sprint_base2(char *x, dword value, bool leading_zeros)
 {
-	char *ix=x;
+	char *ix = x;
 	bool draw = leading_zeros;
 	for (int i=0; i<32; i++) {
 		bool v = value & (1<<(32-i-1));
 		if (v) draw = true;
 		if (draw) *x++ = v ? '1' : '0';
 	}
+	*x = 0;
 	return x-ix;
 }
 
 static int sprint_base2_0(char *x, dword value, int zeros)
 {
-	char *ix=x;
-	char vi=0;
-	dword m=0x80000000;
-	while (zeros<32) {m>>=1; zeros++;}
+	char *ix = x;
+	char vi = 0;
+	dword m = 0x80000000;
+	while (zeros < 32) {m >>= 1; zeros++;}
 	do {
 		if (value & m) {
 			while (vi--) *(x++)='0';
 			vi = 0;
-			*x='1';
+			*x = '1';
 			x++;
 		} else {
 			vi++;
 		}
-		m>>=1;
+		m >>= 1;
 	} while (m);
 	if (!value) *(x++)='0';
-	*x=0;
+	*x = 0;
 	return x-ix;
 }
-
-/*static int sprint_basen(char *buffer, int base, qword q)
-{
-	static char *chars="0123456789abcdef";
-	if ((base<2) || (base>16)) return 0;
-	int n = 0;
-	char *b = buffer;
-	while (q != to_qword(0)) {
-		int c = QWORD_GET_INT(q % to_qword(base));
-		*buffer++ = chars[c];
-		n++;
-		q /= to_qword(base);
-	}
-	for (int i=0; i < n/2; i++) {
-		char t = b[i];
-		b[i] = b[n-i-1];
-		b[n-i-1] = t;
-	}
-	b[n] = 0;
-	return n;
-}*/
-
-/*static int sprintf_basen(char *buffer, const char *format, int base, qword q)
-{
-	int n = 0;
-	while (*format) {
-		if (*format == '%') {
-			int i = sprint_basen(buffer, base, q);
-			buffer += i;
-			n += i;
-		} else {
-			*buffer++ = *format;
-			n++;
-		}
-		format++;
-	}
-	buffer[n] = 0;
-	return n;
-}*/
-
 
 static void nicify(char *dest, const char *src, int d)
 {
@@ -271,19 +232,20 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				x += ht_snprintf(x, 64, "dec   %s\n", buf2);
 				if (to_sint64(r.scalar.integer.value) < to_sint64(0)) {
 					ht_snprintf(buf1, sizeof buf1, "%qd", &r.scalar.integer.value);
-					nicify(buf2, buf1+1, 3);                                                                                                                                                      // I hope nobody ever sees this
+					nicify(buf2, buf1+1, 3);
 					x += ht_snprintf(x, 64, "sdec  -%s\n", buf2);
-				}                              
+				}
 				ht_snprintf(buf1, sizeof buf1, "%qo", &r.scalar.integer.value);
 				nicify(buf2, buf1, 3);
 				x += ht_snprintf(x, 64, "oct   %s\n", buf2);
-				x += sprintf(x, "binlo ");
-				x += sprint_base2(x, lo, true);
-				*(x++) = '\n';
+
+				sprint_base2(buf1, lo, true);
+				nicify(buf2, buf1, 8);
+				x += ht_snprintf(x, 64, "binlo %s\n", buf2);
 				if (hi) {
-					x += sprintf(x, "binhi ");
-					x += sprint_base2(x, hi, true);
-					*(x++) = '\n';
+					sprint_base2(buf1, hi, true);
+					nicify(buf2, buf1, 8);
+					x += ht_snprintf(x, 64, "binhi %s\n", buf2);
 				}
 				char bb[4];
 				int i = lo;

@@ -248,7 +248,7 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 		bin2str(result, data->text, data->textlen);
 		free(data);
 		if (hist) insert_history_entry(hist, result, 0);
-		
+
 		dialog->done();
 		delete dialog;
 		return true;

@@ -845,7 +845,7 @@ void ht_strinputfield::handlemsg(htmsg *msg)
 				dirtyview();
 				clearmsg(msg);
 				return;
-			case K_BackSpace:
+			case K_Backspace:
 				if (is_virgin) {
 					is_virgin=0;
 					*selstart=0;
@@ -1153,7 +1153,7 @@ void ht_hexinputfield::handlemsg(htmsg *msg)
 				dirtyview();
 				clearmsg(msg);
 				return;
-			case K_BackSpace:
+			case K_Backspace:
 				if (*textlen) {
 					if (*curchar+nib>*text) {
 /*						if (*curchar-*text<*textlen) {
@@ -1808,7 +1808,7 @@ void ht_listbox::handlemsg(htmsg *msg)
 					}
 				}
 				break;
-			case K_BackSpace: {
+			case K_Backspace: {
 				if (listboxcaps & LISTBOX_QUICKFIND) {
 					if (qpos > quickfinder) {
 						*(--qpos) = 0;

@@ -778,7 +778,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	int linebuf[1024];
 	int i = 0;
 	int len;
-	
+
 	Address *next_addr = DUP_ADDR(search_addr);
 	while (1) {
 		DPRINTF2("search_addr: (%y, %d) ", search_addr, search_line);

@@ -2221,7 +2221,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					dirtyview();
 					clearmsg(msg);
 					return;
-				case K_BackSpace: {
+				case K_Backspace: {
 					FILEOFS f;
 					if (edit() && (cursor_tag_class == tag_class_edit)
 					&& get_current_offset(&f)) {
@@ -2230,8 +2230,6 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 						focus_cursor();
 						dirtyview();
 						clearmsg(msg);
-/*					} else {
-						pop_vs_history();*/
 					}                         
 					return;
 				}

@@ -99,11 +99,13 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		file->seek(ofs);
 		file->read(&cmd, sizeof cmd);
 		create_host_struct(&cmd, MACHO_COMMAND_struct, image_endianess);
-		// FIXME: improve this logic
-		assert(cmd.cmdsize<=1024);
+		if (cmd.cmdsize>1024) break;
 		macho_shared->cmds.cmds[i] = (MACHO_COMMAND_U*)malloc(cmd.cmdsize);
 		file->seek(ofs);
-		file->read(macho_shared->cmds.cmds[i], cmd.cmdsize);
+		if (file->read(macho_shared->cmds.cmds[i], cmd.cmdsize) != cmd.cmdsize) {
+			free(macho_shared->cmds.cmds[i]);
+			break;
+		}
 		switch (cmd.cmd) {
 			case LC_SEGMENT:
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SEGMENT_COMMAND_struct, image_endianess);
