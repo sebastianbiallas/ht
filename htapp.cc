@@ -338,7 +338,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 		d->extract_url(b);
 
 		// FIXME: urls not fully supported...
-		if (strncmp(buf, "local:", 6) == 0) {
+		if (strncmp(b, "local:", 6) == 0) {
 			ht_snprintf(buf, bufsize, "%s", b+6);
 
 			if (hist) insert_history_entry(hist, buf, 0);
@@ -1446,7 +1446,7 @@ void ht_app::init(bounds *pq)
 	file->insert_entry("~Save", NULL, cmd_file_save, 0, 1);
 	file->insert_entry("Save ~As...", NULL, cmd_file_saveas, 0, 1);
 	file->insert_separator();
-	file->insert_entry("Open ~project...", NULL, cmd_project_open, 0, 1);
+	file->insert_entry("Open/Create ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
 	file->insert_separator();
 	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Alt_Z, 1);

@@ -4,7 +4,7 @@
 version 0.9.0 (repository htdata):
 	- rewrite
 
-version 0.7-trunk (to be 0.8):
+version 0.8.0:
 	- PowerPC (PPC) disassembler
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC, x86, experimental)

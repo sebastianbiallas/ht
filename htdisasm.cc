@@ -39,18 +39,14 @@ extern "C" {
 ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	int t1632;
-#if 0
+#if 1
 	Assembler *assembler=new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 	x86dis *disassembler=new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
-	t1632 = 0;
 #else
 	Assembler *assembler = NULL;
 	Disassembler *disassembler = new PPCDisassembler();
-	t1632 = 0;
-/*	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
-	x86dis *disassembler=new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
-	t1632 = 1;*/
 #endif
+	t1632 = 0;
 
 	ht_disasm_viewer *v=new ht_disasm_viewer();
 	v->init(b, DESC_DISASM, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler, t1632);
@@ -492,7 +488,7 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 	int offsets[avg_look_ahead*50];
 	int *of=offsets;
 	int r=n<6 ? 6*avg_look_ahead : n*avg_look_ahead;
-	if (r > sizeof (buf)) r = sizeof (buf);
+	if (r > (int)sizeof buf) r = sizeof buf;
 	dword o=*ofs-r;
 	int c=r, d;
 	int s;
