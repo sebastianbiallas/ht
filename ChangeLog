@@ -18,6 +18,9 @@ version 0.7-trunk:
 	- experimental XBE (X-Box executable) support by Stefan Esser.
 	- fixed bug in Java bytecode disassembler: invalid opcode crashed
 	  whole program. Thanks Jerome (freejazz).
+	- fixed bug in Java class processing code: errors always crash HT
+	- fixed: 0xcafebabe in mach_kernel... made classread more strict
+	- Mach-O little-endian support
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer

@@ -15,6 +15,7 @@
 - analy.cc: pushAddress(x,y) leaks x if !isValidCodeAddr(x)
 - analy.cc: analyser file storage: thresholds are stored after data structures
   which they are used for.
+- 'follow' is always 32-bit, little-endian.
 
 +dunno
 - update help

@@ -28,20 +28,20 @@
 
 static ht_mask_ptable machoheader[]=
 {
-	{"magic",		STATICTAG_EDIT_DWORD_BE("00000000")},
-	{"cputype",		STATICTAG_EDIT_DWORD_BE("00000004")},
-	{"cpusubtype",		STATICTAG_EDIT_DWORD_BE("00000008")},
-	{"filetype",		STATICTAG_EDIT_DWORD_BE("0000000c")},
-	{"number of cmds",	STATICTAG_EDIT_DWORD_BE("00000010")},
-	{"size of cmds",	STATICTAG_EDIT_DWORD_BE("00000014")},
-	{"flags",		STATICTAG_EDIT_DWORD_BE("00000018")},
+	{"magic",		STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"cputype",		STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"cpusubtype",		STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"filetype",		STATICTAG_EDIT_DWORD_VE("0000000c")},
+	{"number of cmds",	STATICTAG_EDIT_DWORD_VE("00000010")},
+	{"size of cmds",	STATICTAG_EDIT_DWORD_VE("00000014")},
+	{"flags",		STATICTAG_EDIT_DWORD_VE("00000018")},
 	{0, 0}
 };
 
 static ht_mask_ptable macho_segment_header[]=
 {
-	{"cmd",			STATICTAG_EDIT_DWORD_BE("00000000")},
-	{"cmdsize",		STATICTAG_EDIT_DWORD_BE("00000004")},
+	{"cmd",			STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"cmdsize",		STATICTAG_EDIT_DWORD_VE("00000004")},
 	{"name",
 STATICTAG_EDIT_CHAR("00000008")STATICTAG_EDIT_CHAR("00000009")
 STATICTAG_EDIT_CHAR("0000000a")STATICTAG_EDIT_CHAR("0000000b")
@@ -52,14 +52,14 @@ STATICTAG_EDIT_CHAR("00000012")STATICTAG_EDIT_CHAR("00000013")
 STATICTAG_EDIT_CHAR("00000014")STATICTAG_EDIT_CHAR("00000015")
 STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
 },
-	{"virtual address",	STATICTAG_EDIT_DWORD_BE("00000018")},
-	{"virtual size",	STATICTAG_EDIT_DWORD_BE("0000001c")},
-	{"file offset",		STATICTAG_EDIT_DWORD_BE("00000020")},
-	{"file size",		STATICTAG_EDIT_DWORD_BE("00000024")},
-	{"max VM protection",	STATICTAG_EDIT_DWORD_BE("00000028")},
-	{"init VM protection",	STATICTAG_EDIT_DWORD_BE("0000002c")},
-	{"number of sections",	STATICTAG_EDIT_DWORD_BE("00000030")},
-	{"flags",		STATICTAG_EDIT_DWORD_BE("00000034")},
+	{"virtual address",	STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"virtual size",	STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"file offset",		STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"file size",		STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"max VM protection",	STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"init VM protection",	STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{"number of sections",	STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"flags",		STATICTAG_EDIT_DWORD_VE("00000034")},
 	{0, 0}
 };
 
@@ -85,70 +85,70 @@ STATICTAG_EDIT_CHAR("0000001a")STATICTAG_EDIT_CHAR("0000001b")
 STATICTAG_EDIT_CHAR("0000001c")STATICTAG_EDIT_CHAR("0000001d")
 STATICTAG_EDIT_CHAR("0000001e")STATICTAG_EDIT_CHAR("0000001f")
 },
-	{"virtual address",		STATICTAG_EDIT_DWORD_BE("00000020")},
-	{"virtual size",		STATICTAG_EDIT_DWORD_BE("00000024")},
-	{"file offset",			STATICTAG_EDIT_DWORD_BE("00000028")},
-	{"alignment",			STATICTAG_EDIT_DWORD_BE("0000002c")},
-	{"relocation file offset",	STATICTAG_EDIT_DWORD_BE("00000030")},
-	{"number of relocation entries",STATICTAG_EDIT_DWORD_BE("00000034")},
-	{"flags",			STATICTAG_EDIT_DWORD_BE("00000038")},
-	{"reserved1",			STATICTAG_EDIT_DWORD_BE("0000003c")},
-	{"reserved2",			STATICTAG_EDIT_DWORD_BE("00000040")},
+	{"virtual address",		STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"virtual size",		STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"file offset",			STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"alignment",			STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{"relocation file offset",	STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"number of relocation entries",STATICTAG_EDIT_DWORD_VE("00000034")},
+	{"flags",			STATICTAG_EDIT_DWORD_VE("00000038")},
+	{"reserved1",			STATICTAG_EDIT_DWORD_VE("0000003c")},
+	{"reserved2",			STATICTAG_EDIT_DWORD_VE("00000040")},
 	{0, 0}
 };
 
 static ht_mask_ptable macho_thread_header[]=
 {
-	{"cmd",			STATICTAG_EDIT_DWORD_BE("00000000")},
-	{"cmdsize",		STATICTAG_EDIT_DWORD_BE("00000004")},
-	{"flavor",		STATICTAG_EDIT_DWORD_BE("00000008")},
-	{"count (of 32bit words)",	STATICTAG_EDIT_DWORD_BE("0000000c")},
+	{"cmd",			STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"cmdsize",		STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"flavor",		STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"count (of 32bit words)",	STATICTAG_EDIT_DWORD_VE("0000000c")},
 	{0, 0}
 };
 
 static ht_mask_ptable macho_ppc_thread_state[]=
 {
-	{"srr0",		STATICTAG_EDIT_DWORD_BE("00000000")},
-	{"srr1",		STATICTAG_EDIT_DWORD_BE("00000004")},
-	{"flavor",		STATICTAG_EDIT_DWORD_BE("00000008")},
-	{"r0",			STATICTAG_EDIT_DWORD_BE("0000000c")},
-	{"r1",			STATICTAG_EDIT_DWORD_BE("00000010")},
-	{"r2",			STATICTAG_EDIT_DWORD_BE("00000014")},
-	{"r3",			STATICTAG_EDIT_DWORD_BE("00000018")},
-	{"r4",			STATICTAG_EDIT_DWORD_BE("0000001c")},
-	{"r5",			STATICTAG_EDIT_DWORD_BE("00000020")},
-	{"r6",			STATICTAG_EDIT_DWORD_BE("00000024")},
-	{"r7",			STATICTAG_EDIT_DWORD_BE("00000028")},
-	{"r8",			STATICTAG_EDIT_DWORD_BE("0000002c")},
-	{"r9",			STATICTAG_EDIT_DWORD_BE("00000030")},
-	{"r10",			STATICTAG_EDIT_DWORD_BE("00000034")},
-	{"r11",			STATICTAG_EDIT_DWORD_BE("00000038")},
-	{"r12",			STATICTAG_EDIT_DWORD_BE("0000003c")},
-	{"r13",			STATICTAG_EDIT_DWORD_BE("00000040")},
-	{"r14",			STATICTAG_EDIT_DWORD_BE("00000044")},
-	{"r15",			STATICTAG_EDIT_DWORD_BE("00000048")},
-	{"r16",			STATICTAG_EDIT_DWORD_BE("0000004c")},
-	{"r17",			STATICTAG_EDIT_DWORD_BE("00000050")},
-	{"r18",			STATICTAG_EDIT_DWORD_BE("00000054")},
-	{"r19",			STATICTAG_EDIT_DWORD_BE("00000058")},
-	{"r20",			STATICTAG_EDIT_DWORD_BE("0000005c")},
-	{"r21",			STATICTAG_EDIT_DWORD_BE("00000060")},
-	{"r22",			STATICTAG_EDIT_DWORD_BE("00000064")},
-	{"r23",			STATICTAG_EDIT_DWORD_BE("00000068")},
-	{"r24",			STATICTAG_EDIT_DWORD_BE("0000006c")},
-	{"r25",			STATICTAG_EDIT_DWORD_BE("00000070")},
-	{"r26",			STATICTAG_EDIT_DWORD_BE("00000074")},
-	{"r27",			STATICTAG_EDIT_DWORD_BE("00000078")},
-	{"r28",			STATICTAG_EDIT_DWORD_BE("0000007c")},
-	{"r29",			STATICTAG_EDIT_DWORD_BE("00000080")},
-	{"r30",			STATICTAG_EDIT_DWORD_BE("00000084")},
-	{"r31",			STATICTAG_EDIT_DWORD_BE("00000088")},
-	{"cr",			STATICTAG_EDIT_DWORD_BE("0000008c")},
-	{"xer",			STATICTAG_EDIT_DWORD_BE("00000090")},
-	{"lr",			STATICTAG_EDIT_DWORD_BE("00000094")},
-	{"ctr",			STATICTAG_EDIT_DWORD_BE("00000098")},
-	{"mq",			STATICTAG_EDIT_DWORD_BE("0000009c")},
-	{"vrsave",		STATICTAG_EDIT_DWORD_BE("000000a0")},
+	{"srr0",		STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"srr1",		STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"flavor",		STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"r0",			STATICTAG_EDIT_DWORD_VE("0000000c")},
+	{"r1",			STATICTAG_EDIT_DWORD_VE("00000010")},
+	{"r2",			STATICTAG_EDIT_DWORD_VE("00000014")},
+	{"r3",			STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"r4",			STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"r5",			STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"r6",			STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"r7",			STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"r8",			STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{"r9",			STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"r10",			STATICTAG_EDIT_DWORD_VE("00000034")},
+	{"r11",			STATICTAG_EDIT_DWORD_VE("00000038")},
+	{"r12",			STATICTAG_EDIT_DWORD_VE("0000003c")},
+	{"r13",			STATICTAG_EDIT_DWORD_VE("00000040")},
+	{"r14",			STATICTAG_EDIT_DWORD_VE("00000044")},
+	{"r15",			STATICTAG_EDIT_DWORD_VE("00000048")},
+	{"r16",			STATICTAG_EDIT_DWORD_VE("0000004c")},
+	{"r17",			STATICTAG_EDIT_DWORD_VE("00000050")},
+	{"r18",			STATICTAG_EDIT_DWORD_VE("00000054")},
+	{"r19",			STATICTAG_EDIT_DWORD_VE("00000058")},
+	{"r20",			STATICTAG_EDIT_DWORD_VE("0000005c")},
+	{"r21",			STATICTAG_EDIT_DWORD_VE("00000060")},
+	{"r22",			STATICTAG_EDIT_DWORD_VE("00000064")},
+	{"r23",			STATICTAG_EDIT_DWORD_VE("00000068")},
+	{"r24",			STATICTAG_EDIT_DWORD_VE("0000006c")},
+	{"r25",			STATICTAG_EDIT_DWORD_VE("00000070")},
+	{"r26",			STATICTAG_EDIT_DWORD_VE("00000074")},
+	{"r27",			STATICTAG_EDIT_DWORD_VE("00000078")},
+	{"r28",			STATICTAG_EDIT_DWORD_VE("0000007c")},
+	{"r29",			STATICTAG_EDIT_DWORD_VE("00000080")},
+	{"r30",			STATICTAG_EDIT_DWORD_VE("00000084")},
+	{"r31",			STATICTAG_EDIT_DWORD_VE("00000088")},
+	{"cr",			STATICTAG_EDIT_DWORD_VE("0000008c")},
+	{"xer",			STATICTAG_EDIT_DWORD_VE("00000090")},
+	{"lr",			STATICTAG_EDIT_DWORD_VE("00000094")},
+	{"ctr",			STATICTAG_EDIT_DWORD_VE("00000098")},
+	{"mq",			STATICTAG_EDIT_DWORD_VE("0000009c")},
+	{"vrsave",		STATICTAG_EDIT_DWORD_VE("000000a0")},
 	{0, 0}
 };
 
@@ -327,8 +327,13 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	register_atom(ATOM_ELF_OS_ABI, elf_os_abi);
 	register_atom(ATOM_ELF_TYPE, elf_type);
 	register_atom(ATOM_ELF_MACHINE, elf_machine);*/
+	bool isbigendian;
+	switch (macho_shared->image_endianess) {
+		case little_endian: isbigendian = false; break;
+		case big_endian: isbigendian = true; break;
+	}
 	m->add_mask(info);
-	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, true);
+	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, isbigendian);
 
 	FILEOFS ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
 	for (UINT i=0; i<macho_shared->cmds.count; i++) {
@@ -340,12 +345,12 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			    	char info[128];
 				sprintf(info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
 				m->add_mask(info);
-				m->add_staticmask_ptable(macho_segment_header, ofs, true);
+				m->add_staticmask_ptable(macho_segment_header, ofs, isbigendian);
 				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
 				for (UINT j=0; j<c->nsects; j++) {
 					sprintf(info, "**** section %d ****", j);
 					m->add_mask(info);
-					m->add_staticmask_ptable(macho_section_header, ofs+sofs, true);
+					m->add_staticmask_ptable(macho_section_header, ofs+sofs, isbigendian);
 					sofs += 9*4+16+16;
 				}
 				break;
@@ -368,10 +373,10 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			    	char info[128];
 				sprintf(info, "** %s", (macho_shared->cmds.cmds[i]->cmd.cmd == LC_UNIXTHREAD) ? "UNIXTHREAD" : "THREAD");
 				m->add_mask(info);
-				m->add_staticmask_ptable(macho_thread_header, ofs, true);
+				m->add_staticmask_ptable(macho_thread_header, ofs, isbigendian);
 				switch (c->flavor) {
 					case FLAVOR_PPC_THREAD_STATE:
-						m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, true);
+						m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
 						break;
 				}
 				break;

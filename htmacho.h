@@ -106,6 +106,7 @@ struct ht_macho_shared_data {
 	MACHO_HEADER header;
 	macho_commands cmds;
 	macho_sections sections;
+	endianess image_endianess;
 /*	ELF_HEADER ident;
 	endianess byte_order;
 	union {
@@ -128,7 +129,7 @@ struct ht_macho_shared_data {
 
 class ht_macho: public ht_format_group {
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess image_endianess);
 	virtual	void done();
 };
 

@@ -674,11 +674,11 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 }
 
 void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
-		  ht_format_group *g, FILEOFS header_ofs)
+		  ht_format_group *g, FILEOFS header_ofs, void *shared)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_JAVA, f, false, true, 0, g);
-	
-	shared_data = (void*)class_read(f);
+
+	shared_data = shared;
 	ht_format_group::init_ifs(ifs);
 }
 
@@ -711,8 +711,10 @@ static ht_view *class_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	if ((magic[0] == 0xca) && (magic[1] == 0xfe)
 	&& (magic[2] == 0xba) && (magic[3] == 0xbe)) {
 		file->seek(0);
+		void *shared_data = (void*)class_read(file);
+		if (!shared_data) return NULL;
 		cview *c = new cview();
-		c->init(b, file, htcls_ifs, group, 0);
+		c->init(b, file, htcls_ifs, group, 0, shared_data);
 		return c;
 	}
 	return NULL;

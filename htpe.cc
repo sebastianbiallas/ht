@@ -122,7 +122,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 		}
 		case COFF_OPTMAGIC_PE64: {
 			file->read(&pe_shared->pe64.header, sizeof pe_shared->pe64.header);
-			create_host_struct(&pe_shared->pe64.header, COFF_OPTIONAL_HEADER32_struct, little_endian);
+			create_host_struct(&pe_shared->pe64.header, COFF_OPTIONAL_HEADER64_struct, little_endian);
 			file->read(&pe_shared->pe64.header_nt, sizeof pe_shared->pe64.header_nt);
 			create_host_struct(&pe_shared->pe64.header_nt, PE_OPTIONAL_HEADER64_NT_struct, little_endian);
 			for (UINT i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {

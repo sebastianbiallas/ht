@@ -254,7 +254,9 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	count = clazz->interfaces_count = READ2();
 	shared->classinfo.interfaces = NULL;
 	shared->classinfo.thisclass = get_class_name(htio, clazz, clazz->this_class);
+	if (strcmp(shared->classinfo.thisclass, "?") == 0) return NULL;
 	shared->classinfo.superclass = get_class_name(htio, clazz, clazz->super_class);
+	if (strcmp(shared->classinfo.superclass, "?") == 0) return NULL;
 	if (count) {
 		clazz->interfaces = (u2 *)malloc(count * sizeof (*(clazz->interfaces)));
 		if (!clazz->interfaces) {
@@ -274,10 +276,10 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	count = clazz->fields_count = READ2();
 	if (count) {
 		clazz->fields = (mf_info **)malloc(count * sizeof (*(clazz->fields)));
-	if (!clazz->fields) {
-		return NULL;
-	}
-	for (int i=0; i<(int)count; i++) {
+		if (!clazz->fields) {
+			return NULL;
+		}
+		for (int i=0; i<(int)count; i++) {
 			clazz->fields[i] = read_fieldmethod(htio, shared);
 		}
 	} else {

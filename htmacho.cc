@@ -42,11 +42,16 @@ ht_view *htmacho_init(bounds *b, ht_streamfile *file, ht_format_group *format_gr
 	byte magic[4];
 	file->seek(0);
 	file->read(&magic, sizeof magic);
-	if (memcmp(magic, "\xfe\xed\xfa\xce", 4) != 0) return NULL;
-		
-	ht_macho *g = new ht_macho();
-	g->init(b, file, htmacho_ifs, format_group, 0);
-	return g;
+	if (memcmp(magic, "\xfe\xed\xfa\xce", 4) == 0) {
+		ht_macho *g = new ht_macho();
+		g->init(b, file, htmacho_ifs, format_group, 0, big_endian);
+		return g;
+	} else if (memcmp(magic, "\xce\xfa\xed\xfe", 4) == 0) {
+		ht_macho *g = new ht_macho();
+		g->init(b, file, htmacho_ifs, format_group, 0, little_endian);
+		return g;
+	}
+	return NULL;
 }
 
 format_viewer_if htmacho_if = {
@@ -57,7 +62,7 @@ format_viewer_if htmacho_if = {
 /*
  *	CLASS ht_macho
  */
-void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
+void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess image_endianess)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_MACHO, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_macho");
@@ -67,6 +72,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)malloc(sizeof(ht_macho_shared_data));
 
 	shared_data = macho_shared;
+	macho_shared->image_endianess = image_endianess;
 	macho_shared->header_ofs = header_ofs;
 	macho_shared->cmds.count = 0;
 	macho_shared->cmds.cmds = NULL;
@@ -81,7 +87,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	/* read header */
 	file->seek(header_ofs);
 	file->read(&macho_shared->header, sizeof macho_shared->header);
-	create_host_struct(&macho_shared->header, MACHO_HEADER_struct, big_endian);
+	create_host_struct(&macho_shared->header, MACHO_HEADER_struct, image_endianess);
 
 	/* read commands */
 	UINT nsections = 0;
@@ -92,7 +98,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		MACHO_COMMAND cmd;
 		file->seek(ofs);
 		file->read(&cmd, sizeof cmd);
-		create_host_struct(&cmd, MACHO_COMMAND_struct, big_endian);
+		create_host_struct(&cmd, MACHO_COMMAND_struct, image_endianess);
 		// FIXME: improve this logic
 		assert(cmd.cmdsize<=1024);
 		macho_shared->cmds.cmds[i] = (MACHO_COMMAND_U*)malloc(cmd.cmdsize);
@@ -100,26 +106,26 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		file->read(macho_shared->cmds.cmds[i], cmd.cmdsize);
 		switch (cmd.cmd) {
 			case LC_SEGMENT:
-				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SEGMENT_COMMAND_struct, big_endian);
+				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SEGMENT_COMMAND_struct, image_endianess);
 				// already count sections (needed for reading sections, see below)
 				nsections += macho_shared->cmds.cmds[i]->segment.nsects;
 				break;
 			case LC_SYMTAB:
-				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SYMTAB_COMMAND_struct, big_endian);
+				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SYMTAB_COMMAND_struct, image_endianess);
 				break;
 			case LC_THREAD:
 			case LC_UNIXTHREAD: {
 				MACHO_THREAD_COMMAND *c = (MACHO_THREAD_COMMAND*)macho_shared->cmds.cmds[i];
-				create_host_struct(macho_shared->cmds.cmds[i], MACHO_THREAD_COMMAND_struct, big_endian);
+				create_host_struct(macho_shared->cmds.cmds[i], MACHO_THREAD_COMMAND_struct, image_endianess);
 				switch (c->flavor) {
 					case FLAVOR_PPC_THREAD_STATE:
-						create_host_struct(&c->state, MACHO_PPC_THREAD_STATE_struct, big_endian);
+						create_host_struct(&c->state, MACHO_PPC_THREAD_STATE_struct, image_endianess);
 						break;
 				}
 				break;
 			}
 			default:
-				create_host_struct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, big_endian);
+				create_host_struct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, image_endianess);
 		}
 		ofs += cmd.cmdsize;
 	}
@@ -135,7 +141,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 			file->seek(sofs);
 			for (UINT j=0; j<macho_shared->cmds.cmds[i]->segment.nsects; j++) {
 				file->read(&macho_shared->sections.sections[sec], sizeof (MACHO_SECTION));
-				create_host_struct(&macho_shared->sections.sections[sec], MACHO_SECTION_struct, big_endian);
+				create_host_struct(&macho_shared->sections.sections[sec], MACHO_SECTION_struct, image_endianess);
 				sec++;
 			}
 		}
@@ -178,7 +184,6 @@ bool macho_addr_to_ofs(macho_sections *sections, UINT machoclass, MACHOAddress a
 	}
 	return false;
 }
-
 
 bool macho_addr_to_section(macho_sections *sections, UINT machoclass, MACHOAddress addr, int *section)
 {

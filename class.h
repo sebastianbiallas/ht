@@ -154,7 +154,7 @@ char *java_demangle_flags(char *result, int flags);
 class cview : public ht_format_group {
 public:
   void init(bounds *, ht_streamfile *, format_viewer_if **,
-		  ht_format_group *, FILEOFS);
+		  ht_format_group *, FILEOFS, void *shared);
   virtual void done();
 };
 
