@@ -30,10 +30,11 @@
 ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_class_shared_data *class_shared=(ht_class_shared_data *)group->get_shared_data();
+	if (!class_shared->image) return NULL;
 
 	LOG("%s: JAVA: loading image (starting analyser)...", file->get_filename());
 	ClassAnalyser *a = new ClassAnalyser();
-	a->init(class_shared, file);
+	a->init(class_shared, class_shared->image);
 
 	bounds c = *b;
 	ht_group *g = new ht_group();
@@ -43,7 +44,7 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	c.y+=2;
 	c.h-=2;
 	ht_class_aviewer *v = new ht_class_aviewer();
-	v->init(&c, DESC_JAVA_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, a, class_shared);
+	v->init(&c, DESC_JAVA_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, class_shared->image, group, a, class_shared);
 
 	c.y-=2;
 	c.h=2;
@@ -64,9 +65,9 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	h+=pe_shared->pe32.header_nt.image_base;
 */
 	ht_analy_sub *analy=new ht_analy_sub();
-	Address *low = a->createAddress32(0x100);
-	Address *high = a->createAddress32(427);
-	analy->init(file, v, a, low, high);
+	Address *low = a->createAddress32(0x10000000);
+	Address *high = a->createAddress32(0x10001000);
+	analy->init(class_shared->image, v, a, low, high);
 	delete low;
 	delete high;
 	v->analy_sub = analy;

@@ -123,7 +123,7 @@ ht_mask_ptable cpool_utf8[] =
 };
 ht_mask_ptable cpool_hdr[] = 
 { 
-  { "tag",                        STATICTAG_EDIT_BYTE("00000000")\
+  { "tag",                        STATICTAG_EDIT_BYTE("00000000")
 " "STATICTAG_DESC_BYTE("00000000", ATOM_CLS_CPOOL_STR)},
   { 0, 0}
 };
@@ -144,7 +144,7 @@ ht_mask_ptable method_hdr[] =
 };
 ht_mask_ptable mf_hdr[] = 
 {
-  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")\
+  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
 " "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
   { "name index",                 STATICTAG_EDIT_WORD_BE ("00000002")},
   { "descriptor index",           STATICTAG_EDIT_WORD_BE ("00000004")},
@@ -174,7 +174,7 @@ ht_mask_ptable ainn_info[] =
   { "inner class info index",     STATICTAG_EDIT_WORD_BE ("00000000")},
   { "outer class info index",     STATICTAG_EDIT_WORD_BE ("00000002")},
   { "inner name index",           STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "inner class access flags",   STATICTAG_EDIT_WORD_BE ("00000006")\
+  { "inner class access flags",   STATICTAG_EDIT_WORD_BE ("00000006")
 " "STATICTAG_FLAGS("00000006", ATOM_CLS_ACCESS_STR)},
   { 0, 0}     
 };

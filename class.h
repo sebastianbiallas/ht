@@ -80,10 +80,18 @@ static const u2 ATTRIB_LocalVariableTable =  8;
 static const u2 ATTRIB_Deprecated         =  9;
 
 typedef struct _attrib_info {
-  u4 offset;
-  u2 tag;
-  u2 name;
-  u4 len;
+	u4 offset;
+	u2 tag;
+	u2 name;
+	u4 len;
+	union {
+          struct {
+			u2 max_stack;
+			u2 max_locals;
+               u4 len;
+               u4 start;
+          } code;
+	};
 } attrib_info;
 
 /* mf_info */
@@ -121,11 +129,17 @@ typedef struct _classfile {
 } classfile;
 
 struct ht_class_shared_data {
-	ht_dtree	*methods;
+	ht_stree	*methods;
+     ht_mem_file *image;
 	classfile	*file;
+     struct {
+     	char *thisclass;
+          char *superclass;
+          ht_list *interfaces;
+     } classinfo;
 };
 
-extern ht_class_shared_data *class_read(ht_stream *);
+extern ht_class_shared_data *class_read(ht_streamfile *);
 extern void class_unread (ht_class_shared_data *);
 extern attrib_info *attribute_read (ht_stream *, classfile *);
 
@@ -137,20 +151,16 @@ public:
 };
 
 #define ClassAddress dword
-class ClassMethodPosition: public ht_data {
-	ClassAddress start;
-	FILEOFS filestart;
-	UINT length;
-public:
-	ClassMethodPosition(ClassAddress start, FILEOFS filestart, UINT length);
-	int compareTo(ClassMethodPosition *b);
-};
 
 class ClassMethod: public ht_data {
-	char *name;     
 public:
-			ClassMethod(char *name);
-	virtual	~ClassMethod();
+	char *name;
+     ClassAddress start;
+     FILEOFS filestart;
+     UINT length;
+				ClassMethod(char *name, ClassAddress start, FILEOFS filestart, UINT length);
+	virtual		~ClassMethod();
+	virtual int	compareTo(Object *o);
 };
 
 int compare_keys_ClassMethodPosition(ht_data *key_a, ht_data *key_b);

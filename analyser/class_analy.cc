@@ -30,6 +30,7 @@
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "pestruct.h"
 
 #include <stdio.h>
@@ -42,8 +43,8 @@
 void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File)
 {
 	class_shared = Class_shared;
-	file = File;
-
+     file = File;
+     
 	validarea = new Area();
 	validarea->init();
 
@@ -80,139 +81,40 @@ void	ClassAnalyser::done()
  */
 void ClassAnalyser::beginAnalysis()
 {
-#if 0
-	char	buffer[1024];
+	char buffer[1024];
 
-	/*
-	 *	entrypoint
-	 */
-	Address entry=createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+     char *b = &buffer[ht_snprintf(buffer, 1024, "; public class %s", class_shared->classinfo.thisclass)];
+     if (class_shared->classinfo.superclass) {
+          b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
+     }
+     if (class_shared->classinfo.interfaces) {
+          b += ht_snprintf(b, 1024, " implements");
+          int count = class_shared->classinfo.interfaces->count();
+          for (int i=0; i<count; i++) {
+	          b += ht_snprintf(b, 1024, " %y%c", class_shared->classinfo.interfaces->get(i), (i+1<count)?',':' ');
+          }
+     }
+     b += ht_snprintf(b, 1024, " {");
 
-	pushAddress(entry, entry);
-	
-	/*
-	 * give all sections a descriptive comment:
-	 */
-
-	/*struct PE_SECTION_HEADER {
-		byte name[PE_SIZEOF_SHORT_NAME] __attribute__ ((packed));
-		dword data_vsize __attribute__ ((packed));
-		dword data_address __attribute__ ((packed));
-		dword data_size __attribute__	((packed));
-		dword data_offset __attribute__ ((packed));
-		dword relocation_offset __attribute__ ((packed));
-		dword linenumber_offset __attribute__ ((packed));
-		word relocation_count __attribute__ ((packed));
-		word linenumber_count __attribute__ ((packed));
-		dword characteristics __attribute__ ((packed));
-	};*/
-	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
-	char blub[100];
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
-		ADDR secaddr = s->data_address+pe_shared->pe32.header_nt.image_base;
-		sprintf(blub, ";  section %d <%s>", i+1, get_addr_section_name(secaddr));
-		addComment(secaddr, 0, "");
-		addComment(secaddr, 0, ";******************************************************************");
-		addComment(secaddr, 0, blub);
-		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", s->data_address, s->data_vsize);
-		addComment(secaddr, 0, blub);
-		sprintf(blub, ";  file offset      %08x  file size      %08x", s->data_offset, s->data_size);
-		addComment(secaddr, 0, blub);
-		addComment(secaddr, 0, ";******************************************************************");
-
-		// mark end of sections
-		sprintf(blub, ";  end of section <%s>", get_addr_section_name(secaddr));
-		ADDR secend_addr = secaddr + MAX(s->data_size, s->data_vsize);
-		new_addr(secend_addr)->flags |= AF_FUNCTION_END;
-		addComment(secend_addr, 0, "");
-		addComment(secend_addr, 0, ";******************************************************************");
-		addComment(secend_addr, 0, blub);
-		addComment(secend_addr, 0, ";******************************************************************");
-
-		validarea->add(secaddr, secend_addr);
-		if (valid_addr(secaddr, scinitialized) && valid_addr(secaddr + MIN(s->data_size, s->data_vsize), scinitialized)) {
-			initialized->add(secaddr, secaddr + MIN(s->data_size, s->data_vsize));
-		}
-		s++;
-	}
-
-	// exports
-
-	int export_count=pe_shared->exports.funcs->count();
-	int *entropy = random_permutation(export_count);
-	for (int i=0; i<export_count; i++) {
-		ht_pe_export_function *f=(ht_pe_export_function *)pe_shared->exports.funcs->get(*(entropy+i));
-		if (valid_addr(f->address, scvalid)) {
-			char *label;
-			if (f->byname) {
-				sprintf(buffer, "; exported function %s, ordinal %04x", f->name, f->ordinal);
-			} else {
-				sprintf(buffer, "; unnamed exported function, ordinal %04x", f->ordinal);
-			}
-			label = export_func_name((f->byname) ? f->name : NULL, f->ordinal);
-			addComment(f->address, 0, "");
-			addComment(f->address, 0, ";********************************************************");
-			addComment(f->address, 0, buffer);
-			addComment(f->address, 0, ";********************************************************");
-			push_addr(f->address, f->address);
-			assign_label(f->address, label, label_func);
-			free(label);
-		}
-	}
-	if (entropy) free(entropy);
-
-	int import_count=pe_shared->imports.funcs->count();
-	entropy = random_permutation(import_count);
-	for (int i=0; i<import_count; i++) {
-		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->imports.funcs->get(*(entropy+i));
-		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->imports.libs->get(f->libidx);
-		char *label;
-		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
-		addComment(f->address, 0, "");
-		if (!assign_label(f->address, label, label_func)) {
-			// multiple import of a function (duplicate labelname)
-			// -> mangle name a bit more
-			addComment(f->address, 0, "; duplicate import");
-			sprintf(buffer, "%s_%x", label, f->address);
-			assign_label(f->address, buffer, label_func);
-		}
-		data->set_int_addr_type(f->address, dst_idword, 4);
-		free(label);
-	}
-	if (entropy) free(entropy);
-
-	int dimport_count=pe_shared->dimports.funcs->count();
-	entropy = random_permutation(dimport_count);
-	for (int i=0; i<dimport_count; i++) {
-		// FIXME: delay imports need work (push addr)
-		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->dimports.funcs->get(*(entropy+i));
-		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->dimports.libs->get(f->libidx);
-		if (f->byname) {
-			sprintf(buffer, "; delay import function loader for %s, ordinal %04x", f->name.name, f->ordinal);
-		} else {
-			sprintf(buffer, "; delay import function loader for ordinal %04x", f->ordinal);
-		}
-		char *label;
-		label = import_func_name(d->name, f->byname ? f->name.name : NULL, f->ordinal);
-		addComment(f->address, 0, "");
-		addComment(f->address, 0, ";********************************************************");
-		addComment(f->address, 0, buffer);
-		addComment(f->address, 0, ";********************************************************");
-		assign_label(f->address, label, label_func);
-		free(label);
-	}
-	if (entropy) free(entropy);
-
-	addComment(entry, 0, "");
-	addComment(entry, 0, ";****************************");
-	if (pe_shared->coffheader.characteristics & COFF_DLL) {
-		addComment(entry, 0, ";  dll entry point");
-	} else {
-		addComment(entry, 0, ";  program entry point");
-	}
-	addComment(entry, 0, ";****************************");
-	assign_label(entry, "entrypoint", label_func);
-#endif
+	Address *a = createAddress32(0x10000000);
+     addComment(a, 0, "");
+	addComment(a, 0, ";********************************************************");
+	addComment(a, 0, buffer);
+	addComment(a, 0, ";********************************************************");
+     delete a;
+     if (class_shared->methods) {
+     	ClassMethod *cm = NULL;
+          ht_data *value;
+          while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
+               Address *a = createAddress32(cm->start);
+               ht_snprintf(buffer, 1024, "; method %s", cm->name);
+               addComment(a, 0, "");
+			addComment(a, 0, ";----------------------------------------------");
+               addComment(a, 0, buffer);
+			addComment(a, 0, ";----------------------------------------------");
+               delete a;
+          }
+     }
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 
@@ -234,8 +136,8 @@ UINT ClassAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FILEOFS ofs = addressToFileofs(Addr);
 	assert(ofs != INVALID_FILE_OFS);
-	file->seek(ofs);
-	return file->read(buf, size);
+	class_shared->image->seek(ofs);
+	return class_shared->image->read(buf, size);
 }
 
 /*
@@ -249,9 +151,9 @@ Address *ClassAnalyser::createAddress()
 /*
  *
  */
-Address *ClassAnalyser::createAddress32(dword addr)
+Address *ClassAnalyser::createAddress32(ClassAddress addr)
 {
-	return new AddressFlat32(addr);
+	return new AddressFlat32((dword)addr);
 }
 
 /*
@@ -268,7 +170,7 @@ Assembler *ClassAnalyser::createAssembler()
 FILEOFS ClassAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		return ((AddressFlat32*)Addr)->addr;
+		return ((AddressFlat32*)Addr)->addr-0x10000000;
 	} else {
 		return INVALID_FILE_OFS;
 	}
@@ -414,7 +316,7 @@ bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}*/
 	if (!Addr->isValid()) return false;
-	return (((AddressFlat32*)Addr)->addr <= 427);
+	return ((((AddressFlat32*)Addr)->addr >= 0x10000000 && ((AddressFlat32*)Addr)->addr < 0x10001000));
 }
 
 

@@ -28,8 +28,8 @@
 class ClassAnalyser: public Analyser {
 public:
 	ht_class_shared_data 	*class_shared;
-	ht_streamfile 		*file;
-	Area				*validarea;
+     ht_streamfile			*file;
+	Area					*validarea;
 
 			void		init(ht_class_shared_data *Class_shared, ht_streamfile *File);
 			int 		load(ht_object_stream *f);
@@ -38,9 +38,8 @@ public:
 
 	virtual	void		beginAnalysis();
 	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
-			bool		convertAddressToRVA(Address *addr, dword *r);
 	virtual	Address	*createAddress();
-			Address	*createAddress32(dword addr);
+			Address	*createAddress32(ClassAddress addr);
 	virtual   Assembler *createAssembler();
 	virtual	char		*getName();
 	virtual   char		*getType();
