@@ -27,7 +27,6 @@
 - store.cc:60: getObject quits with invalid config file
 - snprintf.cc needs correct indentation
 - disasm (esp. x86) switch 16/32 correctly
-- elf_analy.cc:114 free object ???
 - classread/view.cc
     - rename to match PE/ELF/LE,etc.'s structure
     - shared data not freed
@@ -40,6 +39,8 @@
 	- LE binary search does not work
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 	- dtree leaks now dead nodes
+     - project window is smaller than min_window_size (original size cant
+	be restored after resize)
 
 
 - httext line wrapping

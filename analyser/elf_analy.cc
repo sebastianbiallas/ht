@@ -124,6 +124,8 @@ void ElfAnalyser::beginAnalysis()
 			addComment(secend_addr, 0, ";******************************************************************");
 
 			validarea->add(secaddr, secend_addr);
+
+               delete secend_addr;
 		}
 		delete secaddr;
 		s32++;

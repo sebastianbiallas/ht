@@ -114,27 +114,4 @@ vxd_desc vxds[] = {
 		{ -1 }					/* Terminator */
 };
 
-/*char	vxd_buf[256];
 
-char	*vxd_alt_unassemble(byte	*v, int *length, int addr)
-{
-	if (*(word*)v==0x20cd) {
-/ ***** Catch Win32 VxD-calls ************************************************ /
-		int vxdid=*(word*)(v+4),	serviceid=*(word*)(v+2);
-		vxd_t *vxd=match_hash<vxd_t>(vxds,	vxdid);
-		if (vxd) {
-			char	**service=0;
-			if (vxd->services) service=match_hash<char*>(vxd->services,	serviceid);
-			if ((service) && (*service)) {
-				sprintf(vxd_buf, "VxDCall %s:%s", vxd->name,	*service);
-			} else {
-				sprintf(vxd_buf, "VxDCall %s:%04x", vxd->name, serviceid);
-			}
-		} else {
-			sprintf(vxd_buf, "VxDCall %04x,%04x", vxdid,	serviceid);
-		}
-		*length=6;
-		return vxd_buf;
-	}
-	return 0;
-}*/

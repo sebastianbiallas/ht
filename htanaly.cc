@@ -1493,11 +1493,11 @@ bool ht_aviewer::idle()
 		app->sendmsg(msg_draw, 0);
 	}
 	idle_count++;
-	if (idle_count % 565 == 0) {
+/*	if (idle_count % 565 == 0) {
 		analy_sub->output->invalidateCache();
 		dirtyview();
 		app->sendmsg(msg_draw, 0);
-	}
+	}*/
 	if (analy->active) {
 		if (idle_count%53==0) {
 			analy_sub->output->invalidateCache();
@@ -1755,16 +1755,16 @@ void ht_aviewer::showSymbols(Address *addr)
 	ht_listbox_title *text = new ht_listbox_title();
 	text->init(&b);
 	text->setText(3, "Address", "Type", "Name");
-	dialog->insert(text);
 	/* list */
 	BOUNDS_ASSIGN(b, 1, 1, 56, 12);
 	SymbolBox *sym = new SymbolBox();
 	sym->init(&b, analy);
-	sym->attachTitle(text);
 	if (loc && loc->label) {
 		sym->gotoItemByEntry(sym->quickfind(loc->label->name));
 	}
 	dialog->insert(sym);
+	dialog->insert(text);
+	sym->attachTitle(text);
 	register_idle_object(sym);
 	int r = dialog->run(false);
 	unregister_idle_object(sym);

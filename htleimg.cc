@@ -113,6 +113,8 @@ char *ht_le_aviewer::func(UINT i, bool execute)
 			file->cntl(FCNTL_GET_RELOC, &e);
 			if (execute) {
 				file->cntl(FCNTL_SET_RELOC, !e);
+				analy_sub->output->invalidateCache();
+				dirtyview();
 			}
 			return e ? (char*)"unrelocate" : (char*)"relocate";
 		}

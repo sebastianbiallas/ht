@@ -1582,6 +1582,7 @@ void ht_listbox::draw()
 	if (Cols > cols) rearrangeColumns();
 
 	bool resizing_cols = true;
+     bool title_redraw = false;
 	while (resizing_cols) {
 		resizing_cols = false;
 		clear(fc);
@@ -1604,6 +1605,7 @@ void ht_listbox::draw()
 					 *	therefore we have to redraw a second time.
 					 */
 					resizing_cols = true;
+                         title_redraw = true;
 				}
 				if (s) {
 					if (X >= 0) {
@@ -1636,6 +1638,10 @@ void ht_listbox::draw()
 		}
 	}
 	updateCursor();
+     if (title_redraw && title) {
+		title->update();
+		title->dirtyview();
+     }
 /*     char dbg[100];
 	sprintf(dbg, "cursor=%d pos=%d vh=%d qc:%s", cursor, pos, visible_height, quickfinder);
 	lprint(0, 0, 1, size.w, dbg);
@@ -1860,6 +1866,9 @@ void ht_listbox::redraw()
 	scrollbar->relocate_to(this);
 //	fprintf(stderr, "scrollbar: x=%d, y=%d, w=%d, h=%d\n", scrollbar->vsize.x, scrollbar->vsize.y, scrollbar->vsize.w, scrollbar->vsize.h);
 	scrollbar->redraw();
+     if (title) {
+		title->redraw();
+     }
 	scrollbar->unrelocate_to(this);
 }
 
