@@ -38,7 +38,7 @@ ILDisassembler::~ILDisassembler()
 {
 }
 
-dis_insn *ILDisassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *ILDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 {
 	insn.valid = false;
 	insn.prefix = NULL;

@@ -29,6 +29,7 @@
 #include "httag.h"
 #include "x86asm.h"
 #include "x86dis.h"
+#include "ppcdis.h"
 
 extern "C" {
 #include "evalx.h"
@@ -38,14 +39,17 @@ extern "C" {
 ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	int t1632;
-#if 1
-	x86asm *assembler=new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
+#if 0
+	Assembler *assembler=new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 	x86dis *disassembler=new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
 	t1632 = 0;
 #else
-	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
+	Assembler *assembler = NULL;
+	Disassembler *disassembler = new PPCDisassembler();
+	t1632 = 0;
+/*	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
 	x86dis *disassembler=new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
-	t1632 = 1;
+	t1632 = 1;*/
 #endif
 
 	ht_disasm_viewer *v=new ht_disasm_viewer();
@@ -477,10 +481,18 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
 	dword *ofs=&line_id->id1;
-	unsigned char buf[15*50], *bufp=buf;
-	int offsets[15*50];
+	int min_length;
+	int max_length;
+	int min_look_ahead;
+	int avg_look_ahead;
+	int addr_align;
+	disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
+
+	unsigned char buf[avg_look_ahead*50], *bufp=buf;
+	int offsets[avg_look_ahead*50];
 	int *of=offsets;
-	int r=n<6 ? 6*15 : n*15;
+	int r=n<6 ? 6*avg_look_ahead : n*avg_look_ahead;
+	if (r > sizeof (buf)) r = sizeof (buf);
 	dword o=*ofs-r;
 	int c=r, d;
 	int s;
@@ -501,6 +513,10 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 		if (d>0) {
 			dis_insn *insn=disasm->decode(bufp, d, caddr);
 			s=disasm->getSize(insn);
+/*			if (s!=4) {
+				insn=disasm->decode(bufp, d, caddr);
+			}
+			assert(s==4);*/
 			d-=s;
 		} else {
 			s=1;

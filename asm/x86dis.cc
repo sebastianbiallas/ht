@@ -66,7 +66,7 @@ x86dis::~x86dis()
 {
 }
 
-dis_insn *x86dis::decode(byte *code, byte Maxlen, CPU_ADDR Addr)
+dis_insn *x86dis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 {
 	ocodep=code;
 /* initialize */

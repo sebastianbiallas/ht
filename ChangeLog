@@ -17,6 +17,7 @@ version 0.7-trunk (to be 0.8):
 	- fixed bug in ht_sys_file/ht_stdio_file::extend()
 	- eval dialog: +function help
 	- eval: not ('~') and logical-not ('!') operators implemented
+	- disassembler interface (int maxlen, not byte maxlen)
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

@@ -126,7 +126,7 @@ public:
 			~Disassembler();
 /* new */
 	virtual	dis_insn *createInvalidInsn();
-	virtual	dis_insn *decode(byte *code, byte maxlen, CPU_ADDR cur_address)=0;
+	virtual	dis_insn *decode(byte *code, int maxlen, CPU_ADDR cur_address)=0;
 	virtual	dis_insn *duplicateInsn(dis_insn *disasm_insn)=0;
 	virtual	void	getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)=0;
 	virtual	byte getSize(dis_insn *disasm_insn)=0;

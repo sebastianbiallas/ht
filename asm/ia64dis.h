@@ -89,7 +89,7 @@ public:
 			IA64Disassembler();
 	virtual	~IA64Disassembler();
 
-	virtual	dis_insn	*decode(byte *code, byte maxlen, CPU_ADDR addr);
+	virtual	dis_insn	*decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
 	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
 	virtual	byte		getSize(dis_insn *disasm_insn);

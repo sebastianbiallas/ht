@@ -406,7 +406,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 	
 }
 
-dis_insn *IA64Disassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *IA64Disassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 {
 /*	byte data[] = {0x19, 0x18, 0x00, 0x18, 0x1e, 0x10, 0x00, 0x09, 0x79, 0xb0, 0x2b, 0x00, 0x00, 0x00, 0x00, 0x20};
 	code = data;*/

@@ -29,7 +29,7 @@ PPCDisassembler::PPCDisassembler()
 {
 }
 
-dis_insn *PPCDisassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 {
 	const struct powerpc_opcode *opcode;
 	const struct powerpc_opcode *opcode_end;

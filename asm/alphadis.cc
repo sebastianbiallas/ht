@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *   alphadis.cc
+ *	alphadis.cc
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -80,7 +80,7 @@ int find_alpha_instruction(alpha_opcode_tab_entry *table, int f)
 	return i;
 }
 
-dis_insn *Alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 {
 	// alpha code instructions must be 32 bits long
 	if (maxlen < 4) {

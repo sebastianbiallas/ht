@@ -44,7 +44,7 @@ javadis::~javadis()
 {
 }
 
-dis_insn *javadis::decode(byte *code, byte Maxlen, CPU_ADDR Addr)
+dis_insn *javadis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 {
 	ocodep = code;
 /* initialize */
