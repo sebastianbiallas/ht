@@ -13,7 +13,7 @@ version 0.8-trunk:
 		- COFF support for coff files without optional header
 		- COFF big-endian support
 		- ELF PPC support
-		- ELF relocatable file support
+		- ELF relocatable file support (experimental)
 		- fixed buggy ELF reading code partially (thanks rpm28)
 	- eval dialog: added function help
 	- eval: not ('~') and logical-not ('!') operators

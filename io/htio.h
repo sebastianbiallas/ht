@@ -192,7 +192,7 @@ public:
 	virtual ~genericdrawbuf();
 /* new */
 	virtual void b_fill(int x, int y, int w, int h, int c, int ch);
-		   int b_printf(int x, int y, int c, char *format, ...);
+		int b_printf(int x, int y, int c, char *format, ...);
 	virtual int b_print(int x, int y, int c, char *text);
 	virtual int b_printw(int x, int y, int c, int *text);
 	virtual void b_printchar(int x, int y, int c, int ch);
@@ -237,35 +237,35 @@ K_FIRST = 0,
 /* ASCII > 0 */
 
 K_Backspace		= 1,
-K_BackTab			= 2,
+K_BackTab		= 2,
 
 K_Tab			= '\t',
-K_Return			= '\n',
-K_Escape			= '\e',
+K_Return		= '\n',
+K_Escape		= '\e',
 
 K_Space			= ' ',
 K_ExclamationPoint	= '!',
 K_DoubleQuote		= '"',
 K_Hash			= '#',
-K_Dollar			= '$',
-K_Percent			= '%',
+K_Dollar		= '$',
+K_Percent		= '%',
 K_Ampersand		= '&',
 K_Quote			= '\'',
-K_LParen			= '(',
-K_RParen			= ')',
+K_LParen		= '(',
+K_RParen		= ')',
 K_Star			= '*',
 K_Plus			= '+',
 K_Comma			= ',',
 K_Dash			= '-',
-K_Period			= '.',
+K_Period		= '.',
 K_Slash			= '/',
 K_Colon			= ':',
 K_SemiColon		= ';',
-K_LAngle			= '<',
-K_Equals			= '=',
-K_RAngle			= '>',
+K_LAngle		= '<',
+K_Equals		= '=',
+K_RAngle		= '>',
 K_QuestionMark		= '?',
-K_At				= '@',
+K_At			= '@',
 
 K_LBracket		= '[',
 K_BackSlash		= '\'',
@@ -273,9 +273,9 @@ K_RBracket		= ']',
 K_Caret			= '^',
 K_UnderScore		= '_',
 K_BackQuote		= '`',
-K_LBrace			= '{',
+K_LBrace		= '{',
 K_Pipe			= '|',
-K_RBrace			= '}',
+K_RBrace		= '}',
 K_Tilde			= '~',
 
 K_BackTick		= 'ï',
@@ -345,7 +345,7 @@ K_Shift_X			= 'X',
 K_Shift_Y			= 'Y',
 K_Shift_Z			= 'Z',
 
-K_LASTASCII		= 0xff,
+K_LASTASCII			= 0xff,
 
 /* Special keys start here */
 
