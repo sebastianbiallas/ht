@@ -39,6 +39,7 @@
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
+- textedit.cc:2498 unneccesarry compare (temp)
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
