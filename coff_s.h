@@ -81,6 +81,8 @@ typedef struct	COFF_HEADER {
 // Optional header format.
 //
 
+#define COFF_OPTSIZE_0				0x00
+
 #define COFF_OPTSIZE_COFF32			0x1c
 #define COFF_OPTSIZE_XCOFF32			0x48
 

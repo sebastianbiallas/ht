@@ -117,7 +117,7 @@ bool file_new_dialog(UINT *mode)
 	b.x=0;
 	b.y=0;
 		
-/* mode (input) */
+	/* mode (input) */
 	c=b;
 	c.x=0;
 	c.y=1;
@@ -133,7 +133,7 @@ bool file_new_dialog(UINT *mode)
 
 	d->insert(mode_input);
 	
-/* mode (text) */
+	/* mode (text) */
 	c=b;
 	c.x=0;
 	c.y=0;
@@ -219,7 +219,8 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 {
 	ht_dialog::init(n, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	bounds b = *clientarea, c;
-/* name (input) */
+
+	/* name (input) */
 	c = b;
 	c.x = 1;
 	c.y = 1;
@@ -233,7 +234,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 
 	insert(name_input);
 	
-/* name (text) */
+	/* name (text) */
 	c = b;
 	c.x = 1;
 	c.y = 0;
@@ -245,7 +246,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 
 	insert(name_text);
 
-/* vfslistbox */
+	/* vfslistbox */
 	c = b;
 	c.x = 1;
 	c.y = 4;
@@ -257,7 +258,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 
 	insert(listbox);
 
-/* vfslistbox (text) */
+	/* vfslistbox (text) */
 	c = b;
 	c.x = 1;
 	c.y = 3;
@@ -274,7 +275,7 @@ bool FileBrowser::extract_url(char *buf)
 {
 	ht_strinputfield_data i;
 	name_input->databuf_get(&i, sizeof i);
-/*     ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
+/*	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
 	vfs_extra *x = (vfs_extra*)t->extra_data;*/
 	Vfs *vfs = listbox->getCurVfs();
 	if (vfs) {
@@ -384,7 +385,7 @@ bool file_open_dialog(char **name, UINT *mode)
 	
 	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
 	
-/* mode (input) */
+	/* mode (input) */
 	c=b;
 	c.x=6;
 	c.y=b.h-4;
@@ -400,7 +401,7 @@ bool file_open_dialog(char **name, UINT *mode)
 
 	d->insert(mode_input);
 	
-/* mode (text) */
+	/* mode (text) */
 	c=b;
 	c.x=1;
 	c.y=b.h-4;
@@ -411,7 +412,8 @@ bool file_open_dialog(char **name, UINT *mode)
 	mode_text->init(&c, "~mode", mode_input);
 
 	d->insert(mode_text);
-/* go! */
+
+	/* go! */
 	if (d->run(false)) {
 		struct {
 			FileBrowserData browser;
@@ -653,7 +655,7 @@ OBJECT_ID ht_project::object_id() const
 	return ATOM_HT_PROJECT;
 }
 
-void	ht_project::store(ht_object_stream *s)
+void ht_project::store(ht_object_stream *s)
 {
 	return ht_sorted_list::store(s);
 }
@@ -1429,9 +1431,10 @@ void ht_app::init(bounds *pq)
 
 	syntax_lexers->insert(html_lexer);
 	
-/* init timer */
+	/* init timer */
 	h0=new_timer();
-/* create menu */
+
+	/* create menu */
 	getbounds(&b);
 	b.x=0;
 	b.y=0;
@@ -1498,14 +1501,14 @@ void ht_app::init(bounds *pq)
 	menu=m;
 	insert(menu);
 	
-/* create status */
+	/* create status */
 	/* the status should have the same bounds as the menu */
 	ht_status *status = new ht_status();
 	status->init(&b);
 	status->setpalette(menu->getpalette());
 	insert(status);
 	
-/* create desktop */
+	/* create desktop */
 	getbounds(&b);
 	b.x=0;
 	b.y=1;
@@ -1513,7 +1516,8 @@ void ht_app::init(bounds *pq)
 	desktop=new ht_desktop();
 	desktop->init(&b);
 	insert(desktop);
-/* create keyline */
+	
+	/* create keyline */
 	getbounds(&b);
 	b.x=0;
 	b.y=b.h-1;
@@ -1521,7 +1525,8 @@ void ht_app::init(bounds *pq)
 	keyline=new ht_keyline();
 	keyline->init(&b);
 	insert(keyline);
-/* create battlefield */
+
+	/* create battlefield */
 	getbounds(&b);
 	b.x=0;
 	b.y=1;
@@ -1674,7 +1679,7 @@ ht_window *ht_app::create_window_clipboard()
 		ht_window *window=new ht_window();
 		window->init(&b, "clipboard", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
 		
-/*	     bounds k=b;
+/*		bounds k=b;
 		k.x=b.w-2;
 		k.y=0;
 		k.w=1;
@@ -1801,7 +1806,8 @@ ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, 
 	format_group->init(&k, VO_SELECTABLE | VO_RESIZE, VIEWERGROUP_NAME, file, true, true, format_viewer_ifs, NULL);
 
 	window->insert(format_group);
-/**/
+
+	/**/
 	if (isfile) {
 		char cfgfilename[FILENAME_MAX];
 		strcpy(cfgfilename, title);
@@ -1828,7 +1834,8 @@ ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, 
 			LOG("%s: ok", cfgfilename);
 		}
 	}
-/**/
+
+	/**/
 	if (isfile) LOG("%s: done.", title);
 
 	htmsg m;
@@ -2106,7 +2113,7 @@ ht_window *ht_app::create_window_ofm(char *url1, char *url2)
 	VfsListbox2 *l = new VfsListbox2();
 	l->init(&b, virtual_fs_list, window->getframe());
 
-//     l->changeURL("local:/bp/././..");
+//	l->changeURL("local:/bp/././..");
 	l->changeURL(url1);
 
 	window->insert(l);
@@ -2174,10 +2181,6 @@ void ht_app::draw()
 	buf->printf(57, 1, 7, "avg%d: %d", max_timing+1, avg*1024);
 #endif
 #endif
-/* display flag if analyser(s) active */
-/*	char *analysers[] = {"Analy", "aNaly", "anAly", "anaLy", "analY", "anaLy", "anAly", "aNaly"};
-	if (some_analyser_active) buf->printf(60, 0, VCP(VC_TRANSPARENT, VC_TRANSPARENT), "%s (%d)", analysers[analy_id++], num_ops_parsed);
-	if (analy_id > 7) analy_id = 0;*/
 }
 
 void ht_app::delete_window(ht_window *window)
@@ -2817,7 +2820,7 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(&b, dialog_title, FS_KILLER | FS_TITLE | FS_MOVE);
 
-/* create listbox */
+	/* create listbox */
 	c=b;
 	c.x=0;
 	c.y=0;
@@ -2825,7 +2828,8 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	c.h-=2;
 	ht_text_listbox *listbox=new ht_text_listbox();
 	listbox->init(&c, 1, 0, LISTBOX_NORMAL);
-/* insert all browsable views */
+
+	/* insert all browsable views */
 	ht_clist *structure=new ht_clist();
 	((ht_clist*)structure)->init();
 	int index=0;
@@ -2837,10 +2841,10 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	ht_text_listbox_sort_order so[1];
 	so[0].col = 0;
 	so[0].compare_func = my_compare_func;
-/*     so[1].col = 1;
+/*	so[1].col = 1;
 	so[1].compare_func = my_compare_func;*/
 	
-//     listbox->sort(1, so);
+//	listbox->sort(1, so);
 
 	dialog->insert(listbox);
 	dialog->setpalette(palkey_generic_special);
@@ -2909,7 +2913,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(&b, dialog_title, FS_KILLER | FS_TITLE | FS_MOVE);
 
-/* create listbox */
+	/* create listbox */
 	c=b;
 	c.x=0;
 	c.y=0;
@@ -3168,22 +3172,22 @@ ht_list *build_vfs_list()
 	vfslist->init();
 
 #if 1
-/* LocalFS */
+	/* LocalFS */
 	LocalFs *localfs = new LocalFs();
 	localfs->init();
 
-/* RegistryFS */
+	/* RegistryFS */
 	RegistryFs *registryfs = new RegistryFs();
 	registryfs->init();
 
 	vfslist->insert(localfs);
 	vfslist->insert(registryfs);
 #else
-/* file_vfs */
+	/* file_vfs */
 	ht_file_vfs *file_vfs = new ht_file_vfs();
 	file_vfs->init();
 
-/* reg_vfs */
+	/* reg_vfs */
 	ht_reg_vfs *reg_vfs = new ht_reg_vfs();
 	reg_vfs->init();
 

@@ -90,6 +90,7 @@ static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 
 	/* test size of optional header */
 	switch (h.optional_header_size) {
+		case COFF_OPTSIZE_0:
 		case COFF_OPTSIZE_COFF32:
 		case COFF_OPTSIZE_XCOFF32:
 			break;
@@ -106,9 +107,9 @@ static ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *for
 {
 	FILEOFS h;
 	endianess end;
-/* look for pure coff */
+	/* look for pure coff */
 	if (!is_coff(file, end, h = 0)) {
-/* look for dj-coff */
+		/* look for dj-coff */
 		byte mz[2];
 		file->seek(0);
 		if (file->read(mz, 2) != 2) return 0;
@@ -143,14 +144,14 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	coff_shared->v_header = NULL;
 	coff_shared->endian = end;
 
-/* headers */
+	/* headers */
 	file->seek(h);
 	file->read(&coff_shared->coffheader, sizeof coff_shared->coffheader);
 	create_host_struct(&coff_shared->coffheader, COFF_HEADER_struct, end);
 	coff_shared->opt_magic = 0;
-	if (coff_shared->coffheader.optional_header_size>=2) {
+	if (coff_shared->coffheader.optional_header_size >= 2) {
 		file->read(&coff_shared->opt_magic, sizeof coff_shared->opt_magic);
-		file->seek(h+sizeof coff_shared->coffheader);
+		file->seek(h + sizeof coff_shared->coffheader);
 		coff_shared->opt_magic = create_host_int(&coff_shared->opt_magic, 2, end);
 		switch (coff_shared->opt_magic) {
 			case COFF_OPTMAGIC_COFF32:
@@ -160,7 +161,7 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 		}
 	}
 
-/* read section headers */
+	/* read section headers */
 	int os = coff_shared->coffheader.optional_header_size;
 	coff_shared->sections.section_count = coff_shared->coffheader.section_count;
 

@@ -22,6 +22,8 @@ version 0.8.0:
 	- fixed bug, causing invalid history entries when specifying files
 	  on the command-line
 	- ELF/relocatable file support
+	- Win32: access to native windows clipboard
+	- coff: support for coff files without optional header
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

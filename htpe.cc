@@ -49,13 +49,13 @@ static format_viewer_if *htpe_ifs[] = {
 static ht_view *htpe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte pemagic[4];
-	FILEOFS h=get_newexe_header_ofs(file);
+	FILEOFS h = get_newexe_header_ofs(file);
 	file->seek(h);
 	file->read(pemagic, 4);
 	if ((pemagic[0]!=PE_MAGIC0) || (pemagic[1]!=PE_MAGIC1) ||
 	   (pemagic[2]!=PE_MAGIC2) || (pemagic[3]!=PE_MAGIC3)) return 0;
 
-	ht_pe *g=new ht_pe();
+	ht_pe *g = new ht_pe();
 	g->init(b, file, htpe_ifs, format_group, h);
 	return g;
 }
@@ -102,7 +102,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	pe_shared->v_resources = NULL;
 	pe_shared->v_header = NULL;
 
-/* read header */
+	/* read header */
 	file->seek(header_ofs+4);
 	file->read(&pe_shared->coffheader, sizeof pe_shared->coffheader);
 	create_host_struct(&pe_shared->coffheader, COFF_HEADER_struct, little_endian);
@@ -132,7 +132,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 		}
 	}
 
-/* read section headers */
+	/* read section headers */
 	int os=pe_shared->coffheader.optional_header_size;
 	pe_shared->sections.section_count=pe_shared->coffheader.section_count;
 
@@ -142,6 +142,19 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		create_host_struct(&pe_shared->sections.sections[i], COFF_SECTION_HEADER_struct, little_endian);
+		/*
+		 *	To make those uninitialized/initialized flags
+		 *	correct we guess a little
+		 *
+		if (pe_shared->sections.sections[i].data_size &&
+			pe_shared->sections.sections[i].data_offset) {
+
+			pe_shared->sections.sections[i].characteristics |= ;
+			pe_shared->sections.sections[i].characteristics ~= ;
+		} else {
+			pe_shared->sections.sections[i].characteristics |= ;
+			pe_shared->sections.sections[i].characteristics ~= ;
+		}*/
 	}
 
 	shared_data = pe_shared;
@@ -199,9 +212,9 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
 	if (loc_enum) {
 		loc->name="pe";
 		loc->start=sh->header_ofs;
-// calc pe size
+		// calc pe size
 		UINT l=sizeof (COFF_HEADER) + sh->coffheader.optional_header_size;
-// go through directories
+		// go through directories
 		for (UINT i=0; i<16; i++) {
 			FILEOFS o;
 			if (pe_rva_to_ofs(&sh->sections, sh->pe32.header_nt.directory[i].address, &o)) {
@@ -209,7 +222,7 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
 				l=MAX(k, l);
 			}
 		}
-// go through sections
+		// go through sections
 		for (UINT i=0; i<sh->sections.section_count; i++) {
 			UINT k=sh->sections.sections[i].data_offset+sh->sections.sections[i].data_size-sh->header_ofs;
 			l=MAX(k, l);

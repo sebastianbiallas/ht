@@ -639,7 +639,8 @@ bool PEAnalyser::validAddress(Address *Addr, tsectype action)
 			return (s->characteristics & (COFF_SCN_MEM_EXECUTE | COFF_SCN_CNT_CODE));
 		case scinitialized:
 			if (!pe_rva_is_physical(sections, r)) return false;
-			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
+			return true;
+			// !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}
 	return false;
 }

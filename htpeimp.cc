@@ -117,8 +117,11 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		dofs = file->tell();
 		/* get name of dll */
 		FILEOFS iname_ofs;
-		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)) goto pe_read_error;
-		file->seek(iname_ofs);
+		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)
+			|| file->seek(iname_ofs)) {
+			/* ? try as ofs?*/
+			if (file->seek(import.name)) goto pe_read_error;
+		}
 		char *dllname = fgetstrz(file);	/* dont forget to free it at the end of the scope !!! */
 		dll_count++;
 
@@ -126,7 +129,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 
 		/*
 		 *	First thunk (FT)
-		 *   The first thunk table will be overwritten by the system/loader with
+		 *	The first thunk table will be overwritten by the system/loader with
 		 *	the function entry-points. So the program will treat this table
 		 *	as if it contained just imported addresses.
 		 */
@@ -134,7 +137,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		FILEOFS fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
 		/*
-		 *   ...and Original First Thunk (OFT)
+		 *	...and Original First Thunk (OFT)
 		 * 	I saw executables that have the OFT ptr set to 0 and seem to
 		 *	use the FT ptr instead, but also some that have both !=0 and use
 		 *	the original one (bound executables).
@@ -200,8 +203,10 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 					/* by name */
 					FILEOFS function_desc_ofs;
 					word hint = 0;
-					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)) goto pe_read_error;
-					file->seek(function_desc_ofs);
+					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)
+						|| file->seek(function_desc_ofs)) {
+						if (file->seek(thunk.function_desc_address)) goto pe_read_error;
+					}
 					file->read(&hint, 2);
 					hint = create_host_int(&hint, 2, little_endian);
 					char *name = fgetstrz(file);

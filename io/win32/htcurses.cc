@@ -95,7 +95,7 @@ screendrawbuf::screendrawbuf(char *title)
 
 screendrawbuf::~screendrawbuf()
 {
-/* hack to keep prompt color white on black */
+	/* hack to keep prompt color white on black */
 	b_printchar(size.w-1, size.h-1, VCP(VC_WHITE, VC_BLACK), ' ');
 
 	setcursor(0, size.h-1);

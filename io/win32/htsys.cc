@@ -21,6 +21,7 @@
 
 #include "htsys.h"
 #include "qword.h"
+#include "snprintf.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -338,6 +339,49 @@ int sys_get_caps()
 {
 	return SYSCAP_NONBLOCKING_IPC;
 }
+
+bool sys_write_data_to_native_clipboard(const void *data, int size)
+{
+	if (!OpenClipboard(NULL)) return false;
+	HANDLE h = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size);
+	if (!h) {
+		CloseClipboard();
+		return false;
+	}
+	void *mem = GlobalLock(h);
+	memmove(mem, data, size);
+	GlobalUnlock(h);
+	SetClipboardData(CF_OEMTEXT, h);
+	CloseClipboard();
+}
+
+int sys_get_native_clipboard_data_size()
+{
+	if (!OpenClipboard(NULL)) return false;
+	HANDLE h = GetClipboardData(CF_OEMTEXT);
+	int len = 0;
+	if (h) {
+		void *mem = GlobalLock(h);
+		len = strlen((char*)mem);
+		GlobalUnlock(h);		
+	}
+	CloseClipboard();
+	return len;
+}
+
+bool sys_read_data_from_native_clipboard(void *data, int max_size)
+{
+	if (!OpenClipboard(NULL)) return false;
+	HANDLE h = GetClipboardData(CF_OEMTEXT);
+	if (h) {
+		void *mem = GlobalLock(h);
+		ht_snprintf((char*)data, max_size, "%s", mem);
+		GlobalUnlock(h);		
+	}
+	CloseClipboard();
+	return h != NULL;
+}
+
 
 /*
  *	INIT

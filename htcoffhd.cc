@@ -217,11 +217,12 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 	char info[128];
 	ht_snprintf(info, sizeof info, "* COFF header at offset %08x", h);
 	m->add_mask(info);
+
 	/* COFF header */
 	m->add_mask("--- COFF header ---");
 	m->add_staticmask_ptable(coffheader, h, coff_bigendian);
 	/* optional header */
-	if (coff_shared->coffheader.optional_header_size>=2) {
+	if (coff_shared->coffheader.optional_header_size >= 2) {
 		m->add_mask("--- optional header ---");
 		word opt = coff_shared->opt_magic;
 /*		file->seek(h+20);
@@ -253,7 +254,7 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 	file->seek(h+os+20);*/
 	v->insertsub(m);
 
-	for (int i=0; i<sc; i++) {
+	for (int i=0; i < sc; i++) {
 		ht_mask_sub *n=new ht_mask_sub();
 		n->init(file, i);
 		
