@@ -304,6 +304,8 @@ public:
 			void update_cursor();
 	virtual	ht_data *vstate_create();
 			void vstate_save();
+/* overwritten */
+	virtual	void resize(int rw, int rh);
 };
 
 /*

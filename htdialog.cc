@@ -1392,7 +1392,7 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_RESIZE, 0);
 
-	growmode = GM_HDEFORM | GM_VDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 
 	bounds c=*b;
 	c.x=c.w-1;
@@ -1445,6 +1445,11 @@ void ht_listbox::adjust_scrollbar()
 	int pstart, psize;
 	if (scrollbar_pos(pos-cursor, size.h, count, &pstart, &psize)) {
 		scrollbar->enable();
+		bounds c = size;
+		c.x = c.w-1;
+		c.y = 0;
+		c.w = 1;
+          scrollbar->setbounds(&c);
 		scrollbar->setpos(pstart, psize);
 	} else {
 		scrollbar->disable();
@@ -1784,6 +1789,12 @@ void ht_listbox::redraw()
 //	fprintf(stderr, "scrollbar: x=%d, y=%d, w=%d, h=%d\n", scrollbar->vsize.x, scrollbar->vsize.y, scrollbar->vsize.w, scrollbar->vsize.h);
 	scrollbar->redraw();
 	scrollbar->unrelocate_to(this);
+}
+
+void ht_listbox::resize(int rw, int rh)
+{
+     ht_view::resize(rw, rh);
+     update();
 }
 
 bool ht_listbox::seek(int index)
