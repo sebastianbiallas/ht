@@ -878,50 +878,94 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
 
 int ht_vsnprintf (char *str, size_t count, const char *fmt, va_list args)
 {
-	   if ((int)count < 0) count = 0;
-	   int res = dopr(str, count, fmt, args);
-	   if (count) count--;
-	   return MIN(res, (int)count);
+	if ((int)count < 0) count = 0;
+	int res = dopr(str, count, fmt, args);
+	if (count) count--;
+	return str ? MIN(res, (int)count) : count;
 }
 
-int ht_snprintf(char *str,size_t count,const char *fmt,...)
+int ht_snprintf(char *str, size_t count, const char *fmt,...)
 {
-	   size_t ret;
-	   va_list ap;
-    
-	   va_start(ap, fmt);
-	   ret = ht_vsnprintf(str, count, fmt, ap);
-	   va_end(ap);
-	   return ret;
+	size_t ret;
+	va_list ap;
+
+	va_start(ap, fmt);
+	ret = ht_vsnprintf(str, count, fmt, ap);
+	va_end(ap);
+	return ret;
 }
 
 int ht_vasprintf(char **ptr, const char *format, va_list ap)
 {
-	   int ret;
-	   
-	   ret = dopr(NULL, 0, format, ap);
-	   if (ret <= 0) {
-			 *ptr = NULL;
-			 return 0;
-	   }
+	int ret;
 
-	   (*ptr) = (char *)malloc(ret+1);
-	   if (!*ptr) return 0;
-	   ret = ht_vsnprintf(*ptr, ret+1, format, ap);
+	ret = dopr(NULL, 0, format, ap);
+	if (ret <= 0) {
+		*ptr = NULL;
+		return 0;
+	}
 
-	   return ret;
+	(*ptr) = (char *)malloc(ret+1);
+	if (!*ptr) return 0;
+	ret = ht_vsnprintf(*ptr, ret+1, format, ap);
+
+	return ret;
 }
 
 
 int ht_asprintf(char **ptr, const char *format, ...)
 {
-	   va_list ap;
-	   int ret;
-	   
-	   va_start(ap, format);
-	   ret = ht_vasprintf(ptr, format, ap);
-	   va_end(ap);
+	va_list ap;
+	int ret;
 
-	   return ret;
+	va_start(ap, format);
+	ret = ht_vasprintf(ptr, format, ap);
+	va_end(ap);
+
+	return ret;
 }
 
+int ht_vfprintf(FILE *file, const char *fmt, va_list args)
+{
+#if 0
+ 	char *buf;
+ 	int ret = ht_vasprintf(&buf, fmt, args);
+     fputs(buf, file);
+     free(buf);
+#else
+ 	char buf[1024];
+ 	int ret = ht_vsnprintf(buf, sizeof buf, fmt, args);
+     fputs(buf, file);
+#endif
+     return ret;
+}
+
+int ht_fprintf(FILE *file, const char *fmt, ...)
+{
+	va_list ap;
+	int ret;
+
+	va_start(ap, fmt);
+     ret = ht_vfprintf(file, fmt, ap);
+	va_end(ap);
+
+     return ret;
+}
+
+
+int ht_vprintf(const char *fmt, va_list args)
+{
+	return ht_vfprintf(stdout, fmt, args);
+}
+
+int ht_printf(const char *fmt, ...)
+{
+	va_list ap;
+	int ret;
+
+	va_start(ap, fmt);
+     ret = ht_vprintf(fmt, ap);
+	va_end(ap);
+
+     return ret;
+}

@@ -30,4 +30,9 @@ int ht_vasprintf(char **ptr, const char *format, va_list ap);
 int ht_snprintf(char *str, size_t count, const char *fmt, ...);
 int ht_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 
+int ht_fprintf(FILE *file, const char *fmt, ...);
+int ht_vfprintf(FILE *file, const char *fmt, va_list args);
+
+int ht_printf(const char *fmt, ...);
+int ht_vprintf(const char *fmt, va_list args);
 #endif
