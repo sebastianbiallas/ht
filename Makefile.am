@@ -53,7 +53,8 @@ ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h terminal.cc terminal.
 vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
 htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
 htmachoimg.cc htmachoimg.h fltstruc.h fltstruc.cc htflt.cc htflt.h htflthd.cc \
-htflthd.h htfltimg.cc htfltimg.h
+htflthd.h htfltimg.cc htfltimg.h xbestruct.cc xbestruct.h htxbehead.cc \
+htxbehead.h htxbe.cc htxbe.h
 
 dist2: distdir
 	$(AMTAR) chof - $(distdir) | BZIP2=$(BZIP2_ENV) bzip2 -c >$(distdir).tar.bz2

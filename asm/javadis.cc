@@ -78,6 +78,10 @@ dis_insn *javadis::decode(byte *code, byte Maxlen, CPU_ADDR Addr)
 
 void javadis::decode_insn(javaopc_insn *xinsn)
 {
+	if (!xinsn->name) {
+		invalidate();
+		return;
+	}
 	insn.name = xinsn->name;
 	for (int i=0; i<JAVAINSN_MAX_PARAM_COUNT; i++) {
 		decode_op(xinsn->optype[i], insn.wideopcode, &insn.op[i]);
@@ -432,4 +436,3 @@ bool javadis::validInsn(dis_insn *disasm_insn)
 {
 	return !((javadis_insn *)disasm_insn)->invalid;
 }
-

@@ -11,10 +11,13 @@ version 0.7-trunk:
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC-only, experimental)
 	- Big-endian COFF support
-	- FLT (Flat) support (experimental)
+	- experimental FLT (Flat) support
 	- XCOFF32 support
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)
 	- fixed bug in blockop (checking if const/var op didn't set 'i' and 'o' and sometimes failed)
+	- experimental XBE (X-Box executable) support by Stefan Esser.
+	- fixed bug in Java bytecode disassembler: invalid opcode crashed
+	  whole program. Thanks Jerome (freejazz).
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
