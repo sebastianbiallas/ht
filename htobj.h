@@ -337,7 +337,7 @@ public:
 #define FST_MOVE      	2
 #define FST_RESIZE      	3
 
-class ht_frame: public ht_view {
+class ht_frame: public ht_text {
 protected:
 	UINT number;
 	UINT style;
@@ -355,12 +355,12 @@ public:
 	virtual	int load(ht_object_stream *s);
 	virtual	OBJECT_ID object_id();
 	virtual	void setnumber(UINT number);
+	virtual	void settext(const char *text);
 	virtual	void store(ht_object_stream *s);
 /* new */
 			UINT getstyle();
 			void setframestate(UINT framestate);
 			void setstyle(UINT style);
-			void settitle(char *title);
 };
 
 /*
@@ -400,6 +400,7 @@ public:
 	virtual	void store(ht_object_stream *s);
 /* new */
 			void getclientarea(bounds *b);
+			ht_frame *getframe();
 			void setframe(ht_frame *frame);
 			void sethscrollbar(ht_scrollbar *scrollbar);
 			void setpindicator(ht_text *pindicator);

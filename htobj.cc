@@ -1598,10 +1598,11 @@ void ht_frame::setstyle(UINT s)
 	style=s;
 }
 
-void ht_frame::settitle(char *title)
+void ht_frame::settext(const char *text)
 {
 	if (desc) free(desc);
-	desc=ht_strdup(title);
+	desc = ht_strdup(text);
+	dirtyview();
 }
 
 void ht_frame::store(ht_object_stream *s)
@@ -1659,6 +1660,11 @@ void ht_window::getclientarea(bounds *b)
 UINT ht_window::getnumber()
 {
 	return number;
+}
+
+ht_frame *ht_window::getframe()
+{
+	return frame;
 }
 
 void ht_window::handlemsg(htmsg *msg)
@@ -1943,7 +1949,7 @@ void ht_window::settitle(char *title)
 {
 	if (desc) free(desc);
 	desc=ht_strdup(title);
-	if (frame) frame->settitle(title);
+	if (frame) frame->settext(title);
 }
 
 void ht_window::setvscrollbar(ht_scrollbar *s)
