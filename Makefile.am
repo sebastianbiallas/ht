@@ -55,9 +55,8 @@ htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
 htmachoimg.cc htmachoimg.h
 
 dist2: distdir
-	-chmod -R a+r $(distdir)
-	GZIP=$(GZIP_ENV) $(TAR) choIf $(distdir).tar.bz2 $(distdir)
-	-rm -rf $(distdir)
+	$(AMTAR) chof - $(distdir) | BZIP2=$(BZIP2_ENV) bzip2 -c >$(distdir).tar.bz2
+	$(am__remove_distdir)
 
 dist-all2: dist2
 

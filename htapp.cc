@@ -1477,6 +1477,7 @@ void ht_app::init(bounds *pq)
 	windows->init("~Windows");
 	windows->insert_entry("~Size/Move", "Alt+F5", cmd_window_resizemove, K_Alt_F5, 1);
 	windows->insert_entry("~Close", "Alt+F3", cmd_window_close, K_Alt_F3, 1);
+	windows->insert_entry("~Close (alt)", "Ctrl+W", cmd_window_close, K_Control_W, 1);
 	windows->insert_entry("~List", "Alt+0", cmd_popup_dialog_window_list, K_Alt_0, 1);
 	windows->insert_separator();
 	windows->insert_entry("Lo~g window", NULL, cmd_popup_window_log, 0, 1);

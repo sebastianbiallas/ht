@@ -10,6 +10,6 @@
 - going to lines with ofs % 16 !=0 (+clipboard)
 
 - some problems when run on non-x86 systems... (Sparc bus error e.g.)
-- doesn't compile on Solaris (curses problems) and MacOS X (curses problems)
+- doesn't compile on Solaris (curses problems) and MacOS X (X_textmode problems)
 
 see TODO

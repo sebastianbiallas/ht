@@ -6,6 +6,11 @@ version 0.8.0:
 	- new disassembler: PowerPC
 	- many bugs fixed
 
+version 0.7-trunk:
+	- PowerPC (PPC) disassembler
+	- ELF: PPC support
+	- Mach-O file format support (header and image, PPC-only, experimental)
+
 version 0.7.2:
 	- open devices (e.g. /dev/hda1) (read-only, experimental)
 	- Hexview: Number of bytes per line can be changed now
@@ -14,6 +19,7 @@ version 0.7.2:
 	- FIXED: e~xpr isnt selectable with alt-x (cut) in blockop
 	- FIXED: blockop doenst set "file is modified"
 	- FIXED: main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
+	- FIXED: qword (aka int64) "x shl/shr 32" returns invalid result
 	- ELF/section headers: some flags were displayed invalid
 
 version 0.7.1:

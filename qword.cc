@@ -140,7 +140,7 @@ static uint64 uint64_shl(const uint64 &A, int b)
 {
 	uint64 res;
 	uint64 a = A;
-	if (b > 32) {
+	if (b >= 32) {
 		if (b < 64) {
 			a.hi = a.lo;
 			a.lo = 0;
@@ -151,8 +151,8 @@ static uint64 uint64_shl(const uint64 &A, int b)
 		}
 	}
 	res.hi = a.hi << b;
-	res.lo = a.lo << b;
 	res.hi |= a.lo >> (32-b);
+	res.lo = a.lo << b;
 	return res;
 }
 
@@ -160,7 +160,7 @@ static uint64 uint64_shr(const uint64 &A, int b)
 {
 	uint64 res;
 	uint64 a = A;
-	if (b > 32) {
+	if (b >= 32) {
 		if (b < 64) {
 			a.lo = a.hi;
 			a.hi = 0;

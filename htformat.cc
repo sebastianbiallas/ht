@@ -2603,12 +2603,29 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					dirtyview();
 					return;
 				}
+				case K_Control_F:
+					if (caps & VC_SEARCH) {
+						sendmsg(cmd_file_search);
+						dirtyview();
+						clearmsg(msg);
+						return;
+					}
+					break;
 				case K_Control_L:
 				case K_Shift_F7:
-					if (!continue_search()) infobox("no further matches");
-					dirtyview();
-					clearmsg(msg);
-					return;
+					if (caps & VC_SEARCH) {
+						if (!continue_search()) {
+							if (last_search_request) {
+								infobox("no further matches");
+							} else {
+								infobox("you must 'search' first !");
+							}
+						}
+						dirtyview();
+						clearmsg(msg);
+						return;
+					}
+					break;
 				case K_Alt_C:
 				case K_Control_Insert:
 					sendmsg(cmd_edit_copy);
