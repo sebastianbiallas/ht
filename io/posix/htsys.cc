@@ -162,8 +162,6 @@ void SIGCHLD_sigaction(int i, siginfo_t *info, void *v)
 
 int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
 {
-#if 0
-/* disabled, needs fixing */
 	if (child_pid != -1) return EBUSY;
 	int in_fds[2];
 	int out_fds[2];
@@ -178,12 +176,22 @@ int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, i
 		close(in_fds[0]);
 		close(out_fds[1]);
 		close(err_fds[1]);
-		*in = in_fds[1];
-		*out = out_fds[0];
-		*err = err_fds[0];
+		int in_fd = in_fds[1];
+		int out_fd = out_fds[0];
+		int err_fd = err_fds[0];
+		ht_sys_file *f;
+		f = new ht_sys_file();
+		f->init(in_fd, true, FAM_WRITE);
+		*in = f;
+		f = new ht_sys_file();
+		f->init(out_fd, true, FAM_READ);
+		*out = f;
+		f = new ht_sys_file();
+		f->init(err_fd, true, FAM_READ);
+		*err = f;
 		*handle = pid;
-		if (fcntl(*out, F_SETFL, O_NONBLOCK) ||
-		fcntl(*err, F_SETFL, O_NONBLOCK)) return errno;
+		if (fcntl(out_fd, F_SETFL, O_NONBLOCK) ||
+		fcntl(err_fd, F_SETFL, O_NONBLOCK)) return errno;
 		child_pid = pid;
 		return 0;
 	} else if (pid == 0) {
@@ -200,8 +208,6 @@ int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, i
 		execl(cmd, cmd, NULL);
 		exit(1);
 	} else return errno;
-#endif
-	return ENOSYS;
 }
 
 bool sys_ipc_is_valid(int handle)
