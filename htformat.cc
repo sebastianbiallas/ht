@@ -576,7 +576,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_goto_offset: {
 			FILEOFS o = (FILEOFS)msg->data1.integer;	// FIXME: int != FILEOFS
-			if (goto_offset(o, NULL)) {
+			if (goto_offset(o, false)) {
 				clearmsg(msg);
 				return;
 			}

@@ -34,7 +34,7 @@ public:
 		int delta_x, delta_y;
 		int maxsize_x, maxsize_y;
 		int			foc;
-		void			*selected; // only for getdata()
+		void			*selected;
 
 			   void	init(bounds *b, char *desc);
 		virtual void	done();
@@ -94,8 +94,8 @@ public:
 		virtual bool	is_expanded(void *node);
 		virtual void	select_node(void *node);
 /* new */
-		        void	*get_cursor_node();
-		        void	goto_node(void *node);
+			   void	*get_cursor_node();
+			   void	goto_node(void *node);
 };
 
 #endif
