@@ -2191,6 +2191,12 @@ char *ht_app::func(UINT i, bool execute)
 		case 6:
 			if (execute) sendmsg(cmd_popup_dialog_view_list);
 			return "mode";
+		/* FIXME: experimental */
+		case 9:
+          	if (execute) {
+				create_window_term("make");
+               }
+			return "make";
 		case 10:
 			if (execute) sendmsg(cmd_quit);
 			return "quit";
@@ -2420,8 +2426,13 @@ void ht_app::handlemsg(htmsg *msg)
 					}
 					break;
 /* FIXME: experimental */
+				case K_Control_F9:
+					((ht_app*)app)->create_window_term("main.exe");
+					clearmsg(msg);
+					return;
+/* FIXME: experimental */
 /* enable this if you want to (re)create a defreg.* */
-				case K_Alt_R: {
+/*				case K_Alt_R: {
 					char *n = "./ht.reg";
 					ht_file *f = new ht_file();
 					f->init(n, FAM_WRITE, FOM_CREATE);
@@ -2441,7 +2452,7 @@ void ht_app::handlemsg(htmsg *msg)
 					
 					clearmsg(msg);
 					return;
-				}
+				}*/
 /* FIXME: experimental */				
 /*				case K_Alt_T:
 					create_window_ofm("reg:/", "local:/");
