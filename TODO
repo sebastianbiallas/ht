@@ -31,6 +31,9 @@
     - rename to match PE/ELF/LE,etc.'s structure
     - shared data not freed
 - segmented addresses + eval()
+- [start, end) or [start, end] in
+	- Areas
+	- ht_analy::lowest/highest address
 
 +steves
 - (HT_0_7)
