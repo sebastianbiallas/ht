@@ -37,6 +37,8 @@
 		R - mod of r/m picks register only
 		S - reg of r/m picks segment register
 		T - reg of r/m picks test register
+		V - reg of r/m picks xmm register (xmm0-xmm7)
+		W - r/m picks xmm operand (xmm0-xmm7/mem128)
 		X - DS:ESI
 		Y - ES:EDI
 		2 - prefix of two-unsigned char opcode
@@ -46,7 +48,7 @@
 		f - floating point (second char is esc value)
 		g - do r/m group n (where n may be one of 0-9,A-Z)
 		p - prefix
-		s - size override (second char is a,o)
+		s - size override (second char is a)
 		+ - make default signed
 	Second char after '%':
 		a - two words in memory (BOUND)
@@ -55,6 +57,7 @@
 		d - dword
 		p - 32 or 48 bit pointer
 		q - quadword
+		o - doublequadword (128 bits)
 		s - six unsigned char pseudo-descriptor
 		v - word or dword
 		w - word
@@ -80,6 +83,7 @@
 #define Gb	TYPE_G, 0, SIZE_B, SIZE_B
 #define Gw	TYPE_G, 0, SIZE_W, SIZE_W
 #define Gv	TYPE_G, 0, SIZE_V, SIZE_V
+#define Gd	TYPE_G, 0, SIZE_D, SIZE_D	// <--
 #define Ib	TYPE_I, 0, SIZE_B, SIZE_B
 #define Iw	TYPE_I, 0, SIZE_W, SIZE_W
 #define Iv	TYPE_I, 0, SIZE_V, SIZE_V
@@ -108,6 +112,10 @@
 #define Rv	TYPE_R, 0, SIZE_V, SIZE_V
 #define Sw	TYPE_S, 0, SIZE_W, SIZE_W
 #define Td	TYPE_T, 0, SIZE_D, SIZE_D
+#define Vd	TYPE_Px, 0, SIZE_D, SIZE_D
+#define Vo	TYPE_Px, 0, SIZE_D, SIZE_D
+#define Wq	TYPE_Qx, 0, SIZE_D, SIZE_D
+#define Wo	TYPE_Qx, 0, SIZE_D, SIZE_D
 
 #define Ft	TYPE_F, 0, SIZE_T, SIZE_T
 
@@ -181,6 +189,8 @@ char *x86_segs[8] = {
 #define GROUP_D1		6
 #define GROUP_D2		7
 #define GROUP_D3		8
+//#define GROUP_F2		9
+//#define GROUP_F3		10
 #define GROUP_F6		9
 #define GROUP_F7		10
 #define GROUP_FE		11
@@ -192,7 +202,7 @@ char *x86_segs[8] = {
 #define GROUP_EXT_73		17
 #define GROUP_EXT_BA		18
 #define GROUP_EXT_C7		19
-//#define GROUP_EXT_AE		20
+//#define GROUP_EXT_AE		23
 
 x86opc_insn x86_insns[256] = {
 /* 00 */
@@ -470,6 +480,8 @@ x86opc_insn x86_insns[256] = {
 {"smi"},
 {0, {{SPECIAL_TYPE_PREFIX}}},		/* repnz-prefix */
 {0, {{SPECIAL_TYPE_PREFIX}}},		/* rep-prefix */
+//{0, {{SPECIAL_TYPE_GROUP, GROUP_F2}}},
+//{0, {{SPECIAL_TYPE_GROUP, GROUP_F3}}},
 {"hlt"},
 {"cmc"},
 {0, {{SPECIAL_TYPE_GROUP, GROUP_F6}}},

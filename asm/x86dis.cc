@@ -251,63 +251,63 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		case TYPE_0:
 			return;
 		case TYPE_A: {
-/* direct address without ModR/M */
-			op->type=X86_OPTYPE_FARPTR;
-			op->size=esizeop(xop->size);
+			/* direct address without ModR/M */
+			op->type = X86_OPTYPE_FARPTR;
+			op->size = esizeop(xop->size);
 			switch (op->size) {
 				case 4:
-					op->farptr.offset=getword();
-					op->farptr.seg=getword();
+					op->farptr.offset = getword();
+					op->farptr.seg = getword();
 					break;
 				case 6:
-					op->farptr.offset=getdword();
-					op->farptr.seg=getword();
+					op->farptr.offset = getdword();
+					op->farptr.seg = getword();
 					break;
 			}
 			break;
 		}
 		case TYPE_C: {
-/* reg of ModR/M picks control register */
+			/* reg of ModR/M picks control register */
 			op->type=X86_OPTYPE_CRX;
 			op->size=esizeop(xop->size);
 			op->crx=mkreg(getmodrm());
 			break;
 		}
 		case TYPE_D: {
-/* reg of ModR/M picks debug register */
+			/* reg of ModR/M picks debug register */
 			op->type=X86_OPTYPE_DRX;
 			op->size=esizeop(xop->size);
 			op->drx=mkreg(getmodrm());
 			break;
 		}
 		case TYPE_E: {
-/* ModR/M (general reg or memory) */
+			/* ModR/M (general reg or memory) */
 			decode_modrm(op, xop->size, (xop->size!=SIZE_P), 1, 0);
 			break;
 		}
 		case TYPE_F: {
-/* r/m of ModR/M picks a fpu register */
+			/* r/m of ModR/M picks a fpu register */
 			op->type=X86_OPTYPE_STX;
 			op->size=10;
 			op->stx=mkrm(getmodrm());
 			break;
 		}
 		case TYPE_Fx: {
-/* extra picks a fpu register */
+			/* extra picks a fpu register */
 			op->type=X86_OPTYPE_STX;
 			op->size=10;
 			op->stx=xop->extra;
 			break;
 		}
 		case TYPE_G: {
-/* reg of ModR/M picks general register */
+			/* reg of ModR/M picks general register */
 			op->type=X86_OPTYPE_REG;
 			op->size=esizeop(xop->size);
 			op->reg=mkreg(getmodrm());
 			break;
 		}
 		case TYPE_Is: {
-/* signed immediate */
+			/* signed immediate */
 			op->type=X86_OPTYPE_IMM;
 			op->size=esizeop(xop->extendedsize);
 			int s=esizeop(xop->size);
@@ -333,7 +333,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_I: {
-/* unsigned immediate */
+			/* unsigned immediate */
 			op->type=X86_OPTYPE_IMM;
 			op->size=esizeop(xop->extendedsize);
 			int s=esizeop(xop->size);
@@ -351,14 +351,14 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_Ix: {
-/* fixed immediate */
+			/* fixed immediate */
 			op->type=X86_OPTYPE_IMM;
 			op->size=esizeop(xop->extendedsize);
 			op->imm=xop->extra;
 			break;
 		}
 		case TYPE_J: {
-/* relative branch offset */
+			/* relative branch offset */
 			op->type=X86_OPTYPE_IMM;
 //			op->size=esizeaddr(xop->extendedsize);
 			op->size=(addrsize==X86_ADDRSIZE32) ? 4 : 2;
@@ -377,12 +377,12 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_M: {
-/* ModR/M (memory only) */
+			/* ModR/M (memory only) */
 			decode_modrm(op, xop->size, 0, 1, 0);
 			break;
 		}
 		case TYPE_O: {
-/* direct memory without ModR/M */
+			/* direct memory without ModR/M */
 			op->type=X86_OPTYPE_MEM;
 			op->size=esizeop(xop->size);
 			op->mem.floatptr=isfloat(xop->size);
@@ -403,33 +403,33 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_P: {
-/* reg of ModR/M picks MMX register */
+			/* reg of ModR/M picks MMX register */
 			op->type=X86_OPTYPE_MMX;
 			op->size=8;
 			op->mmx=mkreg(getmodrm());
 			break;
 		}
 		case TYPE_Q: {
-/* ModR/M (MMX reg or memory) */
+			/* ModR/M (MMX reg or memory) */
 			decode_modrm(op, xop->size, 1, 1, 1);
 			break;
 		}
 		case TYPE_R: {
-/* rm of ModR/M picks general register */
+			/* rm of ModR/M picks general register */
 			op->type=X86_OPTYPE_REG;
 			op->size=esizeop(xop->size);
 			op->reg=mkrm(getmodrm());
 			break;
 		}
 		case TYPE_Rx: {
-/* extra picks register */
+			/* extra picks register */
 			op->type=X86_OPTYPE_REG;
 			op->size=esizeop(xop->size);
 			op->reg=xop->extra;
 			break;
 		}
 		case TYPE_S: {
-/* reg of ModR/M picks segment register */
+			/* reg of ModR/M picks segment register */
 			op->type=X86_OPTYPE_SEG;
 			op->size=esizeop(xop->size);
 			op->seg=mkreg(getmodrm());
@@ -437,7 +437,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_Sx: {
-/* extra picks segment register */
+			/* extra picks segment register */
 			op->type=X86_OPTYPE_SEG;
 			op->size=esizeop(xop->size);
 			op->seg=xop->extra;
@@ -445,7 +445,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 			break;
 		}
 		case TYPE_T: {
-/* reg of ModR/M picks test register */
+			/* reg of ModR/M picks test register */
 			op->type=X86_OPTYPE_TRX;
 			op->size=esizeop(xop->size);
 			op->trx=mkreg(getmodrm());

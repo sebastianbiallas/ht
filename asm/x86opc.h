@@ -45,7 +45,7 @@
 #define X86_ADDRSIZE16		0
 #define X86_ADDRSIZE32		1
 
-#define X86_OPTYPE_EMPTY		0
+#define X86_OPTYPE_EMPTY	0
 #define X86_OPTYPE_IMM		1
 #define X86_OPTYPE_REG		2
 #define X86_OPTYPE_SEG		3
@@ -55,7 +55,8 @@
 #define X86_OPTYPE_TRX		7
 #define X86_OPTYPE_STX		8
 #define X86_OPTYPE_MMX		9
-#define X86_OPTYPE_FARPTR	10
+#define X86_OPTYPE_XMM		10
+#define X86_OPTYPE_FARPTR	11
 
 // user defined types start here
 #define X86_OPTYPE_USER		32
@@ -94,28 +95,32 @@ struct x86_insn_op {
 	};
 };
 
-#define TYPE_0			0
-#define TYPE_A			1		/* direct address without ModR/M (generally
-							   like imm, but can be 16:32 = 48 bit) */
-#define TYPE_C			2		/* reg of ModR/M picks control register */
-#define TYPE_D			3		/* reg of ModR/M picks debug register */
-#define TYPE_E			4		/* ModR/M (general reg or memory) */
-#define TYPE_G			5		/* reg of ModR/M picks general register */
+#define TYPE_0		0
+#define TYPE_A		1		/* direct address without ModR/M (generally
+					   like imm, but can be 16:32 = 48 bit) */
+#define TYPE_C		2		/* reg of ModR/M picks control register */
+#define TYPE_D		3		/* reg of ModR/M picks debug register */
+#define TYPE_E		4		/* ModR/M (general reg or memory) */
+#define TYPE_G		5		/* reg of ModR/M picks general register */
 #define TYPE_Is		6		/* signed immediate */
-#define TYPE_I			7		/* unsigned immediate */
+#define TYPE_I		7		/* unsigned immediate */
 #define TYPE_Ix		8		/* fixed immediate */
-#define TYPE_J			9		/* relative branch offset */
-#define TYPE_M			10		/* ModR/M (memory only) */
-#define TYPE_O			11		/* direct memory without ModR/M */
-#define TYPE_P			12		/* reg of ModR/M picks MMX register */
-#define TYPE_Q			13		/* ModR/M (MMX reg or memory) */
-#define TYPE_R			14		/* rm of ModR/M picks general register */
-#define TYPE_Rx		15		/* extra picks register */
-#define TYPE_S			16		/* reg of ModR/M picks segment register */
-#define TYPE_Sx		17		/* extra picks segment register */
-#define TYPE_T			18		/* reg of ModR/M picks test register */
-#define TYPE_F			19		/* r/m of ModR/M picks a fpu register */
-#define TYPE_Fx		20		/* extra picks a fpu register */
+#define TYPE_J		9		/* relative branch offset */
+#define TYPE_M		10		/* ModR/M (memory only) */
+#define TYPE_O		11		/* direct memory without ModR/M */
+#define TYPE_P		12		/* reg of ModR/M picks MMX register */
+#define TYPE_Q		13		/* ModR/M (MMX reg or memory) */
+#define TYPE_Px		14		/* reg of ModR/M picks XMM register */
+#define TYPE_Qx		15		/* ModR/M (XMM reg or memory) */
+#define TYPE_R		16		/* rm of ModR/M picks general register */
+#define TYPE_Rx		17		/* extra picks register */
+#define TYPE_S		18		/* reg of ModR/M picks segment register */
+#define TYPE_Sx		19		/* extra picks segment register */
+#define TYPE_T		20		/* reg of ModR/M picks test register */
+#define TYPE_U		21		/* reg of ModR/M picks XMM register */
+#define TYPE_V		22		/* ModR/M (XMM reg or memory) */
+#define TYPE_F		23		/* r/m of ModR/M picks a fpu register */
+#define TYPE_Fx		24		/* extra picks a fpu register */
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
 #define SPECIAL_TYPE_INVALID		0
@@ -128,6 +133,7 @@ struct x86_insn_op {
 #define SIZE_W			'w'		/* word */
 #define SIZE_D			'd'		/* dword */
 #define SIZE_Q			'q'		/* qword */
+#define SIZE_O			'o'		/* dqword */
 #define SIZE_C			'c'		/* byte OR word */
 #define SIZE_V			'v'		/* word OR dword */
 #define SIZE_P			'p'		/* word:word OR word:dword, memory only ! */

@@ -114,7 +114,7 @@ x86addrcoding modrm32[3][8] = {
 };
 
 /* convert logical operand types to hardware operand types */
-int lop2hop[10][8] = {
+int lop2hop[12][8] = {
 	/* X86_OPTYPE_EMPTY */
 	{},
 	/* X86_OPTYPE_IMM */
@@ -124,7 +124,7 @@ int lop2hop[10][8] = {
 	/* X86_OPTYPE_SEG */
 	{TYPE_S, TYPE_Sx},
 	/* X86_OPTYPE_MEM */
-	{TYPE_E, TYPE_M, TYPE_O, TYPE_Q},
+	{TYPE_E, TYPE_M, TYPE_O, TYPE_Q, TYPE_Qx},
 	/* X86_OPTYPE_CRX */
 	{TYPE_C},
 	/* X86_OPTYPE_DRX */
@@ -134,7 +134,11 @@ int lop2hop[10][8] = {
 	/* X86_OPTYPE_STX */
 	{TYPE_F, TYPE_Fx},
 	/* X86_OPTYPE_MMX */
-	{TYPE_P, TYPE_Q}
+	{TYPE_P, TYPE_Q},
+	/* X86_OPTYPE_XMM */
+	{TYPE_Px, TYPE_Qx},
+	/* X86_OPTYPE_FARPTR */
+	{},
 };
 
 /* byte */
@@ -1113,12 +1117,12 @@ bool x86asm::opfarptr(x86_insn_op *op, char *xop)
 	dword seg, offset;
 	char *x = xop;
 	if (!fetch_number(&x, &seg)) return false;
-	if (*x!=':') return false;
+	if (*x != ':') return false;
 	x++;
 	if (!fetch_number(&x, &offset)) return false;
 	if (*x) return false;
 	op->type = X86_OPTYPE_FARPTR;
-	if (offset>0xffff) op->size=6; else op->size=4;
+	if (offset > 0xffff) op->size=6; else op->size=4;
 	op->farptr.seg = seg;
 	op->farptr.offset = offset;
 	return true;
