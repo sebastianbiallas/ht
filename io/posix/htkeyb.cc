@@ -41,6 +41,8 @@
 #define HT_UNCTRL_KEY(c)  ((c) & (~0x80000000))
 #endif
 
+#define CTRL_ALPHA_KEY(c) ((c)-'a'+1)
+
 #ifdef HAVE_TEXTMODE_X11
 #include <X11/Xlib.h>
 
@@ -48,7 +50,7 @@ static Display *x11_display;
 static Window x11_window;
 #endif /* HAVE_TEXTMODE_X11 */
 
-int get_modifier(int key)
+static int get_modifier(int key)
 {
 #ifdef HAVE_TEXTMODE_X11
 	if (x11_display) {
@@ -72,7 +74,7 @@ int get_modifier(int key)
 	return key;
 }
 
-UINT ht_escseq2rawkey(UINT r)
+static UINT ht_escseq2rawkey(UINT r)
 {
 	switch (r) {
 		case 'H': return KEY_HOME;
@@ -110,11 +112,187 @@ struct ht_key_keycode {
 	int keycode;
 };
 
+bool ht_keypressed()
+{
+	int i = getch();
+	if (i != -1) ungetch(i);
+	return (i != -1);
+}
+
+int ht_raw_getkey()
+{
+	int c = getch();
+	if (c == '\e') {
+		c = getch();
+		if ((c == -1) || (c == '\e')) c = '\e'; else c = HT_META_KEY(c);
+	}
+	if ((unsigned int)c>=0x100) c = get_modifier(c);
+//	fprintf(stderr, "getrawkey() %d/0x%x\n", c, c);
+	return c;
+}
+
 // only works for A-Z !
 //#define HT_CONTROL_KEY(c) (char)(c-'A'+1)
 
 // my curses impl maps shift+f-x to f-(x+12), only works up to shift+f8...
 //#define HT_SHIFT_FKEY(n) (KEY_F0+12+n)
+#if 1
+static ht_key_keycode ht_curses_key_defs[] = {
+	{K_Return,		'\n'},
+	{K_Delete,		KEY_DC},
+	{K_Insert,		KEY_IC},
+	{K_BackSpace,		KEY_BACKSPACE},
+	{K_BackSpace,		127},
+	{K_Alt_Backspace,	HT_META_KEY(KEY_BACKSPACE)},
+
+	{K_F1,			KEY_F(1)},
+	{K_F2,			KEY_F(2)},
+	{K_F3,			KEY_F(3)},
+	{K_F4,			KEY_F(4)},
+	{K_F5,			KEY_F(5)},
+	{K_F6,			KEY_F(6)},
+	{K_F7,			KEY_F(7)},
+	{K_F8,			KEY_F(8)},
+	{K_F9,			KEY_F(9)},
+	{K_F10,			KEY_F(10)},
+	{K_F11,			KEY_F(11)},
+	{K_F12,			KEY_F(12)},
+	{K_Home,		KEY_HOME},
+	{K_End,			KEY_END},
+	{K_Up,			KEY_UP},
+	{K_Down,		KEY_DOWN},
+	{K_Left,		KEY_LEFT},
+	{K_Right,		KEY_RIGHT},
+	{K_PageUp,		KEY_PPAGE},
+	{K_PageDown,		KEY_NPAGE},
+	{K_Tab,			'\t'},
+//	{K_Shift_Tab,		HT_SHIFT_KEY('\t')},
+	{K_Control_PageUp,	HT_CTRL_KEY(KEY_PPAGE)},
+	{K_Control_PageDown,	HT_CTRL_KEY(KEY_NPAGE)},
+	{K_Control_Left,	HT_CTRL_KEY(KEY_LEFT)},
+	{K_Control_Right,	HT_CTRL_KEY(KEY_RIGHT)},
+	{K_Control_Up,		HT_CTRL_KEY(KEY_UP)},
+	{K_Control_Down,	HT_CTRL_KEY(KEY_DOWN)},
+	{K_Control_Insert,	HT_CTRL_KEY(KEY_IC)},
+	{K_Control_Delete,	HT_CTRL_KEY(KEY_DC)},
+	{K_Control_Home,	HT_CTRL_KEY(KEY_HOME)},
+	{K_Control_End,		HT_CTRL_KEY(KEY_END)},
+	{K_Shift_Up,		HT_SHIFT_KEY(KEY_UP)},
+	{K_Shift_Down,		HT_SHIFT_KEY(KEY_DOWN)},
+	{K_Shift_Left,		HT_SHIFT_KEY(KEY_LEFT)},
+	{K_Shift_Right,		HT_SHIFT_KEY(KEY_RIGHT)},
+	{K_Shift_PageUp,	HT_SHIFT_KEY(KEY_PPAGE)},
+	{K_Shift_PageDown,	HT_SHIFT_KEY(KEY_NPAGE)},
+	{K_Shift_Delete,	HT_SHIFT_KEY(KEY_DC)},
+	{K_Shift_Insert,	HT_SHIFT_KEY(KEY_IC)},
+	{K_Shift_Home,		HT_SHIFT_KEY(KEY_HOME)},
+	{K_Shift_End,		HT_SHIFT_KEY(KEY_END)},
+
+	{K_Alt_1,               HT_META_KEY('1')},
+	{K_Alt_2,               HT_META_KEY('2')},
+	{K_Alt_3,               HT_META_KEY('3')},
+	{K_Alt_4,               HT_META_KEY('4')},
+	{K_Alt_5,               HT_META_KEY('5')},
+	{K_Alt_6,               HT_META_KEY('6')},
+	{K_Alt_7,               HT_META_KEY('7')},
+	{K_Alt_8,               HT_META_KEY('8')},
+	{K_Alt_9,               HT_META_KEY('9')},
+	{K_Alt_0,               HT_META_KEY('0')},
+
+	{K_Control_A,		CTRL_ALPHA_KEY('a')},
+	{K_Control_B,		CTRL_ALPHA_KEY('b')},
+	{K_Control_C,		CTRL_ALPHA_KEY('c')},
+	{K_Control_D,		CTRL_ALPHA_KEY('d')},
+	{K_Control_E,		CTRL_ALPHA_KEY('e')},
+	{K_Control_F,		CTRL_ALPHA_KEY('f')},
+	{K_Control_G,		CTRL_ALPHA_KEY('g')},
+	{K_Control_H,		CTRL_ALPHA_KEY('h')},
+	{K_Control_I,		CTRL_ALPHA_KEY('i')},
+	{K_Control_J,		CTRL_ALPHA_KEY('j')},
+	{K_Control_K,		CTRL_ALPHA_KEY('k')},
+	{K_Control_L,		CTRL_ALPHA_KEY('l')},
+	{K_Control_M,		CTRL_ALPHA_KEY('m')},
+	{K_Control_N,		CTRL_ALPHA_KEY('n')},
+	{K_Control_O,		CTRL_ALPHA_KEY('o')},
+	{K_Control_P,		CTRL_ALPHA_KEY('p')},
+	{K_Control_Q,		CTRL_ALPHA_KEY('q')},
+	{K_Control_R,		CTRL_ALPHA_KEY('r')},
+	{K_Control_S,		CTRL_ALPHA_KEY('s')},
+	{K_Control_T,		CTRL_ALPHA_KEY('t')},
+	{K_Control_U,		CTRL_ALPHA_KEY('u')},
+	{K_Control_V,		CTRL_ALPHA_KEY('v')},
+	{K_Control_W,		CTRL_ALPHA_KEY('w')},
+	{K_Control_X,		CTRL_ALPHA_KEY('x')},
+	{K_Control_Y,		CTRL_ALPHA_KEY('y')},
+	{K_Control_Z,		CTRL_ALPHA_KEY('z')},
+
+	{K_Alt_A,               HT_META_KEY('a')},
+	{K_Alt_B,               HT_META_KEY('b')},
+	{K_Alt_C,	        HT_META_KEY('c')},
+	{K_Alt_D,               HT_META_KEY('d')},
+	{K_Alt_E,               HT_META_KEY('e')},
+	{K_Alt_F,               HT_META_KEY('f')},
+	{K_Alt_G,	        HT_META_KEY('g')},
+	{K_Alt_H,               HT_META_KEY('h')},
+	{K_Alt_I,               HT_META_KEY('i')},
+	{K_Alt_J,               HT_META_KEY('j')},
+	{K_Alt_K,	        HT_META_KEY('k')},
+	{K_Alt_L,               HT_META_KEY('l')},
+	{K_Alt_M,               HT_META_KEY('m')},
+	{K_Alt_N,               HT_META_KEY('n')},
+	{K_Alt_O,	        HT_META_KEY('o')},
+	{K_Alt_P,               HT_META_KEY('p')},
+	{K_Alt_Q,               HT_META_KEY('q')},
+	{K_Alt_R,               HT_META_KEY('r')},
+	{K_Alt_S,	        HT_META_KEY('s')},
+	{K_Alt_T,               HT_META_KEY('t')},
+	{K_Alt_U,               HT_META_KEY('u')},
+	{K_Alt_V,               HT_META_KEY('v')},
+	{K_Alt_W,	        HT_META_KEY('w')},
+	{K_Alt_X,               HT_META_KEY('x')},
+	{K_Alt_Y,               HT_META_KEY('y')},
+	{K_Alt_Z,               HT_META_KEY('z')},
+
+/*	{K_Shift_F1,		HT_SHIFT_KEY(KEY_F(1))},
+	{K_Shift_F2,		HT_SHIFT_KEY(KEY_F(2))},
+	{K_Shift_F3,		HT_SHIFT_KEY(KEY_F(3))},
+	{K_Shift_F4,		HT_SHIFT_KEY(KEY_F(4))},
+	{K_Shift_F5,		HT_SHIFT_KEY(KEY_F(5))},
+	{K_Shift_F6,		HT_SHIFT_KEY(KEY_F(6))},
+	{K_Shift_F7,		HT_SHIFT_KEY(KEY_F(7))},
+	{K_Shift_F8,		HT_SHIFT_KEY(KEY_F(8))},
+	{K_Shift_F9,		HT_SHIFT_KEY(KEY_F(9))},
+	{K_Shift_F10,		HT_SHIFT_KEY(KEY_F(10))},
+	{K_Shift_F11,		HT_SHIFT_KEY(KEY_F(11))},
+	{K_Shift_F12,		HT_SHIFT_KEY(KEY_F(12))},*/
+	{K_Shift_F1,		HT_SHIFT_KEY(KEY_F(1+12))},
+	{K_Shift_F2,		HT_SHIFT_KEY(KEY_F(2+12))},
+	{K_Shift_F3,		HT_SHIFT_KEY(KEY_F(3+12))},
+	{K_Shift_F4,		HT_SHIFT_KEY(KEY_F(4+12))},
+	{K_Shift_F5,		HT_SHIFT_KEY(KEY_F(5+12))},
+	{K_Shift_F6,		HT_SHIFT_KEY(KEY_F(6+12))},
+	{K_Shift_F7,		HT_SHIFT_KEY(KEY_F(7+12))},
+	{K_Shift_F8,		HT_SHIFT_KEY(KEY_F(8+12))},
+	{K_Shift_F9,		HT_SHIFT_KEY(KEY_F(9+12))},
+	{K_Shift_F10,		HT_SHIFT_KEY(KEY_F(10+12))},
+	{K_Shift_F11,		HT_SHIFT_KEY(KEY_F(11+12))},
+	{K_Shift_F12,		HT_SHIFT_KEY(KEY_F(12+12))},
+
+	{K_Control_F1,		HT_CTRL_KEY(KEY_F(1))},
+	{K_Control_F2,		HT_CTRL_KEY(KEY_F(2))},
+	{K_Control_F3,		HT_CTRL_KEY(KEY_F(3))},
+	{K_Control_F4,		HT_CTRL_KEY(KEY_F(4))},
+	{K_Control_F5,		HT_CTRL_KEY(KEY_F(5))},
+	{K_Control_F6,		HT_CTRL_KEY(KEY_F(6))},
+	{K_Control_F7,		HT_CTRL_KEY(KEY_F(7))},
+	{K_Control_F8,		HT_CTRL_KEY(KEY_F(8))},
+	{K_Control_F9,		HT_CTRL_KEY(KEY_F(9))},
+	{K_Control_F10,		HT_CTRL_KEY(KEY_F(10))},
+	{K_Control_F11,		HT_CTRL_KEY(KEY_F(11))},
+	{K_Control_F12,		HT_CTRL_KEY(KEY_F(12))}
+};
+
+#else
 
 ht_key_keycode ht_curses_key_defs[] = {
 /*	{K_Escape		'\e'
@@ -267,25 +445,7 @@ ht_key_keycode ht_curses_key_defs[] = {
 	{K_Control_F11,		HT_CTRL_KEY(KEY_F(11))},
 	{K_Control_F12,		HT_CTRL_KEY(KEY_F(12))}
 };
-
-bool ht_keypressed()
-{
-	int i=getch();
-	if (i!=-1) ungetch(i);
-	return (i!=-1);
-}
-
-int ht_raw_getkey()
-{
-	int c = getch();
-	if (c == '\e') {
-		c = getch();
-		if ((c==-1) || (c=='\e')) c='\e'; else c=HT_META_KEY(c);
-	}
-	if ((unsigned int)c>=0x100) c = get_modifier(c);
-//	fprintf(stderr, "getrawkey() %d/0x%x\n", c, c);
-	return c;
-}
+#endif
 
 /*
  *	INIT
