@@ -357,7 +357,7 @@ void MachoAnalyser::initCodeAnalyser()
 void MachoAnalyser::initUnasm()
 {
 	DPRINTF("macho_analy: ");
-	uint machine = macho_shared->header.cputype;
+	UINT machine = macho_shared->header.cputype;
 	bool macho64 = false;
 	switch (machine) {
 		case MACHO_CPU_TYPE_I386: // Intel x86
