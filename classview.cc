@@ -1,8 +1,4 @@
 /*
- * java .class file viewing
- */
-
-/*
  *	HT Editor
  *	classview.cc
  *
@@ -38,35 +34,36 @@
 
 ht_tag_flags_s access_flags[] = 
 {
-  { 1,	"[0x0001] public"},
-  { 2,	"[0x0002] private"},
-  { 3,	"[0x0004] protected"},
-  { 4,	"[0x0008] static"},
-  { 5,	"[0x0010] final"},
-  { 6,	"[0x0020] synchronized"},
-  { 7,	"[0x0040] volatile"},
-  { 8,	"[0x0080] transient"},
-  { 9,	"[0x0100] native"},
-  {10,	"[0x0200] interface"},
-  {11,	"[0x0400] abstract"},
-  {12,	"[0x0800] strict"},
-  {0, 0}
+	{ -1,  "access flags"},
+	{8+0,  "[0x0001] public"},
+	{8+1,  "[0x0002] private"},
+	{8+2,  "[0x0004] protected"},
+	{8+3,  "[0x0008] static"},
+	{8+4,  "[0x0010] final"},
+	{8+5,  "[0x0020] synchronized"},
+	{8+6,  "[0x0040] volatile"},
+	{8+7,  "[0x0080] transient"},
+	{8+8,  "[0x0100] native"},
+	{8+9,  "[0x0200] interface"},
+	{8+10, "[0x0400] abstract"},
+	{8+11, "[0x0800] strict"},
+	{0, 0}
 };
 int_hash cpool_tags [] = 
 {
-  { 1,	"utf8"},
-  { 2, 	"unknown type"},
-  { 3,	"integer"},
-  { 4,	"float"},
-  { 5, 	"long"},
-  { 6,	"double"},
-  { 7,	"class"},
-  { 8, 	"string"},
-  { 9,	"fieldref"},
-  {10,	"methodref"},
-  {11,	"interfacemethodref"},
-  {12,	"nameandtype"},
-  {0, 0}
+	{ 1, "utf8"},
+	{ 2, "unknown type"},
+	{ 3, "integer"},
+	{ 4, "float"},
+	{ 5, "long"},
+	{ 6, "double"},
+	{ 7, "class"},
+	{ 8, "string"},
+	{ 9, "fieldref"},
+	{10, "methodref"},
+	{11, "interfacemethodref"},
+	{12, "nameandtype"},
+	{0, 0}
 };
 ht_mask_ptable cls_class1_hdr[] = 
 {
@@ -508,8 +505,8 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
   if (clazz) {
     ht_uformat_viewer *v = new ht_uformat_viewer();
     v->init(b, DESC_JAVA_HEADERS, VC_EDIT, file, group);
-    register_atom (ATOM_CLS_ACCESS, access_flags);
-    register_atom (ATOM_CLS_CPOOL,  cpool_tags);
+    register_atom(ATOM_CLS_ACCESS, access_flags);
+    register_atom(ATOM_CLS_CPOOL,  cpool_tags);
 
     g = new ht_group_sub();
     g->init(file);

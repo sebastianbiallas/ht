@@ -79,8 +79,11 @@ void	ClassAnalyser::done()
 void ClassAnalyser::beginAnalysis()
 {
 	char buffer[1024];
+     char *b = buffer;
      
-     char *b = &buffer[ht_snprintf(buffer, 1024, "; public class %s", class_shared->classinfo.thisclass)];
+     *(b++) = ';';  *(b++) = ' ';
+     b = java_demangle_flags(b, class_shared->flags);
+     b += ht_snprintf(b, 1024, "%s %s", (class_shared->flags & jACC_INTERFACE)?"interface":"class", class_shared->classinfo.thisclass);
      if (class_shared->classinfo.superclass) {
           b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
      }
@@ -105,13 +108,14 @@ void ClassAnalyser::beginAnalysis()
           while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
                Address *a = createAddress32(cm->start);
                char buffer2[1024];
-               java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type);
+               java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type, cm->flags);
                ht_snprintf(buffer, 1024, "; %s", buffer2);
                addComment(a, 0, "");
 			addComment(a, 0, ";----------------------------------------------");
                addComment(a, 0, buffer);
 			addComment(a, 0, ";----------------------------------------------");
 			addAddressSymbol(a, cm->name, label_func);
+               pushAddress(a, a);
 			delete a;
           }
      }
@@ -317,12 +321,13 @@ bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 			if (!pe_rva_is_physical(sections, Addr)) return false;
 			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}*/
-	if (!Addr->isValid()) return false;
+	if (!Addr->isValid() || !class_shared->valid->contains(Addr)) return false;
 	switch (action) {
 		case scinitialized:
+		case sccode:
 			return class_shared->initialized->contains(Addr);
-		default:
-			return class_shared->valid->contains(Addr);
+          default:
+		     return true;
      }
 }
 

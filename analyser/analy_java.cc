@@ -64,15 +64,12 @@ OBJECT_ID	AnalyJavaDisassembler::object_id()
 
 Address *AnalyJavaDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
 {
-/*	ADDR Addr = INVALID_ADDR;
 	javadis_insn *o = (javadis_insn*)opcode;
 	switch (o->op[0].type) {
 		case JAVA_OPTYPE_LABEL:
-			Addr = o->op[0].label;
-			break;
+			return new AddressFlat32(o->op[0].label);
 	}
-	return Addr;*/
-	return NULL;
+	return new InvalidAddress();
 }
 
 /*
@@ -107,20 +104,20 @@ void AnalyJavaDisassembler::examineOpcode(OPCODE *opcode)
  */
 branch_enum_t AnalyJavaDisassembler::isBranch(OPCODE *opcode)
 {
-/*	javadis_insn *o = (javadis_insn*)opcode;
+	javadis_insn *o = (javadis_insn*)opcode;
 	char *opcode_str = o->name;
 	if ((opcode_str[0]=='i') && (opcode_str[1]=='f')) {
-		return brjXX;
+		return br_jXX;
 	} else if ((strcmp("tableswitch", opcode_str)==0)
 	|| (strcmp("lookupswitch", opcode_str)==0)) {
-		return brjXX;
+		return br_jXX;
 	} else if (strncmp("ret", opcode_str, 3)==0) {
-		return brreturn;
+		return br_return;
 	} else if (strncmp("goto", opcode_str, 4)==0) {
-		return brjump;
+		return br_jump;
 	} else if (strncmp("jsr", opcode_str, 3)==0) {
-		return brcall;
-	} else*/ return br_nobranch;
+		return br_call;
+	} else return br_nobranch;
 }
 
 /*

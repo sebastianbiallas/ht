@@ -2090,7 +2090,7 @@ char	*Analyser::getDisasmStr(Address *Addr, int &length)
 {
 	if (validAddress(Addr, scinitialized)) {
 		if (disasm) {
-			addr_sym_func = 0;
+			addr_sym_func = NULL;
 			byte buf[16];
 			int bz = bufPtr(Addr, buf, sizeof(buf));
 			OPCODE *o = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));

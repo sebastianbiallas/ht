@@ -1,8 +1,4 @@
 /*
- *	java .class file parsing
- */
-
-/*
  *	HT Editor
  *	classread.cc
  *
@@ -28,6 +24,7 @@
 
 #include "analy.h"
 #include "class.h"
+#include "htstring.h"
 #include "snprintf.h"
 #include "stream.h"
 
@@ -51,13 +48,13 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
 
-ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, FILEOFS f, UINT l)
+ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, UINT l, int f)
 {
      name = ht_strdup(n);
      start = s;
      type = d;
-	filestart = f;
 	length = l;
+	flags = f;
 }
 
 ClassMethod::~ClassMethod()
@@ -181,33 +178,29 @@ attrib_info *attribute_read(ht_stream *htio, classfile *clazz)
 /* read and return method info */
 static mf_info *read_fieldmethod (ht_stream *htio, ht_class_shared_data *shared)
 {
-  mf_info *m;
-  u2 idx;
-  int i;
-  classfile *clazz = shared->file;
-  
-  m = (mf_info *)calloc (1, sizeof (*m));
-  if (!m) {
-    return NULL;
-  }
-  m->offset   = offset;
-  idx         = READ2();
-  idx         = READ2();
-  m->name     = get_string (htio, clazz, idx);
-  idx         = READ2();
-  m->desc     = get_string (htio, clazz, idx);
-  idx         = READ2();
-  m->attribs_count = idx;
-  if (idx) {
-    m->attribs = (attrib_info **)malloc (idx * sizeof (*(m->attribs)));
-    if (!m->attribs) {
-	 return NULL;
-    }
-    for (i=0; i<(int)idx; i++) {
-	 m->attribs[i] = attribute_read(htio, clazz);
-    }
-  }
-  return m;
+	mf_info *m;
+	u2 idx;
+	classfile *clazz = shared->file;
+
+	m = (mf_info *)calloc(1, sizeof (*m));
+	if (!m) {
+		return NULL;
+	}
+	m->offset = offset;
+	m->flags = READ2();
+	m->name = get_string(htio, clazz, READ2());
+	m->desc = get_string(htio, clazz, READ2());
+	m->attribs_count = idx = READ2();
+	if (idx) {
+		m->attribs = (attrib_info **)malloc(idx * sizeof (*(m->attribs)));
+		if (!m->attribs) {
+			return NULL;
+		}
+		for (int i=0; i<(int)idx; i++) {
+			m->attribs[i] = attribute_read(htio, clazz);
+		}
+	}
+	return m;
 }
 
 /* read and return classfile */
@@ -252,6 +245,7 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	}
 	clazz->coffset = offset;
 	clazz->access_flags = READ2();
+     shared->flags = clazz->access_flags;
 	index = READ2();
 	clazz->this_class = index;
 	index = READ2();
@@ -278,12 +272,12 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	clazz->foffset = offset;
 	count = clazz->fields_count = READ2();
 	if (count) {
-		clazz->fields = (mf_info **)malloc (count * sizeof (*(clazz->fields)));
+		clazz->fields = (mf_info **)malloc(count * sizeof (*(clazz->fields)));
 	if (!clazz->fields) {
 		return NULL;
 	}
 	for (int i=0; i<(int)count; i++) {
-			clazz->fields[i] = read_fieldmethod (htio, shared);
+			clazz->fields[i] = read_fieldmethod(htio, shared);
 		}
 	} else {
 		clazz->fields = 0;
@@ -291,21 +285,29 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	clazz->moffset = offset;
 	count = clazz->methods_count = READ2();
 	if (count) {
-		clazz->methods = (mf_info **)malloc (count * sizeof (*(clazz->methods)));
+		clazz->methods = (mf_info **)malloc(count * sizeof (*(clazz->methods)));
 		if (!clazz->methods) {
 			return NULL;
 		}
 		for (int i=0; i<(int)count; i++) {
-			clazz->methods[i] = read_fieldmethod (htio, shared);
+			clazz->methods[i] = read_fieldmethod(htio, shared);
                int acount = clazz->methods[i]->attribs_count;
+               bool ok = false;
                for (int j=0; j < acount; j++) {
                     attrib_info *ai = clazz->methods[i]->attribs[j];
                     if (ai->tag == ATTRIB_Code) {
-                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, ai->code.start, ai->code.start, ai->code.len);
+                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, ai->code.start, ai->code.len, clazz->methods[i]->flags);
                          shared->methods->insert(cm, NULL);
                          shared->initialized->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
                          shared->valid->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
+                         ok = true;
                     }
+               }
+               if (!ok) {
+               	// fake abstract method
+				ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, offset, 1, clazz->methods[i]->flags);
+				shared->methods->insert(cm, NULL);
+				shared->valid->add(new AddressFlat32(offset), new AddressFlat32(offset+1));
                }
 		}
 	} else {
@@ -423,8 +425,27 @@ int java_demangle_type(char *result, char **type)
      }
 }
 
-void java_demangle(char *result, char *classname, char *name, char *type)
+char *java_demangle_flags(char *result, int flags)
 {
+     if (flags & jACC_PUBLIC) result += sprintf(result, "public ");
+     if (flags & jACC_PRIVATE) result += sprintf(result, "private ");
+     if (flags & jACC_PROTECTED) result += sprintf(result, "protected ");
+     if (flags & jACC_STATIC) result += sprintf(result, "static ");
+     if (flags & jACC_FINAL) result += sprintf(result, "final ");
+//     if (flags & jACC_SUPER)
+//     if (flags & jACC_SYNCHRONIZED)
+//     if (flags & jACC_VOLATILE)
+//     if (flags & jACC_TRANSIENT)
+     if (flags & jACC_NATIVE) result += sprintf(result, "native ");
+//     if (flags & jACC_INTERFACE)
+     if (flags & jACC_ABSTRACT) result += sprintf(result, "abstract ");
+//     if (flags & jACC_STRICT)
+	return result;
+}
+
+void java_demangle(char *result, char *classname, char *name, char *type, int flags)
+{
+	result = java_demangle_flags(result, flags);
 	strcpy(result, name);
      if (*type != '(') return;
      char *ret = strchr(type, ')');
@@ -448,11 +469,11 @@ void java_demangle(char *result, char *classname, char *name, char *type)
 int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared)
 {
      classfile *clazz = shared->file;
-     char tag[100];
+     char tag[20];
      char data[1024];
-     char classname[100];
-     char name[100];
-     char type[100];
+     char classname[1024];
+     char name[1024];
+     char type[1024];
      strcpy(tag, "?");
      strcpy(data, "?");
      strcpy(classname, "?");
@@ -476,32 +497,39 @@ int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *sh
 		case CONSTANT_Long:
           	strcpy(tag, "Long");
 			break;
-		case CONSTANT_String:
+		case CONSTANT_String: {
           	strcpy(tag, "String");
-               ht_snprintf(data, 1024, "\"%s\"", get_string(NULL, clazz, clazz->cpool[token]->value.llval[0]));
+               char *d = data;
+               *(d++) = '\"';
+               // FIXME: add "..." on too long strings
+			d += escape_special_str(d, 256, get_string(NULL, clazz, clazz->cpool[token]->value.llval[0]), "\"", false);
+               *(d++) = '\"';
+               *d = 0;
 			break;
+          }
 		case CONSTANT_Fieldref: {
           	strcpy(tag, "Field");
                get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
-               char dtype[100];
+               char dtype[1024];
                char *ttype=type;
                java_demangle_type(dtype, &ttype);
-               ht_snprintf(data, 1024, "%s %s", dtype, name);
+               ht_snprintf(data, sizeof data, "%s %s", dtype, name);
 			break;
           }
 		case CONSTANT_Methodref:
           	strcpy(tag, "Method");
                strcpy(classname, get_class_name(NULL, clazz, clazz->cpool[token]->value.llval[0]));
                get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
-               java_demangle(data, classname, name, type);
+               java_demangle(data, classname, name, type, 0);
 			break;
 		case CONSTANT_InterfaceMethodref:
           	strcpy(tag, "InterfaceMethod");
                strcpy(classname, get_class_name(NULL, clazz, clazz->cpool[token]->value.llval[0]));
                get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
-               java_demangle(data, classname, name, type);
+               java_demangle(data, classname, name, type, 0);
 			break;
      }
-     return ht_snprintf(buf, maxlen, "<%s %s>", tag, data);
+//     return ht_snprintf(buf, maxlen, "<%s %s>", tag, data);
+	return ht_snprintf(buf, maxlen, "<%s>", data);
 }
 

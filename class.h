@@ -98,6 +98,7 @@ typedef struct _attrib_info {
 /* mf_info */
 typedef struct _mf_info {
   u4 offset;
+  u2 flags;
   char *name;
   char *desc;
   u2 attribs_count;
@@ -134,6 +135,7 @@ struct ht_class_shared_data {
 	classfile	*file;
      Area *valid;
      Area *initialized;
+     int flags;
      struct {
      	char *thisclass;
           char *superclass;
@@ -146,7 +148,8 @@ extern void class_unread(ht_class_shared_data *);
 extern attrib_info *attribute_read(ht_stream *, classfile *);
 
 int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
-void java_demangle(char *result, char *classname, char *name, char *type);
+void java_demangle(char *result, char *classname, char *name, char *type, int flags);
+char *java_demangle_flags(char *result, int flags);
 
 class cview : public ht_format_group {
 public:
@@ -162,9 +165,9 @@ public:
 	char *name;
 	char *type;
      ClassAddress start;
-     FILEOFS filestart;
      UINT length;
-				ClassMethod(char *name, char *type, ClassAddress start, FILEOFS filestart, UINT length);
+     int flags;
+				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
 	virtual		~ClassMethod();
 	virtual int	compareTo(Object *o);
 };

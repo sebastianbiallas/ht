@@ -237,7 +237,7 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 	const char *cs_number = get_cs(e_cs_number);
 //	const char *cs_symbol = get_cs(e_cs_symbol);
 	const char *cs_comment = get_cs(e_cs_comment);
-	
+
 	*opstrlen=0;
 	switch (op->type) {
 		case JAVA_OPTYPE_CONST: {

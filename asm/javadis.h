@@ -50,7 +50,7 @@ typedef int (*java_token_func)(char *result, int maxlen, dword token, void *cont
 class javadis: public Disassembler {
 protected:
 	javadis_insn insn;
-	char insnstr[256];
+	char insnstr[1024];
 /* initme! */
 	unsigned char *codep, *ocodep;
 	int addr;
