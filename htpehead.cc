@@ -53,10 +53,10 @@ int_hash pe_subsystems[] =
 	{PE_SUBSYSTEM_WINDOWS_CUI, "Windows CUI"},
 	{PE_SUBSYSTEM_OS2_CUI, "OS/2 CUI"},
 	{PE_SUBSYSTEM_POSIX_CUI, "POSIX CUI"},
-	{9, "Windows CE GUI"},
-	{10, "EFI"},
-	{11, "EFI/boot"},
-	{12, "EFI/runtime"},
+	{PE_SUBSYSTEM_CE_GUI, "Windows CE GUI"},
+	{PE_SUBSYSTEM_EFI_APPLICATION, "EFI"},
+	{PE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER, "EFI/boot"},
+	{PE_SUBSYSTEM_EFI_RUNTIME_DRIVER, "EFI/runtime"},
 	{0, 0}
 };
 
@@ -78,6 +78,19 @@ ht_mask_ptable pe32header[] = {
 	{0, 0}
 };
 
+ht_tag_flags_s pe_dll_characteristics[] =
+{
+	{-1, "PE - dll characteristics"},
+	{0,  "[00] * reserved"},
+	{1,  "[01] * reserved"},
+	{2,  "[02] * reserved"},
+	{3,  "[03] * reserved"},
+	{11,  "[11] do not bind"},
+	{13,  "[13] WDM driver"},
+	{15,  "[15] image is terminal server aware"},
+	{0, 0}
+};
+
 ht_mask_ptable pe32header_nt[] = {
 	{"image base",					STATICTAG_EDIT_DWORD_LE("00000030")},
 	{"section alignment",			STATICTAG_EDIT_DWORD_LE("00000034")},
@@ -93,7 +106,7 @@ ht_mask_ptable pe32header_nt[] = {
 	{"size of headers",				STATICTAG_EDIT_DWORD_LE("00000050")},
 	{"checksum",					STATICTAG_EDIT_DWORD_LE("00000054")},
 	{"subsystem",					STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
-	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")},
+	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")" "STATICTAG_FLAGS("0000005a", ATOM_PE_DLL_CHARACTERISTICS_STR)},
 	{"stack reserve",				STATICTAG_EDIT_DWORD_LE("0000005c")},
 	{"stack commit",				STATICTAG_EDIT_DWORD_LE("00000060")},
 	{"heap reserve",				STATICTAG_EDIT_DWORD_LE("00000064")},
@@ -160,6 +173,7 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	register_atom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
 	register_atom(ATOM_PE_OPTIONAL_MAGICS, pe_optional_magics);
 	register_atom(ATOM_PE_SUBSYSTEMS, pe_subsystems);
+	register_atom(ATOM_PE_DLL_CHARACTERISTICS, pe_dll_characteristics);
 
 	ht_mask_sub *s;
 	ht_collapsable_sub *cs;

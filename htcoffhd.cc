@@ -41,6 +41,7 @@ int_hash coff_machines[] =
 	{COFF_MACHINE_SH3, "Hitachi SH3"},
 	{COFF_MACHINE_SH4, "Hitachi SH4"},
 	{COFF_MACHINE_ARM, "ARM"},
+	{COFF_MACHINE_THUMB, "THUMB"},
 	{COFF_MACHINE_POWERPC, "Power PC"},
 	{COFF_MACHINE_IA64, "Intel IA64"},
 	{COFF_MACHINE_MIPS16, "MIPS16"},

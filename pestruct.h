@@ -100,13 +100,16 @@ typedef struct	PE_OPTIONAL_HEADER64_NT {
 
 // Subsystem Values
 
-#define PE_SUBSYSTEM_NATIVE			   1	  // Image doesn't require a subsystem.
-#define PE_SUBSYSTEM_WINDOWS_GUI		   2	  // Image runs in the Windows GUI subsystem.
-#define PE_SUBSYSTEM_WINDOWS_CUI		   3	  // Image runs in the Windows character subsystem.
-#define PE_SUBSYSTEM_OS2_CUI			   5	  // image runs in the OS/2 character subsystem.
-#define PE_SUBSYSTEM_POSIX_CUI		   7	  // image run  in the Posix character subsystem.
-#define PE_SUBSYSTEM_RESERVED8		   8	  // image run  in the 8 subsystem.
-
+#define PE_SUBSYSTEM_NATIVE				 1  // image doesn't require a subsystem.
+#define PE_SUBSYSTEM_WINDOWS_GUI			 2  // image runs in the Windows GUI subsystem.
+#define PE_SUBSYSTEM_WINDOWS_CUI			 3  // image runs in the Windows character subsystem.
+#define PE_SUBSYSTEM_OS2_CUI				 5  // image runs in the OS/2 character subsystem.
+#define PE_SUBSYSTEM_POSIX_CUI			 7  // image run  in the Posix character subsystem.
+#define PE_SUBSYSTEM_RESERVED8			 8  // image run  in the 8 subsystem.
+#define PE_SUBSYSTEM_CE_GUI				 9  // image runs in the Windows CE subsystem.
+#define PE_SUBSYSTEM_EFI_APPLICATION		10  // image is an EFI application.
+#define PE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER	11  // image is an EFI driver that provides boot services.
+#define PE_SUBSYSTEM_EFI_RUNTIME_DRIVER		12  // image is an EFI driver that provides runtime services.
 
 // Directory Entries
 
