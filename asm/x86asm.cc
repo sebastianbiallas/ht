@@ -1389,12 +1389,15 @@ int x86asm::simmsize(dword imm, int immsize)
 	int i;
 	switch (immsize) {
 		case 1:
+          	if (imm > 0xff) return 0;
           	i = (sint8)imm;
                break;
 		case 2:
+          	if (imm > 0xffff) return 0;
           	i = (sint16)imm;
                break;
 		case 4:
+          	if (imm > 0xffffffff) return 0;
           	i = (sint32)imm;
                break;
 	}
