@@ -63,6 +63,40 @@ STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
 	{0, 0}
 };
 
+static ht_mask_ptable macho_section_header[]=
+{
+	{"section name",
+STATICTAG_EDIT_CHAR("00000000")STATICTAG_EDIT_CHAR("00000001")
+STATICTAG_EDIT_CHAR("00000002")STATICTAG_EDIT_CHAR("00000003")
+STATICTAG_EDIT_CHAR("00000004")STATICTAG_EDIT_CHAR("00000005")
+STATICTAG_EDIT_CHAR("00000006")STATICTAG_EDIT_CHAR("00000007")
+STATICTAG_EDIT_CHAR("00000008")STATICTAG_EDIT_CHAR("00000009")
+STATICTAG_EDIT_CHAR("0000000a")STATICTAG_EDIT_CHAR("0000000b")
+STATICTAG_EDIT_CHAR("0000000c")STATICTAG_EDIT_CHAR("0000000d")
+STATICTAG_EDIT_CHAR("0000000e")STATICTAG_EDIT_CHAR("0000000f")
+},
+	{"segment name",
+STATICTAG_EDIT_CHAR("00000010")STATICTAG_EDIT_CHAR("00000011")
+STATICTAG_EDIT_CHAR("00000012")STATICTAG_EDIT_CHAR("00000013")
+STATICTAG_EDIT_CHAR("00000014")STATICTAG_EDIT_CHAR("00000015")
+STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
+STATICTAG_EDIT_CHAR("00000018")STATICTAG_EDIT_CHAR("00000019")
+STATICTAG_EDIT_CHAR("0000001a")STATICTAG_EDIT_CHAR("0000001b")
+STATICTAG_EDIT_CHAR("0000001c")STATICTAG_EDIT_CHAR("0000001d")
+STATICTAG_EDIT_CHAR("0000001e")STATICTAG_EDIT_CHAR("0000001f")
+},
+	{"virtual address",		STATICTAG_EDIT_DWORD_BE("00000020")},
+	{"virtual size",		STATICTAG_EDIT_DWORD_BE("00000024")},
+	{"file offset",			STATICTAG_EDIT_DWORD_BE("00000028")},
+	{"alignment",			STATICTAG_EDIT_DWORD_BE("0000002c")},
+	{"relocation file offset",	STATICTAG_EDIT_DWORD_BE("00000030")},
+	{"number of relocation entries",STATICTAG_EDIT_DWORD_BE("00000034")},
+	{"flags",			STATICTAG_EDIT_DWORD_BE("00000038")},
+	{"reserved1",			STATICTAG_EDIT_DWORD_BE("0000003c")},
+	{"reserved2",			STATICTAG_EDIT_DWORD_BE("00000040")},
+	{0, 0}
+};
+
 static ht_mask_ptable macho_thread_header[]=
 {
 	{"cmd",			STATICTAG_EDIT_DWORD_BE("00000000")},
@@ -304,9 +338,16 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				char segname[17];
 				ht_snprintf(segname, sizeof segname, "%s", c->segname);
 			    	char info[128];
-				sprintf(info, "** vaddr %08x vsize %08x fileofs %08x, filesize %08x: %s", c->vmaddr, c->vmsize, c->fileoff, c->filesize, segname);
+				sprintf(info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, true);
+				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
+				for (uint j=0; j<c->nsects; j++) {
+					sprintf(info, "**** section %d ****", j);
+					m->add_mask(info);
+					m->add_staticmask_ptable(macho_section_header, ofs+sofs, true);
+					sofs += 9*4+16+16;
+				}
 				break;
 			}
 			case LC_SYMTAB: {

@@ -19,12 +19,12 @@
  */
 
 #include "analy.h"
-#include "analy_alpha.h"
+//#include "analy_alpha.h"
 #include "analy_names.h"
-#include "analy_ia64.h"
+//#include "analy_ia64.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
-#include "analy_x86.h"
+//#include "analy_x86.h"
 #include "global.h"
 #include "macho_analy.h"
 
@@ -35,7 +35,7 @@
 #include "htstring.h"
 #include "pestruct.h"
 #include "snprintf.h"
-#include "x86asm.h"
+//#include "x86asm.h"
 
 extern "C" {
 #include "demangle.h"
@@ -62,21 +62,6 @@ void MachoAnalyser::init(ht_macho_shared_data *Macho_shared, ht_streamfile *File
 
 void MachoAnalyser::beginAnalysis()
 {
-//	Address *entry = NULL;
-//	bool c32 = false;
-/*	switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {
-		case MACHOCLASS32: {*/
-/*			entry = createAddress32(macho_shared->header32.e_entry);
-			c32 = true;
-			break;*/
-/*		}
-		case MACHOCLASS64: {
-			entry = createAddress64(macho_shared->header64.e_entry);
-			c32 = false;
-			break;
-		}
-	}*/
-
 	setLocationTreeOptimizeThreshold(100);
 	setSymbolTreeOptimizeThreshold(100);
 
@@ -114,11 +99,7 @@ void MachoAnalyser::beginAnalysis()
 		MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
 
 		Address *secaddr;
-/*		if (c32) {
-			secaddr = createAddress32(s32->sh_addr);
-		} else {
-			secaddr = createAddress64(s64->sh_addr);
-		}*/
+
 		secaddr = createAddress32(s->vmaddr);
 		if (validAddress(secaddr, scvalid)) {
 			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
@@ -134,11 +115,7 @@ void MachoAnalyser::beginAnalysis()
 			// mark end of sections
 			ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
 			Address *secend_addr = (Address *)secaddr->duplicate();
-/*			if (c32) {
-				secend_addr->add(s32->sh_size);
-			} else {
-				secend_addr->add(s64->sh_size.lo);
-			}*/
+
 			secend_addr->add(s->vmsize);
 			newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 			addComment(secend_addr, 0, "");
@@ -155,38 +132,48 @@ void MachoAnalyser::beginAnalysis()
 		pp++;
 	}
 
-/* symbols */
-/*	if (c32) {
-		for (UINT i=1; i<macho_shared->sheaders.count; i++) {
-			if ((macho_shared->sheaders.sheaders32[i].sh_type==MACHO_SHT_SYMTAB) || (macho_shared->sheaders.sheaders32[i].sh_type==MACHO_SHT_DYNSYM)) {
-				initInsertSymbols(i);
-			}
-		}
-	} else {
-		for (UINT i=1; i<macho_shared->sheaders.count; i++) {
-			if ((macho_shared->sheaders.sheaders64[i].sh_type==MACHO_SHT_SYMTAB) || (macho_shared->sheaders.sheaders64[i].sh_type==MACHO_SHT_DYNSYM)) {
-				initInsertSymbols(i);
-			}
-		}
-	}*/
-/*	assignSymbol(entry, "entrypoint", label_func);
-	addComment(entry, 0, "");
-	addComment(entry, 0, ";****************************");
-	switch (c32 ? macho_shared->header32.e_type : macho_shared->header64.e_type) {
-		case MACHO_ET_DYN:
-			addComment(entry, 0, ";  dynamic executable entry point");
-			break;
-		case MACHO_ET_EXEC:
-			addComment(entry, 0, ";  executable entry point");
-			break;
-		default:
-			addComment(entry, 0, ";  entry point");               
-	}
-	addComment(entry, 0, ";****************************");*/
 
+	/* symbols */
+	pp = macho_shared->cmds.cmds;
+	for (UINT i=0; i < macho_shared->cmds.count; i++) {
+		if ((*pp)->cmd.cmd == LC_SYMTAB) {
+			MACHO_SYMTAB_COMMAND *s = (MACHO_SYMTAB_COMMAND*)*pp;
+			int *entropy = random_permutation(s->nsyms);
+			for (uint j=0; j<s->nsyms; j++) {
+				file->seek(s->symoff+entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
+				MACHO_SYMTAB_NLIST nlist;
+				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
+				create_host_struct(&nlist, MACHO_SYMTAB_NLIST_struct, big_endian);
+				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE == MACHO_SYMBOL_TYPE_N_SECT)) {
+					char macho_buffer[1024];
+					file->seek(s->stroff+nlist.strx);
+					char *label = fgetstrz(file);
+//					fprintf(stderr, "symbol '%s' addr %08x\n", label, nlist.value);
+					Address *address = createAddress32(nlist.value);
+					if (validAddress(address, scvalid)) {
+						char *demangled = NULL/*cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI)*/;
+						make_valid_name(label, label);
+						ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label);
+						if (demangled) free(demangled);
+						addComment(address, 0, "");
+						addComment(address, 0, ";********************************************************");
+						addComment(address, 0, macho_buffer);
+						addComment(address, 0, ";********************************************************");
+						pushAddress(address, address);
+						assignSymbol(address, label, label_func);
+					} else {
+//						fprintf(stderr, "'%s' has invalid addr %08x\n", label, nlist.value);
+					}
+					delete address;
+					free(label);
+				}
+			}
+			free(entropy);
+		}
+		pp++;
+	}
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
-//	delete entry;
 	
 	Analyser::beginAnalysis();
 }
@@ -196,217 +183,6 @@ void MachoAnalyser::beginAnalysis()
  */
 void MachoAnalyser::initInsertSymbols(int shidx)
 {
-#if 0
-	char macho_buffer[1024];
-//	if (macho_shared->ident.e_ident[MACHO_EI_CLASS] == MACHOCLASS32) {
-
-		FILEOFS h=macho_shared->sheaders.sheaders32[shidx].sh_offset;
-		FILEOFS sto=macho_shared->sheaders.sheaders32[macho_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
-		UINT symnum=macho_shared->sheaders.sheaders32[shidx].sh_size / sizeof (MACHO_SYMBOL32);
-
-		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
-			MACHO_SYMBOL32 sym;
-			if (entropy[i] == 0) continue;
-			file->seek(h+entropy[i]*sizeof (MACHO_SYMBOL32));
-			file->read(&sym, sizeof sym);
-			create_host_struct(&sym, MACHO_SYMBOL32_struct, macho_shared->byte_order);
-
-			file->seek(sto+sym.st_name);
-			char *name = fgetstrz(file);
-			if (!name) continue;
-
-			switch (sym.st_shndx) {
-				case MACHO_SHN_UNDEF:
-					break;
-				case MACHO_SHN_ABS:
-					break;
-				case MACHO_SHN_COMMON:
-					break;
-				default: {
-					// sym.st_shndx
-					break;
-				}
-			}
-
-			char *bind;
-			switch (MACHO32_ST_BIND(sym.st_info)) {
-				case MACHO_STB_LOCAL:
-					bind="local";
-					break;
-				case MACHO_STB_GLOBAL:
-					bind="global";
-					break;
-				case MACHO_STB_WEAK:
-					bind="weak";
-					break;
-				default:
-					bind="?";
-					break;
-			}
-
-			switch (MACHO32_ST_TYPE(sym.st_info)) {
-				case MACHO_STT_NOTYPE:
-				case MACHO_STT_FUNC: {
-				char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress32(sym.st_value);
-						if (validAddress(address, scvalid)) {
-							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-
-							make_valid_name(label, label);
-
-							ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
-
-							if (demangled) free(demangled);
-
-							addComment(address, 0, "");
-							addComment(address, 0, ";********************************************************");
-							addComment(address, 0, macho_buffer);
-							addComment(address, 0, ";********************************************************");
-							pushAddress(address, address);
-							assignSymbol(address, label, label_func);
-						}
-						delete address;
-					}
-					break;
-				}
-				case MACHO_STT_OBJECT: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress32(sym.st_value);
-						if (validAddress(address, scvalid)) {
-
-							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-					
-							make_valid_name(label, label);
-					
-							ht_snprintf(macho_buffer, sizeof macho_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size, bind);
-
-							if (demangled) free(demangled);
-
-							addComment(address, 0, "");
-							addComment(address, 0, ";********************************************************");
-							addComment(address, 0, macho_buffer);
-							addComment(address, 0, ";********************************************************");
-							assignSymbol(address, label, label_data);
-						}
-						delete address;
-					}
-					break;
-				}
-				case MACHO_STT_SECTION:
-				case MACHO_STT_FILE:
-					break;
-			}
-			free(name);
-		}
-		if (entropy) free(entropy);
-/*	} else {
-		// FIXME: 64 bit
-		FILEOFS h=macho_shared->sheaders.sheaders64[shidx].sh_offset.lo;
-		FILEOFS sto=macho_shared->sheaders.sheaders64[macho_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
-		UINT symnum=macho_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (MACHO_SYMBOL64);
-
-		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
-			MACHO_SYMBOL64 sym;
-			if (entropy[i] == 0) continue;
-			file->seek(h+entropy[i]*sizeof (MACHO_SYMBOL64));
-			file->read(&sym, sizeof sym);
-			create_host_struct(&sym, MACHO_SYMBOL64_struct, macho_shared->byte_order);
-
-			file->seek(sto+sym.st_name);
-			char *name = fgetstrz(file);
-			if (!name) continue;
-
-			switch (sym.st_shndx) {
-				case MACHO_SHN_UNDEF:
-					break;
-				case MACHO_SHN_ABS:
-					break;
-				case MACHO_SHN_COMMON:
-					break;
-				default: {
-					// sym.st_shndx
-					break;
-				}
-			}
-
-			char *bind;
-			switch (MACHO64_ST_BIND(sym.st_info)) {
-				case MACHO_STB_LOCAL:
-					bind="local";
-					break;
-				case MACHO_STB_GLOBAL:
-					bind="global";
-					break;
-				case MACHO_STB_WEAK:
-					bind="weak";
-					break;
-				default:
-					bind="?";
-					break;
-			}
-
-			switch (MACHO64_ST_TYPE(sym.st_info)) {
-				case MACHO_STT_NOTYPE:
-				case MACHO_STT_FUNC: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress64(sym.st_value);
-
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-
-						make_valid_name(label, label);
-
-						ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
-
-						if (demangled) free(demangled);
-
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, macho_buffer);
-						addComment(address, 0, ";********************************************************");
-						pushAddress(address, address);
-						assignSymbol(address, label, label_func);
-						
-						delete address;
-					}
-					break;
-				}
-				case MACHO_STT_OBJECT: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress64(sym.st_value);
-
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-					
-						make_valid_name(label, label);
-					
-						ht_snprintf(macho_buffer, sizeof macho_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size.lo, bind);
-
-						if (demangled) free(demangled);
-
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, macho_buffer);
-						addComment(address, 0, ";********************************************************");
-						assignSymbol(address, label, label_data);
-						
-						delete address;
-					}
-					break;
-				}
-				case MACHO_STT_SECTION:
-				case MACHO_STT_FILE:
-					break;
-			}
-			free(name);
-		}
-		if (entropy) free(entropy);
-	}*/
-#endif
 }
 
 /*
@@ -499,11 +275,6 @@ Address *MachoAnalyser::createAddress32(dword addr)
 	return new AddressFlat32(addr);
 }
 
-Address *MachoAnalyser::createAddress64(qword addr)
-{
-	return new AddressFlat64(addr);
-}
-
 /*
  *
  */
@@ -524,10 +295,10 @@ Assembler *MachoAnalyser::createAssembler()
 FILEOFS MachoAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		dword ofs;
+		uint32 ofs;
 		MACHOAddress ea;
 		if (!convertAddressToMACHOAddress(Addr, &ea)) return INVALID_FILE_OFS;
-		if (!macho_addr_to_ofs(&macho_shared->cmds, 0, ea, &ofs)) return INVALID_FILE_OFS;
+		if (!macho_addr_to_ofs(&macho_shared->sections, 0, ea, &ofs)) return INVALID_FILE_OFS;
 		return ofs;
 	} else {
 		return INVALID_FILE_OFS;
@@ -537,17 +308,17 @@ FILEOFS MachoAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char macho_sectionname[33];
+static char macho_sectionname[33];
 
 char *MachoAnalyser::getSegmentNameByAddress(Address *Addr)
 {
-	macho_commands *cmds = &macho_shared->cmds;
+	macho_sections *sections = &macho_shared->sections;
 	int i;
 	MACHOAddress ea;
 	if (!convertAddressToMACHOAddress(Addr, &ea)) return NULL;
-	if (!macho_addr_to_section(cmds, 0, ea, &i)) return NULL;
-	strncpy(macho_sectionname, (char*)cmds->cmds[i]->segment.segname, 16);
-	macho_sectionname[32]=0;
+	if (!macho_addr_to_section(sections, 0, ea, &i)) return NULL;
+	strncpy(macho_sectionname, (char*)sections->sections[i].sectname, 16);
+	macho_sectionname[16] = 0;
 	return macho_sectionname;
 }
 
@@ -564,7 +335,7 @@ const char *MachoAnalyser::getName()
  */
 const char *MachoAnalyser::getType()
 {
-	return "MACHO/Analyser";
+	return "Mach-O/Analyser";
 }
 
 /*
@@ -679,7 +450,7 @@ int MachoAnalyser::queryConfig(int mode)
 Address *MachoAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
 	MACHOAddress ea;
-	if (macho_ofs_to_addr(&macho_shared->cmds, 0, fileofs, &ea)) {
+	if (macho_ofs_to_addr(&macho_shared->sections, 0, fileofs, &ea)) {
 /*		switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {          
 			case MACHOCLASS32: return createAddress32(ea.a32);
 			case MACHOCLASS64: return createAddress64(ea.a64);
@@ -696,27 +467,33 @@ Address *MachoAnalyser::fileofsToAddress(FILEOFS fileofs)
  */
 bool MachoAnalyser::validAddress(Address *Addr, tsectype action)
 {
-	macho_commands *cmds=&macho_shared->cmds;
+	macho_sections *sections = &macho_shared->sections;
 	int sec;
 	byte cls = 0/*macho_shared->ident.e_ident[MACHO_EI_CLASS]*/;
 	MACHOAddress ea;
 	if (!convertAddressToMACHOAddress(Addr, &ea)) return false;
-	if (!macho_addr_to_section(cmds, cls, ea, &sec)) return false;
+	if (!macho_addr_to_section(sections, cls, ea, &sec)) return false;
 /*	switch (cls) {
 		case MACHOCLASS32: {*/
-			MACHO_SEGMENT_COMMAND *s = &cmds->cmds[sec]->segment;
+			MACHO_SECTION *s = &sections->sections[sec];
 			switch (action) {
 				case scvalid:
 					return true;
 				case scread:
 					return true;
 				case scwrite:
-				case screadwrite:
-					return true/*s->sh_flags & MACHO_SHF_WRITE*/;
+				case screadwrite: {
+					bool writable =
+						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_CSTRING_LITERALS) &&
+						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_4BYTE_LITERALS) &&
+						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_8BYTE_LITERALS)
+					;
+					return writable;
+				}
 				case sccode:
-					return true/*(s->flags & MACHO_SHF_EXECINSTR) && (s->sh_type==MACHO_SHT_PROGBITS)*/;
+					return ((s->flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR);
 				case scinitialized:
-					return true/*s->sh_type==MACHO_SHT_PROGBITS*/;
+					return ((s->flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL);
 			}
 			return false;
 /*		}

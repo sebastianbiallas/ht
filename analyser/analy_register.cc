@@ -36,6 +36,7 @@
 #include "ne_analy.h"
 #include "pe_analy.h"
 #include "le_analy.h"
+#include "macho_analy.h"
 
 #include "htatom.h"
 
@@ -57,6 +58,7 @@ BUILDER(ATOM_COFF_ANALYSER, CoffAnalyser)
 BUILDER(ATOM_NE_ANALYSER, NEAnalyser)
 BUILDER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 BUILDER(ATOM_LE_ANALYSER, LEAnalyser)
+BUILDER(ATOM_MACHO_ANALYSER, MachoAnalyser)
 
 BUILDER(ATOM_ADDRESS_INVALID, InvalidAddress)
 BUILDER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -85,6 +87,7 @@ bool init_analyser()
 	REGISTER(ATOM_NE_ANALYSER, NEAnalyser)
 	REGISTER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 	REGISTER(ATOM_LE_ANALYSER, LEAnalyser)
+	REGISTER(ATOM_MACHO_ANALYSER, MachoAnalyser)
 
 	REGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	REGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -115,6 +118,7 @@ void done_analyser()
 	UNREGISTER(ATOM_NE_ANALYSER, NEAnalyser)
 	UNREGISTER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 	UNREGISTER(ATOM_LE_ANALYSER, LEAnalyser)
+	UNREGISTER(ATOM_MACHO_ANALYSER, MachoAnalyser)
 
 	UNREGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	UNREGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -123,4 +127,3 @@ void done_analyser()
 	UNREGISTER(ATOM_ADDRESS_X86_1616, AddressX86_1616)
 	UNREGISTER(ATOM_ADDRESS_X86_1632, AddressX86_1632)
 }
-

@@ -92,6 +92,74 @@ struct MACHO_SEGMENT_COMMAND {
 #define	SG_FVMLIB	0x2	/* this segment is the VM that is allocated by a fixed VM library, for overlap checking in the link editor */
 #define	SG_NORELOC	0x4	/* this segment has nothing that was relocated in it and nothing relocated to it, that is it maybe safely replaced without relocation */
 
+struct MACHO_SECTION {
+	byte	sectname[16];	/* name of this section */
+	byte	segname[16];	/* segment this section goes in */
+	uint32	vmaddr;		/* memory address of this section */
+	uint32	vmsize;		/* size in bytes of this section */
+	uint32	fileoff;	/* file offset of this section */
+	uint32	align;		/* section alignment (power of 2) */
+	uint32	reloff;		/* file offset of relocation entries */
+	uint32	nreloc;		/* number of relocation entries */
+	uint32	flags;		/* flags (section type and attributes)*/
+	uint32	reserved1;	/* reserved */
+	uint32	reserved2;	/* reserved */
+};
+
+/*
+ * The flags field of a section structure is separated into two parts a section
+ * type and section attributes.  The section types are mutually exclusive (it
+ * can only have one type) but the section attributes are not (it may have more
+ * than one attribute).
+ */
+
+#define MACHO_SECTION_TYPE		 0x000000ff	/* 256 section types */
+#define MACHO_SECTION_ATTRIBUTES	 0xffffff00	/*  24 section attributes */
+
+/* Constants for the type of a section */
+#define	MACHO_S_REGULAR		0x0	/* regular section */
+#define	MACHO_S_ZEROFILL		0x1	/* zero fill on demand section */
+#define	MACHO_S_CSTRING_LITERALS	0x2	/* section with only literal C strings*/
+#define	MACHO_S_4BYTE_LITERALS	0x3	/* section with only 4 byte literals */
+#define	MACHO_S_8BYTE_LITERALS	0x4	/* section with only 8 byte literals */
+#define	MACHO_S_LITERAL_POINTERS	0x5	/* section with only pointers to */
+					/*  literals */
+/*
+ * For the two types of symbol pointers sections and the symbol stubs section
+ * they have indirect symbol table entries.  For each of the entries in the
+ * section the indirect symbol table entries, in corresponding order in the
+ * indirect symbol table, start at the index stored in the reserved1 field
+ * of the section structure.  Since the indirect symbol table entries
+ * correspond to the entries in the section the number of indirect symbol table
+ * entries is inferred from the size of the section divided by the size of the
+ * entries in the section.  For symbol pointers sections the size of the entries
+ * in the section is 4 bytes and for symbol stubs sections the byte size of the
+ * stubs is stored in the reserved2 field of the section structure.
+ */
+#define	MACHO_S_NON_LAZY_SYMBOL_POINTERS	0x6	/* section with only non-lazy
+						   symbol pointers */
+#define	MACHO_S_LAZY_SYMBOL_POINTERS		0x7	/* section with only lazy symbol
+						   pointers */
+#define	MACHO_S_SYMBOL_STUBS			0x8	/* section with only symbol
+						   stubs, byte size of stub in
+						   the reserved2 field */
+#define	MACHO_S_MOD_INIT_FUNC_POINTERS	0x9	/* section with only function
+						   pointers for initialization*/
+/*
+ * Constants for the section attributes part of the flags field of a section
+ * structure.
+ */
+#define MACHO_SECTION_ATTRIBUTES_USR	 0xff000000	/* User setable attributes */
+#define MACHO_S_ATTR_PURE_INSTRUCTIONS 0x80000000	/* section contains only true
+						   machine instructions */
+#define MACHO_SECTION_ATTRIBUTES_SYS	 0x00ffff00	/* system setable attributes */
+#define MACHO_S_ATTR_SOME_INSTRUCTIONS 0x00000400	/* section contains some
+						   machine instructions */
+#define MACHO_S_ATTR_EXT_RELOC	 0x00000200	/* section has external
+						   relocation entries */
+#define MACHO_S_ATTR_LOC_RELOC	 0x00000100	/* section has local
+						   relocation entries */
+
 struct MACHO_PPC_THREAD_STATE {
 	uint32 srr0;	/* Instruction address register (PC) */
 	uint32 srr1;	/* Machine state register (supervisor) */
@@ -161,10 +229,42 @@ union MACHO_COMMAND_U {
 	MACHO_THREAD_COMMAND thread;
 };
 
+struct MACHO_SYMTAB_COMMAND {
+	uint32	cmd;		/* LC_SYMTAB */
+	uint32	cmdsize;	/* sizeof(struct symtab_command) */
+	uint32	symoff;		/* symbol table offset */
+	uint32	nsyms;		/* number of symbol table entries */
+	uint32	stroff;		/* string table offset */
+	uint32	strsize;	/* string table size in bytes */
+};
+
+struct MACHO_SYMTAB_NLIST {
+	uint32	strx;
+	uint8	type;
+	uint8	sect;
+	uint16	desc;
+	uint32	value;
+};
+
+// masks for type
+#define MACHO_SYMBOL_N_STAB	0xe0
+#define MACHO_SYMBOL_N_PEXT	0x10
+#define MACHO_SYMBOL_N_TYPE	0x0e
+#define MACHO_SYMBOL_N_EXT	0x01
+
+#define MACHO_SYMBOL_TYPE_N_UNDF	0x00
+#define MACHO_SYMBOL_TYPE_N_ABS		0x02
+#define MACHO_SYMBOL_TYPE_N_INDR	0x0a
+#define MACHO_SYMBOL_TYPE_N_PBUD	0x0c
+#define MACHO_SYMBOL_TYPE_N_SECT	0x0e
+
 extern byte MACHO_HEADER_struct[];
 extern byte MACHO_COMMAND_struct[];
 extern byte MACHO_SEGMENT_COMMAND_struct[];
+extern byte MACHO_SECTION_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
+extern byte MACHO_SYMTAB_COMMAND_struct[];
+extern byte MACHO_SYMTAB_NLIST_struct[];
 
 #endif /* __MACHOSTRUC_H__ */

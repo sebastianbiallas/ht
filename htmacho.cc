@@ -77,13 +77,15 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	macho_shared->htrelocs=NULL;
 	macho_shared->fake_undefined_section=0;*/
 
+	FILEOFS ofs;
 	/* read header */
 	file->seek(header_ofs);
 	file->read(&macho_shared->header, sizeof macho_shared->header);
 	create_host_struct(&macho_shared->header, MACHO_HEADER_struct, big_endian);
 
 	/* read commands */
-	FILEOFS ofs = file->tell();
+	uint nsections = 0;
+	ofs = header_ofs+sizeof macho_shared->header;
 	macho_shared->cmds.count = macho_shared->header.ncmds;
 	macho_shared->cmds.cmds = (MACHO_COMMAND_U**)malloc(sizeof (MACHO_COMMAND_U*) * macho_shared->header.ncmds);
 	for (uint i=0; i<macho_shared->cmds.count; i++) {
@@ -99,6 +101,11 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		switch (cmd.cmd) {
 			case LC_SEGMENT:
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SEGMENT_COMMAND_struct, big_endian);
+				// already count sections (needed for reading sections, see below)
+				nsections += macho_shared->cmds.cmds[i]->segment.nsects;
+				break;
+			case LC_SYMTAB:
+				create_host_struct(macho_shared->cmds.cmds[i], MACHO_SYMTAB_COMMAND_struct, big_endian);
 				break;
 			case LC_THREAD:
 			case LC_UNIXTHREAD: {
@@ -116,79 +123,25 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		}
 		ofs += cmd.cmdsize;
 	}
-#if 0
-	switch (macho_shared->ident.e_ident[ELF_EI_DATA]) {
-		case ELFDATA2LSB:
-			macho_shared->byte_order = little_endian;
-			break;
-		case ELFDATA2MSB:
-			macho_shared->byte_order = big_endian;
-			break;
+
+	/* read sections */
+	ofs = header_ofs+sizeof macho_shared->header;
+	macho_shared->sections.count = nsections;
+	macho_shared->sections.sections = (MACHO_SECTION*)malloc(sizeof (MACHO_SECTION) * macho_shared->sections.count);
+	uint sec = 0;
+	for (uint i=0; i<macho_shared->cmds.count; i++) {
+		if (macho_shared->cmds.cmds[i]->cmd.cmd == LC_SEGMENT) {
+			FILEOFS sofs = ofs+sizeof (MACHO_SEGMENT_COMMAND);
+			file->seek(sofs);
+			for (uint j=0; j<macho_shared->cmds.cmds[i]->segment.nsects; j++) {
+				file->read(&macho_shared->sections.sections[sec], sizeof (MACHO_SECTION));
+				create_host_struct(&macho_shared->sections.sections[sec], MACHO_SECTION_struct, big_endian);
+				sec++;
+			}
+		}
+		ofs += macho_shared->cmds.cmds[i]->cmd.cmdsize;
 	}
 
-	switch (macho_shared->ident.e_ident[ELF_EI_CLASS]) {
-		case ELFCLASS32: {
-			file->read(&macho_shared->header32, sizeof macho_shared->header32);
-			create_host_struct(&macho_shared->header32, ELF_HEADER32_struct, macho_shared->byte_order);
-			/* read section headers */
-			macho_shared->sheaders.count=macho_shared->header32.e_shnum;
-			macho_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(macho_shared->sheaders.count*sizeof *macho_shared->sheaders.sheaders32);
-			file->seek(header_ofs+macho_shared->header32.e_shoff);
-			file->read(macho_shared->sheaders.sheaders32, macho_shared->sheaders.count*sizeof *macho_shared->sheaders.sheaders32);
-			for (UINT i=0; i<macho_shared->sheaders.count; i++) {
-				ELF_SECTION_HEADER32 a = macho_shared->sheaders.sheaders32[i];
-				create_host_struct(macho_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, macho_shared->byte_order);
-			}
-	
-			/* read program headers */
-			macho_shared->pheaders.count=macho_shared->header32.e_phnum;
-			macho_shared->pheaders.pheaders32=(ELF_PROGRAM_HEADER32*)malloc(macho_shared->pheaders.count*sizeof *macho_shared->pheaders.pheaders32);
-			file->seek(header_ofs+macho_shared->header32.e_phoff);
-			file->read(macho_shared->pheaders.pheaders32, macho_shared->pheaders.count*sizeof *macho_shared->pheaders.pheaders32);
-			for (UINT i=0; i<macho_shared->pheaders.count; i++) {
-				create_host_struct(macho_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, macho_shared->byte_order);
-			}
-			/* create a fake section for undefined symbols */
-//			fake_undefined_symbols();
-
-			/* create streamfile layer for relocations */
-			auto_relocate();
-			break;
-		}
-		case ELFCLASS64: {
-			file->read(&macho_shared->header64, sizeof macho_shared->header64);
-			create_host_struct(&macho_shared->header64, ELF_HEADER64_struct, macho_shared->byte_order);
-			/* read section headers */
-			macho_shared->sheaders.count=macho_shared->header64.e_shnum;
-			macho_shared->sheaders.sheaders64=(ELF_SECTION_HEADER64*)malloc(macho_shared->sheaders.count*sizeof *macho_shared->sheaders.sheaders64);
-/* FIXME: 64-bit */
-			file->seek(header_ofs+macho_shared->header64.e_shoff.lo);
-			file->read(macho_shared->sheaders.sheaders64, macho_shared->sheaders.count*sizeof *macho_shared->sheaders.sheaders64);
-			for (UINT i=0; i<macho_shared->sheaders.count; i++) {
-				ELF_SECTION_HEADER64 a = macho_shared->sheaders.sheaders64[i];
-				create_host_struct(macho_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, macho_shared->byte_order);
-			}
-
-			/* read program headers */
-			macho_shared->pheaders.count=macho_shared->header64.e_phnum;
-			macho_shared->pheaders.pheaders64=(ELF_PROGRAM_HEADER64*)malloc(macho_shared->pheaders.count*sizeof *macho_shared->pheaders.pheaders64);
-/* FIXME: 64-bit */
-			file->seek(header_ofs+macho_shared->header64.e_phoff.lo);
-			file->read(macho_shared->pheaders.pheaders64, macho_shared->pheaders.count*sizeof *macho_shared->pheaders.pheaders64);
-			for (UINT i=0; i<macho_shared->pheaders.count; i++) {
-				create_host_struct(macho_shared->pheaders.pheaders64+i, ELF_PROGRAM_HEADER64_struct, macho_shared->byte_order);
-			}
-			/* create a fake section for undefined symbols */
-//			fake_undefined_symbols();
-
-			/* create streamfile layer for relocations */
-//			auto_relocate();
-			break;
-		}
-	}
-	while (init_if(&htelfsymboltable_if)) macho_shared->symtables++;
-	while (init_if(&htelfreloctable_if)) macho_shared->reloctables++;
-#endif
 	/* init ifs */
 	ht_format_group::init_ifs(ifs);
 }
@@ -196,171 +149,63 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 void ht_macho::done()
 {
 	ht_format_group::done();
-/*	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)shared_data;
-	if (macho_shared->shnames) {
-		for (UINT i=0; i < macho_shared->sheaders.count; i++)
-			free(macho_shared->shnames[i]);
-		free(macho_shared->shnames);
-	}		
-	if (macho_shared->htrelocs) free(macho_shared->htrelocs);
-	switch (macho_shared->ident.e_ident[ELF_EI_CLASS]) {
-		case ELFCLASS32:
-			if (macho_shared->sheaders.sheaders32) free(macho_shared->sheaders.sheaders32);
-			if (macho_shared->pheaders.pheaders32) free(macho_shared->pheaders.pheaders32);
-			break;
-		case ELFCLASS64:
-			if (macho_shared->sheaders.sheaders64) free(macho_shared->sheaders.sheaders64);
-			if (macho_shared->pheaders.pheaders64) free(macho_shared->pheaders.pheaders64);
-			break;
-	}
-	free(macho_shared);*/
 }
 
 /*
  *	address conversion routines
  */
 
-bool macho_phys_and_mem_section(MACHO_SEGMENT_COMMAND *s, UINT machoclass)
+bool macho_phys_and_mem_section(MACHO_SECTION *s, UINT machoclass)
 {
-	return (s->cmd == LC_SEGMENT);
+	return true;
 }
 
-bool macho_valid_section(MACHO_SEGMENT_COMMAND *s, UINT machoclass)
+bool macho_valid_section(MACHO_SECTION *s, UINT machoclass)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = (ELF_SECTION_HEADER32*)sh;
-			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr!=0));
-		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
-			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr.lo!=0) && (s->sh_addr.hi!=0));
-		}
-	}*/
-	return (s->cmd == LC_SEGMENT);
+	return true;
 }
 
-bool macho_addr_to_ofs(macho_commands *command_headers, UINT machoclass, MACHOAddress addr, dword *ofs)
+bool macho_addr_to_ofs(macho_sections *sections, UINT machoclass, MACHOAddress addr, dword *ofs)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			MACHO_COMMAND *s = command_headers->sheaders32;
-			for (UINT i=0; i < command_headers->count; i++) {
-				if ((macho_phys_and_mem_section((macho_section_header*)s, machoclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr+s->sh_size)) {
-					*ofs = addr.a32 - s->sh_addr + s->sh_offset;
-					return true;
-				}
-				s++;
-			}
-			break;
+	MACHO_SECTION *s = sections->sections;
+	for (UINT i=0; i < sections->count; i++) {
+		if (macho_phys_and_mem_section(s, machoclass) &&
+		(addr >= s->vmaddr) && (addr < s->vmaddr+s->vmsize)) {
+			*ofs = addr - s->vmaddr + s->fileoff;
+			return true;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = command_headers->sheaders64;
-			for (UINT i=0; i < command_headers->count; i++) {
-				if ((macho_phys_and_mem_section((macho_section_header*)s, machoclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
-					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
-					*ofs = qofs.lo;
-					return true;
-				}
-				s++;
-			}
-			break;
-		}
-	}*/
-	MACHO_COMMAND_U **pp = command_headers->cmds;
-	for (UINT i=0; i < command_headers->count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if (macho_phys_and_mem_section(s, machoclass) &&
-			(addr >= s->vmaddr) && (addr < s->vmaddr+s->vmsize)) {
-				*ofs = addr - s->vmaddr + s->fileoff;
-				return true;
-			}
-		}
-		pp++;
+		s++;
 	}
 	return false;
 }
 
 
-bool macho_addr_to_section(macho_commands *command_headers, UINT machoclass, MACHOAddress addr, int *section)
+bool macho_addr_to_section(macho_sections *sections, UINT machoclass, MACHOAddress addr, int *section)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = command_headers->sheaders32;
-			for (UINT i = 0; i < command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
-					*section = i;
-					return true;
-				}
-				s++;
-			}
-			break;
+	MACHO_SECTION *s = sections->sections;
+	for (UINT i=0; i < sections->count; i++) {
+		if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
+			*section = i;
+			return true;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = command_headers->sheaders64;
-			for (UINT i = 0; i < command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
-					*section = i;
-					return true;
-				}
-				s++;
-			}
-			break;
-		}
-	}*/
-	MACHO_COMMAND_U **pp = command_headers->cmds;
-	for (UINT i=0; i < command_headers->count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
-				*section = i;
-				return true;
-			}
-		}
-		pp++;
+		s++;
 	}
 	return false;
 }
 
-bool macho_addr_is_valid(macho_commands *command_headers, UINT machoclass, MACHOAddress addr)
+bool macho_addr_is_valid(macho_sections *sections, UINT machoclass, MACHOAddress addr)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = command_headers->sheaders32;
-			for (UINT i=0; i<command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
-					return true;
-				}
-				s++;
-			}
-			break;
+	MACHO_SECTION *s = sections->sections;
+	for (UINT i=0; i < sections->count; i++) {
+		if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
+			return true;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = command_headers->sheaders64;
-			for (UINT i=0; i<command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
-					return true;
-				}
-				s++;
-			}
-			break;
-		}
-	}*/
-	MACHO_COMMAND_U **pp = command_headers->cmds;
-	for (UINT i=0; i < command_headers->count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
-				return true;
-			}
-		}
-		pp++;
+		s++;
 	}
 	return false;
 }
 
-/*bool macho_addr_is_physical(macho_command_headers *command_headers, UINT machoclass, ELFAddress addr)
+/*bool macho_addr_is_physical(macho_sections *sections, UINT machoclass, ELFAddress addr)
 {
 	return false;
 }*/
@@ -369,90 +214,33 @@ bool macho_addr_is_valid(macho_commands *command_headers, UINT machoclass, MACHO
  *	offset conversion routines
  */
 
-bool macho_ofs_to_addr(macho_commands *command_headers, UINT machoclass, dword ofs, MACHOAddress *addr)
+bool macho_ofs_to_addr(macho_sections *sections, UINT machoclass, dword ofs, MACHOAddress *addr)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = command_headers->sheaders32;
-			for (UINT i = 0; i < command_headers->count; i++) {
-				if ((macho_phys_and_mem_section((macho_section_header*)s, machoclass)) && (ofs>=s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
-					addr->a32 = ofs - s->sh_offset + s->sh_addr;
-					return true;
-				}
-				s++;
-			}
-			break;
+	MACHO_SECTION *s = sections->sections;
+	for (UINT i=0; i < sections->count; i++) {
+		if ((macho_phys_and_mem_section(s, machoclass)) && (ofs>=s->fileoff) && (ofs<s->fileoff+s->vmsize)) {
+			*addr = ofs - s->fileoff + s->vmaddr;
+			return true;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = command_headers->sheaders64;
-			qword qofs = to_qword(ofs);
-			for (UINT i = 0; i < command_headers->count; i++) {
-				if ((macho_phys_and_mem_section((macho_section_header*)s, machoclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
-					addr->a64 = qofs - s->sh_offset + s->sh_addr;
-					return true;
-				}
-				s++;
-			}
-			break;
-		}
-	}*/
-	MACHO_COMMAND_U **pp = command_headers->cmds;
-	for (UINT i=0; i < command_headers->count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if ((macho_phys_and_mem_section(s, machoclass)) && (ofs>=s->fileoff) && (ofs<s->fileoff+s->filesize)) {
-				*addr = ofs - s->fileoff + s->vmaddr;
-				return true;
-			}
-		}
-		pp++;
+		s++;
 	}
 	return false;
 }
 
-bool macho_ofs_to_section(macho_commands *command_headers, UINT machoclass, dword ofs, dword *section)
+bool macho_ofs_to_section(macho_sections *sections, UINT machoclass, dword ofs, dword *section)
 {
-/*	switch (machoclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s=command_headers->sheaders32;
-			for (UINT i=0; i<command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (ofs >= s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
-					*section = i;
-					return true;
-				}
-				s++;
-			}
-			break;
+	MACHO_SECTION *s = sections->sections;
+	for (UINT i=0; i < sections->count; i++) {
+		if ((macho_valid_section(s, machoclass)) && (ofs >= s->fileoff) && (ofs<s->fileoff+s->vmsize)) {
+			*section = i;
+			return true;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = command_headers->sheaders64;
-			qword qofs;
-			qofs.hi = 0; qofs.lo = ofs;
-			for (UINT i=0; i < command_headers->count; i++) {
-				if ((macho_valid_section((macho_section_header*)s, machoclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
-					*section = i;
-					return true;
-				}
-				s++;
-			}
-			break;
-		}
-	}*/
-	MACHO_COMMAND_U **pp = command_headers->cmds;
-	for (UINT i=0; i < command_headers->count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if ((macho_valid_section(s, machoclass)) && (ofs >= s->fileoff) && (ofs<s->fileoff+s->filesize)) {
-				*section = i;
-				return true;
-			}
-		}
-		pp++;
+		s++;
 	}
 	return false;
 }
 
-/*bool macho_ofs_to_addr_and_section(macho_command_headers *command_headers, UINT machoclass, dword ofs, ELFAddress *addr, int *section)
+/*bool macho_ofs_to_addr_and_section(macho_sections *sections, UINT machoclass, dword ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }*/

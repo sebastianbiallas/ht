@@ -63,16 +63,13 @@ ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	MACHOAddress l, h;
 	l = (dword)-1;
 	h = 0;
-	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
-	for (UINT i=0; i < macho_shared->cmds.count; i++) {
-		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
-			if (macho_valid_section(s, 0)) {
-				if (s->vmaddr < l) l = s->vmaddr;
-				if ((s->vmaddr + s->vmsize > h) && s->vmsize) h=s->vmaddr + s->vmsize - 1;
-			}
+	MACHO_SECTION *s = macho_shared->sections.sections;
+	for (UINT i=0; i < macho_shared->sections.count; i++) {
+		if (macho_valid_section(s, 0)) {
+			if (s->vmaddr < l) l = s->vmaddr;
+			if ((s->vmaddr + s->vmsize > h) && s->vmsize) h=s->vmaddr + s->vmsize - 1;
 		}
-		pp++;
+		s++;
 	}
 	low = p->createAddress32(l);
 	high = p->createAddress32(h);
@@ -116,7 +113,7 @@ ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	
 //	v->gotoAddress(tmpaddr, NULL);
 //	delete tmpaddr;
-	pp = macho_shared->cmds.cmds;
+	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
 	for (UINT i=0; i < macho_shared->cmds.count; i++) {
 		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
