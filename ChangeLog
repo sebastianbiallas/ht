@@ -7,20 +7,23 @@ version 0.9.0 (repository htdata):
 version 0.7-trunk (to be 0.8):
 	- PowerPC (PPC) disassembler
 	- ELF: PPC support
-	- Mach-O file format support (header and image, PPC-only, experimental)
+	- Mach-O file format support (header and image, PPC, x86, experimental)
 	- Big-endian COFF support
 	- experimental FLT (Flat) support
 	- XCOFF32 support
+	- experimental XBE (X-Box executable) support by Stefan Esser.
+	- fixed bug in bnstr() with defaultbase > 10
+	- fixed buffer overflow in htelfsym.cc (thanks Luis Barrancos)
+	- eval dialog: +function help
+
+version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)
 	- fixed bug in blockop (checking if const/var op didn't set 'i' and 'o' and sometimes failed)
-	- experimental XBE (X-Box executable) support by Stefan Esser.
-	- fixed bug in Java bytecode disassembler: invalid opcode crashed
-	  whole program. Thanks Jerome (freejazz).
+	- fixed bug in Java bytecode disassembler: invalid opcodes crash.
+	  Thanks Jerome (freejazz).
 	- fixed bug in Java class processing code: errors always crash HT
 	- fixed: 0xcafebabe in mach_kernel... made classread more strict
-	- Mach-O little-endian support (x86)
 	- fixed object streaming bug in GET_OBJECT (only when compiled with GCC 3.3+)
-	- fixed possible bug in bnstr()
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
