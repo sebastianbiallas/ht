@@ -37,6 +37,7 @@
 #include "htinfo.h"
 #include "htreg.h"
 #include "htsys.h"
+#include "info/infoview.h"
 #include "log.h"
 #include "stddata.h"
 
