@@ -3,7 +3,6 @@
 +sepps
 - eval-function(s) in PE/image (e.g. "section('.text')",
   "offset(0x401000)")
-- (manually) add xrefs
 - strz escape problems e.g. ffffffff -> "    "
 - next unexplored
 - out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test

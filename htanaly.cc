@@ -829,8 +829,7 @@ void ht_aviewer::generateOutputDialog()
 			}
 		}
 		Address *start_addr, *end_addr;
-		if (!convertViewerPosToAddress(start, &start_addr)
-		|| !convertViewerPosToAddress(end, &end_addr)) {
+		if (!convertViewerPosToAddress(start, &start_addr) || !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
 			continue;
 		}
@@ -997,8 +996,7 @@ void ht_aviewer::exportFileDialog()
 			}
 		}
 		Address *start_addr, *end_addr;
-		if (!convertViewerPosToAddress(start, &start_addr)
-		|| !convertViewerPosToAddress(end, &end_addr)) {
+		if (!convertViewerPosToAddress(start, &start_addr) || !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
 			continue;
 		}
@@ -1811,7 +1809,7 @@ restart:
 		// FIXME: disable button when possible
 		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
 		ht_button *new_xref;
-		NEW_OBJECT(new_xref, ht_button, &b, "~New", 668);
+		NEW_OBJECT(new_xref, ht_button, &b, "~Add", 668);
 		new_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		char str2[1024];
 		AddrXRef *x;
@@ -1852,10 +1850,38 @@ restart:
 				searchForXRefs(Addr);
 				break;
 			case 667:
-				if (xcount) analy->deleteXRef(Addr, (Address*)data.cursor_id);
+				if (xcount) {
+                    	analy->deleteXRef(Addr, (Address*)data.cursor_id);
+					analy->makeDirty();
+					analy_sub->output->invalidateCache();
+                    }
 				break;
-			case 668:
+			case 668: {
+               	char result[256];
+				ht_snprintf(str, sizeof str, "add xref from %y", Addr);
+                    result[0] = 0;
+                    while (inputbox(str, "to ~address: ", result, 255, HISTATOM_GOTO)) {
+                    	viewer_pos res_pos;
+					if (!string_to_pos(result, &res_pos)) {
+						errorbox(globalerror);
+						continue;
+					}
+                         Address *a;
+                         if (!convertViewerPosToAddress(res_pos, &a)) {
+						errorbox("invalid address");
+	                         delete a;
+                              continue;
+                         }
+                         if (!analy->addXRef(Addr, a, xrefoffset)) {
+                         	// FIXME: some error msg
+                         }
+                         delete a;
+					analy->makeDirty();
+					analy_sub->output->invalidateCache();
+                         break;
+                    }
 				break;
+               }
 			case button_ok:
 				if (xcount) gotoAddress((Address*)data.cursor_id, this);
 				break;
