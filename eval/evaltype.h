@@ -18,7 +18,7 @@ typedef enum {
 } inttype_t;
 
 typedef struct {
-	int value;
+	qword value;
 	inttype_t type;
 } int_t;
 

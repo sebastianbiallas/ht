@@ -295,7 +295,7 @@ bool ht_disasm_viewer::string_to_pos(char *string, viewer_pos *addr)
 		int_t i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
-		offset_to_pos(i.value, addr);
+		offset_to_pos(QWORD_GET_INT(i.value), addr);
 		return true;
 	}
 	char *s;

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "eval.h"
 #include "evaltype.h"
 #include "evalparse.h"
 
@@ -50,13 +51,13 @@ static int parse_float(scalar_t *f, char *fpn)
 
 static int parse_integer(scalar_t *i, char *num, int base, int lenmod)
 {
-	int k=0;
+	qword k=int_to_qword(0);
 	int l=strlen(num)+lenmod;
 	while (l--) {
 		int c=char2int(*num, base);
 		if (c==-1) return 0;
-		k*=base;
-		k+=c;
+		k=qword_mul(k, int_to_qword(base));
+		k=qword_mul(k, int_to_qword(c));
 		num++;
 	}
 	i->type=SCALAR_INT;

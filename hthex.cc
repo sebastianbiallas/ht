@@ -185,7 +185,7 @@ bool ht_hex_viewer::string_to_pos(char *string, viewer_pos *pos)
 		int_t i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
-		offset_to_pos(i.value, pos);
+		offset_to_pos(QWORD_GET_INT(i.value), pos);
 		return true;
 	}
 	char *s;

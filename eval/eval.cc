@@ -43,11 +43,12 @@ static eval_func_handler_t eval_func_handler;
 static eval_symbol_handler_t eval_symbol_handler;
 static void *eval_context;
 
-int f2i(double f)
+qword f2i(double f)
 {
 	int r;
 	if (f>0) r = (int)(f+.5); else r = (int)(f-.5);
-	return r;
+     // FIXME
+	return to_qword(r);
 }
 
 char *binstr2cstr(char *s, int len)
@@ -251,7 +252,14 @@ void scalar_create_int(scalar_t *s, int_t *t)
 void scalar_create_int_c(scalar_t *s, int i)
 {
 	s->type=SCALAR_INT;
-	s->scalar.integer.value=i;
+	s->scalar.integer.value=to_qword(i);
+	s->scalar.integer.type=TYPE_UNKNOWN;
+}
+
+void scalar_create_int_q(scalar_t *s, qword q)
+{
+	s->type=SCALAR_INT;
+	s->scalar.integer.value=q;
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
@@ -288,7 +296,8 @@ void scalar_context_str(scalar_t *s, str_t *t)
 	switch (s->type) {
 		case SCALAR_INT: {
 			char buf[16];
-			sprintf(buf, "%d", s->scalar.integer.value);
+               // FIXME
+//			sprintf(buf, "%d", s->scalar.integer.value);
 			t->value=(char*)strdup(buf);
 			t->len=strlen(buf);
 			break;
@@ -320,7 +329,8 @@ void scalar_context_int(scalar_t *s, int_t *t)
 		}
 		case SCALAR_STR: {
 			char *x=binstr2cstr(s->scalar.str.value, s->scalar.str.len);
-			t->value=strtol(x, (char**)NULL, 10);
+               // FIXME
+			t->value=/*strtol(x, (char**)NULL, 10)*/to_qword(0);
 			t->type=TYPE_UNKNOWN;
 			free(x);
 			break;
@@ -339,7 +349,8 @@ void scalar_context_float(scalar_t *s, float_t *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
-			t->value=s->scalar.integer.value;
+          	// FIXME
+			t->value = 0/*s->scalar.integer.value*/;
 			break;
 		}
 		case SCALAR_STR:  {
@@ -419,7 +430,7 @@ int scalar_strop(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 			return 0;
 	}
 	xr->type=SCALAR_INT;
-	xr->scalar.integer.value=r;
+	xr->scalar.integer.value=to_qword(r);
 	xr->scalar.integer.type=TYPE_UNKNOWN;
 	return 1;
 }
@@ -477,7 +488,7 @@ int scalar_float_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 {
 	int_t ai, bi;
-	int a, b, r;
+	qword a, b, r;
 	scalar_context_int(xa, &ai);
 	scalar_context_int(xb, &bi);
 	
@@ -506,18 +517,20 @@ int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 		case '&': r=a&b; break;
 		case '|': r=a|b; break;
 		case '^': r=a^b; break;
-		case EVAL_POW: r=ipow(a,b); break;
-		case EVAL_SHL: r=a<<b; break;
-		case EVAL_SHR: r=a>>b; break;
-		case EVAL_EQ: r=(a==b); break;
-		case EVAL_NE: r=(a!=b); break;
-		case EVAL_GT: r=(a>b); break;
-		case EVAL_GE: r=(a>=b); break;
-		case EVAL_LT: r=(a<b); break;
-		case EVAL_LE: r=(a<=b); break;
-		case EVAL_LAND: r=(a) && (b); break;
-		case EVAL_LXOR: r=(a && !b) || (!a && b); break;
-		case EVAL_LOR: r=(a||b); break;
+          // FIXME
+//		case EVAL_POW: r=ipow(a,b); break;
+		case EVAL_SHL: r=a<<QWORD_GET_LO(b); break;
+		case EVAL_SHR: r=a>>QWORD_GET_LO(b); break;
+		case EVAL_EQ: r=to_qword(a==b); break;
+		case EVAL_NE: r=to_qword(a!=b); break;
+		case EVAL_GT: r=to_qword(a>b); break;
+		case EVAL_GE: r=to_qword(a>=b); break;
+		case EVAL_LT: r=to_qword(a<b); break;
+		case EVAL_LE: r=to_qword(a<=b); break;
+          // FIXME
+//		case EVAL_LAND: r=to_qword((a) && (b)); break;
+//		case EVAL_LXOR: r=to_qword((a && !b) || (!a && b)); break;
+//		case EVAL_LOR: r=to_qword(a||b); break;
 		default: 
 			set_eval_error("invalid operator");
 			return 0;
@@ -564,10 +577,10 @@ void scalar_miniif(scalar_t *xr, scalar_t *xa, scalar_t *xb, scalar_t *xc)
 {
 	int_t a;
 	scalar_context_int(xa, &a);
-	if (a.value) {
-		*xr=*xb;
+	if (a.value != to_qword(0)) {
+		*xr = *xb;
 	} else {
-		*xr=*xc;
+		*xr = *xc;
 	}
 	scalar_destroy(xa);
 }
@@ -579,7 +592,7 @@ void scalar_miniif(scalar_t *xr, scalar_t *xa, scalar_t *xb, scalar_t *xc)
 int func_char(scalar_t *r, int_t *i)
 {
 	str_t s;
-	char c=i->value;
+	char c = QWORD_GET_LO(i->value);
 	s.value=&c;
 	s.len=1;
 	scalar_create_str(r, &s);
@@ -636,7 +649,8 @@ int func_min(scalar_t *r, int_t *p1, int_t *p2)
 
 int func_random(scalar_t *r, int_t *p1)
 {
-	scalar_create_int_c(r, (p1->value) ? (rand() % p1->value):0);
+     qword d = to_qword(rand());
+	scalar_create_int_q(r, (p1->value != to_qword(0)) ? (d % p1->value):to_qword(0));
 	return 1;
 }
 
@@ -720,11 +734,11 @@ int func_strstr(scalar_t *r, str_t *p1, str_t *p2)
 
 int func_substr(scalar_t *r, str_t *p1, int_t *p2, int_t *p3)
 {
-	if (p2->value >= 0 && p3->value > 0) {
-		if (p2->value < p1->len) {
+	if (p2->value >= to_qword(0) && p3->value > to_qword(0)) {
+		if (p2->value < to_qword(p1->len)) {
 			str_t s;
-			s.len = MIN(p3->value, p1->len-p2->value);
-			s.value = &p1->value[p2->value];
+			s.len = QWORD_GET_LO(MIN(p3->value, to_qword(p1->len)-p2->value));
+			s.value = &p1->value[QWORD_GET_LO(p2->value)];
 			scalar_create_str(r, &s);
 		} else {
 			scalar_create_str_c(r, "");

@@ -647,7 +647,7 @@ static int aviewer_func_fileofs(scalar_t *result, int_t *i)
 	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	viewer_pos p;
-	if (aviewer->offset_to_pos(i->value, &p)) {
+	if (aviewer->offset_to_pos(QWORD_GET_INT(i->value), &p)) {
 		Address *a;
 		int b;
 		aviewer->convertViewerPosToAddress(p, &a);

@@ -193,13 +193,13 @@ int blockop_symbol_eval(scalar_t *r, char *symbol)
 {
 	if (strcmp(symbol, "i")==0) {
 		r->type=SCALAR_INT;
-		r->scalar.integer.value=blockop_i;
+		r->scalar.integer.value=to_qword(blockop_i);
 		r->scalar.integer.type=TYPE_UNKNOWN;
 		blockop_expr_is_const=false;
 		return 1;
 	} else if (strcmp(symbol, "o")==0) {
 		r->type=SCALAR_INT;
-		r->scalar.integer.value=blockop_o;
+		r->scalar.integer.value=to_qword(blockop_o);
 		r->scalar.integer.type=TYPE_UNKNOWN;
 		blockop_expr_is_const=false;
 		return 1;
@@ -211,7 +211,7 @@ int func_readbyte(scalar_t *result, int_t *offset)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 	byte b;
-	if ((f->seek(offset->value)!=0) || (f->read(&b, 1)!=1)) {
+	if ((f->seek(QWORD_GET_INT(offset->value))!=0) || (f->read(&b, 1)!=1)) {
 		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", 1, 0, offset->value);
 		return 0;
 	}
@@ -223,13 +223,13 @@ int func_readstring(scalar_t *result, int_t *offset, int_t *len)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 
-	UINT l=len->value;
+	UINT l=QWORD_GET_INT(len->value);
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		str_t s;
 		UINT c = 0;
-		if ((f->seek(offset->value)!=0) || ( (c=f->read(buf, l)) !=l)) {
+		if ((f->seek(QWORD_GET_INT(offset->value))!=0) || ( (c=f->read(buf, l)) !=l)) {
 			free(buf);
 			set_eval_error("i/o error (requested %d, read %d from ofs %08x)", l, c, offset->value);
 			return 0;
@@ -432,7 +432,7 @@ ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 	
 	if (ctx->expr_const) {
 		scalar_context_int(&r, &ir);
-		ctx->v = ir.value;
+		ctx->v = QWORD_GET_INT(ir.value);
 	}
 	scalar_destroy(&r);
 	return ctx;
@@ -477,7 +477,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			}
 			scalar_context_int(&r, &ir);
 			scalar_destroy(&r);
-			ctx->v=ir.value;
+			ctx->v=QWORD_GET_INT(ir.value);
 
 			UINT s = ctx->size;
 			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;

@@ -1112,6 +1112,8 @@ void ht_logviewer::handlemsg(htmsg *msg)
 void ht_logviewer::update()
 {
 	dirtyview();
+/*	ofs = lines->count()-size.h;
+	if (ofs < 0) ofs = 0;*/
 }
 
 /*

@@ -34,8 +34,19 @@ typedef struct {
 #define QWORD_GET_HI(q) ((q).hi)
 #define QWORD_GET_LO(q) ((q).lo)
 
+#define QWORD_GET_INT(q) ((q).lo)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 int qword_cmp(qword a, qword b);
 qword int_to_qword(int i);
+qword qword_add(qword a, qword b);
+qword qword_sub(qword a, qword b);
+qword qword_mul(qword a, qword b);
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 qword to_qword(int i);
@@ -72,6 +83,9 @@ bool operator > (qword a, qword b);
 bool operator >= (qword a, qword b);
 bool operator == (qword a, qword b);
 bool operator != (qword a, qword b);
+bool operator !(qword a);
+qword operator -(qword a);
+
 #endif /* __cplusplus */
 
 #endif /* __QWORD_H__ */

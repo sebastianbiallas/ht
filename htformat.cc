@@ -594,7 +594,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 			}
 			break;
 		}
-		case cmd_edit_mode_i:
+		case cmd_edit_mode_i: {
 			if (file/* && (file==msg->data1.ptr)*/) {
 				if (file->set_access_mode(FAM_READ | FAM_WRITE)) {
 					htmsg m;
@@ -605,6 +605,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 			}
 			clearmsg(msg);
 			return;
+          }
 		case cmd_view_mode_i:
 			if (file /*&& (file==msg->data1.ptr)*/) {
 				UINT size = file->get_size();
@@ -2474,7 +2475,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					int_t i;
 					scalar_context_int(&r, &i);
 					scalar_destroy(&r);
-					o=i.value;
+					o=QWORD_GET_INT(i.value);
 					if (o<s) {
 					/* truncate */
 						htmsg m;
@@ -3583,7 +3584,7 @@ bool ht_uformat_viewer::string_to_offset(char *string, FILEOFS *ofs)
 		int_t i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
-		*ofs=i.value;
+		*ofs=QWORD_GET_INT(i.value);
 		return true;
 	}
 	char *s;
@@ -3806,7 +3807,7 @@ int ht_linear_func_readbyte(scalar_t *result, int_t *offset)
 	};
 	ht_format_viewer *f=((context_t*)eval_get_context())->fv;
 	byte b;
-	if (f->pread(offset->value, &b, 1)!=1) {
+	if (f->pread(QWORD_GET_INT(offset->value), &b, 1)!=1) {
 		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", 1, 0, offset->value);
 		return 0;
 	}
@@ -3823,12 +3824,12 @@ int ht_linear_func_readstring(scalar_t *result, int_t *offset, int_t *len)
 	};
 	ht_format_viewer *f=((context_t*)eval_get_context())->fv;
 
-	UINT l=len->value;
+	UINT l=QWORD_GET_INT(len->value);
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		str_t s;
-		UINT c=f->pread(offset->value, buf, l);
+		UINT c=f->pread(QWORD_GET_INT(offset->value), buf, l);
 		if (c!=l) {
 			free(buf);
 			set_eval_error("i/o error (requested %d, read %d from ofs %08x)", l, c, offset->value);
@@ -3918,7 +3919,7 @@ bool process_search_expr(ht_data *ctx, ht_text *progress_indicator)
 		if (eval(&r, s->expr, ht_linear_sub_func_handler, ht_linear_sub_symbol_handler, &context)) {
 			int_t i;
 			scalar_context_int(&r, &i);
-			if (i.value) {
+			if (i.value != to_qword(0)) {
 				ht_physical_search_result *r=new ht_physical_search_result();
 				r->offset = c->o;
 				r->size = 1;

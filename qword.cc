@@ -70,7 +70,7 @@ int qword_cmp(qword a, qword b)
 	return 0;
 }
 
-static qword qword_add(qword a, qword b)
+qword qword_add(qword a, qword b)
 {
 	qword res;
 	res.lo = a.lo + b.lo;
@@ -79,7 +79,7 @@ static qword qword_add(qword a, qword b)
 	return res;
 }
 
-static qword qword_sub(qword a, qword b)
+qword qword_sub(qword a, qword b)
 {
 	qword res;
 	res.lo = a.lo - b.lo;
@@ -358,4 +358,14 @@ bool operator >= (qword a, qword b) { return qword_cmp(a, b) >= 0; }
 bool operator == (qword a, qword b) { return qword_cmp(a, b) == 0; }
 
 bool operator != (qword a, qword b) { return qword_cmp(a, b) != 0; }
+
+bool operator !(qword a) { return qword_cmp(a, to_qword(0)) == 0; }
+
+qword operator -(qword a)
+{
+	qword r = a;
+     r.lo = ~r.lo;
+     r.hi = ~r.hi;
+	return r+to_qword(1);		// 2s complement - thanks to the academy
+}
 
