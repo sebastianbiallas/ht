@@ -194,6 +194,10 @@ void ht_elf::done()
 			if (elf_shared->pheaders.pheaders64) free(elf_shared->pheaders.pheaders64);
 			break;
 	}
+	if (elf_shared->undefined2fakeaddr) {
+		elf_shared->undefined2fakeaddr->destroy();
+		delete elf_shared->undefined2fakeaddr;
+	}
 	free(elf_shared);
 }
 

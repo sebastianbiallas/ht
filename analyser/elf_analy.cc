@@ -187,6 +187,7 @@ void ElfAnalyser::beginAnalysis()
  */
 void ElfAnalyser::initInsertFakeSymbols()
 {
+	if (!elf_shared->undefined2fakeaddr) return;
 	sectionAndIdx *key = NULL;
 	ht_data_uint32 *value;
 	while ((key = (sectionAndIdx*)elf_shared->undefined2fakeaddr->enum_next(
