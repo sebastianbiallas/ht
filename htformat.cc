@@ -521,12 +521,22 @@ bool ht_format_viewer::continue_search()
 	return false;
 }
 
-bool ht_format_viewer::get_current_pos(viewer_pos *pos)
+int ht_format_viewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+     return 0;
+}
+
+int ht_format_viewer::symbol_handler(eval_scalar *result, char *name)
+{
+     return 0;
+}
+
+bool ht_format_viewer::get_current_offset(FILEOFS *ofs)
 {
 	return false;
 }
 
-bool ht_format_viewer::get_current_offset(FILEOFS *ofs)
+bool ht_format_viewer::get_current_pos(viewer_pos *pos)
 {
 	return false;
 }
@@ -702,6 +712,16 @@ UINT ht_format_viewer::pwrite(FILEOFS ofs, void *buf, UINT size)
 	return 0;
 }
 
+bool ht_format_viewer::qword_to_offset(qword q, FILEOFS *ofs)
+{
+	return false;
+}
+
+bool ht_format_viewer::qword_to_pos(qword q, viewer_pos *pos)
+{
+	return false;
+}
+
 bool ht_format_viewer::show_search_result(ht_search_result *r)
 {
 	switch (r->search_class) {
@@ -719,14 +739,48 @@ bool ht_format_viewer::show_search_result(ht_search_result *r)
 	return false;
 }
 
+static int format_viewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
+     return viewer->func_handler(result, name, params);
+}
+
+static int format_viewer_symbol_handler(eval_scalar *result, char *name)
+{
+	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
+     return viewer->symbol_handler(result, name);
+}
+
+bool ht_format_viewer::string_to_qword(char *string, qword *q)
+{
+	eval_scalar r;
+	if (eval(&r, string, format_viewer_func_handler, format_viewer_symbol_handler, this)) {
+		eval_int i;
+		scalar_context_int(&r, &i);
+		scalar_destroy(&r);
+          *q = i.value;
+          return true;
+	} else {
+		char *s;
+		int p;
+		get_eval_error(&s, &p);
+     	ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "%s at pos %d", s, p);
+     }
+	return false;
+}
+
 bool ht_format_viewer::string_to_pos(char *string, viewer_pos *pos)
 {
-	return false;
+	qword q;
+	if (!string_to_qword(string, &q)) return false;
+	return qword_to_pos(q, pos);
 }
 
 bool ht_format_viewer::string_to_offset(char *string, FILEOFS *ofs)
 {
-	return false;
+	qword q;
+	if (!string_to_qword(string, &q)) return false;
+	return qword_to_offset(q, ofs);
 }
 
 ht_data *ht_format_viewer::vstate_create()
@@ -3583,9 +3637,9 @@ void ht_uformat_viewer::scroll_down(int n)
 	check_cursor_visibility();
 }
 
-bool ht_uformat_viewer::string_to_offset(char *string, FILEOFS *ofs)
+bool ht_uformat_viewer::qword_to_offset(qword q, FILEOFS *ofs)
 {
-	eval_scalar r;
+/*	eval_scalar r;
 	if (eval(&r, string, NULL, NULL, NULL)) {
 		eval_int i;
 		scalar_context_int(&r, &i);
@@ -3596,7 +3650,7 @@ bool ht_uformat_viewer::string_to_offset(char *string, FILEOFS *ofs)
 	char *s;
 	int p;
 	get_eval_error(&s, &p);
-	sprintf(globalerror, "%s at pos %d", s, p);
+	sprintf(globalerror, "%s at pos %d", s, p);*/
 	return false;
 }
 

@@ -633,16 +633,6 @@ static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 	}
 }
 
-/*
-static int aviewer_func_rva(scalar_t *result, int_t *i)
-{
-	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
-	if (pe_rva_to_ofs(aviewer->
-bool pe_rva_to_ofs(pe_section_headers *section_headers, ADDR rva, FILEOFS *ofs)
-	scalar_create_int_c(result, );
-}
-*/
-
 static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 {
 	// FIXNEW
@@ -659,66 +649,6 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 	} else {
 		set_eval_error("invalid file offset or no corresponding address for '0%xh'", i->value);
 		return 0;
-	}
-	return 0;
-}
-
-static int aviewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
-{
-	eval_func myfuncs[] = {
-		{"addressOf", (void*)&aviewer_func_address_of, {SCALAR_STR}},
-		{"fileofs", (void*)&aviewer_func_fileofs, {SCALAR_INT}},
-		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}},
-//		{"rva", (void*)&aviewer_func_rva, {SCALAR_INT}},
-		{NULL}
-	};
-	return std_eval_func_handler(result, name, params, myfuncs);
-}
-
-static int aviewer_symbol_handler(eval_scalar *result, char *name)
-{
-	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
-	unsigned int v;
-	viewer_pos vp;
-	Address *w;
-	if (*name == '@') {
-		name++;
-		if (bnstr(&name, &v, 10)) {
-			if (*name) return 0;
-			if (!aviewer->offset_to_pos(v, &vp)) {
-				set_eval_error("invalid offset: %08x", v);
-				return 0;
-			}
-			aviewer->convertViewerPosToAddress(vp, &w);
-			int b;
-			w->putIntoArray((byte*)&b);
-			delete w;
-			scalar_create_int_c(result, b);
-			return 1;
-		}
-		// invalid number after @
-		return 0;
-	} else {
-		if (strcmp(name, "$")==0) {
-			if (aviewer->getCurrentAddress(&w)) {
-				int b;
-				w->putIntoArray((byte*)&b);
-				scalar_create_int_c(result, b);
-				delete w;
-				return 1;
-			} else {
-				delete w;
-				return 0;
-			}
-		}
-		Symbol *l = aviewer->analy->getSymbolByName(name);
-		if (l) {
-			w=l->location->addr;
-			int b;
-			w->putIntoArray((byte*)&b);
-			scalar_create_int_c(result, b);
-			return 1;
-		}
 	}
 	return 0;
 }
@@ -1933,33 +1863,81 @@ restart:
 	}
 }
 
-bool ht_aviewer::string_to_pos(char *string, viewer_pos *vaddr)
+int ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	eval_func myfuncs[] = {
+		{"addressOf", (void*)&aviewer_func_address_of, {SCALAR_STR}},
+		{"fileofs", (void*)&aviewer_func_fileofs, {SCALAR_INT}},
+		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}},
+//		{"rva", (void*)&aviewer_func_rva, {SCALAR_INT}},
+		{NULL}
+	};
+	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
+     return ht_uformat_viewer::func_handler(result, name, params);
+}
+
+int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
+{
+	unsigned int v;
+	viewer_pos vp;
+	Address *w;
+	if (*name == '@') {
+		name++;
+		if (bnstr(&name, &v, 10)) {
+			if (*name) return 0;
+			if (!offset_to_pos(v, &vp)) {
+				set_eval_error("invalid offset: %08x", v);
+				return 0;
+			}
+			convertViewerPosToAddress(vp, &w);
+			int b;
+			w->putIntoArray((byte*)&b);
+			delete w;
+			scalar_create_int_c(result, b);
+			return 1;
+		}
+		// invalid number after @
+	} else {
+		if (strcmp(name, "$")==0) {
+			if (getCurrentAddress(&w)) {
+				int b;
+				w->putIntoArray((byte*)&b);
+				scalar_create_int_c(result, b);
+				delete w;
+				return 1;
+			} else {
+				delete w;
+				return 0;
+			}
+		}
+		Symbol *l = analy->getSymbolByName(name);
+		if (l) {
+			w=l->location->addr;
+			int b;
+			w->putIntoArray((byte*)&b);
+			scalar_create_int_c(result, b);
+			return 1;
+		}
+	}
+	return ht_uformat_viewer::symbol_handler(result, name);
+}
+     
+bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 {
 	if (!analy) return false;
-	eval_scalar r;
-	if (eval(&r, string, aviewer_func_handler, aviewer_symbol_handler, this)) {
-		eval_int i;
-		scalar_context_int(&r, &i);
-		Address *a=analy->createAddress();
-		// FIXME: this is just plain wrong!!
-		dword ii = QWORD_GET_INT(i.value);
-		a->getFromArray((byte*)&ii);
-		if (analy->validAddress(a, scvalid)) {
-			bool res = convertAddressToViewerPos(a, vaddr);
-			delete a;
-			return res;
-		} else {
-			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-			ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "address %y is invalid", a);
-		}
+	Address *a=analy->createAddress();
+	// FIXME: this is just plain wrong!!
+	dword ii = QWORD_GET_INT(q);
+	a->getFromArray((byte*)&ii);
+	if (analy->validAddress(a, scvalid)) {
+		bool res = convertAddressToViewerPos(a, pos);
 		delete a;
-		scalar_destroy(&r);
+		return res;
 	} else {
-		char *s;
-		int p;
-		get_eval_error(&s, &p);
-		sprintf(globalerror, "%s at pos %d", s, p);
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+		ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "address %y is invalid", a);
 	}
+	delete a;
 	return false;
 }
 

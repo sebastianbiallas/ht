@@ -218,7 +218,9 @@ public:
 			void showSymbols(Address *addr);
 			void showXRefs(Address *addr);
 			void searchForXRefs(Address *addr);
-	virtual	bool string_to_pos(char *string, viewer_pos *p);
+	virtual	bool qword_to_pos(qword q, viewer_pos *p);
+	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
+	virtual	int symbol_handler(eval_scalar *result, char *name);
 };
 
 #endif

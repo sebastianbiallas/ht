@@ -23,6 +23,7 @@
 
 class ht_format_group;
 
+#include "evalx.h"
 #include "htdata.h"
 #include "htobj.h"
 #include "htstring.h"
@@ -189,6 +190,7 @@ public:
 	virtual	void pselect_set(FILEOFS start, FILEOFS end);
 	virtual	UINT pwrite(FILEOFS ofs, void *buf, UINT size);
 	virtual	bool string_to_offset(char *string, FILEOFS *ofs);
+	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
 
 	/* visual address (viewer pos) functions */
 	virtual	bool get_current_pos(viewer_pos *pos);
@@ -200,12 +202,18 @@ public:
 	virtual	void vselect_set(viewer_pos start, viewer_pos end);
 	virtual	UINT vwrite(viewer_pos pos, void *buf, UINT size);
 	virtual	bool string_to_pos(char *string, viewer_pos *pos);
-	
+	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
+
+     /* string evaluation */
+	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
+	virtual	int symbol_handler(eval_scalar *result, char *name);
+
 	/* search related */
 			bool continue_search();
 	virtual	bool show_search_result(ht_search_result *result);
 	/* misc */
 			ht_streamfile *get_file();
+     		bool string_to_qword(char *string, qword *q);
 			bool vstate_save(ht_view *focused);
 };
 
@@ -393,7 +401,7 @@ public:
 	virtual	void pselect_get(FILEOFS *start, FILEOFS *end);
 	virtual	void pselect_set(FILEOFS start, FILEOFS end);
 	virtual	UINT pwrite(FILEOFS ofs, void *buf, UINT size);
-	virtual	bool string_to_offset(char *string, FILEOFS *ofs);
+	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
 	virtual	ht_search_result *vsearch(ht_search_request *search, viewer_pos start, viewer_pos end);
 /* new */
 			void complete_init();
