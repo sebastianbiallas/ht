@@ -36,7 +36,8 @@
                beautiest code alive
 
 +steves
-- !! stream.h:28 #include <io.h>  /* for tell() */  ==> IS NOT POSIX !!
+- !! [FREEBSD] doesnt compile: !!
+  terminal.cc:100 timeout bla
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - search
 	- search should prefill start/end ofs from selection (if applicable)
