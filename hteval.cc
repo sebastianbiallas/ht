@@ -105,6 +105,24 @@ static int sprint_base2_0(char *x, dword value, int zeros)
 	return n;
 }*/
 
+
+static void nicify(char *dest, const char *src, int d)
+{
+	*dest = *src;
+	int l=strlen(src);
+	if (!l) return;
+	dest++;
+	src++;
+	while (l--) {
+		if ((l%d==0) && (l>1)) {
+			*dest='\'';
+			dest++;
+		}
+		*(dest++) = *(src++);
+	}
+	*dest=0;
+}
+
 void eval_dialog()
 {
 	bounds b, c;
@@ -121,12 +139,12 @@ void eval_dialog()
 
 	ht_list *ehist=(ht_list*)find_atom(HISTATOM_EVAL_EXPR);
 
-/* input line */
+	/* input line */
 	BOUNDS_ASSIGN(b, 1, 1, c.w-4, 1);
 	ht_strinputfield *s=new ht_strinputfield();
 	s->init(&b, 255, ehist);
 	d->insert(s);
-/* result text */
+	/* result text */
 	BOUNDS_ASSIGN(b, 1, 3, c.w-4, c.h-5);
 	ht_statictext *t=new ht_statictext();
 	t->init(&b, hint, align_left);
@@ -147,16 +165,26 @@ void eval_dialog()
 				switch (r.type) {
 					case SCALAR_INT: {
 						char *x = b;
+						char buf1[1024];
+						char buf2[1024];
 						// FIXME
 						dword lo = QWORD_GET_LO(r.scalar.integer.value);
 						dword hi = QWORD_GET_HI(r.scalar.integer.value);
 						x += sprintf(x, "64bit integer:\n");
-						x += ht_snprintf(x, 64, "hex   %qx\n", &r.scalar.integer.value);
-						x += ht_snprintf(x, 64, "dec   %qu\n", &r.scalar.integer.value);
+						ht_snprintf(buf1, sizeof buf1, "%qx", &r.scalar.integer.value);
+						nicify(buf2, buf1, 4);
+						x += ht_snprintf(x, 64, "hex   %s\n", buf2);
+						ht_snprintf(buf1, sizeof buf1, "%qu", &r.scalar.integer.value);
+						nicify(buf2, buf1, 3);
+						x += ht_snprintf(x, 64, "dec   %s\n", buf2);
 						if (to_sint64(r.scalar.integer.value) < to_sint64(0)) {
-							x += ht_snprintf(x, 64, "sdec  %qd\n", &r.scalar.integer.value);
+							ht_snprintf(buf1, sizeof buf1, "%qd", &r.scalar.integer.value);
+							nicify(buf2, buf1+1, 3);                                                                                                                                                      // I hope nobody ever sees this
+							x += ht_snprintf(x, 64, "sdec  -%s\n", buf2);
 						}                              
-						x += ht_snprintf(x, 64, "oct   %qo\n", &r.scalar.integer.value);
+						ht_snprintf(buf1, sizeof buf1, "%qo", &r.scalar.integer.value);
+						nicify(buf2, buf1, 3);
+						x += ht_snprintf(x, 64, "oct   %s\n", buf2);
 						x += sprintf(x, "binlo ");
 						x += sprint_base2(x, lo, true);
 						*(x++) = '\n';

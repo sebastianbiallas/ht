@@ -34,8 +34,11 @@
 - [start, end) or [start, end] in
 	- Areas
 	- ht_analy::lowest/highest address
+- document commandline options in help
 
 +steves
+- eval should warn if number too big/cannot parse
+- eval whatis(whatis("whatis")), what is?
 - create ht.cfg in "home dir", implementation+interface sys_get_home_dir()
 - disabling "-pipe" on generic-POSIX systems doesn't ssem to work
 - input_date_time()

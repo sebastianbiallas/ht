@@ -51,7 +51,7 @@ char *htcopyrights[]=
 	NULL
 };
 
-void add_file_history_entry(char *n)
+static void add_file_history_entry(char *n)
 {
 	ht_clist *hist=(ht_clist*)find_atom(HISTATOM_FILE);
 	if (hist) insert_history_entry(hist, n, 0);
@@ -90,7 +90,7 @@ initdonefunc initdone[] = {
 
 int htstate;
 
-bool init()
+static bool init()
 {
 	for (htstate=0; htstate<(int)(sizeof initdone / sizeof initdone[0]); htstate++) {
 		if (!initdone[htstate].i()) return false;
@@ -98,14 +98,14 @@ bool init()
 	return true;
 }
 
-void done()
+static void done()
 {
 	for (htstate--; htstate>=0; htstate--) {
 		initdone[htstate].d();
 	}
 }
 
-void load_file(char *fn, UINT mode)
+static void load_file(char *fn, UINT mode)
 {
 	add_file_history_entry(fn);
 	((ht_app*)app)->create_window_file(fn, mode, true);
@@ -117,7 +117,7 @@ void load_file(char *fn, UINT mode)
 #include "htspline.h"
 #endif
 
-void show_help()
+static void show_help()
 {
 #ifdef SPLINE_TEST
 	bounds b;
@@ -138,20 +138,31 @@ void show_help()
 #endif
 }
 
-void params(int argc, char *argv[])
+static void show_version()
+{
+	char **copyrights=htcopyrights;
+		while (*copyrights) {
+		printf("%s\n", *copyrights);
+		copyrights++;
+	}
+	exit(0);
+}
+
+static void params(int argc, char *argv[], bool started)
 {
 	int escaped_params_start = 0;
 	// FIXME: FOM_AUTO should be the default
 	int load_mode = FOM_BIN;
 	bool showhelp = false;
 	
-#define EXPECT_PARAMEND(b) if ((j+1)!=len) { LOG_EX(LOG_ERROR, "syntax error in options"); b;}
-#define EXPECT_PARAMS(p, b) if (i+p+1 > argc) { LOG_EX(LOG_ERROR, "syntax error in options"); b;}
+#define PARAM_ERROR(a...) {if (started) LOG_EX(LOG_ERROR, a);}
+#define EXPECT_PARAMEND(b) if ((j+1)!=len) { PARAM_ERROR("syntax error in options"); b;}
+#define EXPECT_PARAMS(p, b) if (i+p+1 > argc) { PARAM_ERROR("syntax error in options"); b;}
 #define NOTHING ((void)(0))
 	for (int i=1; i<argc; i++) {
 		if (argv[i][0]=='-') {
 			int len = strlen(argv[i]);
-			if (len==1) LOG_EX(LOG_ERROR, "unknown option: %s", argv[i]);
+			if (len==1) PARAM_ERROR("unknown option: %s", argv[i]);
 			if (argv[i][1]=='-') {
 				if (len==2) {
 					// --
@@ -185,8 +196,11 @@ void params(int argc, char *argv[])
 						i++;
 					}
 				} else
+				if (strcmp(argv[i], "--version") == 0) {
+					show_version();
+				} else
 				{
-					LOG_EX(LOG_ERROR, "unknown option: %s", argv[i]);
+					PARAM_ERROR("unknown option: %s", argv[i]);
 				}
 			} else {
 				for (int j=1; j<len; j++) {
@@ -215,30 +229,35 @@ void params(int argc, char *argv[])
 						case 'h':
 							showhelp = true;
 							break;
-						case 't':
-							EXPECT_PARAMEND(break);
-							EXPECT_PARAMS(1, break);
-							load_file(argv[i+1], FOM_TEXT);
-							i++;
-							break;
 						case 'p':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
 							((ht_app*)app)->project_opencreate(argv[i+1]);
 							i++;
 							break;
+						case 't':
+							EXPECT_PARAMEND(break);
+							EXPECT_PARAMS(1, break);
+							load_file(argv[i+1], FOM_TEXT);
+							i++;
+							break;
+						case 'v':
+							show_version();
+							break;
 						default:
-							LOG_EX(LOG_ERROR, "unknown option: -%c", argv[i][j]);
+							PARAM_ERROR("unknown option: -%c", argv[i][j]);
 							break;
 					}
 				}
 			}
 		} else {
-			add_file_history_entry(argv[i]);
-			load_file(argv[i], load_mode);
+			if (started) {
+				add_file_history_entry(argv[i]);
+				load_file(argv[i], load_mode);
+			}
 		}
 	}
-	if (escaped_params_start) {
+	if (escaped_params_start && started) {
 		char **s = &argv[escaped_params_start];
 		while (*s) {
 			add_file_history_entry(*s);
@@ -246,7 +265,7 @@ void params(int argc, char *argv[])
 			s++;
 		}
 	}
-	if (showhelp) show_help();
+	if (showhelp && started) show_help();
 }
 
 #if defined(WIN32) || defined(__WIN32__)
@@ -263,6 +282,8 @@ int main(int argc, char *argv[])
 	strncpy(appname, argv[0], sizeof appname);
 #endif
 
+	params(argc, argv, 0);
+	
 	if (!init()) {
 		int init_failed = htstate;
 		done();
@@ -323,7 +344,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	params(argc, argv);
+	params(argc, argv, 1);
 
 	try {
 		((ht_app*)app)->run(false);
