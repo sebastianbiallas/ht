@@ -22,11 +22,12 @@
 - int ht_pe_il_viewer::ref_sel(LINE_ID *id)
 
 +steves
+- getbounds rel coords
+- weenn mann suchtt soll der diese selction in strt und ende eintragen tun.
 - the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
 - some (e.g. search) dialogs say "cursor keys move, space for resize mode"
   in move (ctrl-f5) mode, although they arent resizeable
 - commit ./depcomp(.sh)? to cvs (branch+trunk)
-- [FIXED?] goto in <insert viewer here (e.g. hex)> should respect visual (alt-s) mode
 - disable buttons (disable menu-entries, disable messages)
 - mk(s)temp is posix ??
 - scrap "project" menu (kaputtgemergt)

@@ -16,13 +16,20 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     * htanaly.cc: symbols and xrefs dialogs can be now be resized
+     * listbox can resize now !
+	* ht_view::getminbounds introduced
+
+     * htsnprintf: %q[iduxo] implemented
+     * visual mode (alt-s) improved, works with gotos
+
      * h/vscrollbar naming fixed again !?
 
      * gcc 3 updates
 
      * search fixes: e.g. continue search in text-viewer
      * relfile/stream: reloc_enable/disable + bugfix
-     * htne.cc: interactively turn relocations on/off
+	* htne.cc: interactively turn relocations on/off
 
      * logwindow autoscroll
 
