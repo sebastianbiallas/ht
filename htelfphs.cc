@@ -28,27 +28,27 @@
 
 static ht_mask_ptable elfprogramheader32[]=
 {
-	{"type",				STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
-	{"offset",			STATICTAG_EDIT_DWORD_VE("00000004")},
-	{"virtual address",		STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"type",		STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
+	{"offset",		STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"virtual address",	STATICTAG_EDIT_DWORD_VE("00000008")},
 	{"physical address",	STATICTAG_EDIT_DWORD_VE("0000000c")},
-	{"in file size",		STATICTAG_EDIT_DWORD_VE("00000010")},
-	{"in memory size",		STATICTAG_EDIT_DWORD_VE("00000014")},
-	{"flags",				STATICTAG_EDIT_DWORD_VE("00000018")" "STATICTAG_FLAGS("00000018", ATOM_ELF_PH_FLAGS_STR)},
-	{"alignment",			STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"in file size",	STATICTAG_EDIT_DWORD_VE("00000010")},
+	{"in memory size",	STATICTAG_EDIT_DWORD_VE("00000014")},
+	{"flags",		STATICTAG_EDIT_DWORD_VE("00000018")" "STATICTAG_FLAGS("00000018", ATOM_ELF_PH_FLAGS_STR)},
+	{"alignment",		STATICTAG_EDIT_DWORD_VE("0000001c")},
 	{0, 0}
 };
 
 static ht_mask_ptable elfprogramheader64[]=
 {
-	{"type",				STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
-	{"flags",				STATICTAG_EDIT_DWORD_VE("00000004")" "STATICTAG_FLAGS("00000004", ATOM_ELF_PH_FLAGS_STR)},
-	{"offset",			STATICTAG_EDIT_QWORD_VE("00000008")},
-	{"virtual address",		STATICTAG_EDIT_QWORD_VE("00000010")},
+	{"type",		STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
+	{"flags",		STATICTAG_EDIT_DWORD_VE("00000004")" "STATICTAG_FLAGS("00000004", ATOM_ELF_PH_FLAGS_STR)},
+	{"offset",		STATICTAG_EDIT_QWORD_VE("00000008")},
+	{"virtual address",	STATICTAG_EDIT_QWORD_VE("00000010")},
 	{"physical address",	STATICTAG_EDIT_QWORD_VE("00000018")},
-	{"in file size",		STATICTAG_EDIT_QWORD_VE("00000020")},
-	{"in memory size",		STATICTAG_EDIT_QWORD_VE("00000028")},
-	{"alignment",			STATICTAG_EDIT_QWORD_VE("00000030")},
+	{"in file size",	STATICTAG_EDIT_QWORD_VE("00000020")},
+	{"in memory size",	STATICTAG_EDIT_QWORD_VE("00000028")},
+	{"alignment",		STATICTAG_EDIT_QWORD_VE("00000030")},
 	{0, 0}
 };
 
@@ -57,7 +57,7 @@ static int_hash elf_ph_type[] =
 	{ELF_PT_NULL, 		"null"},
 	{ELF_PT_LOAD,		"load"},
 	{ELF_PT_DYNAMIC,	"dynamic"},
-	{ELF_PT_INTERP,	"interp"},
+	{ELF_PT_INTERP,		"interp"},
 	{ELF_PT_NOTE,		"note"},
 	{ELF_PT_SHLIB,		"shlib"},
 	{ELF_PT_PHDR,		"phdr"},

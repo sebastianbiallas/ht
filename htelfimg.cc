@@ -23,7 +23,6 @@
 #include "htpal.h"
 #include "htstring.h"
 #include "formats.h"
-#include "snprintf.h"
 #include "tools.h"
 
 #include "elfstruc.h"
