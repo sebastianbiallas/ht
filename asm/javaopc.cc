@@ -229,7 +229,7 @@ javaopc_insn java_insns[256] = {
 {"invokevirtual", {Cw}},
 {"invokespecial", {Cw}},
 {"invokestatic", {Cw}},
-{"invokeinterface", {Cw}},
+{"invokeinterface", {Cw, S}},
 {"xxxunusedxxx"},
 {"new", {Cw}},
 {"newarray"},
