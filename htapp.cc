@@ -194,7 +194,7 @@ protected:
 	ht_strinputfield *name_input;
 	FileBrowserVfsListbox *listbox;
 public:
-	virtual	void	init(bounds *b, bounds *clientarea, const char *title, const char *starturl);
+	virtual	void init(bounds *b, bounds *clientarea, const char *title, const char *starturl);
 /* new */
 	virtual	bool extract_url(char *buf);
 	virtual	void listbox_changed();
@@ -330,9 +330,9 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 
 	FileBrowser *d = new FileBrowser();
 	d->init(&b, &c, title, cwd);
-	
+
 	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
-	
+
 	/* go! */
 	if (d->run(false)) {
 		char b[VFS_URL_MAX];

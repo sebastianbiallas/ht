@@ -143,7 +143,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header64.e_shnum;
 			elf_shared->sheaders.sheaders64=(ELF_SECTION_HEADER64*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-/* FIXME: 64-bit */
+			/* FIXME: 64-bit */
 			file->seek(header_ofs+elf_shared->header64.e_shoff.lo);
 			file->read(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
 			for (uint i=0; i<elf_shared->sheaders.count; i++) {
@@ -154,7 +154,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header64.e_phnum;
 			elf_shared->pheaders.pheaders64=(ELF_PROGRAM_HEADER64*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
-/* FIXME: 64-bit */
+			/* FIXME: 64-bit */
 			file->seek(header_ofs+elf_shared->header64.e_phoff.lo);
 			file->read(elf_shared->pheaders.pheaders64, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
 			for (uint i=0; i<elf_shared->pheaders.count; i++) {

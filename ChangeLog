@@ -24,6 +24,7 @@ version 0.8.0:
 	- ELF/relocatable file support
 	- Win32: access to native windows clipboard
 	- coff: support for coff files without optional header
+	- fixed bug in x86-assembler (correct opcode for [ebp+esp])
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

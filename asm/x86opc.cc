@@ -67,7 +67,7 @@
 #define Ap	TYPE_A, 0, SIZE_P, SIZE_P
 #define Cd	TYPE_C, 0, SIZE_D, SIZE_D
 #define Dd	TYPE_D, 0, SIZE_D, SIZE_D
-#define E		TYPE_E, 0, SIZE_0, SIZE_0
+#define E	TYPE_E, 0, SIZE_0, SIZE_0
 #define Eb	TYPE_E, 0, SIZE_B, SIZE_B
 #define Ew	TYPE_E, 0, SIZE_W, SIZE_W
 #define Ed	TYPE_E, 0, SIZE_D, SIZE_D
@@ -87,7 +87,7 @@
 #define sIbv	TYPE_Is,0, SIZE_B, SIZE_V
 #define Jb	TYPE_J, 0, SIZE_B, SIZE_B
 #define Jv	TYPE_J, 0, SIZE_V, SIZE_V
-#define M		TYPE_M, 0, 0, 0
+#define M	TYPE_M, 0, 0, 0
 #define Mw	TYPE_M, 0, SIZE_W, SIZE_W
 #define Md	TYPE_M, 0, SIZE_D, SIZE_D
 #define Mp	TYPE_M, 0, SIZE_P, SIZE_P
@@ -185,14 +185,14 @@ char *x86_segs[8] = {
 #define GROUP_F7		10
 #define GROUP_FE		11
 #define GROUP_FF		12
-#define GROUP_EXT_00	13
-#define GROUP_EXT_01	14
-#define GROUP_EXT_71	15
-#define GROUP_EXT_72	16
-#define GROUP_EXT_73	17
-#define GROUP_EXT_BA	18
-#define GROUP_EXT_C7	19
-//#define GROUP_EXT_AE	20
+#define GROUP_EXT_00		13
+#define GROUP_EXT_01		14
+#define GROUP_EXT_71		15
+#define GROUP_EXT_72		16
+#define GROUP_EXT_73		17
+#define GROUP_EXT_BA		18
+#define GROUP_EXT_C7		19
+//#define GROUP_EXT_AE		20
 
 x86opc_insn x86_insns[256] = {
 /* 00 */
@@ -336,8 +336,8 @@ x86opc_insn x86_insns[256] = {
 {"jp", {{Jb}}},
 {"jnp", {{Jb}}},
 {"jl", {{Jb}}},		/* aka jnge */
-{"jnl", {{Jb}}},		/* aka jge */
-{"jng", {{Jb}}},		/* aka jle */
+{"jnl", {{Jb}}},	/* aka jge */
+{"jng", {{Jb}}},	/* aka jle */
 {"jg", {{Jb}}},		/* aka jnle */
 /* 80 */
 {0, {{SPECIAL_TYPE_GROUP, GROUP_80}}},
@@ -358,7 +358,7 @@ x86opc_insn x86_insns[256] = {
 {"mov", {{Sw}, {Ev}}},
 {"pop", {{Ev}}},
 /* 90 */
-{"nop"},	/* same as xchg (e)ax, (e)ax */
+{"nop"},		/* same as xchg (e)ax, (e)ax */
 {"xchg", {{__ax}, {__cx}}},
 {"xchg", {{__ax}, {__dx}}},
 {"xchg", {{__ax}, {__bx}}},

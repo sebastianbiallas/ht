@@ -651,7 +651,15 @@ int x86asm::encode_sib_v(x86_insn_op *op, int mindispsize, int *_ss, int *_index
 				return 0;
 		}
 	}
-	if ((index==X86_REG_SP) && (scale>1)) return 0;
+	if (index==X86_REG_SP) {
+		if (scale>1) return 0;
+		if (scale == 1) {
+			if (base==X86_REG_SP) return 0;
+			int temp = index;
+			index = base;
+			base = temp;
+		}
+	}
 	if (index!=X86_REG_NO) {
 		switch (scale) {
 			case 1:
