@@ -3,7 +3,8 @@
 
 version 0.9-trunk:
 	- analyser: support for int, half and byte data-types.
-	
+	- x86 disasm: invlpg instruction added
+
 version 0.8.0:
 	- g++ v3 abi demangler
 	- x86 disasm: added undocumented ffreep (df c0) instruction

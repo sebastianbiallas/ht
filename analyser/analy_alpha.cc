@@ -2,7 +2,7 @@
  *	HT Editor
  *	analy_alpha.cc
  *
- *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as

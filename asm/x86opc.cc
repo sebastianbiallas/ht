@@ -941,7 +941,7 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 {"smsw", {{Ew}}},
 {0},
 {"lmsw", {{Ew}}},
-{0}
+{"invlpg", {{M}}}}
 },
 /* 15 - GROUP_EXT_71 */
 {
