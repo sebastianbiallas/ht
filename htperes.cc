@@ -151,11 +151,18 @@ ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32 && pe_shared->opt_magic!=COFF_OPTMAGIC_PE64) return NULL;
+
+     bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
 	dword sec_rva, sec_size;
-	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
-	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+     if (pe32) {
+		sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
+		sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+     } else {
+		sec_rva = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
+		sec_size = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+     }
 	if (!sec_rva || !sec_size) return NULL;
 
 	ht_static_treeview *t=new ht_pe_resource_viewer();
@@ -165,8 +172,13 @@ ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 /* get resource directory offset */
 	/* 1. get resource directory rva */
 	FILEOFS iofs;
-	dword irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
-//	dword isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+     dword irva;
+     if (pe32) {
+		irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
+//		dword isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+	} else {
+		irva=pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
+     }
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 
