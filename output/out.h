@@ -68,6 +68,11 @@ public:
 #define EXTERNAL_LINK_SHOW_XREFS 0
 #define EXTERNAL_LINK_SHOW_COMMENTS 1
 
+#define OUTPUT_GENERATE_ERR_OK 0
+#define OUTPUT_GENERATE_ERR_INVAL 1
+#define OUTPUT_GENERATE_ERR_ANALYSER_NOT_FINISHED 2
+#define OUTPUT_GENERATE_ERR_STREAM 3
+
 /*
  *
  */
@@ -90,6 +95,8 @@ public:
 		
 		UINT		current_time;
 		int		size;
+          
+          int		dis_style;
 		
 				void	init(Analyser *analy);
 		virtual	void done();
@@ -102,6 +109,7 @@ public:
 		virtual	void footer();
 				void generateAddr(Address *Addr, OutAddr *oa);
 				int	generateFile(Address *from, Address *to);
+          virtual	ht_stream *getGenerateStream();
 				void	generatePage(Address *from, int lines);
 				OutAddr *getAddr(Address *Addr);
 				OutLine *getLine(Address *Addr, int line);
@@ -119,13 +127,5 @@ public:
 				void	write(char *s);
 				void write(char *s, int n);
 };
-
-/*
- *
- */
-#define ANALY_OUTPUT_OK 0
-#define ANALY_OUTPUT_ERR_GENERIC 1
-#define ANALY_OUTPUT_ERR_STREAM 2
-#define ANALY_OUTPUT_ERR_ANALY_NOT_FINISHED 3
 
 #endif

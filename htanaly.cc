@@ -43,6 +43,7 @@
 #include "syntax.h"
 #include "out.h"
 #include "out_ht.h"
+#include "out_txt.h"
 #include "store.h"
 
 extern "C" {
@@ -857,7 +858,13 @@ void ht_aviewer::generateOutputDialog()
 	BOUNDS_ASSIGN(b, 2, 7, 35, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~end address (or #numberoflines):", v1);
 	dialog->insert(v2);
-	setdatastr(v1, "#1000");
+//	setdatastr(v1, "#1000");
+	if (get_current_pos(&cur)) {
+		char str[1024];
+		pos_to_string(cur, str, sizeof str);
+          strcat(str, "+20");
+		setdatastr(v1, str);
+	}
 	BOUNDS_ASSIGN(b, 13, 11, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "O~k", button_ok);
 	dialog->insert(v1);
@@ -901,14 +908,20 @@ void ht_aviewer::generateOutputDialog()
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
+          	AnalyserOutput *out;
 			switch (odd.lp.cursor_id) {
 				case 0:
-//					generate_html_output(analy, s, (ADDR)start, (ADDR)end, end, by_lines);
+                         out = new AnalyserTxtOutput();
+                         ((AnalyserTxtOutput*)out)->init(analy, s);
 					break;
 				case 1:
-					// plain
+                         out = new AnalyserTxtOutput();
+                         ((AnalyserTxtOutput*)out)->init(analy, s);
 					break;
 			}
+               out->generateFile(start_addr, end_addr);
+               out->done();
+               delete out;
 		}
 		s->done();
 		delete s;
@@ -1913,7 +1926,9 @@ bool ht_aviewer::string_to_pos(char *string, viewer_pos *vaddr)
 		int_t i;
 		scalar_context_int(&r, &i);
 		Address *a=analy->createAddress();
-		a->getFromArray((byte*)&i.value);
+          // FIXME: this is just plain wrong!!
+          dword ii = QWORD_GET_INT(i.value);
+		a->getFromArray((byte*)&ii);
 		if (analy->validAddress(a, scvalid)) {
 			bool res = convertAddressToViewerPos(a, vaddr);
 			delete a;

@@ -1,8 +1,8 @@
-/*
- *	out_txt.h
- */
-
-/*	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+/* 
+ *	HT Editor
+ *	out_txt.cc
+ *
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -18,19 +18,33 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef out_txt_h
-#define out_txt_h
+#ifndef OUT_TXT_H
+#define OUT_TXT_H
 
 #include "analy.h"
 #include "common.h"
 #include "global.h"
 #include "stream.h"
+#include "out.h"
 
-#define TXT_OUTPUT_OK 0
-#define TXT_OUTPUT_ERR_GENERIC 1
-#define TXT_OUTPUT_ERR_STREAM 2
-#define TXT_OUTPUT_ERR_ANALY_NOT_FINISHED 3
-
-int generate_txt_output(Analyser *analy, ht_stream *stream, Address *from, Address *to);
+class AnalyserTxtOutput: public AnalyserOutput {
+		ht_stream *stream;
+          char tmpbuf[1024];
+		int last;
+public:
+				void	init(Analyser *analy, ht_stream *stream);
+		virtual	void done();
+		virtual	void	beginAddr();
+		virtual	void	beginLine();
+          virtual	ht_stream *getGenerateStream();
+		virtual	int	elementLength(char *s);
+		virtual	void	endAddr();
+		virtual	void	endLine();
+		virtual	void footer();
+		virtual	void	header();
+		virtual	void putElement(int element_type, char *element);
+		virtual	char *link(char *s, Address *Addr);
+		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+};
 
 #endif

@@ -122,6 +122,7 @@ void	AnalyserOutput::init(Analyser *Analy)
 	work_buffer_start = (byte*)malloc(WORKBUF_LEN);
 	work_buffer = work_buffer_start;
 	temp_buffer = (byte*)malloc(WORKBUF_LEN);
+     dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
 }
 
 void AnalyserOutput::done()
@@ -329,7 +330,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 
                bool s;
                do {
-				char *x = analy->disasm->str(o, DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR);
+				char *x = analy->disasm->str(o, dis_style);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, x);
                     if ((s = analy->disasm->selectNext(o))) {
                     	endLine();
@@ -469,9 +470,40 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	endAddr();
 }
 
+ht_stream *AnalyserOutput::getGenerateStream()
+{
+	return NULL;
+}
+
 int	AnalyserOutput::generateFile(Address *from, Address *to)
 {
-	return 0;
+	if (analy->active) return OUTPUT_GENERATE_ERR_ANALYSER_NOT_FINISHED;
+     if (!from->isValid() || !to->isValid()) return OUTPUT_GENERATE_ERR_INVAL;
+     ht_stream *out = getGenerateStream();
+     if (!out) return OUTPUT_GENERATE_ERR_INVAL;
+     header();
+     int line = 0;
+     while (from->compareTo(to) <= 0) {
+     	char buffer[1024];
+          if (getLineString(buffer, sizeof buffer, from, line)) {
+               // write buffer
+               // FIXME: remove strlen
+               UINT wr = strlen(buffer);
+          	if (out->write(buffer, wr) != wr) return OUTPUT_GENERATE_ERR_STREAM;
+               
+               // update address
+               int len;
+	          if (getLineByteLength(&len, from, line)) {
+		     	from->add(len);
+	          }
+               // update line
+          	line++;
+          } else {
+          	line = 0;
+          }
+     }
+     footer();
+	return OUTPUT_GENERATE_ERR_OK;
 }
 
 void	AnalyserOutput::generatePage(Address *from, int lines)
