@@ -364,8 +364,8 @@ protected:
 	int prev_line(uformat_viewer_pos *p, int n);
 	void print_tagstring(int x, int y, int maxlen, int xscroll, char *tagstring, bool cursor_in_line);
 	virtual int ref();
-	int ref_desc(dword id, FILEOFS offset, UINT size, bool bigendian);
-	int ref_flags(dword id, FILEOFS offset);
+	int ref_desc(ID id, FILEOFS offset, UINT size, bool bigendian);
+	int ref_flags(ID id, FILEOFS offset);
 	virtual int ref_sel(LINE_ID *id);
 	virtual void reloadpalette();
 	UINT render_tagstring(char *chars, vcp *colors, UINT maxlen, char *tagstring, bool cursor_in_line);
