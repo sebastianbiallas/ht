@@ -11,7 +11,6 @@
 - listbox column titles ? (+ sort order indicators ?)
 - htanaly.cc: menu ifs not used properly (for keys...)
 - convert all %q to %qd and %Q to %qx
-- implement ht_static_treeview::get_cursor_node() correctly
 - implement ht_static_treeview::goto_node() at all
 - static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
   is this a correct quicksort? (THIS WOULD DEFINITLY BE EMBARRASING)
@@ -25,31 +24,23 @@
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 - [FIXED ?]int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 
-+dontknowhow2fix
-- "~case insensitive" in search isnt accessable via alt-c (->copy)
-
-+dontunderstandreport
-- new binary/resize/(F9??)/blockop
-
 +steves
+- new binary/resize/F9/blockop: stream ?? issues
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-- !! (HT_0_6c / HT_0_7) commit ./depcomp(.sh)? to cvs (branch+trunk) !!
 - filemanger/options title ://reg instead of reg://
 - void ht_disasm_viewer::handlemsg(htmsg *msg):
 		case msg_filesize_changed: {
                beautiest code alive
 - int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n), bah
 - "~case insensitive" in search isnt accessable via alt-c (->copy)
-- (HT_0_7) (texteditor) fix at least
-  * save on readonly/locked file
+- (HT_0_7) streams
+	save on readonly/locked file
+	stream::set_layered suspicious
 - exports/dimports in PE32+ broken
 - get rid of globalerror (cause its ugly)
-- [x86]
-  668338ff     cmp     word ptr [eax], ffff   <----------- cant be assembled
-  668138ffff   cmp     word ptr [eax], ffff   <----------- ok
 - [x86] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
 - getbounds rel coords
 - the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
@@ -72,7 +63,6 @@
 	- copy, etc. ?!
 	- vfs ..._viewer to get config_changed
 - elf/pe/etc.-section ref tree optimizationdfgjl
-- stream::set_layered suspicious
 - KEY_RESIZE
 - textedit/file
 	- +get_size,extend,truncate +overwrite -use_getline

@@ -16,7 +16,6 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
-     *
      * htdisasm: follow
 	* FIXED: some (e.g. search) dialogs say "(moving) - space to switch"
 	  in move (ctrl-f5) mode, although they arent resizeable
