@@ -925,6 +925,11 @@ void ht_aviewer::dataStringDialog()
 	delete current_address;
 }
 
+struct export_dialog_data {
+	ht_inputfield_data id1;
+	ht_listpopup_data lp;
+};
+
 void ht_aviewer::exportFileDialog()
 {
 	if (!analy) return;
@@ -975,33 +980,9 @@ void ht_aviewer::exportFileDialog()
 	dialog->insert(v1);
 	while (dialog->run(false)==button_ok) {
 		char filename[260];
-		char start_str[1024], end_str[1024];
-		viewer_pos start, end;
-		bool by_lines;
-		output_dialog_data odd;
-		dialog->databuf_get(&odd, sizeof odd);
-		getdatastr(&odd.id1, filename);
-		getdatastr(&odd.id2, start_str);
-		getdatastr(&odd.id3, end_str);
-		if (!string_to_pos(start_str, &start)) {
-			errorbox(globalerror);
-			continue;
-		}
-		UINT end_by_lines;
-		if ((by_lines = end_str[0]=='#')) {
-			char *pend = &end_str[1];
-			bnstr(&pend, &end_by_lines, 10);
-		} else {
-			if (!string_to_pos(end_str, &end)) {
-				errorbox(globalerror);
-				continue;
-			}
-		}
-		Address *start_addr, *end_addr;
-		if (!convertViewerPosToAddress(start, &start_addr) || !convertViewerPosToAddress(end, &end_addr)) {
-			errorbox("invalid address");
-			continue;
-		}
+		export_dialog_data edd;
+		dialog->databuf_get(&edd, sizeof edd);
+		getdatastr(&edd.id1, filename);
 		
 		ht_file *s = new ht_file();
 		s->init(filename, FAM_WRITE, FOM_CREATE);
@@ -1009,7 +990,7 @@ void ht_aviewer::exportFileDialog()
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
-			switch (odd.lp.cursor_pos) {
+			switch (edd.lp.cursor_pos) {
 				case 0:
 					export_to_sym(analy, s);
 					break;
