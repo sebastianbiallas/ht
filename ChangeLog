@@ -10,11 +10,15 @@ version 0.7-trunk:
 	- PowerPC (PPC) disassembler
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC-only, experimental)
-	- Big-endian COFF support implemented
+	- Big-endian COFF support
+	- FLT (Flat) support (experimental)
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
 	- percent display for searches and scrollbars in big files was incorrect
+	- POSIX: improved keyboard handling (merge from 0.8.0 tree)
+	- POSIX: X11 textmode keyboard support didn't work :-), was not configured correctly
+	- configure now does final (release) builds by default (ie. -O2 -fomit-frame-pointer)
 	
 version 0.7.2:
 	- Hexview: Number of bytes per line can be changed now
