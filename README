@@ -137,14 +137,17 @@ General features
         * Mach exe/link format (MachO)
                - header
                - image with code/data analyser (x86, PowerPC)
-          X-Box executable (XBE)
+
+        * X-Box executable (XBE)
                - header
                - imports
                - image with code/data analyser (x86)
-          Flat (FLT)
+
+        * Flat (FLT)
                - header
                - image with data analyser (no disassembler yet)
-          PowerPC executable format (PEF)
+
+        * PowerPC executable format (PEF)
                - header
                - imports - image with code/data analyser (PowerPC)
 
