@@ -78,8 +78,8 @@ ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		}
 		case ELFCLASS64: {
 			ELFAddress l, h;
-			l.a64 = to_qword(-1);
-			h.a64 = to_qword(0);
+			l.a64 = to_uint64(to_sint64(-1));
+			h.a64 = to_uint64(0);
 			ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
 			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {

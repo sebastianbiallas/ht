@@ -302,7 +302,7 @@ void scalar_create_int(eval_scalar *s, const eval_int *t)
 void scalar_create_int_c(eval_scalar *s, const int i)
 {
 	s->type=SCALAR_INT;
-	s->scalar.integer.value=to_qword(i);
+	s->scalar.integer.value=to_uint64(to_sint64(i));
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
@@ -1184,9 +1184,7 @@ eval_func builtin_evalfuncs[]=	{
 	{ "byte", (void*)&func_byte, {SCALAR_INT}, "converts to byte (1 bytes)" },
 	{ "word", (void*)&func_word, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
 	{ "dword", (void*)&func_dword, {SCALAR_INT}, "converts to dword (4 bytes unsigned)" },
-	{ "word", (void*)&func_dword, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
-	{ "byte", (void*)&func_dword, {SCALAR_INT}, "converts to byte (1 bytes)" },
-	{ "sbyte", (void*)&func_short, {SCALAR_INT}, "converts to signed byte (1 bytes signed)" },
+	{ "sbyte", (void*)&func_sbyte, {SCALAR_INT}, "converts to signed byte (1 bytes signed)" },
 	{ "short", (void*)&func_short, {SCALAR_INT}, "converts to short (2 bytes signed)" },
 	{ "long", (void*)&func_long, {SCALAR_INT}, "converts to long (4 bytes signed)" },
 	{ "typeof", (void*)&func_typeof, {SCALAR_ANY}, "returns \"int\", \"string\" or \"float\"" },
