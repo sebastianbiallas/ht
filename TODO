@@ -11,6 +11,8 @@
 - out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test
 - htanaly.cc: menu ifs not used properly (for keys...)
 - (listbox sort order indicators ?)
+- htanaly.cc:473 fix it
+- nicht gut: 'c' geht nicht in edit-mode
 
 +dunno
 - update help
@@ -30,17 +32,17 @@
 
 +steves
 - (HT_0_7)
-	- features configurable
 	- SPARC_SHIT configure
 	- implement POSIX - sys_truncate
-	- "non interactive (!) program" is misleading (I can start and use rhide)
-	- eval: strcmp() [no params], bad error msg (too short)
-	- eval: int("123") cant eval qword (only dword)
-	- eval: string(-1), crash
-	- eval: float(-1), wrong value (float("-1") correct)
-	- texteditor: syntax-highlight broken (main.cc, press enter somewhere)
-	- help broken (press f1)
-	- FIXED ?: HT crash when only htcfg-header in ht.cfg
+
+- (HT_0_7) use string2qword()
+
+- new instead of malloc
+- ht_strncpy()
+
+- FIXED ?: HT crash when only htcfg-header in ht.cfg
+
+- (HT_0_8) features configurable
 - (HT_0_8) directory structure
 	- move source files (especially object system) into separate directories,
 	  solve name problems (ht* only when necessary for ht obj system)
