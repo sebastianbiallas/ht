@@ -103,8 +103,10 @@ ht_key ht_getkey()
 		if (ht_keypressed()) {
 			r = ht_raw_getkey();
 			r = escseq2rawkey(r);
+#ifndef HAVE_TEXTMODE_X11
 			if (CTRL_KEY(r2) == r2) r = CTRL_KEY(r);
 			if (SHIFT_KEY(r2) == r2) r = SHIFT_KEY(r);
+#endif
 		}
 	}
 	k = ht_rawkey2key(r);
