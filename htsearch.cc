@@ -536,7 +536,7 @@ bool search_bin_process(ht_data *context, ht_text *progress_indicator)
 	}
 	ctx->o -= ctx->patlen-1;
 
-	int p = (ctx->o - ctx->ofs)*100/ctx->len;
+	int p = (int)(((double)(ctx->o - ctx->ofs))*100/ctx->len);
 	
 	char status[64];
 	ht_snprintf(status, sizeof status, "%d %%", p);

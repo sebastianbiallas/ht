@@ -3727,7 +3727,7 @@ ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_
 
 					char text[256];
 /*					if (highest_va>lowest_va) {
-						int p=100*(va-lowest_va)/(highest_va-lowest_va);
+						int p=100*((double)(va-lowest_va))/(highest_va-lowest_va);
 						sprintf(text, "searching for '%s'... %d%% complete (%d lines)", s->rx_str, p, lines);
 					} else*/ {
 						ht_snprintf(text, sizeof text, "searching for '%s'... %d lines", s->rx_str, lines);

@@ -357,7 +357,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 	char status[64];
 	ht_blockop_str_context *ctx = (ht_blockop_str_context*)context;
 	if (ctx->expr_const) {
-		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", ((double)(ctx->o-ctx->ofs)) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
@@ -373,7 +373,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 			return false;
 		}
 	} else {
-		ht_snprintf(status, sizeof status, "operating (variable string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (variable string)... %d%% complete", ((double)(ctx->o-ctx->ofs)) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_str sr;
@@ -475,7 +475,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 	ht_blockop_int_context *ctx = (ht_blockop_int_context*)context;
 	char status[64];
 	if (ctx->expr_const) {		
-		ht_snprintf(status, sizeof status, "operating (constant integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (constant integer)... %d%% complete", ((double)(ctx->o-ctx->ofs)) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		byte ibuf[4];
 		create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
@@ -492,7 +492,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			return false;
 		}
 	} else {
-		ht_snprintf(status, sizeof status, "operating (variable integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (variable integer)... %d%% complete", ((double)(ctx->o-ctx->ofs)) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_int ir;
