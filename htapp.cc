@@ -2192,11 +2192,11 @@ char *ht_app::func(UINT i, bool execute)
 			if (execute) sendmsg(cmd_popup_dialog_view_list);
 			return "mode";
 		/* FIXME: experimental */
-		case 9:
+/*		case 9:
 			if (execute) {
 				create_window_term("make");
 			}
-			return "make";
+			return "make";*/
 		case 10:
 			if (execute) sendmsg(cmd_quit);
 			return "quit";
@@ -2425,7 +2425,7 @@ void ht_app::handlemsg(htmsg *msg)
 						return;
 					}
 					break;
-#ifdef S111111111111111111111111111111111111111111
+#if 0
 				/* FIXME: experimental */
 				case K_Control_F9:
 					((ht_app*)app)->create_window_term("main.exe");
