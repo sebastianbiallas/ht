@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.8.0pre1, Mar 2004}
+@subtitle{Edition 0.9trunk, Sep 2004}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.8.0pre1
+0.9trunk
 @end macro
 
 @macro hturl
@@ -237,10 +237,12 @@ instead of Control or something...
 @node Authors, , Top, Top
 @section Authors
 
-Stefan Weyergraf @email{stefan@@weyergraf.de}
+@itemize @bullet
 
+@item Stefan Weyergraf
 
-Sebastian Biallas @email{sb@@biallas.net}
+@item Sebastian Biallas @email{sb@@biallas.net}
+@end itemize
 
 @node Features, , Top, Top
 @section Features

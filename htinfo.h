@@ -2,7 +2,7 @@
  *	HTE Editor
  *	htinfo.h
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -24,11 +24,10 @@
 #define ht_url "http://hte.sourceforge.net"
 
 #define ht_name "ht"
-#define ht_version "0.8trunk"
+#define ht_version "0.9trunk"
 
 #define ht_author1 "Stefan Weyergraf"
-#define ht_mail1 "stefan@weyergraf.de"
-#define ht_copyright1 "(c) 1999-2004 "ht_author1", "ht_mail1
+#define ht_copyright1 "(c) 1999-2004 "ht_author1
 
 #define ht_author2 "Sebastian Biallas"
 #define ht_mail2 "sb@biallas.net"
