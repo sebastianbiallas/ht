@@ -1179,7 +1179,6 @@ int x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
 	dword disp=0;
 	int addrsize=X86_ADDRSIZEUNKNOWN;
 	int lasttokenreg=X86_REG_NO;
-	int lasttokendisp=0;
 
 	int sign=0;
 	char buf[64]; /* FIXME: possible buffer overflow */
@@ -1191,7 +1190,7 @@ cont:
 		if (strchr("*+-[]()", *s) && *s) {
 			s++;
 		} else {
-			while (!strchr(" \t*+-[]()", *s) || !*s) s++;
+			while (!strchr(" \t*+-[]()", *s) && *s) s++;
 		}
 		strncpy(buf, t, s-t);
 		buf[s-t]=0;
@@ -1208,7 +1207,7 @@ cont:
 		if (*t=='*') {
 			if (lasttokenreg==X86_REG_NO) {
 /* FIXME: case "imm*reg" not yet supported ! cleaner implementation needed ! */
-				return 0;
+                    return 0;
 			} else {
 				dword v;
 				if (!fetch_number(&s, &v)) return 0;
@@ -1258,16 +1257,15 @@ cont:
 		dword v;
 		
 		if (imm_eval_proc && imm_eval_proc(imm_eval_context, &t, &v)) {
-			lasttokendisp=disp;
 			if (sign) disp-=v; else disp+=v;
 			continue;
 		} else if (fetch_number(&t, &v)) {
-			lasttokendisp=disp;
 			if (sign) disp-=v; else disp+=v;
 			continue;
 		}
 		return 0;
 	}
+
 	if ((base==X86_REG_NO) && (index==X86_REG_NO)) {
 /* unsigned disp */
 		if (disp>0xffff) {
