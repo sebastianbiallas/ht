@@ -474,7 +474,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 {
 	ht_blockop_int_context *ctx = (ht_blockop_int_context*)context;
 	char status[64];
-	if (ctx->expr_const) {
+	if (ctx->expr_const) {		
 		ht_snprintf(status, sizeof status, "operating (constant integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		byte ibuf[4];
@@ -570,64 +570,68 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 
 			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start) &&
 			format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
-				int esize=0;
-				int esizes[3]={4, 2, 1};
-				switch (t.mode.cursor_pos) {
-					/* element type: byte */
-					case 0: esize++;
-					/* element type: word */
-					case 1: esize++;
-					/* element type: dword */
-					case 2: {
-						char a[256];
-						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
+				if (end > start) {
+					int esize=0;
+					int esizes[3]={4, 2, 1};
+					switch (t.mode.cursor_pos) {
+						/* element type: byte */
+						case 0: esize++;
+						/* element type: word */
+						case 1: esize++;
+						/* element type: dword */
+						case 2: {
+							char a[256];
+							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
 						
-						char addr[128];
-						bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
-						bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							char addr[128];
+							bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
 						
-						esize = esizes[esize];
-						ht_data *ctx = NULL;
-						try {
-							ctx = create_blockop_int_context(file, start, end-start, esize, little_endian, a);
-							if (ctx) {
-								/*bool b = */execute_process(blockop_int_process, ctx);
+							esize = esizes[esize];
+							ht_data *ctx = NULL;
+							try {
+								ctx = create_blockop_int_context(file, start, end-start, esize, little_endian, a);
+								if (ctx) {
+									/*bool b = */execute_process(blockop_int_process, ctx);
+								}
+							} catch (ht_exception *e) {
+								errorbox("error: %s", e->what());
 							}
-						} catch (ht_exception *e) {
-							errorbox("error: %s", e->what());
+							if (ctx) delete ctx;
+							break;
 						}
-						if (ctx) delete ctx;
-						break;
-					}
-					/* element type: string */
-					case 3: {
-						char a[256];
-						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
+						/* element type: string */
+						case 3: {
+							char a[256];
+							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
 
-						char addr[128];
-						bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
-						bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
-						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
-						
-						ht_data *ctx = NULL;
-						try {
-							ctx = create_blockop_str_context(file, start, end-start, esize, little_endian, a);
-							if (ctx) {
-								/*bool b = */execute_process(blockop_str_process, ctx);
+							char addr[128];
+							bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
+							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+
+							ht_data *ctx = NULL;
+							try {
+								ctx = create_blockop_str_context(file, start, end-start, esize, little_endian, a);
+								if (ctx) {
+									/*bool b = */execute_process(blockop_str_process, ctx);
+								}
+							} catch (ht_exception *e) {
+								errorbox("error: %s", e->what());
 							}
-						} catch (ht_exception *e) {
-							errorbox("error: %s", e->what());
+							if (ctx) delete ctx;
+							break;
 						}
-						if (ctx) delete ctx;
-						break;
-					}
-					default:
-						errorbox("mode %d not supported", t.mode.cursor_pos);
+						default:
+							errorbox("mode %d not supported", t.mode.cursor_pos);
+					}							
+				} else {
+					errorbox("end offset must be greater than start offset");
 				}
 			}
 		}
