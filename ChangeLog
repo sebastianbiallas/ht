@@ -33,12 +33,12 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
-     * open info file fixed
-     * ht_hex_sub::last_line_id(...) fixed
-     * LE host_struct's created
+	* open info file fixed
+	* ht_hex_sub::last_line_id(...) fixed
+	* LE host_struct's created
 
-     * UI file/execute for new sys_ipc_* functions
-     * htsys: new function sys_get_caps(), changed if to sys_ipc_exec(...)
+	* UI file/execute for new sys_ipc_* functions
+	* htsys: new function sys_get_caps(), changed if to sys_ipc_exec(...)
 
 	* htpeimg.cc: "section(ANY)"
 	* infoview copes with CRLF
