@@ -36,6 +36,7 @@
 	- ht_analy::lowest/highest address
 
 +steves
+- create ht.cfg in "home dir", implementation+interface sys_get_home_dir()
 - disabling "-pipe" on generic-POSIX systems doesn't ssem to work
 - input_date_time()
 - open... new option: preserve mtime

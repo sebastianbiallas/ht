@@ -145,8 +145,8 @@ int DjgppSystemDisplay::nprint(int x, int y, vcp color, char *str, int strlen, i
 bool DjgppSystemDisplay::read(int &rawchar, vcp &color, int x, int y)
 {
 	uint16 *b = buf+x+y*w;
-     rawchar = b&0xff;
-     color = b>>8;
+     rawchar = *b&0xff;
+     color = *b>>8;
 	return true;
 }
 

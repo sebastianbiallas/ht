@@ -382,23 +382,23 @@ void	VfsListbox::reread()
 void *VfsListbox::quickfind(char *s)
 {
 	ht_text_listbox_item *item = (ht_text_listbox_item *)e_cursor;
-	for (int j=0; j<2; j++) {
+     for (int j=0; j<2; j++) {
 		int slen = strlen(s);
-		char *i = NULL;
-		if (item) {
-			i = item->data[keycol];
-			i = (i && *i) ? i+1 : i;
-		}
+	     char *i = NULL;
+	     if (item) {
+		     i = item->data[keycol];
+		     i = (i && *i) ? i+1 : i;
+	     }
 		while (item && (compare_strn(i, s, slen)!=0)) {
 			item = item->next;
-			if (item) {
-				i = item->data[keycol];
-				i = (i && *i) ? i+1 : i;
-			}
+	          if (item) {
+			     i = item->data[keycol];
+			     i = (i && *i) ? i+1 : i;
+	          }
 		}
-		if (item) return item;
-		item = first;
-	}
+	     if (item) return item;
+          item = first;
+     }
 	return NULL;
 }
 
@@ -407,11 +407,11 @@ char	*VfsListbox::quickfindCompletition(char *s)
 	ht_text_listbox_item *item = first;
 	char *res = NULL;
 	int slen = strlen(s);
-	char *i = NULL;
-	if (item) {
-		i = item->data[keycol];
-		i = (i && *i) ? i+1 : i;
-	}
+     char *i = NULL;
+     if (item) {
+	     i = item->data[keycol];
+	     i = (i && *i) ? i+1 : i;
+     }
 	while (item) {
 		if (compare_strn(i, s, slen)==0) {
 			if (!res) {
@@ -422,10 +422,10 @@ char	*VfsListbox::quickfindCompletition(char *s)
 			}
 		}
 		item = item->next;
-		if (item) {
-			i = item->data[keycol];
-			i = (i && *i) ? i+1 : i;
-		}
+          if (item) {
+		     i = item->data[keycol];
+		     i = (i && *i) ? i+1 : i;
+          }
 	}
 	return res;
 }
@@ -524,11 +524,21 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 					break;
 			}
 			if (avail) {
-				tm t = *gmtime(&q);
+				tm *pt = gmtime(&q);
+				if (!pt) {
+					q = 0;
+					pt = gmtime(&q);
+				}
+				tm t = *pt;
 
 				time_t ct;
 				time(&ct);
-				tm c = *gmtime(&ct);
+				tm *pc = gmtime(&ct);
+				if (!pc) {
+					ct = 0;
+					pc = gmtime(&ct);
+				}
+				tm c = *pc;
 				char *line = buf;
 									   
 				char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };

@@ -20,6 +20,7 @@
  */
 
 #include "htsys.h"
+#include "qword.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -44,6 +45,15 @@ int sys_canonicalize(char *result, const char *filename)
 	return (GetFullPathName(filename, HT_NAME_MAX, result, &dunno) > 0) ? 0 : ENOENT;
 }
 
+dword filetime_to_ctime(FILETIME f)
+{
+	qword q;
+	QWORD_SET_LO(q, f.dwLowDateTime);
+	QWORD_SET_HI(q, f.dwHighDateTime);
+	q = q / int_to_qword(10000000);		// 100 nano-sec to full sec
+	return QWORD_GET_LO(q) + 1240431886;	// MAGIC: this is 1.1.1970 minus 1.1.1601 in seconds
+}
+
 void sys_findfill(pfind_t *pfind)
 {
 	/*DWORD dwFileAttributes;
@@ -62,9 +72,9 @@ void sys_findfill(pfind_t *pfind)
 	pfind->stat.size = wfs->find_data.nFileSizeLow;
 	pfind->stat.size_high = wfs->find_data.nFileSizeHigh;
 	pfind->stat.mode = (wfs->find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? HT_S_IFDIR : HT_S_IFREG;
-	pfind->stat.ctime = 0;
-	pfind->stat.mtime = 0;
-	pfind->stat.atime = 0;
+	pfind->stat.ctime = filetime_to_ctime(wfs->find_data.ftCreationTime);
+	pfind->stat.mtime = filetime_to_ctime(wfs->find_data.ftLastWriteTime);
+	pfind->stat.atime = filetime_to_ctime(wfs->find_data.ftLastAccessTime);
 }
 
 int sys_findfirst(const char *dirname, pfind_t *pfind)
