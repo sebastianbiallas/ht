@@ -37,12 +37,12 @@ public:
 		virtual	void	beginAddr();
 		virtual	void	beginLine();
 		virtual	ht_stream *getGenerateStream();
-		virtual	int	elementLength(char *s);
+		virtual	int	elementLength(const char *s);
 		virtual	void	endAddr();
 		virtual	void	endLine();
 		virtual	void footer();
 		virtual	void	header();
-		virtual	void putElement(int element_type, char *element);
+		virtual	void putElement(int element_type, const char *element);
 		virtual	char *link(char *s, Address *Addr);
 		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
 };

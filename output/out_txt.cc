@@ -75,7 +75,7 @@ ht_stream *AnalyserTxtOutput::getGenerateStream()
 	return stream;
 }
 
-int	AnalyserTxtOutput::elementLength(char *s)
+int	AnalyserTxtOutput::elementLength(const char *s)
 {
 	return strlen(s);
 }
@@ -91,7 +91,7 @@ void	AnalyserTxtOutput::endLine()
 	AnalyserOutput::endLine();
 }
 
-void AnalyserTxtOutput::putElement(int element_type, char *element)
+void AnalyserTxtOutput::putElement(int element_type, const char *element)
 {
 	switch (element_type) {
 		case ELEMENT_TYPE_HIGHLIGHT_DATA_CODE:
