@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.60, April 2002}
+@subtitle{Edition 0.61, July 2002}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -76,7 +76,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.6.0
+0.6.1
 @end macro
 
 @macro hturl
@@ -174,7 +174,7 @@ Window key bindings
 @item Alt+F3
 @tab close window
 @item Ctrl+F5
-@tab resize/move mode
+@tab toggle resize/move mode
 @item
 @end multitable
 
@@ -189,18 +189,21 @@ Analyser key bindings
 @item n                    
 @tab (re)name current address 
 (empty string to delete)
-@item x                    
-@tab show xrefs (search for xrefs)
-@item #                    
+@item x
+@tab show xrefs (search/delete xrefs)
+@item #
 @tab edit comments
-@item Ctrl+A               
+#item Del
+@tab Delete everything associated@*
+with current address
+@item Ctrl+A
 @tab call assembler
-@item Ctrl+F               
+@item Ctrl+F
 @tab goto start of current function@*
 (indicated in the 2nd line)
-@item Ctrl+L               
+@item Ctrl+L
 @tab goto previous label
-@item Ctrl+T               
+@item Ctrl+T
 @tab show recursive function references
 
 @end multitable
@@ -250,7 +253,8 @@ Win32 portable executables (PE)
 - delay-import section @*
 - export section @*
 - resources @*
-- image with code/data analyser (x86 & alpha)
+- image with code/data analyser @*
+  (x86 & alpha, experimental .NET support)
 @end itemize
 @item 
 UN*X executable and linkable format (ELF)
@@ -260,7 +264,7 @@ UN*X executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86)
+- image with code/data analyser (x86, ia64)
 @end itemize
 @item 
 Win16, OS/2 new executables (NE)
