@@ -42,6 +42,7 @@ class Analyser;
 #define ADDRESS_STRING_FORMAT_ADD_0X		    8
 #define ADDRESS_STRING_FORMAT_ADD_H		   16
 
+#define DUP_ADDR(a) ((Address*)(a)->duplicate())
 class Address: public ht_data {
 public:
 	virtual	bool		add(int offset) = 0;

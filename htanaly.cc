@@ -2056,8 +2056,12 @@ int ht_analy_sub::next_line_id(LINE_ID *line_id, int n)
 	if (!analy) return false;
 	Address *a = analy->createAddress();
 	a->getFromArray((byte*)&(line_id->id2));
-	int res = output->nextLine(&a, (int*)&(line_id->id1), n, highestaddress);
-	if (res) a->putIntoArray((byte*)&(line_id->id2));
+     int line = line_id->id1;
+	int res = output->nextLine(a, line, n, highestaddress);
+	if (res) {
+	     line_id->id1 = line;
+     	a->putIntoArray((byte*)&(line_id->id2));
+     }
 	delete a;
 	return res;
 }
@@ -2067,8 +2071,12 @@ int	ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
 	if (!analy) return false;
 	Address *a = analy->createAddress();
 	a->getFromArray((byte*)&(line_id->id2));
-	int res = output->prevLine(&a, (int*)&line_id->id1, n, lowestaddress);
-	if (res) a->putIntoArray((byte*)&(line_id->id2));
+     int line = line_id->id1;
+	int res = output->prevLine(a, line, n, lowestaddress);
+	if (res) {
+          line_id->id1 = line;
+     	a->putIntoArray((byte*)&(line_id->id2));
+     }
 	delete a;
 	return res;
 }

@@ -422,8 +422,8 @@ AddressQueueItem::AddressQueueItem() {}
 
 AddressQueueItem::AddressQueueItem(Address *Addr, Address *Func)
 {
-	addr = (Address*)Addr->duplicate();
-	func = (Address*)Func->duplicate();
+	addr = DUP_ADDR(Addr);
+	func = DUP_ADDR(Func);
 }
 
 AddressQueueItem::~AddressQueueItem()
@@ -849,7 +849,7 @@ bool Analyser::addXRef(Address *from, Address *to, xref_enum_t action)
 		x = new ht_dtree();
 		((ht_dtree *)x)->init(compare_keys_ht_data);
 	}
-	x->insert((Address*)to->duplicate(), new AddrXRef(action));
+	x->insert(DUP_ADDR(to), new AddrXRef(action));
 	a->xrefs = x;
 	
 	DPRINTF("xref %y->%y\n", from, to);
@@ -924,7 +924,7 @@ void Analyser::assignXRef(Address *from, Address *to, xref_enum_t action)
 
 	if (x) {
 		AddrXRef *xref;
-		Address *tmp_to = (Address*)to->duplicate();
+		Address *tmp_to = DUP_ADDR(to);
 		if ((xref = (AddrXRef*)x->get(tmp_to))) {
 			// update xref
 			xref->type = action;
@@ -936,7 +936,7 @@ void Analyser::assignXRef(Address *from, Address *to, xref_enum_t action)
 		x = new ht_dtree();
 		((ht_dtree *)x)->init(compare_keys_ht_data);
 	}
-	x->insert((Address*)to->duplicate(), new AddrXRef(action));
+	x->insert(DUP_ADDR(to), new AddrXRef(action));
 	a->xrefs = x;
 	
 	DPRINTF("xref %y->%y\n", from, to);
@@ -1208,7 +1208,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			add_comment(a->addr, 0, "");
 		}
 	}*/
-	Address *next_addr = (Address *)addr->duplicate();
+	Address *next_addr = DUP_ADDR(addr);
 	if (!next_addr->add(len)) {
 		delete next_addr;
 		next_addr = new InvalidAddress();
@@ -1350,7 +1350,7 @@ Location *Analyser::enumLocationsReverse(Address *Addr)
 {
 	Location *result = NULL;
 	if (locations) analyserenum_addrs_back(locations, Addr, result);
-	while ((result) && (result->flags & AF_DELETED)) {
+ 	while ((result) && (result->flags & AF_DELETED)) {
 		Address *a = result->addr;
 		result = NULL;
 		analyserenum_addrs_back(locations, a, result);
@@ -1488,7 +1488,7 @@ Location *Analyser::getLocationContextByAddress(Address *Addr)
 {
 	Location *res = enumLocationsReverse(Addr);
 	if (res && res->type.type != dt_unknown) {
-		Address *resaddr = (Address *)res->addr->duplicate();
+		Address *resaddr = DUP_ADDR(res->addr);
 		resaddr->add(res->type.length);
 		if (resaddr->compareTo(Addr) > 0) {
 			delete resaddr;
@@ -1561,7 +1561,7 @@ const char *Analyser::getSymbolNameByLocation(Location *loc)
 Address *Analyser::fileofsToAddress(FILEOFS fileaddr)
 {
 	// abstract / stub
-	return (Address *)invalid_addr->duplicate();
+	return DUP_ADDR(invalid_addr);
 }
 
 /**
@@ -1817,7 +1817,7 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	delete first_explored;
 	delete last_explored;
 	delete next_explored;
-	func = (Address *)func->duplicate();
+	func = DUP_ADDR(func);
 	
 	if (!validCodeAddress(Addr) || explored->contains(Addr)) {
 		DPRINTF("Address: %y Valid: %d Explored: %d\n", addr, validCodeAddress(addr), explored->contains(addr));
@@ -1837,7 +1837,7 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	} else {
 		if (addr != Addr) {
 			delete addr;
-			addr = (Address *)Addr->duplicate();
+			addr = DUP_ADDR(Addr);
 		}
 	}
 
@@ -1850,10 +1850,10 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	if (!next_explored) {
 		next_explored = new InvalidAddress();
 	} else {
-		next_explored = (Address *)next_explored->duplicate();
+		next_explored = DUP_ADDR(next_explored);
 	}
-	first_explored = (Address *)addr->duplicate();
-	last_explored = (Address *)addr->duplicate();
+	first_explored = DUP_ADDR(addr);
+	last_explored = DUP_ADDR(addr);
 	return true;
 }
 
@@ -1922,7 +1922,7 @@ Location *Analyser::newLocation(Location *&locs, Address *Addr)
 		if (Addr->compareTo(locs->addr) > 0) return newLocation(locs->right, Addr);
 	} else {
 		locs = (Location *) smalloc0(sizeof(Location));
-		locs->addr = (Address *)Addr->duplicate();
+		locs->addr = DUP_ADDR(Addr);
 		location_count++;
 	}
 	locs->flags &= ~AF_DELETED;
@@ -1999,8 +1999,8 @@ bool Analyser::popAddress(Address **Addr, Address **func)
 	if (addr_queue->count()) {
 
 		AddressQueueItem *aqi = (AddressQueueItem *) addr_queue->dequeue();
-		*Addr = (Address *)aqi->addr->duplicate();
-		*func = (Address *)aqi->func->duplicate();
+		*Addr = DUP_ADDR(aqi->addr);
+		*func = DUP_ADDR(aqi->func);
 		delete aqi;
 		
 		DPRINTF("addr %y (from sub %y) poped\n", *Addr, *func);

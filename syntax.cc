@@ -425,14 +425,15 @@ void ht_c_syntax_lexer::reloadpalette()
  *	CLASS ht_html_syntax_lexer
  */
 
-/* C lexer states */
+#if 0
+/* HTML lexer states */
 #define LEX_HTMLST_NORMAL			1
 #define LEX_HTMLST_TAG				2
 #define LEX_HTMLST_COMMENT			3
 #define LEX_HTMLST_CSS				4
 #define LEX_HTMLST_SCRIPT			5
 
-/* C lexer tokens */
+/* HTML lexer tokens */
 #define LEX_HTMLTOK_ERROR			1
 #define LEX_HTMLTOK_WHITESPACE		2
 #define LEX_HTMLTOK_NORMAL			3
@@ -457,9 +458,9 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 	{ LSTSET(LEX_HTMLST_NORMAL),
 	  false, LRST_STRING, "<!", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_NORMAL),
-	  false, LRST_REGEX, "</[_A-Za-z0-9-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	  false, LRST_REGEX, "</[-_A-Za-z0-9]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_NORMAL),
-	  false, LRST_REGEX, "<[_A-Za-z0-9-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	  false, LRST_REGEX, "<[-_A-Za-z0-9]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_TAG),
 	  false, LRST_STRING, ">", LEX_HTMLST_NORMAL, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_TAG),
@@ -480,6 +481,67 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 /**/
 	{ 0, 0, LRST_EMPTY, false, false, 0 }
 };
+#else
+
+/* HTML lexer states */
+#define LEX_HTMLST_NORMAL			1
+#define LEX_HTMLST_TAG_OPEN			2
+#define LEX_HTMLST_TAG				3
+#define LEX_HTMLST_COMMENT			4
+#define LEX_HTMLST_CSS				5
+#define LEX_HTMLST_SCRIPT			6
+
+/* HTML lexer tokens */
+#define LEX_HTMLTOK_ERROR			1
+#define LEX_HTMLTOK_WHITESPACE		2
+#define LEX_HTMLTOK_NORMAL			3
+#define LEX_HTMLTOK_COMMENT			4
+#define LEX_HTMLTOK_TAG				5
+#define LEX_HTMLTOK_ATTRIBUTE			6
+#define LEX_HTMLTOK_SYMBOL			7
+#define LEX_HTMLTOK_CDATA			8
+#define LEX_HTMLTOK_ENTITY			9
+
+syntax_lexer_rule html_syntax_lexer_rules[] = {
+/* whitespaces */
+	{ LSTSET(LEX_HTMLST_NORMAL),
+	  false, LRST_WHITESPACE, NULL, 0, LEX_CTOK_WHITESPACE },
+/* '<!--' - '-->' multiline comments */
+	{ LSTSET(LEX_HTMLST_NORMAL),
+	  false, LRST_STRING, "<!--", LEX_HTMLST_COMMENT, LEX_HTMLTOK_COMMENT },
+	{ LSTSET(LEX_HTMLST_COMMENT),
+	  false, LRST_STRING, "-->", LEX_HTMLST_NORMAL, LEX_HTMLTOK_COMMENT },
+	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_COMMENT), LEX_HTMLTOK_COMMENT),
+/* '<' - '>' tags */
+	{ LSTSET(LEX_HTMLST_NORMAL),
+	  false, LRST_STRING, "<", LEX_HTMLST_TAG_OPEN, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG_OPEN),
+	  false, LRST_STRING, "/", LEX_HTMLST_TAG_OPEN, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG_OPEN),
+	  false, LRST_STRING, "!", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG_OPEN),
+	  false, LRST_REGEX, "[-_A-Za-z0-9]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_STRING, ">", LEX_HTMLST_NORMAL, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_STRING, "/>", LEX_HTMLST_NORMAL, LEX_HTMLTOK_TAG},
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_WHITESPACE, NULL, 0, LEX_HTMLTOK_TAG },
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_REGEX, "[-_A-Za-z0-9]+", 0, LEX_HTMLTOK_ATTRIBUTE },
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_CHARSET, "=", 0, LEX_HTMLTOK_SYMBOL },
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_DQSTRING, NULL, 0, LEX_HTMLTOK_CDATA },
+	{ LSTSET(LEX_HTMLST_TAG),
+	  false, LRST_QSTRING, NULL, 0, LEX_HTMLTOK_CDATA },
+/*	{ LSTSET(LEX_HTMLST_NORMAL),
+	  false, LRST_REGEX, "&[#A-Za-z0-9]+?;", 0, LEX_HTMLTOK_ENTITY },*/
+	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_NORMAL), LEX_HTMLTOK_NORMAL),
+/**/
+	{ 0, 0, LRST_EMPTY, false, false, 0 }
+};
+#endif
 
 void ht_html_syntax_lexer::init()
 {

@@ -115,14 +115,14 @@ public:
 			OutAddr *		getAddr(Address *Addr);
 			OutLine *		getLine(Address *Addr, int line);
 			bool			getLineString(char *buf, int maxlen, Address *Addr, int line);
-			bool			getLineByteLength(int *len, Address *Addr, int line);
+			bool			getLineByteLength(int &len, Address *Addr, int line);
 			int			getLineCount(Address *Addr);
 			int			getAddrByteLength(Address *Addr);
 	virtual	void			header();
 			void			invalidateCache();
 	virtual	char *		link(char *s, Address *Addr);
-			int			nextLine(Address **Addr, int *line, int n, Address *max);
-			int			prevLine(Address **Addr, int *line, int n, Address *min);
+			int			nextLine(Address *&Addr, int &line, int n, Address *max);
+			int			prevLine(Address *&Addr, int &line, int n, Address *min);
 	virtual	void			putElement(int element_type, const char *element);
 			void			reset();
 			void			write(const char *s);

@@ -227,22 +227,22 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 				char *label = name;
 					if (!getSymbolByName(label)) {
 						Address *address = createAddress32(sym.st_value);
+                              if (validAddress(address, scvalid)) {
+							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+							make_valid_name(label, label);
 
-						make_valid_name(label, label);
+							ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
 
-						ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
+							if (demangled) free(demangled);
 
-						if (demangled) free(demangled);
-
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, elf_buffer);
-						addComment(address, 0, ";********************************************************");
-						pushAddress(address, address);
-						assignSymbol(address, label, label_func);
-						
+							addComment(address, 0, "");
+							addComment(address, 0, ";********************************************************");
+							addComment(address, 0, elf_buffer);
+							addComment(address, 0, ";********************************************************");
+							pushAddress(address, address);
+							assignSymbol(address, label, label_func);
+						}
 						delete address;
 					}
 					break;
@@ -251,21 +251,22 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 					char *label = name;
 					if (!getSymbolByName(label)) {
 						Address *address = createAddress32(sym.st_value);
+                              if (validAddress(address, scvalid)) {
 
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 					
-						make_valid_name(label, label);
+							make_valid_name(label, label);
 					
-						ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size, bind);
+							ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size, bind);
 
-						if (demangled) free(demangled);
+							if (demangled) free(demangled);
 
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, elf_buffer);
-						addComment(address, 0, ";********************************************************");
-						assignSymbol(address, label, label_data);
-						
+							addComment(address, 0, "");
+							addComment(address, 0, ";********************************************************");
+							addComment(address, 0, elf_buffer);
+							addComment(address, 0, ";********************************************************");
+							assignSymbol(address, label, label_data);
+						}
 						delete address;
 					}
 					break;

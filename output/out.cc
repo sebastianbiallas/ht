@@ -65,7 +65,7 @@ OutLine::~OutLine()
  */
 OutAddr::OutAddr(Address *Addr, UINT Time)
 {
-	addr = (Address *)Addr->duplicate();
+	addr = DUP_ADDR(Addr);
 	updateTime(Time);
 	lines = new ht_clist();
 	lines->init();
@@ -502,7 +502,7 @@ int	AnalyserOutput::generateFile(Address *from, Address *to)
 			
 			// update address
 			int len;
-			if (getLineByteLength(&len, from, line)) {
+			if (getLineByteLength(len, from, line)) {
 				from->add(len);
 			}
 			// update line
@@ -529,17 +529,17 @@ OutAddr *AnalyserOutput::getAddr(Address *Addr)
 		assert(addr != Addr);
 		DPRINTF("not cached1 --");
 		delete addr;
-		addr = (Address *)Addr->duplicate();
+		addr = DUP_ADDR(Addr);
 		OutAddr *oa = (OutAddr*)out_addrs->get(Addr);
 		if (!oa) {
 			DPRINTF("generate\n");
 			if (out_addrs->count() > 1024) {
 				reset();
-				addr = (Address *)Addr->duplicate();
+				addr = DUP_ADDR(Addr);
 			}
 			oa = new OutAddr(Addr, current_time);
 			generateAddr(Addr, oa);
-			out_addrs->insert((Address *)Addr->duplicate(), oa);
+			out_addrs->insert(DUP_ADDR(Addr), oa);
 		} else {
 			DPRINTF("but cached2 ");
 			if (oa->time != current_time) {
@@ -583,11 +583,11 @@ bool AnalyserOutput::getLineString(char *buf, int maxlen, Address *Addr, int lin
 	}
 }
 
-bool AnalyserOutput::getLineByteLength(int *len, Address *Addr, int line)
+bool AnalyserOutput::getLineByteLength(int &len, Address *Addr, int line)
 {
 	OutLine *ol = getLine(Addr, line);
 	if (ol) {
-		*len = ol->bytes;
+		len = ol->bytes;
 		return true;
 	} else {
 		return false;
@@ -631,25 +631,25 @@ void	AnalyserOutput::invalidateCache()
 	}
 }
 
-int	AnalyserOutput::nextLine(Address **Addr, int *line, int n, Address *max)
+int	AnalyserOutput::nextLine(Address *&Addr, int &line, int n, Address *max)
 {
 	int res = 0;
 	int len;
 	while (n--) {
-		if (getLineByteLength(&len, *Addr, *line+1)) {
-			(*line)++;
+		if (getLineByteLength(len, Addr, line + 1)) {
+			line++;
 		} else {
-			getLineByteLength(&len, *Addr, *line);
-			if ((*Addr)->compareTo(max)>=0) return res;
-			if (!(*Addr)->add(len)) return res;
-			*line = 0;
+			getLineByteLength(len, Addr, line);
+			if (Addr->compareTo(max) >= 0) return res;
+			if (!Addr->add(len)) return res;
+			line = 0;
 		}
 		res++;
 	}
 	return res;
 }
 
-int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
+int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 {
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
 #define ADDRBUF(a)
@@ -659,25 +659,37 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 	DPRINTF2("prev_line(%s, %d, %d", tbuf, *line, n);
 	ADDRBUF(min)
 	DPRINTF2(", %s)\n", tbuf);
-	int res = 0;
-	// trivial cases
-	int cmp = (*Addr)->compareTo(min);
+
+     int res = 0;
+	int cmp = Addr->compareTo(min);
+     
 	DPRINTF2("cmp=%d\n", cmp);
-	if (cmp<0 || (cmp == 0 && *line==0)) {
+     /*
+      *	If we have reached |min| and line==0, we're on top
+      */
+	if (cmp<0 || (cmp == 0 && line==0)) {
 		DPRINTF2("geht nicht\n");
 		return 0;
 	}
-	while (n && *line) {
+     /*
+      *	A simple case: no address-change, only line-changes.
+      *	Go up while line > 0
+      */
+	while (n && line) {
 		DPRINTF2("simple\n");
 		n--;
-		(*line)--;
+		line--;
 		res++;
 	}
-	DPRINTF2("test\n");
+	DPRINTF2("test\n");     
 	if (!n) return res;
 	DPRINTF2("test2\n");
 
-	// complicated cases
+	/*
+      *	Now it gets complicated. We have to go to an other address.
+      *	First we have to figure out, where we should start to search for
+      *	the previous address.
+      */
 	int min_length, max_length, min_look_ahead, avg_look_ahead, addr_align;
 	if (analy->disasm) {
 		analy->disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
@@ -685,44 +697,63 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 		min_look_ahead=1;
 		avg_look_ahead=1;
 	}
+     
 	int l = n*avg_look_ahead;
-	if (l<min_look_ahead) l = min_look_ahead;
-	Address *search_addr = (Address*)(*Addr)->duplicate();
-	if (!search_addr->add(-l) || search_addr->compareTo(min)<0) {
-		DPRINTF2("nicht gut\n");
-		delete search_addr;
-		search_addr = (Address *)min->duplicate();
-	}
-	int search_line = 0;
+	if (l < min_look_ahead) l = min_look_ahead;
 
-	Location *prev = analy->enumLocationsReverse(*Addr);
+     /*
+      *	The disassember whats us to go |l| bytes back
+      */
+      
+	Address *search_addr = DUP_ADDR(Addr);
+	if (!search_addr->add(-l) || search_addr->compareTo(min)<0) {
+     	/*
+           *	It isnt possible, to go |l| bytes back. So we start at |min|.
+           */
+		delete search_addr;
+		search_addr = DUP_ADDR(min);
+	}
+
+     /*
+      *	|prev| contains the previous "logical" location.
+      *	that is some address, we know to be "atomic".
+      */
+     Location *prev = analy->enumLocationsReverse(Addr);
 	if (prev) {
-		Address *prevnext = (Address *)prev->addr->duplicate();
+     	/*
+           *	|prevnext| contains the "end address" of |prev|.
+           *	So we know how long (how much bytes) prev is.
+           */
+		Address *prevnext = DUP_ADDR(prev->addr);
 		if (prevnext->add(getAddrByteLength(prev->addr))) {
 				DPRINTF2("mid-test\n");
-			if (prevnext->compareTo(*Addr) > 0) {
-				// somebody jumped in the middle of an continuous address
-				delete *Addr;
+			if (prevnext->compareTo(Addr) > 0) {
+				/*
+                     *   We were in the middle of a location.
+                     *	We solve this situation, by starting a new search
+                     *	with |prev->addr|. This is counted as "one line up".
+                     */
+				delete Addr;
 				delete search_addr;
 				delete prevnext;
-				*Addr = (Address *)prev->addr->duplicate();
-				*line = 0;
+				Addr = DUP_ADDR(prev->addr);
+				line = 0;
 				res++;
 				DPRINTF2("mid\n");
 				return prevLine(Addr, line, n-1, min)+res;
 			}
-			if (prevnext->compareTo(*Addr) == 0) {
-				delete *Addr;
+			if (prevnext->compareTo(Addr) == 0) {
+				delete Addr;
 				delete search_addr;
 				delete prevnext;
-				*Addr = (Address *)prev->addr->duplicate();
-				*line = getLineCount(prev->addr)-1;
+				Addr = DUP_ADDR(prev->addr);
+				line = getLineCount(prev->addr)-1;
 				res++;
 				DPRINTF2("mid2\n");
 				return prevLine(Addr, line, n-1, min)+res;
 			}
-			Address *oldprevnext = (Address *)prevnext->duplicate();
-			if (prevnext->add(l) && prevnext->compareTo(*Addr) >= 0) {
+			Address *oldprevnext = DUP_ADDR(prevnext);
+			if (prevnext->add(l) && prevnext->compareTo(Addr) >= 0) {
 				delete search_addr;
 				search_addr = oldprevnext;
 				DPRINTF2("mid3\n");
@@ -733,38 +764,41 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 		delete prevnext;
 	}
 
+	int search_line = 0;
 	if (search_addr->compareTo(min) < 0) {
+     	/*
+           *	We have to start the search at |min|.
+           */
 		DPRINTF2("search_addr < min\n");
 		delete search_addr;
-		search_addr = (Address *)min->duplicate();
-		search_line = 0;
+		search_addr = DUP_ADDR(min);
 	}
 
 	Address *addrbuf[1024];
-	int	linebuf[1024];
-	int  i = 0;
-	int  len;
+	int linebuf[1024];
+	int i = 0;
+	int len;
 	
-	Address *next_addr = (Address *)search_addr->duplicate();
+	Address *next_addr = DUP_ADDR(search_addr);
 	while (1) {
 		ADDRBUF(search_addr);
 		DPRINTF2("search_addr: (%s, %d) ", tbuf, search_line);
 		ADDRBUF(next_addr);
 		DPRINTF2("next_addr: %s \n", tbuf);
-		if (search_addr->compareTo(*Addr) >= 0) {
-			if (search_line >= *line || (search_addr->compareTo(*Addr) > 0)) break;
+		if (search_addr->compareTo(Addr) >= 0) {
+			if (search_line >= line || (search_addr->compareTo(Addr) > 0)) break;
 		}
-		if (getLineByteLength(&len, search_addr, search_line)) {
+		if (getLineByteLength(len, search_addr, search_line)) {
 			next_addr->add(len);
 			search_line++;
 		} else {
 			delete search_addr;
-			search_addr = (Address *)next_addr->duplicate();
+			search_addr = DUP_ADDR(next_addr);
 			search_line = 0;
 			continue;
 		}
 		assert(i<1024);
-		addrbuf[i & 1023] = (Address *)search_addr->duplicate();
+		addrbuf[i & 1023] = DUP_ADDR(search_addr);
 		linebuf[i & 1023] = search_line-1;
 		i++;
 	}
@@ -776,15 +810,15 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 		DPRINTF2("no i!\n");
 		return res;
 	}
-	delete *Addr;
+	delete Addr;
 	if (i >= n) {
-		*Addr = (Address *)addrbuf[(i-n) & 1023]->duplicate();
-		*line = linebuf[(i-n) & 1023];
+		Addr = DUP_ADDR(addrbuf[(i-n) & 1023]);
+		line = linebuf[(i-n) & 1023];
 		res += n;
 		n = 0;
 	} else {
-		*Addr = (Address *)addrbuf[0]->duplicate();
-		*line = linebuf[0];
+		Addr = DUP_ADDR(addrbuf[0]);
+		line = linebuf[0];
 		res += i;
 		n -= i;
 	}
