@@ -335,7 +335,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 
 bool init_cfg()
 {
-#if defined(WIN32) || defined(__WIN32__) || defined(MSDOS) || defined(DJGPP)
+#if defined(MSDOS) || defined(DJGPP) || defined(WIN32) || defined(__WIN32__)
 	char d[1024];	/* FIXME: !!!! */
 	sys_dirname(d, appname);
 	char *b = "\\"SYSTEM_CONFIG_FILE_NAME;

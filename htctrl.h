@@ -32,7 +32,7 @@ extern ht_view *baseview;
 extern screendrawbuf *screen;
 extern ht_list *virtual_fs_list;
 extern void *project;
-extern char *appname;
+extern char appname[HT_NAME_MAX+1];
 extern int some_analyser_active;
 extern int num_ops_parsed;
 

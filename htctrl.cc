@@ -26,7 +26,7 @@ char *globalerror = sglobalerror;
 ht_view *app;
 ht_view *baseview;
 screendrawbuf *screen;
-char *appname;
+char appname[HT_NAME_MAX+1];
 ht_list *virtual_fs_list;
 void *project;
 int some_analyser_active = 0;

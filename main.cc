@@ -248,9 +248,19 @@ void params(int argc, char *argv[])
 	if (showhelp) show_help();
 }
 
+#if defined(WIN32) || defined(__WIN32__)
+#define LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 int main(int argc, char *argv[])
 {
-	appname = argv[0];
+#if defined(WIN32) || defined(__WIN32__)
+	HMODULE h = GetModuleHandle(NULL);
+	GetModuleFileName(h, appname, sizeof appname);
+#else
+	strncpy(appname, argv[0], sizeof appname);
+#endif
 
 	if (!init()) {
 		int init_failed = htstate;
@@ -266,6 +276,7 @@ int main(int argc, char *argv[])
 		LOG(*copyrights);
 		copyrights++;
 	}
+	LOG("appname = %s", appname);
 
 	int systemconfig_version = 0;   // -1 for older and 1 for newer file found
 	int systemconfig_magic = 0;     // !=0 meens wrong magic found
