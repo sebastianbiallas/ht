@@ -37,6 +37,7 @@
 #include "htpal.h"
 #include "htsearch.h"
 #include "htstring.h"
+#include "htsys.h"
 #include "httree.h"
 #include "htvfs.h"
 #include "infoview.h"
@@ -1409,6 +1410,18 @@ bool ht_app::create_window_term()
 		termwindow->init(&b, "terminal", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
 		
 		bounds k=b;
+		k.x=3;
+		k.y=k.h-2;
+		k.w-=7;
+		k.h=1;
+		ht_statictext *ind=new ht_statictext();
+		ind->init(&k, NULL, align_left, false, true);
+		ind->disable_buffering();
+		ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
+
+		termwindow->setpindicator(ind);
+
+		k=b;
 		k.x=b.w-2;
 		k.y=0;
 		k.w=1;
@@ -1418,10 +1431,10 @@ bool ht_app::create_window_term()
 
 		termwindow->setvscrollbar(hs);
 
-		int in, out, err;
+		ht_streamfile *in, *out, *err;
 		int handle;
 		int e = 0;
-		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "gcc")) == 0) {
+		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "make")) == 0) {
 			Terminal *terminal = new Terminal();
 			terminal->init(in, out, err, handle);
 

@@ -20,18 +20,20 @@
 
 #include <stdlib.h>
 #include <string.h>
+// #include <sys/select.h>
 
 #include "htctrl.h"
 #include "htidle.h"
 #include "htiobox.h"
+#include "htsys.h"
 #include "terminal.h"
-#include "unistd.h"
+#include <unistd.h>
 
 /*
  *	CLASS Terminal
  */
 
-void Terminal::init(int _in, int _out, int _err, int _sys_ipc_handle)
+void Terminal::init(ht_streamfile *_in, ht_streamfile *_out, ht_streamfile *_err, int _sys_ipc_handle)
 {
 	ht_mem_file *m = new ht_mem_file();
 	m->init();
@@ -44,21 +46,24 @@ void Terminal::init(int _in, int _out, int _err, int _sys_ipc_handle)
 
 void Terminal::done()
 {
-	close(in);
-	close(out);
-	close(err);
+	in->done();
+    	delete in;
+	out->done();
+	delete out;
+	err->done();
+	delete err;
 	sys_ipc_terminate(sys_ipc_handle);
 	ht_ltextfile::done();
 }
 
-bool Terminal::append(int file)
+bool Terminal::append(ht_streamfile *file)
 {
 #define STREAM_COPYBUF_SIZE	(128)
 	const int bufsize=STREAM_COPYBUF_SIZE;
 	byte *buf=(byte*)malloc(bufsize);
 	int r, w = 0;
 	do {
-		r = ::read(file, buf, bufsize);
+		r = file->read(buf, bufsize);
 		if (r<0) break;
 		w += r;
 		ht_ltextfile::write(buf, r);
@@ -76,7 +81,7 @@ UINT Terminal::write(const void *buf, UINT size)
 {
 	if (connected()) {
 		UINT r = ht_ltextfile::write(buf, size);
-		::write(in, buf, size);
+		in->write(buf, size);
 		return r;
 	}
 	return 0;		
@@ -84,6 +89,7 @@ UINT Terminal::write(const void *buf, UINT size)
 
 bool Terminal::update()
 {
+#if 0
 	fd_set rfds, wfds;
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
@@ -96,6 +102,7 @@ bool Terminal::update()
 	timeout.tv_usec = 0;
 	
 /*	int n =*/ select(FD_SETSIZE, &rfds, &wfds, NULL, &timeout);
+#endif
 	bool worked = false;
 //	if (FD_ISSET(err, &wfds)/* && (!feof(err))*/) {
 		seek(get_size());
@@ -182,6 +189,16 @@ void TerminalViewer::handlemsg(htmsg *msg)
 					break;
 				}
 			}
+			break;
+		case msg_get_scrollinfo:
+			switch (msg->data1.integer) {
+				case gsi_pindicator: {
+					get_pindicator_str((char*)msg->data2.ptr);
+					break;
+				}
+			}
+			clearmsg(msg);
+			return;
 	}
 	return ht_text_viewer::handlemsg(msg);
 }
@@ -193,4 +210,9 @@ bool TerminalViewer::idle()
 		return true;
 	}
 	return false;
+}
+
+void TerminalViewer::get_pindicator_str(char *buf)
+{
+	sprintf(buf, term->connected() ? " connected " : " disconnected ");
 }

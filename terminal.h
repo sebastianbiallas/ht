@@ -29,18 +29,18 @@
 
 class Terminal: public ht_ltextfile {
 private:
-	int in, out, err;
+	ht_streamfile *in, *out, *err;
 	int sys_ipc_handle;
 
-		bool append(int file);
+			bool append(ht_streamfile *file);
 public:
-		void init(int in, int out, int err, int sys_ipc_handle);
+			void init(ht_streamfile *in, ht_streamfile *out, ht_streamfile *err, int sys_ipc_handle);
 	virtual	void done();
 /* oerwritten */	
-	virtual UINT write(const void *buf, UINT size);
+	virtual	UINT write(const void *buf, UINT size);
 /* new */
-		bool connected();
-		bool update();
+			bool connected();
+			bool update();
 };
 
 /*
@@ -51,9 +51,10 @@ class TerminalViewer: public ht_text_viewer {
 private:
 	Terminal	*term;
 	
-		void do_update();
+	        void do_update();
+		void get_pindicator_str(char *buf);
 public:
-			void init(bounds *b, Terminal *term, bool own_term);
+	        void init(bounds *b, Terminal *term, bool own_term);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
