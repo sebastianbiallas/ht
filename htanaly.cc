@@ -1076,10 +1076,10 @@ void ht_aviewer::get_pindicator_str(char *buf)
 bool ht_aviewer::gotoAddress(Address *a, ht_view *source_object)
 {
 	viewer_pos p;
-     if (analy) {
-     	if (!analy->validAddress(a, scvalid)) return false;
-     }
-     // FIXME: insert a->compare(hi, low address) here
+	if (analy) {
+		if (!analy->validAddress(a, scvalid)) return false;
+	}
+	// FIXME: insert a->compare(hi, low address) here
 	if (convertAddressToViewerPos(a, &p)) {
 		return goto_pos(p, source_object);
 	}
@@ -1891,7 +1891,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 		name++;
 		if (bnstr(&name, &v, 10)) {
 			if (*name) return 0;
-               // FIXME: no QWORD_GET_LO
+			// FIXME: no QWORD_GET_LO
 			if (!offset_to_pos(QWORD_GET_LO(v), &vp)) {
 				set_eval_error("invalid offset: %08x", v);
 				return 0;
@@ -1934,12 +1934,12 @@ bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 	if (!analy) return false;
 	Address *a=analy->createAddress();
 	// FIXME: this is just plain wrong!!
-     if (a->byteSize()==8) {
+	if (a->byteSize()==8) {
 		a->getFromArray((byte*)&q);
-     } else {
+	} else {
 		dword ii = QWORD_GET_INT(q);
 		a->getFromArray((byte*)&ii);
-     }
+	}
 	if (analy->validAddress(a, scvalid)) {
 		bool res = convertAddressToViewerPos(a, pos);
 		delete a;

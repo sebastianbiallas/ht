@@ -37,9 +37,9 @@ struct ht_tag_sel {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
 	ID id128_1 HTPACKED;
-     ID id128_2 HTPACKED;
-     ID id128_3 HTPACKED;
-     ID id128_4 HTPACKED;
+	ID id128_2 HTPACKED;
+	ID id128_3 HTPACKED;
+	ID id128_4 HTPACKED;
 	byte strlen HTPACKED;
 };
 

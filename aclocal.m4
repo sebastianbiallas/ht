@@ -1,4 +1,4 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4
+dnl aclocal.m4 generated automatically by aclocal 1.4-p4
 
 dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
@@ -60,17 +60,17 @@ echo timestamp > conftestfile
 if (
    set X `ls -Lt $srcdir/configure conftestfile 2> /dev/null`
    if test "[$]*" = "X"; then
-	 # -L didn't work.
-	 set X `ls -t $srcdir/configure conftestfile`
+      # -L didn't work.
+      set X `ls -t $srcdir/configure conftestfile`
    fi
    if test "[$]*" != "X $srcdir/configure conftestfile" \
-	 && test "[$]*" != "X conftestfile $srcdir/configure"; then
+      && test "[$]*" != "X conftestfile $srcdir/configure"; then
 
-	 # If neither matched, then we have a broken ls.  This can happen
-	 # if, for instance, CONFIG_SHELL is bash and it inherits a
-	 # broken ls alias from the environment.  This has actually
-	 # happened.  Such a system could not be considered "sane".
-	 AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
+      # If neither matched, then we have a broken ls.  This can happen
+      # if, for instance, CONFIG_SHELL is bash and it inherits a
+      # broken ls alias from the environment.  This has actually
+      # happened.  Such a system could not be considered "sane".
+      AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
 alias in your environment])
    fi
 

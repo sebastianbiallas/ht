@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -80,7 +80,7 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libasm.a
 
-libasm_a_SOURCES = alphadis.cc alphadis.h alphaopc.cc alphaopc.h asm.cc asm.h x86asm.cc x86asm.h x86dis.cc x86dis.h x86opc.cc x86opc.h
+libasm_a_SOURCES = alphadis.cc alphadis.h alphaopc.cc alphaopc.h asm.cc asm.h x86asm.cc x86asm.h x86dis.cc x86dis.h x86opc.cc x86opc.h javadis.cc javadis.h javaopc.cc javaopc.h ildis.cc ildis.h ilopc.cc ilopc.h ia64dis.cc ia64dis.h ia64opc.cc ia64opc.h
 
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io
@@ -96,7 +96,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libasm_a_LIBADD = 
 libasm_a_OBJECTS =  alphadis.o alphaopc.o asm.o x86asm.o x86dis.o \
-x86opc.o
+x86opc.o javadis.o javaopc.o ildis.o ilopc.o ia64dis.o ia64opc.o
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -167,7 +167,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
@@ -177,7 +177,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
 	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
@@ -198,28 +198,13 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-alphadis.o: alphadis.cc alphadis.h ../global.h asm.h ../common.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h alphaopc.h \
-	../htdebug.h ../tools.h ../htdata.h
-alphaopc.o: alphaopc.cc alphaopc.h ../global.h
-asm.o: asm.cc asm.h ../common.h ../global.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h ../htatom.h ../htdata.h \
-	../htdebug.h alphadis.h alphaopc.h x86dis.h x86opc.h
-x86asm.o: x86asm.cc x86asm.h asm.h ../common.h ../global.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h x86opc.h
-x86dis.o: x86dis.cc ../stream.h ../common.h ../global.h \
-	../io/posix/htsys.h ../io/htio.h ../store.h ../htdata.h \
-	../tools.h x86dis.h asm.h x86opc.h
-x86opc.o: x86opc.cc x86opc.h ../common.h ../global.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h
-
 info-am:
 info: info-am
 dvi-am:

@@ -11,5 +11,5 @@ coff_analy.cc coff_analy.h analy_java.cc analy_java.h \
 class_analy.cc class_analy.h ne_analy.cc ne_analy.h \
 analy_il.cc analy_il.h analy_ia64.cc analy_ia64.h
 
-INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/asm -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/output
+INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/asm -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/output -I$(top_srcdir)/eval
 

@@ -549,7 +549,7 @@ void ElfAnalyser::initUnasm()
 {
 	DPRINTF("elf_analy: ");
 	int machine = 0;
-     bool elf64 = false;
+	bool elf64 = false;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32: machine = elf_shared->header32.e_machine; break;
 		case ELFCLASS64: machine = elf_shared->header64.e_machine; elf64 = true; break;
@@ -561,12 +561,12 @@ void ElfAnalyser::initUnasm()
 			((AnalyX86Disassembler*)analy_disasm)->init(this, elf64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
 			break;
 		case ELF_EM_IA_64: // Intel ia64
-          	if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
+			if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
 				errorbox("Intel IA64 cant be used in a 32-Bit ELF.");
-               } else {
+			} else {
 				analy_disasm = new AnalyIA64Disassembler();
 				((AnalyIA64Disassembler*)analy_disasm)->init(this);
-               }
+			}
 			break;
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", machine);

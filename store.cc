@@ -283,7 +283,7 @@ qword ht_object_stream_txt::getQWordHex(int size, char *desc)
 	char *s=str;
 	do {
 		*s++ = cur;
-          if (s-str >= 39) setSyntaxError();
+		if (s-str >= 39) setSyntaxError();
 		readChar();
 		if (get_error()) return to_qword(0);
 	} while (mapchar[cur]=='0' || mapchar[cur]=='A');

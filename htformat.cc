@@ -1299,7 +1299,7 @@ int ht_uformat_viewer::cursormicroedit_forward()
 	cursorline_get();
 	uformat_viewer_pos p;
 	p = top;
-     p.tag_group = cursor.tag_group;
+	p.tag_group = cursor.tag_group;
 	UINT cursor_tag_bitidx = 0;
 
 	cursorline_get();

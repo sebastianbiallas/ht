@@ -37,15 +37,15 @@ extern "C" {
 
 ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
-     int t1632;
+	int t1632;
 #if 1
 	x86asm *assembler=new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 	x86dis *disassembler=new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
-     t1632 = 0;
+	t1632 = 0;
 #else
 	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
 	x86dis *disassembler=new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
-     t1632 = 1;
+	t1632 = 1;
 #endif
 
 	ht_disasm_viewer *v=new ht_disasm_viewer();
@@ -177,7 +177,7 @@ void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file
 	ht_uformat_viewer::init(b, desc, caps, file, format_group);
 	assem = a;
 	disasm = d;
-     op1632 = t;
+	op1632 = t;
 }
 
 void ht_disasm_viewer::done()
@@ -275,18 +275,18 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_disasm_toggle1632: {
-     		op1632 ^= 1;
-               if (op1632) {
-                    ((x86asm *)assem)->opsize = X86_OPSIZE16;
-                    ((x86asm *)assem)->addrsize = X86_OPSIZE16;
-                    ((x86dis *)disasm)->opsize = X86_OPSIZE16;
-                    ((x86dis *)disasm)->addrsize = X86_OPSIZE16;
-               } else {
-                    ((x86asm *)assem)->opsize = X86_OPSIZE32;
-                    ((x86asm *)assem)->addrsize = X86_OPSIZE32;
-                    ((x86dis *)disasm)->opsize = X86_OPSIZE32;
-                    ((x86dis *)disasm)->addrsize = X86_OPSIZE32;
-               }
+			op1632 ^= 1;
+			if (op1632) {
+				((x86asm *)assem)->opsize = X86_OPSIZE16;
+				((x86asm *)assem)->addrsize = X86_OPSIZE16;
+				((x86dis *)disasm)->opsize = X86_OPSIZE16;
+				((x86dis *)disasm)->addrsize = X86_OPSIZE16;
+			} else {
+				((x86asm *)assem)->opsize = X86_OPSIZE32;
+				((x86asm *)assem)->addrsize = X86_OPSIZE32;
+				((x86dis *)disasm)->opsize = X86_OPSIZE32;
+				((x86dis *)disasm)->addrsize = X86_OPSIZE32;
+			}
 			dirtyview();
 			clearmsg(msg);
 			return;
@@ -366,20 +366,20 @@ bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 {
 	ht_disasm_sub *sub = (ht_disasm_sub *) context;
-     static char buf[120];
-     LINE_ID line_id;
-     sub->first_line_id(&line_id);
-     if (Addr.addr32.offset >= line_id.id1) {
-	     sub->last_line_id(&line_id);
-	     if (Addr.addr32.offset <= line_id.id1) {
-          	char buf2[60];
-               sprintf(buf2, "0x%x", Addr.addr32.offset);
-		     char *b = tag_make_ref(buf, Addr.addr32.offset, 0, 0, 0, buf2);
-               *b=0;
-               if (symstrlen) *symstrlen = b-buf;
-               return buf;
-          }
-     }
+	static char buf[120];
+	LINE_ID line_id;
+	sub->first_line_id(&line_id);
+	if (Addr.addr32.offset >= line_id.id1) {
+		sub->last_line_id(&line_id);
+		if (Addr.addr32.offset <= line_id.id1) {
+			char buf2[60];
+			sprintf(buf2, "0x%x", Addr.addr32.offset);
+			char *b = tag_make_ref(buf, Addr.addr32.offset, 0, 0, 0, buf2);
+			*b=0;
+			if (symstrlen) *symstrlen = b-buf;
+			return buf;
+		}
+	}
 	return NULL;
 }
 
@@ -401,7 +401,7 @@ bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 		dis_insn *insn = disasm->decode(buf, c, caddr);
 		addr_sym_func_context = this;
 		addr_sym_func = &diasm_addr_sym_func;
- 		s = disasm->str(insn, display_style);
+		s = disasm->str(insn, display_style);
 		addr_sym_func = NULL;
 		c = disasm->getSize(insn);
 	} else {

@@ -588,12 +588,6 @@ dword x86dis::getdword()
 	}
 }
 
-int x86dis::getMaxOpcodeLength()
-{
-	/* x86 opcodes are <= 15 bytes */
-	return 15;
-}
-
 void x86dis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
 	min_length = 1;

@@ -156,15 +156,15 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		UINT thunk_count = 0;
 		file->seek(thunk_ofs);
 		while (1) {
-          	if (pe32) {
+			if (pe32) {
 				file->read(&thunk, sizeof thunk);
 				create_host_struct(&thunk, PE_THUNK_DATA_struct, little_endian);
 				if (!thunk.ordinal) break;
-               } else {
+			} else {
 				file->read(&thunk64, sizeof thunk64);
 				create_host_struct(&thunk64, PE_THUNK_DATA_64_struct, little_endian);
 				if (!QWORD_GET_LO(thunk64.ordinal)) break;
-               }
+			}
 			thunk_count++;
 		}
 
@@ -173,19 +173,19 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
 		thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
 		file->seek(thunk_ofs);
-          if (pe32) {
+		if (pe32) {
 			file->read(thunk_table, sizeof *thunk_table * thunk_count);
 			// FIXME: ?
 			for (UINT i=0; i<thunk_count; i++) {
 				create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
 			}
-          } else {
+		} else {
 			file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
 			// FIXME: ?
 			for (UINT i=0; i<thunk_count; i++) {
 				create_host_struct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
 			}
-          }
+		}
 		for (dword i=0; i<thunk_count; i++) {
 			function_count++;
 			ht_pe_import_function *func;
@@ -207,11 +207,11 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 					char *name = fgetstrz(file);
 					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
 					free(name);
-                    }
-               } else {
+				}
+			} else {
 				thunk64 = *(thunk_table64+i);
 
-                    // FIXME: is this correct ?
+				// FIXME: is this correct ?
 				if (QWORD_GET_LO(thunk64.ordinal) & 0x80000000) {
 					/* by ordinal */
 					func = new ht_pe_import_function(dll_index, fthunk_rva, QWORD_GET_LO(thunk64.ordinal)&0xffff);
@@ -226,21 +226,21 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 					char *name = fgetstrz(file);
 					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
 					free(name);
-                    }
-               }
+				}
+			}
 			pe_shared->imports.funcs->insert(func);
 
-               if (pe32) {
+			if (pe32) {
 				thunk_ofs+=4;
 				thunk_rva+=4;
 				fthunk_ofs+=4;
 				fthunk_rva+=4;
-               } else {
+			} else {
 				thunk_ofs+=8;
 				thunk_rva+=8;
 				fthunk_ofs+=8;
 				fthunk_rva+=8;
-               }
+			}
 		}
 		
 		dll_index++;
@@ -452,19 +452,19 @@ void ht_pe_import_viewer::select_entry(void *entry)
 	if (pe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
 		PEAnalyser *a = (PEAnalyser*)av->analy;
-          Address *addr;
-          if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+		Address *addr;
+		if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 			addr = a->createAddress32(e->address+pe_shared->pe32.header_nt.image_base);
-          } else {
+		} else {
 			addr = a->createAddress64(to_qword(e->address)+pe_shared->pe64.header_nt.image_base);
-          }
+		}
 		if (av->gotoAddress(addr, NULL)) {
 			app->focus(av);
 			vstate_save();
 		} else {
 			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
-          	errorbox("can't follow: %s %y is not valid !", "import address", addr);
-          }
+			errorbox("can't follow: %s %y is not valid !", "import address", addr);
+		}
 		delete addr;
 	} else errorbox("can't follow: no image viewer");
 }

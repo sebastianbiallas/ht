@@ -1,7 +1,10 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Where is the curses header file ? */
 #define CURSES_HDR @CURSES_HDR@
+
+/* Where is the curses header file ? */
+#undef HAVE_TEXTMODE_X11
 
 /* Define to empty if the keyword does not work.  */
 #undef const

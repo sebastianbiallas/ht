@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -82,7 +82,7 @@ noinst_LIBRARIES = libinfo.a
 
 libinfo_a_SOURCES = infoview.cc infoview.h
 
-INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io
+INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/eval
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -165,7 +165,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
@@ -175,7 +175,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
 	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
@@ -196,19 +196,13 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-infoview.o: infoview.cc ../htdoc.h ../htiobox.h ../htdialog.h \
-	../htdebug.h ../global.h ../htobj.h ../common.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h ../io/posix/htcurses.h \
-	../config.h ../htstring.h ../htdata.h ../htpal.h ../htreg.h \
-	infoview.h ../textedit.h ../textfile.h ../syntax.h ../tools.h
-
 info-am:
 info: info-am
 dvi-am:

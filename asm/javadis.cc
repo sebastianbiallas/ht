@@ -191,12 +191,6 @@ dword javadis::getdword()
 	}
 }
 
-int javadis::getMaxOpcodeLength()
-{
-	/* FIXME: java opcodes are <= 6 bytes */
-	return 6;
-}
-
 void javadis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
 	min_length = 1;

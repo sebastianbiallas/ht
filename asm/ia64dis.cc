@@ -500,12 +500,6 @@ dis_insn *IA64Disassembler::duplicateInsn(dis_insn *disasm_insn)
 	return insn;
 }
 
-int IA64Disassembler::getMaxOpcodeLength()
-{
-	// ia64 instructions are all 128 bits long
-	return 16;
-}
-
 void IA64Disassembler::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
 	min_length = 16;

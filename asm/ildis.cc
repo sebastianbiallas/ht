@@ -122,12 +122,6 @@ dis_insn *ILDisassembler::duplicateInsn(dis_insn *disasm_insn)
 	return insn;
 }
 
-int ILDisassembler::getMaxOpcodeLength()
-{
-	// FIXME
-	return 10;
-}
-
 void ILDisassembler::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
 	// FIXME

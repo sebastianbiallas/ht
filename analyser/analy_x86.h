@@ -102,7 +102,7 @@ public:
 
 class AnalyX86Disassembler: public AnalyDisassembler {
 public:
-     int flags;
+	int flags;
 
 			void			init(Analyser *A, int flags);
 			int 			load(ht_object_stream *f);

@@ -257,12 +257,6 @@ dis_insn *Alphadis::duplicateInsn(dis_insn *disasm_insn)
 	return insn;
 }
 
-int	Alphadis::getMaxOpcodeLength()
-{
-	// alpha opcodes are 32 bits long
-	return 4;
-}
-
 void Alphadis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
 	min_length = 4;

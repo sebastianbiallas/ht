@@ -48,7 +48,8 @@ classread.cc classview.cc class.h htexcept.cc htexcept.h httext.cc httext.h htev
 relfile.cc relfile.h process.cc process.h mfile.cc mfile.h elfstruc.cc \
 pestruct.cc coff_s.cc mzstruct.cc defreg.h defreg.c htdisasm.cc htdisasm.h \
 htcoffimg.cc htcoffimg.h nestruct.cc htneimg.cc htneimg.h htneimp.cc htneimp.h \
-cmds.cc cmds.h
+cmds.cc cmds.h qword.cc qword.h snprintf.cc snprintf.h htpeil.cc htpeil.h \
+ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h
 
 dist2: distdir
 	-chmod -R a+r $(distdir)

@@ -39,7 +39,7 @@ class ht_disasm_viewer: public ht_uformat_viewer {
 protected:
 	Assembler *assem;
 	Disassembler *disasm;
-     int op1632;
+	int op1632;
 public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t);
 	virtual 	void done();

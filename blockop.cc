@@ -211,9 +211,9 @@ static int func_readint(eval_scalar *result, eval_int *offset, int size, endiane
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 	byte buf[4];
-     int read = 0;
+	int read = 0;
 	if ((f->seek(QWORD_GET_INT(offset->value))!=0) ||
-     ((read = f->read(buf, size)) != size)) {
+	((read = f->read(buf, size)) != size)) {
 		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", size, read, offset->value);
 		return 0;
 	}

@@ -31,9 +31,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 		 
-int sys_canonicalize(char *filename, char *fullfilename)
+int sys_canonicalize(char *result, const char *filename)
 {
-	return (realpath(filename, fullfilename)==fullfilename) ? 0 : ENOENT;
+	return (realpath(filename, result)==result) ? 0 : ENOENT;
 }
 
 struct posixfindstate {
@@ -49,7 +49,7 @@ int sys_findclose(pfind_t *pfind)
 	return r;
 }
 
-int sys_findfirst(char *dirname, pfind_t *pfind)
+int sys_findfirst(const char *dirname, pfind_t *pfind)
 {
 	int r;
 	pfind->findstate=malloc(sizeof (posixfindstate));
@@ -82,7 +82,7 @@ int sys_findnext(pfind_t *pfind)
 	return ENOENT;
 }
 
-int sys_pstat(pstat_t *s, char *filename)
+int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
 	int e=stat(filename, &st);
@@ -116,12 +116,12 @@ int sys_get_free_mem()
 	return 0;
 }
 
-int sys_truncate(char *filename, FILEOFS ofs)
+int sys_truncate(const char *filename, FILEOFS ofs)
 {
 	return ENOSYS;
 }
 
-int sys_deletefile(char *filename)
+int sys_deletefile(const char *filename)
 {
 	return remove(filename);
 }
@@ -129,6 +129,19 @@ int sys_deletefile(char *filename)
 bool sys_is_path_delim(char c)
 {
 	return c == '/';
+}
+
+int sys_filename_cmp(const char *a, const char *b)
+{
+	while (*a && *b) {
+		if (sys_is_path_delim(*a) && sys_is_path_delim(*b)) {
+		} else if (*a != *b) {
+			break;
+		}
+		a++;
+		b++;
+	}
+	return *a - *b;
 }
 
 /*

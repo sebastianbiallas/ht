@@ -281,16 +281,16 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 				c=c->next;
 			}
 			// ok now.
-               if (hexv) {
+			if (hexv) {
 				UINT rva;
 				UINT size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
-	                    rva = pe_shared->pe32.header_nt.directory[id->id2].address;
-	                    size = pe_shared->pe32.header_nt.directory[id->id2].size;
-                    } else {
-	                    rva = pe_shared->pe64.header_nt.directory[id->id2].address;
-	                    size = pe_shared->pe64.header_nt.directory[id->id2].size;
-                    }
+					rva = pe_shared->pe32.header_nt.directory[id->id2].address;
+					size = pe_shared->pe32.header_nt.directory[id->id2].size;
+				} else {
+					rva = pe_shared->pe64.header_nt.directory[id->id2].address;
+					size = pe_shared->pe64.header_nt.directory[id->id2].size;
+				}
 				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save(NULL);

@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -165,7 +165,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
@@ -175,7 +175,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
-		  END { for (i in files) print i; }'`; \
+	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
 	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
@@ -196,29 +196,13 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-srt.o: srt.cc ../htatom.h ../htdata.h ../common.h ../global.h \
-	../htdebug.h ../htiobox.h ../htdialog.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../io/htio.h ../htstring.h \
-	srt.h ../analyser/analy.h ../asm/asm.h ../analyser/code_analy.h \
-	../stream.h ../io/posix/htsys.h ../analyser/data_analy.h \
-	../analyser/stddata.h symmath.h srt_x86.h
-srt_x86.o: srt_x86.cc ../htctrl.h ../htobj.h ../common.h ../global.h \
-	../htdebug.h ../io/posix/htcurses.h ../config.h ../io/htio.h \
-	../htexcept.h ../htiobox.h ../htdialog.h ../htstring.h \
-	../htdata.h srt_x86.h srt.h ../analyser/analy.h ../asm/asm.h \
-	../analyser/code_analy.h ../stream.h ../io/posix/htsys.h \
-	../analyser/data_analy.h ../analyser/stddata.h symmath.h \
-	../asm/x86dis.h ../asm/x86opc.h
-symmath.o: symmath.cc ../tools.h ../global.h ../htdata.h ../common.h \
-	../htdebug.h symmath.h
-
 info-am:
 info: info-am
 dvi-am:

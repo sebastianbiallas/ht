@@ -445,7 +445,7 @@ void AnalyX86Disassembler::init(Analyser *A, int f)
  */
 int  AnalyX86Disassembler::load(ht_object_stream *f)
 {
-     GET_INT_HEX(f, flags);
+	GET_INT_HEX(f, flags);
 	return AnalyDisassembler::load(f);
 }
 
@@ -469,7 +469,7 @@ Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 {
 	if (flags & ANALYX86DISASSEMBLER_FLAGS_FLAT64) {
 		return new AddressFlat64(to_qword(offset));
-     } else if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
+	} else if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 		if (offset <= 0xffff) {
 			return new AddressX86_1616(segment, offset);
 		} else {

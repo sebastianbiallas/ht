@@ -165,12 +165,12 @@ void PEAnalyser::beginAnalysis()
 	int *entropy = random_permutation(export_count);
 	for (int i=0; i<export_count; i++) {
 		ht_pe_export_function *f=(ht_pe_export_function *)pe_shared->exports.funcs->get(*(entropy+i));
-          Address *faddr;
-          if (pe32) {
+		Address *faddr;
+		if (pe32) {
 			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
-          } else {
+		} else {
 			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
-          }
+		}
 		if (validAddress(faddr, scvalid)) {
 			char *label;
 			if (f->byname) {
@@ -199,11 +199,11 @@ void PEAnalyser::beginAnalysis()
 		char *label;
 		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
 		Address *faddr;
-          if (pe32) {
+		if (pe32) {
 			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
-          } else {
+		} else {
 			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
-          }
+		}
 		addComment(faddr, 0, "");
 		if (!assignSymbol(faddr, label, label_func)) {
 			// multiple import of a function (duplicate labelname)
@@ -212,11 +212,11 @@ void PEAnalyser::beginAnalysis()
 			sprintf(buffer, "%s_%x", label, f->address);
 			assignSymbol(faddr, buffer, label_func);
 		}
-          if (pe32) {
+		if (pe32) {
 			data->setIntAddressType(faddr, dst_idword, 4);
-          } else {
+		} else {
 			data->setIntAddressType(faddr, dst_iqword, 8);
-          }
+		}
 		free(label);
 		delete faddr;
 	}
@@ -303,8 +303,8 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
 	} else if (oid == ATOM_ADDRESS_FLAT_64) {
-          qword q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
-          if (QWORD_GET_HI(q)) return false;
+		qword q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
+		if (QWORD_GET_HI(q)) return false;
 		*r = QWORD_GET_LO(q);
 		return true;
 	}
@@ -342,11 +342,11 @@ Address *PEAnalyser::createAddress()
 		case COFF_MACHINE_I386:
 		case COFF_MACHINE_I486:
 		case COFF_MACHINE_I586:
-		     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+			if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
 				return new AddressFlat64();
-               } else {
+			} else {
 				return new AddressX86Flat32();
-               }
+			}
 		case COFF_MACHINE_ALPHA:
 			return new AddressAlphaFlat32();
 	}
@@ -490,9 +490,9 @@ static char *token_func(dword token, void *context)
 void PEAnalyser::initUnasm()
 {
 	bool pe64 = false;
-     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
-     	pe64 = true;
-     }
+	if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+		pe64 = true;
+	}
 	DPRINTF("pe_analy: ");
 	if (pe_shared->il) {
 		analy_disasm = new AnalyILDisassembler();
@@ -502,13 +502,13 @@ void PEAnalyser::initUnasm()
 		case COFF_MACHINE_I386:	// Intel 386
 		case COFF_MACHINE_I486:	// Intel 486
 		case COFF_MACHINE_I586:	// Intel 586
-          	if (pe64) {
+			if (pe64) {
 				errorbox("x86 cant be used in PE64 format.");
-               } else {
+			} else {
 				DPRINTF("initing analy_x86_disassembler\n");
 				analy_disasm = new AnalyX86Disassembler();
 				((AnalyX86Disassembler *)analy_disasm)->init(this, 0);
-               }
+			}
 			break;
 		case COFF_MACHINE_R3000:	// MIPS little-endian, 0x160 big-endian
 			DPRINTF("no apropriate disassembler for MIPS\n");
@@ -531,13 +531,13 @@ void PEAnalyser::initUnasm()
 			DPRINTF("no apropriate disassembler for POWER PC\n");
 			warnbox("No disassembler for POWER PC!");
 			break;
-          case COFF_MACHINE_IA64:
-          	if (!pe64) {
+		case COFF_MACHINE_IA64:
+			if (!pe64) {
 				errorbox("Intel IA64 cant be used in PE32 format.");
-               } else {
+			} else {
 				analy_disasm = new AnalyIA64Disassembler();
 				((AnalyIA64Disassembler*)analy_disasm)->init(this);
-               }
+			}
 			break;          
 		case COFF_MACHINE_UNKNOWN:
 		default:
