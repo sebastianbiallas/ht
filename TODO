@@ -1,10 +1,11 @@
  HT TODO
 =========
 +sepps
-- static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
+- (HT_0_7) static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
   is this a correct quicksort? (THIS WOULD DEFINITLY BE EMBARRASING)
 - implement ht_static_treeview::goto_node() at all
 - exports/dimports in PE32+ broken
+- ht_listbox should have column align (left, right, center)
 - strz escape problems e.g. ffffffff -> "    "
 - next unexplored
 - out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test
@@ -28,13 +29,20 @@
 - snprintf.cc needs correct indentation
 
 +steves
+- (HT_0_7) eval: strcmp() [no params], bad error msg (too short)
+- eval: int("123") cant eval qword (only dword)
+- (HT_0_7) eval: string(-1), crash
+- (HT_0_7) eval: float(-1), wrong value (float("-1") correct)
+- (HT_0_7) texteditor: syntax-highlight broken (main.cc, press enter somewhere)
+- (HT_0_7) help broken (press f1)
+- (HT_0_7) "non interactive (!) program" is misleading (I can start and use rhide)
 - syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
   better use bsearch() (ANSI, POSIX)
 - goto('') should be ignored
-- relfile::read/write: enum_next mysteria
+- (HT_0_7) relfile::read/write: enum_next mysteria
 - goto eval help
-- !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-- !! [FREEBSD] doesnt compile: !!
+- (HT_0_7)!! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
+- (HT_0_7)!! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla
 - texteditor as dialog-widget should have attachable scrollbar
 - open file: wildcards
