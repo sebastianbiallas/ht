@@ -16,6 +16,12 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     * fixed x86asm bug (signed immediates)
+     * stream: ht_sys_file, ht_stdio_file, ht_temp_file,
+       tmpnam() not used anymore
+     * stream: interface beautified (use of const)
+     * project add item fixed
+
      * automagically goto entrypoint in mz/image
 	* FIXED: the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
 	* FIXED: filemanger/options title ://reg instead of reg://
