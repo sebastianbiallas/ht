@@ -268,6 +268,13 @@ char *sys_filename_suffix(const char *fn)
 	return p ? p+1 : NULL;
 }
 
+int sys_tmpfile()
+{
+// FIXME: this might leak something...
+    FILE *f = tmpfile();
+    return fileno(f);
+}
+
 /*
  *	COMMON CURSES
  */
