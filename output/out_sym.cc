@@ -59,8 +59,8 @@
  *
  *   (3) Symbol table entry
  * ==========================================================================
- *	contains 32-bit integer, the address followed by a counted
- *	(Pascal-style) string.
+ *	contains 32-bit integer ("the address"), followed by a counted
+ *	(Pascal-style) string ("the name").
  *
  *   (A) Appendix A - Unsure
  * ==========================================================================
