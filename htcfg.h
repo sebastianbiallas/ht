@@ -51,13 +51,18 @@ enum loadstore_result {
 #define ht_systemconfig_magic				"HTCP"
 #define ht_systemconfig_fileversion		5
 
+
+
 /*	FILE CONFIG FILE VERSION HISTORY
  *	Version 1: HT 0.5.0
  *	Version 2: HT 0.6.0
+ *	Version 3: HT 0.7.0
  */
 
 #define ht_fileconfig_magic				"HTCF"
-#define ht_fileconfig_fileversion			2
+#define ht_fileconfig_fileversion			3
+
+
 
 /*	PROJECT CONFIG FILE VERSION HISTORY
  *	Version 1: HT 0.7.0
@@ -65,6 +70,8 @@ enum loadstore_result {
 
 #define ht_projectconfig_magic			"HTPR"
 #define ht_projectconfig_fileversion		1
+
+
 
 /**/
 
