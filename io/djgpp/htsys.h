@@ -45,7 +45,8 @@ bool sys_write_data_to_native_clipboard(const void *data, int size);
 int sys_get_native_clipboard_data_size();
 bool sys_read_data_from_native_clipboard(void *data, int max_size);
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd);
+#include "stream.h"	// FIXME: ARGH
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd);
 bool sys_ipc_is_valid(int handle);
 int sys_ipc_terminate(int handle);
 

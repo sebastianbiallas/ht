@@ -181,23 +181,32 @@ int sys_filename_cmp(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
 {
 	int save_stdout = dup(STDOUT_FILENO);
 	int save_stderr = dup(STDERR_FILENO);
-	*in = -1;
-	*out = sys_tmpfile();
-	*err = sys_tmpfile();
-	dup2(*out, STDOUT_FILENO);
-	dup2(*err, STDERR_FILENO);
-	int r = system(cmd);
+	int fdout = sys_tmpfile();
+	int fderr = sys_tmpfile();
+	dup2(fdout, STDOUT_FILENO);
+	dup2(fderr, STDERR_FILENO);
+	/*int r = */system(cmd);
 	dup2(save_stdout, STDOUT_FILENO);
 	dup2(save_stderr, STDERR_FILENO);
 	close(save_stdout);
 	close(save_stderr);
-	lseek(*out, 0, SEEK_SET);
-	lseek(*err, 0, SEEK_SET);
-	return r;
+	lseek(fdout, 0, SEEK_SET);
+	lseek(fderr, 0, SEEK_SET);
+     ht_null_file *nf = new ht_null_file();
+     nf->init();
+     *in = nf;
+     ht_sys_file *sf;
+     sf = new ht_sys_file();
+     sf->init(fdout, true, FAM_READ);
+     *out = sf;
+     sf = new ht_sys_file();
+     sf->init(fderr, true, FAM_READ);
+     *err = sf;
+	return 0;
 }
 
 bool sys_ipc_is_valid(int handle)
@@ -206,7 +215,7 @@ bool sys_ipc_is_valid(int handle)
         return false;
 }
 
-int sys_ipc_terminate(int handle);
+int sys_ipc_terminate(int handle)
 {
 // do nothing
 	return 0;
