@@ -24,10 +24,11 @@
 - (HT_0_7) update FILE CONFIG FILE VERSION
 - 1”1 will eval to 1
 - [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
+- store.cc:60: getObject quits with invalid config file
 
 +steves
-=======
-- claim 2002 copyright
+- ht_stree::enum_* buggy
+- goto eval help
 - !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla
@@ -76,8 +77,8 @@
 - portability
 	- compile on sun solaris (curses problems (only?) on cf.sf.net)
 	- compile on MacOS X (curses.h, but no ACS_*)
-- free le_page_file...
 - detect format length (ne,le,elf)
+- LE: use byte/word order (no examples)
 - pe/elf/le relocations ?
 - make ht_group_sub work correctly
 - color invert & underlined attribute and transparent chars, codepages ? &&

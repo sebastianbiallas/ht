@@ -16,6 +16,10 @@ version 0.6.1:
 	- x86dis: movzx/movsx param size ambiguity fixed
 	- many bugs fixed
 
+     * LE: header flags
+     * eval: varparam, single type-variable param
+     * eval: typeof(), is_int(), is_string(), is_float() implemented
+
 	* FIXED: textedit.cc:2498 unneccesarry compare (temp)
 
 	* FIXED: texteditor: ctrl-y (delete line) doesnt work on last line
