@@ -52,6 +52,7 @@
 - new instead of malloc
 - terminal.cc: terminal line buffering ?!
 - textviewer: vi-mania: '/' searches, 'n' continues
+- vfsview: xtime tag modified to display seconds. keep this ?
 
 - (HT_0_8) features configurable
 - (HT_0_8) directory structure
