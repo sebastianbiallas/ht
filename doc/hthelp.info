@@ -1,25 +1,26 @@
 This is hthelp.info, produced by makeinfo version 4.1 from
 ht.texi.
 
-   
 START-INFO-DIR-ENTRY
 * ht: (ht.info).             HT Editor.
 END-INFO-DIR-ENTRY
-     This file documents the HT Editor.  Copyright (C)
-1999, 2000, 2001, 2002 The HT authors.
- *Note The HT Authors: Authors, for a list of the copyright
-holders.  Permission is granted to make and distribute
-verbatim copies of this manual provided the copyright notice
-and this permission notice are preserved on all copies. 
 
+   This file documents the HT Editor.
+
+   Copyright (C) 1999, 2000, 2001, 2002 The HT authors.
+*Note The HT Authors: Authors, for a list of the copyright
+holders.
+
+   Permission is granted to make and distribute verbatim copies
+of this manual provided the copyright notice and this
+permission notice are preserved on all copies.
 
 
 
 
 
    Trademarks are the property of their respective owners,
-which may be registered in certain jurisdictions.   
-      
+which may be registered in certain jurisdictions.
 
 
 File: hthelp.info,  Node: Top,  Prev: (dir),  Up: (dir)
@@ -27,9 +28,9 @@ File: hthelp.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-     This is HT 0.7.0; please note that this is a beta
-version of the program. Therefore HT is incomplete and
-sometimes buggy. Enjoy anyway... 
+This is HT 0.7.0; please note that this is a beta version of
+the program.  Therefore HT is incomplete and sometimes buggy.
+Enjoy anyway...
 
 * Menu:
 
@@ -39,28 +40,30 @@ sometimes buggy. Enjoy anyway...
 * Authors::
 * Where to download ?::
 
-
 
 File: hthelp.info,  Node: About,  Prev: Top,  Up: Top
 
 About
 =====
 
-     This program is a file viewer, editor and analyzer for
-text, binary, and (especially) executable files. 
-      This program is free software; you can redistribute it
-     and/or modify it under the terms of the GNU General
-     Public License version 2 as published by the Free
-     Software Foundation.  This program is distributed in
-     the hope that it will be useful, but WITHOUT ANY
-     WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-     the GNU General Public License for more details.     
-     You should have received a copy of the GNU General Public
-     License along with this program; if not, write to the
-     Free Software Foundation, Inc., 59 Temple Place, Suite
-     330, Boston, MA 02111 USA
+This program is a file viewer, editor and analyzer for text,
+binary, and (especially) executable files.
 
+     This program is free software; you can redistribute it
+     and/or modify it under the terms of the GNU General Public
+     License version 2 as published by the Free Software
+     Foundation.
+
+     This program is distributed in the hope that it will be
+     useful, but WITHOUT ANY WARRANTY; without even the implied
+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+     PURPOSE.  See the GNU General Public License for more
+     details.
+
+     You should have received a copy of the GNU General Public
+     License along with this program; if not, write to the Free
+     Software Foundation, Inc., 59 Temple Place, Suite 330,
+     Boston, MA 02111 USA
 
 
 File: hthelp.info,  Node: Key bindings,  Prev: Top,  Up: Top
@@ -68,10 +71,8 @@ File: hthelp.info,  Node: Key bindings,  Prev: Top,  Up: Top
 Key bindings
 ============
 
-    
-     
+   * General key bindings
 
-   * General key bindings 
      Return          follow link (if applicable)
      Backspace       undo "follow link"
      Space/F6        choose view mode
@@ -85,35 +86,34 @@ Key bindings
      Shift+Ins/Alt+V insert
      Ctrl+Del/Alt+D  delete
      Shift+Del/Alt+X cut
-     
 
-   * Window key bindings 
+   * Window key bindings
+
      Alt+F3          close window
      Ctrl+F5         resize/move mode
                      (in resize/move mode only:)
      Space           toggle resize/move mode
      Cursor keys     resize/move window
      Escape/Return/Ctrl+F5leave resize/move mode
-     
 
-   * Analyser key bindings 
+   * Analyser key bindings
+
      c               continue code analysis at cursor
      f               follow dword ptr at address
-     n               name current address  (empty string to
+     n               name current address (empty string to
                      delete)
      x               show xrefs (search for xrefs)
      #               edit comments
      Ctrl+A          call assembler
      Ctrl+F          goto start of current function
-                      (indicated in the 2nd line)
+                     (indicated in the 2nd line)
      Ctrl+L          goto previous label
      Ctrl+T          show recursive function references
-     
-   
 
 
- Note: Some keys don't work in HT-posix. Try using Escape
-instead of Control or something... 
+
+Note: Some keys don't work in HT-posix. Try using Escape
+instead of Control or something...
 
 
 File: hthelp.info,  Node: Authors,  Prev: Top,  Up: Top
@@ -121,8 +121,9 @@ File: hthelp.info,  Node: Authors,  Prev: Top,  Up: Top
 Authors
 =======
 
-    Stefan Weyergraf <stefan@weyergraf.de>   Sebastian
-Biallas <sb@biallas.net> 
+   Stefan Weyergraf <stefan@weyergraf.de>
+
+   Sebastian Biallas <sb@biallas.net>
 
 
 File: hthelp.info,  Node: Features,  Prev: Top,  Up: Top
@@ -130,9 +131,9 @@ File: hthelp.info,  Node: Features,  Prev: Top,  Up: Top
 Features
 ========
 
-    HT is beta software and should not always regarded as
-stable, but nevertheless contains some very advanced and
-useful features: 
+   HT is beta software and should not always regarded as
+stable, but nevertheless contains some very advanced and useful
+features:
 
 * Menu:
 
@@ -143,7 +144,6 @@ useful features:
 * Expression evaluation::
 * Block operations::
 * Search and its different modes::
-   
 
 
 File: hthelp.info,  Node: General features,  Prev: Features,  Up: Features
@@ -151,76 +151,73 @@ File: hthelp.info,  Node: General features,  Prev: Features,  Up: Features
 General features
 ================
 
-   
   1. Supported file formats
         * common object file format (COFF)
                - header
-                - image with code/data analyser (x86)
+               - image with code/data analyser (x86)
 
         * executable and linkable format (ELF)
                - header
-                - section headers
-                - program headers
-                - symbol tables
-                - image with code/data analyser (x86, ia64,
+               - section headers
+               - program headers
+               - symbol tables
+               - image with code/data analyser (x86, ia64,
                alpha)
 
         * linear executables (LE)
                - header
-                - VxD descriptor
+               - VxD descriptor
                - object table
-                - page table
-                - image with code/data analyser (x86)
+               - page table
+               - image with code/data analyser (x86)
                - auto-relocation layer (only internal refs for
                now)
 
         * standard dos executables (MZ)
                - header
-                - relocations
-                - image (disassembly only)
+               - relocations
+               - image (disassembly only)
 
         * new executables (NE)
                - header
-                - segments
-                - names
-                - entrypoints
-                - image with code/data analyser (x86)
+               - segments
+               - names
+               - entrypoints
+               - image with code/data analyser (x86)
                - auto-relocation layer (pretty complete)
 
         * portable executables (PE32, PE64)
                - header
-                - import section
-                - delay-import section
-                - export section
-                - resources
-                - image with code/data analyser (x86, ia64,
+               - import section
+               - delay-import section
+               - export section
+               - resources
+               - image with code/data analyser (x86, ia64,
                alpha)
-                - preliminary support for .net executables
+               - preliminary support for .net executables
 
         * java class files (CLASS)
                - header
-                - image with code/data analyser (java
-               bytecode disassembler)
+               - image with code/data analyser (java bytecode
+               disassembler)
 
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 
   2. Code & Data Analyser
           - finds branch sources and destinations recursively
-           - finds procedure entries
-           - creates labels based on this information
-           - creates xref information
-           - allows to interactively analyse unexplored code
+          - finds procedure entries
+          - creates labels based on this information
+          - creates xref information
+          - allows to interactively analyse unexplored code
           (press 'c')
-           - allows to create/rename/delete labels (press
-          'n')
-           - allows to create/edit comments (press '#')
+          - allows to create/rename/delete labels (press 'n')
+          - allows to create/edit comments (press '#')
 
   3. Target systems
           - DJGPP
-           - GNU/Linux
-           - FreeBSD
-           - Win32
-     
+          - GNU/Linux
+          - FreeBSD
+          - Win32
 
 
 File: hthelp.info,  Node: Configuration files,  Prev: Features,  Up: Features
@@ -228,23 +225,21 @@ File: hthelp.info,  Node: Configuration files,  Prev: Features,  Up: Features
 Configuration files
 ===================
 
-   
-
 Global configuration
 --------------------
 
    HT automatically creates a file to store its configuration.
-It is called `~/.htcfg' on Unices and `ht.cfg' (where  ht.exe
-resides) on Windows. More specifically it contains HT's
-registry  and the *Note Global history::. 
+It is called `~/.htcfg' on Unices and `ht.cfg' (where ht.exe
+resides) on Windows. More specifically it contains HT's registry
+and the *Note Global history::.
 
 Per file configuration
 ----------------------
 
    The analyser (for analysable files) will be stored in an
-extra file called  `FILENAME.htcfg', where FILENAME is the
-analysed file. This file contains all information to restore
-the complete state of the analyser. 
+extra file called `FILENAME.htcfg', where FILENAME is the
+analysed file. This file contains all information to restore
+the complete state of the analyser.
 
 
 File: hthelp.info,  Node: Clipboard,  Prev: Features,  Up: Features
@@ -252,19 +247,20 @@ File: hthelp.info,  Node: Clipboard,  Prev: Features,  Up: Features
 Clipboard
 =========
 
-    All open files and dialogs use the common clipboard,
-where all copied and cut text or binary data is stored.
-Clipboard operations are  normally binary safe, that means
-you can copy some binary data out of a file and paste it into
-an input line. Exceptions are only the \0 character (binary
-null), it will be converted to a space in places where it would
-not make sense (e.g. file open).   Although the clipboard
-won't be saved between different HT sessions (ie. you will
-loose it when exiting HT), you can either save and load it or
-part of it manually (via Edit->paste into/copy from file) or
-rely on the input lines' *Note history: Global history, which
-is stored and retrieved from the config file automatically.
+   All open files and dialogs use the common clipboard, where
+all copied and cut text or binary data is stored. Clipboard
+operations are normally binary safe, that means you can copy
+some binary data out of a file and paste it into an input line.
+Exceptions are only the \0 character (binary null), it will be
+converted to a space in places where it would not make sense
+(e.g. file open).
 
+   Although the clipboard won't be saved between different HT
+sessions (ie. you will loose it when exiting HT), you can
+either save and load it or part of it manually (via Edit->paste
+into/copy from file) or rely on the input lines' *Note history:
+Global history, which is stored and retrieved from the config
+file automatically.
 
 
 File: hthelp.info,  Node: Global history,  Prev: Features,  Up: Features
@@ -272,14 +268,17 @@ File: hthelp.info,  Node: Global history,  Prev: Features,  Up: Features
 Global history
 ==============
 
-    HTs history system is global, which means that you can
-use it for all open files. Histories are also grouped by
-their context. I.e. file-related and  regex-search-related
-dialogs have their own history (who would want to  open
-"[0-9][0-9a-z]+" anyway ?).  History entries are stored
-within the *Note Configuration files::, so they can be reused
-when you relaunch.  You can delete a history entry by
-pressing DEL inside the history popup. 
+   HTs history system is global, which means that you can use
+it for all open files. Histories are also grouped by their
+context. I.e. file-related and regex-search-related dialogs
+have their own history (who would want to open "[0-9][0-9a-z]+"
+anyway ?).
+
+   History entries are stored within the *Note Configuration
+files::, so they can be reused when you relaunch.
+
+   You can delete a history entry by pressing DEL inside the
+history popup.
 
 
 File: hthelp.info,  Node: Expression evaluation,  Prev: Features,  Up: Features
@@ -287,32 +286,34 @@ File: hthelp.info,  Node: Expression evaluation,  Prev: Features,  Up: Features
 Expression evaluation
 =====================
 
-    HT contains a very powerful expression evaluator which is
-used in all dialogs where expressions are expected. These are
-mainly blockoperation, goto, search and of course evaluate
-itself (Edit->Evaluate).  You can use all standard math
-operators (+ - / * % **), logical operators (! && || ^^),
-relational operators (== != < > <= >=), bit operators (~ & |
-^), string operators (. for concatenation), parenthesis, the
-ternary operator (a?b:c), functions and symbols  (both
-depending on context).  The evaluator uses integer, string
-and float types depending on context. You can always convert
-a result via the `int()', `string()' and `float()' functions
-to appropriate type. Try Edit->Evaluate to see how it works...
+   HT contains a very powerful expression evaluator which is
+used in all dialogs where expressions are expected. These are
+mainly blockoperation, goto, search and of course evaluate
+itself (Edit->Evaluate).
 
+   You can use all standard math operators (+ - / * % **),
+logical operators (! && || ^^), relational operators (== != < >
+<= >=), bit operators (~ & | ^), string operators (. for
+concatenation), parenthesis, the ternary operator (a?b:c),
+functions and symbols (both depending on context).
+
+   The evaluator uses integer, string and float types depending
+on context. You can always convert a result via the `int()',
+`string()' and `float()' functions to appropriate type. Try
+Edit->Evaluate to see how it works...
 
 Functions and symbols
 ---------------------
 
    You can always use the standard buildin math (`round',
-`sin', `random', etc.) and string (`strcmp', `strchr',
+`sin', `random', etc.) and string (`strcmp', `strchr',
 `sprintf', etc.) functions, they work more or less like the
-corresponding C functions (actually they ARE more or less
-wrappers for them); see `eval/eval.y' for  details (sorry but
-a detailed help would get outdated rather soon). When using
-*Note Block operations::, or searching you have some  context
+corresponding C functions (actually they ARE more or less
+wrappers for them); see `eval/eval.y' for details (sorry but a
+detailed help would get outdated rather soon).  When using
+*Note Block operations::, or searching you have some context
 depending functions and symbols; see these sections for
-explanation. 
+explanation.
 
 
 File: hthelp.info,  Node: Block operations,  Prev: Features,  Up: Features
@@ -320,18 +321,22 @@ File: hthelp.info,  Node: Block operations,  Prev: Features,  Up: Features
 Block operations
 ================
 
-    Block operation (Blockop) is a very powerful tool to
-perform modifications on binary files. It is available in hex
-viewer only.  Blockop takes four parameters: START, END,
-MODE and EXPRESSION. Blockop works as follows: 
+   Block operation (Blockop) is a very powerful tool to perform
+modifications on binary files. It is available in hex viewer
+only.
+
+   Blockop takes four parameters: START, END, MODE and
+EXPRESSION. Blockop works as follows:
+
    * START: Start at the offset specified by START
 
    * REPEAT: Evaluate EXPRESSION and store n bytes (1 - byte, 2
-     - word, 4 - dword, variable - string) at the current
-     offset. Increment current offset by n. Stop if END has
+     - word, 4 - dword, variable - string) at the current
+     offset. Increment current offset by n. Stop if END has
      been reached.
-     Special variables/functions that can be used in
-EXPRESSION: 
+
+Special variables/functions that can be used in EXPRESSION:
+
 `readbyte(ofs)'
      read a byte from offset OFS, returns a number
 
@@ -342,7 +347,7 @@ EXPRESSION:
      contains the iteration count/index starting with 0
 
 `o'
-     contains the current offset 
+     contains the current offset
 
 
 File: hthelp.info,  Node: Search and its different modes,  Prev: Features,  Up: Features
@@ -350,73 +355,75 @@ File: hthelp.info,  Node: Search and its different modes,  Prev: Features,  Up: 
 Search and its different modes
 ==============================
 
- The search function is one of the most advanced functions of
-HT. It is invoked through F7, Shift-F7 continues a search
-from cursor. Depending on context (ie. file type and mode)
-the following modes are enabled: 
+   The search function is one of the most advanced functions of
+HT.  It is invoked through F7, Shift-F7 continues a search from
+cursor.  Depending on context (ie. file type and mode) the
+following modes are enabled:
 
 bin: ASCII / Hex
 ----------------
 
    Enter an exact search string either via ascii characters or
-via hexadecimal interpretation. This is the fastest search
-mode. You may specify a  case-insensitive search. 
+via hexadecimal interpretation. This is the fastest search
+mode. You may specify a case-insensitive search.
 
 bin: eval str
 -------------
 
    Enter an expression, it will be evaluated ONCE (difference
-to the 4th mode), and HT will then search for the
-result-string. This is pretty useful when searching for
+to the 4th mode), and HT will then search for the
+result-string. This is pretty useful when searching for
 intermixed text and control-chars/binary, e.g. `"hello
-world\n\0"' 
+world\n\0"'
 
 display: regex
 --------------
 
    As the prefix indicates, this search doesn't search in the
-binary file but in the display on screen. HT searches for a
-regular expression so this can be very powerful, e.g. in
-PE/Image you can search for `(add|sub).+?,\ [78]$'. This will
+binary file but in the display on screen. HT searches for a
+regular expression so this can be very powerful, e.g. in
+PE/Image you can search for `(add|sub).+?,\ [78]$'.  This will
 find all add or sub instructions with second parameter 7 or 8.
-
 
 expr nonzero
 ------------
 
    This is the slowest but also most advanced search mode.
-Enter an expression and the search stops if this expression
-evaluates to non-zero (it will be  evaluated on every byte).
-In this mode there are two predefined symbols and some
-functions: I is always the number of current iteration and O
-stands for the current offset in file. With the functions
-`readbyte(ofs)' and `readstring(ofs, size)' you access the
-file's content.  It's easier to understand this with
-examples: 
-  1. Searching for patterns:  
+Enter an expression and the search stops if this expression
+evaluates to non-zero (it will be evaluated on every byte). In
+this mode there are two predefined symbols and some functions:
+I is always the number of current iteration and O stands for
+the current offset in file. With the functions `readbyte(ofs)'
+and `readstring(ofs, size)' you access the file's content.
+
+   It's easier to understand this with examples:
+
+  1. Searching for patterns:
+
        a. Enter `readbyte(o) == readbyte(o+1)'
-           This will search for two equal bytes ("AA", "55",
+          This will search for two equal bytes ("AA", "55",
           "!!", etc.).
 
        b. Enter `(readbyte(o) == readbyte(o+1)+1) &&
           ((readbyte(o)==readbyte(o+2)+2)'
-           This will search for three ascending bytes ("ABC",
+          This will search for three ascending bytes ("ABC",
           "123", etc).
-          
 
-  2. Search with special functions:  With HT you can easily
-     detect the RSA key in the `ADVAPI32.DLL': Search for
-     `entropy(readstring(o, 64)) > 82' in expr!=0 mode, and you
-     will find it very quickly. How does it work?
-     `readstring(o, 64)' reads a 64 byte string from current
-     offset and entropy calculates the entropy ("randomness")
-     of a string (result is 0..100). So the search stops if a
-     entropy greater than 82% (guessed value) is encountered,
-     which normally indicates packed or encryted data. 
+  2. Search with special functions:
+
+     With HT you can easily detect the RSA key in the
+     `ADVAPI32.DLL': Search for `entropy(readstring(o, 64)) >
+     82' in expr!=0 mode, and you will find it very quickly.
+     How does it work? `readstring(o, 64)' reads a 64 byte
+     string from current offset and entropy calculates the
+     entropy ("randomness") of a string (result is 0..100).  So
+     the search stops if a entropy greater than 82% (guessed
+     value) is encountered, which normally indicates packed or
+     encryted data.
+
      Note: the `entropy()' function is not the best of its
-     kind, if you know of a better one please let us know!
-     
-        
+     kind, if you know of a better one please let us know!
+
 
 
 File: hthelp.info,  Node: Where to download ?,  Prev: Top,  Up: Top
@@ -424,26 +431,26 @@ File: hthelp.info,  Node: Where to download ?,  Prev: Top,  Up: Top
 Where to download ?
 ===================
 
-     The HT homepage is at  `http://hte.sourceforge.net'
- Downloads are available from the 'download' section. 
-Please also take a look at
-`http://sourceforge.net/projects/hte'   
+The HT homepage is at `http://hte.sourceforge.net'
+
+Downloads are available from the 'download' section.  Please
+also take a look at `http://sourceforge.net/projects/hte'
 
 
 
 Tag Table:
-Node: Top635
-Node: About959
-Node: Key bindings1831
-Node: Authors3375
-Node: Features3539
-Node: General features3938
-Node: Configuration files6276
-Node: Clipboard6946
-Node: Global history7774
-Node: Expression evaluation8336
-Node: Block operations9737
-Node: Search and its different modes10661
-Node: Where to download ?13418
+Node: Top594
+Node: About900
+Node: Key bindings1748
+Node: Authors3236
+Node: Features3394
+Node: General features3775
+Node: Configuration files6012
+Node: Clipboard6662
+Node: Global history7475
+Node: Expression evaluation8028
+Node: Block operations9408
+Node: Search and its different modes10309
+Node: Where to download ?12999
 
 End Tag Table

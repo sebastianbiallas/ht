@@ -209,15 +209,8 @@ void ht_streamfile_modifier::mod_page_destroy(FILEOFS offset)
 
 ht_mod_page *ht_streamfile_modifier::mod_page_find(FILEOFS offset)
 {
-#if 0
-	ht_data_uint *o = new ht_data_uint(offset & page_mask);
-	ht_mod_page *q = (ht_mod_page*)mod_pages->get(o);
-	delete o;
-	return q;
-#else
 	ht_data_uint o(offset & page_mask);
 	return (ht_mod_page*)mod_pages->get(&o);
-#endif
 }
 
 void ht_streamfile_modifier::mod_page_flush(FILEOFS offset)
@@ -231,7 +224,7 @@ void ht_streamfile_modifier::mod_page_flush(FILEOFS offset)
 
 int ht_streamfile_modifier::extend(UINT newsize)
 {
-/*	if (!active) return ht_layer_streamfile::extend(newsize);*/
+	if (!active) return ht_layer_streamfile::extend(newsize);
 	UINT osize = size;
 
 	if (size != newsize) modified = true;
@@ -240,7 +233,8 @@ int ht_streamfile_modifier::extend(UINT newsize)
 		if (!mod_page_find(o)) mod_page_create(o);
 	}
 /**/
-	return ht_layer_streamfile::extend(newsize);
+     return 0;
+//	return ht_layer_streamfile::extend(newsize);
 }
 
 UINT ht_streamfile_modifier::get_size()
@@ -340,7 +334,7 @@ FILEOFS ht_streamfile_modifier::tell()
 
 int ht_streamfile_modifier::truncate(UINT newsize)
 {
-/*	if (!active) return ht_layer_streamfile::truncate(newsize);*/
+	if (!active) return ht_layer_streamfile::truncate(newsize);
 	for (FILEOFS o = (newsize+page_granularity-1) & page_mask; o < size;
 	o += page_granularity) {
 		mod_page_destroy(o);
@@ -348,7 +342,8 @@ int ht_streamfile_modifier::truncate(UINT newsize)
 	if (size != newsize) modified = true;
 	size = newsize;
 /**/
-	return ht_layer_streamfile::truncate(newsize);
+	return 0;
+//	return ht_layer_streamfile::truncate(newsize);
 }
 
 int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)

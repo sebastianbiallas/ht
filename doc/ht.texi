@@ -301,7 +301,7 @@ new executables (NE)
 - segments @*
 - names @*
 - entrypoints @*
-- image with code/data analyser (x86) @*
+- image with code/data analyser (x86) @*
 - auto-relocation layer (pretty complete)
 @end itemize
 @item 

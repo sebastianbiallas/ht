@@ -60,6 +60,11 @@
 // user defined types start here
 #define X86_OPTYPE_USER		32
 
+union int_or_ptr {
+	int i;
+	void *p;
+};
+
 struct x86_insn_op {
 	int type;
 	int size;
@@ -85,7 +90,7 @@ struct x86_insn_op {
 		int trx;
 		int stx;
 		int mmx;
-		int user[4];
+		int_or_ptr user[4];
 	};
 };
 
