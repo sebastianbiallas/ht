@@ -273,7 +273,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 						Address *address = createAddress32(sym_addr);
 						if (validAddress(address, scvalid)) {
 							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-
+							if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
 							make_valid_name(label, label);
 
 							ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);

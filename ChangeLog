@@ -2,6 +2,7 @@
 ==============
 
 version 0.8-trunk:
+	- g++ v3 abi demangler
 	- x86 disasm: added undocumented ffreep (df c0) instruction
 	- compiles with gcc 3.4
 	- display hex file
@@ -24,7 +25,7 @@ version 0.8-trunk:
 	- disassembler interface (int maxlen, not byte maxlen)
 	- Win32: fixed access to native windows clipboard
 	- Win32: high CPU usage problems fixed (sys_suspend() bugged)
-
+	
 version 0.7.5:
 	- fixed bug in bnstr() with defaultbase > 10
 	- fixed buffer overflow in htelfsym.cc (thanks Luis Barrancos)
