@@ -78,7 +78,7 @@ public:
 	virtual bool combine(ht_undo_data *ud);
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -97,7 +97,7 @@ public:
 	virtual bool combine(ht_undo_data *ud);
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -117,7 +117,7 @@ public:
 	virtual bool combine(ht_undo_data *ud);
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -139,7 +139,7 @@ public:
 	virtual bool combine(ht_undo_data *ud);
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -157,7 +157,7 @@ public:
 	~ht_undo_data_split_line();
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -174,7 +174,7 @@ public:
 	~ht_undo_data_join_line();
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -196,7 +196,7 @@ public:
 	~ht_undo_data_insert_block();
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -218,7 +218,7 @@ public:
 	~ht_undo_data_delete_block();
 	virtual UINT getsize();
 	virtual void gettext(char *text, UINT maxlen);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };

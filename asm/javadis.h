@@ -78,7 +78,7 @@ public:
 	virtual char *getName();
 	virtual byte getSize(dis_insn *disasm_insn);
 		   int load(ht_object_stream *f);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual char *str(dis_insn *disasm_insn, int options);
 	virtual char *strf(dis_insn *disasm_insn, int options, char *format);
 	virtual void store(ht_object_stream *f);

@@ -157,7 +157,7 @@ void AnalyILDisassembler::done()
 	AnalyDisassembler::done();
 }
 
-OBJECT_ID AnalyILDisassembler::object_id()
+OBJECT_ID AnalyILDisassembler::object_id() const
 {
 	return ATOM_ANALY_IL;
 }

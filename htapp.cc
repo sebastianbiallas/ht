@@ -646,7 +646,7 @@ int ht_project::load(ht_object_stream *s)
 	return ht_sorted_list::load(s);
 }
 
-OBJECT_ID ht_project::object_id()
+OBJECT_ID ht_project::object_id() const
 {
 	return ATOM_HT_PROJECT;
 }
@@ -689,7 +689,7 @@ int ht_project_item::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-OBJECT_ID ht_project_item::object_id()
+OBJECT_ID ht_project_item::object_id() const
 {
 	return ATOM_HT_PROJECT_ITEM;
 }
@@ -2711,7 +2711,7 @@ int ht_app::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_app::object_id()
+OBJECT_ID ht_app::object_id() const
 {
 	return ATOM_HT_APP;
 }

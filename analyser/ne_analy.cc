@@ -271,7 +271,7 @@ void NEAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	NEAnalyser::object_id()
+OBJECT_ID	NEAnalyser::object_id() const
 {
 	return ATOM_NE_ANALYSER;
 }

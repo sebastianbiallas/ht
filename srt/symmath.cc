@@ -127,7 +127,7 @@ int sym_int_symbol::nstrfy(char *buf, int n)
 	return q-1;
 }
 
-OBJECT_ID sym_int_symbol::object_id()
+OBJECT_ID sym_int_symbol::object_id() const
 {
 	return ATOM_SYM_INT_SYMBOL;
 }
@@ -165,7 +165,7 @@ int sym_int_const::nstrfy(char *buf, int n)
 	return sprintf(buf, "0x%x", value);
 }
  
-OBJECT_ID sym_int_const::object_id()
+OBJECT_ID sym_int_const::object_id() const
 {
 	return ATOM_SYM_INT_CONST;
 }
@@ -410,7 +410,7 @@ int sym_int::nstrfy(char *buf, int n)
 	return l;
 }
 
-OBJECT_ID sym_int::object_id()
+OBJECT_ID sym_int::object_id() const
 {
 	return ATOM_SYM_INT;
 }
@@ -717,7 +717,7 @@ int sym_bool_symbol::nstrfy(char *buf, int n)
 //	return sprintf(buf, "%s", name);
 }
 
-OBJECT_ID sym_bool_symbol::object_id()
+OBJECT_ID sym_bool_symbol::object_id() const
 {
 	return ATOM_SYM_BOOL_SYMBOL;
 }
@@ -843,7 +843,7 @@ int sym_bool_intcmp::nstrfy(char *buf, int n)
 	return i;
 }
 
-OBJECT_ID sym_bool_intcmp::object_id()
+OBJECT_ID sym_bool_intcmp::object_id() const
 {
 	return ATOM_SYM_BOOL_INTCMP;
 }
@@ -1006,7 +1006,7 @@ void sym_bool::n_operate(n_op n)
 {
 }
 
-OBJECT_ID sym_bool::object_id()
+OBJECT_ID sym_bool::object_id() const
 {
 	return ATOM_SYM_BOOL;
 }

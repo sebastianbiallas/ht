@@ -97,7 +97,7 @@ public:
 	virtual	bool		selectNext(dis_insn *disasm_insn);
 	virtual	char		*str(dis_insn *disasm_insn, int style);
 	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	bool		validInsn(dis_insn *disasm_insn);
 private:
 			void		decodeSlot(int slot_nb);

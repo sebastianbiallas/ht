@@ -35,7 +35,7 @@ public:
 			void     	init();
 			int 		load(ht_object_stream *f);
 	virtual	void 	done();
-			OBJECT_ID	object_id();
+			OBJECT_ID	object_id() const;
 
 			void		add(Object *Start, Object *End);
 			bool		contains(Object *V);

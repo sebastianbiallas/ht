@@ -185,7 +185,7 @@ public:
 	virtual void done();
 /* overwritten */
 	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void	store(ht_object_stream *s);
 /* new */
 		   char *get_filename();
@@ -204,7 +204,7 @@ public:
 	virtual void done();
 /* overwritten */
 	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void	store(ht_object_stream *s);
 /* new */
 	const char *get_filename();
@@ -329,7 +329,7 @@ public:
 	virtual	char *func(UINT i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	int load(ht_object_stream *f);
-	virtual   OBJECT_ID object_id();
+	virtual   OBJECT_ID object_id() const;
 	virtual	int run(bool modal);
 	virtual	void store(ht_object_stream *f);
 /* new */

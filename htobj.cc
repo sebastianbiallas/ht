@@ -565,7 +565,7 @@ void ht_view::move(int rx, int ry)
 	app->clipbounds(&vsize);
 }
 
-OBJECT_ID ht_view::object_id()
+OBJECT_ID ht_view::object_id() const
 {
 	return ATOM_HT_VIEW;
 }
@@ -1091,7 +1091,7 @@ void ht_group::move(int rx, int ry)
 	}
 }
 
-OBJECT_ID ht_group::object_id()
+OBJECT_ID ht_group::object_id() const
 {
 	return ATOM_HT_GROUP;
 }
@@ -1302,7 +1302,7 @@ int ht_xgroup::load(ht_object_stream *s)
 	return ht_group::load(s);
 }
 
-OBJECT_ID ht_xgroup::object_id()
+OBJECT_ID ht_xgroup::object_id() const
 {
 	return ATOM_HT_XGROUP;
 }
@@ -1418,7 +1418,7 @@ int ht_scrollbar::load(ht_object_stream *s)
 	return 1;
 }
 
-OBJECT_ID ht_scrollbar::object_id()
+OBJECT_ID ht_scrollbar::object_id() const
 {
 	return ATOM_HT_SCROLLBAR;
 }
@@ -1576,7 +1576,7 @@ int ht_frame::load(ht_object_stream *s)
 	return ht_view::load(s);
 }
 
-OBJECT_ID ht_frame::object_id()
+OBJECT_ID ht_frame::object_id() const
 {
 	return ATOM_HT_FRAME;
 }
@@ -1801,7 +1801,7 @@ bool ht_window::next_action_state()
 	return false;
 }
 
-OBJECT_ID ht_window::object_id()
+OBJECT_ID ht_window::object_id() const
 {
 	return ATOM_HT_WINDOW;
 }

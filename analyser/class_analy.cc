@@ -129,7 +129,7 @@ void ClassAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	ClassAnalyser::object_id()
+OBJECT_ID	ClassAnalyser::object_id() const
 {
 	return ATOM_CLASS_ANALYSER;
 }

@@ -57,7 +57,7 @@ public:
 	virtual	char		*getName();
 	virtual	char		*str(dis_insn *disasm_insn, int style);
 	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	bool		validInsn(dis_insn *disasm_insn);
 };
 								

@@ -220,7 +220,7 @@ int javadis::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID javadis::object_id()
+OBJECT_ID javadis::object_id() const
 {
 	return ATOM_DISASM_JAVA;
 }

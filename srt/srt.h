@@ -69,7 +69,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 }; 
 
 /*
@@ -88,7 +88,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 };
 
 /***/

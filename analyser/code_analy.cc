@@ -43,7 +43,7 @@ void CodeAnalyser::done()
 }
 
 
-OBJECT_ID	CodeAnalyser::object_id()
+OBJECT_ID	CodeAnalyser::object_id() const
 {
 	return ATOM_CODE_ANALYSER;
 }

@@ -272,7 +272,7 @@ void PEAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	PEAnalyser::object_id()
+OBJECT_ID	PEAnalyser::object_id() const
 {
 	return ATOM_PE_ANALYSER;
 }

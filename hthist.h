@@ -54,7 +54,7 @@ public:
 /* overwritten */
 	virtual int	load(ht_object_stream *s);
 	virtual void	store(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 };
 
 bool insert_history_entry(ht_list *history, char *name, ht_view *view);

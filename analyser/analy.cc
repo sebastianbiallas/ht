@@ -72,7 +72,7 @@ int InvalidAddress::byteSize()
 	return 0;
 }
 
-int InvalidAddress::compareTo(Object *to)
+int InvalidAddress::compareTo(const Object *to) const
 {
 	return 0;
 }
@@ -109,7 +109,7 @@ int InvalidAddress::parseString(const char *s, int length, Analyser *a)
 	return 0;
 }
 
-OBJECT_ID InvalidAddress::object_id()
+OBJECT_ID InvalidAddress::object_id() const
 {
 	return ATOM_ADDRESS_INVALID;
 }
@@ -157,7 +157,7 @@ int AddressFlat32::byteSize()
 	return 4;
 }
 
-int AddressFlat32::compareTo(Object *to)
+int AddressFlat32::compareTo(const Object *to) const
 {
 	assert(object_id() == to->object_id());
 	if (addr > ((AddressFlat32 *)to)->addr) return 1;
@@ -206,7 +206,7 @@ int AddressFlat32::load(ht_object_stream *st)
 	return st->get_error();
 }
 
-OBJECT_ID AddressFlat32::object_id()
+OBJECT_ID AddressFlat32::object_id() const
 {
 	return ATOM_ADDRESS_FLAT_32;
 }
@@ -287,7 +287,7 @@ int AddressFlat64::byteSize()
 	return 8;
 }
 
-int AddressFlat64::compareTo(Object *to)
+int AddressFlat64::compareTo(const Object *to) const
 {
 	assert(object_id() == to->object_id());
 	return qword_cmp(addr, ((AddressFlat64 *)to)->addr);
@@ -340,7 +340,7 @@ int AddressFlat64::load(ht_object_stream *st)
 	return st->get_error();
 }
 
-OBJECT_ID AddressFlat64::object_id()
+OBJECT_ID AddressFlat64::object_id() const
 {
 	return ATOM_ADDRESS_FLAT_64;
 }
@@ -405,7 +405,7 @@ int AddrXRef::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID AddrXRef::object_id()
+OBJECT_ID AddrXRef::object_id() const
 {
 	return ATOM_ADDR_XREF;
 }
@@ -432,7 +432,7 @@ AddressQueueItem::~AddressQueueItem()
 	delete func;
 }
 
-OBJECT_ID	AddressQueueItem::object_id()
+OBJECT_ID	AddressQueueItem::object_id() const
 {
 	return ATOM_ADDR_QUEUE_ITEM;
 }

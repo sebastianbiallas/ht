@@ -44,39 +44,39 @@ class Analyser;
 
 class Address: public ht_data {
 public:
-	virtual bool add(int offset) = 0;
-	virtual int byteSize() = 0;
-	virtual int compareTo(Object *to) = 0;
-	virtual int compareDelinear(Address *to);
-	virtual bool difference(int &result, Address *to) = 0;
-	virtual void getFromArray(const byte *array) = 0;
-	virtual void getFromCPUAddress(CPU_ADDR *ca) = 0;
-	virtual bool isValid();
-	virtual int parseString(const char *s, int length, Analyser *a) = 0;
-	virtual void putIntoArray(byte *array) = 0;
-	virtual void putIntoCPUAddress(CPU_ADDR *ca) = 0;
-	virtual int stringify(char *s, int max_length, int format) = 0;
-	virtual int stringSize() = 0;
-	virtual int toString(char *s, int maxlen);
+	virtual	bool		add(int offset) = 0;
+	virtual	int		byteSize() = 0;
+	virtual	int		compareTo(const Object *to) const = 0;
+	virtual	int		compareDelinear(Address *to);
+	virtual	bool 	difference(int &result, Address *to) = 0;
+	virtual	void 	getFromArray(const byte *array) = 0;
+	virtual	void 	getFromCPUAddress(CPU_ADDR *ca) = 0;
+	virtual	bool 	isValid();
+	virtual	int		parseString(const char *s, int length, Analyser *a) = 0;
+	virtual	void		putIntoArray(byte *array) = 0;
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) = 0;
+	virtual	int		stringify(char *s, int max_length, int format) = 0;
+	virtual	int		stringSize() = 0;
+	virtual	int		toString(char *s, int maxlen);
 };
 
 class InvalidAddress: public Address {
 public:
-	InvalidAddress();
-	virtual bool add(int offset);
-	virtual int byteSize();
-	virtual int compareTo(Object *to);
-	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
-	virtual void getFromArray(const byte *array);
-	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual bool isValid();
-	virtual OBJECT_ID object_id();
-	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+					InvalidAddress();
+	virtual	bool		add(int offset);
+	virtual	int		byteSize();
+	virtual	int		compareTo(const Object *to) const;
+	virtual	bool		difference(int &result, Address *to);
+	virtual	Object *	duplicate();
+	virtual	void 	getFromArray(const byte *array);
+	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		isValid();
+	virtual	OBJECT_ID object_id() const;
+	virtual	int		parseString(const char *s, int length, Analyser *a);
+	virtual	void 	putIntoArray(byte *array);
+	virtual	void 	putIntoCPUAddress(CPU_ADDR *ca);
+	virtual	int		stringify(char *s, int max_length, int format);
+	virtual	int		stringSize();
 };
 
 /*
@@ -85,47 +85,47 @@ public:
 class AddressFlat32: public Address {
 public:
 	dword addr;
-	AddressFlat32();
-	AddressFlat32(dword a);
-	virtual bool add(int offset);
-	virtual int byteSize();
-	virtual int compareTo(Object *to);
-	virtual int compareDelinear(Address *to);
-	virtual void getFromArray(const byte *array);
-	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
-	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+					AddressFlat32();
+					AddressFlat32(dword a);
+	virtual	bool		add(int offset);
+	virtual	int		byteSize();
+	virtual	int		compareTo(const Object *to) const;
+	virtual	int		compareDelinear(Address *to);
+	virtual	void		getFromArray(const byte *array);
+	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		difference(int &result, Address *to);
+	virtual	Object *	duplicate();
+	virtual	int		load(ht_object_stream *s);
+	virtual	OBJECT_ID	object_id() const;
+	virtual	int		parseString(const char *s, int length, Analyser *a);
+	virtual	void		putIntoArray(byte *array);
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca);
+	virtual	void		store(ht_object_stream *s);
+	virtual	int		stringify(char *s, int max_length, int format);
+	virtual	int		stringSize();
 };
 
 class AddressFlat64: public Address {
 public:
 	qword addr;
-	AddressFlat64();
-	AddressFlat64(qword a);
-	virtual bool add(int offset);
-	virtual int byteSize();
-	virtual int compareTo(Object *to);
-	virtual int compareDelinear(Address *to);
-	virtual void getFromArray(const byte *array);
-	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
-	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+					AddressFlat64();
+					AddressFlat64(qword a);
+	virtual	bool		add(int offset);
+	virtual	int		byteSize();
+	virtual	int		compareTo(const Object *to) const;
+	virtual	int		compareDelinear(Address *to);
+	virtual	void		getFromArray(const byte *array);
+	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		difference(int &result, Address *to);
+	virtual	Object *	duplicate();
+	virtual	int		load(ht_object_stream *s);
+	virtual	OBJECT_ID	object_id() const;
+	virtual	int		parseString(const char *s, int length, Analyser *a);
+	virtual	void		putIntoArray(byte *array);
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca);
+	virtual	void		store(ht_object_stream *s);
+	virtual	int		stringify(char *s, int max_length, int format);
+	virtual	int		stringSize();
 };
 
 #define ANALY_SEGMENT_CAP_WRITE 1
@@ -137,11 +137,11 @@ class Segment: public ht_data {
 	char *name;
 	int caps;
 	
-			   Segment(const char *n, Address *s, Address *e, int c, int address_size);
-	virtual bool containsAddress(Address *addr) = 0;
-	virtual char *getName();
-	virtual int getAddressSize();
-	virtual int getCapability(int cap);
+					Segment(const char *n, Address *s, Address *e, int c, int address_size);
+	virtual	bool		containsAddress(Address *addr) = 0;
+	virtual	char *	getName();
+	virtual	int		getAddressSize();
+	virtual	int		getCapability(int cap);
 };
 
 /*
@@ -168,12 +168,12 @@ class AnalyDisassembler: public Object {
 public:
 	Analyser			*analy;
 	Disassembler        *disasm;
-						AnalyDisassembler::AnalyDisassembler();
+						AnalyDisassembler();
 			void			init(Analyser *A);
 			int 			load(ht_object_stream *f);
 	virtual	void			done();
 
-	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine) = 0;
+	virtual	Address *		branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine) = 0;
 	virtual	void			examineOpcode(OPCODE *opcode) = 0;
 	virtual	void			initDisasm();
 	virtual	branch_enum_t 	isBranch(OPCODE *opcode) = 0;
@@ -198,7 +198,7 @@ public:
 						AddrXRef();
 						AddrXRef(xref_enum_t Type);
 			int 			load(ht_object_stream *f);
-	virtual	OBJECT_ID		object_id();
+	virtual	OBJECT_ID		object_id() const;
 	virtual	void			store(ht_object_stream *f);
 };
 
@@ -279,12 +279,12 @@ class AddressQueueItem: public ht_data {
 public:
 	Address	*addr;
 	Address	*func;
-			AddressQueueItem();
-			AddressQueueItem(Address *Addr, Address *Func);
-			~AddressQueueItem();
-			OBJECT_ID	object_id();
-			int	load(ht_object_stream *f);
-	virtual	void	store(ht_object_stream *f);
+					AddressQueueItem();
+					AddressQueueItem(Address *Addr, Address *Func);
+					~AddressQueueItem();
+			OBJECT_ID	object_id() const;
+			int		load(ht_object_stream *f);
+	virtual	void		store(ht_object_stream *f);
 };
 
 class CodeAnalyser;
@@ -333,7 +333,7 @@ public:
 	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size) = 0;
 			bool	  		continueAnalysis();
 			void			continueAnalysisAt(Address *Addr);
-	virtual	Address		*createAddress() = 0;
+	virtual	Address *		createAddress() = 0;
 			void			dataAccess(Address *Addr, taccess access);
 			void			deleteLocation(Address *Addr);
 			void			deleteSymbol(Address *Addr);
@@ -341,27 +341,27 @@ public:
 			void			disableSymbol(Symbol *label);
 			void			doBranch(branch_enum_t branch, OPCODE *opcode, int len);
 			void			engageCodeanalyser();
-			Location		*enumLocations(Address *Addr);
-			Location		*enumLocationsReverse(Address *Addr);
-			Symbol		*enumSymbolsByName(const char *at);
-			Symbol		*enumSymbolsByNameReverse(const char *at);
-			Symbol		*enumSymbols(Symbol *sym);
-			Symbol		*enumSymbolsReverse(Symbol *sym);
-	virtual	taddr_typetype examineData(Address *Addr);
+			Location *	enumLocations(Address *Addr);
+			Location *	enumLocationsReverse(Address *Addr);
+			Symbol *		enumSymbolsByName(const char *at);
+			Symbol *		enumSymbolsByNameReverse(const char *at);
+			Symbol *		enumSymbols(Symbol *sym);
+			Symbol *		enumSymbolsReverse(Symbol *sym);
+	virtual	taddr_typetype	examineData(Address *Addr);
 			void			finish();
 			void			freeLocation(Location *loc);
 			void			freeLocations(Location *locs);
 			void			freeComments(Location *loc);
 			void			freeSymbol(Symbol *label);
 			void			freeSymbols(Symbol *labels);
-			Location		*getLocationByAddress(Address *Addr);
-			Location		*getLocationContextByAddress(Address *Addr);
+			Location *	getLocationByAddress(Address *Addr);
+			Location *	getLocationContextByAddress(Address *Addr);
 			int			getLocationCount();
-			Location		*getFunctionByAddress(Address *Addr);
-			Location		*getPreviousSymbolByAddress(Address *Addr);
-	virtual	char			*getSegmentNameByAddress(Address *Addr);
-			Symbol 		*getSymbolByAddress(Address *Addr);
-			Symbol		*getSymbolByName(const char *label);
+			Location *	getFunctionByAddress(Address *Addr);
+			Location *	getPreviousSymbolByAddress(Address *Addr);
+	virtual	char *		getSegmentNameByAddress(Address *Addr);
+			Symbol *		getSymbolByAddress(Address *Addr);
+			Symbol *		getSymbolByName(const char *label);
 			int			getSymbolCount();
 			bool			gotoAddress(Address *Addr, Address *func);
 	virtual	void 		initCodeAnalyser();
@@ -369,11 +369,11 @@ public:
 	virtual	void			initUnasm() = 0;
 	virtual	void			log(const char *s);                // stub
 	virtual	CPU_ADDR 		mapAddr(Address *Addr);      // stub
-			Location		*newLocation(Address *Addr);
-			Location		*newLocation(Location *&locs, Address *Addr);
-			Symbol		*newSymbol(const char *label, Location *loc, labeltype type, Location *infunc);
-			Symbol		*newSymbol(Symbol *&syms, const char *label, Location *loc, labeltype type);
-	virtual	Address		*nextValid(Address *Addr) = 0;
+			Location *	newLocation(Address *Addr);
+			Location *	newLocation(Location *&locs, Address *Addr);
+			Symbol *		newSymbol(const char *label, Location *loc, labeltype type, Location *infunc);
+			Symbol *		newSymbol(Symbol *&syms, const char *label, Location *loc, labeltype type);
+	virtual	Address *		nextValid(Address *Addr) = 0;
 			void			optimizeLocationTree();
 			void			optimizeSymbolTree();
 			bool			popAddress(Address **Addr, Address **func);
@@ -393,15 +393,15 @@ public:
 //  interface only (there's no internal use)
 	int		mode;
 
-	virtual   Assembler      *createAssembler();
-	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-			CommentList	*getComments(Address *Addr);
-			char			*getDisasmStr(Address *Addr, int &length);
-			char			*getDisasmStrFormatted(Address *Addr);
+	virtual   Assembler *	createAssembler();
+	virtual	Address *		fileofsToAddress(FILEOFS fileofs);
+			CommentList *	getComments(Address *Addr);
+			char *		getDisasmStr(Address *Addr, int &length);
+			char *		getDisasmStrFormatted(Address *Addr);
 			int			getDisplayMode();
-	virtual   const char	*getName();
-	virtual   const char	*getType();
-			ht_tree		*getXRefs(Address *Addr);
+	virtual   const char *	getName();
+	virtual   const char *	getType();
+			ht_tree *		getXRefs(Address *Addr);
 			bool			isDirty();
 			void			makeDirty();
 			void			setDisplayMode(int enable, int disable);

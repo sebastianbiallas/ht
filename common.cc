@@ -57,9 +57,10 @@ void Object::done()
 #endif
 }
 
-int Object::compareTo(Object *o)
+int Object::compareTo(const Object *o) const
 {
-	return 0;
+	assert(0);
+     return 0;
 }
 
 Object *Object::duplicate()
@@ -89,7 +90,7 @@ int Object::load(ht_object_stream *s)
 	return 0;
 }
 
-OBJECT_ID Object::object_id()
+OBJECT_ID Object::object_id() const
 {
 	return ATOM_OBJECT;
 }

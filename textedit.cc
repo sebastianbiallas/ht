@@ -218,7 +218,7 @@ void ht_undo_data_delete_string::gettext(char *text, UINT maxlen)
 	free(buf);
 }
 
-OBJECT_ID ht_undo_data_delete_string::object_id()
+OBJECT_ID ht_undo_data_delete_string::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_DELETE;
 }
@@ -300,7 +300,7 @@ void ht_undo_data_delete_string2::gettext(char *text, UINT maxlen)
 	free(buf);
 }
 
-OBJECT_ID ht_undo_data_delete_string2::object_id()
+OBJECT_ID ht_undo_data_delete_string2::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_DELETE2;
 }
@@ -383,7 +383,7 @@ void ht_undo_data_insert_string::gettext(char *text, UINT maxlen)
 	free(buf);
 }
 
-OBJECT_ID ht_undo_data_insert_string::object_id()
+OBJECT_ID ht_undo_data_insert_string::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_INSERT;
 }
@@ -492,7 +492,7 @@ void ht_undo_data_overwrite_string::gettext(char *text, UINT maxlen)
 	free(buf);
 }
 
-OBJECT_ID ht_undo_data_overwrite_string::object_id()
+OBJECT_ID ht_undo_data_overwrite_string::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_OVERWRITE;
 }
@@ -558,7 +558,7 @@ void ht_undo_data_split_line::gettext(char *text, UINT maxlen)
 	ht_snprintf(text, maxlen, "split line at %d:%d", apos.line+1, apos.pofs+1);
 }
 
-OBJECT_ID ht_undo_data_split_line::object_id()
+OBJECT_ID ht_undo_data_split_line::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_SPLIT_LINE;
 }
@@ -610,7 +610,7 @@ void ht_undo_data_join_line::gettext(char *text, UINT maxlen)
 	ht_snprintf(text, maxlen, "join lines %d and %d", bpos.line+1, bpos.line+2);
 }
 
-OBJECT_ID ht_undo_data_join_line::object_id()
+OBJECT_ID ht_undo_data_join_line::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_JOIN_LINE;
 }
@@ -756,7 +756,7 @@ void ht_undo_data_insert_block::gettext(char *text, UINT maxlen)
 	ht_snprintf(text, maxlen, "insert block ...");
 }
 
-OBJECT_ID ht_undo_data_insert_block::object_id()
+OBJECT_ID ht_undo_data_insert_block::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_INSERT_BLOCK;
 }
@@ -812,7 +812,7 @@ void ht_undo_data_delete_block::gettext(char *text, UINT maxlen)
 	ht_snprintf(text, maxlen, "delete block ...");
 }
 
-OBJECT_ID ht_undo_data_delete_block::object_id()
+OBJECT_ID ht_undo_data_delete_block::object_id() const
 {
 	return ATOM_HT_UNDO_DATA_DELETE_BLOCK;
 }

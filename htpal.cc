@@ -276,7 +276,7 @@ int palette_entry::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID palette_entry::object_id()
+OBJECT_ID palette_entry::object_id() const
 {
 	return ATOM_PALETTE_ENTRY;
 }

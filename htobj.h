@@ -193,7 +193,7 @@ public:
 	virtual	int isalone(ht_view *view);
 	virtual   int	load(ht_object_stream *s);
 	virtual	void move(int rx, int ry);
-	virtual   OBJECT_ID object_id();
+	virtual   OBJECT_ID object_id() const;
 			int pointvisible(int x, int y);
 	virtual	void receivefocus();
 	virtual	void redraw();
@@ -248,7 +248,7 @@ public:
 			int isviewdirty();
 	virtual	int load(ht_object_stream *s);
 	virtual	void move(int x, int y);
-	virtual   OBJECT_ID object_id();
+	virtual   OBJECT_ID object_id() const;
 			void putontop(ht_view *view);
 	virtual 	void receivefocus();
 	virtual	void resize(int rw, int rh);
@@ -281,7 +281,7 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	int isalone(ht_view *view);
 	virtual	int load(ht_object_stream *s);
-	virtual   OBJECT_ID object_id();
+	virtual   OBJECT_ID object_id() const;
 	virtual	void redraw();
 	virtual	void selectfirst();
 	virtual	void selectlast();
@@ -305,7 +305,7 @@ public:
 	virtual	void disable();
 	virtual 	void draw();
 	virtual	int load(ht_object_stream *s);
-	virtual   OBJECT_ID object_id();
+	virtual   OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *s);
 /* new */
 	virtual	void setpos(int pstart, int psize);
@@ -353,7 +353,7 @@ public:
 	virtual	void draw();
 	virtual	UINT getnumber();
 	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void setnumber(UINT number);
 	virtual	void settext(const char *text);
 	virtual	void store(ht_object_stream *s);
@@ -391,7 +391,7 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void insert(ht_view *view);
 	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void receivefocus();
 	virtual	void releasefocus();
 	virtual	void redraw();

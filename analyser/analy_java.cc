@@ -53,7 +53,7 @@ void AnalyJavaDisassembler::done()
 /*
  *
  */
-OBJECT_ID	AnalyJavaDisassembler::object_id()
+OBJECT_ID	AnalyJavaDisassembler::object_id() const
 {
 	return ATOM_ANALY_JAVA;
 }

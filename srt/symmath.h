@@ -110,7 +110,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void simplify();
 /* new */
 		   void b_operate(b_op bop, sym_int_token *t);
@@ -135,7 +135,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 };
 
 /*
@@ -152,7 +152,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 };
 
 /*
@@ -183,7 +183,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 };
 
 /*
@@ -217,7 +217,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void simplify();
 };
 
@@ -238,7 +238,7 @@ public:
 	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual void simplify();
 /* new */
 		   void l_operate(l_op l, sym_bool_token *t);

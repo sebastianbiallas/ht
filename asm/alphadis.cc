@@ -276,7 +276,7 @@ byte	Alphadis::getSize(dis_insn *disasm_insn)
 	return ((alphadis_insn*)disasm_insn)->size;
 }
 
-OBJECT_ID Alphadis::object_id()
+OBJECT_ID Alphadis::object_id() const
 {
 	return ATOM_DISASM_ALPHA;
 }

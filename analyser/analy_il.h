@@ -24,34 +24,11 @@
 #include "analy.h"
 #include "ildis.h"
 
-/*class AddressAlphaFlat32: public Address {
-public:
-	dword addr;
-	AddressAlphaFlat32();
-	AddressAlphaFlat32(dword addr);
-	virtual bool add(int offset);
-	virtual int byteSize();
-	virtual int compareTo(Object *to);
-	virtual int compareDelinear(Address *to);
-	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
-	virtual void getFromArray(const byte *array);
-	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
-	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
-};*/
-
 class AnalyILDisassembler: public AnalyDisassembler {
 public:
 			void			init(Analyser *A, char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
 	virtual   void	     	done();
-	virtual	OBJECT_ID		object_id();
+	virtual	OBJECT_ID		object_id() const;
 
 	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
 			Address		*createAddress(dword offset);

@@ -400,7 +400,7 @@ void ElfAnalyser::done()
 	Analyser::done();
 }
 
-OBJECT_ID ElfAnalyser::object_id()
+OBJECT_ID ElfAnalyser::object_id() const
 {
 	return ATOM_ELF_ANALYSER;
 }

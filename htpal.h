@@ -47,7 +47,7 @@ public:
 	virtual	bool editdialog(const char *keyname);
 	virtual   void strvalue(char *buf32bytes);
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 };
 

@@ -35,7 +35,7 @@ public:
 			void      	init(Analyser *A);
 			int 			load(ht_object_stream *f);
 	virtual	void 		done();
-	virtual	OBJECT_ID		object_id();
+	virtual	OBJECT_ID		object_id() const;
 
 	virtual	void			store(ht_object_stream *f);
 };

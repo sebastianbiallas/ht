@@ -2,7 +2,7 @@
  *	HT Editor
  *	htexcept.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -18,10 +18,11 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htexcept.h"
-
 #include <stdio.h>
 #include <stdarg.h>
+
+#include "htexcept.h"
+#include "snprintf.h"
 
 /*
  *	CLASS ht_exception
@@ -37,18 +38,18 @@ const char *ht_exception::what()
 }
 
 /*
- *	CLASS ht_io_exception
+ *	CLASS ht_msg_exception
  */
 
-ht_io_exception::ht_io_exception(char *e,...)
+ht_msg_exception::ht_msg_exception(char *e,...)
 {
 	va_list va;
 	va_start(va, e);
-	vsprintf(estr, e, va);		// FIXME: should be vsnprintf...
+	ht_vsnprintf(estr, sizeof estr, e, va);
 	va_end(va);
 }
 
-const char *ht_io_exception::what()
+const char *ht_msg_exception::what()
 {
 	return estr;
 }

@@ -34,7 +34,7 @@ public:
 			void			init(ht_coff_shared_data *Coff_shared, ht_streamfile *File);
 			int 			load(ht_object_stream *f);
 	virtual	void			done();
-	virtual	OBJECT_ID		object_id();
+	virtual	OBJECT_ID		object_id() const;
 
 	virtual	void			beginAnalysis();
 	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size);

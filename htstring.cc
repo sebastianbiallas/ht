@@ -510,7 +510,7 @@ int ht_data_string::toString(char *s, int maxlen)
 	return ht_snprintf(s, maxlen, "%s", value);
 }
 
-OBJECT_ID ht_data_string::object_id()
+OBJECT_ID ht_data_string::object_id() const
 {
 	return ATOM_HT_DATA_STRING;
 }

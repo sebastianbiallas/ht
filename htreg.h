@@ -47,7 +47,7 @@ public:
 			~ht_registry_data_stree();
 /* overwritten */
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 	virtual	void strvalue(char *buf32bytes);
 };
@@ -64,7 +64,7 @@ public:
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 	virtual	void strvalue(char *buf32bytes);
 };
@@ -83,7 +83,7 @@ public:
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 	virtual	void strvalue(char *buf32bytes);
 };
@@ -101,7 +101,7 @@ public:
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 	virtual	void strvalue(char *buf32bytes);
 };
@@ -120,7 +120,7 @@ public:
 	create_empty_registry_data_func create_empty_registry_data;
 	
 	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *f);
 };
 
@@ -145,7 +145,7 @@ public:
 /* overwritten */
 	virtual	int  load(ht_object_stream *f);
 	virtual	void store(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 };
 
 /*
@@ -193,7 +193,7 @@ public:
 /* overwritten */
 	virtual	int  load(ht_object_stream *f);
 	virtual	void store(ht_object_stream *f);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 /* debug */
 			void debug_dump();
 			void debug_dump_i(FILE *f, ht_tree *t, int ident);

@@ -56,7 +56,7 @@ void ht_data_uint::store(ht_object_stream *s)
 	s->putIntHex(value, 4, NULL);
 }
 
-OBJECT_ID ht_data_uint::object_id()
+OBJECT_ID ht_data_uint::object_id() const
 {
 	return ATOM_HT_DATA_UINT;
 }
@@ -81,7 +81,7 @@ void ht_data_dword::store(ht_object_stream *s)
 	s->putIntHex(value, 4, NULL);
 }
 
-OBJECT_ID ht_data_dword::object_id()
+OBJECT_ID ht_data_dword::object_id() const
 {
 	return ATOM_HT_DATA_DWORD;
 }
@@ -126,7 +126,7 @@ void ht_data_mem::store(ht_object_stream *s)
 	s->putBinary(value, size, NULL);
 }
 
-OBJECT_ID ht_data_mem::object_id()
+OBJECT_ID ht_data_mem::object_id() const
 {
 	return ATOM_HT_DATA_MEM;
 }
@@ -516,7 +516,7 @@ void ht_stree::store(ht_object_stream *s)
 	}
 }
 
-OBJECT_ID ht_stree::object_id()
+OBJECT_ID ht_stree::object_id() const
 {
 	return ATOM_HT_STREE;
 }
@@ -977,7 +977,7 @@ void ht_clist::move_multiple(UINT source, UINT dest, UINT count)
 	}
 }
 
-OBJECT_ID ht_clist::object_id()
+OBJECT_ID ht_clist::object_id() const
 {
 	return ATOM_HT_CLIST;
 }

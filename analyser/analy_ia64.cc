@@ -43,7 +43,7 @@ void AnalyIA64Disassembler::done()
 	AnalyDisassembler::done();
 }
 
-OBJECT_ID AnalyIA64Disassembler::object_id()
+OBJECT_ID AnalyIA64Disassembler::object_id() const
 {
 	return ATOM_ANALY_IA64;
 }

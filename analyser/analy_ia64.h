@@ -28,7 +28,7 @@ class AnalyIA64Disassembler: public AnalyDisassembler {
 public:
 			void			init(Analyser *A);
 	virtual   void	     	done();
-	virtual	OBJECT_ID		object_id();
+	virtual	OBJECT_ID		object_id() const;
 
 	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
 			Address		*createAddress(dword offset);

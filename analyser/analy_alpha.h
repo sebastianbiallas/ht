@@ -31,14 +31,14 @@ public:
 	AddressAlphaFlat32(dword addr);
 	virtual bool add(int offset);
 	virtual int byteSize();
-	virtual int compareTo(Object *to);
+	virtual int compareTo(const Object *to) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
 	virtual Object *duplicate();
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
 	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
+	virtual OBJECT_ID object_id() const;
 	virtual int parseString(const char *s, int length, Analyser *a);
 	virtual void putIntoArray(byte *array);
 	virtual void putIntoCPUAddress(CPU_ADDR *ca);

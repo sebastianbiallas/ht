@@ -110,7 +110,7 @@ void	DataAnalyser::done()
 {
 }
 
-OBJECT_ID	DataAnalyser::object_id()
+OBJECT_ID	DataAnalyser::object_id() const
 {
 	return ATOM_DATA_ANALYSER;
 }

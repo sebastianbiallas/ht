@@ -99,7 +99,7 @@ public:
 			void		init(Analyser *Analy);
 			int		load(ht_object_stream *f);
 	virtual	void		done();
-	virtual	OBJECT_ID	object_id();
+	virtual	OBJECT_ID	object_id() const;
 
 			void		access(Address *Addr, OP op, int size);
 			void		setAddressType(Address *Addr, taddr_typetype type, int subtype, int length);

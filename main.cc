@@ -248,8 +248,27 @@ void params(int argc, char *argv[])
 	if (showhelp) show_help();
 }
 
+//#define STRING_TEST
+
+#ifdef STRING_TEST
+#include "string2.h"
+#include "snprintf.h"
+#endif
 int main(int argc, char *argv[])
 {
+#ifdef STRING_TEST
+#define DPRINTF2(msg...) {char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
+	printf("=========================\n");
+	String a("abc");
+     String b = "";
+     String c = a;
+//     DPRINTF2("%y\n", &a, &b, &c);
+     c = "def";
+     String d = a+"def";
+     int aa = a < b;
+     DPRINTF2("a:%y|b:%y|c:%y|d:%y\n", &a, &b, &c, &d);
+	return 0;
+#endif
 	appname = argv[0];
 
 	if (!init()) {

@@ -86,7 +86,7 @@ int ht_registry_data_stree::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_registry_data_stree::object_id()
+OBJECT_ID ht_registry_data_stree::object_id() const
 {
 	return ATOM_HT_REGISTRY_DATA_STREE;
 }
@@ -132,7 +132,7 @@ int ht_registry_data_dword::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_registry_data_dword::object_id()
+OBJECT_ID ht_registry_data_dword::object_id() const
 {
 	return ATOM_HT_REGISTRY_DATA_DWORD;
 }
@@ -195,7 +195,7 @@ int ht_registry_data_raw::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_registry_data_raw::object_id()
+OBJECT_ID ht_registry_data_raw::object_id() const
 {
 	return ATOM_HT_REGISTRY_DATA_RAW;
 }
@@ -244,7 +244,7 @@ int ht_registry_data_string::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_registry_data_string::object_id()
+OBJECT_ID ht_registry_data_string::object_id() const
 {
 	return ATOM_HT_REGISTRY_DATA_STRING;
 }
@@ -291,7 +291,7 @@ void ht_registry_node::store(ht_object_stream *f)
 	f->putObject(data, NULL);
 }
 
-OBJECT_ID ht_registry_node::object_id()
+OBJECT_ID ht_registry_node::object_id() const
 {
 	return ATOM_HT_REGISTRY_NODE;
 }
@@ -333,7 +333,7 @@ int ht_registry_node_type_desc::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_registry_node_type_desc::object_id()
+OBJECT_ID ht_registry_node_type_desc::object_id() const
 {
 	return ATOM_HT_REGISTRY_NODE_TYPE_DESC;
 }
@@ -672,7 +672,7 @@ ht_registry_node_type ht_registry::lookup_node_type(const char *identifier)
 	return d ? d->type : 0;
 }
 
-OBJECT_ID ht_registry::object_id()
+OBJECT_ID ht_registry::object_id() const
 {
 	return ATOM_HT_REGISTRY;
 }

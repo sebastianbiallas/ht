@@ -52,7 +52,7 @@ int AddressAlphaFlat32::byteSize()
 	return 4;
 }
 
-int AddressAlphaFlat32::compareTo(Object *to)
+int AddressAlphaFlat32::compareTo(const Object *to) const
 {
 	assert(object_id() == to->object_id());
 	return addr-((AddressAlphaFlat32 *)to)->addr;
@@ -95,7 +95,7 @@ int AddressAlphaFlat32::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-OBJECT_ID AddressAlphaFlat32::object_id()
+OBJECT_ID AddressAlphaFlat32::object_id() const
 {
 	return ATOM_ADDRESS_ALPHA_FLAT_32;
 }

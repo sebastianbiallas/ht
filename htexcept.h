@@ -38,15 +38,21 @@ public:
  *	CLASS ht_io_exception
  */
 
-#define HT_IO_EXCEPTION_MAX_ERRSTR		256
+#define HT_MSG_EXCEPTION_MAX_ERRSTR		256
 
-class ht_io_exception: public ht_exception {
+class ht_msg_exception: public ht_exception {
 protected:
-	char estr[HT_IO_EXCEPTION_MAX_ERRSTR];
+	char estr[HT_MSG_EXCEPTION_MAX_ERRSTR];
 public:
-			    ht_io_exception(char *errstr,...);
+			    ht_msg_exception(char *errstr,...);
 /* new */
 	virtual const char *what();
 };
+
+/*
+ *	CLASS ht_io_exception
+ */
+
+#define ht_io_exception ht_msg_exception
 
 #endif /* __HTEXCEPT_H__ */

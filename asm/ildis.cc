@@ -236,7 +236,7 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 	return insnstr;     
 }
 
-OBJECT_ID ILDisassembler::object_id()
+OBJECT_ID ILDisassembler::object_id() const
 {
 	// FIXME
 	return 0;

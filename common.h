@@ -44,20 +44,20 @@ public:
 	bool destroyed;
 #endif
 
-			Object();
-	virtual		~Object();
+					Object();
+	virtual			~Object();
 
-		   void	init();
-	virtual void	done();
-	virtual int	compareTo(Object *o);
-	virtual Object	*duplicate();
-	virtual bool	idle();
-	virtual bool	instanceOf(OBJECT_ID id);
-		   bool	instanceOf(Object *o);
-	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id();
-	virtual void	store(ht_object_stream *s);
-	virtual int	toString(char *s, int maxlen);
+			void		init();
+	virtual	void		done();
+	virtual	int		compareTo(const Object *o) const;
+	virtual	Object *	duplicate();
+	virtual	bool		idle();
+	virtual	bool		instanceOf(OBJECT_ID id);
+			bool		instanceOf(Object *o);
+	virtual	int		load(ht_object_stream *s);
+	virtual	OBJECT_ID	object_id() const;
+	virtual	void		store(ht_object_stream *s);
+	virtual	int		toString(char *s, int maxlen);
 };
 
 #endif

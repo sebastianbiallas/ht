@@ -52,7 +52,7 @@ int AddressX86Flat32::byteSize()
 	return 4;
 }
 
-int AddressX86Flat32::compareTo(Object *to)
+int AddressX86Flat32::compareTo(const Object *to) const
 {
 /*	if (object_id() != to->object_id()) {
 		int as=1;
@@ -104,7 +104,7 @@ int AddressX86Flat32::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-OBJECT_ID AddressX86Flat32::object_id()
+OBJECT_ID AddressX86Flat32::object_id() const
 {
 	return ATOM_ADDRESS_X86_FLAT_32;
 }
@@ -177,7 +177,7 @@ int AddressX86_1632::byteSize()
 	return 6;
 }
 
-int AddressX86_1632::compareTo(Object *to)
+int AddressX86_1632::compareTo(const Object *to) const
 {
 	assert(object_id() == to->object_id());
 	if (seg > ((AddressX86_1632 *)to)->seg) return 1;
@@ -235,7 +235,7 @@ int AddressX86_1632::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-OBJECT_ID AddressX86_1632::object_id()
+OBJECT_ID AddressX86_1632::object_id() const
 {
 	return ATOM_ADDRESS_X86_1632;
 }
@@ -315,7 +315,7 @@ int AddressX86_1616::byteSize()
 	return 4;
 }
 
-int AddressX86_1616::compareTo(Object *to)
+int AddressX86_1616::compareTo(const Object *to) const
 {
 	assert(object_id() == to->object_id());
 	if (seg > ((AddressX86_1616 *)to)->seg) return 1;
@@ -373,7 +373,7 @@ int AddressX86_1616::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-OBJECT_ID AddressX86_1616::object_id()
+OBJECT_ID AddressX86_1616::object_id() const
 {
 	return ATOM_ADDRESS_X86_1616;
 }
@@ -460,7 +460,7 @@ void AnalyX86Disassembler::done()
 /*
  *
  */
-OBJECT_ID	AnalyX86Disassembler::object_id()
+OBJECT_ID	AnalyX86Disassembler::object_id() const
 {
 	return ATOM_ANALY_X86;
 }

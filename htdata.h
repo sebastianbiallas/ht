@@ -61,7 +61,7 @@ public:
 /* overwritten */
 	virtual	int load(ht_object_stream *s);
 	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 };
 
 /*
@@ -76,7 +76,7 @@ public:
 /* overwritten */
 	virtual	int load(ht_object_stream *s);
 	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 };
 
 /*
@@ -104,7 +104,7 @@ public:
 /* overwritten */
 	virtual	int load(ht_object_stream *s);
 	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 };
 
 /*
@@ -170,7 +170,7 @@ public:
 	virtual	ht_data *get(ht_data *key);
 	virtual	bool insert(ht_data *key, ht_data *value);
 	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void store(ht_object_stream *s);
 	virtual void set_compare_keys(compare_keys_func_ptr new_compare_keys);
 };
@@ -269,7 +269,7 @@ public:
 	virtual	int  load(ht_object_stream *s);
 	virtual	void move(UINT source, UINT dest);
 	virtual	void move_multiple(UINT source, UINT dest, UINT count);
-	virtual	OBJECT_ID object_id();
+	virtual	OBJECT_ID object_id() const;
 	virtual	void prepend(ht_data *data);
 	virtual	ht_data *remove(UINT i);
 	virtual	bool set(UINT i, ht_data *data);

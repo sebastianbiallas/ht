@@ -673,7 +673,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 	return insnstr;     
 }
 
-OBJECT_ID IA64Disassembler::object_id()
+OBJECT_ID IA64Disassembler::object_id() const
 {
 	return ATOM_DISASM_IA64;
 }

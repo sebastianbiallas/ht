@@ -127,7 +127,7 @@ void ht_history_entry::store(ht_object_stream *s)
 	}
 }
 
-OBJECT_ID ht_history_entry::object_id()
+OBJECT_ID ht_history_entry::object_id() const
 {
 	return ATOM_HT_HISTORY_ENTRY;
 }

@@ -78,7 +78,7 @@ int sym_int_reg::nstrfy(char *buf, int n)
 	return sprintf(buf, "reg%d", regidx);
 }
 
-OBJECT_ID sym_int_reg::object_id()
+OBJECT_ID sym_int_reg::object_id() const
 {
 	return ATOM_SYM_INT_REG;
 }
@@ -120,7 +120,7 @@ int sym_int_mem::nstrfy(char *buf, int n)
 	return l;
 }
 
-OBJECT_ID sym_int_mem::object_id()
+OBJECT_ID sym_int_mem::object_id() const
 {
 	return ATOM_SYM_INT_MEM;
 }

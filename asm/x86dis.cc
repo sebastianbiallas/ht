@@ -642,7 +642,7 @@ int x86dis::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID x86dis::object_id()
+OBJECT_ID x86dis::object_id() const
 {
 	return ATOM_DISASM_X86;
 }

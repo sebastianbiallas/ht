@@ -222,7 +222,7 @@ void CoffAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	CoffAnalyser::object_id()
+OBJECT_ID	CoffAnalyser::object_id() const
 {
 	return ATOM_COFF_ANALYSER;
 }

@@ -69,7 +69,7 @@ void Area::done()
 	freeRecursive(a);
 }
 
-OBJECT_ID	Area::object_id()
+OBJECT_ID	Area::object_id() const
 {
 	return ATOM_AREA;
 }
