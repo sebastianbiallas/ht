@@ -22,10 +22,11 @@
 #define ANALY_JAVA_H
 
 #include "analy.h"
+#include "javadis.h"
 
 class AnalyJavaDisassembler: public AnalyDisassembler {
 public:
-			void			init(Analyser *A);
+			void			init(Analyser *A, java_token_func token_func, void *context);
 			int 			load(ht_object_stream *f);
 	virtual   void    	 	done();
 	virtual	OBJECT_ID		object_id();

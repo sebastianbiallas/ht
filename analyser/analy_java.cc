@@ -28,9 +28,9 @@
 /*
  *
  */
-void AnalyJavaDisassembler::init(Analyser *A)
+void AnalyJavaDisassembler::init(Analyser *A, java_token_func token_func, void *context)
 {
-	disasm = new javadis();
+	disasm = new javadis(token_func, context);
 	AnalyDisassembler::init(A);
 }
 
