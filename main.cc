@@ -2,7 +2,7 @@
  *	HT Editor
  *	main.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -260,13 +260,13 @@ int main(int argc, char *argv[])
 #define DPRINTF2(msg...) {char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
 	printf("=========================\n");
 	String a("abc");
-     String b = "";
-     String c = a;
+	String b = "";
+	String c = a;
 //     DPRINTF2("%y\n", &a, &b, &c);
-     c = "def";
-     String d = a+"def";
-     int aa = a < b;
-     DPRINTF2("a:%y|b:%y|c:%y|d:%y\n", &a, &b, &c, &d);
+	c = "def";
+	String d = a+"def";
+	int aa = a < b;
+	DPRINTF2("a:%y|b:%y|c:%y|d:%y\n", &a, &b, &c, &d);
 	return 0;
 #endif
 	appname = argv[0];

@@ -386,6 +386,7 @@ void AnalyInfoline::init(bounds *b, ht_aviewer *A, char *Format)
 	displayformat = ht_strdup(Format);
 	s = (char *)smalloc(ANALYINFOLINE_DISPLAYFORMAT_LENGTH);
 	addr = new InvalidAddress();
+	fofs = INVALID_FILE_OFS;
 }
 
 void AnalyInfoline::done()
@@ -400,10 +401,10 @@ char *AnalyInfoline::gettext()
 {
 	if (valid()) {
 		char *sec = analy->analy->getSegmentNameByAddress(addr);
-		if (fofs!=INVALID_FILE_OFS) {
+		if (fofs != INVALID_FILE_OFS) {
 			Location *a = analy->analy->getFunctionByAddress(addr);
 			char *func = (a) ? ((a->label) ? a->label->name : NULL): NULL;
-			
+
 			char *d = displayformat;
 			char *ss = s;
 			while (*d) {

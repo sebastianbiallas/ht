@@ -35,7 +35,6 @@
 
 +steves
 =======
-- claim 2002 copyright
 - !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla

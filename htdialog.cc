@@ -2,7 +2,7 @@
  *	HT Editor
  *	htdialog.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -189,6 +189,8 @@ void ht_cluster::init(bounds *b, ht_string_list *_strings)
 
 void ht_cluster::done()
 {
+	strings->destroy();
+	delete strings;
 	ht_view::done();
 }
 
@@ -1269,7 +1271,7 @@ void ht_button::init(bounds *b, const char *Text, int Value)
 
 void ht_button::done()
 {
-	if (text) delete text;
+	if (text) free(text);
 	ht_view::done();
 }
 
@@ -1387,6 +1389,7 @@ void ht_listbox_title::setText(int cols, ...)
 	va_list vargs;
 	va_start(vargs, cols);
 	setTextv(cols, vargs);
+	va_end(vargs);
 	va_end(vargs);
 }
 
@@ -2311,6 +2314,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 		tmp->next = list[i+1];
 		tmp = list[i+1];
 	}
+	free(list);
 
 	update();
 	state_changed();
@@ -2389,7 +2393,7 @@ void ht_statictext::init(bounds *b, const char *t, statictext_align al, bool bre
 
 void ht_statictext::done()
 {
-	if (text) delete text;
+	if (text) free(text);
 	ht_view::done();
 }
 
@@ -2506,8 +2510,8 @@ char *ht_statictext::gettext()
 
 void ht_statictext::settext(const char *_text)
 {
-	if (text) delete text;
-	text=ht_strdup(_text);
+	if (text) free(text);
+	text = ht_strdup(_text);
 	dirtyview();
 }
 

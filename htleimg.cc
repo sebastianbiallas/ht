@@ -2,7 +2,7 @@
  *	HT Editor
  *	htleimg.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -48,11 +48,13 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
+// construction of le_page_file
+// dont just change; see below
 	ht_le_page_file *mfile = new ht_le_page_file();
-	mfile->init(file, 1, &le_shared->pagemap, le_shared->pagemap.count,
+	mfile->init(file, false, &le_shared->pagemap, le_shared->pagemap.count,
 		le_shared->hdr.pagesize);
 
-	ht_uformat_viewer *v = new ht_uformat_viewer();
+	ht_le_image *v = new ht_le_image();
 	v->init(b, "le/image", VC_EDIT | VC_GOTO | VC_SEARCH, mfile, group);
 
 	for (int i=0; i<le_shared->objmap.count; i++) {
@@ -87,6 +89,24 @@ format_viewer_if htleimage_if = {
 	htleimage_init,
 	0
 };
+
+/*
+ *	CLASS ht_le_image
+ */
+ 
+// watch out ! we're free'ing file. this is only valid if
+// file is constructed accordingly:
+// (1) file must be a layer on what "everybody else" treats
+//     as "our file".
+// (2) file must not own "our file"
+// see construction above
+
+void ht_le_image::done()
+{
+	ht_uformat_viewer::done();
+	file->done();
+	delete file;
+}
 
 /*
  *	CLASS ht_le_page_file

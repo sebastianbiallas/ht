@@ -2,7 +2,7 @@
  *	HT Editor
  *	htsearch.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -249,8 +249,8 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 ht_fxbin_search_request::ht_fxbin_search_request(UINT search_class, UINT flags, UINT ds, byte *d) :
 	ht_search_request(search_class, ST_FXBIN, flags)
 {
-	data_size=ds;
-	data=(byte*)malloc(data_size);
+	data_size = ds;
+	data = (byte*)malloc(data_size);
 	memmove(data, d, data_size);
 }
 
@@ -261,9 +261,7 @@ ht_fxbin_search_request::~ht_fxbin_search_request()
 
 Object *ht_fxbin_search_request::duplicate()
 {
-	byte *dt=(byte*)malloc(data_size);
-	memmove(dt, data, data_size);
-	return new ht_fxbin_search_request(search_class, flags, data_size, dt);
+	return new ht_fxbin_search_request(search_class, flags, data_size, data);
 }
 
 /*
@@ -338,14 +336,15 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 ht_regex_search_request::ht_regex_search_request(UINT search_class, UINT flags, char *regex) :
 	ht_search_request(search_class, ST_REGEX, flags)
 {
-	rx_str=ht_strdup(regex);
-	int r=regcomp(&rx, rx_str, REG_EXTENDED | ((flags & SF_REGEX_CASEINSENSITIVE) ? REG_ICASE : 0));
+	rx_str = ht_strdup(regex);
+	int r = regcomp(&rx, rx_str, REG_EXTENDED | ((flags & SF_REGEX_CASEINSENSITIVE) ? REG_ICASE : 0));
 	if (r) throw new ht_regex_search_exception(r, &rx);
 }
 
 ht_regex_search_request::~ht_regex_search_request()
 {
 	regfree(&rx);
+	free(rx_str);
 }
 
 Object *ht_regex_search_request::duplicate()
@@ -1281,7 +1280,8 @@ void ht_search_dialog::init(bounds *b, const char *title)
 	ht_dialog::init(b, title, FS_KILLER | FS_TITLE | FS_MOVE);
 	VIEW_DEBUG_NAME("ht_search_dialog");
 
-	smodecount=0;
+	smodecount = 0;
+	smodeidx = -1;
 
 	bounds c;
 	c.x=1;
@@ -1331,8 +1331,8 @@ void ht_search_dialog::handlemsg(htmsg *msg)
 		ht_dialog::handlemsg(msg);
 		ht_listpopup_data data;
 		search_mode_popup->databuf_get(&data);
-		if ((int)data.cursor_id!=smodeidx) {
-			smodeidx=data.cursor_id;
+		if ((int)data.cursor_id != smodeidx) {
+			smodeidx = data.cursor_id;
 			select_search_mode_bymodeidx();
 		}
 	} else ht_dialog::handlemsg(msg);

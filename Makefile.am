@@ -30,7 +30,7 @@ htdebug.cc htdebug.h htdialog.cc htdialog.h htelf.cc htelf.h htelfhd.cc \
 htelfhd.h htelfimg.cc htelfimg.h htelfphs.cc htelfphs.h htelfshs.cc htelfshs.h \
 htelfsym.cc htelfsym.h htelfrel.cc htelfrel.h htfinfo.cc htfinfo.h htformat.cc \
 htformat.h hthex.cc hthex.h hthist.cc hthist.h htidle.cc \
-htidle.h htinfo.cc htinfo.h htiobox.cc htiobox.h htle.cc htle.h htleent.cc \
+htidle.h htinfo.h htiobox.cc htiobox.h htle.cc htle.h htleent.cc \
 htleent.h htlehead.cc htlehead.h htleimg.cc htleimg.h htleobj.cc htleobj.h \
 htlepage.cc htlepage.h htmenu.cc htmenu.h htmz.cc htmz.h \
 htmzhead.cc htmzhead.h htmzimg.cc htmzimg.h htmzrel.cc htmzrel.h htne.cc \
@@ -40,7 +40,7 @@ htpal.h htpe.cc htpe.h htpedimp.cc htpedimp.h htpeexp.cc htpeexp.h \
 htpehead.cc htpehead.h htpeimg.cc htpeimg.h htpeimp.cc htpeimp.h htperes.cc \
 htperes.h htreg.cc htreg.h htsearch.cc htsearch.h \
 htstring.cc htstring.h htstruct.cc htstruct.h httag.cc httag.h httree.cc \
-httree.h htvfs.cc htvfs.h lestruct.h main.cc mzstruct.h nestruct.h pestruct.h \
+httree.h lestruct.h main.cc mzstruct.h nestruct.h pestruct.h \
 regex.h store.cc store.h stream.cc stream.h tools.cc tools.h vxd.cc vxd.h \
 vxdserv.cc vxdserv.h cplus-dem.c demangle.h regex.c regex.h \
 syntax.cc syntax.h textfile.cc textfile.h textedit.cc textedit.h \

@@ -2,7 +2,7 @@
  *	HT Editor
  *	htne.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -205,11 +205,17 @@ void ht_ne::done()
 		for (UINT i=0; i<ne_shared->modnames_count; i++) {
 			free(ne_shared->modnames[i]);
 		}
+		free(ne_shared->modnames);
 	}
 	
 	if (ne_shared->entrypoints) {
 		ne_shared->entrypoints->destroy();
 		delete ne_shared->entrypoints;
+	}
+	
+	if (ne_shared->imports) {
+		ne_shared->imports->destroy();
+		delete ne_shared->imports;
 	}
 	free(shared_data);
 }
@@ -376,6 +382,11 @@ ht_ne_entrypoint::ht_ne_entrypoint(UINT Ordinal, UINT Seg, UINT Offset, UINT Fla
 	offset = Offset;
 	flags = Flags;
 	name = NULL;
+}
+
+ht_ne_entrypoint::~ht_ne_entrypoint()
+{
+        if (name) free(name);
 }
 
 /*

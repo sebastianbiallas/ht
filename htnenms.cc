@@ -2,7 +2,7 @@
  *	HT Editor
  *	htnenms.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -35,7 +35,7 @@ void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
 		ht_ne_entrypoint *e = (ht_ne_entrypoint*)ne_shared->entrypoints->get(i);
 		if (e) {
 			e->name = strdup(name);
-		} else fprintf(stderr, "entry %d not available\n", i);
+		} /*else fprintf(stderr, "entry %d not available\n", i);*/
 	} /* else trouble :-) */
 }
 

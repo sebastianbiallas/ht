@@ -35,4 +35,3 @@
 #define ht_copyright2 "(c) 1999-2002 "ht_author2", "ht_mail2
 
 #endif /* !__HTINFO_H__ */
-

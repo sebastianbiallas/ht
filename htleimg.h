@@ -2,7 +2,7 @@
  *	HT Editor
  *	htleimg.h
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -24,6 +24,15 @@
 #include "stream.h"
 
 #include "formats.h"
+
+/*
+ *	CLASS ht_le_image
+ */
+
+class ht_le_image: public ht_uformat_viewer {
+public:
+	virtual	void	done();
+};
 
 /*
  *	CLASS ht_le_page_file

@@ -2,7 +2,7 @@
  *	HT Editor
  *	htsys.cc (DJGPP implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -211,8 +211,8 @@ int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, i
 
 bool sys_ipc_is_valid(int handle)
 {
-// FIXME: implement it
-	   return false;
+// no multitasking, never valid
+	return false;
 }
 
 int sys_ipc_terminate(int handle)

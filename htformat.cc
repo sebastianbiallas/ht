@@ -2511,6 +2511,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 						break;
 					}
 				}
+				delete request;
 				if (result) {
 					// FIXME: !!!!!!!!
 					if (!show_search_result(result)) infobox("couldn't display result (internal error)");
@@ -4414,7 +4415,7 @@ void ht_collapsable_sub::init(ht_streamfile *file, ht_sub *sub, bool own_sub, ch
 
 void ht_collapsable_sub::done()
 {
-	if (nodestring) delete nodestring;
+	if (nodestring) free(nodestring);
 	ht_layer_sub::done();
 }
 

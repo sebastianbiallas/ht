@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcurses.h (DJGPP implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -67,7 +67,6 @@ protected:
 public:
 	screendrawbuf(char *title);
 	~screendrawbuf();
-/* overwritten */
 	virtual void b_fill(int x, int y, int w, int h, int c, int ch);
 	virtual void b_printchar(int x, int y, int c, int ch);
 	virtual int b_lprint(int x, int y, int c, int l, char *text);
@@ -75,11 +74,6 @@ public:
 	virtual void b_resize(int rw, int rh);
 	virtual void b_rmove(int rx, int ry);
 	virtual void b_setbounds(bounds *b);
-/* overwritten - graphical extension */
-	virtual void b_line(int px1, int py1, int px2, int py2, int c);
-	virtual void b_putpixel(int px, int py, int c);
-	virtual void text_to_pixel_coord(int tx, int ty, int *px, int *py);
-	virtual void pixel_to_text_coord(int px, int py, int *tx, int *ty);
 /* new */
 	void drawbuffer(drawbuf *buf, int x, int y, bounds *clipping);
 	void	show();
@@ -91,4 +85,3 @@ public:
 };
 
 #endif /* !__HTCURSES_H__ */
-

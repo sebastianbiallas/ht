@@ -2,7 +2,7 @@
  *	HT Editor
  *	io.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -409,9 +409,7 @@ drawbuf::drawbuf(bounds *b)
 
 drawbuf::~drawbuf()
 {
-	if (buf) {
-		delete buf;
-	}
+	if (buf) free(buf);
 }
 
 void drawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
@@ -476,7 +474,7 @@ int drawbuf::b_lprintw(int x, int y, int c, int l, int *text)
 void drawbuf::b_setbounds(bounds *b)
 {
 	genericdrawbuf::b_setbounds(b);
-	if (buf) delete buf;
+	if (buf) free(buf);
 	if (size.w * size.h) {
 		buf=(drawbufch*)malloc(sizeof *buf * size.w * size.h);
 		drawbufch *bb=buf;

@@ -2,7 +2,7 @@
  *	HT Editor
  *	htle.cc
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -63,7 +63,7 @@ void ht_le::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	VIEW_DEBUG_NAME("ht_le");
 
 	LOG("%s: LE: found header at %08x", file->get_filename(), h);
-	ht_le_shared_data *le_shared=new ht_le_shared_data;
+	ht_le_shared_data *le_shared = (ht_le_shared_data*)malloc(sizeof(ht_le_shared_data));
 	shared_data=le_shared;
 	le_shared->v_header=0;
 	le_shared->v_objects=0;
@@ -80,6 +80,8 @@ void ht_le::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 
 void ht_le::done()
 {
+	ht_format_group::done();
+
 	ht_le_shared_data *le_shared=(ht_le_shared_data*)shared_data;
 	
 	if (le_shared->objmap.header) free(le_shared->objmap.header);
@@ -89,17 +91,17 @@ void ht_le::done()
 	if (le_shared->pagemap.offset) free(le_shared->pagemap.offset);
 	if (le_shared->pagemap.vsize) free(le_shared->pagemap.vsize);
 	if (le_shared->pagemap.psize) free(le_shared->pagemap.psize);
-
-	ht_format_group::done();
+	free(le_shared);
 }
 
 void ht_le::loc_enum_start()
 {
-	loc_enum=true;
+//	loc_enum=true;
 }
 
 bool ht_le::loc_enum_next(ht_format_loc *loc)
 {
+#if 0
 	ht_le_shared_data *sh=(ht_le_shared_data*)shared_data;
 	if (loc_enum) {
 		loc->name="le";
@@ -109,6 +111,6 @@ bool ht_le::loc_enum_next(ht_format_loc *loc)
 		loc_enum=false;
 		return true;
 	}
+#endif	
 	return false;
 }
-
