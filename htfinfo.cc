@@ -77,9 +77,9 @@ char *ht_finfo_text::gettext()
 	if (s.caps & pstat_gid) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "group id", s.gid);
 
 	if (s.caps & pstat_size) {
-		t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d (%.2fK, %.2fM)\n", "size", s.size, ((float)s.size)/1024, ((float)s.size)/1024/1024);
+		t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d (%.2fKiB, %.2fMiB)\n", "size", s.size, ((float)s.size)/1024, ((float)s.size)/1024/1024);
 	}	    
-	
+
 	if (s.caps & pstat_inode) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "inode", s.fsid); else
 		if (s.caps & pstat_cluster) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "cluster (?)", s.fsid); else
 		if (s.caps & pstat_fsid) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "fsid", s.fsid);
