@@ -249,6 +249,7 @@ class ht_project_window: public ht_window {
 protected:
 	ht_project **project;
 	ht_project_listbox *plb;
+	char wtitle[128];
 public:
 
 			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **project);

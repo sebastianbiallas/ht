@@ -598,7 +598,7 @@ char *ht_project_listbox::getstr(int col, void *entry)
 	static char mybuf[32];
 	if (project) switch (col) {
 		case 0:
-			ht_snprintf(mybuf, sizeof mybuf, "%-16s", ((ht_project_item*)project->get((int)entry-1))->get_filename());
+			ht_snprintf(mybuf, sizeof mybuf, "%s", ((ht_project_item*)project->get((int)entry-1))->get_filename());
 			break;
 		case 1:
 			ht_snprintf(mybuf, sizeof mybuf, "%s", ((ht_project_item*)project->get((int)entry-1))->get_path());
@@ -614,25 +614,41 @@ char *ht_project_listbox::getstr(int col, void *entry)
 void ht_project_listbox::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
+		case cmd_project_add_item: {
+			if (project) {
+				char fn[FILENAME_MAX];
+				fn[0] = 0;
+				if (inputbox("Add project item", "~Filename", fn, sizeof fn, HISTATOM_FILE) == button_ok) {
+					char ffn[HT_NAME_MAX];
+					char dir[HT_NAME_MAX];
+					getcwd(dir, sizeof dir);
+					if ((sys_common_canonicalize(ffn, fn, dir, sys_is_path_delim) == 0)
+					&& (sys_basename(fn, ffn) == 0)
+					&& (sys_dirname(dir, ffn) == 0)) {
+						ht_project_item *p = new ht_project_item();
+						p->init(fn, dir);
+						((ht_project*)project)->insert(p);
+						sendmsg(msg_project_changed);
+					}
+				}
+			}
+			clearmsg(msg);
+			return;
+		}
+		case cmd_project_remove_item: {
+			int p = pos;
+			if (count && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
+				cursor_up(1);
+				project->del(p);
+				update();
+				if (p) cursor_down(1);
+				dirtyview();
+			}
+			clearmsg(msg);
+			return;
+		}
 		case msg_keypressed:
 			switch (msg->data1.integer) {
-				case K_Insert: {
-					app->sendmsg(cmd_project_add_item);
-					clearmsg(msg);
-					return;
-				}
-				case K_Delete: {
-					int p = pos;
-					if (count && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
-						cursor_up(1);
-						project->del(p);
-						update();
-						if (p) cursor_down(1);
-						dirtyview();
-					}
-					clearmsg(msg);
-					break;
-				}
 				case K_Return: {
 					if (count) {
 						int p = pos;
@@ -713,6 +729,7 @@ void	ht_project_window::init(bounds *b, char *desc, UINT framestyle, UINT number
 	plb->init(&c, *p);
 
 	insert(plb);
+	sendmsg(msg_project_changed);
 }
 
 void ht_project_window::done()
@@ -723,9 +740,24 @@ void ht_project_window::done()
 void ht_project_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_project_changed:
+		case msg_project_changed: {
+			char *t = *project ? (*project)->get_filename() : NULL;
+			if (t) ht_snprintf(wtitle, sizeof wtitle, "project '%s'", t); else strcpy(wtitle, "project window");
+			settitle(wtitle);
 			plb->set_project(*project);
 			break;
+		}
+		case msg_contextmenuquery: {
+			ht_static_context_menu *projects=new ht_static_context_menu();
+			projects->init("~Project");
+			projects->insert_entry("~Add item", "Insert", cmd_project_add_item, K_Insert, 1);
+			projects->insert_entry("~Remove item", "Delete", cmd_project_remove_item, K_Delete, 1);
+//			projects->insert_entry("~Edit item", NULL, cmd_project_edit_item, 0, 1);
+
+			msg->msg = msg_retval;
+			msg->data1.ptr = projects;
+			return;
+		}
 	}
 	ht_window::handlemsg(msg);
 }
@@ -1206,6 +1238,9 @@ void ht_app::init(bounds *pq)
 	file->insert_entry("~Save", 0, cmd_file_save, 0, 1);
 	file->insert_entry("Save ~As...", 0, cmd_file_saveas, 0, 1);
 	file->insert_separator();
+	file->insert_entry("Open ~project", NULL, cmd_project_open, 0, 1);
+	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
+	file->insert_separator();
 	file->insert_entry("~Quit", "F10", cmd_quit, 0, 1);
 	m->insert_menu(file);
 
@@ -1229,11 +1264,6 @@ void ht_app::init(bounds *pq)
 	edit->insert_entry("~Evaluate...", 0, cmd_popup_dialog_eval, 0, 1);
 	m->insert_menu(edit);
 
-/*	ht_static_context_menu *options=new ht_static_context_menu();
-	options->init("~Options");
-	options->insert_entry("~Palette", NULL, cmd_options_palette, 0, 1);
-	m->insert_menu(options);*/
-
 	ht_static_context_menu *windows=new ht_static_context_menu();
 	windows->init("~Windows");
 	windows->insert_entry("~Size/Move", "Alt+F5", cmd_window_resizemove, K_Alt_F5, 1);
@@ -1244,15 +1274,6 @@ void ht_app::init(bounds *pq)
 	windows->insert_entry("~Options", NULL, cmd_popup_window_options, 0, 1);
 	windows->insert_entry("~Project", NULL, cmd_popup_window_project, 0, 1);
 	m->insert_menu(windows);
-
-	ht_static_context_menu *projects=new ht_static_context_menu();
-	projects->init("~Project");
-	projects->insert_entry("~Open", NULL, cmd_project_open, 0, 1);
-	projects->insert_entry("~Close", NULL, cmd_project_close, 0, 1);
-	projects->insert_entry("~Add item", NULL, cmd_project_add_item, 0, 1);
-	projects->insert_entry("~Remove item", NULL, cmd_project_remove_item, 0, 1);
-	projects->insert_entry("~Edit item", NULL, cmd_project_edit_item, 0, 1);
-	m->insert_menu(projects);
 
 	ht_static_context_menu *help=new ht_static_context_menu();
 	help->init("~Help");
@@ -2018,7 +2039,7 @@ void ht_app::handlemsg(htmsg *msg)
 
 						ht_streamfile *old = e->layer->get_layered();
 
-						if (f->set_access_mode(old->get_access_mode())) {
+						if (f->set_access_mode(old->get_access_mode() & (~FAM_CREATE))) {
 							e->layer->set_layered(f);
 							e->isfile = true;
 
@@ -2249,7 +2270,7 @@ void ht_app::handlemsg(htmsg *msg)
 						ht_layer_streamfile *file = new ht_layer_streamfile();
 						file->init(modfile, true);
 
-						create_window_file_bin(&b, file, "Untitled", true);
+						create_window_file_bin(&b, file, "Untitled", false);
 					}
 				}
 			}
@@ -2326,44 +2347,6 @@ void ht_app::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		}
-		case cmd_project_add_item: {
-			if (project) {
-				char fn[FILENAME_MAX];
-				fn[0] = 0;
-				if (inputbox("Add project item", "~Filename", fn, sizeof fn, HISTATOM_FILE) == button_ok) {
-					char ffn[HT_NAME_MAX];
-					char dir[HT_NAME_MAX];
-					getcwd(dir, sizeof dir);
-					if ((sys_common_canonicalize(ffn, fn, dir, sys_is_path_delim) == 0)
-					&& (sys_basename(fn, ffn) == 0)
-					&& (sys_dirname(dir, ffn) == 0)) {
-						ht_project_item *p = new ht_project_item();
-						p->init(fn, dir);
-						((ht_project*)project)->insert(p);
-						sendmsg(msg_project_changed);
-					}
-				}
-			}
-			clearmsg(msg);
-			return;
-		}
-		case cmd_project_remove_item: {
-			if (project) {
-//                    sendmsg(msg_project_changed);
-			}
-			clearmsg(msg);
-			return;
-		}
-		case cmd_project_edit_item: {
-			if (project) {
-			}
-			clearmsg(msg);
-			return;
-		}
-/*		case cmd_window_resizemove:
-			sendmsg(msg_resize, 0);
-			clearmsg(msg);
-			return;*/
 		case cmd_window_close:
 			if (battlefield->current) sendmsg(msg_kill, battlefield->current);
 			clearmsg(msg);
@@ -2737,7 +2720,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 			if (modified) {
 				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, "file %s has been modified, save ?", file->get_filename())) {
 					case button_yes: {
-                         	app->focus(this);
+						app->focus(this);
 						htmsg msg;
 						msg.msg = cmd_file_save;
 						msg.type = mt_empty;
@@ -2750,6 +2733,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 				}
 			}
 
+			// flush so that cmd_analyser_save get correct mtime
 			file->cntl(FCNTL_FLUSH_STAT);
 			
 			Analyser *a;
