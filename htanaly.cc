@@ -1780,8 +1780,8 @@ void ht_aviewer::showXRefs(Address *Addr)
 	if (x_tree) {
 		bounds c, b;
 		app->getbounds(&c);
-          b.w = c.w*5/6;
-          b.h = c.h*5/6;
+		b.w = c.w*5/6;
+		b.h = c.h*5/6;
 		center_bounds(&b);
 restart:
 		UINT bw = b.w;
