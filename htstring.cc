@@ -328,7 +328,21 @@ int bnstr2bin(char *str, char *p, int base, dword *v)
 	return 1;
 }
 
-int bnstr(char **str, dword *v, int defaultbase)
+int bnstr2bin(char *str, char *p, int base, qword *q)
+{
+	*q = to_qword(0);
+     qword qbase = to_qword(base);
+	do {
+		int c = hexdigit(*str);
+		if ((c == -1) || (c >= base)) return 0;
+		(*q) *= qbase;
+		*q += to_qword(c);
+		str++;
+	} while (str < p);
+	return 1;
+}
+
+int bnstr(char **str, qword *q, int defaultbase)
 {
 	int base=defaultbase;
 	int t=0;
@@ -364,11 +378,19 @@ int bnstr(char **str, dword *v, int defaultbase)
 				if (**str=='0') base=8;
 		}
 	}
-	if (bnstr2bin(*str, p, base, v)) {
+	if (bnstr2bin(*str, p, base, q)) {
 		*str=p+t;
 		return 1;
 	}
 	return 0;
+}
+
+int bnstr(char **str, dword *v, int defaultbase)
+{
+	qword q;
+	int res = bnstr(str, &q, defaultbase);
+     *v = QWORD_GET_LO(q);
+     return res;
 }
 
 /* hex/string functions */

@@ -303,7 +303,9 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
 	} else if (oid == ATOM_ADDRESS_FLAT_64) {
-		*r = QWORD_GET_INT(((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base);
+          qword q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
+          if (QWORD_GET_HI(q)) return false;
+		*r = QWORD_GET_LO(q);
 		return true;
 	}
 	return false;

@@ -48,6 +48,7 @@ int waitforchar(char **str, char b);
 /* string evaluation functions */
 
 int bnstr(char **str, dword *v, int defaultbase);
+int bnstr(char **str, qword *q, int defaultbase);
 
 /* hex/string functions */
 

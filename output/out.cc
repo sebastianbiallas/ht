@@ -33,10 +33,10 @@
 #include <string.h>
 
 #undef DPRINTF
-//#define DPRINTF(msg...) printf(##msg)
-//#define DPRINTF2(msg...) printf(##msg)
 #define DPRINTF(msg...)
 #define DPRINTF2(msg...)
+//#define DPRINTF(msg...) printf(##msg)
+//#define DPRINTF2(msg...) printf(##msg)
 
 int compare_keys_addresses_delinear(ht_data *key_a, ht_data *key_b)
 {
@@ -656,15 +656,13 @@ int	AnalyserOutput::nextLine(Address **Addr, int *line, int n, Address *max)
 int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 {
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
-// #define ADDRBUF(a) (a)->stringify(tbuf, 1024, 0);
 #define ADDRBUF(a)
+//#define ADDRBUF(a) (a)->stringify(tbuf, 1024, 0);
 	char tbuf[1024];
 	ADDRBUF(*Addr)
 	DPRINTF2("prev_line(%s, %d, %d", tbuf, *line, n);
-//	printf("prev_line(%s, %d, %d", tbuf, *line, n);
 	ADDRBUF(min)
 	DPRINTF2(", %s)\n", tbuf);
-//	printf(", %s)\n", tbuf);
 	int res = 0;
 	// trivial cases
 	int cmp = (*Addr)->compareTo(min);

@@ -114,6 +114,8 @@ public:
 		   int	getInt(int size, char *desc);
 	virtual int	getIntDec(int size, char *desc) = 0;
 	virtual int	getIntHex(int size, char *desc) = 0;
+	virtual qword	getQWordDec(int size, char *desc) = 0;
+	virtual qword	getQWordHex(int size, char *desc) = 0;
 	virtual Object	*getObject(char *name) = 0;
 	virtual void	getObject(Object *&o, char *name) = 0;
 	virtual void	getSeparator() = 0;
@@ -126,6 +128,8 @@ public:
 		   void	putInt(int a, int size, char *desc);
 	virtual void	putIntDec(int a, int size, char *desc) = 0;
 	virtual void	putIntHex(int a, int size, char *desc) = 0;
+	virtual void	putQWordDec(qword a, int size, char *desc) = 0;
+	virtual void	putQWordHex(qword a, int size, char *desc) = 0;
 	virtual void	putObject(Object *obj, char *name) = 0;
 	virtual void	putSeparator() = 0;
 	virtual void	putString(char *string, char *desc) = 0;
@@ -136,6 +140,8 @@ public:
 #define PUT_INT(st, d) st->putInt(d, 4, #d)
 #define PUT_INT_DEC(st, d) st->putIntDec(d, 4, #d)
 #define PUT_INT_HEX(st, d) st->putIntHex(d, 4, #d)
+#define PUT_QWORD_DEC(st, d) st->putQWordDec(d, 8, #d)
+#define PUT_QWORD_HEX(st, d) st->putQWordHex(d, 8, #d)
 #define PUT_OBJECT(st, o) st->putObject(o, #o)
 #define PUT_STRING(st, d) st->putString(d, #d)
 
@@ -143,6 +149,8 @@ public:
 #define GET_INT(st, d) d=st->getInt(4, #d)
 #define GET_INT_DEC(st, d) d=st->getIntDec(4, #d)
 #define GET_INT_HEX(st, d) d=st->getIntHex(4, #d)
+#define GET_QWORD_DEC(st, d) d=st->getQWordDec(8, #d)
+#define GET_QWORD_HEX(st, d) d=st->getQwordHex(8, #d)
 #define GET_OBJECT(st, o) st->getObject((Object *)o, #o)
 #define GET_STRING(st, d) d=st->getString(#d)
 

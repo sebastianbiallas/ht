@@ -47,6 +47,8 @@ public:
 	virtual bool	getBool(char *desc);
 	virtual int	getIntDec(int size, char *desc);
 	virtual int	getIntHex(int size, char *desc);
+	virtual qword	getQWordDec(int size, char *desc);
+	virtual qword	getQWordHex(int size, char *desc);
 	virtual void	getSeparator();
 	virtual char	*getString(char *desc);
 	virtual void	putBinary(void *mem, int size, char *desc);
@@ -54,6 +56,8 @@ public:
 	virtual void	putInfo(char *info);
 	virtual void	putIntDec(int a, int size, char *desc);
 	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putQWordDec(qword a, int size, char *desc);
+	virtual void	putQWordHex(qword a, int size, char *desc);
 	virtual void	putSeparator();
 	virtual void	putString(char *string, char *desc);
 };
@@ -73,6 +77,8 @@ public:
 	virtual bool	getBool(char *desc);
 	virtual int	getIntDec(int size, char *desc);
 	virtual int	getIntHex(int size, char *desc);
+	virtual qword	getQWordDec(int size, char *desc);
+	virtual qword	getQWordHex(int size, char *desc);
 	virtual void	getObject(Object *&o, char *name);
 	virtual void	getSeparator();
 	virtual char	*getString(char *desc);
@@ -81,6 +87,8 @@ public:
 	virtual void	putInfo(char *info);
 	virtual void	putIntDec(int a, int size, char *desc);
 	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putQWordDec(qword a, int size, char *desc);
+	virtual void	putQWordHex(qword a, int size, char *desc);
 	virtual void	putObject(Object *obj, char *name);
 	virtual void	putSeparator();
 	virtual void	putString(char *string, char *desc);
@@ -119,12 +127,16 @@ public:
 	virtual void	getBinary(void *p, int size, char *desc);
 	virtual int	getIntDec(int size, char *desc);
 	virtual int	getIntHex(int size, char *desc);
+	virtual qword	getQWordDec(int size, char *desc);
+	virtual qword	getQWordHex(int size, char *desc);
 	virtual char	*getString(char *desc);
 	virtual UINT	recordStart(UINT size);
 	virtual void	recordEnd(UINT);
 	virtual void	putBinary(void *mem, int size, char *desc);
 	virtual void	putIntDec(int a, int size, char *desc);
 	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putQWordDec(qword a, int size, char *desc);
+	virtual void	putQWordHex(qword a, int size, char *desc);
 	virtual void	putString(char *string, char *desc);
 };
 

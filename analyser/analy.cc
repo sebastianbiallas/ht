@@ -322,6 +322,7 @@ Object *AddressFlat64::duplicate()
 
 void AddressFlat64::getFromArray(const byte *array)
 {
+	// FIXME: no .lo/.hi
 	UNALIGNED_MOVE(addr.lo, *(dword*)array);
 	UNALIGNED_MOVE(addr.hi, *(dword*)(array+sizeof addr.lo));
 }

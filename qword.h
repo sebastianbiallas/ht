@@ -25,8 +25,8 @@
 #include "global.h"		// for types dword and UINT
 
 typedef struct {
-	dword hi;
 	dword lo;
+	dword hi;
 } qword;
 
 // FIXME: dont work for >32 bit systems
