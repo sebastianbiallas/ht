@@ -47,11 +47,6 @@ static int_hash elf_st_type[] =
 	{0, 0}
 };
 
-static bool isValidSectionIdx(ht_elf_shared_data *elf_shared, int idx)
-{
-	return (idx >= 0) && (idx<elf_shared->sheaders.count);
-}
-
 static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
@@ -68,7 +63,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 			}
 		}
 	}
-	if (symtab_shidx == ELF_SHN_UNDEF) return NULL;
+	if (!isValidELFSectionIdx(elf_shared, symtab_shidx)) return NULL;
 
 	FILEOFS h = elf_shared->sheaders.sheaders32[symtab_shidx].sh_offset;
 
@@ -76,7 +71,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 	FILEOFS sto = elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[symtab_shidx].sh_link].sh_offset;
 
 	char *symtab_name;
-	if (!isValidSectionIdx(elf_shared, elf_shared->header32.e_shstrndx) ||
+	if (!isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx) ||
 	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[symtab_shidx].sh_name)
 	|| !((symtab_name=fgetstrz(file))))
 		symtab_name = "?";
@@ -147,8 +142,10 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 				tt += ht_snprintf(tt, sizeof t - (tt-t), "*common     ");
 				break;
 			default: {
-				file->seek(so+elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name);
-				char *s = fgetstrz(file);
+				char *s;
+				if (!isValidELFSectionIdx(elf_shared, sym.st_shndx)
+				|| file->seek(so+elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name)
+				|| !((s = fgetstrz(file)))) s = "?";
 				tt += ht_snprintf(tt, sizeof t - (tt-t), "%-11s ", s);
 				free(s);
 				break;

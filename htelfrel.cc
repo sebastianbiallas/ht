@@ -44,11 +44,6 @@ static int_hash elf_r_386_type[] =
 	{0, 0}
 };
 
-static bool isValidSectionIdx(ht_elf_shared_data *elf_shared, int idx)
-{
-	return (idx >= 0) && (idx<elf_shared->sheaders.count);
-}
-
 static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
@@ -69,7 +64,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 			}
 		}
 	}
-	if (reloctab_shidx==ELF_SHN_UNDEF) return NULL;
+	if (!isValidELFSectionIdx(elf_shared, reloctab_shidx)) return NULL;
 
 	FILEOFS h=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
 	
@@ -80,8 +75,8 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 	int si_dest=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_info;
 
 	char *reloctab_name;
-	if (!isValidSectionIdx(elf_shared, elf_shared->header32.e_shstrndx) ||
-	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.
+	if (!isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)
+	|| file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.
 	e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name)
 	|| !((reloctab_name=fgetstrz(file))))
 		reloctab_name = "?";

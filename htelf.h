@@ -179,6 +179,8 @@ public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
 };
 
+bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);
+
 bool elf_phys_and_mem_section(elf_section_header *s, UINT elfclass);
 bool elf_valid_section(elf_section_header *s, UINT elfclass);
 

@@ -102,6 +102,11 @@ static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
 	return a->secidx - b->secidx;
 }
 
+bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
+{
+	return (idx >= 0) && (idx<(int)elf_shared->sheaders.count);
+}
+
 /*
  *	CLASS ht_elf
  */
@@ -302,47 +307,50 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 	FILEOFS relh = s[rsi].sh_offset;
 
 	uint symtabidx = s[rsi].sh_link;
+	if (!isValidELFSectionIdx(elf_shared, symtabidx)) throw new ht_msg_exception("invalid symbol table index %d", symtabidx);
 	FILEOFS symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
 
-	if (s[rsi].sh_type == ELF_SHT_REL) {
-		uint relnum = s[rsi].sh_size / sizeof (ELF_REL32);
-		for (uint i=0; i<relnum; i++) {
-			// read ELF_REL32
-			ELF_REL32 r;
-			if (file->seek(relh+i*sizeof r)) throw new ht_msg_exception("seek error");
-			if (file->read(&r, sizeof r) != sizeof r)
-				throw new ht_msg_exception("read error reading relocations for section %d [REL32]", si);
-			create_host_struct(&r, ELF_REL32_struct, elf_shared->byte_order);
+	if (s[rsi].sh_type != ELF_SHT_REL) throw new ht_msg_exception(
+		"invalid section type for section %d (expeecting %d)",
+		rsi, ELF_SHT_REL);
 
-			// read ELF_SYMBOL32
-			uint symbolidx = ELF32_R_SYM(r.r_info);
-			ELF_SYMBOL32 sym;
-			if (file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32))) throw new ht_msg_exception("seek error");
-			if (file->read(&sym, sizeof sym) != sizeof sym)
-				throw new ht_msg_exception("read error reading relocations for section %d [SYM-LOOKUP]", si);
-			create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+	uint relnum = s[rsi].sh_size / sizeof (ELF_REL32);
+	for (uint i=0; i<relnum; i++) {
+		// read ELF_REL32
+		ELF_REL32 r;
+		if (file->seek(relh+i*sizeof r)) throw new ht_msg_exception("seek error");
+		if (file->read(&r, sizeof r) != sizeof r)
+			throw new ht_msg_exception("read error reading relocations for section %d [REL32]", si);
+		create_host_struct(&r, ELF_REL32_struct, elf_shared->byte_order);
 
-			// calc reloc vals
-			uint32 A = 0;
-			uint32 P = r.r_offset+s[si].sh_addr;
-			uint32 S;
-			if ((sym.st_shndx > 0) && (sym.st_shndx < elf_shared->sheaders.count)) {
-				S = sym.st_value + elf_shared->shrelocs[sym.st_shndx].relocAddr;
-			} else if (elf_shared->fake_undefined_shidx >= 0) {
-				sectionAndIdx s(symtabidx, symbolidx);
-				ht_data_uint32 *addr = (ht_data_uint32 *)elf_shared->undefined2fakeaddr->get(&s);
-				if (addr) {
-					S = addr->value;
-				} else continue;
-			} else {
-				// skip this one
-				// FIXME: nyi
-				continue;
-			}
-			ht_data *z = new ht_elf32_reloc_entry(
-				ELF32_R_TYPE(r.r_info), A, P, S);
-			f->insert_reloc(r.r_offset+s[si].sh_offset, z);
+		// read ELF_SYMBOL32
+		uint symbolidx = ELF32_R_SYM(r.r_info);
+		ELF_SYMBOL32 sym;
+		if (file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32))) throw new ht_msg_exception("seek error");
+		if (file->read(&sym, sizeof sym) != sizeof sym)
+			throw new ht_msg_exception("read error reading relocations for section %d [SYM-LOOKUP]", si);
+		create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+
+		// calc reloc vals
+		uint32 A = 0;
+		uint32 P = r.r_offset+s[si].sh_addr;
+		uint32 S;
+		if ((sym.st_shndx > 0) && (sym.st_shndx < elf_shared->sheaders.count)) {
+			S = sym.st_value + elf_shared->shrelocs[sym.st_shndx].relocAddr;
+		} else if (elf_shared->fake_undefined_shidx >= 0) {
+			sectionAndIdx s(symtabidx, symbolidx);
+			ht_data_uint32 *addr = (ht_data_uint32 *)elf_shared->undefined2fakeaddr->get(&s);
+			if (addr) {
+				S = addr->value;
+			} else continue;
+		} else {
+			// skip this one
+			// FIXME: nyi
+			continue;
 		}
+		ht_data *z = new ht_elf32_reloc_entry(
+			ELF32_R_TYPE(r.r_info), A, P, S);
+		f->insert_reloc(r.r_offset+s[si].sh_offset, z);
 	}
 }
 
