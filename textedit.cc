@@ -2421,7 +2421,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_text_editor_delete_line: {
-			if (top_line+cursory < textfile->linecount()-1) {
+			if (top_line+cursory <= textfile->linecount()-1) {
 				text_viewer_pos apos, bpos, a, b;
 				apos.line = top_line+cursory;
 				apos.pofs = physical_cursorx();
@@ -2430,8 +2430,14 @@ void ht_text_editor::handlemsg(htmsg *msg)
 				a.line = top_line+cursory;
 				a.pofs = 0;
 				b = a;
-				b.line++;
-				textoperation_apply(new ht_undo_data_delete_block(&apos, &bpos, &a, &b));
+                    // if last line
+                    if (b.line+1 > textfile->linecount()-1) {
+                         b.pofs = textfile->getlinelength(b.line);
+                    } else {
+					b.line++;
+                    }
+                    if ((a.line != b.line) || (a.pofs != b.pofs))
+					textoperation_apply(new ht_undo_data_delete_block(&apos, &bpos, &a, &b));
 			}
 			dirtyview();
 			clearmsg(msg);
