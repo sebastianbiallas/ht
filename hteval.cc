@@ -160,10 +160,11 @@ void eval_dialog()
 						x += sprintf(x, "bin0 ");
 						x += sprint_base2(x, lo, true);
 						*(x++) = '\n';
-						x += sprintf(x, "bin1 ");
-						x += sprint_base2(x, hi, true);
-						*(x++) = '\n';
-
+                              if (hi) {
+							x += sprintf(x, "bin1 ");
+							x += sprint_base2(x, hi, true);
+							*(x++) = '\n';
+                              }
 						char bb[4];
 						/* big-endian string */
 						x += sprintf(x, "32bit big-endian (e.g. network) string\n\"");
