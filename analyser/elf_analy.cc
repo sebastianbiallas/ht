@@ -77,18 +77,17 @@ void ElfAnalyser::beginAnalysis()
 		}
 	}
 
+	if (!validAddress(entry, scvalid)) {
+		delete entry;
+		entry = NULL;
+	}
+
 	setLocationTreeOptimizeThreshold(100);
 	setSymbolTreeOptimizeThreshold(100);
 
 	/*
-	 *	entrypoint
-	 */
-	pushAddress(entry, entry);
-	
-	/*
 	 *	give all sections a descriptive comment:
 	 */
-
 	ELF_SECTION_HEADER32 *s32=elf_shared->sheaders.sheaders32;
 	ELF_SECTION_HEADER64 *s64=elf_shared->sheaders.sheaders64;
 	char blub[100];
@@ -108,7 +107,7 @@ void ElfAnalyser::beginAnalysis()
 			addComment(secaddr, 0, blub);
 			ht_snprintf(blub, sizeof blub, ";  virtual address  %08x  virtual size   %08x", s32->sh_addr, s32->sh_size);
 			addComment(secaddr, 0, blub);
-			ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_size);
+			ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_offset ? s32->sh_size : 0);
 			addComment(secaddr, 0, blub);
 			addComment(secaddr, 0, ";******************************************************************");
 
@@ -149,10 +148,16 @@ void ElfAnalyser::beginAnalysis()
 			}
 		}
 	}
-	assignSymbol(entry, "entrypoint", label_func);
-	addComment(entry, 0, "");
-	addComment(entry, 0, ";****************************");
-	switch (c32 ? elf_shared->header32.e_type : elf_shared->header64.e_type) {
+
+	/*
+	 *	entrypoint
+	 */
+	if (entry) {
+		pushAddress(entry, entry);
+		assignSymbol(entry, "entrypoint", label_func);
+		addComment(entry, 0, "");
+		addComment(entry, 0, ";****************************");
+		switch (c32 ? elf_shared->header32.e_type : elf_shared->header64.e_type) {
 		case ELF_ET_DYN:
 			addComment(entry, 0, ";  dynamic executable entry point");
 			break;
@@ -161,13 +166,14 @@ void ElfAnalyser::beginAnalysis()
 			break;
 		default:
 			addComment(entry, 0, ";  entry point");               
+		}
+		addComment(entry, 0, ";****************************");
+		delete entry;
 	}
-	addComment(entry, 0, ";****************************");
 
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
-	delete entry;
-	
+
 	Analyser::beginAnalysis();
 }
 
@@ -523,8 +529,12 @@ char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
 	ELFAddress ea;
 	if (!convertAddressToELFAddress(Addr, &ea)) return NULL;
 	if (!elf_addr_to_section(sections, elf_shared->ident.e_ident[ELF_EI_CLASS], ea, &i)) return NULL;
-	strncpy(elf_sectionname, elf_shared->shnames[i], 32);
-	elf_sectionname[32]=0;
+	if (i == elf_shared->fake_undefined_shidx) {
+		strcpy(elf_sectionname, "$$HT_FAKE$$");
+	} else {
+		strncpy(elf_sectionname, elf_shared->shnames[i], 32);
+		elf_sectionname[32] = 0;
+	}
 	return elf_sectionname;
 }
 

@@ -132,7 +132,7 @@ static ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 			break;
 		}
 	}
-	
+
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
 

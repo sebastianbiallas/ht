@@ -21,6 +21,7 @@
 #include "global.h"
 #include "htdebug.h"
 
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,12 @@
 void ht_assert_failed(char *file, int line, char *assertion)
 {
 	fprintf(stderr, "in file %s, line %d: assertion failed: %s\n", file, line, assertion);
+#ifndef WIN32
+#if 1
+	fprintf(stderr, "sending SIGTRAP...");
+	raise(SIGTRAP);
+#endif
+#endif
 	exit(1);
 }
 

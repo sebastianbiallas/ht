@@ -653,7 +653,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 {
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
 //#undef DPRINTF2
-//#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, ##msg); printf(tbuf);}
+//#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, ##msg); fprintf(stderr, "%s", tbuf);}
 //	char tbuf[1024];
 	DPRINTF2("prev_line(%y, %d, %d, %y)\n", Addr, line, n, min);
 
