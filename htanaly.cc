@@ -1263,8 +1263,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		case cmd_analyser_name_addr: {
 			if (!analy) break;
 			Address *addr;
-			if (!getCurrentAddress(&addr)
-			 || !canCreateAddress(addr, true)) {
+			if (!getCurrentAddress(&addr) || !canCreateAddress(addr, true)) {
 				delete addr;
 				clearmsg(msg);
 				return;
@@ -1280,7 +1279,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 					if (n[0]) {
 						if (valid_name(n)) {
 							char *n2 = ht_strdup(n);
-							if (!analy->assignSymbol(addr, n2, (l)?l->type:label_loc)) {
+							if (!analy->assignSymbol(addr, n2, (l)?l->type:label_unknown)) {
 								l = analy->getSymbolByName(n);
 								global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 								errorbox("Label '%s' already exists at address %y!", n, l->location->addr);

@@ -1790,20 +1790,22 @@ Location *Analyser::newLocation(Address *Addr)
 	return newLocation(locations, Addr);
 }
 
-Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *Addr, labeltype type)
+Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *loc, labeltype type)
 {
 	if (labels) {
 		int i = strcmp(label, labels->name);
-		if (i < 0) return newSymbol(labels->left, label, Addr, type);
-		if (i > 0) return newSymbol(labels->right, label, Addr, type);
-		if (!(labels->location)) goto w;
+		if (i < 0) return newSymbol(labels->left, label, loc, type);
+		if (i > 0) return newSymbol(labels->right, label, loc, type);
+		if (!(labels->location)) {
+			labels->location = loc;
+			if (type != label_unknown) labels->type = type;
+          }
 	} else {
 		labels = (Symbol *) smalloc0(sizeof(Symbol));
 		labels->name = ht_strdup(label);
-		symbol_count++;
-	    w:
-		labels->location = Addr;
+		labels->location = loc;
 		labels->type = type;
+		symbol_count++;
 	}
 	return labels;
 }
@@ -1811,13 +1813,13 @@ Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *Addr, 
 /*
  *
  */
-Symbol *Analyser::newSymbol(const char *label, Location *Addr, labeltype type, Location *infunc)
+Symbol *Analyser::newSymbol(const char *label, Location *loc, labeltype type, Location *infunc)
 {
 	if (!(cur_label_ops--)) {
 		optimizeSymbolTree();
 	}
-	Symbol *result = newSymbol(symbols, label, Addr, type);
-	if ((result) && (result->location==Addr) && (infunc)) setLocationFunction(Addr, infunc);
+	Symbol *result = newSymbol(symbols, label, loc, type);
+	if ((result) && (result->location==loc) && (infunc)) setLocationFunction(loc, infunc);
 	return result;
 }
 

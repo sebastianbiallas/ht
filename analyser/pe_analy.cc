@@ -30,14 +30,15 @@
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "global.h"
-#include "pe_analy.h"
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htpe.h"
 #include "htstring.h"
 #include "ilopc.h"
+#include "pe_analy.h"
 #include "pestruct.h"
+#include "snprintf.h"
 #include "x86asm.h"
 
 /*
@@ -127,18 +128,18 @@ void PEAnalyser::beginAnalysis()
 		} else {
 			secaddr = createAddress64(to_qword(s->data_address)+pe_shared->pe64.header_nt.image_base);
 		}
-		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+		ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 		addComment(secaddr, 0, "");
 		addComment(secaddr, 0, ";******************************************************************");
 		addComment(secaddr, 0, blub);
-		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", s->data_address, s->data_vsize);
+		ht_snprintf(blub, sizeof blub, ";  virtual address  %08x  virtual size   %08x", s->data_address, s->data_vsize);
 		addComment(secaddr, 0, blub);
-		sprintf(blub, ";  file offset      %08x  file size      %08x", s->data_offset, s->data_size);
+		ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s->data_offset, s->data_size);
 		addComment(secaddr, 0, blub);
 		addComment(secaddr, 0, ";******************************************************************");
 
 		// mark end of sections
-		sprintf(blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
+		ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
 		Address *secend_addr = (Address *)secaddr->duplicate();
 		secend_addr->add(MAX(s->data_size, s->data_vsize));
 		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
@@ -174,9 +175,9 @@ void PEAnalyser::beginAnalysis()
 		if (validAddress(faddr, scvalid)) {
 			char *label;
 			if (f->byname) {
-				sprintf(buffer, "; exported function %s, ordinal %04x", f->name, f->ordinal);
+				ht_snprintf(buffer, sizeof buffer, "; exported function %s, ordinal %04x", f->name, f->ordinal);
 			} else {
-				sprintf(buffer, "; unnamed exported function, ordinal %04x", f->ordinal);
+				ht_snprintf(buffer, sizeof buffer, "; unnamed exported function, ordinal %04x", f->ordinal);
 			}
 			label = export_func_name((f->byname) ? f->name : NULL, f->ordinal);
 			addComment(faddr, 0, "");
@@ -209,7 +210,7 @@ void PEAnalyser::beginAnalysis()
 			// multiple import of a function (duplicate labelname)
 			// -> mangle name a bit more
 			addComment(faddr, 0, "; duplicate import");               
-			sprintf(buffer, "%s_%x", label, f->address);
+			ht_snprintf(buffer, sizeof buffer, "%s_%x", label, f->address);
 			assignSymbol(faddr, buffer, label_func);
 		}
 		if (pe32) {
@@ -229,9 +230,9 @@ void PEAnalyser::beginAnalysis()
 		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->dimports.funcs->get(*(entropy+i));
 		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->dimports.libs->get(f->libidx);
 		if (f->byname) {
-			sprintf(buffer, "; delay import function loader for %s, ordinal %04x", f->name.name, f->ordinal);
+			ht_snprintf(buffer, sizeof buffer, "; delay import function loader for %s, ordinal %04x", f->name.name, f->ordinal);
 		} else {
-			sprintf(buffer, "; delay import function loader for ordinal %04x", f->ordinal);
+			ht_snprintf(buffer, sizeof buffer, "; delay import function loader for ordinal %04x", f->ordinal);
 		}
 		char *label;
 		label = import_func_name(d->name, f->byname ? f->name.name : NULL, f->ordinal);
