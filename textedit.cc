@@ -2329,6 +2329,10 @@ void ht_text_editor::handlemsg(htmsg *msg)
 					sendmsg(cmd_edit_delete);
 					clearmsg(msg);
 					return;
+				case K_Control_Y:
+					sendmsg(cmd_text_editor_delete_line);
+					clearmsg(msg);
+					return;
 				default: {
 					int k=msg->data1.integer;
 					if (((k>=' ') && (k<=255)) ||
@@ -2375,7 +2379,8 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			}
 			m->insert_entry("Change ~highlight", "Alt+H", cmd_text_viewer_change_highlight, K_Alt_H, 1);
 			m->insert_separator();
-			m->insert_entry("~Delete line", "Control+Y", cmd_text_editor_delete_line, K_Control_Y, 1);
+               // FIXME: somewhat hacked
+			m->insert_entry("~Delete line", "Control+Y", cmd_text_editor_delete_line, 0, 1);
 			m->insert_separator();
 			m->insert_entry("~Go to line", "", cmd_text_viewer_goto, 0, 1);
 			msg->msg = msg_retval;
