@@ -492,10 +492,11 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 							line += ht_snprintf(line, bufsize-(line-buf), "-%um:%u", (UINT)(ct-q)/60/60, (UINT)(ct-q)/60%60);
 						}
 					} else {
-						line += ht_snprintf(line, bufsize-(line-buf), " %02d:%02d", t.tm_hour, t.tm_min);
+						line += ht_snprintf(line, bufsize-(line-buf), " %02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
 					}
 				} else {
 					line += ht_snprintf(line, bufsize-(line-buf), "  %04d", t.tm_year+1900);
+					line += ht_snprintf(line, bufsize-(line-buf), " %02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
 				}
 			}
 			break;
