@@ -150,6 +150,7 @@ typedef word elf64_quarter;
 #define ELF_EM_ME16			59	/* Toyota ME16 processor */
 #define ELF_EM_ST100		60	/* STMicroelectronics ST100 processor */
 #define ELF_EM_TINYJ		61	/* Advanced Logic Corp. TinyJ embedded processor */
+#define ELF_EM_X86_64		62	/* X86-64 (AMD Opteron) */
 
 #define ELF_EM_FX66			66	/* Siemens FX66 microcontroller */
 #define ELF_EM_ST9PLUS		67	/* STMicroelectronics ST9+ 8/16 bit microcontroller */

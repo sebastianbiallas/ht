@@ -168,6 +168,7 @@ int_hash elf_machine[] =
 	{ELF_EM_ME16,		"Toyota ME16 processor"},
 	{ELF_EM_ST100,		"STMicroelectronics ST100 processor"},
 	{ELF_EM_TINYJ,		"Advanced Logic Corp. TinyJ embedded processor"},
+	{ELF_EM_X86_64,		"x86-64 (AMD Opteron)"},
 
 	{ELF_EM_FX66,		"Siemens FX66 microcontroller"},
 	{ELF_EM_ST9PLUS,	"STMicroelectronics ST9+ 8/16 bit microcontroller"},
