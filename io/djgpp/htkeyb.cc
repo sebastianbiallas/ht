@@ -75,7 +75,7 @@ struct ht_key_keycode {
 };
 
 ht_key_keycode ht_dj_key_defs[] = {
-	{K_BackSpace,			0x008},
+	{K_Backspace,			0x008},
 	{K_BackTab,			0x10f},
 	
 	{K_Tab,				0x009},
