@@ -23,7 +23,7 @@ END-INFO-DIR-ENTRY
 This file documents the HT Editor.
 
 @c 
-Copyright @copyright{} 1999, 2000, 2001, 2002 The HT authors. @*
+Copyright @copyright{} 1999-2003 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -51,14 +51,14 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.7, September 2002}
+@subtitle{Edition 0.7, April 2003}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999, 2000, 2001, 2002 The HT authors. @*
+Copyright @copyright{} 1999-2003 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -272,7 +272,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, ia64, alpha)
+- image with code/data analyser (x86, ia64, alpha, ppc)
 @end itemize
 @item 
 linear executables (LE)

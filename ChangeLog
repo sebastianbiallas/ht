@@ -1,16 +1,19 @@
  HT ChangeLog
 ==============
 
-version 0.7.1+:
+version 0.8.0:
 	- rewrite
 	- new disassembler: PowerPC
+	- many bugs fixed
+
+version 0.7.2:
+	- Hexview: Number of bytes per line can be changed now
+	- PE/header: can now follow bound import directory link (it's offset not RVA !)
 	- FIXED: x86dis: 0f0f0000 should be invalid? 0f^n 00 00 1<n<=13 should be invalid?
 	- FIXED: e~xpr isnt selectable with alt-x (cut) in blockop
 	- FIXED: blockop doenst set "file is modified"
 	- FIXED: main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
-	- PE/header: can now follow bound import directory link (it's offset not RVA !)
 	- ELF/section headers: some flags were displayed invalid
-	- many bugs fixed
 
 version 0.7.1:
 	- (win2k/xp) fixed bug that caused ht to create ht.cfg in current

@@ -4357,7 +4357,7 @@ bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
 			*l++=' ';
 		}
 		if (i+1<c && ofs+i>=fofs) {
-			if (i==7) {
+			if (i%8==7) {
 				l=tag_make_edit_selvis(l, ofs+i, '-');
 			} else {
 				l=tag_make_edit_selvis(l, ofs+i, ' ');
