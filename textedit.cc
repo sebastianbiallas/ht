@@ -2490,15 +2490,8 @@ bool ht_text_editor::save()
 	if (!textfile->get_filename()) return false;
 	dirtyview();
 
-//	char tempfile[PATH_MAX+20];
-
 	ht_temp_file *temp = NULL;
-//	tempfile[0] = 0;
-// FIXME: !!
-/*	if (tmpnam(tempfile)) {
-		temp = new ht_file();
-		temp->init(tempfile, FAM_WRITE, FOM_CREATE);
-	}*/
+
 	temp = new ht_temp_file();
 	temp->init(FAM_READ | FAM_WRITE);
 
@@ -2513,8 +2506,6 @@ bool ht_text_editor::save()
 	old->seek(0);
 	old->copy_to(temp);
 
-//	temp->set_access_mode(FAM_READ);
-
 	pstat_t st1, st2;
 	old->pstat(&st1);
 	temp->pstat(&st2);
@@ -2523,8 +2514,6 @@ bool ht_text_editor::save()
 
 		temp->done();
 		delete temp;
-
-//		sys_deletefile(tempfile);
 
 		free(oldname);
 
@@ -2545,8 +2534,6 @@ bool ht_text_editor::save()
 
 	temp->done();
 	delete temp;
-
-//	sys_deletefile(tempfile);
 
 	free(oldname);
 
