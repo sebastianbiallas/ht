@@ -19,6 +19,7 @@
  */
 
 #include "htatom.h"
+#include "cmds.h"
 #include "htctrl.h"
 #include "hthist.h"
 #include "htiobox.h"
@@ -1001,10 +1002,10 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, form);
 			}
 /* create request */
-			switch (s->search_class) {
+		switch (s->search_class) {
 				case SC_PHYSICAL:
 					if (!format->pos_to_offset(*start, &sstart.offset)
-					|| !format->pos_to_offset(*end, &send.offset)) {
+						|| !format->pos_to_offset(*end, &send.offset)) {
 						throw new ht_io_exception("Internal error: can't convert viewer_pos to offset");
 					}
 					break;
@@ -1042,8 +1043,9 @@ static ht_replace_method replace_methods[] =
 	{ NULL }
 };
 
-void replace_dialog(ht_format_viewer *format, UINT searchmodes)
+UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 {
+	*cancelled = false;
 	bounds b;
 	b.w = 50;
 	b.h = 22;
@@ -1090,6 +1092,7 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 	dialog->select_search_mode(lastsearchmodeid);
 	dialog->select_replace_mode(lastreplacemodeid);
 
+     UINT repl_count = 0;
 	if (dialog->run(false)) {
 		int smodeid = dialog->get_search_modeid();
 		int rmodeid = dialog->get_replace_modeid();
@@ -1123,7 +1126,6 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 		}
 		
 		if (request) {
-			UINT n = 0;
 			FILEOFS so = start.offset, eo = end.offset;
 			ht_physical_search_result *result;
 
@@ -1136,10 +1138,9 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 					bool do_replace = false;
 
 					if (!replace_all) {
-						format->show_search_result(result);
+						bool showed = format->show_search_result(result);
 						int r = msgbox(btmask_yes+btmask_no+btmask_all+btmask_cancel, "confirmation", 0, align_center, "replace ?");
-//						format->pop_vs_history();
-// FIXME: sdfsdfds
+						if (showed) app->sendmsg(cmd_vstate_restore);
 						switch (r) {
 							case button_yes:
 								do_replace = true;
@@ -1151,6 +1152,7 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 								break;
 						}
 						if (r == button_cancel) {
+							*cancelled = true;
 							delete result;
 							break;
 						}
@@ -1169,7 +1171,7 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 							format->sendmsg(msg_filesize_changed);
 						}
 						so = result->offset + irepllen;
-						n++;
+						repl_count++;
 					} else {
 						so = result->offset + result->size;
 					}
@@ -1178,16 +1180,15 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 			} catch (ht_exception *e) {
 				errorbox("error: %s", e->what());
 			}
-		
-//			format->pop_vs_history();
-// FIXME: !!!
-			infobox("%d replacement(s) made", n);
+
+			app->sendmsg(cmd_vstate_restore);
 		}
 				
 		if (request) delete request;
 	}
 	dialog->done();
 	delete dialog;
+     return repl_count;
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
@@ -1233,30 +1234,36 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 			c->o = c->ofs + c->len;
 		}
 		c->file->seek(c->o);
-		c->file->read(c->buf, c->z);
+		if (c->file->read(c->buf, c->z) != c->z)
+              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o+c->repllen-c->len);
-		c->file->write(c->buf, c->z);
+		if (c->file->write(c->buf, c->z) != c->z)
+              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 			
 		if (c->o > c->ofs + c->len) return true;
 		
 		c->file->seek(c->ofs);
-		c->file->write(c->repl, c->repllen);
+		if (c->file->write(c->repl, c->repllen) != c->repllen)
+               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		free(c->buf);
 	} else if (c->repllen < c->len) {
 /* shrink */
 		UINT size = c->file->get_size();
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
-			c->file->write(c->repl, c->repllen);
+			if (c->file->write(c->repl, c->repllen) != c->repllen)
+               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		}
 		
 		if (c->z > size - c->o) {
 			c->z = size - c->o;
 		}
 		c->file->seek(c->o);
-		c->file->read(c->buf, c->z);
+		if (c->file->read(c->buf, c->z) != c->z)
+              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o - (c->len - c->repllen));
-		c->file->write(c->buf, c->z);
+		if (c->file->write(c->buf, c->z) != c->z)
+              	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->o += REPLACE_COPY_BUF_SIZE;
 		
 		if (c->z == REPLACE_COPY_BUF_SIZE) return true;
@@ -1265,7 +1272,8 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		free(c->buf);
 	} else {
 		c->file->seek(c->ofs);
-		c->file->write(c->repl, c->repllen);
+		if (c->file->write(c->repl, c->repllen) != c->repllen)
+               	throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 	}
 	if (c->return_repllen) *c->return_repllen = c->repllen;
 	return false;
