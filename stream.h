@@ -159,7 +159,7 @@ public:
 /* cntl cmd */
 #define FCNTL_MODS_INVD				0x00000001
 #define FCNTL_MODS_FLUSH				0x00000002
-#define FCNTL_MODS_IS_DIRTY			0x00000003	// FILEOFS offset, UINT range
+#define FCNTL_MODS_IS_DIRTY			0x00000003	// FILEOFS offset, UINT range, bool *isdirty
 #define FCNTL_MODS_CLEAR_DIRTY		0x00000004
 #define FCNTL_MODS_CLEAR_DIRTY_RANGE	0x00000005	// FILEOFS offset, UINT range
 #define FCNTL_FLUSH_STAT				0x00000006
