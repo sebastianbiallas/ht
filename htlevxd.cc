@@ -59,14 +59,15 @@ ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 	if (!le_shared->is_vxd) return NULL;
+	ht_streamfile *myfile = le_shared->reloc_file;
 
 	/* FIXME: */
 	bool le_bigendian = false;
 
 	ht_uformat_viewer *v = new ht_uformat_viewer();
-	v->init(b, DESC_LE_VXD, VC_EDIT | VC_SEARCH, le_shared->linear_file, group);
+	v->init(b, DESC_LE_VXD, VC_EDIT | VC_SEARCH, myfile, group);
 	ht_mask_sub *m = new ht_mask_sub();
-	m->init(le_shared->linear_file, 0);
+	m->init(myfile, 0);
 
 	char info[128];
 	ht_snprintf(info, sizeof info, "* LE VXD descriptor in section 1, offset %08x", le_shared->vxd_desc_linear_ofs);
@@ -82,3 +83,4 @@ format_viewer_if htlevxd_if = {
 	htlevxd_init,
 	0
 };
+
