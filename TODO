@@ -41,6 +41,7 @@
 	- remove experimental code in htapp.cc
      
 - LE binary search does not work
+- Resources in VxDs (like in PE)
 - IPC-djgpp: recognize gui progs and close window !?
 - httext line wrapping, ctrl+page_down ?!
 - new instead of malloc
@@ -118,7 +119,7 @@
   dialog-elements content modified )
 - file structure overview
 - uformat+k_shift_*: use select_mode_*
-- *::duplicate();
+- *::duplicate(); --> *::clone();
 - use better c/c++ (s/most dwords/UINT/, s/int/bool/where needed,
   more enums, templates, exceptions)
 - better coff-detection
@@ -135,7 +136,7 @@
 - full support of: pe, le, lx, mz, ne, elf, a archives, pure/dj coff,
   m$ object files, etc..
 - exe-packer support (at least notification)
-- remove (the cause of) FIXMEs
+- fix FIXMEs
 - remove memory leaks
 
 +discussion

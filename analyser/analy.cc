@@ -1004,7 +1004,7 @@ bool	Analyser::continueAnalysis()
 				}
 			} else {
 				DPRINTF("invalid opcode @%y\n", addr);
-//	             log("invalid opcode at address %y\n", addr);
+//				log("invalid opcode at address %y\n", addr);
 				if (!addr->add(len)) {
 					delete addr;
 					addr = new InvalidAddress();
@@ -1072,7 +1072,7 @@ void	Analyser::dataAccess(Address *Addr, taccess access)
 	byte buffer[1024];
 
 	if (validAddress(Addr, scinitialized)) {
-		UINT bz = bufPtr(Addr, buffer, sizeof(buffer));
+		UINT bz = bufPtr(Addr, buffer, sizeof buffer);
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -1196,7 +1196,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			log(msg);
 		}
 	}
-/*     if (branch != brcall) {
+/*	if (branch != brcall) {
 		taddr *a = new_addr(addr+len);
 		if (!a->comments) {
 			add_comment(a->addr, 0, "");
@@ -1368,13 +1368,6 @@ static void analyserenum_labels(Symbol *labels, const char *at, Symbol *&label)
  *	or the first if "at" is NULL
  *	returns NULL if there is no preceding label
  *
- */
-/* e.g.:
-		tlabel *label = enum_labels(NULL);
-		while (label) {
-			printf("%d %08x %s\n", label->type, label->addr->addr, label->name);
-			label = enum_labels(label->name);
-		}
  */
 Symbol *Analyser::enumSymbolsByName(const char *at)
 {
