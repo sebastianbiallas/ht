@@ -37,10 +37,6 @@
 - document commandline options in help
 
 +steves
-- e~xpr isnt selectable with alt-x (cut) in blockop
-- blockop doenst set "file is modified"
-- x86dis: 0f0f0000 should be invalid? 0f^n 00 00 1<n<=13 should be invalid?
-- main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
 - eval should warn if number too big/cannot parse
 - eval whatis(whatis("whatis")), what is?
 - create ht.cfg in "home dir", implementation+interface sys_get_home_dir()

@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.7.0
+0.7-trunk
 @end macro
 
 @macro hturl
@@ -408,7 +408,7 @@ can always convert a result via the @code{int()}, @code{string()} and @code{floa
 to appropriate type. Try Edit->Evaluate to see how it works@dots{}
 
 @subsection Functions and symbols
-You can always use the standard buildin math (@code{round}, @code{sin}, @code{random}, etc.) and
+You can always use the standard built-in math (@code{round}, @code{sin}, @code{random}, etc.) and
 string (@code{strcmp}, @code{strchr}, @code{sprintf}, etc.) functions, they work more or less like the corresponding
 C functions (actually they ARE more or less wrappers for them); see @file{eval/eval.y} for 
 details (sorry but a detailed help would get outdated rather soon).

@@ -26,7 +26,7 @@ File: ht.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-This is HT 0.7.0; please note that this is a beta version of the
+This is HT 0.7-trunk; please note that this is a beta version of the
 program.  Therefore HT is incomplete and sometimes buggy. Enjoy
 anyway...
 
@@ -418,17 +418,17 @@ a look at `http://sourceforge.net/projects/hte'
 
 Tag Table:
 Node: Top594
-Node: About896
-Node: Key bindings1725
-Node: Authors3244
-Node: Features3398
-Node: General features3775
-Node: Configuration files5953
-Node: Clipboard6600
-Node: Global history7409
-Node: Expression evaluation7958
-Node: Block operations9333
-Node: Search and its different modes10225
-Node: Where to download ?12895
+Node: About900
+Node: Key bindings1729
+Node: Authors3248
+Node: Features3402
+Node: General features3779
+Node: Configuration files5957
+Node: Clipboard6604
+Node: Global history7413
+Node: Expression evaluation7962
+Node: Block operations9337
+Node: Search and its different modes10229
+Node: Where to download ?12899
 
 End Tag Table

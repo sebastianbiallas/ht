@@ -1,4 +1,4 @@
-This is hthelp.info, produced by makeinfo version 4.1 from
+Dies ist hthelp.info, hergestellt von Makeinfo Version 4.2 aus
 ht.texi.
 
 START-INFO-DIR-ENTRY
@@ -28,9 +28,9 @@ File: hthelp.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-This is HT 0.7.0; please note that this is a beta version of
-the program.  Therefore HT is incomplete and sometimes buggy.
-Enjoy anyway...
+This is HT 0.7-trunk; please note that this is a beta version
+of the program.  Therefore HT is incomplete and sometimes
+buggy. Enjoy anyway...
 
 * Menu:
 
@@ -439,18 +439,18 @@ also take a look at `http://sourceforge.net/projects/hte'
 
 
 Tag Table:
-Node: Top594
-Node: About900
-Node: Key bindings1748
-Node: Authors3236
-Node: Features3394
-Node: General features3775
-Node: Configuration files6012
-Node: Clipboard6662
-Node: Global history7475
-Node: Expression evaluation8028
-Node: Block operations9408
-Node: Search and its different modes10309
-Node: Where to download ?12999
+Node: Top598
+Node: About908
+Node: Key bindings1756
+Node: Authors3244
+Node: Features3402
+Node: General features3783
+Node: Configuration files6020
+Node: Clipboard6670
+Node: Global history7483
+Node: Expression evaluation8036
+Node: Block operations9416
+Node: Search and its different modes10317
+Node: Where to download ?13007
 
 End Tag Table

@@ -437,7 +437,7 @@ bool ht_streamfile_modifier::writebyte(FILEOFS offset, byte b)
 	if (!m) m = mod_page_create(offset);
 	byte t = b;
 	m->read(offset % page_granularity, &t, 1);
-	modified = (t!=b);
+	modified |= (t!=b);
 	return (m->write(offset % page_granularity, &b, 1)==1);
 }
 

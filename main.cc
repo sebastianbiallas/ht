@@ -277,9 +277,9 @@ int main(int argc, char *argv[])
 {
 #if defined(WIN32) || defined(__WIN32__)
 	HMODULE h = GetModuleHandle(NULL);
-	GetModuleFileName(h, appname, sizeof appname);
+	GetModuleFileName(h, appname, sizeof appname-1);
 #else
-	strncpy(appname, argv[0], sizeof appname);
+	strncpy(appname, argv[0], sizeof appname-1);
 #endif
 
 	params(argc, argv, 0);
