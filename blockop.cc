@@ -189,7 +189,7 @@ static dword blockop_i;
 static dword blockop_o;
 static bool blockop_expr_is_const;
 
-int blockop_symbol_eval(eval_scalar *r, char *symbol)
+static int blockop_symbol_eval(eval_scalar *r, char *symbol)
 {
 	if (strcmp(symbol, "i")==0) {
 		r->type=SCALAR_INT;
@@ -207,19 +207,46 @@ int blockop_symbol_eval(eval_scalar *r, char *symbol)
 	return 0;
 }
 
-int func_readbyte(eval_scalar *result, eval_int *offset)
+static int func_readint(eval_scalar *result, eval_int *offset, int size, endianess e)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
-	byte b;
-	if ((f->seek(QWORD_GET_INT(offset->value))!=0) || (f->read(&b, 1)!=1)) {
-		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", 1, 0, offset->value);
+	byte buf[4];
+     int read = 0;
+	if ((f->seek(QWORD_GET_INT(offset->value))!=0) ||
+     ((read = f->read(buf, size)) != size)) {
+		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", size, read, offset->value);
 		return 0;
 	}
-	scalar_create_int_c(result, b);
+	scalar_create_int_c(result, create_host_int(buf, size, e));
 	return 1;
 }
 
-int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
+static int func_readbyte(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 1, little_endian);
+}
+
+static int func_read16le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 2, little_endian);
+}
+
+static int func_read32le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 4, little_endian);
+}
+
+static int func_read16be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 2, big_endian);
+}
+
+static int func_read32be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 4, big_endian);
+}
+
+static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 
@@ -244,12 +271,16 @@ int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 	return 0;
 }
 
-int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *params)
+static int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 /* FIXME: non-constant funcs (e.g. rand()) should
    set blockop_expr_is_const to false */
 	eval_func myfuncs[] = {
 		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}},
+		{"read16le", (void*)&func_read16le, {SCALAR_INT}},
+		{"read32le", (void*)&func_read32le, {SCALAR_INT}},
+		{"read16be", (void*)&func_read16be, {SCALAR_INT}},
+		{"read32be", (void*)&func_read32be, {SCALAR_INT}},
 		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}},
 		{NULL}
 	};
