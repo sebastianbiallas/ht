@@ -1518,10 +1518,10 @@ void ht_frame::draw()
 	char *d;
 	switch (framestate) {
 		case FST_MOVE:
-			d = "(moving) - space to switch";
+			d = (char*)((style & FS_RESIZE) ? "(moving) - hit space to resize" : "(moving)");
 			break;
 		case FST_RESIZE:
-			d = "(resizing) - space to switch";
+			d = (char*)((style & FS_MOVE) ? "(resizing) - hit space to move" : "(resizing)");
 			break;
 		default:
 			d = desc;
