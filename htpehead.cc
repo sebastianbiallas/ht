@@ -294,7 +294,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save();
-					hexv->goto_offset(ofs, NULL);
+					hexv->goto_offset(ofs, false);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
 				} else errorbox("can't follow: %s %08x is not valid !", "directory RVA", rva);

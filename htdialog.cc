@@ -1380,19 +1380,19 @@ void	ht_listbox_title::init(bounds *b)
 	ht_view::init(b, VO_RESIZE, "ht_listbox_title");
 	growmode = MK_GM(GMH_FIT, GMV_FIT);
 	texts = NULL;
-     listbox = NULL;
-     cols = NULL;
+	listbox = NULL;
+	cols = NULL;
 }
 
 void	ht_listbox_title::done()
 {
 	if (texts) {
 		for (int i=0; i<cols; i++) {
-	     	free(texts[i]);
-	     }
-	     free(texts);
-     }
-     ht_view::done();
+			free(texts[i]);
+		}
+		free(texts);
+	}
+	ht_view::done();
 }
 
 char *ht_listbox_title::defaultpalette()
@@ -1404,18 +1404,18 @@ void ht_listbox_title::draw()
 {
 	vcp color = getTextColor();
 	clear(color);
-     if (!texts || !listbox) return;
-     int x = listbox->x;
-     x = 0;
-     for (int i=0; i<cols; i++) {     
+	if (!texts || !listbox) return;
+	int x = listbox->x;
+	x = 0;
+	for (int i=0; i<cols; i++) {     
 		buf_lprint(x, 0, color, size.w, texts[i]);
-          x += listbox->widths[i];
+		x += listbox->widths[i];
 		if (i+1<cols) {
 			buf_printchar(x++, 0, color, ' ');
 			buf_printchar(x++, 0, color, CHAR_LINEV);
 			buf_printchar(x++, 0, color, ' ');
 		}
-     }
+	}
 }
 
 vcp ht_listbox_title::getTextColor()
@@ -1435,28 +1435,28 @@ void ht_listbox_title::setTextv(int c, va_list vargs)
 {
 	if (texts) {
 		for (int i=0; i<cols; i++) {
-	     	free(texts[i]);
-	     }
-	     free(texts);
-     }
-     texts = NULL;
-     cols = c;
-     if (!c) return;
-     texts = (char**)malloc(c * sizeof(char*));
-     for (int i=0; i<cols; i++) {
-     	texts[i] = ht_strdup(va_arg(vargs, char* ));
-     }
-     update();
+			free(texts[i]);
+		}
+		free(texts);
+	}
+	texts = NULL;
+	cols = c;
+	if (!c) return;
+	texts = (char**)malloc(c * sizeof(char*));
+	for (int i=0; i<cols; i++) {
+		texts[i] = ht_strdup(va_arg(vargs, char* ));
+	}
+	update();
 }
 
 void ht_listbox_title::update()
 {
 	if (texts && listbox && listbox->widths) {
-	     for (int i=0; i<cols; i++) {
-	         	int s = strlen(texts[i]);
-               if (s > listbox->widths[i]) listbox->widths[i] = s;
-          }
-     }
+		for (int i=0; i<cols; i++) {
+			int s = strlen(texts[i]);
+			if (s > listbox->widths[i]) listbox->widths[i] = s;
+		}
+	}
 }
 
 
@@ -1493,7 +1493,7 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 	cursor = 0;
 	e_top = getfirst();
 	e_cursor = e_top;
-     title = NULL;
+	title = NULL;
 	visible_height = 0;
 	x = 0;
 	widths = NULL;
@@ -1551,9 +1551,9 @@ void ht_listbox::attachTitle(ht_listbox_title *aTitle)
 {
 	if (numColumns() > cols) rearrangeColumns();
 	title = aTitle;
-     title->listbox = this;
-     title->update();
-     title->dirtyview();
+	title->listbox = this;
+	title->update();
+	title->dirtyview();
 }
 
 void ht_listbox::clear_quickfind()
@@ -1658,25 +1658,25 @@ void ht_listbox::draw()
 						if (slen > -X) buf_lprint(0, i, c, size.w, &s[-X]);
 					}
 				}
-                    if (j==cols-1) {
+				if (j==cols-1) {
 					X += slen;
-                    } else {
+				} else {
 					X += widths[j];
-                    }
+				}
 				if (j+1<cols) {
 					buf_printchar(X++, i, c, ' ');
 					buf_printchar(X++, i, c, CHAR_LINEV);
 					buf_printchar(X++, i, c, ' ');
 				}
 			}
-               if (x > 0) {
-               	// more text right
+			if (x > 0) {
+				// more text right
 				buf_printchar(0, i, c, '<');
-               }
-               if (X >= size.w) {
-               	// more text left
+			}
+			if (X >= size.w) {
+				// more text left
 				buf_printchar(size.w-2, i, c, '>');
-               }
+			}
 			entry = getnext(entry);
 			i++;
 		}
@@ -2018,10 +2018,10 @@ void ht_listbox::update()
 ok:
 	adjust_pos_hack();
 	adjust_scrollbar();
-     if (title) {
-     	title->update();
-     	title->dirtyview();
-     }
+	if (title) {
+		title->update();
+		title->dirtyview();
+	}
 	dirtyview();
 }
 
@@ -2048,7 +2048,7 @@ void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, UINT aListboxcaps)
 	keycol = aKeycol;
 	count = 0;
 	Cursor_adjust = 0;
-     rearrangeColumns();
+	rearrangeColumns();
 }
 
 void ht_text_listbox::done()
@@ -2124,9 +2124,9 @@ void *ht_text_listbox::getprev(void *entry)
 char *ht_text_listbox::getstr(int col, void *entry)
 {
 	if (entry && (col < cols)) {
-          return ((ht_text_listbox_item *)entry)->data[col];
+		return ((ht_text_listbox_item *)entry)->data[col];
 	} else {
-          return "";
+		return "";
 	}
 }
 
@@ -2289,11 +2289,11 @@ void ht_text_listbox::update()
 {
 	ht_listbox::update();
 	Cursor_adjust = 0;
-     if (widths) {
+	if (widths) {
 		for (int i=0; i<keycol; i++) {
 			Cursor_adjust+=widths[i]+3;
 		}
-     }
+	}
 }
 
 /*

@@ -31,7 +31,7 @@ int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd);
 
 class Terminal: public ht_ltextfile {
 private:
-     FILE *in, *out, *err;
+	FILE *in, *out, *err;
 public:
 			void init(FILE *in, FILE *out, FILE *err);
 	virtual	void done();
@@ -51,7 +51,7 @@ public:
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
-     virtual	bool idle();
+	virtual	bool idle();
 };
 
 #endif /* __TERMINAL_H__ */

@@ -35,8 +35,8 @@
 class ht_regnode_file: public ht_mem_file {
 protected:
 	char *nodename;
-     UINT access_mode0;
-     UINT open_mode;
+	UINT access_mode0;
+	UINT open_mode;
 	
 /* overwritten */
 		   int load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data);

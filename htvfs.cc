@@ -236,9 +236,9 @@ int ht_file_vfs::streamfile_open(const char *filename, UINT access_mode, UINT op
 
 void ht_regnode_file::init(const char *nn, UINT am, UINT om)
 {
-     access_mode0 = am;
+	access_mode0 = am;
 	ht_mem_file::init(0, 1024, am);
-     open_mode = om;
+	open_mode = om;
 	nodename = ht_strdup(nn);
 	if ((access_mode & FAM_READ) && (access_mode & FAM_WRITE)) {
 		set_error(EINVAL);

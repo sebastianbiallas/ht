@@ -32,9 +32,9 @@ int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd)
 {
 	int save_stdout = dup(STDOUT_FILENO);
 	int save_stderr = dup(STDERR_FILENO);
-     *in = NULL;
-     *out = tmpfile();
-     *err = tmpfile();
+	*in = NULL;
+	*out = tmpfile();
+	*err = tmpfile();
 	dup2(fileno(*out), STDOUT_FILENO);
 	dup2(fileno(*err), STDERR_FILENO);
 	int r = system(cmd);
@@ -42,9 +42,9 @@ int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd)
 	dup2(save_stderr, STDERR_FILENO);
 	close(save_stdout);
 	close(save_stderr);
-     fseek(*out, 0, SEEK_SET);
-     fseek(*err, 0, SEEK_SET);
-     return r;
+	fseek(*out, 0, SEEK_SET);
+	fseek(*err, 0, SEEK_SET);
+	return r;
 }
 #else
 int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd)
@@ -74,11 +74,11 @@ void append(FILE *file, ht_stream *stream)
 void Terminal::init(FILE *_in, FILE *_out, FILE *_err)
 {
 	ht_mem_file *m = new ht_mem_file();
-     m->init();
+	m->init();
 	ht_ltextfile::init(m, true, NULL);
-     in = _in;
-     out = _out;
-     err = _err;
+	in = _in;
+	out = _out;
+	err = _err;
 }
 
 void Terminal::done()
@@ -86,34 +86,34 @@ void Terminal::done()
 	fclose(in);
 	fclose(out);
 	fclose(err);
-     ht_ltextfile::done();
+	ht_ltextfile::done();
 }
 
 bool Terminal::update()
 {
-     fd_set rfds, wfds;
-     FD_ZERO(&rfds);
-     FD_ZERO(&wfds);
+	fd_set rfds, wfds;
+	FD_ZERO(&rfds);
+	FD_ZERO(&wfds);
 	FD_SET(fileno(out), &wfds);
 	FD_SET(fileno(err), &wfds);
 	FD_SET(fileno(in), &rfds);
 	struct timeval timeout;
-     
+	
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
-     
-     int n = select(FD_SETSIZE, &rfds, &wfds, NULL, &timeout);
-     bool worked = false;
-     if (FD_ISSET(fileno(out), &wfds) && (!feof(out))) {
+	
+/*	int n =*/ select(FD_SETSIZE, &rfds, &wfds, NULL, &timeout);
+	bool worked = false;
+	if (FD_ISSET(fileno(out), &wfds) && (!feof(out))) {
 		seek(get_size());
-          append(out, this);
-          worked = true;
+		append(out, this);
+		worked = true;
 	}
-     if (FD_ISSET(fileno(err), &wfds) && (!feof(err))) {
+	if (FD_ISSET(fileno(err), &wfds) && (!feof(err))) {
 		seek(get_size());
-          append(err, this);
-          worked = true;
-     }
+		append(err, this);
+		worked = true;
+	}
 	return worked;
 }
 
@@ -124,13 +124,13 @@ bool Terminal::update()
 void TerminalViewer::init(bounds *b, Terminal *t, bool ot)
 {
 	ht_text_viewer::init(b, ot, t, NULL);
-     term = t;
-     register_idle_object(this);
+	term = t;
+	register_idle_object(this);
 }
 
 void TerminalViewer::done()
 {
-     unregister_idle_object(this);
+	unregister_idle_object(this);
 	ht_text_viewer::done();
 }
 
@@ -139,21 +139,21 @@ void TerminalViewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_keypressed:
 			switch (msg->data1.integer) {
-               	case K_F8: {
-                    	term->seek(term->get_size());
-                    	term->write("blabla\x08", 7);
-                    	dirtyview();
-                    	clearmsg(msg);
-                         return;
-                    }
-               	case K_F9: {
-                    	term->seek(term->get_size());
-                    	term->write("\n", 1);
-                    	dirtyview();
-                    	clearmsg(msg);
-                         return;
-                    }
-               }
+				case K_F8: {
+					term->seek(term->get_size());
+					term->write("blabla\x08", 7);
+					dirtyview();
+					clearmsg(msg);
+					return;
+				}
+				case K_F9: {
+					term->seek(term->get_size());
+					term->write("\n", 1);
+					dirtyview();
+					clearmsg(msg);
+					return;
+				}
+			}
 	}
 	return ht_text_viewer::handlemsg(msg);
 }
@@ -161,10 +161,10 @@ void TerminalViewer::handlemsg(htmsg *msg)
 bool TerminalViewer::idle()
 {
 	if (term->update()) {
-     	dirtyview();
+		dirtyview();
 		app->sendmsg(msg_draw, 0);
-          return true;
-     }
+		return true;
+	}
 	return false;
 }
 

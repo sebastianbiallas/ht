@@ -253,10 +253,10 @@ class ht_listbox;
 
 class ht_listbox_title: public ht_view {
 public:
-     ht_listbox *listbox;
+	ht_listbox *listbox;
 protected:
 	char **texts;
-     int cols;
+	int cols;
 
 /* overwritten */
 	virtual	char *defaultpalette();
@@ -269,7 +269,7 @@ public:
 	virtual	vcp getTextColor();
 			void setText(int cols, ...);
 			void setTextv(int cols, va_list arguments);
-               void update();
+			void update();
 };
 
 /*
@@ -298,12 +298,12 @@ public:
 	int		*widths;
 	
 	ht_scrollbar *scrollbar;
-     ht_listbox_title *title;
-     
+	ht_listbox_title *title;
+	
 			void	init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void	done();
 	virtual	int 	load(ht_object_stream *f);
-               void attachTitle(ht_listbox_title *title);
+			void attachTitle(ht_listbox_title *title);
 			void adjust_pos_hack();
 			void adjust_scrollbar();
 	virtual   int  calc_count() = 0;

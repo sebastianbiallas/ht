@@ -701,7 +701,7 @@ int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 	for (int i=0; i<3; i++) {
 		switch (disasm_insn->op[i].type) {
 			case X86_OPTYPE_SEG:
-               	segc++;
+				segc++;
 			case X86_OPTYPE_REG:
 			case X86_OPTYPE_CRX:
 			case X86_OPTYPE_DRX:
@@ -716,7 +716,7 @@ int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 		}
 	}
 	return (memc && !regc)
-     	|| (memc && segc)
+		|| (memc && segc)
 		|| (strcmp(disasm_insn->name, "movzx") == 0)
 		|| (strcmp(disasm_insn->name, "movsx") == 0);
 }

@@ -54,15 +54,15 @@ ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->sendmsg(msg_complete_init, 0);
 
-     viewer_pos p;
-     v->clear_viewer_pos(&p);
-     p.u.sub = d;
-     p.u.tag_idx = 0;
+	viewer_pos p;
+	v->clear_viewer_pos(&p);
+	p.u.sub = d;
+	p.u.tag_idx = 0;
 
 	if (d->convert_ofs_to_id(o+mz_shared->header.cs*16+
 	mz_shared->header.ip, &p.u.line_id)) {
-     	v->goto_pos(p, false);
-     }
+		v->goto_pos(p, false);
+	}
 
 	return v;
 }

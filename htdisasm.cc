@@ -102,12 +102,12 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			BOUNDS_ASSIGN(b, 1, 0, 56, 1);
 			ht_listbox_title *text = new ht_listbox_title();
 			text->init(&b);
-               text->setText(2, "opcode", "disassembly");
+			text->setText(2, "opcode", "disassembly");
 			dialog->insert(text);
 			BOUNDS_ASSIGN(b, 1, 1, 56, 12);
 			ht_text_listbox *list=new ht_text_listbox();
 			list->init(&b, 2, 0);
-               list->attachTitle(text);
+			list->attachTitle(text);
 			asm_code *ac2 = ac;
 			UINT aci = 0;
 			int best = 0;
@@ -272,8 +272,8 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 
 			assem->set_imm_eval_proc(NULL, NULL);
 
-               byte data[32];
-               int datalen = vread(current_pos, data, sizeof data);
+			byte data[32];
+			int datalen = vread(current_pos, data, sizeof data);
 			dis_insn *o = disasm->decode(data, datalen, cpuaddr);
 			char *curinsn = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 			int want_length = disasm->getSize(o);
@@ -337,13 +337,13 @@ bool ht_disasm_viewer::qword_to_pos(qword q, viewer_pos *p)
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = 0;
-     return s->convert_ofs_to_id(ofs, &p->u.line_id);
+	return s->convert_ofs_to_id(ofs, &p->u.line_id);
 }
 
 int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-     	FILEOFS ofs;
+		FILEOFS ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;

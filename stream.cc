@@ -25,7 +25,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>		/* for tell() */
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
@@ -34,11 +33,6 @@
 #include <unistd.h>
 
 /* namespace trick */
-
-inline off_t tell_wrap(int file)
-{
-	return tell(file);
-}
 
 inline ssize_t read_wrap(int fd, void *buffer, size_t length)
 {
@@ -421,9 +415,9 @@ void	ht_sys_file::init(int f, bool ofd, UINT am)
 {
 	ht_streamfile::init();
 	fd = f;
-     offset = 0;
-     own_fd = ofd;
-     set_access_mode(am);
+	offset = 0;
+	own_fd = ofd;
+	set_access_mode(am);
 }
 
 void	ht_sys_file::done()
@@ -467,8 +461,7 @@ const char *ht_sys_file::get_desc()
 UINT	ht_sys_file::get_size()
 {
 	int t = tell();
-	lseek(fd, 0, SEEK_END);	/* zero is allowed */
-	int r = tell_wrap(fd);
+	UINT r = lseek(fd, 0, SEEK_END);
 	lseek(fd, t, SEEK_SET);
 	return r;
 }
@@ -485,7 +478,7 @@ int	ht_sys_file::seek(FILEOFS o)
 {
 	if (o == offset) return 0;
 	off_t r = lseek(fd, o, SEEK_SET);
-     offset = r;
+	offset = r;
 	return (offset == o) ? 0 : EIO;
 }
 
@@ -510,9 +503,9 @@ void	ht_stdio_file::init(FILE *f, bool ofile, UINT am)
 {
 	ht_streamfile::init();
 	file = f;
-     offset = 0;
-     own_file = ofile;
-     set_access_mode(am);
+	offset = 0;
+	own_file = ofile;
+	set_access_mode(am);
 }
 
 void	ht_stdio_file::done()
@@ -574,7 +567,7 @@ int	ht_stdio_file::seek(FILEOFS o)
 {
 	if (o == offset) return 0;
 	int r = fseek(file, o, SEEK_SET);
-     if (r == 0) offset = o;
+	if (r == 0) offset = o;
 	return r;
 }
 
@@ -598,9 +591,9 @@ UINT	ht_stdio_file::write(const void *buf, UINT size)
 void	ht_file::init(const char *fn, UINT am, UINT om)
 {
 	filename = strdup(fn);
-     open_mode = om;
+	open_mode = om;
 	ht_stdio_file::init(NULL, true, am);
-     open_mode = FOM_EXISTS;
+	open_mode = FOM_EXISTS;
 }
 
 void	ht_file::done()
@@ -653,7 +646,7 @@ RETRY:
 		if (am & FAM_READ) mode = "rb";
 		if (am & FAM_WRITE) mode = "rb+";
 	}
-     
+	
 	bool retval = true;
 	if (am != FAM_NULL) {
 		pstat_t s;

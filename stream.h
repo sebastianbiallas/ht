@@ -54,9 +54,9 @@ protected:
 	int	error;
 	UINT	access_mode;
 
-	        int		call_error_func();
+		   int		call_error_func();
 public:
-	        void		init();
+		   void		init();
 	virtual void		done();
 /* new */
 	virtual void		copy_to(ht_stream *stream);
@@ -81,7 +81,7 @@ protected:
 	
 public:
 	
-	        void		init(ht_stream *stream, bool own_stream);
+		   void		init(ht_stream *stream, bool own_stream);
 	virtual void		done();
 /* overwritten */
 	virtual void		copy_to(ht_stream *stream);
@@ -92,7 +92,7 @@ public:
 	virtual bool		set_access_mode(UINT access_mode);
 	virtual void		set_error(int error);
 	virtual void		set_error_func(stream_error_func_ptr stream_error_func);
-	        void		set_stream_ownership(bool own);
+		   void		set_stream_ownership(bool own);
 	virtual UINT		write(const void *buf, UINT size);
 };
 
@@ -235,7 +235,7 @@ public:
 class ht_sys_file: public ht_streamfile {
 protected:
 	int fd;
-     bool own_fd;
+	bool own_fd;
 
 	FILEOFS offset;
 public:
@@ -259,7 +259,7 @@ public:
 class ht_stdio_file: public ht_streamfile {
 protected:
 	FILE *file;
-     bool own_file;
+	bool own_file;
 
 	FILEOFS offset;
 public:
@@ -283,7 +283,7 @@ public:
 class ht_file: public ht_stdio_file {
 protected:
 	char *filename;
-     UINT open_mode;
+	UINT open_mode;
 
 	FILEOFS offset;
 

@@ -49,7 +49,7 @@ relfile.cc relfile.h process.cc process.h mfile.cc mfile.h elfstruc.cc \
 pestruct.cc coff_s.cc mzstruct.cc defreg.h defreg.c htdisasm.cc htdisasm.h \
 htcoffimg.cc htcoffimg.h nestruct.cc htneimg.cc htneimg.h htneimp.cc htneimp.h \
 cmds.cc cmds.h qword.cc qword.h snprintf.cc snprintf.h htpeil.cc htpeil.h \
-ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h
+ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h terminal.cc terminal.h
 
 dist2: distdir
 	-chmod -R a+r $(distdir)

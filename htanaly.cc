@@ -1752,13 +1752,13 @@ void ht_aviewer::showSymbols(Address *addr)
 	BOUNDS_ASSIGN(b, 1, 0, 56, 1);
 	ht_listbox_title *text = new ht_listbox_title();
 	text->init(&b);
-     text->setText(3, "Address", "Type", "Name");
+	text->setText(3, "Address", "Type", "Name");
 	dialog->insert(text);
 	/* list */
 	BOUNDS_ASSIGN(b, 1, 1, 56, 12);
 	SymbolBox *sym = new SymbolBox();
 	sym->init(&b, analy);
-     sym->attachTitle(text);
+	sym->attachTitle(text);
 	if (loc && loc->label) {
 		sym->goto_item(sym->quickfind(loc->label->name));
 	}
@@ -1795,7 +1795,7 @@ restart:
 		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 		BOUNDS_ASSIGN(b, 1, 0, bw-4, 1);
 		ht_listbox_title *text = new ht_listbox_title();
-          text->init(&b);
+		text->init(&b);
 		text->setText(3, "xref to", "type", "from function");
 		b.y = 1;          
 		b.h = bh-6;
@@ -1838,9 +1838,9 @@ restart:
 			list->insert_str((int)xa, str, xref_type(x->type), str2);
 			xa = (Address*)x_tree->enum_next((ht_data**)&x, xa);
 		}
-          list->attachTitle(text);
+		list->attachTitle(text);
 		list->update();
-          dialog->insert(text);
+		dialog->insert(text);
 		dialog->insert(list);
 		dialog->insert(search_for_xrefs);
 		dialog->insert(delete_xref);

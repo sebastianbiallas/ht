@@ -174,13 +174,13 @@ bool ht_hex_viewer::qword_to_pos(qword q, viewer_pos *p)
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = ofs & 0xf;
-     return s->convert_ofs_to_id(ofs, &p->u.line_id);
+	return s->convert_ofs_to_id(ofs, &p->u.line_id);
 }
 
 int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-     	FILEOFS ofs;
+		FILEOFS ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;

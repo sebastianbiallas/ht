@@ -1207,7 +1207,7 @@ cont:
 		if (*t=='*') {
 			if (lasttokenreg==X86_REG_NO) {
 /* FIXME: case "imm*reg" not yet supported ! cleaner implementation needed ! */
-                    return 0;
+				return 0;
 			} else {
 				dword v;
 				if (!fetch_number(&s, &v)) return 0;
@@ -1389,20 +1389,20 @@ int x86asm::simmsize(dword imm, int immsize)
 	int i;
 	switch (immsize) {
 		case 1:
-          	if (imm > 0xff) return 0;
-          	i = (sint8)imm;
-               break;
+			if (imm > 0xff) return 0;
+			i = (sint8)imm;
+			break;
 		case 2:
-          	if (imm > 0xffff) return 0;
-          	i = (sint16)imm;
-               break;
+			if (imm > 0xffff) return 0;
+			i = (sint16)imm;
+			break;
 		case 4:
-          	if (imm > 0xffffffff) return 0;
-          	i = (sint32)imm;
-               break;
+			if (imm > 0xffffffff) return 0;
+			i = (sint32)imm;
+			break;
 	}
-    	if ((i >= -0x80) && (i < 0x80)) return 1;
-    	if ((i >= -0x8000) && (i < 0x8000)) return 2;
+	if ((i >= -0x80) && (i < 0x80)) return 1;
+	if ((i >= -0x8000) && (i < 0x8000)) return 2;
 	return 4;
 }
 

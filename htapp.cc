@@ -1418,11 +1418,11 @@ bool ht_app::create_window_term()
 
 		termwindow->setvscrollbar(hs);
 
-          FILE *in, *out, *err;
+		FILE *in, *out, *err;
 		sys_ipc_exec(&in, &out, &err, "gcc");
 
-          Terminal *terminal = new Terminal();
-          terminal->init(in, out, err);
+		Terminal *terminal = new Terminal();
+		terminal->init(in, out, err);
 
 		b.x=0;
 		b.y=0;
@@ -2647,9 +2647,9 @@ void ht_app::project_opencreate(char *filename)
 	}
 	char *suf = sys_filename_suffix(fn);
 	/* append HT project file suffix if not already there */
-     if (!(suf && (strcmp(suf, HT_PROJECT_CONFIG_SUFFIX+1)==0))) {
+	if (!(suf && (strcmp(suf, HT_PROJECT_CONFIG_SUFFIX+1)==0))) {
 		strcat(fn, HT_PROJECT_CONFIG_SUFFIX);
-     }
+	}
 
 	void *old_project = project;
 	project = NULL;
@@ -2661,12 +2661,12 @@ void ht_app::project_opencreate(char *filename)
 		LOG_EX(LOG_ERROR, "%s: error in line %d", fn, einfo);
 		errorbox("%s: error in line %d", fn,  einfo);
 	} else if (lsr == LS_ERROR_NOT_FOUND) {
-     	if (confirmbox("%s: no such project.\nDo you want to create this project ?", fn) == button_yes) {
+		if (confirmbox("%s: no such project.\nDo you want to create this project ?", fn) == button_yes) {
 			project = new ht_project();
 			((ht_project*)project)->init(fn);
 			LOG("%s: new project created", fn);
 			error = false;
-          }
+		}
 	} else if (lsr != LS_OK) {
 		LOG_EX(LOG_ERROR, "%s: some error", fn);
 		errorbox("%s: some error", fn);

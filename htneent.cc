@@ -148,6 +148,6 @@ int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 		app->focus(ne_shared->v_image);
 	} else errorbox("can't follow: address %y is not valid !", a);
 	return 1;*/
-     return 0;
+	return 0;
 }
 
