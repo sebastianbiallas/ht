@@ -23,7 +23,7 @@
 #include "relfile.h"
 #include "tools.h"
 
-#define MAX_RELOC_TOKEN_LEN 8
+#define MAX_RELOC_ITEM_LEN 8
 
 /*
  *	CLASS ht_reloc_file
@@ -73,43 +73,54 @@ void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 UINT	ht_reloc_file::read(void *buf, UINT size)
 {
 	FILEOFS o = tell();
+     /* read fine data. */
 	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
 	if (enabled) {
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		if ((MAX_RELOC_TOKEN_LEN+1) <= o)
-			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		if ((MAX_RELOC_ITEM_LEN+1) <= o)
+			k->value = o - (MAX_RELOC_ITEM_LEN+1);
 		else
 			k = NULL;
                
-          /*
-          SB: im nachfolgenden code-teil werden 9 nichts-sagende variablen
-          gebraucht:
-          b,c,e,k,l,mm,o,(q,)r,s
-          durch verschaerftes draufgucken erfaehrt man vielleicht (!),
-          dass s, e start/end und o wahrscheinlich offset heisst.
-          l ist eine laenge (?) r, k werden enumeriert, was ist mm?
-          */
+          /* enum through 'relocs' - the tree that contains all our
+           * dear relocations - and start some bytes before the current
+           * (stream) offset to get all the relocation items that may
+           * intersect with our fine read data. */
 		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
+           	/* buffer to apply relocation to */
+			byte b[MAX_RELOC_ITEM_LEN];
+               /* stop if the item is "behind" the area this function
+                * should work on. */
 			if (k->value >= o+c) break;
 
+               /* if relocation item intersects with the beginning of
+                * this read, copy buf to b+s */
 			UINT s = (k->value < o) ? o - k->value : 0;
+               /* if relocation item intersects with the end of
+                * this read, copy buf+e to b */
 			UINT e = (k->value > o) ? k->value - o : 0;
 
-			UINT l = (k->value+MAX_RELOC_TOKEN_LEN > o+c) ?
-				k->value + MAX_RELOC_TOKEN_LEN - o - c : 0;
-
-			byte b[MAX_RELOC_TOKEN_LEN];
-               // SB: warum das (memset mit 0)?
-			memset(b, 0, sizeof b);
-               // SB: warum hier sizeof und oben MAX_RELOC_TOKEN_LEN ?
+               /* complicated calculation to get the size of the
+                * intended intersection (=: mm) of the read and b. */
+			UINT l = (k->value + sizeof b > o+c) ?
+				k->value + sizeof b - o - c : 0;
 			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
+			/* probably cleaner to clear it all before we start
+                * because if the read is smaller then the reloc item
+                * we'd have some undefined bytes in b. */
+			memset(b, 0, sizeof b);
+
+               /* never memmove beyond bounds of b. */
                assert(mm+s <= sizeof b);
 
+               /* move read data to b as good as we can. */
 			memmove(b+s, ((byte*)buf)+e, mm);
+               /* apply complete relocation item. */
 			reloc_apply(r, b);
+               /* overwrite read with relocated/read data as good as we can. */
 			memmove(((byte*)buf)+e, b+s, mm);
 		}
 	}
@@ -118,6 +129,7 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 
 UINT	ht_reloc_file::write(const void *buf, UINT size)
 {
+	/* documentation: see read(). */
 	FILEOFS o;
 	if (enabled) {
 		o = tell();
@@ -125,26 +137,27 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		if ((MAX_RELOC_TOKEN_LEN+1) <= o)
-			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		if ((MAX_RELOC_ITEM_LEN+1) <= o)
+			k->value = o - (MAX_RELOC_ITEM_LEN+1);
 		else
 			k = NULL;
-			
+
 		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
+			byte b[MAX_RELOC_ITEM_LEN];
 			if (k->value >= o+c) break;
 
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
 
-			UINT l = (k->value+MAX_RELOC_TOKEN_LEN > o+c) ?
-				k->value + MAX_RELOC_TOKEN_LEN - o - c : 0;
+			UINT l = (k->value+sizeof b > o+c) ?
+				k->value + sizeof b - o - c : 0;
 
-			byte b[MAX_RELOC_TOKEN_LEN];
 			memset(b, 0, sizeof b);
 			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
 			assert(mm+s <= sizeof b);
 			memmove(b+s, ((byte*)buf)+e, mm);
+               // FIXME: return here ???
 			if (!reloc_unapply(r, b)) /*return 0*/;
 			// FIXME: violation of function declaration "const void *buf"
 			memmove(((byte*)buf)+e, b+s, mm);
