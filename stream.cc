@@ -639,7 +639,7 @@ RETRY:
 		if (am & FAM_READ) mode = "rb";
 		if (am & FAM_WRITE) mode = "rb+";
 	}
-	
+
 	bool retval = true;
 	if (am != FAM_NULL) {
 		int e = 0;

@@ -132,14 +132,15 @@ int sys_pstat(pstat_t *s, const char *filename)
 	int flen = strlen(fn);
 	if (flen && sys_is_path_delim(fn[flen-1]) && (flen !=3) || (fn[1]!=':')) fn[flen-1] = 0;
 	struct stat st;
-	int e=stat(fn, &st);
-	if (e) return e;
-	s->caps=pstat_mtime|pstat_mode_usr|pstat_mode_w|pstat_size/*|pstat_cluster*/|pstat_mode_type;
-	s->mtime=st.st_mtime;
-	s->mode=sys_ht_mode(st.st_mode);
-	s->size=st.st_size;
-	s->size_high=0;
-	s->fsid=st.st_ino;
+	errno = 0;
+	int e = stat(fn, &st);
+	if (e) return errno ? errno : ENOENT;
+	s->caps = pstat_mtime|pstat_mode_usr|pstat_mode_w|pstat_size/*|pstat_cluster*/|pstat_mode_type;
+	s->mtime = st.st_mtime;
+	s->mode = sys_ht_mode(st.st_mode);
+	s->size = st.st_size;
+	s->size_high = 0;
+	s->fsid = st.st_ino;
 	return 0;
 }
 

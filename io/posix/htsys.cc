@@ -88,8 +88,9 @@ int sys_findnext(pfind_t *pfind)
 int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
+	errno = 0;
 	int e = stat(filename, &st);
-	if (e) return errno;
+	if (e) return errno ? errno : ENOENT;
 	s->caps = pstat_ctime|pstat_mtime|pstat_atime|pstat_uid|pstat_gid|pstat_mode_all|pstat_size|pstat_inode;
 	s->ctime = st.st_ctime;
 	s->mtime = st.st_mtime;
