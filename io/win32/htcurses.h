@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcurses.h (WIN32 implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as

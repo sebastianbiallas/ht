@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcurses.cc (WIN32 implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -98,8 +98,8 @@ screendrawbuf::~screendrawbuf()
 
 	setcursor(0, size.h-1);
 	show();
-	if (buf_attr) delete buf_attr;
-	if (buf_char) delete buf_char;
+	if (buf_attr) free(buf_attr);
+	if (buf_char) free(buf_char);
 }
 
 bool screendrawbuf::init_console()
@@ -195,21 +195,21 @@ int screendrawbuf::b_lprintw(int x, int y, int c, int l, int *text)
 
 void screendrawbuf::b_resize(int rw, int rh)
 {
-    /* screens are not sizeable (?) */
+	/* screens are not sizeable (?) */
 }
 
 void screendrawbuf::b_rmove(int rx, int ry)
 {
-    /* screens are not movable */
+	/* screens are not movable */
 }
 
 void screendrawbuf::b_setbounds(bounds *b)
 {
 	genericdrawbuf::b_setbounds(b);
-	if (buf_attr) delete buf_attr;
-	if (buf_char) delete buf_char;
-	buf_attr=(word *)malloc(size.w * size.h * sizeof(word));
-	buf_char=(char *)malloc(size.w * size.h * sizeof(byte));
+	if (buf_attr) free(buf_attr);
+	if (buf_char) free(buf_char);
+	buf_attr = (word *)malloc(size.w * size.h * sizeof(word));
+	buf_char = (char *)malloc(size.w * size.h * sizeof(byte));
 	b_fill(size.x, size.y, size.w, size.h, VCP(VC_WHITE, VC_BLACK), ' ');
 }
 
