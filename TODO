@@ -75,8 +75,7 @@
 	- input separators configurable (right now only creates UNIX-style files)
 - search backwards
 - more history entries: replace e.g.
-- vfs -empty, mkdir, cd, dont work - no cursor
-- vfs: window resizing...
+- vfsview
 - improve edit_time/dialog ?!
 - homogenous/heterogenous lists
 - cleanup msg interface
