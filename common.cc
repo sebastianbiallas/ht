@@ -59,7 +59,7 @@ void Object::done()
 
 /**
  *	Standard Object comparator.
- *	@param obj, object to compare to
+ *	@param obj object to compare to
  *	@returns 0 for equality, negative number if |this<obj| and positive number if |this>obj|
  */
 int Object::compareTo(const Object *obj) const

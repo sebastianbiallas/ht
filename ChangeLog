@@ -31,8 +31,8 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
-     * FIXED: htanaly: nicht gut: 'c' geht nicht in edit-mode
-     * LE * fixes
+	* FIXED: htanaly: nicht gut: 'c' geht nicht in edit-mode
+	* LE * fixes
 
 	* FIXED: texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
 	  (because this is handled via local menu)

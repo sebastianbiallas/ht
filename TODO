@@ -1,18 +1,17 @@
  HT TODO
 =========
 +sepps
-- (HT_0_7) static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
-  is this a correct quicksort? (THIS WOULD DEFINITLY BE EMBARRASING)
 - implement ht_static_treeview::goto_node() at all
 - exports/dimports in PE32+ broken
 - ht_listbox should have column align (left, right, center)
 - strz escape problems e.g. ffffffff -> "    "
+- segments
+	- multiple disassemblers
 - next unexplored
 - out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test
 - htanaly.cc: menu ifs not used properly (for keys...)
 - (listbox sort order indicators ?)
-- htanaly.cc:473 fix it
-- multiple disassemblers ??? e.g. LE ifsmgr, at entrypoint 16bit, rest 32bit
+- htanaly.cc:473 fix it. fix what ?
 
 +dunno
 - update help
@@ -21,8 +20,6 @@
 - FILEOFS 64+ bits
 - (HT_1_0) freeze/stabilize config file formats / APIs
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
-- texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
-  (because this is handled via local menu)
 - 1”1 will eval to 1
 - [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
 - store.cc:60: getObject quits with invalid config file
