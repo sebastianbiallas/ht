@@ -39,14 +39,14 @@ char hexchars[17]="0123456789abcdef";
 
 char *ht_strdup(const char *str)
 {
-	   if (str) {
-			 int len=strlen(str)+1;
-			 char *s=(char*)malloc(len);
-			 memmove(s, str, len);
-			 return s;
-	   } else {
-			 return 0;
-	   }
+	if (str) {
+		int len = strlen(str)+1;
+		char *s = (char*)smalloc(len);
+		memmove(s, str, len);
+		return s;
+	} else {
+		return NULL;
+	}
 }
 
 
@@ -306,49 +306,51 @@ void non_whitespaces(char **str)
 	}
 }
 
-int waitforchar(char **str, char b)
+bool waitforchar(char **str, char b)
 {
 	while (**str!=b) {
-		if (!**str) return 0;
+		if (!**str) return false;
 		(*str)++;
 	}
-	return 1;
+	return true;
 }
 
-int bnstr2bin(char *str, char *p, int base, dword *v)
+/*
+static bool bnstr2bin(char *str, char *p, int base, dword *v)
 {
 	*v=0;
 	do {
 		int c=hexdigit(*str);
-		if ((c==-1) || (c>=base)) return 0;
+		if ((c==-1) || (c>=base)) return false;
 		(*v)*=base;
 		*v+=c;
 		str++;
 	} while (str<p);
-	return 1;
+	return true;
 }
+*/
 
-int bnstr2bin(char *str, char *p, int base, qword *q)
+static bool bnstr2bin(char *str, char *p, int base, qword *q)
 {
 	*q = to_qword(0);
 	qword qbase = to_qword(base);
 	do {
 		int c = hexdigit(*str);
-		if ((c == -1) || (c >= base)) return 0;
+		if ((c == -1) || (c >= base)) return false;
 		(*q) *= qbase;
 		*q += to_qword(c);
 		str++;
 	} while (str < p);
-	return 1;
+	return true;
 }
 
-int bnstr(char **str, qword *q, int defaultbase)
+bool bnstr(char **str, qword *q, int defaultbase)
 {
 	int base=defaultbase;
 	int t=0;
 	char *p=*str;
 	while (!strchr("+-*/%()[] \t#.,:;", *p) && (*p)) p++;
-	if (p==*str) return 0; /* zero length */
+	if (p==*str) return false; /* zero length */
 	if (strncmp("0x", *str, 2)==0) {
 		(*str)+=2;
 		base=16;
@@ -380,15 +382,15 @@ int bnstr(char **str, qword *q, int defaultbase)
 	}
 	if (bnstr2bin(*str, p, base, q)) {
 		*str=p+t;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-int bnstr(char **str, dword *v, int defaultbase)
+bool bnstr(char **str, dword *v, int defaultbase)
 {
 	qword q;
-	int res = bnstr(str, &q, defaultbase);
+	bool res = bnstr(str, &q, defaultbase);
 	*v = QWORD_GET_LO(q);
 	return res;
 }

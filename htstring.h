@@ -43,12 +43,12 @@ void wide_char_to_multi_byte(char *result, const byte *unicode, int maxlen);
 /* common string parsing functions */
 
 void whitespaces(char **str);
-int waitforchar(char **str, char b);
+bool waitforchar(char **str, char b);
 
 /* string evaluation functions */
 
-int bnstr(char **str, dword *v, int defaultbase);
-int bnstr(char **str, qword *q, int defaultbase);
+bool bnstr(char **str, dword *v, int defaultbase);
+bool bnstr(char **str, qword *q, int defaultbase);
 
 /* hex/string functions */
 
