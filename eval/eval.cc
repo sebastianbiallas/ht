@@ -1189,10 +1189,10 @@ eval_func builtin_evalfuncs[]=	{
 	{ "sbyte", (void*)&func_short, {SCALAR_INT}, "converts to signed byte (1 bytes signed)" },
 	{ "short", (void*)&func_short, {SCALAR_INT}, "converts to short (2 bytes signed)" },
 	{ "long", (void*)&func_long, {SCALAR_INT}, "converts to long (4 bytes signed)" },
-	{ "typeof", (void*)&func_typeof, {SCALAR_VARARG}, "returns \"int\", \"string\" or \"float\"" },
-	{ "is_int", (void*)&func_is_int, {SCALAR_VARARG}, "returns non-zero if param is an integer" },
-	{ "is_string", (void*)&func_is_string, {SCALAR_VARARG}, "returns non-zero if param is a string" },
-	{ "is_float", (void*)&func_is_float, {SCALAR_VARARG}, "returns non-zero if param is a float" },
+	{ "typeof", (void*)&func_typeof, {SCALAR_ANY}, "returns \"int\", \"string\" or \"float\"" },
+	{ "is_int", (void*)&func_is_int, {SCALAR_ANY}, "returns non-zero if param is an integer" },
+	{ "is_string", (void*)&func_is_string, {SCALAR_ANY}, "returns non-zero if param is a string" },
+	{ "is_float", (void*)&func_is_float, {SCALAR_ANY}, "returns non-zero if param is a float" },
 
 /* general */
 	{ "error", (void*)&func_error, {SCALAR_STR}, "abort with error" },
@@ -1322,7 +1322,7 @@ int exec_evalfunc(eval_scalar *r, eval_scalarlist *params, eval_func *proto)
 
 				DEBUG_DUMP_SCALAR(&sc[j], "param %d: float=", j);
 				break;
-			case SCALAR_VARARG: {
+			case SCALAR_ANY: {
 				protoparams++;
 				if (params->count<protoparams) return 0;
 				scalar_clone(&sc[j], &params->scalars[j]);
@@ -1405,7 +1405,7 @@ int evalsymbol(eval_scalar *r, char *sname)
 	return s;
 }
 
-void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
+static void proto_dump(char *buf, int bufsize, eval_func *proto, int full, const char *separator)
 {
 // FIXME: buffer safety/possible buffer overflow
 	strcpy(buf, proto->name);
@@ -1424,7 +1424,7 @@ void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
 			case SCALAR_FLOAT:
 				strcat(buf, "FLOAT");
 				break;
-			case SCALAR_VARARG:
+			case SCALAR_ANY:
 				strcat(buf, "ANY");
 				break;
 			case SCALAR_VARARGS:
@@ -1438,7 +1438,7 @@ void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
 	}
 	strcat(buf, ")");
 	if (full && proto->desc) {
-		strcat(buf, " - ");
+		strcat(buf, separator);
 		strcat(buf, proto->desc);
 	}
 }
@@ -1454,8 +1454,8 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 		while (protos->name) {
 			char buf[256];
 			if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
-				proto_dump(buf, sizeof buf, protos, 1);
-				strcat(buf, "\n");
+				proto_dump(buf, sizeof buf, protos, 1, "\n");
+				strcat(buf, "\n\n");
 				eval_scalar s;
 				scalar_create_str_c(&s, buf);
 				eval_scalar r;
@@ -1473,7 +1473,7 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 					return exec_evalfunc(result, params, protos);
 				case PROTOMATCH_PARAM_FAIL: {
 					char b[256];
-					proto_dump(b, sizeof b, protos, 0);
+					proto_dump(b, sizeof b, protos, 0, "");
 					set_eval_error("invalid params to function %s, declaration is: %s", protos->name, b);
 					return 0;
 				}
