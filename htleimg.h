@@ -36,9 +36,9 @@ protected:
 	dword page_size;
 	FILEOFS ofs;
 /* new */
-	        int map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
+		   int map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
 public:
-	        void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
+		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
 /* overwritten */
 	virtual bool isdirty(FILEOFS offset, UINT range);
 	virtual UINT read(void *buf, dword size);

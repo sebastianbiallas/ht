@@ -465,6 +465,8 @@ void ht_format_viewer::init(bounds *b, char *desc, UINT caps, ht_streamfile *f, 
 
 void ht_format_viewer::done()
 {
+	if (last_search_request) delete last_search_request;
+
 	ht_view::done();
 }
 
@@ -1393,7 +1395,7 @@ restart:
 //	buf_printf(20, 8, 7, "vsize.x=%2d, vsize.y=%2d, vsize.w=%2d, vsize.h=%2d", group->group->vsize.x, group->group->vsize.y, group->group->vsize.w, group->group->vsize.h);
 //	buf_printf(0, 7, 7, "vx=%2d, vl=%2d, ypos=%2d", cursor_visual_xpos, cursor_visual_length, cursor_ypos);
 //	buf_printf(0, 2, 7, "cursor_micropos=%d", cursor_tag_micropos);
-//	buf_printf(0, 2, 7, "c_id1=%x, c_id2=%x, c_tagidx", cursor.line_id.id1, cursor.line_id.id2, cursor.tag_idx);
+//	buf_printf(0, 2, 7, "%x, %x, %x, %x, %x, c_tagidx", cursor.line_id.id1, cursor.line_id.id2, cursor.line_id.id3, cursor.line_id.id4, cursor.line_id.id5, cursor.tag_idx);
 //	buf_printf(0, 3, 7, "(%c)", "vid"[cursor_state]);
 //	buf_printf(0, 6, 7, "cursor.tag_idx=%d", cursor.tag_idx);
 /*     if (cursor_tag_class==tag_class_edit) {
@@ -3327,30 +3329,36 @@ int ht_uformat_viewer::ref_sel(LINE_ID *id)
 	return 0;
 }
 
-ht_search_result *ht_uformat_viewer::psearch(ht_search_request *search, FILEOFS start, FILEOFS end)
+ht_search_result *ht_uformat_viewer::psearch(ht_search_request *request, FILEOFS start, FILEOFS end)
 {
-	last_search_request=(ht_search_request*)search->duplicate();
-	last_search_physical=1;
-	last_search_end_ofs=end;
+	if (request != last_search_request) {
+		if (last_search_request) delete last_search_request;
+		last_search_request = (ht_search_request*)request->duplicate();
+	}
+	last_search_physical = true;
+	last_search_end_ofs = end;
 	
 	ht_sub *sub=first_sub;
 	while (sub) {
-		ht_search_result *r=sub->search(search, start, end);
+		ht_search_result *r = sub->search(request, start, end);
 		if (r) return r;
-		sub=sub->next;
+		sub = sub->next;
 	}
 	return NULL;
 }
 
-ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *search, viewer_pos start, viewer_pos end)
+ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_pos start, viewer_pos end)
 {
-	last_search_request=(ht_search_request*)search->duplicate();
-	last_search_physical=0;
-	last_search_end_pos=end;
+	if (request != last_search_request) {
+		if (last_search_request) delete last_search_request;
+		last_search_request = (ht_search_request*)request->duplicate();
+	}
+	last_search_physical = false;
+	last_search_end_pos = end;
 	
-	if ((search->search_class==SC_VISUAL) && (search->type==ST_REGEX)) {
+	if ((request->search_class==SC_VISUAL) && (request->type==ST_REGEX)) {
 		if (!cursor.sub) return 0;
-		ht_regex_search_request *s=(ht_regex_search_request*)search;
+		ht_regex_search_request *s=(ht_regex_search_request*)request;
 /* build progress indicator */
 		bounds b;
 		get_std_progress_indicator_metrics(&b);
@@ -3606,6 +3614,7 @@ void ht_uformat_viewer::update_misc_info()
 				cursor_tag_offset=tag_get_offset(e);
 				break;
 			case tag_class_sel:
+               	clear_line_id(&cursor_tag_id.id);
 				tag_get_id(e, &cursor_tag_id.id.id1, &cursor_tag_id.id.id2, &cursor_tag_id.id.id3, &cursor_tag_id.id.id4);
 				break;
 		}
@@ -4344,6 +4353,7 @@ bool ht_collapsable_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offse
 
 void ht_collapsable_sub::first_line_id(LINE_ID *line_id)
 {
+	clear_line_id(line_id);
 	*line_id = myfid;
 }
 

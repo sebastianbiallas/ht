@@ -44,7 +44,7 @@ Object *ht_object_stream_inter::getObject(char *name)
 void ht_object_stream_inter::getObject(Object *&o, char *name)
 {
 	OBJECT_ID id=getIntHex(4, "id");
-     if (id) {
+	if (id) {
 		object_builder b=(object_builder)find_atom(id);
 		if (b) {
 			o=b();
@@ -57,7 +57,7 @@ void ht_object_stream_inter::getObject(Object *&o, char *name)
 			/* object not registered! */
 			assert(0);
 			o = NULL;
-          }
+		}
 	} else {
 		o = NULL;
 	}
@@ -116,7 +116,7 @@ int  ht_object_stream_bin::getIntDec(int size, char *desc)
 
 int  ht_object_stream_bin::getIntHex(int size, char *desc)
 {
-     assert(size <= 8);
+	assert(size <= 8);
 	byte neta[8];
 	int a;
 	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
@@ -157,7 +157,7 @@ void ht_object_stream_bin::putIntDec(int a, int size, char *desc)
 
 void ht_object_stream_bin::putIntHex(int a, int size, char *desc)
 {
-     assert(size <= 8);
+	assert(size <= 8);
 	byte neta[8];
 	create_foreign_int(neta, a, size, big_endian);
 	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);

@@ -574,9 +574,9 @@ bool ht_aviewer::convertAddressToViewerPos(Address *a, viewer_pos *p)
 		a->putIntoArray((byte*)&(p->u.line_id.id2));
 		p->u.line_id.id1 = 0;
 		return true;
-     } else {
+	} else {
 		return false;
-     }
+	}
 }
 
 char *ht_aviewer::func(UINT i, bool execute)
@@ -819,17 +819,17 @@ void ht_aviewer::generateOutputDialog()
 	NEW_OBJECT(v2, ht_label, &b, "output ~filename:", v1);
 	dialog->insert(v2);
 
-     char pname[HT_NAME_MAX+16];
-     char *filename = file->get_filename();
-     if (filename) {
-     	pname[HT_NAME_MAX-1] = 0;
-     	strncpy(pname, filename, HT_NAME_MAX-1);
+	char pname[HT_NAME_MAX+16];
+	char *filename = file->get_filename();
+	if (filename) {
+		pname[HT_NAME_MAX-1] = 0;
+		strncpy(pname, filename, HT_NAME_MAX-1);
 		char *suffix = sys_filename_suffix(pname);
-          if (suffix) {
-          	strcpy(suffix, "out");
+		if (suffix) {
+			strcpy(suffix, "out");
 			setdatastr(v1, pname);
-          }
-     }
+		}
+	}
 
 	BOUNDS_ASSIGN(b, 29, 2, 15, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);
@@ -878,7 +878,7 @@ void ht_aviewer::generateOutputDialog()
 			errorbox(globalerror);
 			continue;
 		}
-          UINT end_by_lines;
+		UINT end_by_lines;
 		if ((by_lines = end_str[0]=='#')) {
 			char *pend = &end_str[1];
 			bnstr(&pend, &end_by_lines, 10);
@@ -888,27 +888,27 @@ void ht_aviewer::generateOutputDialog()
 				continue;
 			}
 		}
-          Address *start_addr, *end_addr;
-          if (!convertViewerPosToAddress(start, &start_addr)
-          || !convertViewerPosToAddress(end, &end_addr)) {
+		Address *start_addr, *end_addr;
+		if (!convertViewerPosToAddress(start, &start_addr)
+		|| !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
 			continue;
-          }
-          
+		}
+		
 		ht_file *s = new ht_file();
 		s->init(filename, FAM_CREATE+FAM_WRITE);
 		if (s->get_error()) {
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
-          	switch (odd.lp.cursor_id) {
-               	case 0:
+			switch (odd.lp.cursor_id) {
+				case 0:
 //					generate_html_output(analy, s, (ADDR)start, (ADDR)end, end, by_lines);
-                    	break;
-               	case 1:
-                    	// plain
-                    	break;
-               }
+					break;
+				case 1:
+					// plain
+					break;
+			}
 		}
 		s->done();
 		delete s;
@@ -1000,17 +1000,17 @@ void ht_aviewer::exportFileDialog()
 	NEW_OBJECT(v2, ht_label, &b, "output ~filename:", v1);
 	dialog->insert(v2);
 
-     char pname[HT_NAME_MAX+16];
-     char *filename = file->get_filename();
-     if (filename) {
-     	pname[HT_NAME_MAX-1] = 0;
-     	strncpy(pname, filename, HT_NAME_MAX-1);
+	char pname[HT_NAME_MAX+16];
+	char *filename = file->get_filename();
+	if (filename) {
+		pname[HT_NAME_MAX-1] = 0;
+		strncpy(pname, filename, HT_NAME_MAX-1);
 		char *suffix = sys_filename_suffix(pname);
-          if (suffix) {
-          	strcpy(suffix, "exp");
+		if (suffix) {
+			strcpy(suffix, "exp");
 			setdatastr(v1, pname);
-          }
-     }
+		}
+	}
 
 	BOUNDS_ASSIGN(b, 2, 5, 25, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);
@@ -1019,7 +1019,7 @@ void ht_aviewer::exportFileDialog()
 	BOUNDS_ASSIGN(b, 2, 4, 25, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~export format:", v1);
 	dialog->insert(v2);
-     
+	
 	BOUNDS_ASSIGN(b, 13, 8, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "O~k", button_ok);
 	dialog->insert(v1);
@@ -1040,7 +1040,7 @@ void ht_aviewer::exportFileDialog()
 			errorbox(globalerror);
 			continue;
 		}
-          UINT end_by_lines;
+		UINT end_by_lines;
 		if ((by_lines = end_str[0]=='#')) {
 			char *pend = &end_str[1];
 			bnstr(&pend, &end_by_lines, 10);
@@ -1050,24 +1050,24 @@ void ht_aviewer::exportFileDialog()
 				continue;
 			}
 		}
-          Address *start_addr, *end_addr;
-          if (!convertViewerPosToAddress(start, &start_addr)
-          || !convertViewerPosToAddress(end, &end_addr)) {
+		Address *start_addr, *end_addr;
+		if (!convertViewerPosToAddress(start, &start_addr)
+		|| !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
 			continue;
-          }
-          
+		}
+		
 		ht_file *s = new ht_file();
 		s->init(filename, FAM_CREATE+FAM_WRITE);
 		if (s->get_error()) {
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
-          	switch (odd.lp.cursor_id) {
-               	case 0:
+			switch (odd.lp.cursor_id) {
+				case 0:
 					export_to_sym(analy, s);
-                    	break;
-               }
+					break;
+			}
 		}
 		s->done();
 		delete s;
@@ -1571,9 +1571,10 @@ bool ht_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 
 int ht_aviewer::ref_sel(LINE_ID *id)
 {
+	if ((id->id1 | id->id2 |  id->id3 |id->id4) == 0) return 0;
 	switch (id->id4) {
 		case 0:
-			if (analy && id->id1) {
+			if (analy) {
 				Address *a = analy->createAddress();
 				a->getFromArray((byte*)&id->id1);
 				bool res = gotoAddress(a, this);

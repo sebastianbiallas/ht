@@ -431,7 +431,7 @@ static int compare_keys_project_item(ht_data *key_a, ht_data *key_b)
 {
 	ht_project_item *a=(ht_project_item *)key_a;
 	ht_project_item *b=(ht_project_item *)key_b;
-     int c = sys_filename_cmp(a->get_path(), b->get_path());
+	int c = sys_filename_cmp(a->get_path(), b->get_path());
 	return (c == 0) ? sys_filename_cmp(a->get_filename(), b->get_filename()) : c;
 }
 
@@ -1939,27 +1939,27 @@ void ht_app::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 #ifdef SYS_SUPPORT_NATIVE_CLIPBOARD
-     	case cmd_edit_copy_native: {
-          	int dz = sys_get_native_clipboard_data_size();
-               if (dz) {
-	          	void *data = smalloc(dz);
+		case cmd_edit_copy_native: {
+			int dz = sys_get_native_clipboard_data_size();
+			if (dz) {
+				void *data = smalloc(dz);
 				if (sys_read_data_from_native_clipboard(data, dz)) {
-                    	dz = strlen((char*)data);
-	               	clipboard_copy(SYS_NATIVE_CLIPBOARD_NAME, data, dz);
-	               }
-	               free(data);
-               }
-               break;
-          }
-          case cmd_edit_paste_native: {
+					dz = strlen((char*)data);
+					clipboard_copy(SYS_NATIVE_CLIPBOARD_NAME, data, dz);
+				}
+				free(data);
+			}
+			break;
+		}
+		case cmd_edit_paste_native: {
 			int maxsize = clipboard_getsize();
 			byte *buf = (byte*)smalloc(maxsize);
 			int r = clipboard_paste(buf, maxsize);
-               if (r) {
+			if (r) {
 				sys_write_data_to_native_clipboard(buf, r);
-               }
-               free(buf);
-          }
+			}
+			free(buf);
+		}
 #endif
 		case cmd_file_save: {
 			UINT i = get_window_listindex((ht_window*)battlefield->current);
@@ -2119,7 +2119,7 @@ void ht_app::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;*/
 				case K_Space:
-                    	sendmsg(cmd_popup_dialog_view_list);
+					sendmsg(cmd_popup_dialog_view_list);
 					clearmsg(msg);
 					return;
 /*				case K_Space: {
@@ -2353,20 +2353,20 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_popup_dialog_view_list: {
-              	ht_view *v = popup_view_list("select mode");
+			ht_view *v = popup_view_list("select mode");
 			if (v) focus(v);
 			clearmsg(msg);
 			return;
 		}
 		case cmd_popup_dialog_window_list: {
-              	ht_window *w = popup_window_list("select window");
+			ht_window *w = popup_window_list("select window");
 			if (w) focus(w);
 			clearmsg(msg);
 			return;
 		}
-          case cmd_popup_dialog_info_loader: {
+		case cmd_popup_dialog_info_loader: {
 			char file[256];
-               file[0] = 0;
+			file[0] = 0;
 			if (inputbox("open info file", "filename", file, sizeof file, HISTATOM_FILE) == button_ok) {
 				char node[256];
 				strcpy(node, "Top");
@@ -2377,7 +2377,7 @@ void ht_app::handlemsg(htmsg *msg)
 			}
 			clearmsg(msg);
 			return;
-          }
+		}
 		case cmd_popup_window_log:
 			create_window_log();
 			clearmsg(msg);
@@ -2484,12 +2484,12 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	dialog->insert(listbox);
 	dialog->setpalette(palkey_generic_special);
 
-     ht_view *result = NULL;
+	ht_view *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
 		listbox->databuf_get(&data);
 		ht_data_ptr *p=(ht_data_ptr*)structure->get(data.cursor_id);
-          if (p) result = (ht_view*)p->value;
+		if (p) result = (ht_view*)p->value;
 	}
 
 	structure->destroy();
@@ -2497,7 +2497,7 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 
 	dialog->done();
 	delete dialog;
-     return result;
+	return result;
 }
 
 int ht_app::popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, ht_list *structure, int depth, int *currenti, ht_view *currentv)
@@ -2570,7 +2570,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	dialog->insert(listbox);
 	dialog->setpalette(palkey_generic_special);
 
-     ht_window *result = NULL;
+	ht_window *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
 		listbox->databuf_get(&data);
@@ -2578,7 +2578,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	}
 	dialog->done();
 	delete dialog;
-     return result;
+	return result;
 }
 
 void ht_app::project_opencreate(char *filename)
@@ -2619,7 +2619,7 @@ void ht_app::project_opencreate(char *filename)
 		m.type = mt_broadcast;
 		m.msg = msg_project_changed;
 		sendmsg(&m);
-          create_window_project();
+		create_window_project();
 	}
 }
 
@@ -2658,13 +2658,13 @@ void ht_app::store(ht_object_stream *f)
 ht_vstate_history_entry::ht_vstate_history_entry(Object *Data, ht_view *View)
 {
 	data = Data;
-     view = View;
+	view = View;
 }
 
 ht_vstate_history_entry::~ht_vstate_history_entry()
 {
 	data->done();
-     delete data;
+	delete data;
 }
 
 /*
@@ -2675,15 +2675,15 @@ void	ht_file_window::init(bounds *b, char *desc, UINT framestyle, UINT number, h
 {
 	ht_window::init(b, desc, framestyle, number);
 	file = f;
-     vstate_history = new ht_clist();
-     ((ht_clist*)vstate_history)->init();
-     vstate_history_pos = 0;
+	vstate_history = new ht_clist();
+	((ht_clist*)vstate_history)->init();
+	vstate_history_pos = 0;
 }
 
 void ht_file_window::done()
 {
-     vstate_history->destroy();
-     delete vstate_history;
+	vstate_history->destroy();
+	delete vstate_history;
 	ht_window::done();
 }
 
@@ -2691,21 +2691,21 @@ void ht_file_window::add_vstate_history(ht_vstate_history_entry *e)
 {
 	int c = vstate_history->count();
 	if (c > vstate_history_pos) {
-          vstate_history->del_multiple(vstate_history_pos, c-vstate_history_pos);
-     }
+		vstate_history->del_multiple(vstate_history_pos, c-vstate_history_pos);
+	}
 	vstate_history->insert(e);
-     vstate_history_pos++;
+	vstate_history_pos++;
 }
 
 void ht_file_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-     	case msg_vstate_save: {
+		case msg_vstate_save: {
 			Object *data = (Object*)msg->data1.ptr;
 			ht_view *view = (ht_view*)msg->data2.ptr;
-               add_vstate_history(new ht_vstate_history_entry(data, view));
-          	break;
-          }
+			add_vstate_history(new ht_vstate_history_entry(data, view));
+			break;
+		}
 		case msg_accept_close: if (file) {
 			bool modified=false;
 			if (file->get_filename() != NULL) {
@@ -2758,20 +2758,20 @@ void ht_file_window::handlemsg(htmsg *msg)
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_BackSpace: {
-                    	if (vstate_history_pos) {
-                              vstate_history_pos--;
-                    		ht_vstate_history_entry *e = (ht_vstate_history_entry*)
-                              	vstate_history->get(vstate_history_pos);
-                              htmsg m;
-                              m.msg = msg_vstate_restore;
-                              m.type = mt_empty;
-                              m.data1.ptr = e->data;
-                              e->view->sendmsg(&m);
-                              focus(e->view);
-                         }
-                    	clearmsg(msg);
-                         return;
-                    }
+					if (vstate_history_pos) {
+						vstate_history_pos--;
+						ht_vstate_history_entry *e = (ht_vstate_history_entry*)
+							vstate_history->get(vstate_history_pos);
+						htmsg m;
+						m.msg = msg_vstate_restore;
+						m.type = mt_empty;
+						m.data1.ptr = e->data;
+						e->view->sendmsg(&m);
+						focus(e->view);
+					}
+					clearmsg(msg);
+					return;
+				}
 			}
 			break;
 	}

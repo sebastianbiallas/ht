@@ -489,7 +489,7 @@ void	Analyser::init()
 {
 	active = false;
 	dirty = false;
-     next_address_is_invalid = false;
+	next_address_is_invalid = false;
 	addr = new InvalidAddress();
 	invalid_addr = new InvalidAddress();
 	addr_queue = new ht_queue();
@@ -634,7 +634,7 @@ int Analyser::load(ht_object_stream *st)
 	if (active) {
 		some_analyser_active++;
 	}
-     next_address_is_invalid = false;
+	next_address_is_invalid = false;
 	GET_OBJECT(st, next_explored);
 	GET_OBJECT(st, first_explored);
 	GET_OBJECT(st, last_explored);
@@ -962,7 +962,7 @@ bool	Analyser::continueAnalysis()
 	int			len;
 	branch_enum_t	branch;
 
-     assert((UINT)max_opcode_length <= sizeof buf);
+	assert((UINT)max_opcode_length <= sizeof buf);
 
 	if (!active) return	false;
 	do {
@@ -985,8 +985,8 @@ bool	Analyser::continueAnalysis()
 		int bz = bufPtr(addr, buf, max_opcode_length);
 
 		instr = disasm->decode(buf, bz, mapAddr(addr));
-          instr = disasm->duplicateInsn(instr);
-          
+		instr = disasm->duplicateInsn(instr);
+		
 		ops_parsed++;
 		num_ops_parsed++;
 
@@ -1010,14 +1010,14 @@ bool	Analyser::continueAnalysis()
 					addr = new InvalidAddress();
 				} else {
 					newLocation(addr)->flags |= AF_FUNCTION_END;
-                         next_address_is_invalid = true;
+					next_address_is_invalid = true;
 				}
 			}
 		} while (disasm->selectNext(instr));
-          if (next_address_is_invalid || !addr->add(len)) {
+		if (next_address_is_invalid || !addr->add(len)) {
 			gotoAddress(invalid_addr, invalid_addr);
-               next_address_is_invalid = false;
-          }
+			next_address_is_invalid = false;
+		}
 		free(instr);
 	} while ((ops_parsed % MAX_OPS_PER_CONTINUE) !=0);
 	return true;
@@ -1198,14 +1198,13 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			if (next_addr->isValid())
 				newLocation(next_addr)->flags |= AF_FUNCTION_END;
 
-               next_address_is_invalid = true;
+			next_address_is_invalid = true;
 			break;
 		case	br_call: {
 			addXRef(branch_addr, addr, xrefcall);
 			bool special_func = false;
 			char *lprfx = LPRFX_SUB;
-               Symbol *sym = getSymbolByAddress(branch_addr);
-			if (!sym && validCodeAddress(branch_addr)) {
+			if (!explored->contains(branch_addr) && validCodeAddress(branch_addr)) {
 				// should be in code_analy
 				byte buf[16];
 				int bz = bufPtr(branch_addr, buf, sizeof(buf));
@@ -1869,9 +1868,9 @@ static void saveaddrs(ht_object_stream *st, Location *addr)
 			if (addr->thisfunc) {
 				st->putObject(addr->thisfunc->addr, "func");
 			} else {
-				Address *ia = new InvalidAddress();
-				st->putObject(ia, "func");
-				delete ia;
+				Address *invalid_addr = new InvalidAddress();
+				st->putObject(invalid_addr, "func");
+				delete invalid_addr;
 			}
 
 			st->putIntHex(addr->flags, 4, "flags");

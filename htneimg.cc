@@ -73,8 +73,8 @@ ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	analy->init(file, v, p, low, high);
 	v->analy_sub = analy;
 	v->insertsub(analy);
-     delete high;
-     delete low;
+	delete high;
+	delete low;
 
 	v->sendmsg(msg_complete_init, 0);
 
@@ -113,7 +113,7 @@ char *ht_ne_aviewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 3: {
-          	bool e = false;
+			bool e = false;
 			file->cntl(FCNTL_GET_RELOC, &e);
 			if (execute) {
 				file->cntl(FCNTL_SET_RELOC, !e);

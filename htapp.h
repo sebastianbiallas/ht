@@ -148,10 +148,10 @@ public:
 class ht_vstate_history_entry: public ht_data {
 public:
 	Object *data;
-     ht_view *view;
+	ht_view *view;
 
-     ht_vstate_history_entry(Object *data, ht_view *view);
-     ~ht_vstate_history_entry();
+	ht_vstate_history_entry(Object *data, ht_view *view);
+	~ht_vstate_history_entry();
 };
 
 /*
@@ -161,8 +161,8 @@ public:
 class ht_file_window: public ht_window {
 protected:
 	ht_list *vstate_history;
-     int vstate_history_pos;
-     
+	int vstate_history_pos;
+	
 			void add_vstate_history(ht_vstate_history_entry *e);
 public:
 	ht_streamfile	*file;

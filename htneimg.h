@@ -35,8 +35,8 @@ class ht_ne_aviewer: public ht_aviewer {
 public:
 	ht_ne_shared_data *ne_shared;
 	ht_streamfile *file;
-     
-	        void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_ne_shared_data *ne_shared);
+	
+		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_ne_shared_data *ne_shared);
 /* overwritten */
 	virtual char *func(UINT i, bool execute);
 	virtual void setAnalyser(Analyser *a);

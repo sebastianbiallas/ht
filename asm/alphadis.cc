@@ -252,9 +252,9 @@ dis_insn *Alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
 
 dis_insn *Alphadis::duplicateInsn(dis_insn *disasm_insn)
 {
-     alphadis_insn *insn = (alphadis_insn *)malloc(sizeof (alphadis_insn));
-     *insn = *(alphadis_insn *)disasm_insn;
-     return insn;
+	alphadis_insn *insn = (alphadis_insn *)malloc(sizeof (alphadis_insn));
+	*insn = *(alphadis_insn *)disasm_insn;
+	return insn;
 }
 
 int	Alphadis::getMaxOpcodeLength()

@@ -141,9 +141,9 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 
 dis_insn *javadis::duplicateInsn(dis_insn *disasm_insn)
 {
-     javadis_insn *insn = (javadis_insn *)malloc(sizeof (javadis_insn));
-     *insn = *(javadis_insn *)disasm_insn;
-     return insn;
+	javadis_insn *insn = (javadis_insn *)malloc(sizeof (javadis_insn));
+	*insn = *(javadis_insn *)disasm_insn;
+	return insn;
 }
 
 byte javadis::getbyte()

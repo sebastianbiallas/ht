@@ -314,20 +314,20 @@ UINT ht_ltextfile::find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, in
 			if (le_len) *le_len = l;
 			break;
 		}
-          if (s != readlen) {
-          	len += s;
-          	break;
-          }
+		if (s != readlen) {
+			len += s;
+			break;
+		}
 		/* make sure current and next read overlap
 		   to guarantee proper lineend-matching */
-          if (s > (TEXTFILE_MAX_LINEENDLEN-1)) {
+		if (s > (TEXTFILE_MAX_LINEENDLEN-1)) {
 			len += s-(TEXTFILE_MAX_LINEENDLEN-1);
-          }
+		}
 		ofs += s-(TEXTFILE_MAX_LINEENDLEN-1);
 	} while (s == readlen);
 	if (len > TEXTFILE_MAX_LINELEN) {
 		len = TEXTFILE_MAX_LINELEN;
-          if (le_len) *le_len = 0;
+		if (le_len) *le_len = 0;
 	}
 	return len;
 }

@@ -53,10 +53,12 @@ public:
 class ht_pe_il_viewer: public ht_uformat_viewer {
 public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group);
+		virtual void done();
 /* overwritten */
-	virtual	int ref_sel(ID id_low, ID id_high);
+	virtual	int ref_sel(LINE_ID *id);
 };
 
 int ILunpackDword(dword &result, const byte *buf, int len);
+int ILunpackToken(dword &result, const byte *buf, int len);
 
 #endif /* !__HTPEIL_H__ */

@@ -32,7 +32,7 @@ extern format_viewer_if htneentrypoints_if;
 class ht_ne_entrypoint_viewer: public ht_uformat_viewer {
 public:
 /* overwritten */
-	virtual	int ref_sel(ID id_low, ID id_high);
+	virtual	int ref_sel(LINE_ID *id);
 };
 
 #endif /* !__HTNEENT_H__ */

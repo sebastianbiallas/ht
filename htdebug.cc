@@ -134,7 +134,7 @@ dword get_timer_msec(timer_handle h)
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
 	get_timer_tick_internal(h, &t);
-     t = t / to_qword(CPU_CLOCK/1000);
+	t = t / to_qword(CPU_CLOCK/1000);
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 

@@ -72,14 +72,14 @@ void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 
 UINT	ht_reloc_file::read(void *buf, UINT size)
 {
+	FILEOFS o = tell();
 	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
-	if (enabled) {
-		FILEOFS o = tell();
+	/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
+	if (enabled && (o >= MAX_RELOC_TOKEN_LEN+1)) {
 		ht_data_uint q;
-		/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
 		ht_data *r;
 		ht_data_uint *k = &q;
-		k->value = o-MAX_RELOC_TOKEN_LEN-1;
+		k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
@@ -97,14 +97,14 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 
 UINT	ht_reloc_file::write(const void *buf, UINT size)
 {
-	if (enabled) {
-		FILEOFS o = tell();
+	/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
+	FILEOFS o;
+	if (enabled && ((o = tell()) >= MAX_RELOC_TOKEN_LEN+1)) {
 		UINT c = size;
 		ht_data_uint q;
-		/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
 		ht_data *r;
 		ht_data_uint *k = &q;
-		k->value = o-MAX_RELOC_TOKEN_LEN-1;
+		k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
@@ -114,7 +114,7 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 			UINT mm = MIN(c - e, sizeof b - s);
 			memmove(b+s, ((byte*)buf)+e, mm);
 			if (!reloc_unapply(r, b)) return 0;
-			// FIXME: violation of const in param "const void *buf"
+			// FIXME: violation of function declaration "const void *buf"
 			memmove(((byte*)buf)+e, b+s, mm);
 		}
 	}

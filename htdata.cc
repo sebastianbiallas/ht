@@ -90,7 +90,7 @@ OBJECT_ID ht_data_dword::object_id()
  *	CLASS ht_data_ptr
  */
 
-ht_data_ptr::ht_data_ptr(void *v)
+ht_data_ptr::ht_data_ptr(const void *v)
 {
 	value=v;
 }
@@ -99,7 +99,7 @@ ht_data_ptr::ht_data_ptr(void *v)
  *	CLASS ht_data_mem
  */
 
-ht_data_mem::ht_data_mem(void *v, UINT _size)
+ht_data_mem::ht_data_mem(const void *v, UINT _size)
 {
 	size=_size;
 	if (size) {

@@ -1,4 +1,4 @@
-Dies ist hthelp.info, hergestellt von Makeinfo Version 4.0 aus
+This is hthelp.info, produced by makeinfo version 4.0 from
 ht.texi.
 
 START-INFO-DIR-ENTRY
@@ -466,21 +466,21 @@ and patches welcome.
 
 
 Tag Table:
-Node: Top598
-Node: About888
-Node: Keys1500
-Node: Authors2763
-Node: Features2921
-Node: Supported file formats3349
-Node: Code and data analyser4514
-Node: Target systems4958
-Node: Configuration files5485
-Node: Clipboard6162
-Node: Global history6975
-Node: Expression evaluation7477
-Node: Block operations8857
-Node: Searching9808
-Node: x86 Assembler12466
-Node: Homepage13260
+Node: Top594
+Node: About884
+Node: Keys1496
+Node: Authors2759
+Node: Features2917
+Node: Supported file formats3345
+Node: Code and data analyser4510
+Node: Target systems4954
+Node: Configuration files5481
+Node: Clipboard6158
+Node: Global history6971
+Node: Expression evaluation7473
+Node: Block operations8853
+Node: Searching9804
+Node: x86 Assembler12462
+Node: Homepage13256
 
 End Tag Table

@@ -85,9 +85,9 @@ public:
 
 class ht_data_ptr: public ht_data {
 public:
-	void *value;
+	const void *value;
 
-	ht_data_ptr(void *v=0);
+	ht_data_ptr(const void *v=0);
 };
 
 /*
@@ -99,7 +99,7 @@ public:
 	void *value;
 	UINT size;
 
-			ht_data_mem(void *v=0, UINT size=0);
+			ht_data_mem(const void *v=0, UINT size=0);
 	virtual	~ht_data_mem();
 /* overwritten */
 	virtual	int load(ht_object_stream *s);

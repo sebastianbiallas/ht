@@ -490,9 +490,9 @@ void x86dis::decode_sib(x86_insn_op *op, int mod)
 
 dis_insn *x86dis::duplicateInsn(dis_insn *disasm_insn)
 {
-     x86dis_insn *insn = (x86dis_insn *)malloc(sizeof (x86dis_insn));
-     *insn = *(x86dis_insn *)disasm_insn;
-     return insn;
+	x86dis_insn *insn = (x86dis_insn *)malloc(sizeof (x86dis_insn));
+	*insn = *(x86dis_insn *)disasm_insn;
+	return insn;
 }
 
 int x86dis::esizeaddr(char c)

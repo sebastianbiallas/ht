@@ -538,13 +538,13 @@ FILEOFS ht_file::tell()
 
 int	ht_file::truncate(UINT newsize)
 {
-     int e;
-     int old_access_mode = access_mode;
+	int e;
+	int old_access_mode = access_mode;
 	if (set_access_mode(FAM_UNDEFINED)) {
 		e = sys_truncate(filename, newsize);
 	} else {
-     	e = EACCES;
-     }
+		e = EACCES;
+	}
 
 	set_access_mode(old_access_mode);
 	return e;

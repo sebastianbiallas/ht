@@ -1397,7 +1397,7 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 	c.y=0;
 	c.w=1;
 	scrollbar=new ht_scrollbar();
-	scrollbar->init(&c, &pal, false);
+	scrollbar->init(&c, &pal, true);
 
 	pos = 0;
 	cursor = 0;
@@ -2105,7 +2105,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 
 	if (cnt<2) return;
 	
-	list = (ht_text_listbox_item **)malloc(cnt*sizeof(ht_text_listbox_item *));
+	list = (ht_text_listbox_item **)malloc(cnt*4);
 	tmp = first;
 	while (tmp) {
 		list[i++] = tmp;

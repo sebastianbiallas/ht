@@ -31,7 +31,7 @@
 class ht_reloc_file: public ht_layer_streamfile {
 protected:
 	ht_tree *relocs;
-     bool enabled;
+	bool enabled;
 
 /* new */
 	virtual void	reloc_apply(ht_data *reloc, byte *data) = 0;

@@ -70,7 +70,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	VIEW_DEBUG_NAME("ht_elf");
 
 	LOG("%s: ELF: found header at %08x", file->get_filename(), header_ofs);
-     
+	
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
 	
 	shared_data=elf_shared;
@@ -361,20 +361,20 @@ bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAdd
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (UINT i=0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
-                         *ofs = qofs.lo;
+					*ofs = qofs.lo;
 					return true;
 				}
 				s++;
 			}
-               break;
-          }
+			break;
+		}
 	}
 	return false;
 }
@@ -391,7 +391,7 @@ bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, EL
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
@@ -402,8 +402,8 @@ bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, EL
 				}
 				s++;
 			}
-               break;
-          }
+			break;
+		}
 	}
 	return false;
 }
@@ -419,7 +419,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFA
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
@@ -429,7 +429,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFA
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 	}
 	return false;
@@ -457,11 +457,11 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword 
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-               qword qofs = to_qword(ofs);
+			qword qofs = to_qword(ofs);
 			for (UINT i = 0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					addr->a64 = qofs - s->sh_offset + s->sh_addr;
@@ -469,7 +469,7 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword 
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 	}
 	return false;
@@ -487,12 +487,12 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dwo
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-               qword qofs;
-               qofs.hi = 0; qofs.lo = ofs;
+			qword qofs;
+			qofs.hi = 0; qofs.lo = ofs;
 			for (UINT i=0; i < section_headers->count; i++) {
 				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					*section = i;
@@ -500,7 +500,7 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dwo
 				}
 				s++;
 			}
-               break;
+			break;
 		}
 	}
 	return false;

@@ -400,9 +400,9 @@ extern byte ELF_RELA64_struct[];
 
 struct ELFAddress {
 	union {
-     	dword a32;
-          qword a64;
-     };
+		dword a32;
+		qword a64;
+	};
 };
 
 #endif /* __ELFSTRUC_H__ */

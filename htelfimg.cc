@@ -57,70 +57,70 @@ ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	v->attachInfoline(head);
 
 /* find lowest/highest address */
-	Address *low;
-	Address *high;
+	Address *low=NULL;
+	Address *high=NULL;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
-	     case ELFCLASS32: {
+		case ELFCLASS32: {
 			ELFAddress l, h;
-               l.a32 = (dword)-1;
-               h.a32 = 0;
+			l.a32 = (dword)-1;
+			h.a32 = 0;
 			ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
 			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 					if (s->sh_addr < l.a32) l.a32=s->sh_addr;
 					if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
-                    }
+				}
 				s++;
 			}
-               low = p->createAddress32(l.a32);
-               high = p->createAddress32(h.a32);
-               break;
-          }
-	     case ELFCLASS64: {
+			low = p->createAddress32(l.a32);
+			high = p->createAddress32(h.a32);
+			break;
+		}
+		case ELFCLASS64: {
 			ELFAddress l, h;
-               l.a64 = to_qword(-1);
-               h.a64 = to_qword(0);
+			l.a64 = to_qword(-1);
+			h.a64 = to_qword(0);
 			ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
 			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 					if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
 					if ((s->sh_addr + s->sh_size > h.a64)
-                         && s->sh_size != to_qword(0)) {
-                         	h.a64 = s->sh_addr + s->sh_size - to_qword(1);
-                         }
-                    }
+					&& s->sh_size != to_qword(0)) {
+						h.a64 = s->sh_addr + s->sh_size - to_qword(1);
+					}
+				}
 				s++;
 			}
-               low = p->createAddress64(l.a64);
-               high = p->createAddress64(h.a64);
-               break;
-          }
-     }
+			low = p->createAddress64(l.a64);
+			high = p->createAddress64(h.a64);
+			break;
+		}
+	}
 
 	ht_analy_sub *analy=new ht_analy_sub();
-     char buff[1000];
-     ht_snprintf(buff, sizeof buff, "low: %y high: %y", low, high);
+	char buff[1000];
+	ht_snprintf(buff, sizeof buff, "low: %y high: %y", low, high);
 	analy->init(file, v, p, low, high);
 	v->analy_sub = analy;
 	v->insertsub(analy);
 
-     delete high;
-     delete low;
+	delete high;
+	delete low;
 
 	v->sendmsg(msg_complete_init, 0);
 
-     Address *tmpaddr;
+	Address *tmpaddr = NULL;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
-	     case ELFCLASS32: {
+		case ELFCLASS32: {
 			tmpaddr = p->createAddress32(elf_shared->header32.e_entry);
-               break;
-          }
-	     case ELFCLASS64: {
+			break;
+		}
+		case ELFCLASS64: {
 			tmpaddr = p->createAddress64(elf_shared->header64.e_entry);
-               break;
-          }
-     }
-     
+			break;
+		}
+	}
+	
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
 

@@ -237,9 +237,10 @@ void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *f
 
 int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 {
+#if 0
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
-	switch (id->id2) {
+	switch (id_high) {
 		case 0: {
 			// FIXME: God forgive us...
 			ht_group *vr_group=group;
@@ -255,11 +256,11 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 			}
 			// ok now.
 			if (hexv && (pe_shared->opt_magic == COFF_OPTMAGIC_PE32)) {
-				UINT rva = pe_shared->pe32.header_nt.directory[id->id1].address;
-				UINT size = pe_shared->pe32.header_nt.directory[id->id1].size;
+				UINT rva = pe_shared->pe32.header_nt.directory[id_low].address;
+				UINT size = pe_shared->pe32.header_nt.directory[id_low].size;
 				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
-                         vstate_save(NULL);
+					vstate_save(NULL);
 					hexv->goto_offset(ofs, NULL);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
@@ -269,23 +270,24 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		}
 		case 1:
 			if (pe_shared->v_exports) {
-                    vstate_save(NULL);
+				vstate_save(NULL);
 				app->focus(pe_shared->v_exports);
 			}
 			break;
 		case 2:
 			if (pe_shared->v_imports) {
-                    vstate_save(NULL);
+				vstate_save(NULL);
 				app->focus(pe_shared->v_imports);
 			}
 			break;
 		case 3:
-          	if (pe_shared->v_resources) {
-                    vstate_save(NULL);
+			if (pe_shared->v_resources) {
+				vstate_save(NULL);
 				app->focus(pe_shared->v_resources);
 			}
 			break;
 	}
 	return 1;
+#endif
 }
 

@@ -308,7 +308,7 @@ protected:
 			void render_meta(UINT x, UINT y, text_viewer_pos *pos, vcp color);
 			void render_str(int x, int y, vcp color, text_viewer_pos *pos, UINT len, char *str, bool multi);
 			void render_str_color(vcp *color, text_viewer_pos *pos);
-			ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search_pos *start, text_search_pos *end);
+			ht_search_result *search(ht_search_request *request, text_search_pos *start, text_search_pos *end);
 			bool show_search_result(ht_search_result *result);
 public:
 			void init(bounds *b, bool own_textfile, ht_textfile *textfile, ht_list *lexers);

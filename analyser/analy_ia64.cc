@@ -61,7 +61,7 @@ Address *AnalyIA64Disassembler::branchAddr(OPCODE *opcode, branch_enum_t brancht
 			return addr;
 		}
 	}
-     return new InvalidAddress();
+	return new InvalidAddress();
 }
 
 Address *AnalyIA64Disassembler::createAddress(dword offset)

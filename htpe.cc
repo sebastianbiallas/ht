@@ -99,7 +99,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	pe_shared->v_dimports = NULL;
 	pe_shared->v_imports = NULL;
 	pe_shared->v_exports = NULL;
-     pe_shared->v_resources = NULL;
+	pe_shared->v_resources = NULL;
 	pe_shared->v_header = NULL;
 
 /* read header */

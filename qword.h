@@ -26,7 +26,7 @@
 
 struct qword {
 	dword hi;
-     dword lo;
+	dword lo;
 };
 
 #define QWORD_HI(q) ((q).hi)

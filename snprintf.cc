@@ -329,7 +329,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  break;
 				    case 's':
 						  strvalue = va_arg (args, char *);
-                                if (!strvalue) strvalue = "(null)";
+						  if (!strvalue) strvalue = "(null)";
 						  if (max == -1) {
 								max = strlen(strvalue);
 						  }
@@ -345,13 +345,13 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  qword *q = va_arg (args, qword *);
 						  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
 						  break;
-                        }
+				    }
 				    case 'Q': {
 						  /* qword */
 						  qword *q = va_arg (args, qword *);
 						  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
 						  break;
-                        }
+				    }
 				    case 'n':
 						  if (cflags == DP_C_SHORT) {
 								short int *num;
@@ -562,7 +562,7 @@ static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
 	   if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
 
 	   do {
-                qword uv = uvalue % to_qword((unsigned)base);
+			 qword uv = uvalue % to_qword((unsigned)base);
 			 convert[place++] =
 				    (caps? "0123456789ABCDEF":"0123456789abcdef")
 				    [uv.lo];
@@ -870,11 +870,11 @@ int ht_vasprintf(char **ptr, const char *format, va_list ap)
 {
 	   int ret;
 	   
-        ret = dopr(NULL, 0, format, ap);
+	   ret = dopr(NULL, 0, format, ap);
 	   if (ret <= 0) {
-                *ptr = NULL;
-                return 0;
-        }
+			 *ptr = NULL;
+			 return 0;
+	   }
 
 	   (*ptr) = (char *)malloc(ret+1);
 	   if (!*ptr) return 0;

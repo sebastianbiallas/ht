@@ -180,6 +180,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 			rf->finalize();
 			file = rf;
 			own_file = true;
+			LOG("%s: NE: relocations present, relocation layer enabled", file->get_filename());
 		} else {
 			errorbox("%s: NE relocations seem to be corrupted.", file->get_filename());
 			rf->done();

@@ -37,13 +37,13 @@ IA64Disassembler::~IA64Disassembler()
 bool IA64Disassembler::selectNext(dis_insn *disasm_insn)
 {
 	IA64DisInsn *insn = (IA64DisInsn *)disasm_insn;
-     if (!insn->valid) return false;
+	if (!insn->valid) return false;
 	insn->selected += insn->slot[insn->selected].next;
 	if (insn->selected > 2) {
 		insn->selected = 0;
 		return false;
 	}
-     return true;
+	return true;
 }
 
 qword IA64Disassembler::signExtend(qword a, int length)
@@ -529,9 +529,9 @@ rev:
 
 dis_insn *IA64Disassembler::duplicateInsn(dis_insn *disasm_insn)
 {
-     IA64DisInsn *insn = (IA64DisInsn *)malloc(sizeof (IA64DisInsn));
-     *insn = *(IA64DisInsn *)disasm_insn;
-     return insn;
+	IA64DisInsn *insn = (IA64DisInsn *)malloc(sizeof (IA64DisInsn));
+	*insn = *(IA64DisInsn *)disasm_insn;
+	return insn;
 }
 
 int IA64Disassembler::getMaxOpcodeLength()
@@ -585,7 +585,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 		}
 	} else {
 		char *is = insnstr;
-          IA64SlotDisInsn *slot = &dis_insn->slot[dis_insn->selected];
+		IA64SlotDisInsn *slot = &dis_insn->slot[dis_insn->selected];
 		is[0] = 0;
 //          char c[] = ".#'";
 		if (slot->valid) {

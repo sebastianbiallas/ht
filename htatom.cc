@@ -30,12 +30,12 @@ void *find_atom(HT_ATOM atom)
 	if (atom) {    		// atom 0 is special !
 		ht_data_uint a(atom);
 		ht_data_ptr *d=(ht_data_ptr*)atoms->get(&a);
-		if (d) return d->value;
+		if (d) return (void*)d->value;
 	}
 	return NULL;
 }
 
-HT_ATOM find_atom_rev(void *data)
+HT_ATOM find_atom_rev(const void *data)
 {
 	if (data) {
 		ht_data_uint *key=NULL;
@@ -47,7 +47,7 @@ HT_ATOM find_atom_rev(void *data)
 	return 0;
 }
 
-bool register_atom(HT_ATOM atom, void *data)
+bool register_atom(HT_ATOM atom, const void *data)
 {
 	if (!find_atom(atom)) {
 		atoms->insert(new ht_data_uint(atom), new ht_data_ptr(data));

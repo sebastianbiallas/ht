@@ -26,8 +26,8 @@
 typedef unsigned int HT_ATOM;
 
 void *find_atom(HT_ATOM atom);
-HT_ATOM find_atom_rev(void *data);
-bool register_atom(HT_ATOM atom, void *data);
+HT_ATOM find_atom_rev(const void *data);
+bool register_atom(HT_ATOM atom, const void *data);
 bool unregister_atom(HT_ATOM atom);
 
 /*

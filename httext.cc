@@ -65,32 +65,32 @@ bool ht_text_viewer2::pos_to_offset(viewer_pos pos, FILEOFS *ofs)
 void ht_text_viewer2::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-     	case msg_keypressed:
-          	switch (msg->data1.integer) {
-               	case K_Left: {
-                    	// FIXME: send cmd_bla when available
-                    	htmsg m;
-                         m.msg = msg_keypressed;
-                         m.type = mt_empty;
-                         m.data1.integer = K_Control_Left;
-                    	sendmsg(&m);
-                         clearmsg(msg);
-                         return;
+		case msg_keypressed:
+			switch (msg->data1.integer) {
+				case K_Left: {
+					// FIXME: send cmd_bla when available
+					htmsg m;
+					m.msg = msg_keypressed;
+					m.type = mt_empty;
+					m.data1.integer = K_Control_Left;
+					sendmsg(&m);
+					clearmsg(msg);
+					return;
 				}
-               	case K_Right: {
-                    	// FIXME: send cmd_bla when available
-                    	htmsg m;
-                         m.msg = msg_keypressed;
-                         m.type = mt_empty;
-                         m.data1.integer = K_Control_Right;
-                    	sendmsg(&m);
-                         clearmsg(msg);
-                         return;
+				case K_Right: {
+					// FIXME: send cmd_bla when available
+					htmsg m;
+					m.msg = msg_keypressed;
+					m.type = mt_empty;
+					m.data1.integer = K_Control_Right;
+					sendmsg(&m);
+					clearmsg(msg);
+					return;
 				}
-               }
-               break;
-     }
-     return ht_uformat_viewer::handlemsg(msg);
+			}
+			break;
+	}
+	return ht_uformat_viewer::handlemsg(msg);
 }
 
 /*
@@ -128,10 +128,10 @@ void ht_text_sub::done()
 
 bool ht_text_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
-     clear_line_id(line_id);
-     line_id->id1 = offset;
-     prev_line_id(line_id, 1);
-     return true;
+	clear_line_id(line_id);
+	line_id->id1 = offset;
+	prev_line_id(line_id, 1);
+	return true;
 }
 
 bool ht_text_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
@@ -207,20 +207,20 @@ UINT ht_text_sub::find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int
 			if (le_len) *le_len = l;
 			break;
 		}
-          if (s != readlen) {
-          	len += s;
-          	break;
-          }
+		if (s != readlen) {
+			len += s;
+			break;
+		}
 		/* make sure current and next read overlap
 		   to guarantee proper lineend-matching */
-          if (s > (TEXT_SUB_MAX_LINEENDLEN-1)) {
+		if (s > (TEXT_SUB_MAX_LINEENDLEN-1)) {
 			len += s-(TEXT_SUB_MAX_LINEENDLEN-1);
-          }
+		}
 		ofs += s-(TEXT_SUB_MAX_LINEENDLEN-1);
 	} while (s == readlen);
 	if (len > TEXT_SUB_MAX_LINELEN) {
 		len = TEXT_SUB_MAX_LINELEN;
-          if (le_len) *le_len = 0;
+		if (le_len) *le_len = 0;
 	}
 	return len;
 }

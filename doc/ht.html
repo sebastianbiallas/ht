@@ -14,16 +14,16 @@ Aufwärts:<a rel=up href="#(dir)">(dir)</a>
 
 <h2>HT Editor</h2>
 
-<p>This is HT 0.6.0;
+<p>This is HT 0.5.1;
 please note that this is a beta version of the program. 
 Therefore HT is incomplete and sometimes buggy. Enjoy anyway<small>...</small>
 
 <ul>
 <li><a href="#About">About</a>: 
-<li><a href="#Keys">Keys</a>: 
+<li><a href="#Key%20bindings">Key bindings</a>: 
 <li><a href="#Features">Features</a>: 
 <li><a href="#Authors">Authors</a>: 
-<li><a href="#Homepage">Homepage</a>: 
+<li><a href="#Where%20to%20download%20%3f">Where to download ?</a>: 
 </ul>
 
 <p><hr>
@@ -38,23 +38,23 @@ Aufwärts:<a rel=up href="#Top">Top</a>
 for text, binary, and (especially) executable files.
 
 <blockquote>
-This program comes with ABSOLUTELY NO WARRANTY <br>
-This is free software, and you are welcome to <br>
-redistribute it under certain conditions <br>
-For more information please read the GNU General <br>
-Public License, contained in the file "copying" <br>
-If you do not have received a copy of this file along <br>
-with this program, please write to the Free Software <br>
+This program comes with ABSOLUTELY NO WARRANTY<br>
+This is free software, and you are welcome to<br>
+redistribute it under certain conditions<br>
+For more information please read the GNU General<br>
+Public License, contained in the file "copying"<br>
+If you do not have received a copy of this file along<br>
+with this program, please write to the Free Software<br>
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 </blockquote>
 
 <p><hr>
-Knoten:<a name="Keys">Keys</a>,
+Knoten:<a name="Key%20bindings">Key bindings</a>,
 Vorheriger:<a rel=previous href="#Top">Top</a>,
 Aufwärts:<a rel=up href="#Top">Top</a>
 <br>
 
-<h2>Keys</h2>
+<h2>Key bindings</h2>
 
 <ul>
 
@@ -94,7 +94,13 @@ Aufwärts:<a rel=up href="#Top">Top</a>
 <td>close window
 <br></tr><tr align="left"><td>Ctrl+F5
 <td>resize/move mode
-<br></tr><tr align="left"><td>
+<br></tr><tr align="left"><td><td>(in resize/move mode only:)
+<br></tr><tr align="left"><td>Space
+<td>toggle resize/move mode
+<br></tr><tr align="left"><td>Cursor keys
+<td>resize/move window
+<br></tr><tr align="left"><td>Escape/Return/Ctrl+F5
+<td>leave resize/move mode
 <br></tr></table>
 
 <li>Analyser key bindings
@@ -104,7 +110,7 @@ Aufwärts:<a rel=up href="#Top">Top</a>
 <br></tr><tr align="left"><td>f
 <td>follow dword ptr at address
 <br></tr><tr align="left"><td>n
-<td>(re)name current address
+<td>name current address
 (empty string to delete)
 <br></tr><tr align="left"><td>x
 <td>show xrefs (search for xrefs)
@@ -125,7 +131,8 @@ Aufwärts:<a rel=up href="#Top">Top</a>
 </ul>
 
 <br><p>
-<p>Note: HT-posix keyboard support is somewhat experimental. Be warned.
+<p>Note: Some keys don't work in HT-posix. Try using Escape
+instead of Control or something...
 
 <p><hr>
 Knoten:<a name="Authors">Authors</a>,
@@ -147,32 +154,63 @@ Aufwärts:<a rel=up href="#Top">Top</a>
 
 <h2>Features</h2>
 
-<p>Although HT is beta software and should not always be regarded as stable, it
-contains some very advanced and useful features:
+<p>HT is beta software and should not always regarded as stable, but
+nevertheless contains some very advanced and useful features:
 
 <ul>
-<li><a href="#Supported%20file%20formats">Supported file formats</a>: 
-<li><a href="#Target%20systems">Target systems</a>: 
-<li><a href="#Code%20and%20data%20analyser">Code and data analyser</a>: 
+<li><a href="#General%20features">General features</a>: 
 <li><a href="#Configuration%20files">Configuration files</a>: 
 <li><a href="#Clipboard">Clipboard</a>: 
 <li><a href="#Global%20history">Global history</a>: 
 <li><a href="#Expression%20evaluation">Expression evaluation</a>: 
 <li><a href="#Block%20operations">Block operations</a>: 
-<li><a href="#Searching">Searching</a>: 
-<li><a href="#x86%20Assembler">x86 Assembler</a>: 
+<li><a href="#Search%20and%20its%20different%20modes">Search and its different modes</a>: 
 </ul>
 
 <p><hr>
-Knoten:<a name="Supported%20file%20formats">Supported file formats</a>,
+Knoten:<a name="General%20features">General features</a>,
 Vorheriger:<a rel=previous href="#Features">Features</a>,
 Aufwärts:<a rel=up href="#Features">Features</a>
 <br>
 
-<h2>Supported file formats</h2>
+<h2>General features</h2>
 
+<ol type=1 start=1>
+<li>Supported file formats
 <ul>
-<li>Win32 portable executables (PE)
+<li>common object file format (COFF)
+<ul>
+<li>- header
+</ul>
+<li>executable and linkable format (ELF)
+<ul>
+<li>- header <br>
+- section headers <br>
+- program headers <br>
+- symbol tables <br>
+- image with code/data analyser (x86)
+</ul>
+<li>linear executables (LE)
+<ul>
+<li>- header <br>
+- object table <br>
+- page table <br>
+- image (disassembly only)
+</ul>
+<li>standard dos executables (MZ)
+<ul>
+<li>- header <br>
+- relocations <br>
+- image (disassembly only)
+</ul>
+<li>new executables (NE)
+<ul>
+<li>- header <br>
+- segments <br>
+- names <br>
+- entrypoints
+</ul>
+<li>portable executables (PE)
 <ul>
 <li>- header <br>
 - import section <br>
@@ -181,87 +219,26 @@ Aufwärts:<a rel=up href="#Features">Features</a>
 - resources <br>
 - image with code/data analyser (x86 &amp; alpha)
 </ul>
-<li>UN*X executable and linkable format (ELF)
-<ul>
-<li>- header <br>
-- section headers <br>
-- program headers <br>
-- symbol tables <br>
-- image with code/data analyser (x86)
+<li>Still some to be implemented (M$-OBJ, ARCH, LX)
 </ul>
-<li>Win16, OS/2 new executables (NE)
-<ul>
-<li>- header <br>
-- segments <br>
-- names <br>
-- entrypoints <br>
-- imported names <br>
-- image with code/data analyser (x86)
-</ul>
-<li>UN*X common object file format (COFF)
-<ul>
-<li>- header <br>
-- image with code/data analyser (x86)
-</ul>
-<li>Win, OS/2 linear executables (LE)
-<ul>
-<li>- header <br>
-- object table <br>
-- page table <br>
-- image (disassembly only)
-</ul>
-<li>DOS executables (MZ)
-<ul>
-<li>- header <br>
-- relocations <br>
-- image (disassembly only)
-</ul>
-<li>Java class files (experimental)
-<ul>
-<li>- header <br>
-</ul>
-</ul>
-
-<p><hr>
-Knoten:<a name="Code%20and%20data%20analyser">Code and data analyser</a>,
-Vorheriger:<a rel=previous href="#Features">Features</a>,
-Aufwärts:<a rel=up href="#Features">Features</a>
-<br>
-
-<h2>Code and data analyser</h2>
-
+<li>Code &amp; Data Analyser
 <ul>
 - finds branch sources and destinations recursively <br>
 - finds procedure entries <br>
 - creates labels based on this information <br>
 - creates xref information <br>
-- interactively analyse unexplored code (press 'c') <br>
-- create/rename/delete labels (press 'n') <br>
-- create/edit comments (press '#') <br>
+- allows to interactively analyse unexplored code (press 'c') <br>
+- allows to create/rename/delete labels (press 'n') <br>
+- allows to create/edit comments (press '#')
 </ul>
-
-<p><hr>
-Knoten:<a name="Target%20systems">Target systems</a>,
-Vorheriger:<a rel=previous href="#Features">Features</a>,
-Aufwärts:<a rel=up href="#Features">Features</a>
-<br>
-
-<h2>Target systems</h2>
-
-<p>HT is tested and known to work on at least the following systems:
+<li>Target systems
 <ul>
 - DJGPP <br>
 - GNU/Linux <br>
 - FreeBSD <br>
 - Win32
 </ul>
-
-<p>HT should be portable to any POSIX-compilant OS supporting (n)curses with
-almost no effort.
-
-<p>Much work is done to enable HT for non-x86 systems. 
-Alpha, PPC, 68k and Sparc have been successfully build and started. 
-These versions are however mostly untested (broader testing anyone ?).
+</ol>
 
 <p><hr>
 Knoten:<a name="Configuration%20files">Configuration files</a>,
@@ -271,7 +248,7 @@ Aufwärts:<a rel=up href="#Features">Features</a>
 
 <h2>Configuration files</h2>
 
-<h3>System-wide configuration</h3>
+<h3>Global configuration</h3>
 
 <p>HT automatically creates a file to store its configuration. 
 It is called <code>~/.htcfg</code> on Unices and <code>ht.cfg</code> (where
@@ -280,9 +257,9 @@ and the Siehe<a href="#Global%20history">Global history</a>.
 
 <h3>Per file configuration</h3>
 
-<p>The analyser (for analysable files) will store its data in an extra file called
-<code>FILENAME.htcfg</code>, where FILENAME is the name of the analysed file. This
-file contains all information to restore the complete state of the analyser.
+<p>The analyser (for analysable files) will be stored in an extra file called
+<code>FILENAME.htcfg</code>, where FILENAME is the analysed file. This file contains
+all information to restore the complete state of the analyser.
 
 <p><hr>
 Knoten:<a name="Clipboard">Clipboard</a>,
@@ -296,10 +273,10 @@ Aufwärts:<a rel=up href="#Features">Features</a>
 copied and cut text or binary data is stored. Clipboard operations are
 normally binary safe, that means you can copy some binary data out of a
 file and paste it into an input line. Exceptions are only the \0 character
-(binary null), it will be converted to a space in places where it wouldn't
+(binary null), it will be converted to a space in places where it would not
 make sense (e.g. file open).
 
-<p>Although the clipboard is not preserved across different HT sessions
+<p>Although the clipboard won't be saved between different HT sessions
 (ie. you will loose it when exiting HT), you can either save and load it
 or part of it manually (via Edit-&gt;paste into/copy from file) or rely on
 the input lines' Siehe<a href="#Global%20history">history</a>, which is stored and
@@ -315,7 +292,8 @@ Aufwärts:<a rel=up href="#Features">Features</a>
 
 <p>HTs history system is global, which means that you can use it for all open
 files. Histories are also grouped by their context. I.e. file-related and
-regex-search-related dialogs have their own history.
+regex-search-related dialogs have their own history (who would want to
+open "[0-9][0-9a-z]+" anyway ?).
 
 <p>History entries are stored within the Siehe<a href="#Configuration%20files">Configuration files</a>, so they
 can be reused when you relaunch.
@@ -362,17 +340,16 @@ Aufwärts:<a rel=up href="#Features">Features</a>
 <h2>Block operations</h2>
 
 <p>Block operation (Blockop) is a very powerful tool to perform modifications
-on binary files. It is available in hex (i.e. raw/uncooked) mode only.
+on binary files. It is available in hex viewer only.
 
 <p>Blockop takes four parameters: <var>start</var>, <var>end</var>, <var>mode</var> and
 <var>expression</var>. Blockop works as follows:
 
 <ul>
 <li>START: Start at the offset specified by <var>start</var>
-<li>REPEAT: Evaluate <var>expression</var> and store n bytes (byte - 1,  word - 2,
-dword - 4, string - variable) or less (to match <var>end</var>) at the current
-offset. Stop if <var>end</var> has been reached. Increment current offset by n. 
-Repeat. 
+<li>REPEAT: Evaluate <var>expression</var> and store n bytes (1 - byte, 2 - word,
+4 - dword, variable - string) at the current offset. Increment current offset
+by n. Stop if <var>end</var> has been reached. 
 </ul>
 
 <p>Special variables/functions that can be used in <var>expression</var>:
@@ -389,12 +366,12 @@ Repeat.
 </dl>
 
 <p><hr>
-Knoten:<a name="Searching">Searching</a>,
+Knoten:<a name="Search%20and%20its%20different%20modes">Search and its different modes</a>,
 Vorheriger:<a rel=previous href="#Features">Features</a>,
 Aufwärts:<a rel=up href="#Features">Features</a>
 <br>
 
-<h2>Searching</h2>
+<h2>Search and its different modes</h2>
 
 <p>The search function is one of the most advanced functions of HT. 
 It is invoked through F7, Shift-F7 continues a search from cursor. 
@@ -403,33 +380,30 @@ Depending on context (ie. file type and mode) the following modes are enabled:
 <h3>bin: ASCII / Hex</h3>
 
 <p>Enter an exact search string either via ascii characters or via hexadecimal
-interpretation. This is the fastest search mode. <br>
-OPTIONS: case-insensitive.
+interpretation. This is the fastest search mode. You may specify a
+case-insensitive search.
 
 <h3>bin: eval str</h3>
 
 <p>Enter an expression, it will be evaluated ONCE (difference to the 4th mode),
 and HT will then search for the result-string. This is pretty useful when
-searching for intermixed text and control-chars/binary, e.g. <code>"hello world\n\0"</code> <br>
-OPTIONS: case-insensitive.
+searching for intermixed text and control-chars/binary, e.g. <code>"hello world\n\0"</code>
 
 <h3>display: regex</h3>
 
 <p>As the prefix indicates, this search doesn't search in the binary file but
 in the display on screen. HT searches for a regular expression so this can
 be very powerful, e.g. in PE/Image you can search for <code>(add|sub).+?,[78]</code>. 
-This will find all add or sub instructions with second parameter 7 or 8. <br>
-OPTIONS: case-insensitive.
+This will find all add or sub instructions with second parameter 7 or 8.
 
 <h3>expr nonzero</h3>
 
-<p>This is the slowest but also most advanced search mode. The search is
-successful if the entered expression evaluates to non-zero (it will be
-evaluated once for every byte). In this mode there are two predefined
-symbols and some functions: <var>i</var> is always the number of current iteration
-and <var>o</var> stands for the current offset in file. With the functions
-<code>readbyte(ofs)</code> and <code>readstring(ofs, size)</code> you may access the
-file's content.
+<p>This is the slowest but also most advanced search mode. Enter an expression
+and the search stops if this expression evaluates to non-zero (it will be
+evaluated on every byte). In this mode there are two predefined symbols
+and some functions: <var>i</var> is always the number of current iteration and
+<var>o</var> stands for the current offset in file. With the functions <code>readbyte(ofs)</code>
+and <code>readstring(ofs, size)</code> you access the file's content.
 
 <p>It's easier to understand this with examples:
 
@@ -452,50 +426,25 @@ from current offset and entropy calculates the entropy ("randomness") of a strin
 So the search stops if a entropy greater than 82% (guessed value)
 is encountered, which normally indicates packed or encryted data.
 
-<p>Note: the <code>entropy()</code> function is not the best of its kind, if you have a better
+<p>Note: the <code>entropy()</code> function is not the best of its kind, if you know of a better
 one please let us know!
 
 </ol>
 
 <p><hr>
-Knoten:<a name="x86%20Assembler">x86 Assembler</a>,
-Vorheriger:<a rel=previous href="#Features">Features</a>,
-Aufwärts:<a rel=up href="#Features">Features</a>
-<br>
-
-<h2>x86 Assembler</h2>
-
-<p>HT features an assembler for the x86 architecture. 
-It is capable of assembling any command string, that HTs disassembler
-produces. I.e. it can at least produce 386,486,Pentium + MMX + 3dnow
-instructions. 
-Assembling and disassembling is done separately using a single compiled-in
-opcode table.
-
-<p>If supported the assembler can be invoked in any disassembler view by hitting
-CTRL+A. 
-If the typed assembler command is ambigous in itself (e.g. no memory type
-given) or if there are multiple opcodes possible, alternatives are presented. 
-If alternatives are presented HT tries to select an alternative opcode with
-the same size as the opcode that you had selected when pressing CTRL+A.
-
-<p><hr>
-Knoten:<a name="Homepage">Homepage</a>,
+Knoten:<a name="Where%20to%20download%20%3f">Where to download ?</a>,
 Vorheriger:<a rel=previous href="#Top">Top</a>,
 Aufwärts:<a rel=up href="#Top">Top</a>
 <br>
 
-<h2>Homepage</h2>
+<h2>Where to download ?</h2>
 
 <p>The HT homepage is at
 <a href="http://hte.sourceforge.net">http://hte.sourceforge.net</a>
 
 <p>Downloads are available from the 'download' section. 
-For further information and bug reporting look at
+Please also take a look at
 <a href="http://sourceforge.net/projects/hte">http://sourceforge.net/projects/hte</a>
-
-<p>Feel free to Siehe<a href="#Authors">mail us</a>.. 
-Suggestions, criticism and patches welcome.
 
 </body></html>
 

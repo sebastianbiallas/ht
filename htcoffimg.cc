@@ -63,7 +63,7 @@ ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
 		if (s->data_address < l) l = s->data_address;
 		if ((s->data_address + s->data_size > h) && s->data_size) {
-          	h = s->data_address + s->data_size - 1;
+			h = s->data_address + s->data_size - 1;
 		}
 		s++;
 	}
@@ -76,8 +76,8 @@ ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	v->analy_sub = analy;
 	v->insertsub(analy);
 
-     delete high;
-     delete low;
+	delete high;
+	delete low;
 
 	v->sendmsg(msg_complete_init, 0);
 

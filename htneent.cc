@@ -122,7 +122,7 @@ format_viewer_if htneentrypoints_if = {
  *	CLASS ht_ne_entrypoint_viewer
  */
 
-int ht_ne_entrypoint_viewer::ref_sel(ID id_low, ID id_high)
+int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 {
 /*   FIXNEW
 	UINT seg = id_high;

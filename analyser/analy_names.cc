@@ -142,8 +142,68 @@ void make_valid_name(char *result, const char *str)
 	*result = 0;
 }
 
-char *comment_lookup(UINT c)
+/*
+ *
+ */
+char the_label_prefix_string[2]="l";
+
+char *addr_label()
+{
+	return the_label_prefix_string;
+}
+
+char *real_name(char *s)
+{
+	if (!s) return NULL;
+	switch (s[0]) {
+		case M_PREFIX_LABEL: {
+			return "label";
+			break;
+		}
+		case M_PREFIX_DUP:
+		case M_PREFIX_REF: {
+			return &s[1];
+			break;
+		}
+		default: {}
+	}
+	return s;
+}
+
+char *quote_string(char *s)
+{
+	char *s2 = (char *) smalloc(strlen(s)+2);
+	s2[0] = M_PREFIX_DUP;
+	strcpy(&s2[1], s);
+	return s2;
+}
+
+ht_sorted_string_list *reference_strings;
+
+char *reference_string(char *s)
+{
+	char *r = reference_strings->get_string(s);
+	if (!r) {
+		reference_strings->insert_string(s);
+		r = reference_strings->get_string(s);
+	}
+	return r;
+}
+
+char *comment_lookup(int special)
 {
 	return "testa";
+}
+
+void init_analy_names()
+{
+	reference_strings = new ht_sorted_string_list();
+	reference_strings->init(compare_keys_string);
+}
+
+void done_analy_names()
+{
+	reference_strings->done();
+	delete reference_strings;
 }
 

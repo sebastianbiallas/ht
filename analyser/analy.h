@@ -299,7 +299,7 @@ public:
 	int			ops_parsed;							// for continuing
 	bool			active;
 	Address		*next_explored, *first_explored, *last_explored;
-     bool			next_address_is_invalid;
+	bool			next_address_is_invalid;
 	Area			*explored;
 	Area			*initialized;
 	Location		*locations;

@@ -61,8 +61,8 @@ void ElfAnalyser::init(ht_elf_shared_data *Elf_shared, ht_streamfile *File)
 
 void ElfAnalyser::beginAnalysis()
 {
-	Address *entry;
-	bool c32;
+	Address *entry = NULL;
+	bool c32 = false;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32: {
 			entry = createAddress32(elf_shared->header32.e_entry);

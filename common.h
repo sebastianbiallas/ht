@@ -49,11 +49,11 @@ public:
 
 		   void	init();
 	virtual void	done();
-     virtual int	compareTo(Object *o);
+	virtual int	compareTo(Object *o);
 	virtual Object	*duplicate();
 	virtual bool	idle();
-     virtual bool	instanceOf(OBJECT_ID id);
-             bool	instanceOf(Object *o);
+	virtual bool	instanceOf(OBJECT_ID id);
+		   bool	instanceOf(Object *o);
 	virtual int	load(ht_object_stream *s);
 	virtual OBJECT_ID object_id();
 	virtual void	store(ht_object_stream *s);

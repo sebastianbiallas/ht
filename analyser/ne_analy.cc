@@ -145,7 +145,7 @@ void NEAnalyser::beginAnalysis()
 	for (UINT i = 0; i < ne_shared->segments.segment_count; i++) {
 		Address *secaddr = createAddress1616(NE_ADDR_SEG(NE_get_seg_addr(ne_shared, i)), NE_ADDR_OFS(NE_get_seg_addr(ne_shared, i)));
 
- 		UINT epsize = MIN(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
+		UINT epsize = MIN(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		UINT evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 
 		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));

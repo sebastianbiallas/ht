@@ -995,6 +995,8 @@ void ht_text_viewer::init(bounds *b, bool own_t, ht_textfile *t, ht_list *l)
 
 void ht_text_viewer::done()
 {
+	if (last_search_request) delete last_search_request;
+
 	if (own_textfile) {
 		textfile->done();
 		delete textfile;
@@ -1395,7 +1397,7 @@ void ht_text_viewer::get_pindicator_str(char *buf)
 	if (ln) sprintf(buf, "(%s) ", ln);
 }
 
-bool ht_text_viewer::get_hscrollbar_pos(int *pstart, int *psize)
+bool ht_text_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 {
 	return (scrollbar_pos(top_line, size.h, textfile->linecount(), pstart, psize));
 }
@@ -1411,7 +1413,7 @@ ht_textfile *ht_text_viewer::get_textfile()
 	return textfile;
 }
 
-bool ht_text_viewer::get_vscrollbar_pos(int *pstart, int *psize)
+bool ht_text_viewer::get_hscrollbar_pos(int *pstart, int *psize)
 {
 	return false;
 }
@@ -1913,10 +1915,15 @@ UINT ht_text_viewer::scroll_right(UINT n)
 
 ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search_pos *s, text_search_pos *e)
 {
+	if (request != last_search_request) {
+		if (last_search_request) delete last_search_request;
+		last_search_request = (ht_search_request*)request->duplicate();
+	}
+	last_search_end_ofs = e->offset;
+
 	switch (request->search_class) {
 		case SC_PHYSICAL: {
 			FILEOFS start = s->offset, end = e->offset;
-			last_search_end_ofs = end;
 			return linear_bin_search(request, start, end, textfile, 0, 0xffffffff);
 			/* FIXME: nyi */
 			/* textfile->get_size() */
@@ -2478,7 +2485,7 @@ bool ht_text_editor::save()
 {
 	if (!textfile->get_filename()) return false;
 	dirtyview();
-	
+
 	char tempfile[PATH_MAX+20];
 
      ht_file *temp = NULL;

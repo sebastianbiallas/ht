@@ -112,7 +112,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 					tmp += sprintf(tmp, "%02x ", ac2->data[i]);
 				}
 				if ((best == 0) && (want_length == ac2->size)) {
-				        best = aci+1;
+					   best = aci+1;
 				}
 				if (disasm) {
 					dis_insn *o=disasm->decode((byte *)ac2->data, ac2->size, cpuaddr);
@@ -130,11 +130,11 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			list->update();
 			if (best) {
 				list->goto_item_by_position(best-1);
-               }
+			}
 			list->sort(1, &so);
-               if (!best) {
-               	list->goto_item_by_position(0);
-               }
+			if (!best) {
+				list->goto_item_by_position(0);
+			}
 			dialog->insert(list);
 			int r = dialog->run(0);
 			ok = r;

@@ -190,7 +190,21 @@ void ht_pe_il_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file,
 	VIEW_DEBUG_NAME("ht_pe_il_viewer");
 }
 
-int ht_pe_il_viewer::ref_sel(ID id_low, ID id_high)
+void ht_pe_il_viewer::done()
+{
+	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
+	if (pe_shared && pe_shared->il) {
+		if (pe_shared->il->string_pool) free(pe_shared->il->string_pool);
+		if (pe_shared->il->entries) {
+		    pe_shared->il->entries->destroy();
+		    delete pe_shared->il->entries;
+		}
+		delete pe_shared->il;
+	}
+	ht_uformat_viewer::done();
+}
+
+int ht_pe_il_viewer::ref_sel(LINE_ID *id)
 {
 #if 0
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
@@ -248,7 +262,7 @@ int ht_pe_il_viewer::ref_sel(ID id_low, ID id_high)
 
 ht_il_metadata_entry::ht_il_metadata_entry(char *n, dword o, dword s)
 {
-	   name = ht_strdup(n);
+	name = ht_strdup(n);
 	offset = o;
 	size = s;
 }
@@ -276,17 +290,17 @@ int ILunpackDword(dword &result, const byte *buf, int len)
 			// four byte form
 			if (len < 2) return 0;
 			result = ((result & 0x1F) << 24) |
-			         (((dword)buf[0]) << 16) |
-			         (((dword)buf[1]) << 8) |
-			           (dword)buf[2];
+				    (((dword)buf[0]) << 16) |
+				    (((dword)buf[1]) << 8) |
+					 (dword)buf[2];
 			return 4;
 		} else if ((result & 0xf0) == 0xe0) {
 			// five byte form
 			if (len < 3) return 0;
 			result = (((dword)buf[0]) << 24) |
-			         (((dword)buf[1]) << 16) |
-			         (((dword)buf[2]) << 8) |
-			           (dword)buf[3];
+				    (((dword)buf[1]) << 16) |
+				    (((dword)buf[2]) << 8) |
+					 (dword)buf[3];
 			return 5;
 		}
 	}
@@ -295,22 +309,22 @@ int ILunpackDword(dword &result, const byte *buf, int len)
 
 int ILunpackToken(dword &result, const byte *buf, int len)
 {
-     int read = ILunpackDword(result, buf, len);
-     if (!read) return 0;
-     dword type;
+	int read = ILunpackDword(result, buf, len);
+	if (!read) return 0;
+	dword type;
 	switch (result & 0x03) {
 		case 0x00:
-          	type = IL_META_TOKEN_TYPE_DEF;
-               break;
-          case 0x01:
-          	type = IL_META_TOKEN_TYPE_REF;
-               break;
+			type = IL_META_TOKEN_TYPE_DEF;
+			break;
+		case 0x01:
+			type = IL_META_TOKEN_TYPE_REF;
+			break;
 		case 0x02:
-          	type = IL_META_TOKEN_TYPE_SPEC;
-               break;
-          default:
-               type = IL_META_TOKEN_BASE_TYPE;
-     }
-    	result = (result >> 2) | type;
+			type = IL_META_TOKEN_TYPE_SPEC;
+			break;
+		default:
+			type = IL_META_TOKEN_BASE_TYPE;
+	}
+	result = (result >> 2) | type;
 	return read;
 }
