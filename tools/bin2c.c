@@ -59,13 +59,17 @@ void bin2c_table(int size, FILE *in, FILE *out)
     
     while ((s = fread(buf, 1, s, in))) {
 	for (i = 0; i < s; i++) {
+		int elemlen;
 	    if (i % CHARS_PER_LINE == 0) {
-		fputs("  ", out);
+		fputs("\t", out);
 	    }
 	    char2cchar(elem, buf[i]);
-	    fprintf(out, "%4s", elem);
+	    elemlen = strlen(elem);
+	    fputs(elem, out);
 	    if (j+1 < size) {
+		int k;
 		fputs(",", out);
+		for (k=0; k<4-elemlen; k++) fputs(" ", out);
 		if ((j+1) % CHARS_PER_LINE == 0) {
 		    fputs("\n", out);
 		}
@@ -132,7 +136,7 @@ int main(int argc, char *argv[])
     } else {
 	syntax(argv[0]);
     }
-    in=fopen(inname, "r");
+    in=fopen(inname, "rb");
     if (!in) ERROR("can't open input file: %s", inname);
 
     if (argc>=x+2) {
@@ -149,12 +153,12 @@ int main(int argc, char *argv[])
 	    }
 		  outhname=n;
 	}
-	   outh=fopen(outhname, "w");
+	   outh=fopen(outhname, "wb");
 	   if (!outh) ERROR("can't open .h output file: %s", outhname);
     } else {
 	ERROR("no output file");
     }
-    out=fopen(outname, "w");
+    out=fopen(outname, "wb");
     if (!out) ERROR("can't open .c output file: %s", outname);
 
     fseek(in, 0, SEEK_END);
