@@ -87,9 +87,16 @@ branch_enum_t AnalyPPCDisassembler::isBranch(OPCODE *opcode)
 				return br_call;
 			}
 			if (ppc_insn->name[2]=='r') {
-				return br_return;
+				if (ppc_insn->name[3]=='l') {
+					return br_call;
+				} else {
+					return br_return;
+				}
 			}
 			return br_jXX;
+		}
+		if (ppc_insn->name[strlen(ppc_insn->name)] == 'l') {
+				return br_call;
 		}
 		if (ppc_insn->name[1]==0) {
 				return br_jump;

@@ -1089,7 +1089,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			sub->init("~Jump");
 			sub->insert_entry("~Symbol list", "F8", cmd_analyser_symbols, 0, 1);
 			sub->insert_entry("~Function start", "Ctrl-F", cmd_analyser_this_function, K_Control_F, 1);
-			sub->insert_entry("~Prev label", "Ctrl-P", cmd_analyser_previous_label, K_Control_P, 1);
+			sub->insert_entry("Prev ~label", "Ctrl-L", cmd_analyser_previous_label, K_Control_L, 1);
 			sub->insert_entry("Follow ~ptr", "f", cmd_analyser_follow, 0, 1);
 			m->insert_submenu(sub);
 			sub=new ht_static_context_menu();
@@ -1113,6 +1113,16 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		}
 		case msg_keypressed:
 			switch (msg->data1.integer) {
+				case K_Control_L: {
+					sendmsg(cmd_analyser_previous_label);
+					clearmsg(msg);
+					return;
+				}
+				case K_Control_F: {
+					sendmsg(cmd_analyser_this_function);
+					clearmsg(msg);
+					return;
+				}
 				case K_Control_O: {
 					sendmsg(cmd_analyser_generate_output);
 					clearmsg(msg);
