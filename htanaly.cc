@@ -1860,7 +1860,7 @@ restart:
 				break;
 			case 667:
 				if (xcount) {
-					analy->deleteXRef(Addr, (Address*)data.cursor_ptr);
+					analy->deleteXRef(Addr, (Address*)list->getID(data.cursor_ptr));
 					analy->makeDirty();
 					analy_sub->output->invalidateCache();
 				}
@@ -1892,7 +1892,7 @@ restart:
 				break;
 			}
 			case button_ok:
-				if (xcount) gotoAddress((Address*)data.cursor_ptr, this);
+				if (xcount) gotoAddress((Address*)list->getID(data.cursor_ptr), this);
 				break;
 		}
 		dialog->getbounds(&b);

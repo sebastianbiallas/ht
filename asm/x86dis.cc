@@ -1134,10 +1134,8 @@ dis_insn *x86dis_vxd::decode(byte *code, byte maxlen, CPU_ADDR addr)
 			insn.op[0].type = X86_OPTYPE_USER;
 			insn.op[0].user[0] = *(word*)(code+4);
 			insn.op[0].user[1] = (int)v->name;
-
 			char *vs = NULL;
 			if (v->services) vs = find_vxd_service(v->services, *(word*)(code+2) & 0x7fff);
-
 			if (vs) {
 				insn.op[1].type = X86_OPTYPE_USER;
 				insn.op[1].user[0] = *(word*)(code+2);

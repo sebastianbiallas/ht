@@ -628,6 +628,8 @@ static void resolveaddrs(Analyser *a, Location *loc)
  */
 int Analyser::load(ht_object_stream *st)
 {
+	cur_addr_ops = 0;
+	cur_label_ops = 0;
 	GET_OBJECT(st, addr);
 	invalid_addr = new InvalidAddress();
 	GET_OBJECT(st, addr_queue);
@@ -688,8 +690,6 @@ int Analyser::load(ht_object_stream *st)
 	}
 	delete curfuncaddr;
 	
-	cur_addr_ops = 0;
-	cur_label_ops = 0;
 	dirty = false;
 	return st->get_error();
 }
@@ -1934,9 +1934,9 @@ Location *Analyser::newLocation(Location *&locs, Address *Addr)
  */
 Location *Analyser::newLocation(Address *Addr)
 {
-	if (!(cur_addr_ops--)) {
+/*	if (!(cur_addr_ops--)) {
 		optimizeLocationTree();
-	}
+	}*/
 	return newLocation(locations, Addr);
 }
 
@@ -1965,9 +1965,9 @@ Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *loc, l
  */
 Symbol *Analyser::newSymbol(const char *label, Location *loc, labeltype type, Location *infunc)
 {
-	if (!(cur_label_ops--)) {
+/*	if (!(cur_label_ops--)) {
 		optimizeSymbolTree();
-	}
+	}*/
 	Symbol *result = newSymbol(symbols, label, loc, type);
 	if ((result) && (result->location==loc) && (infunc)) setLocationFunction(loc, infunc);
 	return result;
