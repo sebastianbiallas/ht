@@ -238,7 +238,7 @@ protected:
 public:
 	ht_xgroup *search_mode_xgroup;
 	
-			void	init(bounds *b);
+			void	init(bounds *b, const char *title);
 	virtual	void	done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);

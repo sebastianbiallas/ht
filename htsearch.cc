@@ -961,7 +961,7 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 	b.x = (screen->size.w-b.w)/2;
 	b.y = (screen->size.h-b.h)/2;
 	ht_search_dialog *dialog = new ht_search_dialog();
-	dialog->init(&b);
+	dialog->init(&b, "search");
 
 	bounds k;
 	dialog->search_mode_xgroup->getbounds(&k);
@@ -1276,9 +1276,9 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
  *	CLASS ht_search_dialog
  */
 
-void ht_search_dialog::init(bounds *b)
+void ht_search_dialog::init(bounds *b, const char *title)
 {
-	ht_dialog::init(b, "search", FS_KILLER | FS_TITLE | FS_MOVE);
+	ht_dialog::init(b, title, FS_KILLER | FS_TITLE | FS_MOVE);
 	VIEW_DEBUG_NAME("ht_search_dialog");
 
 	smodecount=0;
@@ -1384,7 +1384,7 @@ void ht_search_dialog::select_search_mode_bymodeidx()
 
 void ht_replace_dialog::init(bounds *b)
 {
-	ht_search_dialog::init(b);
+	ht_search_dialog::init(b, "replace");
 
 	rmodecount=0;
 
