@@ -36,20 +36,17 @@
 - (HT_0_7)
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 	- remove experimental code in textedit.cc
-	- project window is smaller than min_window_size (original size cant
-	  be restored after resize)
-	- remove relfile.cc german comments (better even: fix them)
+	- LE binary search does not work
 
 - IPC-djgpp: recognize gui progs and close window !?
-- text-edit, highlighting bug
-#include
-//#include
-
-- httext line wrapping
+- httext line wrapping, ctrl+page_down ?!
 - new instead of malloc
 - terminal.cc: terminal line buffering ?!
 - textviewer: vi-mania: '/' searches, 'n' continues
 - vfsview: xtime tag modified to display seconds. keep this ?
+- LE: fix file offset chaos (but howto ?)
+- "class Process" in process.cc: replacing/improving *_process
+  see messy code htsearch: replace_bin_process (c->'s)
 
 - (HT_0_8) features configurable
 - (HT_0_8) directory structure

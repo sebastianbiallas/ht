@@ -6,7 +6,7 @@ version 0.7.0:
 	  Enables segmented and 64-bit addresses.
 	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
 	- projects (groups of files)
-	- LE: image/analyser, VxD support,internal relocations (beta, no imports)
+	- LE: image/analyser,VxD support,internal relocations (beta, no imports)
 	- Java: disassembler, image/analyser
 	- NE: relocations improved
 	- IA-64 disassembler + PE64 support
@@ -30,6 +30,14 @@ version 0.7.0:
 	- log-window scrolling fixed
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
+
+     * bin replace fixed
+	* KINDA_FIXED: project window is smaller than min_window_size (original size cant
+	  be restored after resize)
+       changed DEFAULT_VIEW_MIN_HEIGHT from 7 to 6
+	* DONE: remove relfile.cc german comments (better even: fix them)
+     * LE: section size fixed, goto offset in view-reverse working
+     * highlighting problems fixed (I hope)
 
 	* LE: analyinfoline + goto offset in view... working
 
