@@ -59,6 +59,8 @@
 #define LE_ADDR_INVALID	0
 #define LE_BASE_ADDR	0x400000
 
+class ht_le_page_file;
+
 struct ht_le_shared_data {
 	endianess byteorder;
 	dword hdr_ofs;
@@ -73,7 +75,7 @@ struct ht_le_shared_data {
 	bool is_vxd;
 	UINT vxd_desc_linear_ofs;
 	LE_VXD_DESCRIPTOR vxd_desc;
-	ht_streamfile *linear_file;
+	ht_le_page_file *linear_file;
 	ht_reloc_file *reloc_file;
 	LEAddress best_entrypoint;
 };
@@ -106,8 +108,6 @@ protected:
 	dword pagemapsize;
 	dword page_size;
 	FILEOFS ofs;
-/* new */
-		   bool map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
 public:
 		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
 /* overwritten */
@@ -117,6 +117,9 @@ public:
 	virtual FILEOFS tell();
 	virtual int vcntl(UINT cmd, va_list vargs);
 	virtual UINT write(const void *buf, UINT size);
+/* new */
+		   bool map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize);
+		   bool unmap_ofs(FILEOFS pofs, UINT *lofs);
 };
 
 /*
@@ -126,11 +129,12 @@ public:
 class ht_le_reloc_entry: public ht_data {
 public:
 	UINT ofs;	// FIXME: hack
+     UINT seg;
 	LEAddress addr;
 	uint8 address_type;
 	uint8 reloc_type;
 
-	ht_le_reloc_entry(UINT ofs, LEAddress addr, uint8 address_type, uint8 reloc_type);
+	ht_le_reloc_entry(UINT ofs, UINT seg, LEAddress addr, uint8 address_type, uint8 reloc_type);
 };
 
 /*

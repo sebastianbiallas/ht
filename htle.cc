@@ -179,6 +179,7 @@ void ht_le::do_fixups()
 			size -= sizeof f;
 			file->read(&f, sizeof f);
 			create_host_struct(&f, LE_FIXUP_struct, le_shared->byteorder);
+               /* only internal references (16/32) supported for now... */
 			if ((f.reloc_type != 0) && (f.reloc_type != 16)) {
 				error = true;
 				break;
@@ -186,11 +187,11 @@ void ht_le::do_fixups()
 
 			// is address_type supported ?
 			switch (f.address_type & LE_FIXUP_ADDR_TYPE_MASK) {
-/*				case LE_FIXUP_ADDR_TYPE_0_8:
+				case LE_FIXUP_ADDR_TYPE_0_8:
 				case LE_FIXUP_ADDR_TYPE_16_0:
 				case LE_FIXUP_ADDR_TYPE_16_16:
-				case LE_FIXUP_ADDR_TYPE_0_16:
-				case LE_FIXUP_ADDR_TYPE_16_32:*/
+                    case LE_FIXUP_ADDR_TYPE_0_16:
+				case LE_FIXUP_ADDR_TYPE_16_32:
 				case LE_FIXUP_ADDR_TYPE_0_32:
 				case LE_FIXUP_ADDR_TYPE_REL32:
 					break;
@@ -248,10 +249,10 @@ void ht_le::do_fixups()
 							size -= sizeof buf;
 							file->read(buf, sizeof buf);
 							src_ofs = create_host_int(buf, sizeof buf, little_endian);
-							rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
+							rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, target_seg, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
 						}
 					} else {
-						rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
+						rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, target_seg, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
 					}
 					break;
 				case LE_FIXUP_RELOC_TYPE_IMPORT_ORD:
@@ -365,7 +366,7 @@ void ht_le::read_objects()
 		file->seek(h+le_shared->hdr.objtab+i*24);
 		file->read(&le_shared->objmap.header[i], sizeof *le_shared->objmap.header);
 		create_host_struct(&le_shared->objmap.header[i], LE_OBJECT_HEADER_struct, le_shared->byteorder);
-		
+
 		/* sum up page sizes to find object's physical size */
 		UINT psize = 0;
 		for (UINT j=0; j<le_shared->objmap.header[i].page_map_count; j++) {
@@ -376,9 +377,8 @@ void ht_le::read_objects()
 			else
 				le_shared->pagemap.vsize[j+le_shared->objmap.header[i].page_map_index-1]=le_shared->hdr.pagesize;
 		}
-		le_shared->objmap.psize[i]=psize;
-
-		le_shared->objmap.vsize[i]=le_shared->objmap.header[i].vsize;
+		le_shared->objmap.psize[i] = MIN(psize, le_shared->objmap.header[i].vsize);
+		le_shared->objmap.vsize[i] = le_shared->objmap.header[i].vsize;
 	}
 
 /* create temporary address space for LEAddress's */
@@ -441,42 +441,57 @@ bool ht_le_page_file::isdirty(FILEOFS offset, UINT range)
 	return 0;
 }
 
-bool ht_le_page_file::map_ofs(dword qofs, FILEOFS *offset, dword *maxsize)
+/**
+ *	Map a paged and linearized LE offset to its corresponding
+ *	physical file offset
+ */
+bool ht_le_page_file::map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize)
 {
-	dword i=qofs/page_size, j=qofs % page_size;
-	if (i<pagemapsize) {
-		if (j<pagemap->vsize[i]) {
-			*offset=pagemap->offset[i]+j;
-			*maxsize=pagemap->vsize[i]-j;
+	UINT i = lofs/page_size, j = lofs % page_size;
+	if (i < pagemapsize) {
+		if (j < pagemap->vsize[i]) {
+			*pofs = pagemap->offset[i]+j;
+			*maxsize = pagemap->vsize[i]-j;
 			return true;
 		}
 	}
 	return false;
 }
 
+bool ht_le_page_file::unmap_ofs(FILEOFS pofs, UINT *lofs)
+{
+	for (UINT i=0; i<pagemapsize; i++) {
+     	if ((pofs >= pagemap->offset[i]) && (pofs < pagemap->offset[i]+pagemap->vsize[i])) {
+               *lofs = pofs - pagemap->offset[i] + i*page_size;
+               return true;
+          }
+     }
+     return false;
+}
+
 UINT ht_le_page_file::read(void *buf, UINT size)
 {
 	FILEOFS mofs;
 	UINT msize;
-	int c=0;
+	int c = 0;
 	while (size) {
-		dword s=size;
+		UINT s = size;
 		if (!map_ofs(ofs, &mofs, &msize)) break;
-		if (s>msize) s=msize;
+		if (s>msize) s = msize;
 		streamfile->seek(mofs);
-		s=streamfile->read(buf, s);
+		s = streamfile->read(buf, s);
 		if (!s) break;
-		((byte*)buf)+=s;
-		size-=s;
-		c+=s;
-		ofs+=s;
+		((byte*)buf) += s;
+		size -= s;
+		c += s;
+		ofs += s;
 	}
 	return c;
 }
 
 int ht_le_page_file::seek(FILEOFS offset)
 {
-	ofs=offset;
+	ofs = offset;
 	return 0;
 }
 
@@ -527,17 +542,18 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 
 UINT ht_le_page_file::write(const void *buf, UINT size)
 {
-	dword mofs, msize;
-	int c=0;
+	FILEOFS mofs;
+     UINT msize;
+	int c = 0;
 	while (size) {
-		dword s=size;
+		UINT s = size;
 		if (!map_ofs(ofs, &mofs, &msize)) break;
-		if (s>msize) s=msize;
+		if (s>msize) s = msize;
 		streamfile->seek(mofs);
-		((byte*)buf)+=streamfile->write(buf, s);
-		size-=s;
-		c+=s;
-		ofs+=s;
+		((byte*)buf) += streamfile->write(buf, s);
+		size -= s;
+		c += s;
+		ofs += s;
 	}
 	return c;
 }
@@ -546,9 +562,10 @@ UINT ht_le_page_file::write(const void *buf, UINT size)
  *	CLASS ht_le_reloc_entry
  */
 
-ht_le_reloc_entry::ht_le_reloc_entry(UINT o, LEAddress a, uint8 at, uint8 rt)
+ht_le_reloc_entry::ht_le_reloc_entry(UINT o, UINT s, LEAddress a, uint8 at, uint8 rt)
 {
 	ofs = o;
+     seg = s;
 	addr = a;
 	address_type = at;
 	reloc_type = rt;
@@ -570,14 +587,21 @@ void ht_le_reloc_file::reloc_apply(ht_data *reloc, byte *data)
 
 	switch (e->address_type & LE_FIXUP_ADDR_TYPE_MASK) {
 		case LE_FIXUP_ADDR_TYPE_0_8:
+			create_foreign_int(data, e->addr, 1, little_endian);
 			break;
 		case LE_FIXUP_ADDR_TYPE_16_0:
+			create_foreign_int(data, e->seg, 2, little_endian);
 			break;
 		case LE_FIXUP_ADDR_TYPE_16_16:
+			create_foreign_int(data, e->addr, 2, little_endian);
+			create_foreign_int(data, e->seg, 2, little_endian);
 			break;
 		case LE_FIXUP_ADDR_TYPE_0_16:
+			create_foreign_int(data, e->addr, 2, little_endian);
 			break;
 		case LE_FIXUP_ADDR_TYPE_16_32:
+			create_foreign_int(data, e->addr, 4, little_endian);
+			create_foreign_int(data, e->seg, 2, little_endian);
 			break;
 		case LE_FIXUP_ADDR_TYPE_0_32:
 			create_foreign_int(data, e->addr, 4, little_endian);
