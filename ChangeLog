@@ -16,6 +16,8 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+	* FIXED: texteditor: ctrl-y (delete line) doesnt work on last line
+
 	* F4/view mode - ask before forgetting changes
      * some project tweaks (ask before create, close before open)
 	* disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor

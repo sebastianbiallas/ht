@@ -36,7 +36,6 @@
                beautiest code alive
 
 +steves
-- texteditor: ctrl-y (delete line) doesnt work on last line
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
