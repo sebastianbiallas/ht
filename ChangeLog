@@ -1,8 +1,17 @@
  HT ChangeLog
 ==============
 
-version 0.7.1:
+version 0.8.0:
+	- rewrite
 	- many bugs fixed
+
+version 0.7.1:
+	- (win2k/xp) fixed bug that caused ht to create ht.cfg in current
+	  directory instead of executable's
+	- (win32) findfirst/next now fill the ctime, mtime and atime fields
+	- (win32) chdir() to "X:\" fixed
+	- cmdline param '-h' works again
+	- new config.guess/config.sub
 
 version 0.7.0:
 	- whole new Address class for the analyser. Much more flexible.
