@@ -885,7 +885,7 @@ int x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 		return (xop->size==flsz2hsz(op->size));
 	} else if (op->type==X86_OPTYPE_IMM) {
 		if (xop->type==TYPE_Is) {
-			hsz=immlsz2hsz(simmsize(op->imm, op->size), opsize);
+			hsz=immlsz2hsz(simmsize(op->imm, esizeop(xop->extendedsize, opsize)), opsize);
 		} else if (xop->type==TYPE_J) {
 			int size=esizeop(xop->size, opsize);
 			// FIXME: ?!
@@ -1386,19 +1386,21 @@ int x86asm::translate_str(asm_insn *asm_insn, const char *s)
 
 int x86asm::simmsize(dword imm, int immsize)
 {
+	int i;
 	switch (immsize) {
 		case 1:
-			return 1;
+          	i = (sint8)imm;
+               break;
 		case 2:
-			if ((imm<=0x7f) || (imm>=0xff80)) return 1;
-			return 2;
+          	i = (sint16)imm;
+               break;
 		case 4:
-			if ((imm<=0x7f) || (imm>=0xffffff80)) return 1;
-			// FIXME: ?!
-			if ((imm<=0x7fff) || (imm>=0xffff8000)) return 2;
-			return 4;
+          	i = (sint32)imm;
+               break;
 	}
-	return 0;
+    	if ((i >= -0x80) && (i < 0x80)) return 1;
+    	if ((i >= -0x8000) && (i < 0x8000)) return 2;
+	return 4;
 }
 
 void x86asm::splitstr(const char *s, char *name, char *op[3])
