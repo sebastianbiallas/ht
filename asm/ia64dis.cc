@@ -408,6 +408,8 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 
 dis_insn *IA64Disassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
 {
+/*	byte data[] = {0x19, 0x18, 0x00, 0x18, 0x1e, 0x10, 0x00, 0x09, 0x79, 0xb0, 0x2b, 0x00, 0x00, 0x00, 0x00, 0x20};
+     code = data;*/
 	cpu_addr = addr;
 	insn.selected = 0;
 	if (maxlen < 16) {
@@ -606,7 +608,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 						is += ht_snprintf(is, 256, "%s[%sr%d%s]", cs_symbol, cs_default, slot->op[i].reg, cs_symbol);
 						break;                              
 					case IA64_OPERAND_IMM:
-						is += ht_snprintf(is, 256, "%s%Q", cs_number, &slot->op[i].imm);
+						is += ht_snprintf(is, 256, "%s%qx", cs_number, &slot->op[i].imm);
 						break;                              
 					case IA64_OPERAND_ADDRESS: {
 						CPU_ADDR caddr;
@@ -619,7 +621,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 							p[slen] = 0;
 							is += slen;
 						} else {
-							is += ht_snprintf(is, 256, "%s0x%Q", cs_number, &slot->op[i].ofs);
+							is += ht_snprintf(is, 256, "%s0x%qx", cs_number, &slot->op[i].ofs);
 						}
 						break;
 					}
@@ -630,7 +632,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 				}
 			}
 		} else {
-			is += ht_snprintf(is, 256, "%d       %-20s", dis_insn->selected, "invalid");
+			is += ht_snprintf(is, 256, "%s%d       %-20s", cs_comment, dis_insn->selected, "invalid");
 		}
 //		line += insn.slot[line].next;
 //		if (line > 2) line = 0;
