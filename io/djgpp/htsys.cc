@@ -178,7 +178,7 @@ int sys_filename_cmp(const char *a, const char *b)
 		a++;
 		b++;
 	}
-	return *a - *b;
+	return tolower(*a) - tolower(*b);
 }
 
 /*
