@@ -248,7 +248,7 @@ BOOL CreateChildProcess(DWORD *pid, const char *cmd, HANDLE in, HANDLE out, HAND
 	si.hStdOutput = out;
 	si.hStdError = err;
 
-	TCHAR shellCmd[_MAX_PATH];
+	TCHAR shellCmd[HT_NAME_MAX];
 	strcpy(shellCmd, cmd);
 	BOOL ret = CreateProcess(NULL, shellCmd, NULL, NULL, TRUE, 0/*DETACHED_PROCESS*/,
 		NULL, NULL, &si, &pi);
