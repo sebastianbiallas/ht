@@ -233,7 +233,7 @@ int ht_streamfile_modifier::extend(UINT newsize)
 		if (!mod_page_find(o)) mod_page_create(o);
 	}
 /**/
-     return 0;
+	return 0;
 //	return ht_layer_streamfile::extend(newsize);
 }
 
