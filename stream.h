@@ -283,6 +283,7 @@ protected:
 	FILEOFS pos;
 	UINT bufsize, dsize, ibufsize;
 	byte *buf;
+     bool created;
 
 	virtual UINT	extendbufsize(UINT bufsize);
 	virtual UINT	shrinkbufsize(UINT bufsize);
@@ -301,6 +302,7 @@ public:
 	virtual void	pstat(pstat_t *s);
 	virtual UINT	read(void *buf, UINT size);
 	virtual int	seek(FILEOFS offset);
+	virtual bool	set_access_mode(UINT access_mode);
 	virtual FILEOFS tell();
 	virtual int	truncate(UINT newsize);
 	virtual UINT	write(const void *buf, UINT size);

@@ -483,7 +483,8 @@ bool	ht_file::set_access_mode(UINT am)
 {
 	UINT orig_access_mode = access_mode;
 	bool r = set_access_mode_internal(am);
-	if (!r) set_access_mode_internal(orig_access_mode);
+	if (!r && !set_access_mode_internal(orig_access_mode))
+     	throw new ht_io_exception("fatal error: couldn't restore file access mode. %s possibly damaged...", get_filename());
 	return r;
 }
 
@@ -626,12 +627,12 @@ UINT ht_memmap_file::write(const void *b, UINT size)
  */
 
 #define HTMEMFILE_INITIAL_SIZE		1024
-#define HTMEMFILE_GROW_FACTOR_NOM	4
+#define HTMEMFILE_GROW_FACTOR_NUM		4
 #define HTMEMFILE_GROW_FACTOR_DENOM	3
 
 void ht_mem_file::init()
 {
-	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE, FAM_READ | FAM_WRITE);
+	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE, FAM_READ | FAM_WRITE | FAM_CREATE);
 }
 
 void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
@@ -645,7 +646,8 @@ void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 	pos=0;
 	dsize=0;
 	access_mode=0;
-	set_access_mode(am);
+     created = false;
+	if (!set_access_mode(am)) throw new ht_io_exception("unable to open memfile");
 }
 
 void ht_mem_file::done()
@@ -673,12 +675,12 @@ void ht_mem_file::extendbuf()
 
 UINT ht_mem_file::extendbufsize(UINT bufsize)
 {
-	return bufsize * HTMEMFILE_GROW_FACTOR_NOM / HTMEMFILE_GROW_FACTOR_DENOM;
+	return bufsize * HTMEMFILE_GROW_FACTOR_NUM / HTMEMFILE_GROW_FACTOR_DENOM;
 }
 
 UINT	ht_mem_file::get_access_mode()
 {
-	return access_mode & (FAM_READ | FAM_WRITE);
+	return ht_stream::get_access_mode();
 }
 
 char *ht_mem_file::get_desc()
@@ -729,9 +731,27 @@ int ht_mem_file::seek(FILEOFS o)
 	return 0;
 }
 
+bool	ht_mem_file::set_access_mode(UINT access_mode)
+{
+	if (!created && !(access_mode & FAM_CREATE)) return false;
+     if (ht_stream::set_access_mode(access_mode)) {
+	     if (access_mode & FAM_CREATE) {
+          	created = true;
+               truncate(0);
+		}
+	     if (access_mode & FAM_APPEND) {
+               if (seek(get_size()) != 0) return false;
+          } else {
+          	if (seek(0) != 0) return false;
+          }
+	     return true;
+     }
+     return false;
+}
+
 UINT ht_mem_file::shrinkbufsize(UINT bufsize)
 {
-	return bufsize * HTMEMFILE_GROW_FACTOR_DENOM / HTMEMFILE_GROW_FACTOR_NOM;
+	return bufsize * HTMEMFILE_GROW_FACTOR_DENOM / HTMEMFILE_GROW_FACTOR_NUM;
 }
 
 void ht_mem_file::shrinkbuf()
