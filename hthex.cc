@@ -160,9 +160,9 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Local-Hex");
 			m->insert_entry("~Block operations", "Ctrl+B", cmd_file_blockop, K_Control_B, 1);
-			m->insert_entry("~Replace", "Ctrl+R", cmd_file_replace, K_Control_R, 1);
+			m->insert_entry("~Replace", "Ctrl+E", cmd_file_replace, K_Control_E, 1);
 			m->insert_entry("~Entropy", "Ctrl+T", cmd_hex_entropy, K_Control_T, 1);
-			m->insert_entry("~Change display width...", "Ctrl+W", cmd_hex_display_bytes, K_Control_W, 1);
+			m->insert_entry("~Change display width...", "Ctrl+O", cmd_hex_display_bytes, K_Control_O, 1);
 
 			msg->msg = msg_retval;
 			msg->data1.ptr = m;
