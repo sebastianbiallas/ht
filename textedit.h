@@ -362,7 +362,7 @@ protected:
 			void clipboard_delete_cmd();
 			void clipboard_paste_cmd();
 	virtual	vcp  get_bgcolor();
-			void save();
+			bool save();
 public:
 			void init(bounds *b, bool own_textfile, ht_textfile *textfile, ht_list *lexers, UINT edit_options);
 	virtual	void done();

@@ -95,6 +95,7 @@ int sys_pstat(pstat_t *s, char *filename)
 	s->uid=st.st_gid;
 	s->mode=sys_ht_mode(st.st_mode);
 	s->size=st.st_size;
+	s->size_high=0;
 	s->fsid=st.st_ino;
 	return 0;
 }

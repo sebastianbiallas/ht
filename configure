@@ -529,7 +529,7 @@ fi
 
 
 PACKAGE=ht
-VERSION=0.6.0
+VERSION=0.6.0b
 
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do

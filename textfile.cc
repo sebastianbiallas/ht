@@ -734,7 +734,7 @@ void ht_ltextfile::set_layered_assume(ht_streamfile *streamfile, bool changes_ap
 		orig_lines->empty();
 		UINT c = lines->count();
 		for (UINT i=0; i<c; i++) {
-			ht_ltextfile_line *l = fetch_line(i);
+			ht_ltextfile_line *l = fetch_line_nofs_ok(i);
 			ht_ltextfile_line *m = new ht_ltextfile_line();
 			l->on_disk.ofs = l->nofs;
 			if (l->is_in_memory) {

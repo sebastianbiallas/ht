@@ -1,6 +1,10 @@
  HT ChangeLog
 ==============
 
+version 0.6.0b:
+     - textedit: save-bug fixed
+     - sys/posix: pstat() fixed
+
 version 0.6.0:
      - ELF: new OS ABI values supported (eg. FreeBSD)
      - built-in registry - data not code

@@ -2162,8 +2162,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_save: {
-			clearmsg(msg);
-			save();
+			if (save()) clearmsg(msg);
 			return;
 		}
 		case cmd_text_editor_undo: {
@@ -2243,9 +2242,9 @@ void ht_text_editor::insert_lines(UINT line, UINT count)
 	textfile->insert_lines(line, count);
 }
 
-void ht_text_editor::save()
+bool ht_text_editor::save()
 {
-	if (!textfile->get_filename()) return;
+	if (!textfile->get_filename()) return false;
 	dirtyview();
 	
 	char tempfile[PATH_MAX+20];
@@ -2268,7 +2267,7 @@ void ht_text_editor::save()
 
 	if (temp->get_error()) {
 		errorbox("couldn't create tempfile %s", tempfile);
-		return;
+		return false;
 	}
 	ht_streamfile *old = textfile->get_layered();
 	char *oldname = strdup(textfile->get_filename());
@@ -2282,7 +2281,7 @@ void ht_text_editor::save()
 	old->pstat(&st1);
 	temp->pstat(&st2);
 	if ((st1.size != st2.size) || (st1.size_high != st2.size_high)) {
-		errorbox("Couldn't create backup file - file not saved.");
+		errorbox("couldn't write backup file %s - file not saved. (o=%d, t=%d)", tempfile, st1.size_high, st2.size_high);
 
 		temp->done();
 		delete temp;
@@ -2291,7 +2290,7 @@ void ht_text_editor::save()
 
 		free(oldname);
 
-		return;
+		return false;
 	}
 
 	textfile->set_layered_assume(temp, false);
@@ -2315,6 +2314,7 @@ void ht_text_editor::save()
 	if (undo_list) {
 		undo_list->mark_clean();
 	}
+	return true;
 }
 
 void ht_text_editor::show_protocol()
