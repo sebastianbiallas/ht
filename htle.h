@@ -26,6 +26,7 @@
 #include "relfile.h"
 
 #include "lestruct.h"
+#include "htendian.h"
 
 #define DESC_LE "le - win,os2 linear exe"
 #define DESC_LE_HEADER "le/header"
@@ -54,6 +55,7 @@
 #define ATOM_LE_ENTRY_BUNDLE_FLAGS_STR	 "4c450005"
 
 struct ht_le_shared_data {
+	endianess byteorder;
 	dword hdr_ofs;
 	LE_HEADER hdr;
 	ht_viewer *v_header;

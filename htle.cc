@@ -76,10 +76,14 @@ void ht_le::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	le_shared->hdr_ofs = h;
 	le_shared->linear_file = NULL;
 	le_shared->reloc_file = NULL;
+
+     // FIXME: byteorder handling...
+	le_shared->byteorder = little_endian;
+
 	/* read LE header */
 	file->seek(h);
-	/* FIXME: create_host_struct */
 	file->read(&le_shared->hdr, sizeof le_shared->hdr);
+	create_host_struct(&le_shared->hdr, LE_HEADER_struct, le_shared->byteorder);
 
 	le_shared->is_vxd = (le_shared->hdr.winresoff) ||
 		(le_shared->hdr.winreslen) ||
@@ -154,8 +158,8 @@ void ht_le::do_fixups()
 
 	LE_FIXUP f;
 	file->seek(h+le_shared->hdr.frectab+page_fixup_ofs[0]);
-	/* FIXME: create_host struct */
 	file->read(&f, sizeof f);
+	create_host_struct(&f, LE_FIXUP_struct, le_shared->byteorder);
 	if ((f.address_type == 0x08) && (f.reloc_type == 0x0)) {
 		/* if single source */
 		char buf[2];
@@ -184,15 +188,15 @@ void ht_le::check_vxd()
 		if ((b.entry_count == 1) && (b.flags & LE_ENTRYPOINT_BUNDLE_VALID) &&
 		(b.flags & LE_ENTRYPOINT_BUNDLE_32BIT) && (b.obj_index == 1)) {
 			LE_ENTRYPOINT32 e;
-			/* FIXME: create_host_struct */
 			file->read(&e, sizeof e);
+			create_host_struct(&e, LE_ENTRYPOINT32_struct, le_shared->byteorder);
 			if (e.flags & LE_ENTRYPOINT_EXPORTED) {
 				/* linearized address for ht_le_page_file */
 				uint32 vxd_desc_ofs = (le_shared->objmap.header[0].
 					page_map_index-1)*le_shared->hdr.pagesize + e.offset;
 				le_shared->linear_file->seek(vxd_desc_ofs);
-				/* FIXME: create_host_struct */
 				le_shared->linear_file->read(&le_shared->vxd_desc, sizeof le_shared->vxd_desc);
+				create_host_struct(&le_shared->vxd_desc, LE_VXD_DESCRIPTOR_struct, le_shared->byteorder);
 				le_shared->vxd_desc_linear_ofs = vxd_desc_ofs;
 				le_shared->is_vxd = true;
 			}
@@ -214,16 +218,16 @@ void ht_le::read_pagemap()
 	for (dword i=0; i<le_shared->hdr.pagecnt; i++) {
 		LE_PAGE_MAP_ENTRY e;
 		file->seek(h+le_shared->hdr.pagemap+i*4);
-		/* FIXME: create_host_struct */
 		file->read(&e, sizeof e);
+		create_host_struct(&e, LE_PAGE_MAP_ENTRY_struct, le_shared->byteorder);
 		
 		/* FIXME: is this formula correct ? it comes straight from my docs... */
 		dword eofs=(e.high+e.low-1)*le_shared->hdr.pagesize+le_shared->hdr.datapage;
-		le_shared->pagemap.offset[i]=eofs;
+		le_shared->pagemap.offset[i] = eofs;
 
 		if (le_shared->pagemap.offset[i]>last_page_offset) {
-			last_page_offset=le_shared->pagemap.offset[i];
-			last_page=i;
+			last_page_offset = le_shared->pagemap.offset[i];
+			last_page = i;
 		}
 	}
 
@@ -248,8 +252,8 @@ void ht_le::read_objects()
 
 	for (dword i=0; i<le_shared->hdr.objcnt; i++) {
 		file->seek(h+le_shared->hdr.objtab+i*24);
-		/* FIXME: create_host_struct */
 		file->read(&le_shared->objmap.header[i], sizeof *le_shared->objmap.header);
+		create_host_struct(&le_shared->objmap.header[i], LE_OBJECT_HEADER_struct, le_shared->byteorder);
 		
 		/* sum up page sizes to find object's physical size */
 		dword psize = 0;

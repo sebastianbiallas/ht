@@ -21,6 +21,8 @@
 #ifndef __LESTRUCT_H_
 #define __LESTRUCT_H_
 
+#include "global.h"
+
 #define LE_CPU_286	0x01
 #define LE_CPU_386	0x02
 #define LE_CPU_486	0x03
@@ -160,7 +162,6 @@ struct LE_HEADER {
 
 #define LE_OBJECT_FLAG_USE32            (1<<13)
 
-
 #define LE_SIZEOF_OBJECT_HEADER	24
 
 struct LE_OBJECT_HEADER	{
@@ -276,6 +277,17 @@ struct ht_le_pagemap {
 	dword *vsize;
 	int count;
 };
+
+/**/
+
+extern byte LE_HEADER_struct[];
+extern byte LE_FIXUP_struct[];
+extern byte LE_ENTRYPOINT16_struct[];
+extern byte LE_ENTRYPOINT32_struct[];
+extern byte LE_VXD_DESCRIPTOR_struct[];
+extern byte LE_FIXUP_INTERNAL_struct[];
+extern byte LE_OBJECT_HEADER_struct[];
+extern byte LE_PAGE_MAP_ENTRY_struct[];
 
 #endif /* __LESTRUCT_H_ */
 

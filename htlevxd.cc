@@ -24,6 +24,7 @@
 #include "htlevxd.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include "lestruct.h"
 
@@ -67,9 +68,8 @@ ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(le_shared->linear_file, 0);
 
-	/* FIXME: */
 	char info[128];
-	sprintf(info, "* LE VXD descriptor in section 1, offset %d", le_shared->vxd_desc_linear_ofs);
+	ht_snprintf(info, sizeof info, "* LE VXD descriptor in section 1, offset %08x", le_shared->vxd_desc_linear_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(le_vxd_header, le_shared->vxd_desc_linear_ofs, le_bigendian);
 	v->insertsub(m);
