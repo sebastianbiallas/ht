@@ -3135,9 +3135,8 @@ void ht_file_window::handlemsg(htmsg *msg)
 		}
 		break;
 		case cmd_analyser_save: {
-			char filename[1024];	/* FIXME: possible buffer overflow */
-			strcpy(filename, file->get_filename());
-			strcat(filename, HT_FILE_CONFIG_SUFFIX);
+			char filename[1024];
+			ht_snprintf(filename, sizeof filename, "%s%s", file->get_filename(), HT_FILE_CONFIG_SUFFIX);
 			LOG("%s: saving config", filename);
 			save_fileconfig(filename, ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_store_fcfg_func, this);
 			LOG("%s: done", filename);

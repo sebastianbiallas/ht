@@ -123,7 +123,7 @@ ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 
 			file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name);
 			char *s = fgetstrz(file);
-			char t[1024];	/* FIXME: possible buffer overflow */
+			char t[1024];
 			ht_snprintf(t, sizeof t, "section %d: %s", i, s);
 			elf_shared->shnames[i] = s;
 
