@@ -34,6 +34,12 @@ javadis::javadis()
 {
 }
 
+javadis::javadis(java_token_func tf, void *c)
+{
+	token_func = tf;
+     context = c;
+}
+
 javadis::~javadis()
 {
 }
@@ -103,7 +109,7 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 			op->imm = getdword();
 			break;
 		case JOPC_TYPE_CONST:
-			op->type = JAVA_OPTYPE_IMM;
+			op->type = JAVA_OPTYPE_CONST;
 			if (widesize) {
 				op->size = 2;
 				op->imm = getword();
@@ -230,9 +236,29 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 	const char *cs_default = get_cs(e_cs_default);
 	const char *cs_number = get_cs(e_cs_number);
 //	const char *cs_symbol = get_cs(e_cs_symbol);
+	const char *cs_comment = get_cs(e_cs_comment);
 	
 	*opstrlen=0;
 	switch (op->type) {
+		case JAVA_OPTYPE_CONST: {
+			char *g=opstr;
+			strcpy(g, cs_comment); g += strlen(cs_comment);
+               g += token_func(g, 1024, op->imm, context);
+			*(g++) = ' ';
+			strcpy(g, cs_number); g += strlen(cs_number);
+			switch (op->size) {
+				case 1:
+					hexd(&g, 2, options, op->imm);
+					break;
+				case 2:
+					hexd(&g, 4, options, op->imm);
+					break;
+				case 4:
+					hexd(&g, 8, options, op->imm);
+					break;
+			}
+			break;
+          }
 		case JAVA_OPTYPE_LABEL: {
 			CPU_ADDR a;
 			a.addr32.offset=op->imm;
@@ -296,7 +322,7 @@ void javadis::str_format(char **str, char **format, char *p, char *n, char *op[3
 		if (*f==stopchar) break;
 		switch (*f) {
 			case '\t':
-				if (print) do *(s++)=' '; while ((s-insnstr) % DIS_STYLE_TABSIZE);
+				if (print) do *(s++)=' '; while ((s-insnstr) % 16);
 				break;
 			case DISASM_STRF_VAR:
 				f++;

@@ -28,6 +28,7 @@
 #define JAVA_OPTYPE_DBL		2
 #define JAVA_OPTYPE_REF		3
 #define JAVA_OPTYPE_LABEL	4
+#define JAVA_OPTYPE_CONST	5
 
 #define JOPC_TYPE(t)		((t) & 0x0f)
 #define JOPC_TYPE_EMPTY		0

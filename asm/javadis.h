@@ -45,6 +45,8 @@ struct javadis_insn {
  *	CLASS x86dis
  */
 
+typedef int (*java_token_func)(char *result, int maxlen, dword token, void *context);
+
 class javadis: public Disassembler {
 protected:
 	javadis_insn insn;
@@ -53,7 +55,8 @@ protected:
 	unsigned char *codep, *ocodep;
 	int addr;
 	int maxlen;
-
+     java_token_func token_func;
+     void *context;
 /* new */
 			void decode_insn(javaopc_insn *insn);
 			void decode_op(int optype, bool wideopc, java_insn_op *op);
@@ -65,6 +68,7 @@ protected:
 	virtual	void str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_op *op);
 public:
 	javadis();
+	javadis(java_token_func token_func, void *context);
 	virtual ~javadis();
 
 /* overwritten */

@@ -29,6 +29,8 @@
 #include <stdarg.h>
 
 #include "alphadis.h"
+#include "ia64dis.h"
+#include "ildis.h"
 #include "javadis.h"
 #include "x86dis.h"
 
@@ -267,17 +269,20 @@ void Disassembler::disable_highlighting()
 BUILDER(ATOM_DISASM_X86, x86dis)
 BUILDER(ATOM_DISASM_ALPHA, Alphadis)
 BUILDER(ATOM_DISASM_JAVA, javadis)
+BUILDER(ATOM_DISASM_IA64, IA64Disassembler)
 
 bool init_asm()
 {
 	REGISTER(ATOM_DISASM_X86, x86dis)
 	REGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	REGISTER(ATOM_DISASM_JAVA, javadis)
+	REGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	return true;
 }
 
 void done_asm()
 {
+	UNREGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	UNREGISTER(ATOM_DISASM_JAVA, javadis)
 	UNREGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	UNREGISTER(ATOM_DISASM_X86, x86dis)

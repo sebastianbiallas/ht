@@ -242,8 +242,8 @@ javaopc_insn java_insns[256] = {
 {"monitorenter"},
 {"monitorexit"},
 {"wide"},
-{"multianewarray"},
-{"ifnull"},
+{"multianewarray", {S}},    //?
+{"ifnull", {Ls}},
 {"ifnonnull", {Ls}},
 {"goto_w", {Lw}},
 {"jsr_w", {Lw}},

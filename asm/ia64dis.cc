@@ -679,8 +679,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 
 OBJECT_ID IA64Disassembler::object_id()
 {
-	// FIXME
-	return 0;
+	return ATOM_DISASM_IA64;
 }
 
 bool IA64Disassembler::validInsn(dis_insn *disasm_insn)
