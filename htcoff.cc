@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcoff.cc
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2003 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -44,7 +44,7 @@ int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	bool machine_found = false;
 	endianess end;
 
-	// FIXME: I'm sure little/big-endian assignment for CPUs is incorrect...
+	// FIXME: I'm not sure little/big-endian assignment for CPUs is incorrect...
 
 	// LITTLE-ENDIAN machines
 	file->seek(ofs);
@@ -62,10 +62,10 @@ int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 		case COFF_MACHINE_SH4:
 		case COFF_MACHINE_ARM:
 		case COFF_MACHINE_POWERPC_LE:
-		case COFF_MACHINE_IA64:
+//		case COFF_MACHINE_IA64:		// COFF64 not supported
 		case COFF_MACHINE_MIPS16:
 		case COFF_MACHINE_68k:
-		case COFF_MACHINE_ALPHA_AXP_64:
+//		case COFF_MACHINE_ALPHA_AXP_64:	// COFF64 not supported
 		case COFF_MACHINE_MIPSf:
 		case COFF_MACHINE_MIPS16f:
 			end = little_endian;
@@ -85,8 +85,15 @@ int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	if (!machine_found) return false;
 	/* test symbol_table_offset */
 //	if ((h.symbol_table_offset>=size) || (h.symbol_table_offset<ofs+sizeof h)) return 0;
+
 	/* test size of optional header */
-	if (h.optional_header_size>COFF_OPTHEADER_MAXSIZE) return false;
+	switch (h.optional_header_size) {
+		case COFF_OPTSIZE_COFF32:
+		case COFF_OPTSIZE_XCOFF32:
+			break;
+		default:
+			return false;
+	}
 
 	/* all tests have completed successfully -> it's a COFF (probably) */
 	endian = end;
@@ -102,7 +109,7 @@ ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_gro
 /* look for dj-coff */
 		byte mz[2];
 		file->seek(0);
-		file->read(mz, 2);
+		if (file->read(mz, 2) != 2) return 0;
 		if ((mz[0] != IMAGE_MZ_MAGIC0) || (mz[1] != IMAGE_MZ_MAGIC1) ||
 				(!is_coff(file, end, h = 0x800)))
 				return 0;
@@ -129,6 +136,7 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	LOG("%s: COFF: found header at %08x", file->get_filename(), h);
 	coff_shared = (ht_coff_shared_data *)malloc(sizeof(*coff_shared));
 	coff_shared->hdr_ofs = h;
+	coff_shared->sections.hdr_ofs = h;
 	coff_shared->v_image = NULL;
 	coff_shared->v_header = NULL;
 	coff_shared->endian = end;
@@ -153,10 +161,9 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 /* read section headers */
 	int os = coff_shared->coffheader.optional_header_size;
 	coff_shared->sections.section_count = coff_shared->coffheader.section_count;
-	coff_shared->sections.base_ofs = 0x800;
 
-	h-=4;
-	
+	h -= 4;
+
 	file->seek(h+os+24);
 	coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
 	file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
@@ -201,7 +208,7 @@ int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs)
 	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+s->data_size)) {
-			*ofs=rva-s->data_address+s->data_offset+section_headers->base_ofs;
+			*ofs=rva-s->data_address+s->data_offset+section_headers->hdr_ofs;
 			return 1;
 		}
 		s++;
@@ -245,9 +252,9 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
-		if ((ofs>=s->data_offset+section_headers->base_ofs) &&
-		(ofs<s->data_offset+section_headers->base_ofs+s->data_size)) {
-			*rva=ofs-(s->data_offset+section_headers->base_ofs)+s->data_address;
+		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
+		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
+			*rva=ofs-(s->data_offset+section_headers->hdr_ofs)+s->data_address;
 			return 1;
 		}
 		s++;
@@ -259,8 +266,8 @@ int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
-		if ((ofs>=s->data_offset+section_headers->base_ofs) &&
-		(ofs<s->data_offset+section_headers->base_ofs+s->data_size)) {
+		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
+		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
 			*section=i;
 			return 1;
 		}

@@ -12,14 +12,18 @@ version 0.7-trunk:
 	- Mach-O file format support (header and image, PPC-only, experimental)
 	- Big-endian COFF support
 	- FLT (Flat) support (experimental)
+	- XCOFF32 support
+	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)
+	- fixed bug in blockop (checking if const/var op didn't set 'i' and 'o' and sometimes failed)
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
 	- percent display for searches and scrollbars in big files was incorrect
 	- POSIX: improved keyboard handling (merge from 0.8.0 tree)
 	- POSIX: X11 textmode keyboard support didn't work :-), was not configured correctly
-	- configure now does final (release) builds by default (ie. -O2 -fomit-frame-pointer)
-	
+branch_only	- configure now does final (release) builds by default (ie. -O2 -fomit-frame-pointer)
+branch_only	- binary search in */image disabled because its buggy
+
 version 0.7.2:
 	- Hexview: Number of bytes per line can be changed now
 	- PE/header: can now follow bound import directory link (it's offset not RVA !)

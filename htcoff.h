@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcoff.h
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2003 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -36,6 +36,9 @@
 #define ATOM_COFF_OPTIONAL_MAGICS 		0xf0450001
 #define ATOM_COFF_OPTIONAL_MAGICS_STR 		 "f0450001"
 
+#define ATOM_COFF_OPTIONAL_SIZES 		0xf0450002
+#define ATOM_COFF_OPTIONAL_SIZES_STR 		 "f0450002"
+
 #define ATOM_COFF_CHARACTERISTICS		0xf0450003
 #define ATOM_COFF_CHARACTERISTICS_STR		 "f0450003"
 
@@ -45,7 +48,7 @@
 extern format_viewer_if htcoff_if;
 
 struct coff_section_headers {
-	UINT base_ofs;
+	UINT hdr_ofs;		// duplicate of ht_coff_shared_data.hdr_ofs (!)
 	UINT section_count;
 	COFF_SECTION_HEADER *sections;
 };
@@ -84,4 +87,4 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva);
 int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section);
 int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section);
 
-#endif /* !__HTPE_H__ */
+#endif /* !__HTCOFF_H__ */

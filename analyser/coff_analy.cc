@@ -123,7 +123,7 @@ void CoffAnalyser::beginAnalysis()
 		addComment(secaddr, 0, blub);
 		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", s->data_address, s->data_vsize);
 		addComment(secaddr, 0, blub);
-		sprintf(blub, ";  file offset      %08x  file size      %08x", s->data_offset+coff_shared->sections.base_ofs, s->data_size);
+		sprintf(blub, ";  file offset      %08x  file size      %08x", s->data_offset+coff_shared->hdr_ofs, s->data_size);
 		addComment(secaddr, 0, blub);
 		addComment(secaddr, 0, ";******************************************************************");
 

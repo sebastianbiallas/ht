@@ -140,11 +140,11 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 
 	c=*b;
 	c.h=1;
-	c.w=30;
+	c.w=40;
 	c.x=7;
 	c.y=6;
 	action=new ht_strinputfield();
-	action->init(&c, 64, ehist);
+	action->init(&c, 4096, ehist);
 	insert(action);
 
 /* action_desc */
@@ -156,7 +156,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 	insert(s);
 
 /* help */
-	c=*b;
+/*	c=*b;
 	c.x=1;
 	c.y=8;
 	c.w-=c.x+2;
@@ -166,7 +166,16 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 		"special vars:          special funcs:\n"
 		"o - file offset        readbyte(ofs)\n"
 		"i - iteration index    readstring(ofs, n)", align_left);
-	insert(text);
+	insert(text);*/
+/* functions */
+	ht_button *bhelp = new ht_button();
+	c = *b;
+	c.x = 1;
+	c.y = 8;
+	c.w = 11;
+	c.h = 1;
+	bhelp->init(&c, "~Functions", 100);
+	insert(bhelp);
 }
 
 void ht_blockop_dialog::done()
@@ -334,6 +343,9 @@ ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 
 	blockop_expr_is_const = true;
 
+	// test if first eval works
+	blockop_i = ctx->i;
+	blockop_o = ctx->o;
 	eval_scalar r;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
 		char *s;
@@ -449,7 +461,10 @@ ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 	ctx->o = ofs;
 
 	blockop_expr_is_const = true;
-	
+
+	// test if first eval works
+	blockop_i = ctx->i;
+	blockop_o = ctx->o;
 	eval_scalar r;
 	eval_int ir;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
@@ -550,14 +565,22 @@ bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, in
 void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 {
 	bounds b;
-	b.w=50;
+	b.w=65;
 	b.h=15;
 	b.x=(screen->size.w-b.w)/2;
 	b.y=(screen->size.h-b.h)/2;
 	
 	ht_blockop_dialog *d=new ht_blockop_dialog();
 	d->init(&b, pstart, pend, 0);
-	if (d->run(false)) {
+	bool run = true;
+	int r;
+	while (run && ((r = d->run(false)) != button_cancel)) {
+		switch (r) {
+			case 100:
+				dialog_eval_help(blockop_func_eval, blockop_symbol_eval, NULL);
+				break;
+			default: 
+		{
 		ht_blockop_dialog_data t;
 		d->databuf_get(&t, sizeof t);
 		
@@ -580,7 +603,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 						case 1: esize++;
 						/* element type: dword */
 						case 2: {
-							char a[256];
+							char a[4096];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
 							insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
 						
@@ -634,6 +657,9 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 					errorbox("end offset must be greater than start offset");
 				}
 			}
+		}
+		run = false;
+		}
 		}
 	}
 

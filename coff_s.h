@@ -74,14 +74,18 @@ typedef struct	COFF_HEADER {
 #define COFF_MACHINE_MIPS16f			0x466   // MIPS16f
 #define COFF_MACHINE_AMD_HAMMER			0x8664  // AMD Hammer
 
+// FIXME: not yet implemented: XCOFF64, no sample file available
+//#define COFF_MACHINE_POWERPC64_BE	   	0x1ef   // XCOFF 64Bit Big-Endian (PowerPC only ?)
+
 //
 // Optional header format.
 //
 
-/* !!! Change this as soon as more optional headers are supported !!! */
-/* 0x1c for COFFs, 0x48 for some XCOFFS and 0xe0 for PEs,
-   but we don't use the PE value here */
-#define COFF_OPTHEADER_MAXSIZE			0x48
+#define COFF_OPTSIZE_COFF32			0x1c
+#define COFF_OPTSIZE_XCOFF32			0x48
+
+#define COFF_OPTSIZE_PE32			0xe0
+
 
 #define COFF_OPTMAGIC_ROMIMAGE			0x107
 

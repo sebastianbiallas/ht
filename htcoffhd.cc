@@ -29,7 +29,7 @@
 
 int_hash coff_machines[] =
 {
-	{COFF_MACHINE_UNKNOWN, "generic"},
+//	{COFF_MACHINE_UNKNOWN, "generic"},
 	{COFF_MACHINE_I386, "Intel 386"},
 	{COFF_MACHINE_I486, "Intel 486"},
 	{COFF_MACHINE_I586, "Intel 586"},
@@ -58,6 +58,13 @@ int_hash coff_optional_magics[] =
 {
 	{COFF_OPTMAGIC_ROMIMAGE, "ROM image"},
 	{COFF_OPTMAGIC_COFF32, "COFF"},
+	{0, 0}
+};
+
+int_hash coff_optional_sizes[] =
+{
+	{COFF_OPTSIZE_COFF32, "COFF32"},
+	{COFF_OPTSIZE_XCOFF32, "XCOFF32"},
 	{0, 0}
 };
 
@@ -128,7 +135,7 @@ ht_mask_ptable coffheader[]=
 	{"time-date stamp",		STATICTAG_EDIT_TIME("00000004")},
 	{"pointer to symbol table",	STATICTAG_EDIT_DWORD_VE("00000008")},
 	{"number of symbols",		STATICTAG_EDIT_DWORD_VE("0000000c")},
-	{"size of optional header",	STATICTAG_EDIT_WORD_VE("00000010")},
+	{"size of optional header",	STATICTAG_EDIT_WORD_VE("00000010")" "STATICTAG_DESC_WORD_VE("00000010", ATOM_COFF_OPTIONAL_SIZES_STR)},
 	{"characteristics",		STATICTAG_EDIT_WORD_VE("00000012")" "STATICTAG_FLAGS("00000012", ATOM_COFF_CHARACTERISTICS_STR)},
 	{0, 0}
 };
@@ -143,6 +150,36 @@ ht_mask_ptable coff32header[] = {
 	{"entry point",			STATICTAG_EDIT_DWORD_VE("00000024")},
 	{"code base",			STATICTAG_EDIT_DWORD_VE("00000028")},
 	{"data base",			STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{0, 0}
+};
+
+ht_mask_ptable xcoff32header[] = {
+	{"optional magic",		STATICTAG_EDIT_WORD_VE("00000014")" "STATICTAG_DESC_WORD_VE("00000014", ATOM_COFF_OPTIONAL_MAGICS_STR)},
+	{"major linker version",	STATICTAG_EDIT_BYTE("00000016")},
+	{"minor linker version",	STATICTAG_EDIT_BYTE("00000017")},
+	{"size of code",		STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"size of data",		STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"size of bss",			STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"address of entrypoint",	STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"code base",			STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"data base",			STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{"address of TOC anchor",	STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"section of entrypoint",	STATICTAG_EDIT_WORD_VE("00000034")},
+	{"section of .text",		STATICTAG_EDIT_WORD_VE("00000036")},
+	{"section of .data",		STATICTAG_EDIT_WORD_VE("00000038")},
+	{"section of TOC",		STATICTAG_EDIT_WORD_VE("0000003a")},
+	{"section of loader data",	STATICTAG_EDIT_WORD_VE("0000003c")},
+	{"section of .bss",		STATICTAG_EDIT_WORD_VE("0000003e")},
+	{"max. alignment for .text",	STATICTAG_EDIT_WORD_VE("00000040")},
+	{"max. alignment for .data",	STATICTAG_EDIT_WORD_VE("00000042")},
+	{"module type field",		STATICTAG_EDIT_WORD_VE("00000044")},
+	{"cpu type",			STATICTAG_EDIT_BYTE("00000046")},
+	{"cpu type (reserved)",		STATICTAG_EDIT_BYTE("00000047")},
+	{"max. stack size",		STATICTAG_EDIT_DWORD_VE("00000048")},
+	{"max. data size",		STATICTAG_EDIT_DWORD_VE("0000004c")},
+	{"reserved for debuggers",	STATICTAG_EDIT_DWORD_VE("00000050")},
+	{"reserved field",		STATICTAG_EDIT_DWORD_VE("00000054")},
+	{"reserved field",		STATICTAG_EDIT_DWORD_VE("00000058")},
 	{0, 0}
 };
 
@@ -173,6 +210,7 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	m->init(file, 0);
 	register_atom(ATOM_COFF_MACHINES, coff_machines);
 	register_atom(ATOM_COFF_OPTIONAL_MAGICS, coff_optional_magics);
+	register_atom(ATOM_COFF_OPTIONAL_SIZES, coff_optional_sizes);
 	register_atom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
 	register_atom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
 	char info[128];
@@ -189,7 +227,14 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 		file->read(&opt, 2);*/
 		switch (opt) {
 			case COFF_OPTMAGIC_COFF32:
-				m->add_staticmask_ptable(coff32header, h, coff_bigendian);
+				switch (coff_shared->coffheader.optional_header_size) {
+					case COFF_OPTSIZE_COFF32:
+						m->add_staticmask_ptable(coff32header, h, coff_bigendian);
+						break;
+					case COFF_OPTSIZE_XCOFF32:
+						m->add_staticmask_ptable(xcoff32header, h, coff_bigendian);
+						break;
+				}
 				break;
 			default: {
 				m->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_VE("00000018")" "STATICTAG_DESC_WORD_VE("00000018", ATOM_COFF_OPTIONAL_MAGICS_STR), h+20, coff_bigendian);
