@@ -22,13 +22,15 @@
 #define __HTPEF_H__
 
 #include "pefstruc.h"
+#include "htpefimp.h"
 #include "formats.h"
 #include "htendian.h"
 #include "htformat.h"
 
-#define DESC_PEF	"pef"
-#define DESC_PEF_HEADER	"pef/header"
-#define DESC_PEF_IMAGE	"pef/image"
+#define DESC_PEF		"pef"
+#define DESC_PEF_HEADER		"pef/header"
+#define DESC_PEF_IMPORTS	"pef/imports"
+#define DESC_PEF_IMAGE		"pef/image"
 
 #define ATOM_PEF_ARCH				0x50454600
 #define ATOM_PEF_ARCH_STR			 "50454600"
@@ -52,6 +54,14 @@ struct ht_pef_shared_data {
 	endianess byte_order;
 	pef_section_headers sheaders;
 	PEF_ARCH arch;
+	FILEOFS loader_info_header_ofs; 	// 0 if not loader_info_header
+	PEF_LOADER_INFO_HEADER loader_info_header;
+	
+	ht_pef_import imports;
+	
+	ht_format_viewer *v_header;
+	ht_view *v_imports;
+	ht_format_viewer *v_image;
 };
 
 /*

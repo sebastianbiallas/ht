@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	htpeimp.h
+ *	htpefimp.h
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
@@ -18,71 +18,66 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __HTPEIMP_H__
-#define __HTPEIMP_H__
+#ifndef __HTPEFIMP_H__
+#define __HTPEFIMP_H__
 
+#include "htdialog.h"
 #include "formats.h"
 
-extern format_viewer_if htpeimports_if;
+extern format_viewer_if htpefimports_if;
 
 /*
- *	class ht_pe_import_library
+ *	class ht_pef_import_library
  */
 
-class ht_pe_import_library: public ht_data {
+class ht_pef_import_library: public ht_data {
 public:
 	char *name;
 
-	ht_pe_import_library(char *name);
-	~ht_pe_import_library();
+	ht_pef_import_library(char *name);
+	~ht_pef_import_library();
 };
 
 /*
- *	class ht_pe_import_function
+ *	class ht_pef_import_function
  */
 
-class ht_pe_import_function: public ht_data {
+class ht_pef_import_function: public ht_data {
 public:
 	UINT libidx;
-	bool byname;
-	union {
-		UINT ordinal;
-		struct {
-			char *name;
-			UINT hint;
-		} name;
-	};
-	RVA address;
+	int num;
+	char *name;
+	UINT sym_class;
 
-	ht_pe_import_function(UINT libidx, RVA address, UINT ordinal);
-	ht_pe_import_function(UINT libidx, RVA address, char *name, UINT hint);
-	~ht_pe_import_function();
+	ht_pef_import_function(UINT libidx, int num, const char *name, UINT sym_class);
+	~ht_pef_import_function();
 };
 
-struct ht_pe_import {
+struct ht_pef_import {
 	ht_clist *funcs;
 	ht_clist *libs;
 };
 
 /*
- *	CLASS ht_pe_import_viewer
+ *	CLASS ht_pef_import_viewer
  */
 
-class ht_pe_import_viewer: public ht_itext_listbox {
+class ht_pef_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
 	UINT sortby;
-/* new */
-			void dosort();
+	/* new */
+    
+		void	dosort();
 public:
-			void	init(bounds *b, char *desc, ht_format_group *fg);
+		void	init(bounds *b, char *desc, ht_format_group *fg);
 	virtual	void	done();
-/* overwritten */
-	virtual	void handlemsg(htmsg *msg);
-	virtual	bool select_entry(void *entry);
-/* new */
-			char *func(UINT i, bool execute);
+	/* overwritten */
+	virtual	void	handlemsg(htmsg *msg);
+	virtual	bool	select_entry(void *entry);
+	/* new */
+		char *	func(UINT i, bool execute);
 };
 
-#endif /* !__HTPEIMP_H__ */
+#endif /* !__HTPEFIMP_H__ */

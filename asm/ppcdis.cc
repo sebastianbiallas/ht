@@ -45,7 +45,7 @@ dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 	}
 
 	insn.size = 4;
-	
+
 	/* Get the major opcode of the instruction.  */
 	op = PPC_OP(insn.data);
 

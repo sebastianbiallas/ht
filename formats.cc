@@ -34,10 +34,10 @@
 #include "htmz.h"
 #include "htne.h"
 #include "htpe.h"
+#include "htpef.h"
 #include "htflt.h"
 #include "htstruct.h"
 #include "htxbe.h"
-#include "htpef.h"
 
 format_viewer_if *format_viewer_ifs[] =
 {

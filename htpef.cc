@@ -22,6 +22,7 @@
 #include "log.h"
 #include "htpef.h"
 #include "htpefhd.h"
+#include "htpefimp.h"
 #include "htpefimg.h"
 #include "htendian.h"
 #include "stream.h"
@@ -31,6 +32,7 @@
 
 format_viewer_if *htpef_ifs[] = {
 	&htpefheader_if,
+	&htpefimports_if,
 	&htpefimage_if,
 	0
 };
@@ -66,15 +68,24 @@ void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_PEF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_pef");
 
-	LOG("%s: pef: found header at %08x", file->get_filename(), header_ofs);
+	LOG("%s: PEF: found header at %08x", file->get_filename(), header_ofs);
 
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)malloc(sizeof(ht_pef_shared_data));
-
+	memset(pef_shared, 0, sizeof *pef_shared);
+	
 	shared_data = pef_shared;
 	/* always big-endian */
 	pef_shared->byte_order = big_endian;
 	pef_shared->header_ofs = 0;
 
+	pef_shared->imports.funcs = new ht_clist();
+	pef_shared->imports.funcs->init();
+
+	pef_shared->imports.libs = new ht_clist();
+	pef_shared->imports.libs->init();
+
+	pef_shared->v_imports = NULL;
+	
 	/* read (container) header */
 	file->seek(header_ofs);
 	file->read(&pef_shared->contHeader, sizeof pef_shared->contHeader);
@@ -95,8 +106,18 @@ void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 		create_host_struct(&pef_shared->sheaders.sheaders[i], PEF_SECTION_HEADER_struct, pef_shared->byte_order);
 		// FIXME: hack
 		pef_shared->sheaders.sheaders[i].defaultAddress = i*0x100000;
+		if (!pef_shared->loader_info_header_ofs
+		&& pef_shared->sheaders.sheaders[i].sectionKind == PEF_SK_Loader) {
+			pef_shared->loader_info_header_ofs = pef_shared->sheaders.sheaders[i].containerOffset;
+		}
 	}
 
+	if (pef_shared->loader_info_header_ofs) {
+		file->seek(pef_shared->loader_info_header_ofs);
+		file->read(&pef_shared->loader_info_header, sizeof pef_shared->loader_info_header);
+		create_host_struct(&pef_shared->loader_info_header, PEF_LOADER_INFO_HEADER_struct, pef_shared->byte_order);
+	}
+	
 	/* init ifs */
 	ht_format_group::init_ifs(ifs);
 }
@@ -104,6 +125,17 @@ void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 void ht_pef::done()
 {
 	ht_format_group::done();
+	
+	ht_pef_shared_data *pef_shared = (ht_pef_shared_data*)shared_data;
+	if (pef_shared->imports.funcs) {
+		pef_shared->imports.funcs->destroy();
+		delete pef_shared->imports.funcs;
+	}
+	if (pef_shared->imports.libs) {
+		pef_shared->imports.libs->destroy();
+		delete pef_shared->imports.libs;
+	}
+	free(shared_data);
 }
 
 /*

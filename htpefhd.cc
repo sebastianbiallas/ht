@@ -105,6 +105,25 @@ static int_hash pef_shareKind[] =
 	{0, 0}
 };
 
+static ht_mask_ptable pef_loader_info_header[]=
+{
+	{"main section",		STATICTAG_EDIT_DWORD_BE("00000000")},
+	{"main offset",			STATICTAG_EDIT_DWORD_BE("00000004")},
+	{"init section",		STATICTAG_EDIT_DWORD_BE("00000008")},
+	{"init offset",			STATICTAG_EDIT_DWORD_BE("0000000c")},
+	{"term section",		STATICTAG_EDIT_DWORD_BE("00000010")},
+	{"term offset",			STATICTAG_EDIT_DWORD_BE("00000014")},
+	{"imported library count",	STATICTAG_EDIT_DWORD_BE("00000018")},
+	{"total imported symbol count",	STATICTAG_EDIT_DWORD_BE("0000001c")},
+	{"reloc section count",		STATICTAG_EDIT_DWORD_BE("00000020")},
+	{"reloc section offset",	STATICTAG_EDIT_DWORD_BE("00000024")},
+	{"load strings offset",		STATICTAG_EDIT_DWORD_BE("00000028")},
+	{"export hash offset",		STATICTAG_EDIT_DWORD_BE("0000002c")},
+	{"export hash table power",	STATICTAG_EDIT_DWORD_BE("00000030")},
+	{"exported symbol count",	STATICTAG_EDIT_DWORD_BE("00000034")},
+	{0, 0}
+};
+
 ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
@@ -120,16 +139,30 @@ ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	register_atom(ATOM_PEF_SECTION_KIND, pef_sectionKind);
 	m->add_mask(info);
 	m->add_staticmask_ptable(pef_header, pef_shared->header_ofs, true);
-
+	v->insertsub(m);
+	
 	for (int i=0; i<pef_shared->contHeader.sectionCount; i++) {
-		ht_snprintf(info, sizeof info, "*** section %d", i);
-		m->add_mask(info);
+		m = new ht_mask_sub();
+		m->init(file, 1);
+		ht_snprintf(info, sizeof info, "Section %d", i);
 		m->add_staticmask_ptable(pef_sectionheader,
 			pef_shared->header_ofs+sizeof(pef_shared->contHeader)
 			+i*sizeof(PEF_SECTION_HEADER), true);
+		ht_collapsable_sub *cs = new ht_collapsable_sub();
+		cs->init(file, m, 1, info, 1);
+		v->insertsub(cs);
 	}
 
-	v->insertsub(m);
+	if (pef_shared->loader_info_header_ofs) {
+		m = new ht_mask_sub();
+		m->init(file, 1);
+		ht_snprintf(info, sizeof info, "Loader header at offset %08x", pef_shared->loader_info_header_ofs);
+		m->add_staticmask_ptable(pef_loader_info_header, pef_shared->loader_info_header_ofs, true);
+		ht_collapsable_sub *cs = new ht_collapsable_sub();
+		cs->init(file, m, 1, info, 1);
+		v->insertsub(cs);
+	}
+	
 	return v;
 }
 
