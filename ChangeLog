@@ -22,7 +22,7 @@ version 0.6.1:
 
      * search fixes: e.g. continue search in text-viewer
      * relfile/stream: reloc_enable/disable + bugfix
-	* htne.cc: interactively turn relocations on/off
+     * htne.cc: interactively turn relocations on/off
 
      * logwindow autoscroll
 
