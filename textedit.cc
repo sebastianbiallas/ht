@@ -92,7 +92,7 @@ ht_search_request *text_search_dialog(ht_text_viewer *text_viewer, UINT searchmo
 	b.x = (screen->size.w-b.w)/2;
 	b.y = (screen->size.h-b.h)/2;
 	ht_search_dialog *dialog = new ht_search_dialog();
-	dialog->init(&b);
+	dialog->init(&b, "search");
 
 	bounds k;
 	dialog->search_mode_xgroup->getbounds(&k);
@@ -1333,7 +1333,7 @@ vcp ht_text_viewer::get_bgcolor()
 void ht_text_viewer::get_cursor_pos(text_viewer_pos *cursor)
 {
 	cursor->pofs = physical_cursorx();
-	cursor->line = cursory;
+	cursor->line = top_line+cursory;
 }
 
 cursor_mode ht_text_viewer::get_cursor_mode()
@@ -1923,8 +1923,6 @@ ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search
 		case SC_PHYSICAL: {
 			FILEOFS start = s->offset, end = e->offset;
 			return linear_bin_search(request, start, end, textfile, 0, 0xffffffff);
-			/* FIXME: nyi */
-			/* textfile->get_size() */
 		}
 	}
 	return NULL;
@@ -2495,8 +2493,8 @@ bool ht_text_editor::save()
 	temp = new ht_temp_file();
 	temp->init(FAM_READ | FAM_WRITE);
 
-	if ((!temp) || (temp->get_error())) {
-		errorbox("couldn't create a tempfile");
+	if (temp->get_error()) {
+		errorbox("error creating temporary file");
 		return false;
 	}
 
