@@ -133,7 +133,7 @@ void show_help()
 	s->insert(sv);
 	((ht_app*)app)->insert_window(s, AWT_LOG, 0, false, NULL);
 #else
-	((ht_app*)app)->create_window_help("hthelp.info", "Top");
+	((ht_app*)app)->create_window_help(MAGIC_HT_HELP, "Top");
 #endif
 }
 
