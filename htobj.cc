@@ -748,7 +748,7 @@ void ht_view::setpalettefull(char *_pal_name, char *_pal_class)
 
 void	ht_view::store(ht_object_stream *s)
 {
-	s->putBool(enabled, NULL);
+/*	s->putBool(enabled, NULL);
 	s->putBool(focused, NULL);
 	s->putIntDec(options, 4, NULL);
 	s->putIntDec(browse_idx, 4, NULL);
@@ -757,7 +757,7 @@ void	ht_view::store(ht_object_stream *s)
 	put_bounds(s, &vsize);
 	s->putString(pal_class, NULL);
 	s->putString(pal_name, NULL);
-	s->putIntDec(growmode, 4, NULL);
+	s->putIntDec(growmode, 4, NULL);*/
 }
 
 void ht_view::unrelocate_to(ht_view *view)

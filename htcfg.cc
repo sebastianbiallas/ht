@@ -361,4 +361,3 @@ void done_cfg()
 {
 	free(systemconfig_file);
 }
-

@@ -288,15 +288,15 @@ lexer_token ht_info_lexer::gettoken(void *b, UINT buflen, text_pos p, bool start
 			info_pos q(p.line, p.pofs);
 			info_xref *x = (info_xref*)xrefs->get(&q);
 			if (x) {
-				*ret_len=x->len;
+				*ret_len = MIN(x->len, buflen);
 				return ((cy == p.line) && (cx >= p.pofs) &&
 				(cx < p.pofs + x->len)) ? ILT_LINK_SEL : ILT_LINK;
 			}
 		}			
-		*ret_len=1;
+		*ret_len = 1;
 		return ILT_TEXT;
 	} else {
-		*ret_len=0;
+		*ret_len = 0;
 		return 0;
 	}
 }
@@ -360,9 +360,9 @@ public:
  
 void ht_info_textfile::init(ht_streamfile *s, bool own_s, ht_syntax_lexer *l)
 {
+	start = 0;
+	end = 0;
 	ht_ltextfile::init(s, own_s, l);
-	start=0;
-	end=0;
 }
 
 void ht_info_textfile::done()
@@ -385,12 +385,12 @@ UINT ht_info_textfile::linecount()
 void ht_info_textfile::set_node(UINT ofs, UINT len)
 {
 	UINT s, e, t;
-	start=0;
-	end=ht_ltextfile::linecount();
+	start = 0;
+	end = ht_ltextfile::linecount();
 	convert_ofs2line(ofs, &s, &t);
 	convert_ofs2line(ofs+len, &e, &t);
-	start=s;
-	end=e;
+	start = s;
+	end = e;
 }
 
 /*
@@ -402,7 +402,7 @@ void ht_info_viewer::init(bounds *b)
 	ht_mem_file *f = new ht_mem_file();
 	f->init();
 
-	ht_info_textfile *s=new ht_info_textfile();
+	ht_info_textfile *s = new ht_info_textfile();
 	s->init(f, true, NULL);
 
 	ht_text_viewer::init(b, true, s, NULL);
@@ -518,7 +518,7 @@ bool ht_info_viewer::igotonode(char *f, char *n, bool add2hist)
 	char ncwd[HT_NAME_MAX];
 	ncwd[0] = 0;
 	bool newnode = !node || (node && (strcmp(node, n) != 0));
-     int fl = strlen(f)-strlen(MAGIC_HT_HELP);
+	int fl = strlen(f)-strlen(MAGIC_HT_HELP);
 	if ((fl>=0) && (strcmp(f+fl, MAGIC_HT_HELP) == 0)) {
 		infotext = strdup(htinfo);
 		strcpy(ncwd, "");

@@ -130,18 +130,18 @@ ht_ltextfile_line::~ht_ltextfile_line()
 void	ht_ltextfile::init(ht_streamfile *streamfile, bool own_streamfile, ht_syntax_lexer *l)
 {
 	ht_textfile::init(streamfile, own_streamfile);
-	if (!get_error()) {
-		lexer=l;
-		lines=new ht_clist();
-		lines->init();
-		orig_lines=new ht_clist();
-		orig_lines->init();
-		reread();
-		first_parse_dirty_line=linecount();
-		first_nofs_dirty_line=linecount();
-		dirty=false;
-		ofs=0;
-	}
+	int e = get_error();
+	if (get_error()) return;
+	lexer = l;
+	lines = new ht_clist();
+	lines->init();
+	orig_lines = new ht_clist();
+	orig_lines->init();
+	reread();
+	first_parse_dirty_line = linecount();
+	first_nofs_dirty_line = linecount();
+	dirty = false;
+	ofs = 0;
 }
 
 void ht_ltextfile::done()
@@ -445,7 +445,7 @@ UINT ht_ltextfile::getlinelength_i(ht_ltextfile_line *e)
 void ht_ltextfile::insert_lines(UINT before, UINT count, void **line_ends, int *line_end_lens)
 {
 	ht_ltextfile_line *e = fetch_line(before);
-     int instate = e->instate;
+	int instate = e->instate;
 	while (count--) {
 		e = new ht_ltextfile_line();
 		e->is_in_memory = true;

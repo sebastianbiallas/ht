@@ -96,7 +96,7 @@ bool Terminal::update()
 	FD_SET(out, &wfds);
 	FD_SET(err, &wfds);
 	FD_SET(in, &rfds);
-     // FIXME: FreeBSD problems here
+	// FIXME: FreeBSD problems here
 	struct timeval timeout;
 	
 	timeout.tv_sec = 0;
@@ -167,14 +167,15 @@ void TerminalViewer::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 				}
-				case K_BackSpace: {
+// FIXME: unsupported...				
+/*				case K_BackSpace: {
 					term->seek(term->get_size());
 					term->write("a\t", 2);
 					term->write("b\v", 2);
 					do_update();
 					clearmsg(msg);
 					return;
-				}
+				}*/
 				default: {
 					int ch = msg->data1.integer;
 					if ((ch >= 32) && (ch<=0x7f)) {

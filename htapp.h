@@ -222,7 +222,7 @@ protected:
 	
 public:
 			void		init(bounds *b, ht_project *project);
-               
+			
 	virtual	int		calcCount();
 	virtual	void		draw();
 	virtual	void *	getFirst();
@@ -297,7 +297,7 @@ protected:
 
 	ht_group *battlefield;
 	
-	int exit_program;
+	bool exit_program;
 
 /* new */
 			bool create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);

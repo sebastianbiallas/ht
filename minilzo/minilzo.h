@@ -76,20 +76,20 @@ extern "C" {
 /* compression */
 LZO_EXTERN(int)
 lzo1x_1_compress        ( const lzo_byte *src, lzo_uint  src_len,
-                                lzo_byte *dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem );
+						  lzo_byte *dst, lzo_uintp dst_len,
+						  lzo_voidp wrkmem );
 
 /* decompression */
 LZO_EXTERN(int)
 lzo1x_decompress        ( const lzo_byte *src, lzo_uint  src_len,
-                                lzo_byte *dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem /* NOT USED */ );
+						  lzo_byte *dst, lzo_uintp dst_len,
+						  lzo_voidp wrkmem /* NOT USED */ );
 
 /* safe decompression with overrun testing */
 LZO_EXTERN(int)
 lzo1x_decompress_safe   ( const lzo_byte *src, lzo_uint  src_len,
-                                lzo_byte *dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem /* NOT USED */ );
+						  lzo_byte *dst, lzo_uintp dst_len,
+						  lzo_voidp wrkmem /* NOT USED */ );
 
 
 #ifdef __cplusplus

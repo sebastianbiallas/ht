@@ -246,7 +246,7 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 		ht_inputfield_data *data=(ht_inputfield_data*)malloc(dsize);
 		input->databuf_get(data, dsize);
 		bin2str(result, data->text, data->textlen);
-		delete data;
+		free(data);
 		if (hist) insert_history_entry(hist, result, 0);
 		
 		dialog->done();

@@ -118,6 +118,7 @@ void SymbolBox::init(bounds *b, Analyser *Analy)
 	ht_listbox::init(b);
 	str = (char *)smalloc(1024);
 	symbols = analy->getSymbolCount();
+	idle_count = 1;
 }
 
 void SymbolBox::done()

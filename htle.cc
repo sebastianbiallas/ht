@@ -36,7 +36,7 @@
 #include "tools.h"
 
 #define LE_SEG_ADDR(i) (LE_shared->objmap.header[(i)].page_map_index-1) *\
-          	LE_shared->hdr.pagesize + LE_BASE_ADDR
+			LE_shared->hdr.pagesize + LE_BASE_ADDR
 
 format_viewer_if *htle_ifs[] = {
 	&htleheader_if,
@@ -82,9 +82,9 @@ void ht_le::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	le_shared->hdr_ofs = h;
 	le_shared->linear_file = NULL;
 	le_shared->reloc_file = NULL;
-     le_shared->best_entrypoint = LE_ADDR_INVALID;
+	le_shared->best_entrypoint = LE_ADDR_INVALID;
 
-     // FIXME: byteorder handling...
+	// FIXME: byteorder handling...
 	le_shared->byteorder = little_endian;
 
 	/* read LE header */
@@ -163,29 +163,29 @@ void ht_le::do_fixups()
 
 	le_shared->reloc_file = rfile;
 
-     UINT error_count = 0;
+	UINT error_count = 0;
 
 	for (UINT i=0; i<le_shared->hdr.pagecnt; i++) {
-     	// size of fixup record table for segment
-     	uint32 size = page_fixup_size[i];
-          UINT obj_ofs = i * le_shared->hdr.pagesize;
+		// size of fixup record table for segment
+		uint32 size = page_fixup_size[i];
+		UINT obj_ofs = i * le_shared->hdr.pagesize;
 
 		file->seek(h+le_shared->hdr.frectab+page_fixup_ofs[i]);
 		bool error = false;
-          while (size>0 && !error) {
-	          // addr_type + reloc_type
+		while (size>0 && !error) {
+			// addr_type + reloc_type
 			LE_FIXUP f;
 			if (sizeof f > size) { error = true; break; }
 			size -= sizeof f;
 			file->read(&f, sizeof f);
 			create_host_struct(&f, LE_FIXUP_struct, le_shared->byteorder);
-               if ((f.reloc_type != 0) && (f.reloc_type != 16)) {
-               	error = true;
-               	break;
+			if ((f.reloc_type != 0) && (f.reloc_type != 16)) {
+				error = true;
+				break;
 			}
 
-               // is address_type supported ?
-	          switch (f.address_type & LE_FIXUP_ADDR_TYPE_MASK) {
+			// is address_type supported ?
+			switch (f.address_type & LE_FIXUP_ADDR_TYPE_MASK) {
 /*				case LE_FIXUP_ADDR_TYPE_0_8:
 				case LE_FIXUP_ADDR_TYPE_16_0:
 				case LE_FIXUP_ADDR_TYPE_16_16:
@@ -195,78 +195,82 @@ void ht_le::do_fixups()
 				case LE_FIXUP_ADDR_TYPE_REL32:
 					break;
 				default:
-                         error = true;
-     	          	break;
-          	}
-               if (error) break;
+					error = true;
+					break;
+			}
+			if (error) break;
 
-               UINT multi_count = 0;
-               uint16 src_ofs;
-               bool multi_ofs = (f.address_type & LE_FIXUP_ADDR_MULTIPLE);
+			UINT multi_count = 0;
+			uint16 src_ofs;
+			bool multi_ofs = (f.address_type & LE_FIXUP_ADDR_MULTIPLE);
 			if (multi_ofs) {
-               	// number of entries in offset table
+				// number of entries in offset table
 				char buf[1];
-		          if (sizeof buf > size) { error = true; break; }
+				if (sizeof buf > size) { error = true; break; }
 				size -= sizeof buf;
 				file->read(buf, sizeof buf);
 				multi_count = create_host_int(buf, 1, little_endian);
-               } else {
-               	// single source offset
+			} else {
+				// single source offset
 				char buf[2];
-		          if (sizeof buf > size) { error = true; break; }
+				if (sizeof buf > size) { error = true; break; }
 				size -= sizeof buf;
 				file->read(buf, sizeof buf);
 				src_ofs = create_host_int(buf, 2, little_endian);
 			}
 
-	          switch (f.reloc_type & LE_FIXUP_RELOC_TYPE_MASK) {
+			switch (f.reloc_type & LE_FIXUP_RELOC_TYPE_MASK) {
 				case LE_FIXUP_RELOC_TYPE_INTERNAL:
-                    	uint16 target_seg;
-                         uint32 target_ofs;
-                         if (f.reloc_type & LE_FIXUP_RELOC_TARGET32) {
+					uint16 target_seg;
+					uint32 target_ofs;
+					if (f.reloc_type & LE_FIXUP_RELOC_TARGET32) {
 						LE_FIXUP_INTERNAL32 x;
-			     	     if (sizeof x > size) { error = true; break; }
-    				     	size -= sizeof x;
+						if (sizeof x > size) { error = true; break; }
+						size -= sizeof x;
 						file->read(&x, sizeof x);
 						create_host_struct(&x, LE_FIXUP_INTERNAL32_struct, le_shared->byteorder);
-                              target_seg = x.seg-1;
-                              target_ofs = x.ofs;
-                         } else {
+						target_seg = x.seg-1;
+						target_ofs = x.ofs;
+					} else {
 						LE_FIXUP_INTERNAL16 x;
-			     	     if (sizeof x > size) { error = true; break; }
-    				     	size -= sizeof x;
+						if (sizeof x > size) { error = true; break; }
+						size -= sizeof x;
 						file->read(&x, sizeof x);
 						create_host_struct(&x, LE_FIXUP_INTERNAL16_struct, le_shared->byteorder);
-                              target_seg = x.seg-1;
-                              target_ofs = x.ofs;
-                         }
+						target_seg = x.seg-1;
+						target_ofs = x.ofs;
+					}
 
-                         if (multi_ofs) {
-                         	for (UINT j=0; j<multi_count; j++) {
+					if (multi_ofs) {
+						for (UINT j=0; j<multi_count; j++) {
 							char buf[2];
-				     	     if (sizeof buf > size) { error = true; break; }
+							if (sizeof buf > size) { error = true; break; }
 							size -= sizeof buf;
 							file->read(buf, sizeof buf);
 							src_ofs = create_host_int(buf, sizeof buf, little_endian);
 							rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
-                              }
-                         } else {
+						}
+					} else {
 						rfile->insert_reloc(obj_ofs + src_ofs, new ht_le_reloc_entry(obj_ofs + src_ofs, LE_MAKE_ADDR(le_shared, target_seg, target_ofs), f.address_type, f.reloc_type));
-                         }
-     	          	break;
+					}
+					break;
 				case LE_FIXUP_RELOC_TYPE_IMPORT_ORD:
-                         error = true;
-               		break;
+					error = true;
+					break;
 				case LE_FIXUP_RELOC_TYPE_IMPORT_NAME:
-                         error = true;
-     	          	break;
+					error = true;
+					break;
 				case LE_FIXUP_RELOC_TYPE_OSFIXUP:
-                         error = true;
-                         break;
-	          }
+					error = true;
+					break;
+			}
 		}
-          if (error) error_count++;
-     }
+		if (error) error_count++;
+	}
+
+	free(page_fixup_ofs);
+	free(page_fixup_size);
+
 	if (error_count) {
 		// FIXME: once complete:
 		// "%s: NE relocations seem to be corrupted.", file->get_filename());
@@ -487,38 +491,38 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 		case FCNTL_MODS_CLEAR_DIRTY_RANGE: {
 			FILEOFS o = va_arg(vargs, FILEOFS);
 			UINT s = va_arg(vargs, UINT);
-               UINT ts, ms;
-               int e;
+			UINT ts, ms;
+			int e;
 
-               do {
-	               if (!map_ofs(o, &o, &ms)) return EINVAL;
+			do {
+				if (!map_ofs(o, &o, &ms)) return EINVAL;
 				ts = (s < ms) ? s : ms;
 				e = streamfile->cntl(cmd, o, ts);
-	               if (e) return e;
-                    s -= ts;
+				if (e) return e;
+				s -= ts;
 			} while (s);
-               return 0;
+			return 0;
 		}
 		case FCNTL_MODS_IS_DIRTY: {
 			FILEOFS o = va_arg(vargs, FILEOFS);
 			UINT s = va_arg(vargs, UINT);
 			bool *b = va_arg(vargs, bool*);
-               UINT ts, ms;
-               int e;
+			UINT ts, ms;
+			int e;
 
-               *b = false;
-               do {
-	               if (!map_ofs(o, &o, &ms)) return EINVAL;
+			*b = false;
+			do {
+				if (!map_ofs(o, &o, &ms)) return EINVAL;
 				ts = (s < ms) ? s : ms;
 				e = streamfile->cntl(cmd, o, ts, b);
-	               if (e) return e;
-                    if (*b) break;
-                    s -= ts;
+				if (e) return e;
+				if (*b) break;
+				s -= ts;
 			} while (s);
-               return 0;
+			return 0;
 		}
-     }
-     return ht_layer_streamfile::vcntl(cmd, vargs);
+	}
+	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
 UINT ht_le_page_file::write(const void *buf, UINT size)
@@ -566,21 +570,21 @@ void ht_le_reloc_file::reloc_apply(ht_data *reloc, byte *data)
 
 	switch (e->address_type & LE_FIXUP_ADDR_TYPE_MASK) {
 		case LE_FIXUP_ADDR_TYPE_0_8:
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_16_0:
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_16_16:
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_0_16:
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_16_32:
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_0_32:
 			create_foreign_int(data, e->addr, 4, little_endian);
-              	break;
+			break;
 		case LE_FIXUP_ADDR_TYPE_REL32:
 			create_foreign_int(data, e->addr - LE_BASE_ADDR - e->ofs - 4, 4, little_endian);
-              	break;
+			break;
 	}
 }
 
@@ -595,25 +599,25 @@ bool ht_le_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
 
 FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, UINT i)
 {
-     assert(i<LE_shared->objmap.count);
+	assert(i<LE_shared->objmap.count);
 	return LE_SEG_ADDR(i) - LE_BASE_ADDR;
 }
 
 LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, UINT i)
 {
-     assert(i<LE_shared->objmap.count);
+	assert(i<LE_shared->objmap.count);
 	return LE_SEG_ADDR(i);
 }
 
 UINT LE_get_seg_psize(ht_le_shared_data *LE_shared, UINT i)
 {
-     assert(i<LE_shared->objmap.count);
+	assert(i<LE_shared->objmap.count);
 	return LE_shared->objmap.psize[i];
 }
 
 UINT LE_get_seg_vsize(ht_le_shared_data *LE_shared, UINT i)
 {
-     assert(i<LE_shared->objmap.count);
+	assert(i<LE_shared->objmap.count);
 	return LE_shared->objmap.vsize[i];
 }
 
@@ -646,9 +650,9 @@ bool LE_addr_to_ofs(ht_le_shared_data *LE_shared, LEAddress Addr, FILEOFS *ofs)
 		LEAddress base = LE_get_seg_addr(LE_shared, i);
 		UINT psize = LE_get_seg_psize(LE_shared, i);
 		if ((Addr >= base) && (Addr < base + psize)) {
-		     *ofs = Addr - LE_BASE_ADDR;
+			*ofs = Addr - LE_BASE_ADDR;
 			return true;
-          }
+		}
 	}
 	return false;
 }
@@ -658,7 +662,7 @@ bool LE_ofs_to_addr(ht_le_shared_data *LE_shared, FILEOFS ofs, LEAddress *Addr)
 	for (UINT i = 0; i < LE_shared->objmap.count; i++) {
 		FILEOFS sofs = LE_get_seg_ofs(LE_shared, i);
 		if ((ofs >= sofs) && (ofs < sofs + LE_get_seg_psize(LE_shared, i))) {
-		     *Addr = LE_BASE_ADDR + ofs;
+			*Addr = LE_BASE_ADDR + ofs;
 			return true;
 		}
 	}
@@ -673,22 +677,22 @@ LEAddress LE_MAKE_ADDR(ht_le_shared_data *LE_shared, uint16 seg, uint32 ofs)
 uint16 LE_ADDR_SEG(ht_le_shared_data *LE_shared, LEAddress a)
 {
 	for (UINT i = 0; i<LE_shared->objmap.count; i++) {
-     	LEAddress addr = LE_SEG_ADDR(i);
-     	if ((a >= addr) && (a < addr + LE_shared->objmap.vsize[i])) {
-          	return i;
-          }
+		LEAddress addr = LE_SEG_ADDR(i);
+		if ((a >= addr) && (a < addr + LE_shared->objmap.vsize[i])) {
+			return i;
+		}
 	}
-     return 0xffff;
+	return 0xffff;
 }
 
 uint32 LE_ADDR_OFS(ht_le_shared_data *LE_shared, LEAddress a)
 {
 	for (UINT i = 0; i<LE_shared->objmap.count; i++) {
-     	LEAddress addr = LE_SEG_ADDR(i);
-     	if ((a >= addr) && (a < addr + LE_shared->objmap.vsize[i])) {
-          	return a-addr;
-          }
+		LEAddress addr = LE_SEG_ADDR(i);
+		if ((a >= addr) && (a < addr + LE_shared->objmap.vsize[i])) {
+			return a-addr;
+		}
 	}
-     return 0;
+	return 0;
 }
 

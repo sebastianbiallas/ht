@@ -31,6 +31,10 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
+	* further Valgrinding
+	* help hang bug fixed
+	* Resize problems fixed
+
 	* FIXED: htanaly: nicht gut: 'c' geht nicht in edit-mode
 	* LE * fixes
 

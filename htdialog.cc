@@ -1660,9 +1660,9 @@ int  ht_listbox::estimateEntryPos(void *entry)
 
 void ht_listbox::getdata(ht_object_stream *s)
 {
-     ht_listbox_data d;
-     d.top_ptr = e_top;
-     d.cursor_ptr = e_cursor;
+	ht_listbox_data d;
+	d.top_ptr = e_top;
+	d.cursor_ptr = e_cursor;
 	s->write(&d, sizeof d);
 }
 
@@ -1701,8 +1701,8 @@ void ht_listbox::gotoItemByEntry(void *entry, bool clear_quickfind)
 void ht_listbox::gotoItemByPosition(UINT pos)
 {
 	void *entry = getFirst();
-     while (pos--) entry = getNext(entry);
-     gotoItemByEntry(entry, true);
+	while (pos--) entry = getNext(entry);
+	gotoItemByEntry(entry, true);
 }
 
 void ht_listbox::handlemsg(htmsg *msg)
@@ -1881,10 +1881,10 @@ bool ht_listbox::selectEntry(void *entry)
 
 void ht_listbox::setdata(ht_object_stream *s)
 {
-     ht_listbox_data d;
+	ht_listbox_data d;
 	s->read(&d, sizeof d);
-     e_top = d.top_ptr;
-     e_cursor = d.cursor_ptr;
+	e_top = d.top_ptr;
+	e_cursor = d.cursor_ptr;
 	update();
 }
 

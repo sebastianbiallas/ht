@@ -114,7 +114,7 @@ static int hexdigit(char a)
 static void str2int(char *str, qword *q, int base)
 {
 	*q = to_qword(0);
-     qword qbase = to_qword(base);
+	qword qbase = to_qword(base);
 	while (*str) {
 		int c = hexdigit(*str);
 		if ((c == -1) || (c >= base)) break;
@@ -370,7 +370,7 @@ void scalar_context_str(const eval_scalar *s, eval_str *t)
 		case SCALAR_INT: {
 			char buf[64];
 			ht_snprintf(buf, sizeof buf, "%qd",
-               	/* FIXME: by reference*/ &s->scalar.integer.value);
+				/* FIXME: by reference*/ &s->scalar.integer.value);
 			t->value = (char*)strdup(buf);
 			t->len = strlen(buf);
 			break;

@@ -646,13 +646,17 @@ int Analyser::load(ht_object_stream *st)
 	GET_OBJECT(st, explored);
 	GET_OBJECT(st, initialized);
 
+	cur_addr_ops = cur_label_ops = 1;
+	setLocationTreeOptimizeThreshold(1000);
+	setSymbolTreeOptimizeThreshold(1000);
+
 	GET_INT_DEC(st, location_count);
 	loadlocations(st, locations, location_count, location_count);
 
 	if (st->get_error()) return st->get_error();
 
 	resolveaddrs(this, locations);
-	
+
 	GET_INT_DEC(st, symbol_count);
 	loadsymbols(this, st, symbols, symbol_count, symbol_count);
 

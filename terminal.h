@@ -31,8 +31,10 @@ class Terminal: public ht_ltextfile {
 private:
 	ht_streamfile *in, *out, *err;
 	int sys_ipc_handle;
+// FIXME: we need line buffering using String2	
 
 			bool append(ht_streamfile *file);
+			
 public:
 			void init(ht_streamfile *in, ht_streamfile *out, ht_streamfile *err, int sys_ipc_handle);
 	virtual	void done();

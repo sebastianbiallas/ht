@@ -168,18 +168,18 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 			thunk_count++;
 		}
 
-		PE_THUNK_DATA *thunk_table;
-		PE_THUNK_DATA_64 *thunk_table64;
-		thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
-		thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
+		PE_THUNK_DATA *thunk_table = NULL;
+		PE_THUNK_DATA_64 *thunk_table64 = NULL;
 		file->seek(thunk_ofs);
 		if (pe32) {
+			thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
 			file->read(thunk_table, sizeof *thunk_table * thunk_count);
 			// FIXME: ?
 			for (UINT i=0; i<thunk_count; i++) {
 				create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
 			}
 		} else {
+			thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
 			file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
 			// FIXME: ?
 			for (UINT i=0; i<thunk_count; i++) {
@@ -242,10 +242,14 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 				fthunk_rva+=8;
 			}
 		}
-		
+
 		dll_index++;
 
-		free(thunk_table);
+		if (pe32) {
+			free(thunk_table);
+		} else {
+			free(thunk_table64);
+		}			
 
 		free(dllname);
 	}

@@ -216,7 +216,7 @@ void ht_stree::done()
 void ht_stree::destroy()
 {
 	empty();
-	ht_tree::done();
+	done();
 }
 
 void ht_stree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
@@ -806,7 +806,7 @@ void ht_list::done()
 
 void ht_list::destroy()
 {
-	ht_list::done();
+	done();
 }
 
 void ht_list::append(ht_data *data)
@@ -940,7 +940,7 @@ void ht_clist::done()
 void ht_clist::destroy()
 {
 	empty();
-	ht_clist::done();
+	done();
 }
 
 void ht_clist::append(ht_data *data)

@@ -75,7 +75,7 @@ struct ht_le_shared_data {
 	LE_VXD_DESCRIPTOR vxd_desc;
 	ht_streamfile *linear_file;
 	ht_reloc_file *reloc_file;
-     LEAddress best_entrypoint;
+	LEAddress best_entrypoint;
 };
 
 class ht_le: public ht_format_group {

@@ -79,10 +79,10 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-          if ((MAX_RELOC_TOKEN_LEN+1) < o)
-          	k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		if ((MAX_RELOC_TOKEN_LEN+1) < o)
+			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		else
-          	k->value = 0;
+			k->value = 0;
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
 
@@ -111,15 +111,15 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 	FILEOFS o;
 	/* FIXME: relocs will not work before offset 1 */
 	if (enabled) {
-          o = tell();
+		o = tell();
 		UINT c = size;
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-          if ((MAX_RELOC_TOKEN_LEN+1) < o)
-          	k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		if ((MAX_RELOC_TOKEN_LEN+1) < o)
+			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		else
-          	k->value = 0;
+			k->value = 0;
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
 

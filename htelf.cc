@@ -66,7 +66,7 @@ format_viewer_if htelf_if = {
  */
 void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
 {
-	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE, DESC_ELF, f, false, true, 0, format_group);
+	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_ELF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_elf");
 
 	LOG("%s: ELF: found header at %08x", file->get_filename(), header_ofs);

@@ -676,7 +676,7 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
 		  ht_format_group *g, FILEOFS header_ofs)
 {
-	ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA, f, false, true, 0, g);
+	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_JAVA, f, false, true, 0, g);
 	
 	shared_data = (void*)class_read(f);
 	ht_format_group::init_ifs(ifs);

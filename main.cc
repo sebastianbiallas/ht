@@ -78,13 +78,13 @@ initdonefunc initdone[] = {
 	INITDONE(idle),
 	INITDONE(menu),
 	INITDONE(hist),
-	INITDONE(app),
 	INITDONE(clipboard),
 	INITDONE(obj),
 	INITDONE(analyser),
 	INITDONE(asm),
 	INITDONE(stddata),
-	INITDONE(cfg)
+	INITDONE(cfg),
+	INITDONE(app)
 };
 
 int htstate;

@@ -199,7 +199,7 @@ int VfsListbox::changeURL(const char *url)
 		so[0].compare_func = vfslistbox_fncmp;
 		sort(1, so);
 	} /*else update();*/
-     
+	
 	gotoItemByPosition(0);
 	/* code to position cursor when doing "cd .." (part II) */
 	if (cdpp) {

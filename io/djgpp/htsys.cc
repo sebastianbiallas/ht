@@ -183,7 +183,7 @@ int sys_filename_cmp(const char *a, const char *b)
 
 int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options)
 {
-     if (options & HT_IPC_NONBLOCKING) return ENOSYS;
+	if (options & HT_IPC_NONBLOCKING) return ENOSYS;
 	int save_stdin = dup(STDIN_FILENO);
 	int save_stdout = dup(STDOUT_FILENO);
 	int save_stderr = dup(STDERR_FILENO);

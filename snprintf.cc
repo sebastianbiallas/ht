@@ -928,16 +928,16 @@ int ht_asprintf(char **ptr, const char *format, ...)
 int ht_vfprintf(FILE *file, const char *fmt, va_list args)
 {
 #if 0
- 	char *buf;
- 	int ret = ht_vasprintf(&buf, fmt, args);
-     fputs(buf, file);
-     free(buf);
+	char *buf;
+	int ret = ht_vasprintf(&buf, fmt, args);
+	fputs(buf, file);
+	free(buf);
 #else
- 	char buf[1024];
- 	int ret = ht_vsnprintf(buf, sizeof buf, fmt, args);
-     fputs(buf, file);
+	char buf[1024];
+	int ret = ht_vsnprintf(buf, sizeof buf, fmt, args);
+	fputs(buf, file);
 #endif
-     return ret;
+	return ret;
 }
 
 int ht_fprintf(FILE *file, const char *fmt, ...)
@@ -946,10 +946,10 @@ int ht_fprintf(FILE *file, const char *fmt, ...)
 	int ret;
 
 	va_start(ap, fmt);
-     ret = ht_vfprintf(file, fmt, ap);
+	ret = ht_vfprintf(file, fmt, ap);
 	va_end(ap);
 
-     return ret;
+	return ret;
 }
 
 
@@ -964,8 +964,8 @@ int ht_printf(const char *fmt, ...)
 	int ret;
 
 	va_start(ap, fmt);
-     ret = ht_vprintf(fmt, ap);
+	ret = ht_vprintf(fmt, ap);
 	va_end(ap);
 
-     return ret;
+	return ret;
 }

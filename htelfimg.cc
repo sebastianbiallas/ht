@@ -157,7 +157,6 @@ void ht_elf_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, 
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	elf_shared = ELF_shared;
-	file = File;
 }
 
 void ht_elf_aviewer::setAnalyser(Analyser *a)
@@ -167,4 +166,3 @@ void ht_elf_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-

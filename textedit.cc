@@ -1772,7 +1772,7 @@ void ht_text_viewer::popup_change_highlight()
 		}
 	}
 	mode_input->update();
-     if (selected >= 0) mode_input->gotoItemByPosition(selected);
+	if (selected >= 0) mode_input->gotoItemByPosition(selected);
 	d->insert(mode_input);
 	
 /* mode (text) */
@@ -2379,7 +2379,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			}
 			m->insert_entry("Change ~highlight", "Alt+H", cmd_text_viewer_change_highlight, K_Alt_H, 1);
 			m->insert_separator();
-               // FIXME: somewhat hacked
+			// FIXME: somewhat hacked
 			m->insert_entry("~Delete line", "Control+Y", cmd_text_editor_delete_line, 0, 1);
 			m->insert_separator();
 			m->insert_entry("~Go to line", "", cmd_text_viewer_goto, 0, 1);

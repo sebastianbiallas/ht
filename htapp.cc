@@ -1384,22 +1384,22 @@ void ht_app::init(bounds *pq)
 	menu = NULL;
 	setframe(NULL);
 	VIEW_DEBUG_NAME("ht_app");
-	exit_program=0;
-	focused=1;
+	exit_program = false;
+	focused = true;
 	bounds b;
 
-	windows=new ht_sorted_list();
+	windows = new ht_sorted_list();
 	windows->init(compare_keys_app_window_entry);
 	
 	syntax_lexers = new ht_clist();
 	((ht_clist*)syntax_lexers)->init();
 
-	ht_c_syntax_lexer *c_lexer=new ht_c_syntax_lexer();
+	ht_c_syntax_lexer *c_lexer = new ht_c_syntax_lexer();
 	c_lexer->init();
 
 	syntax_lexers->insert(c_lexer);
 
-	ht_html_syntax_lexer *html_lexer=new ht_html_syntax_lexer();
+	ht_html_syntax_lexer *html_lexer = new ht_html_syntax_lexer();
 	html_lexer->init();
 
 	syntax_lexers->insert(html_lexer);
@@ -1658,7 +1658,7 @@ bool ht_app::create_window_clipboard()
 
 		window->setvscrollbar(hs);*/
 
-          bounds k;
+		bounds k;
 		k = b;
 		k.x=3;
 		k.y=k.h-2;
@@ -1960,15 +1960,15 @@ bool ht_app::create_window_help(char *file, char *node)
 		infoviewer->init(&b);
 		window->insert(infoviewer);
 
-          char ff[HT_NAME_MAX], cwd[HT_NAME_MAX];
+		char ff[HT_NAME_MAX], cwd[HT_NAME_MAX];
 
-          cwd[0] = 0;
+		cwd[0] = 0;
 		getcwd(cwd, sizeof cwd);
-          if (strcmp(file, "hthelp.info")) {
-	          sys_common_canonicalize(ff, file, cwd, sys_is_path_delim);
-          } else {
-          	strcpy(ff, file);
-          }
+		if (strcmp(file, "hthelp.info")) {
+			sys_common_canonicalize(ff, file, cwd, sys_is_path_delim);
+		} else {
+			strcpy(ff, file);
+		}
 		if (infoviewer->gotonode(ff, node)) {
 			insert_window(window, AWT_HELP, 0, false, NULL);
 			
@@ -2493,10 +2493,10 @@ void ht_app::handlemsg(htmsg *msg)
 			char cmd[HT_NAME_MAX];
 			cmd[0] = 0;
 			if (inputbox("execute shell command",
-               (sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
-               : "non-interactive (!) command",
-               cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
-               	if (cmd[0]) create_window_term(cmd);
+			(sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
+			: "non-interactive (!) command",
+			cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
+				if (cmd[0]) create_window_term(cmd);
 			}
 			clearmsg(msg);
 			return;
@@ -2530,7 +2530,7 @@ void ht_app::handlemsg(htmsg *msg)
 		case cmd_quit:
 			if (accept_close_all_windows()) {
 				LOG("terminating...");
-				exit_program=1;
+				exit_program = true;
 				sendmsg(cmd_project_close);
 				clearmsg(msg);
 			}
@@ -2945,13 +2945,13 @@ int ht_app::run(bool modal)
 	sendmsg(msg_draw, 0);
 	while (!exit_program) {
 		if (ht_keypressed()) {
-			int k=ht_getkey();
+			int k = ht_getkey();
 			sendmsg(msg_keypressed, k);
 			sendmsg(msg_draw);
 		}
 		ht_queued_msg *q;
-		while ((q=dequeuemsg())) {
-			htmsg m=q->msg;
+		while ((q = dequeuemsg())) {
+			htmsg m = q->msg;
 			q->target->sendmsg(&m);
 			sendmsg(msg_draw);
 			delete q;
@@ -3143,31 +3143,22 @@ BUILDER(ATOM_HT_PROJECT_ITEM, ht_project_item);
 bool init_app()
 {
 	bounds b;
-	screen=new screendrawbuf(ht_name" "ht_version);
+	screen = new screendrawbuf(ht_name" "ht_version);
 
 	loglines = new ht_log();
 	loglines->init();
 
 	virtual_fs_list = build_vfs_list();
 
-// test
-/*	ht_project_item *pi = new ht_project_item();
-	pi->init("regex.c", ".");
-	project = new ht_project();
-	((ht_project*)project)->init();
-	((ht_project*)project)->insert(pi);*/
-/*     ((ht_project*)project)->insert(new ht_project_item("balbla", "l”l"));
-	((ht_project*)project)->insert(new ht_project_item("htstruct.cc", "descsdf"));*/
 	project = NULL;
-//
 
-	b.x=0;
-	b.y=0;
-	b.w=screen->size.w;
-	b.h=screen->size.h;
-	app=new ht_app();
+	b.x = 0;
+	b.y = 0;
+	b.w = screen->size.w;
+	b.h = screen->size.h;
+	app = new ht_app();
 	((ht_app*)app)->init(&b);
-	baseview=app;
+	baseview = app;
 
 	app_memory_reserve = malloc(16384); // malloc, not smalloc
 	out_of_memory_func = &app_out_of_memory_proc;
@@ -3195,7 +3186,6 @@ void done_app()
 	if (app_memory_reserve) free(app_memory_reserve);
 
 	if (project) {
-		// FIXME: should not happen
 		((ht_project*)project)->destroy();
 		delete ((ht_project*)project);
 	}
@@ -3213,4 +3203,3 @@ void done_app()
 	
 	if (screen) delete screen;
 }
-

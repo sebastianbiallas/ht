@@ -1519,7 +1519,7 @@ int ht_uformat_viewer::cursormicroedit_forward()
 		int c=tag_count_selectable_tags_in_group(c_line, p.tag_group);
 		while (p.tag_idx<c) {
 			char *t=tag_get_selectable_tag(c_line, p.tag_idx, p.tag_group);
-			if (tag_get_class(t)==tag_class_edit) {
+			if (t && (tag_get_class(t)==tag_class_edit)) {
 				if (cursor_found) {
 					cursor_tag_micropos=0;
 					set_cursor(p);
@@ -1589,7 +1589,7 @@ restart:
 	uformat_viewer_pos p = top;
 	uformat_viewer_pos sp;
 	clear_viewer_pos(&sp);
-	
+
 	char line[1024];	/* FIXME: possible buffer overflow ! */
 	bool cursor_in_line;
 	int cursor_found=-1;
@@ -2231,7 +2231,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					return;
 				}
 			}
-               break;
+			break;
 		case msg_complete_init:
 			complete_init();
 			clearmsg(msg);
@@ -2597,7 +2597,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					dirtyview();
 					return;
 				}
-                    case K_Control_L:
+				case K_Control_L:
 				case K_Shift_F7:
 					if (!continue_search()) infobox("no further matches");
 					dirtyview();
@@ -2670,7 +2670,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			char addrstr[1024];
 			addrstr[0] = 0;
 			while (address_input("goto", addrstr, sizeof addrstr, HISTATOM_GOTO) != button_cancel) {
-               	if (addrstr[0]) {
+				if (addrstr[0]) {
 					viewer_pos pos;
 					globalerror[0] = 0;
 					if (string_to_pos(addrstr, &pos) && goto_pos(pos, this))
@@ -4363,7 +4363,7 @@ void ht_hex_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
 	if (fsize) {
-     	int k = fsize + (fofs & 0xf);
+		int k = fsize + (fofs & 0xf);
 		line_id->id1 = (k & ~0xf) + (fofs & ~0xf);
 	} else {
 		line_id->id1 = fofs;

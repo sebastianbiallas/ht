@@ -26,10 +26,14 @@
 #include "global.h"
 #include "htdata.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#ifdef DISABLE_UNALIGNED_MOVES
+#ifdef NO_NATIVE_UNALIGNED_MOVES
 #define UNALIGNED_MOVE(a, b) memcpy(&(a), &(b), sizeof(a))
 #define UNALIGNED_MOVE_CONST(a, b, type) {assert(sizeof(a)==sizeof(type));type c = b;memcpy(&(a), &c, sizeof(a));}
 #else

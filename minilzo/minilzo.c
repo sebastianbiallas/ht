@@ -267,7 +267,7 @@
 
 #if defined(LZO_BYTE_ORDER)
 #  if (LZO_BYTE_ORDER != LZO_LITTLE_ENDIAN) && \
-      (LZO_BYTE_ORDER != LZO_BIG_ENDIAN)
+	 (LZO_BYTE_ORDER != LZO_BIG_ENDIAN)
 #    error "invalid LZO_BYTE_ORDER"
 #  endif
 #endif
@@ -331,10 +331,10 @@ extern "C" {
 #  include <dos.h>
 #  if 1 && defined(__WATCOMC__)
 #    include <i86.h>
-     __LZO_EXTERN_C unsigned char _HShift;
+	__LZO_EXTERN_C unsigned char _HShift;
 #    define __LZO_HShift    _HShift
 #  elif 1 && defined(_MSC_VER)
-     __LZO_EXTERN_C unsigned short __near _AHSHIFT;
+	__LZO_EXTERN_C unsigned short __near _AHSHIFT;
 #    define __LZO_HShift    ((unsigned) &_AHSHIFT)
 #  elif defined(__LZO_WIN16)
 #    define __LZO_HShift    3
@@ -351,9 +351,9 @@ extern "C" {
 
 #if !defined(lzo_ptrdiff_t)
 #  if (UINT_MAX >= LZO_0xffffffffL)
-     typedef ptrdiff_t          lzo_ptrdiff_t;
+	typedef ptrdiff_t          lzo_ptrdiff_t;
 #  else
-     typedef long               lzo_ptrdiff_t;
+	typedef long               lzo_ptrdiff_t;
 #  endif
 #endif
 
@@ -365,8 +365,8 @@ extern "C" {
 #if !defined(__LZO_HAVE_PTR_T)
 #  if defined(SIZEOF_CHAR_P) && defined(SIZEOF_UNSIGNED_LONG)
 #    if (SIZEOF_CHAR_P == SIZEOF_UNSIGNED_LONG)
-       typedef unsigned long    lzo_ptr_t;
-       typedef long             lzo_sptr_t;
+	  typedef unsigned long    lzo_ptr_t;
+	  typedef long             lzo_sptr_t;
 #      define __LZO_HAVE_PTR_T
 #    endif
 #  endif
@@ -374,8 +374,8 @@ extern "C" {
 #if !defined(__LZO_HAVE_PTR_T)
 #  if defined(SIZEOF_CHAR_P) && defined(SIZEOF_UNSIGNED)
 #    if (SIZEOF_CHAR_P == SIZEOF_UNSIGNED)
-       typedef unsigned int     lzo_ptr_t;
-       typedef int              lzo_sptr_t;
+	  typedef unsigned int     lzo_ptr_t;
+	  typedef int              lzo_sptr_t;
 #      define __LZO_HAVE_PTR_T
 #    endif
 #  endif
@@ -383,8 +383,8 @@ extern "C" {
 #if !defined(__LZO_HAVE_PTR_T)
 #  if defined(SIZEOF_CHAR_P) && defined(SIZEOF_UNSIGNED_SHORT)
 #    if (SIZEOF_CHAR_P == SIZEOF_UNSIGNED_SHORT)
-       typedef unsigned short   lzo_ptr_t;
-       typedef short            lzo_sptr_t;
+	  typedef unsigned short   lzo_ptr_t;
+	  typedef short            lzo_sptr_t;
 #      define __LZO_HAVE_PTR_T
 #    endif
 #  endif
@@ -393,8 +393,8 @@ extern "C" {
 #  if defined(LZO_HAVE_CONFIG_H) || defined(SIZEOF_CHAR_P)
 #    error "no suitable type for lzo_ptr_t"
 #  else
-     typedef unsigned long      lzo_ptr_t;
-     typedef long               lzo_sptr_t;
+	typedef unsigned long      lzo_ptr_t;
+	typedef long               lzo_sptr_t;
 #    define __LZO_HAVE_PTR_T
 #  endif
 #endif
@@ -1852,7 +1852,7 @@ m4_match:
 		assert(m_off > 0); assert(m_off <= 0x7fff);
 		if (m_len <= M4_MAX_LEN)
 		    *op++ = LZO_BYTE(M4_MARKER |
-				     ((m_off & 0x4000) >> 11) | (m_len - 2));
+					((m_off & 0x4000) >> 11) | (m_len - 2));
 		else
 		{
 		    m_len -= M4_MAX_LEN;
@@ -2048,8 +2048,8 @@ DO_COMPRESS      ( const lzo_byte *in , lzo_uint  in_len,
 #if defined(DO_DECOMPRESS)
 LZO_PUBLIC(int)
 DO_DECOMPRESS  ( const lzo_byte *in , lzo_uint  in_len,
-		       lzo_byte *out, lzo_uintp out_len,
-		       lzo_voidp wrkmem )
+			  lzo_byte *out, lzo_uintp out_len,
+			  lzo_voidp wrkmem )
 #endif
 {
     register lzo_byte *op;
@@ -2540,8 +2540,8 @@ lookbehind_overrun:
 #if defined(DO_DECOMPRESS)
 LZO_PUBLIC(int)
 DO_DECOMPRESS  ( const lzo_byte *in , lzo_uint  in_len,
-		       lzo_byte *out, lzo_uintp out_len,
-		       lzo_voidp wrkmem )
+			  lzo_byte *out, lzo_uintp out_len,
+			  lzo_voidp wrkmem )
 #endif
 {
     register lzo_byte *op;

@@ -64,7 +64,7 @@ ClassMethod::~ClassMethod()
 
 int ClassMethod::compareTo(const Object *obj) const
 {
-     ClassMethod *cm = (ClassMethod*)obj;
+	ClassMethod *cm = (ClassMethod*)obj;
 	if ((start + length - 1) < cm->start) return -1;
 	if (start > (cm->start + cm->length - 1)) return 1;
 	return 0;

@@ -250,7 +250,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 					return;
 				}
 			}
-               break;
+			break;
 		}
 		case msg_filesize_changed: {
 			htmsg m;

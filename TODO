@@ -10,8 +10,10 @@
 - next unexplored
 - out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test
 - htanaly.cc: menu ifs not used properly (for keys...)
-- (listbox sort order indicators ?)
-- htanaly.cc:473 fix it. fix what ?
+- analy_x86: AnalyX86Disassembler::createAddress() fix it.
+- analy.cc: pushAddress(x,y) leaks x if !isValidCodeAddr(x)
+- analy.cc: analyser file storage: thresholds are stored after data structures
+  which they are used for.
 
 +dunno
 - update help
@@ -25,15 +27,18 @@
 - store.cc:60: getObject quits with invalid config file
 - snprintf.cc needs correct indentation
 - disasm (esp. x86) switch 16/32 correctly
+- elf_analy.cc:114 free object ???
+- classread/view.cc
+    - rename to match PE/ELF/LE,etc.'s behaviour
+    - shared data not freed
 
 +steves
 - (HT_0_7)
-	- SPARC_SHIT configure
+	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 	- implement POSIX - sys_truncate
-	- resize problem in XX/image regressed
-       (open file from project window, goto image and resize to fullscreen)
 
 - new instead of malloc
+- terminal.cc: terminal needs line buffering
 
 - FIXED ?: HT crash when only htcfg-header in ht.cfg
 

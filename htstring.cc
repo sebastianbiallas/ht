@@ -58,7 +58,7 @@ char *ht_strndup(const char *str, int maxlen)
 	maxlen ++;
 	if (str) {
 		int len = strlen(str)+1;
-          len = MIN(len, maxlen);
+		len = MIN(len, maxlen);
 		char *s = (char*)smalloc(len);
 		memmove(s, str, len);
 		return s;
@@ -79,12 +79,12 @@ int ht_strncpy(char *s1, const char *s2, int maxlen)
 	if (maxlen <= 0) return 0;
 	char *os1 = s1;
 	while (maxlen && *s2) {
-          *s1 = *s2;
-     	maxlen--;
-          s1++;
-     }
-     s1[-1] = 0;
-     return s1-os1-1;
+		*s1 = *s2;
+		maxlen--;
+		s1++;
+	}
+	s1[-1] = 0;
+	return s1-os1-1;
 }
 
 

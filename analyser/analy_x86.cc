@@ -429,7 +429,7 @@ int AddressX86_1616::stringSize()
 void AnalyX86Disassembler::init(Analyser *A, int f)
 {
 	flags = f;
-     createUnasm();
+	createUnasm();
 	AnalyDisassembler::init(A);
 }
 
@@ -477,13 +477,13 @@ Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 
 void AnalyX86Disassembler::createUnasm()
 {
-     if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
+	if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
 		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
 			disasm = new x86dis_vxd(X86_OPSIZE16, X86_ADDRSIZE16);
 		} else {
 			disasm = new x86dis_vxd(X86_OPSIZE32, X86_ADDRSIZE32);
 		}
-     } else {
+	} else {
 		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
 			disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
 		} else {

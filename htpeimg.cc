@@ -194,7 +194,6 @@ void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, h
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	pe_shared = PE_shared;
-	file = File;
 }
 
 int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)

@@ -172,13 +172,13 @@ void eval_dialog()
 						create_foreign_int(bb, i, 4, big_endian);
 						bin2str(x, bb, 4);
 						x += 4;
-                              x += sprintf(x, "%s", "\" 32bit big-endian (e.g. network)\n");
+						x += sprintf(x, "%s", "\" 32bit big-endian (e.g. network)\n");
 						/* little-endian string */
 						x += sprintf(x, "string \"");
 						create_foreign_int(bb, i, 4, little_endian);
 						bin2str(x, bb, 4);
 						x += 4;
-                              x += sprintf(x, "%s", "\" 32bit little-endian (e.g. x86)\n");
+						x += sprintf(x, "%s", "\" 32bit little-endian (e.g. x86)\n");
 						/* finish */
 						*x = 0;
 						break;
