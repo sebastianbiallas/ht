@@ -33,6 +33,13 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
+	* FIXED: texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
+	  (because this is handled via local menu)
+	* goto('') should be ignored
+	* htapp.cc: experimental code disabled
+	* FIXED: (HT_0_7) has SYSTEM CONFIG FILE changed ?? NO.
+	* FIXED: (HT_0_7) update FILE CONFIG FILE VERSION
+
 	* open info file fixed
 	* ht_hex_sub::last_line_id(...) fixed
 	* LE host_struct's created
