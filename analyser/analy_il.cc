@@ -159,7 +159,7 @@ void AnalyILDisassembler::done()
 
 OBJECT_ID AnalyILDisassembler::object_id()
 {
-	return ATOM_ANALY_ALPHA;
+	return ATOM_ANALY_IL;
 }
 
 /*

@@ -18,8 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef ANALY_IL_H
-#define ANALY_IL_H
+#ifndef ANALY_IA64_H
+#define ANALY_IA64_H
 
 #include "analy.h"
 #include "ia64dis.h"
