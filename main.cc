@@ -171,13 +171,13 @@ static void params(int argc, char *argv[], bool started)
 				}
 				if (strcmp(argv[i], "--auto") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
-						load_file(argv[i+1], FOM_AUTO);
+						if (started) load_file(argv[i+1], FOM_AUTO);
 						i++;
 					}
 				} else
 				if (strcmp(argv[i], "--bin") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
-						load_file(argv[i+1], FOM_BIN);
+						if (started) load_file(argv[i+1], FOM_BIN);
 						i++;
 					}
 				} else
@@ -186,13 +186,13 @@ static void params(int argc, char *argv[], bool started)
 				} else
 				if (strcmp(argv[i], "--project") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
-						((ht_app*)app)->project_opencreate(argv[i+1]);
+						if (started) ((ht_app*)app)->project_opencreate(argv[i+1]);
 						i++;
 					}
 				} else
 				if (strcmp(argv[i], "--text") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
-						load_file(argv[i+1], FOM_TEXT);
+						if (started) load_file(argv[i+1], FOM_TEXT);
 						i++;
 					}
 				} else
@@ -217,13 +217,13 @@ static void params(int argc, char *argv[], bool started)
 						case 'a':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
-							load_file(argv[i+1], FOM_AUTO);
+							if (started) load_file(argv[i+1], FOM_AUTO);
 							i++;
 							break;
 						case 'b':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
-							load_file(argv[i+1], FOM_BIN);
+							if (started) load_file(argv[i+1], FOM_BIN);
 							i++;
 							break;
 						case 'h':
@@ -232,13 +232,13 @@ static void params(int argc, char *argv[], bool started)
 						case 'p':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
-							((ht_app*)app)->project_opencreate(argv[i+1]);
+							if (started) ((ht_app*)app)->project_opencreate(argv[i+1]);
 							i++;
 							break;
 						case 't':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
-							load_file(argv[i+1], FOM_TEXT);
+							if (started) load_file(argv[i+1], FOM_TEXT);
 							i++;
 							break;
 						case 'v':

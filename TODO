@@ -37,10 +37,11 @@
 - document commandline options in help
 
 +steves
+- main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
 - eval should warn if number too big/cannot parse
 - eval whatis(whatis("whatis")), what is?
 - create ht.cfg in "home dir", implementation+interface sys_get_home_dir()
-- disabling "-pipe" on generic-POSIX systems doesn't ssem to work
+- disabling "-pipe" on generic-POSIX systems doesn't seem to work
 - input_date_time()
 - open... new option: preserve mtime
 - htsys.h move to .., implement sys_pstat_fd(pstat_t *s, int fd)
