@@ -21,6 +21,8 @@
 #ifndef __HTDIALOG_H__
 #define __HTDIALOG_H__
 
+#include <stdarg.h>
+
 #include "htdebug.h"
 #include "htobj.h"
 #include "htstring.h"

@@ -23,7 +23,7 @@
 
 #include "common.h"
 #include "global.h"
-#include "htsys.h"
+#include "htio.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -333,6 +333,29 @@ public:
 	virtual UINT		read(void *buf, UINT size);
 	virtual int		seek(FILEOFS offset);
 	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
+};
+
+/*
+ *	CLASS ht_null_file
+ */
+
+class ht_null_file: public ht_streamfile {
+protected:
+public:
+		   void		init();
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual UINT		get_access_mode();
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual void		pstat(pstat_t *s);
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual FILEOFS 	tell();
+	virtual int		truncate(UINT newsize);
 	virtual UINT		write(const void *buf, UINT size);
 };
 

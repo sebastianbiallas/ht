@@ -18,11 +18,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htdebug.h"
-#include "htexcept.h"
-#include "stream.h"
-#include "tools.h"
-
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -31,6 +26,12 @@
 #include <stdlib.h>
 #include <sys/stat.h>	/* for mode definitions */
 #include <unistd.h>
+
+#include "htdebug.h"
+#include "htexcept.h"
+#include "htsys.h"
+#include "stream.h"
+#include "tools.h"
 
 /*
  *	CLASS ht_stream
@@ -760,6 +761,77 @@ UINT ht_memmap_file::write(const void *b, UINT size)
 	memmove(((byte*)buf)+pos, b, size);
 	pos+=size;
 	return size;
+}
+
+/*
+ *	CLASS ht_null_file
+ */
+
+void ht_null_file::init()
+{
+	ht_streamfile::init();
+}
+
+void ht_null_file::done()
+{
+	ht_streamfile::done();
+}
+
+int ht_null_file::extend(UINT newsize)
+{
+	return newsize ? EINVAL : 0;
+}
+
+UINT ht_null_file::get_access_mode()
+{
+	return access_mode;
+}
+
+const char *ht_null_file::get_desc()
+{
+	return "null device";
+}
+
+UINT ht_null_file::get_size()
+{
+	return 0;
+}
+
+void ht_null_file::pstat(pstat_t *s)
+{
+	s->caps = pstat_size;
+	s->size = get_size();
+	s->size_high = 0;
+}
+
+UINT ht_null_file::read(void *buf, UINT size)
+{
+	return 0;
+}
+
+int ht_null_file::seek(FILEOFS offset)
+{
+	return offset ? EINVAL : 0;
+}
+
+bool ht_null_file::set_access_mode(UINT am)
+{
+	return (am == access_mode);
+}
+
+FILEOFS ht_null_file::tell()
+{
+	return 0;
+}
+
+int ht_null_file::truncate(UINT newsize)
+{
+	return newsize ? EINVAL : 0;
+}
+
+UINT ht_null_file::write(const void *buf, UINT size)
+{
+	return 0;
 }
 
 /*

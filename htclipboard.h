@@ -24,7 +24,6 @@
 #include "global.h"
 #include "stream.h"
 #include "htformat.h"
-#include "htsys.h"
 
 /*
  *	CLASS ht_clipboard

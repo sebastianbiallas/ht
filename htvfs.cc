@@ -29,6 +29,7 @@
 #include "htkeyb.h"
 #include "htreg.h"
 #include "htvfs.h"
+#include "htsys.h"
 #include "httag.h"
 #include "htstring.h"
 #include "store.h"

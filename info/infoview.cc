@@ -25,6 +25,7 @@
 #include "htiobox.h"
 #include "htpal.h"
 #include "htstring.h"
+#include "htsys.h"
 #include "infoview.h"
 #include "tools.h"
 
