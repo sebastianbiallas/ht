@@ -182,7 +182,7 @@ public:
 
 	/* physical address (offset) functions */
 	virtual	bool get_current_offset(FILEOFS *ofs);
-	virtual	bool goto_offset(FILEOFS ofs, ht_view *source_object);
+	virtual	bool goto_offset(FILEOFS ofs, bool save_vstate);
 	virtual	UINT pread(FILEOFS ofs, void *buf, UINT size);
 	virtual	ht_search_result *psearch(ht_search_request *search, FILEOFS start, FILEOFS end);
 	virtual	void pselect_add(FILEOFS start, FILEOFS end);
@@ -194,7 +194,7 @@ public:
 
 	/* visual address (viewer pos) functions */
 	virtual	bool get_current_pos(viewer_pos *pos);
-	virtual	bool goto_pos(viewer_pos pos, ht_view *source_object);
+	virtual	bool goto_pos(viewer_pos pos, bool save_vstate);
 	virtual	UINT vread(viewer_pos pos, void *buf, UINT size);
 	virtual	ht_search_result *vsearch(ht_search_request *search, viewer_pos start, viewer_pos end);
 	virtual	void vselect_add(viewer_pos start, viewer_pos end);
@@ -214,7 +214,7 @@ public:
 	/* misc */
 			ht_streamfile *get_file();
 			bool string_to_qword(char *string, qword *q);
-			bool vstate_save(ht_view *focused);
+			bool vstate_save();
 };
 
 /*
@@ -393,8 +393,8 @@ public:
 	virtual	void draw();
 	virtual	bool get_current_offset(FILEOFS *offset);
 	virtual	bool get_current_pos(viewer_pos *pos);
-	virtual	bool goto_offset(FILEOFS offset, ht_view *source_object=0);
-	virtual	bool goto_pos(viewer_pos pos, ht_view *source_object=0);
+	virtual	bool goto_offset(FILEOFS offset, bool save_vstate);
+	virtual	bool goto_pos(viewer_pos pos, bool save_vstate);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	ht_search_result *psearch(ht_search_request *search, FILEOFS start, FILEOFS end);
 	virtual	void pselect_add(FILEOFS start, FILEOFS end);

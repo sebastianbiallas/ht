@@ -561,12 +561,12 @@ bool ht_format_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 	return false;
 }
 
-bool ht_format_viewer::goto_offset(FILEOFS ofs, ht_view *source_object)
+bool ht_format_viewer::goto_offset(FILEOFS ofs, bool save_vstate)
 {
 	return false;
 }
 
-bool ht_format_viewer::goto_pos(viewer_pos pos, ht_view *source_object)
+bool ht_format_viewer::goto_pos(viewer_pos pos, bool save_vstate)
 {
 	return false;
 }
@@ -663,7 +663,7 @@ bool ht_format_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *pos)
 	return false;
 }
 
-bool ht_format_viewer::vstate_save(ht_view *focused)
+bool ht_format_viewer::vstate_save()
 {
 	ht_data *vs = vstate_create();
 	if (vs) {
@@ -1868,7 +1868,7 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 						m.data1.integer = o;	// FIXME: int = FILEOFS
 						v->sendmsg(&m);
 						if (m.msg == msg_empty) {
-							vstate_save(NULL);
+							vstate_save();
 							app->focus(v);
 						} else {
 							errorbox("offset %08x is not supported/invalid in '%s'", o, v->desc);
@@ -2150,7 +2150,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				case K_Control_PageUp: {
 					top.sub = first_sub;
 					if (top.sub) {
-						vstate_save(this);
+						vstate_save();
 						select_mode_pre();
 						top.sub->first_line_id(&top.line_id);
 
@@ -2173,7 +2173,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				case K_Control_PageDown: {
 					top.sub = last_sub;
 					if (top.sub) {
-						vstate_save(this);
+						vstate_save();
 						select_mode_pre();
 						top.sub->last_line_id(&top.line_id);
 
@@ -2597,14 +2597,14 @@ void ht_uformat_viewer::insertsub(ht_sub *sub)
 	if (!first_sub) first_sub=sub;
 }
 
-bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
+bool ht_uformat_viewer::goto_offset(FILEOFS offset, bool save_vstate)
 {
 	uformat_viewer_pos p;
 	p.sub = first_sub;
 	p.tag_group = cursor.tag_group;
 	while (p.sub) {
 		if (p.sub->convert_ofs_to_id(offset, &p.line_id)) {
-			if (source_object) vstate_save(source_object);
+			if (save_vstate) vstate_save();
 			switch (cursor_state) {
 				case cursor_state_visible: {
 					select_mode_pre();
@@ -2630,9 +2630,9 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 	return false;
 }
 
-bool ht_uformat_viewer::goto_pos(viewer_pos pos, ht_view *source_object)
+bool ht_uformat_viewer::goto_pos(viewer_pos pos, bool save_vstate)
 {
-	if (source_object) vstate_save(source_object);
+	if (save_vstate) vstate_save();
 	select_mode_pre();
 	set_cursor(pos.u);
 	select_mode_post(false);

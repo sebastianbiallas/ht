@@ -72,7 +72,7 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	
 	viewer_pos entrypoint;
 	if (v->string_to_pos("entrypoint", &entrypoint)) {
-		v->goto_pos(entrypoint);
+		v->goto_pos(entrypoint, false);
 	}
 
 	g->insert(head);
