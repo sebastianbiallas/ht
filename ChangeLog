@@ -11,16 +11,20 @@ version 0.7-trunk:
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC-only, experimental)
 
+version 0.7.3:
+	- some keys were assigned to multiple commands in hex-viewer
+	- percent display for searches and scrollbars in big files was incorrect
+	
 version 0.7.2:
-	- open devices (e.g. /dev/hda1) (read-only, experimental)
 	- Hexview: Number of bytes per line can be changed now
 	- PE/header: can now follow bound import directory link (it's offset not RVA !)
-	- FIXED: x86dis: 0f0f0000 should be invalid? 0f^n 00 00 1<n<=13 should be invalid?
-	- FIXED: e~xpr isnt selectable with alt-x (cut) in blockop
-	- FIXED: blockop doenst set "file is modified"
-	- FIXED: main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
-	- FIXED: qword (aka int64) "x shl/shr 32" returns invalid result
-	- ELF/section headers: some flags were displayed invalid
+	- x86dis: "0f 0f 0f" is now marked invalid (as it should be)
+	- alt-x in blockop dialog was used twice by "cut" and "select expr"
+	- fixed problem in streams that caused files not to be flagged "modified"
+	- security fix: main.cc: strncpy(appname, argv[0], sizeof appname-1);
+	- qword "x shl/shr 32" returns invalid result
+	- ELF/section headers: flags now displayed correctly (thanks "scut")
+	- (POSIX) slightly improved keyboard handling (Ctrl+W = close window)
 
 version 0.7.1:
 	- (win2k/xp) fixed bug that caused ht to create ht.cfg in current
