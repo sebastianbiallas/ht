@@ -42,6 +42,8 @@ int debug_dump_ident;
 static eval_func_handler g_eval_func_handler;
 static eval_symbol_handler g_eval_symbol_handler;
 static void *eval_context;
+static int helpmode = 0;
+static eval_scalar helpstring;
 
 qword f2i(double f)
 {
@@ -49,6 +51,21 @@ qword f2i(double f)
 	if (f>0) r = (int)(f+.5); else r = (int)(f-.5);
      // FIXME
 	return to_qword(r);
+}
+
+int get_helpmode()
+{
+	return helpmode;
+}
+
+void set_helpmode(int flag)
+{
+	helpmode = flag;
+}
+
+eval_scalar *get_helpstring()
+{
+	return &helpstring;
 }
 
 static qword ipow(qword a, qword b)
@@ -1218,23 +1235,43 @@ int evalsymbol(eval_scalar *r, char *sname)
 	return s;
 }
 
-int std_eval_func_handler(eval_scalar *r, char *fname, eval_scalarlist *params, eval_func *protos)
+int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *params, eval_func *protos)
 {
 	char fname_short[MAX_FUNCNAME_LEN+1];
 	
 	fname_short[MAX_FUNCNAME_LEN]=0;
 	strncpy(fname_short, fname, MAX_FUNCNAME_LEN);
-	
-	while (protos->name) {
-		switch (match_evalfunc_proto(fname_short, params, protos)) {
-			case PROTOMATCH_OK:
-				return exec_evalfunc(r, params, protos);
-			case PROTOMATCH_PARAM_FAIL:
-				set_eval_error("invalid params to function %s", fname_short);
-				return 0;
-			default: {}
-		}
-		protos++;
+
+     if (helpmode) {
+		while (protos->name) {
+              	// FIXME: possible buffer overflow
+               char buf[1024];
+               if (protos->desc) {
+	               sprintf(buf, "%s: %s\n", protos->name, protos->desc);
+			} else {
+	               sprintf(buf, "%s\n", protos->name);
+               }
+               eval_scalar s;
+			scalar_create_str_c(&s, buf);
+               eval_scalar r;
+               scalar_concat(&r, &helpstring, &s);
+               scalar_destroy(&helpstring);
+               helpstring = r;
+
+          	protos++;
+          }
+     } else {
+		while (protos->name) {
+			switch (match_evalfunc_proto(fname_short, params, protos)) {
+				case PROTOMATCH_OK:
+					return exec_evalfunc(result, params, protos);
+				case PROTOMATCH_PARAM_FAIL:
+					set_eval_error("invalid params to function %s", fname_short);
+					return 0;
+				default: {}
+			}
+			protos++;
+	     }
 	}
 	return 0;
 }
