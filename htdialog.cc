@@ -1410,8 +1410,8 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 	clear_quickfind();
 	update();
 	listboxcaps = Listboxcaps;
-     cols = 0;
-     widths = NULL;
+	cols = 0;
+	widths = NULL;
 }
 
 int 	ht_listbox::load(ht_object_stream *f)
@@ -1423,7 +1423,7 @@ void	ht_listbox::done()
 {
 	scrollbar->done();
 	delete scrollbar;
-     if (widths) free(widths);
+	if (widths) free(widths);
 	ht_view::done();
 }
 
@@ -1527,11 +1527,11 @@ void ht_listbox::draw()
 		getcolor(palidx_generic_list_unfocused_unselected);
 
 	int Cols = numColumns();
-     if (Cols > cols) rearrageColumns();
+	if (Cols > cols) rearrageColumns();
 
-    	bool resizing_cols = true;
-     while (resizing_cols) {
-          resizing_cols = false;
+	bool resizing_cols = true;
+	while (resizing_cols) {
+		resizing_cols = false;
 		clear(fc);
 		void *entry = e_top;
 		int i=0;
@@ -1545,14 +1545,14 @@ void ht_listbox::draw()
 			for (int j=0; j<cols; j++) {
 				char *s = getstr(j, entry);
 				int slen = strlen(s);
-	               if (slen > widths[j]) {
-	               	widths[j] = slen;
-	                    /*
-	                     *	a column has been resized,
-	                     *	therefore we have to redraw a second time.
-	                     */
-                         resizing_cols = true;
-	               }
+				if (slen > widths[j]) {
+					widths[j] = slen;
+					/*
+					 *	a column has been resized,
+					 *	therefore we have to redraw a second time.
+					 */
+					resizing_cols = true;
+				}
 				if (s) {
 					if (X > 0) {
 						buf_lprint(X, i, c, size.w, s);
@@ -1571,7 +1571,7 @@ void ht_listbox::draw()
 			entry = getnext(entry);
 			i++;
 		}
-     }
+	}
 	update_cursor();
 /*     char dbg[100];
 	sprintf(dbg, "cursor=%d pos=%d vh=%d qc:%s", cursor, pos, visible_height, quickfinder);
@@ -1800,8 +1800,8 @@ char	*ht_listbox::quickfind_completition(char *s)
 void ht_listbox::rearrageColumns()
 {
 	if (widths) free(widths);
-     cols = numColumns();
-     widths = (int*)calloc(cols*sizeof(int), 1);
+	cols = numColumns();
+	widths = (int*)calloc(cols*sizeof(int), 1);
 }
 
 void ht_listbox::redraw()
@@ -2015,10 +2015,10 @@ char *ht_text_listbox::getstr(int col, void *entry)
 {
 	if (entry && (col < cols)) {
 		char *str = ((ht_text_listbox_item *)entry)->data[col];
-          strcpy(return_str, str);
+		strcpy(return_str, str);
 	} else {
-     	return_str[0] = 0;
-     }
+		return_str[0] = 0;
+	}
 	return return_str;
 }
 

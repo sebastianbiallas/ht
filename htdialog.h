@@ -266,9 +266,9 @@ public:
 	char		*qpos;
 	UINT		listboxcaps;
 
-     int		cols;
-     int		*widths;
-     
+	int		cols;
+	int		*widths;
+	
 	ht_scrollbar *scrollbar;
 
 			void	init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
