@@ -1076,6 +1076,10 @@ void ht_aviewer::get_pindicator_str(char *buf)
 bool ht_aviewer::gotoAddress(Address *a, ht_view *source_object)
 {
 	viewer_pos p;
+     if (analy) {
+     	if (!analy->validAddress(a, scvalid)) return false;
+     }
+     // FIXME: insert a->compare(hi, low address) here
 	if (convertAddressToViewerPos(a, &p)) {
 		return goto_pos(p, source_object);
 	}
