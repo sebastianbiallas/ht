@@ -1763,7 +1763,7 @@ void ht_aviewer::showSymbols(Address *addr)
 		// goto selected symbol
 		ht_listbox_data d;
 		sym->databuf_get(&d, sizeof d);
-		gotoAddress(((Symbol *)d.cursor_ptr)->location->addr, this);
+		if (d.cursor_ptr) gotoAddress(((Symbol *)d.cursor_ptr)->location->addr, this);
 	}
 	dialog->done();
 	delete dialog;

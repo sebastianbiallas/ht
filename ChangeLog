@@ -9,13 +9,12 @@ version 0.8-trunk:
 		- Mach-O header and image support for PPC and x86 (experimental)
 		- FLT (Flat) support (experimental)
 		- PEF support (experimental)
+		- XCOFF32 support
+		- COFF support for coff files without optional header
+		- COFF big-endian support
 		- ELF PPC support
 		- ELF relocatable file support
-		- fixed buggy ELF reading code partially (thanks rpm28).
-		  further reviewing required.
-		- XCOFF32 support
-		- support for COFF files without optional header
-		- big-endian COFF support
+		- fixed buggy ELF reading code partially (thanks rpm28)
 	- eval dialog: added function help
 	- eval: not ('~') and logical-not ('!') operators
 	- disassembler interface (int maxlen, not byte maxlen)

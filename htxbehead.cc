@@ -299,6 +299,7 @@ void ht_xbe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *
 	VIEW_DEBUG_NAME("ht_xbe_header_viewer");
 }
 
+/*
 static ht_format_viewer *find_hex_viewer(ht_group *group)
 {
 	// FIXME: God forgive us...
@@ -313,6 +314,7 @@ static ht_format_viewer *find_hex_viewer(ht_group *group)
 	}
 	return NULL;
 }
+*/
 
 int ht_xbe_header_viewer::ref_sel(LINE_ID *id)
 {
