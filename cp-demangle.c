@@ -95,8 +95,11 @@
 #include <string.h>
 #endif
 
-#include "ansidecl.h"
-#include "libiberty.h"
+//#include "ansidecl.h"
+//#include "libiberty.h"
+#include <malloc.h>
+#include <string.h>
+
 #include "demangle.h"
 #include "cp-demangle.h"
 
