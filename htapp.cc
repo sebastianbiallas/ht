@@ -277,11 +277,11 @@ bool FileBrowser::extract_url(char *buf)
 /*     ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
 	vfs_extra *x = (vfs_extra*)t->extra_data;*/
 	Vfs *vfs = listbox->getCurVfs();
-     if (vfs) {
+	if (vfs) {
 		int buflen = ht_snprintf(buf, VFS_URL_MAX, "%s:", listbox->getCurProto());
 		char fname[VFS_URL_MAX];
 		bin2str(fname, i.text, i.textlen);
-     	vfs->canonicalize(buf+buflen, fname, listbox->getCurDir());
+		vfs->canonicalize(buf+buflen, fname, listbox->getCurDir());
 		return true;
 	}
 	return false;
@@ -292,7 +292,7 @@ void FileBrowser::listbox_changed()
 	FileBrowserVfsListboxData l;
 	listbox->databuf_get(&l);
 	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(l.cursor_id);
-     if (t) {
+	if (t) {
 		vfs_extra *x = (vfs_extra*)t->extra_data;
 		ht_strinputfield_data i;
 		i.textlen = strlen(x->name);
@@ -828,7 +828,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 				update();
 				if (p) cursor_down(1);
 				dirtyview();
-                    rearrangeColumns();
+				rearrangeColumns();
 			}
 			clearmsg(msg);
 			return;

@@ -68,7 +68,7 @@ public:
 	virtual	bool			findClose(pfind_t *f) = 0;
 	virtual	int			getCaps() = 0;
 	virtual	const char *	getProtoName() = 0;
-     virtual	is_path_delim	isPathDelim() = 0;
+	virtual	is_path_delim	isPathDelim() = 0;
 	virtual	int			makeDir(const char *dirname) = 0;
 	virtual	int			open(const char *filename, bool edit) = 0;
 	virtual	int			pstat(pstat_t *s, const char *filename) = 0;
@@ -96,7 +96,7 @@ public:
 	virtual	bool			findClose(pfind_t *f);
 	virtual	int			getCaps();
 	virtual	const char *	getProtoName();
-     virtual	is_path_delim	isPathDelim();
+	virtual	is_path_delim	isPathDelim();
 	virtual	int			makeDir(const char *dirname);
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);
@@ -131,7 +131,7 @@ public:
 	virtual	bool			findClose(pfind_t *f);
 	virtual	int			getCaps();
 	virtual	const char *	getProtoName();
-     virtual	is_path_delim	isPathDelim();
+	virtual	is_path_delim	isPathDelim();
 	virtual	int			makeDir(const char *dirname);
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);

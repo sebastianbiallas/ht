@@ -1470,7 +1470,7 @@ bool ht_uformat_viewer::edit_end()
 {
 	if (!edit()) {
 		hidecursor();
-          set_cursor(cursor);
+		set_cursor(cursor);
 #if 0
 		uformat_viewer_pos p = cursor;
 		if (find_first_tag(&p, size.h)) {

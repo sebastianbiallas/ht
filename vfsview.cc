@@ -28,10 +28,10 @@
 
 vfs_extra *make_vfs_extra(const char *name, pstat_t s)
 {
-     vfs_extra *e = (vfs_extra*)malloc(sizeof *e);
-     e->stat = s;
-     e->name = strdup(name);
-     return e;
+	vfs_extra *e = (vfs_extra*)malloc(sizeof *e);
+	e->stat = s;
+	e->name = strdup(name);
+	return e;
 }
 
 void free_vfs_extra(vfs_extra *e)
@@ -45,10 +45,10 @@ static Vfs *vfslistbox_vfs;
 static int vfslistbox_fncmp(const char *a, const char *b)
 {
 	if (strchr("/ *@=#+", *a) && (*b != *a)) {
-     	if (*a == '/') return -1;
-     	if (*b == '/') return 1;
-     	return *b-*a;
-     }
+		if (*a == '/') return -1;
+		if (*b == '/') return 1;
+		return *b-*a;
+	}
 	return vfslistbox_vfs->compareFilenames(a,b);
 }
 
@@ -104,13 +104,13 @@ static char *format_property[VFSV_FORMAT_PROPERTIES]={
 
 void	VfsListbox::init(bounds *b, ht_list *vl, ht_text *sp)
 {
-     cvfs = NULL;
-     show_pos = sp;
+	cvfs = NULL;
+	show_pos = sp;
 	ht_itext_listbox::init(b);
-     vfs_list = vl;
-     cdir[0] = 0;
-     cproto[0] = 0;
-     config_changed();
+	vfs_list = vl;
+	cdir[0] = 0;
+	cproto[0] = 0;
+	config_changed();
 }
 
 void VfsListbox::done()
@@ -121,80 +121,80 @@ void VfsListbox::done()
 int VfsListbox::changeDir(const char *dir)
 {
 	char url[VFS_URL_MAX];
-     ht_snprintf(url, sizeof url, "%s:%s", cproto, dir);
-     return changeURL(url);
+	ht_snprintf(url, sizeof url, "%s:%s", cproto, dir);
+	return changeURL(url);
 }
 
 int VfsListbox::changeURL(const char *url)
 {
 	int c = vfs_list->count();
-     const char *pend = strchr(url, ':');
-     Vfs *newVfs = NULL;
-     const char *pathptr = url;
-     if (pend) {
-     	/* find matching protocol */
-	     char protoname[VFS_PROTO_MAX+1];
-     	if (pend-url > VFS_PROTO_MAX) return EINVAL;
-	     strncpy(protoname, url, pend-url);
-          protoname[pend-url] = 0;
+	const char *pend = strchr(url, ':');
+	Vfs *newVfs = NULL;
+	const char *pathptr = url;
+	if (pend) {
+		/* find matching protocol */
+		char protoname[VFS_PROTO_MAX+1];
+		if (pend-url > VFS_PROTO_MAX) return EINVAL;
+		strncpy(protoname, url, pend-url);
+		protoname[pend-url] = 0;
 		for (int i=0; i<c; i++) {
-          	Vfs *v = (Vfs*)vfs_list->get(i);
-     		if (strcmp(protoname, v->getProtoName()) == 0) {
+			Vfs *v = (Vfs*)vfs_list->get(i);
+			if (strcmp(protoname, v->getProtoName()) == 0) {
 				newVfs = v;
-                    break;
-               }
-	     }
-	     if (!newVfs) return EINVAL;
-          pathptr = pend+1;
-     } else {
-     /* no proto mentioned, default to first in list */
+				break;
+			}
+		}
+		if (!newVfs) return EINVAL;
+		pathptr = pend+1;
+	} else {
+	/* no proto mentioned, default to first in list */
 		if (!c) return EINVAL;
 		newVfs = (Vfs*)vfs_list->get(0);
-     }
-     char path[VFS_DIR_MAX+1];
+	}
+	char path[VFS_DIR_MAX+1];
 	if (sys_common_canonicalize(path, pathptr, NULL, newVfs->isPathDelim()) !=0) return EINVAL;
 	/* add trailing path delimiter if needed */
-    	int l = strlen(path)-1;
+	int l = strlen(path)-1;
 	if ((l==-1) || !newVfs->isPathDelim()(path[l])) {
-     	if (l+2 >= (int)sizeof path) return EINVAL;
-     	path[l+1] = '/';
-     	path[l+2] = 0;
-     }
+		if (l+2 >= (int)sizeof path) return EINVAL;
+		path[l+1] = '/';
+		path[l+2] = 0;
+	}
 	/* stat and find out if its a dir*/
-     pstat_t s;
-     int e;
-     if ((e = newVfs->pstat(&s, path)) != 0) return e;
-     if (!(s.caps & pstat_mode_type) || !(HT_S_ISDIR(s.mode))) return ENOTDIR;
+	pstat_t s;
+	int e;
+	if ((e = newVfs->pstat(&s, path)) != 0) return e;
+	if (!(s.caps & pstat_mode_type) || !(HT_S_ISDIR(s.mode))) return ENOTDIR;
 	/* code to position cursor when doing "cd .." */
-     char spath[VFS_DIR_MAX+1];
-     char spath2[VFS_DIR_MAX+1];
-     strcpy(spath, cdir);
-     char *p = strend(spath)-2;
-     bool cdpp = false;
-     while (p >= spath) {
-     	if (newVfs->isPathDelim()(*p)) {
-          	strcpy(spath2, p+1);
-               *(strend(spath2)-1) = 0;
-          	*(p+1) = 0;
-	          if (newVfs->compareFilenames(path, spath) == 0) {
-    	          	cdpp = true;
-               }
-               break;
-          }
-     	p--;
-     }
-     
+	char spath[VFS_DIR_MAX+1];
+	char spath2[VFS_DIR_MAX+1];
+	strcpy(spath, cdir);
+	char *p = strend(spath)-2;
+	bool cdpp = false;
+	while (p >= spath) {
+		if (newVfs->isPathDelim()(*p)) {
+			strcpy(spath2, p+1);
+			*(strend(spath2)-1) = 0;
+			*(p+1) = 0;
+			if (newVfs->compareFilenames(path, spath) == 0) {
+				cdpp = true;
+			}
+			break;
+		}
+		p--;
+	}
+	
 	/* everything ok, set current to this */
 	strncpy(cproto, newVfs->getProtoName(), sizeof cproto-1);
-     strncpy(cdir, path, sizeof cdir-1);
-     cvfs = newVfs;
+	strncpy(cdir, path, sizeof cdir-1);
+	cvfs = newVfs;
 
 	reread();
-     /**/
-    		update();
-     if (dfmt_quickfind != -1) {
+	/**/
+		update();
+	if (dfmt_quickfind != -1) {
 		ht_text_listbox_sort_order so[1];
-          vfslistbox_vfs = cvfs;
+		vfslistbox_vfs = cvfs;
 		so[0].col = dfmt_quickfind;
 		so[0].compare_func = vfslistbox_fncmp;
 		sort(1, so);
@@ -203,24 +203,24 @@ int VfsListbox::changeURL(const char *url)
 	goto_item_by_position(0);
 	/* code to position cursor when doing "cd .." (part II) */
 	if (cdpp) {
-          ht_text_listbox_item *i = (ht_text_listbox_item*)getfirst();
-          while (i) {
-          	vfs_extra *x = (vfs_extra*)i->extra_data;
-          	if (newVfs->compareFilenames(x->name, spath2) == 0) {
-               	goto_item(i);
-               	break;
-               }
-          	i = (ht_text_listbox_item*)getnext(i);
-          }
-     }
-     rearrangeColumns();
+		ht_text_listbox_item *i = (ht_text_listbox_item*)getfirst();
+		while (i) {
+			vfs_extra *x = (vfs_extra*)i->extra_data;
+			if (newVfs->compareFilenames(x->name, spath2) == 0) {
+				goto_item(i);
+				break;
+			}
+			i = (ht_text_listbox_item*)getnext(i);
+		}
+	}
+	rearrangeColumns();
 
-     return 0;
+	return 0;
 }
 
 void VfsListbox::config_changed()
 {
-     ht_text_listbox::config_changed();
+	ht_text_listbox::config_changed();
 	char *dfmt = get_config_string("misc/vfs display format");
 	set_display_format(dfmt ? dfmt : (char*)"name");
 	if (dfmt) free(dfmt);
@@ -229,7 +229,7 @@ void VfsListbox::config_changed()
 void	VfsListbox::free_extra_data(void *extra_data)
 {
 	if (extra_data) {
-     	free_vfs_extra((vfs_extra*)extra_data);
+		free_vfs_extra((vfs_extra*)extra_data);
 	}
 }
 
@@ -255,31 +255,31 @@ void VfsListbox::handlemsg(htmsg *msg)
 			switch (msg->data1.integer) {
 				case K_Return: {
 					if (count && select_entry(e_cursor)) {
-	                         clearmsg(msg);
-         		               return;
+						clearmsg(msg);
+						return;
 					}
-                         break;
+					break;
 				}
 			}
-               break;
+			break;
 	}
-     return ht_text_listbox::handlemsg(msg);
+	return ht_text_listbox::handlemsg(msg);
 }
 
 void VfsListbox::set_display_format(char *fmt)
 {
 /*	int dfmt_cols;
 	int dfmt_props;
-     int dfmt_prop2colidx[VFSV_FORMAT_MAX_COLS];
+	int dfmt_prop2colidx[VFSV_FORMAT_MAX_COLS];
 	int dfmt_prop[VFSV_FORMAT_MAX_COLS];*/
 	int type;
 	dfmt_cols = 0;
-     dfmt_props = 0;
-     dfmt_quickfind = -1;
+	dfmt_props = 0;
+	dfmt_quickfind = -1;
 	while ((fmt = translate_prop(fmt, &type))) {
-     	if (type == VFSV_FORMAT_SEPARATOR) {
+		if (type == VFSV_FORMAT_SEPARATOR) {
 			if (++dfmt_cols == VFSV_FORMAT_MAX_COLS) break;
-          } else {
+		} else {
 			if (*fmt == ':') {
 				fmt++;
 				unsigned int width = strtoul(fmt, &fmt, 10);
@@ -292,21 +292,21 @@ void VfsListbox::set_display_format(char *fmt)
 			} else {
 				dfmt_prop[dfmt_props] = MAKE_DISPLAY_FORMAT(type);
 			}
-               dfmt_prop2colidx[dfmt_props] = dfmt_cols;
+			dfmt_prop2colidx[dfmt_props] = dfmt_cols;
 			if (++dfmt_props == VFSV_FORMAT_MAX_COLS) break;
 		}
 
 		while ((*fmt == ',') || (*fmt == ' ')) fmt++;
 
-          if ((type == VFSV_FORMAT_NAME) && (dfmt_quickfind == -1)) {
-               dfmt_quickfind = dfmt_cols;
-          }
+		if ((type == VFSV_FORMAT_NAME) && (dfmt_quickfind == -1)) {
+			dfmt_quickfind = dfmt_cols;
+		}
 	}
-     ++dfmt_cols;
-     cols = dfmt_cols;
-     if (dfmt_quickfind != -1) keycol = dfmt_quickfind;
-     	else keycol = 0;
-     rearrangeColumns();
+	++dfmt_cols;
+	cols = dfmt_cols;
+	if (dfmt_quickfind != -1) keycol = dfmt_quickfind;
+		else keycol = 0;
+	rearrangeColumns();
 }
 
 bool VfsListbox::select_entry(void *entry)
@@ -320,8 +320,8 @@ bool VfsListbox::select_entry(void *entry)
 				ht_snprintf(d, sizeof d, "%s%s", cdir, e->name);
 				changeDir(d);
 				update();
-                    return true;
-               }
+				return true;
+			}
 		}
 	}
 	return false;
@@ -344,42 +344,42 @@ void	VfsListbox::reread()
 #define VFSV_FORMAT_MAX_LENGTH 256
 	if (!cvfs) return;
 	clear_all();
-     char *strs[VFSV_FORMAT_MAX_COLS];
-     for (int i=0; i<dfmt_cols; i++) {
-     	strs[i] = (char*)malloc(VFSV_FORMAT_MAX_LENGTH);
-     }
-     pfind_t f;
-     int k = 0;
-     if (cvfs->findFirst(cdir, &f)) {
-     	do {
-          	if (strcmp(f.name, ".") != 0) {
-			     for (int i=0; i<dfmt_cols; i++) {
-			          *(strs[i]) = 0;
+	char *strs[VFSV_FORMAT_MAX_COLS];
+	for (int i=0; i<dfmt_cols; i++) {
+		strs[i] = (char*)malloc(VFSV_FORMAT_MAX_LENGTH);
+	}
+	pfind_t f;
+	int k = 0;
+	if (cvfs->findFirst(cdir, &f)) {
+		do {
+			if (strcmp(f.name, ".") != 0) {
+				for (int i=0; i<dfmt_cols; i++) {
+					*(strs[i]) = 0;
 				}
-			     for (int i=0; i<dfmt_props; i++) {
-                    	int z = dfmt_prop2colidx[i];
-                    	int l = strlen(strs[z]);
-     	          	renderEntry(strs[z]+l, VFSV_FORMAT_MAX_LENGTH-l, dfmt_prop[i], f.name, f.stat);
-			     }
-               	insert_str_extra(k++, make_vfs_extra(f.name, f.stat), strs);
+				for (int i=0; i<dfmt_props; i++) {
+					int z = dfmt_prop2colidx[i];
+					int l = strlen(strs[z]);
+					renderEntry(strs[z]+l, VFSV_FORMAT_MAX_LENGTH-l, dfmt_prop[i], f.name, f.stat);
+				}
+				insert_str_extra(k++, make_vfs_extra(f.name, f.stat), strs);
 			}
-          } while (cvfs->findNext(&f));
-     }
-     cvfs->findClose(&f);
-     for (int i=0; i<dfmt_cols; i++) {
-     	free(strs[i]);
-     }
+		} while (cvfs->findNext(&f));
+	}
+	cvfs->findClose(&f);
+	for (int i=0; i<dfmt_cols; i++) {
+		free(strs[i]);
+	}
 }
 
 void VfsListbox::update()
 {
-     if (show_pos) {
-     	char curl[VFS_URL_MAX];
-          ht_snprintf(curl, sizeof curl, "%s:%s", cproto, cdir);
-     	show_pos->settext(curl);
+	if (show_pos) {
+		char curl[VFS_URL_MAX];
+		ht_snprintf(curl, sizeof curl, "%s:%s", cproto, cdir);
+		show_pos->settext(curl);
 	}
 
-     ht_text_listbox::update();
+	ht_text_listbox::update();
 }
 
 void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filename, pstat_t stat)
@@ -388,12 +388,12 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 	int timei = 0;
 	switch (GET_DISPLAY_FORMAT_TYPE(dfmt)) {
 		case VFSV_FORMAT_NAME: {
-          	ht_snprintf(buf, bufsize, "%s", filename);
+			ht_snprintf(buf, bufsize, "%s", filename);
 			break;
 		}
 		case VFSV_FORMAT_SIZE:
 			if (stat.caps & pstat_size) {
-	          	ht_snprintf(buf, bufsize, "%d", stat.size);
+				ht_snprintf(buf, bufsize, "%d", stat.size);
 			}
 			break;
 		case VFSV_FORMAT_BSIZE:
@@ -408,7 +408,7 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 			}
 			break;
 		case VFSV_FORMAT_TYPE:
-          	if (bufsize>1) {
+			if (bufsize>1) {
 				if (stat.caps & pstat_mode_type) {
 					if (HT_S_ISDIR(stat.mode)) {
 						buf[0] = '/';
@@ -470,7 +470,7 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 				time_t ct;
 				time(&ct);
 				tm c = *gmtime(&ct);
-                    char *line = buf;
+				char *line = buf;
 									   
 				char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 				if ((reltime) && ((UINT)ct-q<=60*60*24*28)) {
@@ -501,8 +501,8 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 			break;
 		}
 		case VFSV_FORMAT_PERM: {
-          	if (bufsize>3) {
-	          	char *line = buf;
+			if (bufsize>3) {
+				char *line = buf;
 				if (stat.caps & pstat_mode_type) {
 					*(line++)=HT_S_ISDIR(stat.mode) ? 'd' : '-';
 				}
@@ -555,7 +555,7 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 			}
 			break;
 		case VFSV_FORMAT_SPACE:
-          	if (bufsize>1) {
+			if (bufsize>1) {
 				buf[0] = ' ';
 				buf[1] = 0;
 			}

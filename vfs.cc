@@ -310,7 +310,7 @@ void RegistryFs::create_pfind_t(pfind_t *f, const char *key, ht_registry_data *d
 {
 	f->name = key;
 	f->stat.caps = pstat_mode_type | pstat_desc;
-     create_pstat_t(&f->stat, data, type);
+	create_pstat_t(&f->stat, data, type);
 	data->strvalue(f->stat.desc);		/* FIXME: possible buffer overflow !!! only 32 bytes... */
 }
 
@@ -464,15 +464,15 @@ int RegistryFs::pstat(pstat_t *s, const char *filename)
 	ht_registry_data *data;
 	ht_registry_node_type type;
 
-     char key[VFS_DIR_MAX];
-     ht_snprintf(key, sizeof key, "%s", filename);
-     int l = strlen(key)-1;
-     if ((l>=0) && (key[l] == '/')) key[l]=0;
+	char key[VFS_DIR_MAX];
+	ht_snprintf(key, sizeof key, "%s", filename);
+	int l = strlen(key)-1;
+	if ((l>=0) && (key[l] == '/')) key[l]=0;
 	if (registry->find_any_entry(key, &data, &type)) {
-	     create_pstat_t(s, data, type);
-	     return 0;
-     }
-     return EINVAL;
+		create_pstat_t(s, data, type);
+		return 0;
+	}
+	return EINVAL;
 }
 
 int RegistryFs::renameFile(const char *filename, const char *newname)

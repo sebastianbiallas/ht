@@ -774,13 +774,13 @@ void ht_strinputfield::draw()
 		buf_printchar(size.w-1, y+size.h-1, getcolor(palidx_generic_input_clip), CHAR_ARROW_DOWN);
 	}
 	if (focused) {
-     	int cx, cy;
+		int cx, cy;
 		if (*curchar-*text-ofs>=(size.w-2)*size.h) {
-          	cx = size.w-1;
-          	cy = size.h-1;
+			cx = size.w-1;
+			cy = size.h-1;
 		} else {
-          	cx = (*curchar-*text-ofs)%(size.w-2)+1;
-               cy = (*curchar-*text-ofs)/(size.w-2);
+			cx = (*curchar-*text-ofs)%(size.w-2)+1;
+			cy = (*curchar-*text-ofs)/(size.w-2);
 		}
 		setcursor(cx, cy, insert ? cm_normal : cm_overwrite);
 	}
@@ -1095,13 +1095,13 @@ void ht_hexinputfield::draw()
 		buf_print(size.w-1, y, getcolor(palidx_generic_input_clip), ">");
 	}
 	if (focused) {
-     	int cx, cy;
+		int cx, cy;
 		if ((*curchar-*text-ofs)*3+nib+1>=(size.w-2)*size.h) {
-          	cx = size.w-1;
-               cy = size.h-1;
+			cx = size.w-1;
+			cy = size.h-1;
 		} else {
-          	cx = ((*curchar-*text-ofs)*3+nib+1)%(size.w-2);
-               cy = ((*curchar-*text-ofs)*3+nib+1)/(size.w-2);
+			cx = ((*curchar-*text-ofs)*3+nib+1)%(size.w-2);
+			cy = ((*curchar-*text-ofs)*3+nib+1)/(size.w-2);
 		}
 		setcursor(cx, cy, insert ? cm_normal : cm_overwrite);
 	}
@@ -1438,7 +1438,7 @@ public:
 void ht_listbox::init(bounds *b, UINT Listboxcaps)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_RESIZE, 0);
-     cached_count = 0;
+	cached_count = 0;
 
 	growmode = MK_GM(GMH_FIT, GMV_FIT);
 

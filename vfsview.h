@@ -30,7 +30,7 @@
 
 struct vfs_extra {
 	pstat_t stat;
-     char *name;
+	char *name;
 };
 
 #define VFSV_FORMAT_MAX_COLS		64
@@ -40,40 +40,40 @@ struct vfs_extra {
 
 class VfsListbox: public ht_itext_listbox {
 protected:
-     ht_list *vfs_list;
+	ht_list *vfs_list;
 	Vfs *cvfs;
-     char cdir[VFS_DIR_MAX+1];
-     char cproto[VFS_PROTO_MAX+1];
+	char cdir[VFS_DIR_MAX+1];
+	char cproto[VFS_PROTO_MAX+1];
 /**/
 	int dfmt_cols;
 	int dfmt_props;
-     int dfmt_prop2colidx[VFSV_FORMAT_MAX_COLS];
+	int dfmt_prop2colidx[VFSV_FORMAT_MAX_COLS];
 	int dfmt_prop[VFSV_FORMAT_MAX_COLS];
-     int dfmt_quickfind;
+	int dfmt_quickfind;
 /**/
 	ht_text *show_pos;
-     
+	
 /* overwritten */
-     virtual	void			free_extra_data(void *extra_data);
+	virtual	void			free_extra_data(void *extra_data);
 /* new */
 			void			renderEntry(char *buf, int bufsize, int dfmt, const char *filename, pstat_t stat);
 			void			set_display_format(char *fmt);
 	virtual	bool 		select_entry(void *entry);
 			char *		translate_prop(char *fmt, int *type);
-               void			reread();
+			void			reread();
 public:
 			void			init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
 	virtual	void			done();
 /* overwritten */
 	virtual	void			config_changed();
 	virtual	void			handlemsg(htmsg *msg);
-     virtual	void			update();
+	virtual	void			update();
 /* new */
-               int			changeURL(const char *url);
-               int			changeDir(const char *dir);
-               const char *	getCurDir();
-               const char *	getCurProto();
-               Vfs *		getCurVfs();
+			int			changeURL(const char *url);
+			int			changeDir(const char *dir);
+			const char *	getCurDir();
+			const char *	getCurProto();
+			Vfs *		getCurVfs();
 };
 
 /*
