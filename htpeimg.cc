@@ -112,6 +112,27 @@ format_viewer_if htpeimage_if = {
 	0
 };
 
+static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
+{
+	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
+     RVA rva = QWORD_GET_INT(i->value);
+	viewer_pos p;
+     FILEOFS ofs;
+	if (pe_rva_to_ofs(&aviewer->pe_shared->sections, rva, &ofs)
+     && aviewer->offset_to_pos(ofs, &p)) {
+		Address *a;
+		int b;
+		aviewer->convertViewerPosToAddress(p, &a);
+		a->putIntoArray((byte*)&b);
+		delete a;
+		scalar_create_int_c(result, b);
+		return 1;
+	} else {
+		set_eval_error("invalid file offset or no corresponding RVA for '0%xh'", rva);
+	}
+	return 0;
+}
+
 /*
  *	CLASS ht_pe_aviewer
  */
@@ -120,6 +141,16 @@ void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, h
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	pe_shared = PE_shared;
 	file = File;
+}
+
+int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	eval_func myfuncs[] = {
+		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT}},
+		{NULL}
+	};
+	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
+     return ht_aviewer::func_handler(result, name, params);
 }
 
 void ht_pe_aviewer::setAnalyser(Analyser *a)

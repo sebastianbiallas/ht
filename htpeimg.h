@@ -36,6 +36,7 @@ public:
 	ht_pe_shared_data *pe_shared;
 	ht_streamfile *file;
 		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_pe_shared_data *pe_shared);
+	virtual int  func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual void setAnalyser(Analyser *a);
 };
 
