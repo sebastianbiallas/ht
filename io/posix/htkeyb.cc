@@ -77,6 +77,10 @@ UINT ht_escseq2rawkey(UINT r)
 	switch (r) {
 		case 'H': return KEY_HOME;
 		case 'F': return KEY_END;
+		case 'P': return KEY_F(1);
+		case 'Q': return KEY_F(2);
+		case 'R': return KEY_F(3);
+		case 'S': return KEY_F(4);
 	}
 	return K_INVALID;
 }
@@ -270,8 +274,8 @@ bool ht_keypressed()
 int ht_raw_getkey()
 {
 	int c = getch();
-	if (c=='\e') {
-		c=getch();
+	if (c == '\e') {
+		c = getch();
 		if ((c==-1) || (c=='\e')) c='\e'; else c=HT_META_KEY(c);
 	}
 	return c;
@@ -297,7 +301,7 @@ bool init_keyb()
 	for (i=0; i<sizeof ht_curses_key_defs/ sizeof ht_curses_key_defs[0]; i++) {
 		ht_set_key(ht_curses_key_defs[i].key, ht_curses_key_defs[i].keycode);
 	}
-	
+
 	return true;
 }
 
