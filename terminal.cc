@@ -23,55 +23,25 @@
 
 #include "htctrl.h"
 #include "htidle.h"
+#include "htiobox.h"
 #include "terminal.h"
+#include "unistd.h"
 
-/**/
-#ifdef DJGPP
-#include <unistd.h>
-int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd)
+inline static ssize_t read_wrap(int fd, void *buffer, size_t length)
 {
-	int save_stdout = dup(STDOUT_FILENO);
-	int save_stderr = dup(STDERR_FILENO);
-	*in = NULL;
-	*out = tmpfile();
-	*err = tmpfile();
-	dup2(fileno(*out), STDOUT_FILENO);
-	dup2(fileno(*err), STDERR_FILENO);
-	int r = system(cmd);
-	dup2(save_stdout, STDOUT_FILENO);
-	dup2(save_stderr, STDERR_FILENO);
-	close(save_stdout);
-	close(save_stderr);
-	fseek(*out, 0, SEEK_SET);
-	fseek(*err, 0, SEEK_SET);
-	return r;
+	return read(fd, buffer, length);
 }
-#else
-int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd)
+
+inline static int write_wrap(int file, const void *buffer, size_t count)
 {
-	return 1;
+	return write(file, buffer, count);
 }
-#endif
-/**/
 
 /*
  *	CLASS Terminal
  */
 
-void append(FILE *file, ht_stream *stream)
-{
-#define STREAM_COPYBUF_SIZE	(1024)
-	const UINT bufsize=STREAM_COPYBUF_SIZE;
-	byte *buf=(byte*)malloc(bufsize);
-	UINT r;
-	do {
-		r = fread(buf, 1, bufsize, file);
-		stream->write(buf, r);
-	} while (r == bufsize);
-	free(buf);
-}
-
-void Terminal::init(FILE *_in, FILE *_out, FILE *_err)
+void Terminal::init(int _in, int _out, int _err, int _sys_ipc_handle)
 {
 	ht_mem_file *m = new ht_mem_file();
 	m->init();
@@ -79,14 +49,47 @@ void Terminal::init(FILE *_in, FILE *_out, FILE *_err)
 	in = _in;
 	out = _out;
 	err = _err;
+	sys_ipc_handle = _sys_ipc_handle;
 }
 
 void Terminal::done()
 {
-	fclose(in);
-	fclose(out);
-	fclose(err);
+	close(in);
+	close(out);
+	close(err);
+	sys_ipc_terminate(sys_ipc_handle);
 	ht_ltextfile::done();
+}
+
+bool Terminal::append(int file)
+{
+#define STREAM_COPYBUF_SIZE	(128)
+	const int bufsize=STREAM_COPYBUF_SIZE;
+	byte *buf=(byte*)malloc(bufsize);
+	int r, w = 0;
+	do {
+		r = read_wrap(file, buf, bufsize);
+		if (r<0) break;
+		w += r;
+		ht_ltextfile::write(buf, r);
+	} while (r == bufsize);
+	free(buf);
+	return w != 0;
+}
+
+bool Terminal::connected()
+{
+	return sys_ipc_is_valid(sys_ipc_handle);
+}
+
+UINT Terminal::write(const void *buf, UINT size)
+{
+	if (connected()) {
+		UINT r = ht_ltextfile::write(buf, size);
+		write_wrap(in, buf, size);
+		return r;
+	}
+	return 0;		
 }
 
 bool Terminal::update()
@@ -94,26 +97,24 @@ bool Terminal::update()
 	fd_set rfds, wfds;
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
-	FD_SET(fileno(out), &wfds);
-	FD_SET(fileno(err), &wfds);
-	FD_SET(fileno(in), &rfds);
+	FD_SET(out, &wfds);
+	FD_SET(err, &wfds);
+	FD_SET(in, &rfds);
 	struct timeval timeout;
 	
-	timeout.tv_sec = 1;
+	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 	
 /*	int n =*/ select(FD_SETSIZE, &rfds, &wfds, NULL, &timeout);
 	bool worked = false;
-	if (FD_ISSET(fileno(out), &wfds) && (!feof(out))) {
+//	if (FD_ISSET(err, &wfds)/* && (!feof(err))*/) {
 		seek(get_size());
-		append(out, this);
-		worked = true;
-	}
-	if (FD_ISSET(fileno(err), &wfds) && (!feof(err))) {
+		worked |= append(err);
+//	}
+//	if (FD_ISSET(out, &wfds)/* && (!feof(out))*/) {
 		seek(get_size());
-		append(err, this);
-		worked = true;
-	}
+		worked |= append(out);
+//	}
 	return worked;
 }
 
@@ -134,24 +135,61 @@ void TerminalViewer::done()
 	ht_text_viewer::done();
 }
 
+void TerminalViewer::do_update()
+{
+	UINT l = term->linecount();
+	if (l) {
+		goto_line(l-1);
+		cursor_end();
+	}
+	dirtyview();
+	app->sendmsg(msg_draw, 0);
+}
+
 void TerminalViewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_F8: {
-					term->seek(term->get_size());
-					term->write("blabla\x08", 7);
-					dirtyview();
+					char buf[128];
+					buf[0] = 0;
+					if (inputbox("input", "input", buf, sizeof buf) == button_ok) {
+						term->seek(term->get_size());
+						term->write(buf, strlen(buf));
+						do_update();
+					}
 					clearmsg(msg);
 					return;
 				}
-				case K_F9: {
+				case K_Return: {
 					term->seek(term->get_size());
 					term->write("\n", 1);
-					dirtyview();
+					do_update();
 					clearmsg(msg);
 					return;
+				}
+				case K_BackSpace: {
+					term->seek(term->get_size());
+					term->write("a\t", 2);
+					term->write("b\v", 2);
+					do_update();
+					clearmsg(msg);
+					return;
+				}
+				default: {
+					int ch = msg->data1.integer;
+					if ((ch >= 32) && (ch<=0x7f)) {
+						char buf[2];
+						buf[0] = ch;
+						buf[1] = 0;
+						term->seek(term->get_size());
+						term->write(buf, 1);
+						do_update();
+						clearmsg(msg);
+						return;
+					}						
+					break;
 				}
 			}
 	}
@@ -161,10 +199,8 @@ void TerminalViewer::handlemsg(htmsg *msg)
 bool TerminalViewer::idle()
 {
 	if (term->update()) {
-		dirtyview();
-		app->sendmsg(msg_draw, 0);
+		do_update();
 		return true;
 	}
 	return false;
 }
-

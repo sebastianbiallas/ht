@@ -23,20 +23,24 @@
 
 #include "textedit.h"
 
-int sys_ipc_exec(FILE **in, FILE **out, FILE **err, const char *cmd);
-
 /*
  *	CLASS Terminal
  */
 
 class Terminal: public ht_ltextfile {
 private:
-	FILE *in, *out, *err;
+	int in, out, err;
+	int sys_ipc_handle;
+
+		bool append(int file);
 public:
-			void init(FILE *in, FILE *out, FILE *err);
+		void init(int in, int out, int err, int sys_ipc_handle);
 	virtual	void done();
+/* oerwritten */	
+	virtual UINT write(const void *buf, UINT size);
 /* new */
-			bool update();
+		bool connected();
+		bool update();
 };
 
 /*
@@ -46,6 +50,8 @@ public:
 class TerminalViewer: public ht_text_viewer {
 private:
 	Terminal	*term;
+	
+		void do_update();
 public:
 			void init(bounds *b, Terminal *term, bool own_term);
 	virtual	void done();
