@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *   ppc-dis.h
+ *	ppcdis.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *

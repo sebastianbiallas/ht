@@ -1,7 +1,6 @@
-
 /*
  *	HT Editor
- *   alphadis.cc
+ *	ppcdis.cc
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *	Copyright 1994 Free Software Foundation, Inc.
