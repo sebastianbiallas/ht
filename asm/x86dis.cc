@@ -216,15 +216,15 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				}
 				break;
 			case SPECIAL_TYPE_GROUP: {
-				int m=mkreg(getmodrm());
-				insn.opcode|=m<<8;
-				decode_insn(&x86_group_insns[special.data][m]);
+				int m = mkreg(getmodrm());
+				insn.opcode |= m<<8;
+				decode_insn(&x86_group_insns[(int)special.data][m]);
 				break;
 			}
 			case SPECIAL_TYPE_FGROUP: {
-				int m=getmodrm();
-				if (mkmod(m)==3) {
-					x86opc_finsn f=x86_float_group_insns[special.data][mkreg(m)];
+				int m = getmodrm();
+				if (mkmod(m) == 3) {
+					x86opc_finsn f = x86_float_group_insns[(int)special.data][mkreg(m)];
 /*					fprintf(stderr, "special.data=%d, m=%d, mkreg(m)=%d, mkrm(m)=%d\n", special.data, m, mkreg(m), mkrm(m));*/
 					if (f.group) {
 						decode_insn(&f.group[mkrm(m)]);
@@ -232,7 +232,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 						decode_insn(&f.insn);
 					} else invalidate();
 				} else {
-					decode_insn(&x86_modfloat_group_insns[special.data][mkreg(m)]);
+					decode_insn(&x86_modfloat_group_insns[(int)special.data][mkreg(m)]);
 				}
 				break;
 			}
