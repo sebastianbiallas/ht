@@ -142,7 +142,10 @@ void eval_dialog()
 		
 			insert_history_entry(ehist, b, 0);
 
+               // FIXME: debug
+//               set_helpmode(1);
 			if (eval(&r, b, NULL, NULL, NULL)) {
+	               set_helpmode(0);
 				switch (r.type) {
 					case SCALAR_INT: {
 						char *x = b;
@@ -223,6 +226,9 @@ void eval_dialog()
 				s->isetcursor(pos);
 				sprintf(b, "error at pos %d: %s", pos+1, str);
 			}
+               // FIXME: debug
+//               set_helpmode(0);
+               
 			t->settext(b);
 		} else {
 			t->settext(hint);

@@ -16,6 +16,11 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     * htformat: string eval interface changed heaviliy funcs should
+       now be easily extendable through inheritance and more
+     * htpeimg: evalfunc rva() implemented (proof of concept)
+     * snprintf: %q/%Q removed
+
      * htanaly.cc: symbols and xrefs dialogs can be now be resized
      * listbox can resize now !
 	* ht_view::getminbounds introduced
