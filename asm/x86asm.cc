@@ -84,7 +84,7 @@ x86addrcoding modrm32[3][8] = {
 {X86_REG_CX, X86_REG_NO, 0},
 {X86_REG_DX, X86_REG_NO, 0},
 {X86_REG_BX, X86_REG_NO, 0},
-{X86_REG_INVALID, X86_REG_INVALID, -1},                           /* special: SIB */
+{X86_REG_INVALID, X86_REG_INVALID, -1},		/* special: SIB */
 {X86_REG_NO, X86_REG_NO, 4},
 {X86_REG_SI, X86_REG_NO, 0},
 {X86_REG_DI, X86_REG_NO, 0}
@@ -95,7 +95,7 @@ x86addrcoding modrm32[3][8] = {
 {X86_REG_CX, X86_REG_NO, 1},
 {X86_REG_DX, X86_REG_NO, 1},
 {X86_REG_BX, X86_REG_NO, 1},
-{X86_REG_INVALID, X86_REG_INVALID, -1},                           /* special: SIB + disp8 */
+{X86_REG_INVALID, X86_REG_INVALID, -1},		/* special: SIB + disp8 */
 {X86_REG_BP, X86_REG_NO, 1},
 {X86_REG_SI, X86_REG_NO, 1},
 {X86_REG_DI, X86_REG_NO, 1}
@@ -106,7 +106,7 @@ x86addrcoding modrm32[3][8] = {
 {X86_REG_CX, X86_REG_NO, 4},
 {X86_REG_DX, X86_REG_NO, 4},
 {X86_REG_BX, X86_REG_NO, 4},
-{X86_REG_INVALID, X86_REG_INVALID, -1},                           /* special: SIB + disp32 */
+{X86_REG_INVALID, X86_REG_INVALID, -1},		/* special: SIB + disp32 */
 {X86_REG_BP, X86_REG_NO, 4},
 {X86_REG_SI, X86_REG_NO, 4},
 {X86_REG_DI, X86_REG_NO, 4}
@@ -460,7 +460,8 @@ int x86asm::encode_modrm(x86_insn_op *op, char size, int allow_reg, int allow_me
 		case X86_OPTYPE_MEM: {
 			if (!allow_mem) return 0;
 
-			int mindispsize=op->mem.disp ? simmsize(op->mem.disp) : 0;
+			// FIXME: !
+			int mindispsize=op->mem.disp ? simmsize(op->mem.disp, 4) : 0;
 			int addrsize=op->mem.addrsize;
 			if (addrsize==X86_ADDRSIZEUNKNOWN) addrsize=eaddrsize;
 			if (addrsize==X86_ADDRSIZE16) {
@@ -879,15 +880,16 @@ int x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 {
 	if ((op->type==X86_OPTYPE_EMPTY) && (xop->type==TYPE_0)) return 1;
 	if ((!op->size) && (xop->type!=TYPE_0)) return 1;
-	char *hsz=0;
+	char *hsz = NULL;
 	if (((op->type==X86_OPTYPE_MEM) && (op->mem.floatptr)) || (op->type==X86_OPTYPE_STX)) {
 		return (xop->size==flsz2hsz(op->size));
 	} else if (op->type==X86_OPTYPE_IMM) {
 		if (xop->type==TYPE_Is) {
-			hsz=immlsz2hsz(simmsize(op->imm), opsize);
+			hsz=immlsz2hsz(simmsize(op->imm, op->size), opsize);
 		} else if (xop->type==TYPE_J) {
 			int size=esizeop(xop->size, opsize);
-			hsz=immlsz2hsz(simmsize(op->imm-address-code.size-size-1), opsize);
+			// FIXME: ?!
+			hsz=immlsz2hsz(simmsize(op->imm-address-code.size-size-1, 4), opsize);
 		} else {
 			hsz=immlsz2hsz(op->size, opsize);
 		}
@@ -917,7 +919,8 @@ int x86asm::match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int 
 #define MATCHOPNAME_MATCH_IF_OPSIZE16	2
 #define MATCHOPNAME_MATCH_IF_OPSIZE32	3
 
-int x86asm::match_opcode_name(char *input_name, char *opcodelist_name) {
+int x86asm::match_opcode_name(char *input_name, char *opcodelist_name)
+{
 	if (opcodelist_name) {
 		if (strstr(opcodelist_name, "%c")) {
 			char n[32];
@@ -1151,7 +1154,6 @@ int x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
 		if (!strncmp(s, "ptr", 3)==0) return 0;
 		opsize=hsize;
 		s+=3;
-		if (!strchr(" \t", *s) || !*s) return 0;
 		while (strchr(" \t", *s) && *s) s++;
 	}
 
@@ -1334,7 +1336,7 @@ int x86asm::opspecialregs(x86_insn_op *op, char *xop)
 	return 0;
 }
 
-int x86asm::prepare_str(asm_insn *asm_insn, char *s)
+int x86asm::translate_str(asm_insn *asm_insn, const char *s)
 {
 	x86asm_insn *insn=(x86asm_insn*)asm_insn;
 	char *opp[3], op[3][256];
@@ -1347,7 +1349,7 @@ int x86asm::prepare_str(asm_insn *asm_insn, char *s)
 	insn->repprefix=X86_PREFIX_NO;
 	insn->segprefix=X86_PREFIX_NO;
 
-	char *p = s, *a, *b;
+	const char *p = s, *a, *b;
 /* prefixes */
 	while (iswhitespace(*p)) p++;
 	a=p;
@@ -1384,17 +1386,26 @@ int x86asm::prepare_str(asm_insn *asm_insn, char *s)
 	return 1;
 }
 
-int x86asm::simmsize(dword imm)
+int x86asm::simmsize(dword imm, int immsize)
 {
-//	if (!imm) return 0;
-	if ((imm<=0x7f) || (imm>=0xffffff80)) return 1;
-	if ((imm<=0x7fff) || (imm>=0xffff8000)) return 2;
-	return 4;
+	switch (immsize) {
+		case 1:
+			return 1;
+		case 2:
+			if ((imm<=0x7f) || (imm>=0xff80)) return 1;
+			return 2;
+		case 4:
+			if ((imm<=0x7f) || (imm>=0xffffff80)) return 1;
+			// FIXME: ?!
+			if ((imm<=0x7fff) || (imm>=0xffff8000)) return 2;
+			return 4;
+	}
+	return 0;
 }
 
-void x86asm::splitstr(char *s, char *name, char *op[3])
+void x86asm::splitstr(const char *s, char *name, char *op[3])
 {
-	char *a, *b;
+	const char *a, *b;
 	int wantbreak=0;
 	*name=0;
 	*op[0]=0;

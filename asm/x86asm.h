@@ -103,8 +103,8 @@ protected:
 	int opreg(x86_insn_op *op, char *xop);
 	int opseg(x86_insn_op *op, char *xop);
 	int opspecialregs(x86_insn_op *op, char *xop);
-	int simmsize(dword imm);
-	void splitstr(char *s, char *name, char *op[3]);
+	int simmsize(dword imm, int immsize);
+	void splitstr(const char *s, char *name, char *op[3]);
 public:
 			x86asm(int opsize, int addrsize);
 	virtual	~x86asm();
@@ -112,7 +112,7 @@ public:
 	virtual	asm_insn *alloc_insn();
 	virtual	asm_code *encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address);
 	virtual	char *get_name();
-	virtual	int prepare_str(asm_insn *asm_insn, char *s);
+	virtual	int translate_str(asm_insn *asm_insn, const char *s);
 };
 
 #endif /* __X86ASM_H__ */
