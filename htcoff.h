@@ -24,22 +24,23 @@
 #include "formats.h"
 #include "coff_s.h"
 #include "htcoffhd.h"
+#include "htendian.h"
 
 #define DESC_COFF			"coff - unix common obj file"
 #define DESC_COFF_HEADER		"coff/header"
-#define DESC_COFF_IMAGE		"coff/image"
+#define DESC_COFF_IMAGE			"coff/image"
 
-#define ATOM_COFF_MACHINES 				0xf0450000
-#define ATOM_COFF_MACHINES_STR			 "f0450000"
+#define ATOM_COFF_MACHINES 			0xf0450000
+#define ATOM_COFF_MACHINES_STR			"f0450000"
 
-#define ATOM_COFF_OPTIONAL_MAGICS 			0xf0450001
+#define ATOM_COFF_OPTIONAL_MAGICS 		0xf0450001
 #define ATOM_COFF_OPTIONAL_MAGICS_STR 		 "f0450001"
 
-#define ATOM_COFF_CHARACTERISTICS			0xf0450003
+#define ATOM_COFF_CHARACTERISTICS		0xf0450003
 #define ATOM_COFF_CHARACTERISTICS_STR		 "f0450003"
 
 #define ATOM_COFF_SECTION_CHARACTERISTICS	0xf0450004
-#define ATOM_COFF_SECTION_CHARACTERISTICS_STR "f0450004"
+#define ATOM_COFF_SECTION_CHARACTERISTICS_STR	 "f0450004"
 
 extern format_viewer_if htcoff_if;
 
@@ -53,6 +54,7 @@ struct ht_coff_shared_data {
 	dword hdr_ofs;
 	COFF_HEADER coffheader;
 	word opt_magic;
+	endianess endian;
 	union {
 		COFF_OPTIONAL_HEADER32 coff32header;
 	};
@@ -69,7 +71,7 @@ class ht_coff: public ht_format_group {
 private:
 	ht_coff_shared_data *coff_shared;
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess end);
 	virtual	void done();
 };
 

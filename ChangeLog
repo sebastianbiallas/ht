@@ -10,6 +10,7 @@ version 0.7-trunk:
 	- PowerPC (PPC) disassembler
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC-only, experimental)
+	- Big-endian COFF support implemented
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer

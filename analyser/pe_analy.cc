@@ -28,6 +28,7 @@
 #include "analy_il.h"
 #include "analy_names.h"
 #include "analy_register.h"
+#include "analy_ppc.h"
 #include "analy_x86.h"
 #include "global.h"
 #include "htctrl.h"
@@ -521,10 +522,14 @@ void PEAnalyser::initUnasm()
 			analy_disasm = new AnalyAlphaDisassembler();
 			((AnalyAlphaDisassembler *)analy_disasm)->init(this);
 			break;
-		case COFF_MACHINE_POWERPC:	// IBM PowerPC Little-Endian
+		case COFF_MACHINE_POWERPC_LE:	// IBM PowerPC Little-Endian
 			DPRINTF("no apropriate disassembler for POWER PC\n");
 			warnbox("No disassembler for POWER PC!");
 			break;
+		case COFF_MACHINE_POWERPC_BE:
+			analy_disasm = new AnalyPPCDisassembler();
+			((AnalyPPCDisassembler*)analy_disasm)->init(this);
+			break;          
 		case COFF_MACHINE_IA64:
 			if (!pe64) {
 				errorbox("Intel IA64 cant be used in PE32 format.");

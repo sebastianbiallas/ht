@@ -42,7 +42,8 @@ int_hash coff_machines[] =
 	{COFF_MACHINE_SH4, "Hitachi SH4"},
 	{COFF_MACHINE_ARM, "ARM"},
 	{COFF_MACHINE_THUMB, "THUMB"},
-	{COFF_MACHINE_POWERPC, "Power PC"},
+	{COFF_MACHINE_POWERPC_LE, "Power PC (little-endian)"},
+	{COFF_MACHINE_POWERPC_BE, "Power PC (big-endian)"},
 	{COFF_MACHINE_IA64, "Intel IA64"},
 	{COFF_MACHINE_MIPS16, "MIPS16"},
 	{COFF_MACHINE_68k, "Motorola 68k"},
@@ -122,53 +123,53 @@ ht_tag_flags_s coff_section_characteristics[] =
 
 ht_mask_ptable coffheader[]=
 {
-	{"machine",				STATICTAG_EDIT_WORD_LE("00000000")" "STATICTAG_DESC_WORD_LE("00000000", ATOM_COFF_MACHINES_STR)},
-	{"number of sections",		STATICTAG_EDIT_WORD_LE("00000002")},
-	{"time-date stamp",			STATICTAG_EDIT_TIME("00000004")},
-	{"pointer to symbol table",	STATICTAG_EDIT_DWORD_LE("00000008")},
-	{"number of symbols",		STATICTAG_EDIT_DWORD_LE("0000000c")},
-	{"size of optional header",	STATICTAG_EDIT_WORD_LE("00000010")},
-	{"characteristics",			STATICTAG_EDIT_WORD_LE("00000012")" "STATICTAG_FLAGS("00000012", ATOM_COFF_CHARACTERISTICS_STR)},
+	{"machine",			STATICTAG_EDIT_WORD_VE("00000000")" "STATICTAG_DESC_WORD_VE("00000000", ATOM_COFF_MACHINES_STR)},
+	{"number of sections",		STATICTAG_EDIT_WORD_VE("00000002")},
+	{"time-date stamp",		STATICTAG_EDIT_TIME("00000004")},
+	{"pointer to symbol table",	STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"number of symbols",		STATICTAG_EDIT_DWORD_VE("0000000c")},
+	{"size of optional header",	STATICTAG_EDIT_WORD_VE("00000010")},
+	{"characteristics",		STATICTAG_EDIT_WORD_VE("00000012")" "STATICTAG_FLAGS("00000012", ATOM_COFF_CHARACTERISTICS_STR)},
 	{0, 0}
 };
 
 ht_mask_ptable coff32header[] = {
-	{"optional magic",		STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_COFF_OPTIONAL_MAGICS_STR)},
+	{"optional magic",		STATICTAG_EDIT_WORD_VE("00000014")" "STATICTAG_DESC_WORD_VE("00000014", ATOM_COFF_OPTIONAL_MAGICS_STR)},
 	{"major linker version",	STATICTAG_EDIT_BYTE("00000016")},
 	{"minor linker version",	STATICTAG_EDIT_BYTE("00000017")},
-	{"size of code",		STATICTAG_EDIT_DWORD_LE("00000018")},
-	{"size of data",		STATICTAG_EDIT_DWORD_LE("0000001c")},
-	{"size of bss",		STATICTAG_EDIT_DWORD_LE("00000020")},
-	{"entry point",		STATICTAG_EDIT_DWORD_LE("00000024")},
-	{"code base",			STATICTAG_EDIT_DWORD_LE("00000028")},
-	{"data base",			STATICTAG_EDIT_DWORD_LE("0000002c")},
+	{"size of code",		STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"size of data",		STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"size of bss",			STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"entry point",			STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"code base",			STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"data base",			STATICTAG_EDIT_DWORD_VE("0000002c")},
 	{0, 0}
 };
 
 ht_mask_ptable coff_section[] = {
-	{"name",					STATICTAG_EDIT_CHAR("00000000") STATICTAG_EDIT_CHAR("00000001") STATICTAG_EDIT_CHAR("00000002") STATICTAG_EDIT_CHAR("00000003") STATICTAG_EDIT_CHAR("00000004") STATICTAG_EDIT_CHAR("00000005") STATICTAG_EDIT_CHAR("00000006") STATICTAG_EDIT_CHAR("00000007")},
-	{"virtual size",			STATICTAG_EDIT_DWORD_LE("00000008")},
-	{"virtual address",			STATICTAG_EDIT_DWORD_LE("0000000c")},
-	{"size",					STATICTAG_EDIT_DWORD_LE("00000010")},
-	{"offset",				STATICTAG_EDIT_DWORD_LE("00000014")},
-	{"relocation table offset",	STATICTAG_EDIT_DWORD_LE("00000018")},
-	{"line number table offset",	STATICTAG_EDIT_DWORD_LE("0000001c")},
-	{"relocation count",		STATICTAG_EDIT_WORD_LE("00000020")},
-	{"line number count",		STATICTAG_EDIT_WORD_LE("00000022")},
-	{"characteristics",			STATICTAG_EDIT_DWORD_LE("00000024")" "STATICTAG_FLAGS("00000024", ATOM_COFF_SECTION_CHARACTERISTICS_STR)},
+	{"name",			STATICTAG_EDIT_CHAR("00000000") STATICTAG_EDIT_CHAR("00000001") STATICTAG_EDIT_CHAR("00000002") STATICTAG_EDIT_CHAR("00000003") STATICTAG_EDIT_CHAR("00000004") STATICTAG_EDIT_CHAR("00000005") STATICTAG_EDIT_CHAR("00000006") STATICTAG_EDIT_CHAR("00000007")},
+	{"virtual size",		STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"virtual address",		STATICTAG_EDIT_DWORD_VE("0000000c")},
+	{"size",			STATICTAG_EDIT_DWORD_VE("00000010")},
+	{"offset",			STATICTAG_EDIT_DWORD_VE("00000014")},
+	{"relocation table offset",	STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"line number table offset",	STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"relocation count",		STATICTAG_EDIT_WORD_VE("00000020")},
+	{"line number count",		STATICTAG_EDIT_WORD_VE("00000022")},
+	{"characteristics",		STATICTAG_EDIT_DWORD_VE("00000024")" "STATICTAG_FLAGS("00000024", ATOM_COFF_SECTION_CHARACTERISTICS_STR)},
 	{0, 0}
 };
 
 ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
-	bool coff_bigendian = false;
-	ht_coff_shared_data *coff_shared=(ht_coff_shared_data *)group->get_shared_data();
+	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
+	bool coff_bigendian = coff_shared->endian == big_endian;
 
-	dword h=coff_shared->hdr_ofs;
-	ht_uformat_viewer *v=new ht_uformat_viewer();
+	dword h = coff_shared->hdr_ofs;
+	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_COFF_HEADER, VC_EDIT, file, group);
 
-	ht_mask_sub *m=new ht_mask_sub();
+	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 	register_atom(ATOM_COFF_MACHINES, coff_machines);
 	register_atom(ATOM_COFF_OPTIONAL_MAGICS, coff_optional_magics);
@@ -183,15 +184,15 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	/* optional header */
 	if (coff_shared->coffheader.optional_header_size>=2) {
 		m->add_mask("--- optional header ---");
-		word opt;
-		file->seek(h+20);
-		file->read(&opt, 2);
+		word opt = coff_shared->opt_magic;
+/*		file->seek(h+20);
+		file->read(&opt, 2);*/
 		switch (opt) {
 			case COFF_OPTMAGIC_COFF32:
 				m->add_staticmask_ptable(coff32header, h, coff_bigendian);
 				break;
 			default: {
-				m->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_LE("00000018")" "STATICTAG_DESC_WORD_LE("00000018", ATOM_COFF_OPTIONAL_MAGICS_STR), h+20, coff_bigendian);
+				m->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_VE("00000018")" "STATICTAG_DESC_WORD_VE("00000018", ATOM_COFF_OPTIONAL_MAGICS_STR), h+20, coff_bigendian);
 				m->add_mask("-------------------------------------------------------------------------");
 				m->add_mask("Unsupported optional magic ! If you get this message in an original");
 				m->add_mask("(unmodified) file, please contact us (see help).");
@@ -199,14 +200,13 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 		}
 	}
 	/* section headers */
-	int sc=0, os=0;
-	file->seek(h+2);
-	file->read(&sc, 2);
-	file->seek(h+16);
+	int sc = coff_shared->sections.section_count;
+	int os = coff_shared->coffheader.optional_header_size;
+/*	file->seek(h+16);
 	file->read(&os, 2);
-	file->seek(h+os+20);
+	file->seek(h+os+20);*/
 	v->insertsub(m);
-	
+
 	for (int i=0; i<sc; i++) {
 		ht_mask_sub *n=new ht_mask_sub();
 		n->init(file, i);

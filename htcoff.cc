@@ -36,53 +36,80 @@ format_viewer_if *htcoff_ifs[] = {
 	0
 };
 
-int is_coff(ht_streamfile *file, FILEOFS ofs)
+int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 {
+	// unfortunately COFF has no magic (urgs). so we have to guess
+	// a little bit.
 	COFF_HEADER h;
+	bool machine_found = false;
+	endianess end;
+
+	// FIXME: I'm sure little/big-endian assignment for CPUs is incorrect...
+
+	// LITTLE-ENDIAN machines
+	file->seek(ofs);
+	if (file->read(&h, sizeof h) != sizeof h) return false;
+	create_host_struct(&h, COFF_HEADER_struct, little_endian);
+	switch (h.machine) {
+		case COFF_MACHINE_I386:
+		case COFF_MACHINE_I486:
+		case COFF_MACHINE_I586:
+		case COFF_MACHINE_R3000:
+		case COFF_MACHINE_R4000:
+		case COFF_MACHINE_R10000:
+		case COFF_MACHINE_ALPHA:
+		case COFF_MACHINE_SH3:
+		case COFF_MACHINE_SH4:
+		case COFF_MACHINE_ARM:
+		case COFF_MACHINE_POWERPC_LE:
+		case COFF_MACHINE_IA64:
+		case COFF_MACHINE_MIPS16:
+		case COFF_MACHINE_68k:
+		case COFF_MACHINE_ALPHA_AXP_64:
+		case COFF_MACHINE_MIPSf:
+		case COFF_MACHINE_MIPS16f:
+			end = little_endian;
+			machine_found = true;
+	}
+
+	// BIG-ENDIAN machines
 	file->seek(ofs);
 	if (file->read(&h, sizeof h)!=sizeof h) return 0;
-	create_host_struct(&h, COFF_HEADER_struct, little_endian);
-//     dword size=file->get_size();
-/* test machine field */
+	create_host_struct(&h, COFF_HEADER_struct, big_endian);
 	switch (h.machine) {
-		case COFF_MACHINE_I386:		case COFF_MACHINE_I486:
-		case COFF_MACHINE_I586:		case COFF_MACHINE_R3000BE:
-		case COFF_MACHINE_R3000:		case COFF_MACHINE_R4000:
-		case COFF_MACHINE_R10000:	case COFF_MACHINE_ALPHA:
-		case COFF_MACHINE_SH3:		case COFF_MACHINE_SH4:
-		case COFF_MACHINE_ARM:		case COFF_MACHINE_POWERPC:
-		case COFF_MACHINE_IA64:		case COFF_MACHINE_MIPS16:
-		case COFF_MACHINE_68k:		case COFF_MACHINE_ALPHA_AXP_64:
-		case COFF_MACHINE_MIPSf:		case COFF_MACHINE_MIPS16f:
-			break;
-		default:
-			return 0;
+		case COFF_MACHINE_R3000BE:
+		case COFF_MACHINE_POWERPC_BE:
+			end = big_endian;
+			machine_found = true;
 	}
-/* test symbol_table_offset */
+	if (!machine_found) return false;
+	/* test symbol_table_offset */
 //	if ((h.symbol_table_offset>=size) || (h.symbol_table_offset<ofs+sizeof h)) return 0;
-/* test size of optional header */
-	if (h.optional_header_size>COFF_OPTHEADER_MAXSIZE) return 0;
+	/* test size of optional header */
+	if (h.optional_header_size>COFF_OPTHEADER_MAXSIZE) return false;
 
-/* all tests have completed successfully -> it's a COFF (probably) */
-	return 1;
+	/* all tests have completed successfully -> it's a COFF (probably) */
+	endian = end;
+	return true;
 }
 
 ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	FILEOFS h;
+	endianess end;
 /* look for pure coff */
-	if (!is_coff(file, h=0)) {
+	if (!is_coff(file, end, h = 0)) {
 /* look for dj-coff */
 		byte mz[2];
 		file->seek(0);
 		file->read(mz, 2);
-		if ((mz[0]!=IMAGE_MZ_MAGIC0) || (mz[1]!=IMAGE_MZ_MAGIC1) ||
-				(!is_coff(file, h=0x800)))
+		if ((mz[0] != IMAGE_MZ_MAGIC0) || (mz[1] != IMAGE_MZ_MAGIC1) ||
+				(!is_coff(file, end, h = 0x800)))
 				return 0;
 	}
 
-	ht_coff *g=new ht_coff();
-	g->init(b, file, htcoff_ifs, format_group, h);
+	ht_coff *g = new ht_coff();
+	g->init(b, file, htcoff_ifs, format_group, h, end);
 	return g;
 }
 
@@ -94,7 +121,7 @@ format_viewer_if htcoff_if = {
 /*
  *	CLASS ht_coff
  */
-void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h)
+void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h, endianess end)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_COFF, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_coff");
@@ -104,26 +131,28 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	coff_shared->hdr_ofs = h;
 	coff_shared->v_image = NULL;
 	coff_shared->v_header = NULL;
+	coff_shared->endian = end;
 
 /* headers */
 	file->seek(h);
 	file->read(&coff_shared->coffheader, sizeof coff_shared->coffheader);
-	create_host_struct(&coff_shared->coffheader, COFF_HEADER_struct, little_endian);
-	coff_shared->opt_magic=0;
+	create_host_struct(&coff_shared->coffheader, COFF_HEADER_struct, end);
+	coff_shared->opt_magic = 0;
 	if (coff_shared->coffheader.optional_header_size>=2) {
 		file->read(&coff_shared->opt_magic, sizeof coff_shared->opt_magic);
 		file->seek(h+sizeof coff_shared->coffheader);
+		coff_shared->opt_magic = create_host_int(&coff_shared->opt_magic, 2, end);
 		switch (coff_shared->opt_magic) {
 			case COFF_OPTMAGIC_COFF32:
 				file->read(&coff_shared->coff32header, sizeof coff_shared->coff32header);
-				create_host_struct(&coff_shared->coff32header, COFF_OPTIONAL_HEADER32_struct, little_endian);
+				create_host_struct(&coff_shared->coff32header, COFF_OPTIONAL_HEADER32_struct, end);
 				break;
 		}
 	}
 
 /* read section headers */
-	int os=coff_shared->coffheader.optional_header_size;
-	coff_shared->sections.section_count=coff_shared->coffheader.section_count;
+	int os = coff_shared->coffheader.optional_header_size;
+	coff_shared->sections.section_count = coff_shared->coffheader.section_count;
 	coff_shared->sections.base_ofs = 0x800;
 
 	h-=4;
@@ -132,10 +161,10 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
 	file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
 	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
-		create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, little_endian);
+		create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
 	}
 
-	shared_data=coff_shared;
+	shared_data = coff_shared;
 
 	ht_format_group::init_ifs(ifs);
 }

@@ -32,16 +32,14 @@
 
 ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
-	ht_coff_shared_data *coff_shared=(ht_coff_shared_data *)group->get_shared_data();
-
-	if (coff_shared->opt_magic!=COFF_OPTMAGIC_COFF32) return 0;
+	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 
 	LOG("%s: COFF: loading image (starting analyser)...", file->get_filename());
 	CoffAnalyser *p = new CoffAnalyser();
 	p->init(coff_shared, file);
 
-	bounds c=*b;
-	ht_group *g=new ht_group();
+	bounds c = *b;
+	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_COFF_IMAGE"-g");
 	AnalyInfoline *head;
 
@@ -81,9 +79,15 @@ ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 	v->sendmsg(msg_complete_init, 0);
 
-	Address *tmpaddr = p->createAddress32(coff_shared->coff32header.entrypoint_address);
-	v->gotoAddress(tmpaddr, NULL);
-	delete tmpaddr;
+	// entrypoint
+	switch (coff_shared->opt_magic) {
+		case COFF_OPTMAGIC_COFF32:
+			Address *tmpaddr = p->createAddress32(coff_shared->coff32header.entrypoint_address);
+			v->gotoAddress(tmpaddr, NULL);
+			delete tmpaddr;
+			break;
+	}
+
 
 	g->insert(head);
 	g->insert(v);
