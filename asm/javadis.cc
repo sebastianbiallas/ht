@@ -127,11 +127,11 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 			if (widesize) {
 				op->size = 4;
 				// FIXME: sint32
-				op->label = addr + (int)getdword();
+				op->label = addr + (int)getdword() - op->size - 1;
 			} else {
 				op->size = 2;
 				// FIXME: sint16
-				op->label = addr + (short)getword();
+				op->label = addr + (short)getword() - op->size - 1;
 			}
 			break;
 		default:
