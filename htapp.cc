@@ -2413,8 +2413,9 @@ void ht_app::handlemsg(htmsg *msg)
 						return;
 					}
 					break;
-/* FIXME: experimental */				
-				case K_Alt_R: {
+/* FIXME: experimental */
+/* enable this if you want to (re)create a defreg.* */
+/*				case K_Alt_R: {
 					char *n = "./ht.reg";
 					ht_file *f = new ht_file();
 					f->init(n, FAM_WRITE, FOM_CREATE);
@@ -2434,12 +2435,12 @@ void ht_app::handlemsg(htmsg *msg)
 					
 					clearmsg(msg);
 					return;
-				}
+				}*/
 /* FIXME: experimental */				
-				case K_Alt_T:
+/*				case K_Alt_T:
 					create_window_ofm("reg:/", "local:/");
 					clearmsg(msg);
-					return;
+					return;*/
 /* FIXME: experimental */				
 /*				case K_Control_A:
 					create_window_help("/HT/res/info/intidx.info", "Top");
