@@ -3,7 +3,7 @@
 #	int2info.pl
 #	converts Ralf Brown's Interrupt List to TexInfo files
 #
-#	Copyright (C) 2002 Stefan Weyergraf (stefan@weyergraf.de)
+#	Copyright (C) 2002 Stefan Weyergraf
 #
 #	This program is distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of

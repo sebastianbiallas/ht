@@ -2,7 +2,7 @@
  *	HT Editor
  *	ppcdis.cc
  *
- *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@biallas.net)
  *	Copyright 1994 Free Software Foundation, Inc.
  *	Written by Ian Lance Taylor, Cygnus Support
  *
