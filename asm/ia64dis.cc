@@ -409,7 +409,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 dis_insn *IA64Disassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
 {
 /*	byte data[] = {0x19, 0x18, 0x00, 0x18, 0x1e, 0x10, 0x00, 0x09, 0x79, 0xb0, 0x2b, 0x00, 0x00, 0x00, 0x00, 0x20};
-     code = data;*/
+	code = data;*/
 	cpu_addr = addr;
 	insn.selected = 0;
 	if (maxlen < 16) {
@@ -455,33 +455,33 @@ rev:
 10001100111111000110011000000001100000000
 */
 			QWORD_SET_LO(insn.slot[0].data,
-               	  ((dword)(code[0] >> 5))
+				  ((dword)(code[0] >> 5))
 				| (((dword)code[1]) << 3)
 				| (((dword)code[2]) << 11)
 				| (((dword)code[3]) << 19)
 				| (((dword)code[4] & 0x1f) << 27));    // 32 bits
 			QWORD_SET_HI(insn.slot[0].data,
-               	  ((dword)(code[4] >> 5))
+				  ((dword)(code[4] >> 5))
 				| (((dword)code[5] & 0x3f) << 3));     // +9 = 41 bits
 
 			QWORD_SET_LO(insn.slot[1].data,
-               	  ((dword)(code[5] >> 6))
+				  ((dword)(code[5] >> 6))
 				| (((dword)code[6]) << 2)
 				| (((dword)code[7]) << 10)
 				| (((dword)code[8]) << 18)
 				| (((dword)code[9] & 0x3f) << 26));    // 32 bits
 			QWORD_SET_HI(insn.slot[1].data,
-               	  ((dword)(code[9] >> 6))
+				  ((dword)(code[9] >> 6))
 				| (((dword)code[10] & 0x7f) << 2));    // +9 = 41 bits
 
 			QWORD_SET_LO(insn.slot[2].data,
-               	  ((dword)(code[10] >> 7))
+				  ((dword)(code[10] >> 7))
 				| (((dword)code[11]) << 1)
 				| (((dword)code[12]) << 9)
 				| (((dword)code[13]) << 17)
 				| (((dword)code[14] & 0x7f) << 25));   // 32 bits
 			QWORD_SET_HI(insn.slot[2].data,
-               	  ((dword)(code[14] >> 7))
+				  ((dword)(code[14] >> 7))
 				| (((dword)code[15]) << 1));           // +9 = 41 bits
 		}
 		for (int i=0; i<3; ) {

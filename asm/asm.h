@@ -105,11 +105,11 @@ extern char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context);
 extern void* addr_sym_func_context;
 
 enum AsmSyntaxHighlightEnum {
-     e_cs_default=0,
-     e_cs_comment,
-     e_cs_number,
-     e_cs_symbol,
-     e_cs_string
+	e_cs_default=0,
+	e_cs_comment,
+	e_cs_number,
+	e_cs_symbol,
+	e_cs_string
 };
 
 class Disassembler: public Object {

@@ -50,33 +50,33 @@ qword f2i(double f)
 {
 	int r;
 	if (f>0) r = (int)(f+.5); else r = (int)(f-.5);
-     // FIXME
+	// FIXME
 	return to_qword(r);
 }
 
 void set_helpmode(int flag, char *name)
 {
 	helpmode = flag;
-     int l = name ? strlen(name) : (MAX_FUNCNAME_LEN+1);
-     if (l>MAX_FUNCNAME_LEN) {
-     	*helpname = 0;
-     	return;
-     }
-     strcpy(helpname, name);
+	int l = name ? strlen(name) : (MAX_FUNCNAME_LEN+1);
+	if (l>MAX_FUNCNAME_LEN) {
+		*helpname = 0;
+		return;
+	}
+	strcpy(helpname, name);
 }
 
 static qword ipow(qword a, qword b)
 {
 	qword r = to_qword(1);
-     qword m = to_qword(1) << 63;
-     while (m != to_qword(0)) {
-         	r *= r;
-          if ((b & m) != to_qword(0)) {
-          	r *= a;
+	qword m = to_qword(1) << 63;
+	while (m != to_qword(0)) {
+		r *= r;
+		if ((b & m) != to_qword(0)) {
+			r *= a;
 		}
-          m = m >> 1;
-     }
-     return r;
+		m = m >> 1;
+	}
+	return r;
 }
 
 static int sprint_basen(char *buffer, int base, qword q)
@@ -96,7 +96,7 @@ static int sprint_basen(char *buffer, int base, qword q)
 		b[i] = b[n-i-1];
 		b[n-i-1] = t;
 	}
-     b[n] = 0;
+	b[n] = 0;
 	return n;
 }
 
@@ -345,7 +345,7 @@ void scalar_context_str(eval_scalar *s, eval_str *t)
 	switch (s->type) {
 		case SCALAR_INT: {
 			char buf[16];
-               sprint_basen(buf, 10, s->scalar.integer.value);
+			sprint_basen(buf, 10, s->scalar.integer.value);
 			t->value=(char*)strdup(buf);
 			t->len=strlen(buf);
 			break;
@@ -377,7 +377,7 @@ void scalar_context_int(eval_scalar *s, eval_int *t)
 		}
 		case SCALAR_STR: {
 			char *x=binstr2cstr(s->scalar.str.value, s->scalar.str.len);
-               // FIXME
+			// FIXME
 			t->value=to_qword((int)strtol(x, (char**)NULL, 10));
 			t->type=TYPE_UNKNOWN;
 			free(x);
@@ -554,7 +554,7 @@ int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 		case '&': r=a&b; break;
 		case '|': r=a|b; break;
 		case '^': r=a^b; break;
-          // FIXME
+		// FIXME
 		case EVAL_POW: r=ipow(a, b); break;
 //		case EVAL_POW: r=to_qword((int)pow(QWORD_GET_INT(a),QWORD_GET_INT(b))); break;
 		case EVAL_SHL: r=a<<QWORD_GET_LO(b); break;
@@ -565,7 +565,7 @@ int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 		case EVAL_GE: r=to_qword(a>=b); break;
 		case EVAL_LT: r=to_qword(a<b); break;
 		case EVAL_LE: r=to_qword(a<=b); break;
-          // FIXME
+		// FIXME
 //		case EVAL_LAND: r=to_qword((a) && (b)); break;
 //		case EVAL_LXOR: r=to_qword((a && !b) || (!a && b)); break;
 //		case EVAL_LOR: r=to_qword(a||b); break;
@@ -687,7 +687,7 @@ int func_min(eval_scalar *r, eval_int *p1, eval_int *p2)
 
 int func_random(eval_scalar *r, eval_int *p1)
 {
-     qword d = to_qword(rand());
+	qword d = to_qword(rand());
 	scalar_create_int_q(r, (p1->value != to_qword(0)) ? (d % p1->value):to_qword(0));
 	return 1;
 }
@@ -1021,39 +1021,39 @@ int func_error(eval_scalar *r, eval_str *s)
 int func_help_helper(eval_scalar *r, eval_str *s)
 {
 	if (s->len > MAX_FUNCNAME_LEN) return 0;
-     char b[MAX_FUNCNAME_LEN+1];
-     bin2str(b, s->value, s->len);
+	char b[MAX_FUNCNAME_LEN+1];
+	bin2str(b, s->value, s->len);
 	set_helpmode(1, b);
-     eval_scalar str;
-     scalar_create_str_c(&str, "NaF()");
-     scalar_create_str_c(&helpstring, "");
-     func_eval(r, &str.scalar.str);
-     *r = helpstring;
-     scalar_destroy(&str);
+	eval_scalar str;
+	scalar_create_str_c(&str, "NaF()");
+	scalar_create_str_c(&helpstring, "");
+	func_eval(r, &str.scalar.str);
+	*r = helpstring;
+	scalar_destroy(&str);
 	set_helpmode(0, NULL);
 	return 1;
 }
 
 int func_whatis(eval_scalar *r, eval_str *s)
 {
-     int t = 0;
+	int t = 0;
 	if (s->len != 0) t = func_help_helper(r, s);
-     if ((s->len == 0) || (r->scalar.str.len == 0)) {
-     	char n[MAX_FUNCNAME_LEN+1];
-          bin2str(n, s->value, s->len);
-     	set_eval_error("no such function \"%s\"", n);
-          return 0;
-     }
-     return t;
+	if ((s->len == 0) || (r->scalar.str.len == 0)) {
+		char n[MAX_FUNCNAME_LEN+1];
+		bin2str(n, s->value, s->len);
+		set_eval_error("no such function \"%s\"", n);
+		return 0;
+	}
+	return t;
 }
 
 int func_help(eval_scalar *r)
 {
-     eval_scalar str;
-     scalar_create_str_c(&str, "");
-     int t = func_help_helper(r, &str.scalar.str);
-     scalar_destroy(&str);
-     return t;
+	eval_scalar str;
+	scalar_create_str_c(&str, "");
+	int t = func_help_helper(r, &str.scalar.str);
+	scalar_destroy(&str);
+	return t;
 }
 
 eval_func builtin_evalfuncs[]=	{
@@ -1277,84 +1277,84 @@ void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
 {
 // FIXME: buffer safety/possible buffer overflow
 	strcpy(buf, proto->name);
-     int term = 0;
-    	strcat(buf, "(");
+	int term = 0;
+	strcat(buf, "(");
 	for (int j=0; j<MAX_EVALFUNC_PARAMS; j++) {
 		if (proto->ptype[j]==SCALAR_NULL) break;
-          if (j) strcat(buf, ", ");
+		if (j) strcat(buf, ", ");
 		switch (proto->ptype[j]) {
 			case SCALAR_INT:
-               	strcat(buf, "INT");
-               	break;
+				strcat(buf, "INT");
+				break;
 			case SCALAR_STR:
-               	strcat(buf, "STRING");
-               	break;
+				strcat(buf, "STRING");
+				break;
 			case SCALAR_FLOAT:
-               	strcat(buf, "FLOAT");
-               	break;
-          	case SCALAR_VARARGS:
-               	strcat(buf, "...");
-                    term = 1;
-               	break;
+				strcat(buf, "FLOAT");
+				break;
+			case SCALAR_VARARGS:
+				strcat(buf, "...");
+				term = 1;
+				break;
 			default:
-               	break;
+				break;
 		}
 		if (term) break;
 	}
-    	strcat(buf, ")");
-     if (full && proto->desc) {
-     	strcat(buf, " - ");
-          strcat(buf, proto->desc);
-     }
+	strcat(buf, ")");
+	if (full && proto->desc) {
+		strcat(buf, " - ");
+		strcat(buf, proto->desc);
+	}
 }
 
 int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *params, eval_func *protos)
 {
-     if (strlen(fname) > MAX_FUNCNAME_LEN) {
+	if (strlen(fname) > MAX_FUNCNAME_LEN) {
 		set_eval_error("invalid function, function name too long");
-     	return 0;
+		return 0;
 	}
 	
-     if (helpmode) {
+	if (helpmode) {
 		while (protos->name) {
-               char buf[256];
-               if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
-                    proto_dump(buf, sizeof buf, protos, 1);
-                    strcat(buf, "\n");
-     	          eval_scalar s;
+			char buf[256];
+			if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
+				proto_dump(buf, sizeof buf, protos, 1);
+				strcat(buf, "\n");
+				eval_scalar s;
 				scalar_create_str_c(&s, buf);
-               	eval_scalar r;
-	               scalar_concat(&r, &helpstring, &s);
-     	          scalar_destroy(&helpstring);
-          	     helpstring = r;
+				eval_scalar r;
+				scalar_concat(&r, &helpstring, &s);
+				scalar_destroy(&helpstring);
+				helpstring = r;
 			}
 
-          	protos++;
-          }
-     } else {
+			protos++;
+		}
+	} else {
 		while (protos->name) {
 			switch (match_evalfunc_proto(fname, params, protos)) {
 				case PROTOMATCH_OK:
 					return exec_evalfunc(result, params, protos);
 				case PROTOMATCH_PARAM_FAIL: {
-                    	char b[256];
-                    	proto_dump(b, sizeof b, protos, 0);
+					char b[256];
+					proto_dump(b, sizeof b, protos, 0);
 					set_eval_error("invalid params to function %s", b);
 					return 0;
 				}
 				default: {}
 			}
 			protos++;
-	     }
+		}
 	}
 	return 0;
 }
 
 int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params)
 {
-     if (strlen(fname) > MAX_FUNCNAME_LEN) {
+	if (strlen(fname) > MAX_FUNCNAME_LEN) {
 		set_eval_error("invalid function, function name too long");
-     	return 0;
+		return 0;
 	}
 	
 	int s;
@@ -1368,7 +1368,7 @@ int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params)
 	if (get_eval_error(NULL, NULL)) return 0;
 	if (s) return s;
 	
-     if (!helpmode) {
+	if (!helpmode) {
 		set_eval_error("unknown function %s", fname);
 		return 0;
 	} else return 1;

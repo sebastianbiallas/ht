@@ -108,7 +108,7 @@ void ht_view::init(bounds *b, int o, char *d)
 	buf = 0;
 	enabled = true;
 
-     growmode = MK_GM(GMH_LEFT, GMV_TOP);
+	growmode = MK_GM(GMH_LEFT, GMV_TOP);
 	
 	if (options & VO_OWNBUFFER) {
 		buf = new drawbuf(&size);
@@ -412,8 +412,8 @@ vcp ht_view::getcolor(UINT index)
 
 void ht_view::getminbounds(int *width, int *height)
 {
-     *width = DEFAULT_VIEW_MIN_WIDTH;
-     *height = DEFAULT_VIEW_MIN_HEIGHT;
+	*width = DEFAULT_VIEW_MIN_WIDTH;
+	*height = DEFAULT_VIEW_MIN_HEIGHT;
 }
 
 struct databufdup_s {
@@ -1144,34 +1144,34 @@ void ht_group::reorder_view(ht_view *v, int rx, int ry)
 	int px=0, py=0;
 	int sx=0, sy=0;
 
-     int gmv = GET_GM_V(v->growmode);
-     int gmh = GET_GM_H(v->growmode);
-     switch (gmh) {
-     	case GMH_LEFT:
-          	/* do nothing */
-          	break;
+	int gmv = GET_GM_V(v->growmode);
+	int gmh = GET_GM_H(v->growmode);
+	switch (gmh) {
+		case GMH_LEFT:
+			/* do nothing */
+			break;
 		case GMH_RIGHT:
 			px = rx;
-          	break;
+			break;
 		case GMH_FIT:
 			sx = rx;
-          	break;
-     }
-     
-     switch (gmv) {
-     	case GMV_TOP:
-          	/* do nothing */
-          	break;
+			break;
+	}
+	
+	switch (gmv) {
+		case GMV_TOP:
+			/* do nothing */
+			break;
 		case GMV_BOTTOM:
 			py = ry;
-          	break;
+			break;
 		case GMV_FIT:
 			sy = ry;
-          	break;
-     }
+			break;
+	}
 
 	v->move(px, py);
-     v->resize(sx, sy);
+	v->resize(sx, sy);
 }
 
 void ht_group::resize(int rx, int ry)
@@ -1180,7 +1180,7 @@ void ht_group::resize(int rx, int ry)
 	
 	ht_view *v = first;
 	while (v) {
-     	reorder_view(v, rx, ry);
+		reorder_view(v, rx, ry);
 		v = v->next;
 	}
 }
@@ -1700,8 +1700,8 @@ void ht_window::handlemsg(htmsg *msg)
 				}
 			} else if (action_state==WAC_RESIZE) {
 				if (options & VO_RESIZE) {
-                    	int min_width, min_height;
-                         getminbounds(&min_width, &min_height);
+					int min_width, min_height;
+					getminbounds(&min_width, &min_height);
 					switch (msg->data1.integer) {
 						case K_Up:
 							if (size.h > min_height) resize(0, -1);

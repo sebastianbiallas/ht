@@ -55,8 +55,8 @@ protected:
 	unsigned char *codep, *ocodep;
 	int addr;
 	int maxlen;
-     java_token_func token_func;
-     void *context;
+	java_token_func token_func;
+	void *context;
 /* new */
 			void decode_insn(javaopc_insn *insn);
 			void decode_op(int optype, bool wideopc, java_insn_op *op);

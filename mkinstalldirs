@@ -4,7 +4,7 @@
 # Created: 1993-05-16
 # Public domain
 
-# $Id: mkinstalldirs,v 1.2 2002/06/30 15:00:49 seppel Exp $
+# $Id: mkinstalldirs,v 1.3 2002/08/19 17:02:26 steveman Exp $
 
 errstatus=0
 dirmode=""
@@ -15,16 +15,16 @@ Usage: mkinstalldirs [-h] [--help] [-m mode] dir ..."
 # process command line arguments
 while test $# -gt 0 ; do
    case "${1}" in
-     -h | --help | --h* )			# -h for help
-        echo "${usage}" 1>&2; exit 0 ;;
-     -m )					# -m PERM arg
-        shift
-        test $# -eq 0 && { echo "${usage}" 1>&2; exit 1; }
-        dirmode="${1}"
-        shift ;;
-     -- ) shift; break ;;			# stop option processing
-     -* ) echo "${usage}" 1>&2; exit 1 ;;	# unknown option
-     * )  break ;;				# first non-opt arg
+	-h | --help | --h* )			# -h for help
+	   echo "${usage}" 1>&2; exit 0 ;;
+	-m )					# -m PERM arg
+	   shift
+	   test $# -eq 0 && { echo "${usage}" 1>&2; exit 1; }
+	   dirmode="${1}"
+	   shift ;;
+	-- ) shift; break ;;			# stop option processing
+	-* ) echo "${usage}" 1>&2; exit 1 ;;	# unknown option
+	* )  break ;;				# first non-opt arg
    esac
 done
 
@@ -36,33 +36,33 @@ do
    pathcomp=
    for d
    do
-     pathcomp="$pathcomp$d"
-     case "$pathcomp" in
-       -* ) pathcomp=./$pathcomp ;;
-     esac
+	pathcomp="$pathcomp$d"
+	case "$pathcomp" in
+	  -* ) pathcomp=./$pathcomp ;;
+	esac
 
-     if test ! -d "$pathcomp"; then
-        echo "mkdir $pathcomp"
+	if test ! -d "$pathcomp"; then
+	   echo "mkdir $pathcomp"
 
-        mkdir "$pathcomp" || lasterr=$?
+	   mkdir "$pathcomp" || lasterr=$?
 
-        if test ! -d "$pathcomp"; then
-  	  errstatus=$lasterr
+	   if test ! -d "$pathcomp"; then
+	  errstatus=$lasterr
 	else
 	  if test ! -z "$dirmode"; then
-	     echo "chmod $dirmode $pathcomp"
+		echo "chmod $dirmode $pathcomp"
 
-	     lasterr=""
-	     chmod $dirmode "$pathcomp" || lasterr=$?
+		lasterr=""
+		chmod $dirmode "$pathcomp" || lasterr=$?
 
-	     if test ! -z "$lasterr"; then
-	       errstatus=$lasterr
-	     fi
+		if test ! -z "$lasterr"; then
+		  errstatus=$lasterr
+		fi
 	  fi
-        fi
-     fi
+	   fi
+	fi
 
-     pathcomp="$pathcomp/"
+	pathcomp="$pathcomp/"
    done
 done
 

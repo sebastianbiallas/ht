@@ -1066,10 +1066,10 @@ void ht_logviewer::handlemsg(htmsg *msg)
 		case msg_log_changed: {
 			ofs = lines->count()-size.h;
 			if (ofs < 0) ofs = 0;
-               update();
+			update();
 			clearmsg(msg);
 			return;
-          }
+		}
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_Up:
@@ -1341,9 +1341,9 @@ bool ht_app::create_window_log()
 	} else {
 		bounds b;
 /*		battlefield->getbounds(&b);
-          b.x = 0;
-          b.y = 0;*/
-          get_stdbounds_file(&b);
+		b.x = 0;
+		b.y = 0;*/
+		get_stdbounds_file(&b);
 
 		ht_window *logwindow=new ht_window();
 		logwindow->init(&b, "log window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
@@ -1897,7 +1897,7 @@ void ht_app::get_stdbounds_file(bounds *b)
 		battlefield->getbounds(b);
 		b->x = 0;
 		b->y = 0;
-     }
+	}
 }
 
 void ht_app::get_stdbounds_tool(bounds *b)

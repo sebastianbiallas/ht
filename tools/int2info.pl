@@ -343,7 +343,7 @@ sub genlinks2
 	my $r = "", $p = "";
 	foreach $k (@t) {
 		if ($k =~ s/(".*")$//) {
-		        $p = $1;
+			   $p = $1;
 		}
 		if ($k =~ s/#(.\d{4})/gentablelink($1)/ge) {
 		} elsif ($k =~ s/MEM (.{4})h?:(.{4})h?/genmemlink1616($k, $1.$2)/ge) {

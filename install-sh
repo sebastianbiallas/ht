@@ -180,7 +180,7 @@ while [ $# -ne 0 ] ; do
 	shift
 
 	if [ ! -d "${pathcomp}" ] ;
-        then
+	   then
 		$mkdirprog "${pathcomp}"
 	else
 		:

@@ -204,7 +204,7 @@ public:
 	virtual	bool string_to_pos(char *string, viewer_pos *pos);
 	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
 
-     /* string evaluation */
+	/* string evaluation */
 	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual	int symbol_handler(eval_scalar *result, char *name);
 
@@ -213,7 +213,7 @@ public:
 	virtual	bool show_search_result(ht_search_result *result);
 	/* misc */
 			ht_streamfile *get_file();
-     		bool string_to_qword(char *string, qword *q);
+			bool string_to_qword(char *string, qword *q);
 			bool vstate_save(ht_view *focused);
 };
 

@@ -193,7 +193,7 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	switch (opt) {
 		case COFF_OPTMAGIC_PE32:
 		case COFF_OPTMAGIC_PE64: {
-           	bool pe32 = (opt==COFF_OPTMAGIC_PE32);
+			bool pe32 = (opt==COFF_OPTMAGIC_PE32);
 			s->add_staticmask_ptable(pe32header, h+4, pe_bigendian);
 			cs=new ht_collapsable_sub();
 			cs->init(file, s, 1, "optional header", 1);
@@ -213,7 +213,7 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 			cs->init(file, s, 1, "optional header: directories", 1);
 			v->insertsub(cs);
 			break;
-          }
+		}
 		default: {
 			s->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_PE_OPTIONAL_MAGICS_STR), h+4, pe_bigendian);
 			s->add_mask("-------------------------------------------------------------------------");

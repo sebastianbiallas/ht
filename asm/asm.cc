@@ -247,13 +247,13 @@ char *Disassembler::str(dis_insn *disasm_insn, int style)
 const char *Disassembler::get_cs(AsmSyntaxHighlightEnum style)
 {
 	const char *highlights[] = {
-          ASM_SYNTAX_DEFAULT,
+		ASM_SYNTAX_DEFAULT,
 		ASM_SYNTAX_COMMENT,
 		ASM_SYNTAX_NUMBER,
 		ASM_SYNTAX_SYMBOL,
 		ASM_SYNTAX_STRING
-     };
-     return (highlight) ? highlights[(int)style] : "";
+	};
+	return (highlight) ? highlights[(int)style] : "";
 }
 
 void Disassembler::enable_highlighting()

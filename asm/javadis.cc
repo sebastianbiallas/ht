@@ -37,7 +37,7 @@ javadis::javadis()
 javadis::javadis(java_token_func tf, void *c)
 {
 	token_func = tf;
-     context = c;
+	context = c;
 }
 
 javadis::~javadis()
@@ -129,7 +129,7 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 			}
 			break;
 		case JOPC_TYPE_LABEL:
- 			op->type = JAVA_OPTYPE_LABEL;
+			op->type = JAVA_OPTYPE_LABEL;
 			if (widesize) {
 				op->size = 4;
 				// FIXME: sint32
@@ -243,7 +243,7 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 		case JAVA_OPTYPE_CONST: {
 			char *g=opstr;
 			strcpy(g, cs_comment); g += strlen(cs_comment);
-               g += token_func(g, 1024, op->imm, context);
+			g += token_func(g, 1024, op->imm, context);
 			*(g++) = ' ';
 			strcpy(g, cs_number); g += strlen(cs_number);
 			switch (op->size) {
@@ -258,7 +258,7 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 					break;
 			}
 			break;
-          }
+		}
 		case JAVA_OPTYPE_LABEL: {
 			CPU_ADDR a;
 			a.addr32.offset=op->imm;
@@ -312,7 +312,7 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 
 void javadis::str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print)
 {
-     
+	
 	const char *cs_default = get_cs(e_cs_default);
 	const char *cs_symbol = get_cs(e_cs_symbol);
 

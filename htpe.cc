@@ -119,7 +119,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 				create_host_struct(&pe_shared->pe32.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
 			}
 			break;
-          }
+		}
 		case COFF_OPTMAGIC_PE64: {
 			file->read(&pe_shared->pe64.header, sizeof pe_shared->pe64.header);
 			create_host_struct(&pe_shared->pe64.header, COFF_OPTIONAL_HEADER32_struct, little_endian);
@@ -129,7 +129,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 				create_host_struct(&pe_shared->pe64.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
 			}
 			break;
-          }
+		}
 	}
 
 /* read section headers */

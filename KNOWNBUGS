@@ -1,7 +1,7 @@
   KnownBugs
 =============
 
-- Blockop should support multiple endianesses (currently only big-endian)
+- Blockop should support multiple endianesses (currently only big-endian)
 - Cursor misplacement in image (F4)
 - Help / features / configuration PgDn
 

@@ -1449,7 +1449,7 @@ void ht_listbox::adjust_scrollbar()
 		c.x = c.w-1;
 		c.y = 0;
 		c.w = 1;
-          scrollbar->setbounds(&c);
+		scrollbar->setbounds(&c);
 		scrollbar->setpos(pstart, psize);
 	} else {
 		scrollbar->disable();
@@ -1793,8 +1793,8 @@ void ht_listbox::redraw()
 
 void ht_listbox::resize(int rw, int rh)
 {
-     ht_view::resize(rw, rh);
-     update();
+	ht_view::resize(rw, rh);
+	update();
 }
 
 bool ht_listbox::seek(int index)

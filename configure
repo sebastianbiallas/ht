@@ -106,7 +106,7 @@ do
     ac_feature=`echo $ac_option|sed -e 's/-*disable-//'`
     # Reject names that are not valid shell variable names.
     if test -n "`echo $ac_feature| sed 's/[-a-zA-Z0-9_]//g'`"; then
-      { echo "configure: error: $ac_feature: invalid feature name" 1>&2; exit 1; }
+	 { echo "configure: error: $ac_feature: invalid feature name" 1>&2; exit 1; }
     fi
     ac_feature=`echo $ac_feature| sed 's/-/_/g'`
     eval "enable_${ac_feature}=no" ;;
@@ -115,12 +115,12 @@ do
     ac_feature=`echo $ac_option|sed -e 's/-*enable-//' -e 's/=.*//'`
     # Reject names that are not valid shell variable names.
     if test -n "`echo $ac_feature| sed 's/[-_a-zA-Z0-9]//g'`"; then
-      { echo "configure: error: $ac_feature: invalid feature name" 1>&2; exit 1; }
+	 { echo "configure: error: $ac_feature: invalid feature name" 1>&2; exit 1; }
     fi
     ac_feature=`echo $ac_feature| sed 's/-/_/g'`
     case "$ac_option" in
-      *=*) ;;
-      *) ac_optarg=yes ;;
+	 *=*) ;;
+	 *) ac_optarg=yes ;;
     esac
     eval "enable_${ac_feature}='$ac_optarg'" ;;
 
@@ -151,17 +151,17 @@ Configuration:
   --version               print the version of autoconf that created configure
 Directory and file names:
   --prefix=PREFIX         install architecture-independent files in PREFIX
-                          [$ac_default_prefix]
+					 [$ac_default_prefix]
   --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
-                          [same as prefix]
+					 [same as prefix]
   --bindir=DIR            user executables in DIR [EPREFIX/bin]
   --sbindir=DIR           system admin executables in DIR [EPREFIX/sbin]
   --libexecdir=DIR        program executables in DIR [EPREFIX/libexec]
   --datadir=DIR           read-only architecture-independent data in DIR
-                          [PREFIX/share]
+					 [PREFIX/share]
   --sysconfdir=DIR        read-only single-machine data in DIR [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data in DIR
-                          [PREFIX/com]
+					 [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data in DIR [PREFIX/var]
   --libdir=DIR            object code libraries in DIR [EPREFIX/lib]
   --includedir=DIR        C header files in DIR [PREFIX/include]
@@ -172,7 +172,7 @@ Directory and file names:
   --program-prefix=PREFIX prepend PREFIX to installed program names
   --program-suffix=SUFFIX append SUFFIX to installed program names
   --program-transform-name=PROGRAM
-                          run sed PROGRAM on installed program names
+					 run sed PROGRAM on installed program names
 EOF
     cat << EOF
 Host type:
@@ -188,7 +188,7 @@ Features and packages:
   --x-libraries=DIR       X library files are in DIR
 EOF
     if test -n "$ac_help"; then
-      echo "--enable and --with options recognized:$ac_help"
+	 echo "--enable and --with options recognized:$ac_help"
     fi
     exit 0 ;;
 
@@ -346,12 +346,12 @@ EOF
     ac_package=`echo $ac_option|sed -e 's/-*with-//' -e 's/=.*//'`
     # Reject names that are not valid shell variable names.
     if test -n "`echo $ac_package| sed 's/[-_a-zA-Z0-9]//g'`"; then
-      { echo "configure: error: $ac_package: invalid package name" 1>&2; exit 1; }
+	 { echo "configure: error: $ac_package: invalid package name" 1>&2; exit 1; }
     fi
     ac_package=`echo $ac_package| sed 's/-/_/g'`
     case "$ac_option" in
-      *=*) ;;
-      *) ac_optarg=yes ;;
+	 *=*) ;;
+	 *) ac_optarg=yes ;;
     esac
     eval "with_${ac_package}='$ac_optarg'" ;;
 
@@ -359,7 +359,7 @@ EOF
     ac_package=`echo $ac_option|sed -e 's/-*without-//'`
     # Reject names that are not valid shell variable names.
     if test -n "`echo $ac_package| sed 's/[-a-zA-Z0-9_]//g'`"; then
-      { echo "configure: error: $ac_package: invalid package name" 1>&2; exit 1; }
+	 { echo "configure: error: $ac_package: invalid package name" 1>&2; exit 1; }
     fi
     ac_package=`echo $ac_package| sed 's/-/_/g'`
     eval "with_${ac_package}=no" ;;
@@ -387,10 +387,10 @@ EOF
 
   *)
     if test -n "`echo $ac_option| sed 's/[-a-z0-9.]//g'`"; then
-      echo "configure: warning: $ac_option: invalid host type" 1>&2
+	 echo "configure: warning: $ac_option: invalid host type" 1>&2
     fi
     if test "x$nonopt" != xNONE; then
-      { echo "configure: error: can only configure for one host and one target at a time" 1>&2; exit 1; }
+	 { echo "configure: error: can only configure for one host and one target at a time" 1>&2; exit 1; }
     fi
     nonopt="$ac_option"
     ;;
@@ -701,13 +701,13 @@ else
     case "$ac_dir/" in
     /|./|.//|/etc/*|/usr/sbin/*|/usr/etc/*|/sbin/*|/usr/afsws/bin/*|/usr/ucb/*) ;;
     *)
-      # OSF1 and SCO ODT 3.0 have their own names for install.
-      # Don't use installbsd from OSF since it installs stuff as root
-      # by default.
-      for ac_prog in ginstall scoinst install; do
-        if test -f $ac_dir/$ac_prog; then
+	 # OSF1 and SCO ODT 3.0 have their own names for install.
+	 # Don't use installbsd from OSF since it installs stuff as root
+	 # by default.
+	 for ac_prog in ginstall scoinst install; do
+	   if test -f $ac_dir/$ac_prog; then
 	  if test $ac_prog = install &&
-            grep dspmsg $ac_dir/$ac_prog >/dev/null 2>&1; then
+		  grep dspmsg $ac_dir/$ac_prog >/dev/null 2>&1; then
 	    # AIX install.  It has an incompatible calling convention.
 	    :
 	  else
@@ -715,8 +715,8 @@ else
 	    break 2
 	  fi
 	fi
-      done
-      ;;
+	 done
+	 ;;
     esac
   done
   IFS="$ac_save_IFS"
@@ -755,17 +755,17 @@ echo timestamp > conftestfile
 if (
    set X `ls -Lt $srcdir/configure conftestfile 2> /dev/null`
    if test "$*" = "X"; then
-      # -L didn't work.
-      set X `ls -t $srcdir/configure conftestfile`
+	 # -L didn't work.
+	 set X `ls -t $srcdir/configure conftestfile`
    fi
    if test "$*" != "X $srcdir/configure conftestfile" \
-      && test "$*" != "X conftestfile $srcdir/configure"; then
+	 && test "$*" != "X conftestfile $srcdir/configure"; then
 
-      # If neither matched, then we have a broken ls.  This can happen
-      # if, for instance, CONFIG_SHELL is bash and it inherits a
-      # broken ls alias from the environment.  This has actually
-      # happened.  Such a system could not be considered "sane".
-      { echo "configure: error: ls -t appears to fail.  Make sure there is not a broken
+	 # If neither matched, then we have a broken ls.  This can happen
+	 # if, for instance, CONFIG_SHELL is bash and it inherits a
+	 # broken ls alias from the environment.  This has actually
+	 # happened.  Such a system could not be considered "sane".
+	 { echo "configure: error: ls -t appears to fail.  Make sure there is not a broken
 alias in your environment" 1>&2; exit 1; }
    fi
 
@@ -995,8 +995,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_RANLIB="ranlib"
-      break
+	 ac_cv_prog_RANLIB="ranlib"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1032,8 +1032,8 @@ else
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path_MAKE="$ac_dir/$ac_word"
-      break
+	 ac_cv_path_MAKE="$ac_dir/$ac_word"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1093,8 +1093,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CC="gcc"
-      break
+	 ac_cv_prog_CC="gcc"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1124,12 +1124,12 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      if test "$ac_dir/$ac_word" = "/usr/ucb/cc"; then
-        ac_prog_rejected=yes
+	 if test "$ac_dir/$ac_word" = "/usr/ucb/cc"; then
+	   ac_prog_rejected=yes
 	continue
-      fi
-      ac_cv_prog_CC="cc"
-      break
+	 fi
+	 ac_cv_prog_CC="cc"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1159,7 +1159,7 @@ fi
   if test -z "$CC"; then
     case "`uname -s`" in
     *win32* | *WIN32*)
-      # Extract the first word of "cl", so it can be a program name with args.
+	 # Extract the first word of "cl", so it can be a program name with args.
 set dummy cl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:1166: checking for $ac_word" >&5
@@ -1174,8 +1174,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CC="cl"
-      break
+	 ac_cv_prog_CC="cl"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1317,8 +1317,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CXX="$ac_prog"
-      break
+	 ac_cv_prog_CXX="$ac_prog"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1460,8 +1460,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_YACC="$ac_prog"
-      break
+	 ac_cv_prog_YACC="$ac_prog"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1576,8 +1576,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_LEX="$ac_prog"
-      break
+	 ac_cv_prog_LEX="$ac_prog"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1609,8 +1609,8 @@ else
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_LEX="flex"
-      break
+	 ac_cv_prog_LEX="flex"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1754,8 +1754,8 @@ else
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path_AR="$ac_dir/$ac_word"
-      break
+	 ac_cv_path_AR="$ac_dir/$ac_word"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1789,8 +1789,8 @@ else
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path_AR="$ac_dir/$ac_word"
-      break
+	 ac_cv_path_AR="$ac_dir/$ac_word"
+	 break
     fi
   done
   IFS="$ac_save_ifs"
@@ -1806,7 +1806,7 @@ fi
 
 
 if test "x$AR" = "x"; then
-        { echo "configure: error: *** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***" 1>&2; exit 1; }
+	   { echo "configure: error: *** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***" 1>&2; exit 1; }
 fi
 
 
@@ -2057,7 +2057,7 @@ fi
 done
 
 		if test "x$CURSES_LIB" = "x"; then
-		        { echo "configure: error: *** (n)curses.h needed ***" 1>&2; exit 1; }
+			   { echo "configure: error: *** (n)curses.h needed ***" 1>&2; exit 1; }
 		fi
 	fi
 	HT_LIBS="$HT_LIBS -l$CURSES_LIB"
@@ -2112,7 +2112,7 @@ ccp = (char const *const *) p;
   ++p;
 }
 { /* AIX XL C 1.02.0.0 rejects this saying
-     "k.c", line 2.27: 1506-025 (S) Operand must be a modifiable lvalue. */
+	"k.c", line 2.27: 1506-025 (S) Operand must be a modifiable lvalue. */
   struct s { int j; const int *ap[3]; };
   struct s *b; b->j = 5;
 }
@@ -2384,8 +2384,8 @@ EOF
     # `set' does not quote correctly, so add quotes (double-quote substitution
     # turns \\\\ into \\, and sed turns \\ into \).
     sed -n \
-      -e "s/'/'\\\\''/g" \
-      -e "s/^\\([a-zA-Z0-9_]*_cv_[a-zA-Z0-9_]*\\)=\\(.*\\)/\\1=\${\\1='\\2'}/p"
+	 -e "s/'/'\\\\''/g" \
+	 -e "s/^\\([a-zA-Z0-9_]*_cv_[a-zA-Z0-9_]*\\)=\\(.*\\)/\\1=\${\\1='\\2'}/p"
     ;;
   *)
     # `set' quotes correctly as required by POSIX, so do not add quotes.
@@ -2573,9 +2573,9 @@ while $ac_more_lines; do
     rm -f conftest.s$ac_file
   else
     if test -z "$ac_sed_cmds"; then
-      ac_sed_cmds="sed -f conftest.s$ac_file"
+	 ac_sed_cmds="sed -f conftest.s$ac_file"
     else
-      ac_sed_cmds="$ac_sed_cmds | sed -f conftest.s$ac_file"
+	 ac_sed_cmds="$ac_sed_cmds | sed -f conftest.s$ac_file"
     fi
     ac_file=`expr $ac_file + 1`
     ac_beg=$ac_end
@@ -2610,7 +2610,7 @@ for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
   # Support "outfile[:infile[:infile...]]", defaulting infile="outfile.in".
   case "$ac_file" in
   *:*) ac_file_in=`echo "$ac_file"|sed 's%[^:]*:%%'`
-       ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
+	  ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
   *) ac_file_in="${ac_file}.in" ;;
   esac
 
@@ -2630,8 +2630,8 @@ for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
 
   case "$ac_given_srcdir" in
   .)  srcdir=.
-      if test -z "$ac_dots"; then top_srcdir=.
-      else top_srcdir=`echo $ac_dots|sed 's%/$%%'`; fi ;;
+	 if test -z "$ac_dots"; then top_srcdir=.
+	 else top_srcdir=`echo $ac_dots|sed 's%/$%%'`; fi ;;
   /*) srcdir="$ac_given_srcdir$ac_dir_suffix"; top_srcdir="$ac_given_srcdir" ;;
   *) # Relative path.
     srcdir="$ac_dots$ac_given_srcdir$ac_dir_suffix"
@@ -2692,7 +2692,7 @@ for ac_file in .. $CONFIG_HEADERS; do if test "x$ac_file" != x..; then
   # Support "outfile[:infile[:infile...]]", defaulting infile="outfile.in".
   case "$ac_file" in
   *:*) ac_file_in=`echo "$ac_file"|sed 's%[^:]*:%%'`
-       ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
+	  ac_file=`echo "$ac_file"|sed 's%:.*%%'` ;;
   *) ac_file_in="${ac_file}.in" ;;
   esac
 
@@ -2759,10 +2759,10 @@ cat >> $CONFIG_STATUS <<\EOF
     rm -f conftest.h
   else
     # Remove last slash and all that follows it.  Not all systems have dirname.
-      ac_dir=`echo $ac_file|sed 's%/[^/][^/]*$%%'`
-      if test "$ac_dir" != "$ac_file" && test "$ac_dir" != .; then
-      # The file is in a subdirectory.
-      test ! -d "$ac_dir" && mkdir "$ac_dir"
+	 ac_dir=`echo $ac_file|sed 's%/[^/][^/]*$%%'`
+	 if test "$ac_dir" != "$ac_file" && test "$ac_dir" != .; then
+	 # The file is in a subdirectory.
+	 test ! -d "$ac_dir" && mkdir "$ac_dir"
     fi
     rm -f $ac_file
     mv conftest.h $ac_file

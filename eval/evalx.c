@@ -11,10 +11,10 @@ int eval(eval_scalar *r, const char *str, eval_func_handler func_handler, eval_s
 	eval_scalar result;
 /*     if (get_helpmode()) {
 		eval_scalar *hs = get_helpstring();
-          scalar_create_str_c(hs, "");
-          strbuffer = lex_scan_string_buffer("NaF()");
-     } else {*/
-          strbuffer = lex_scan_string_buffer(str);
+		scalar_create_str_c(hs, "");
+		strbuffer = lex_scan_string_buffer("NaF()");
+	} else {*/
+		strbuffer = lex_scan_string_buffer(str);
 /*     }*/
 
 	DEBUG_DUMP("evaluating \"%s\":", str);
@@ -34,9 +34,9 @@ int eval(eval_scalar *r, const char *str, eval_func_handler func_handler, eval_s
 	
 /*     if (get_helpmode()) {
 		eval_scalar *hs = get_helpstring();
-          *r = *hs;
-          hs->type = SCALAR_NULL;
-          clear_eval_error();
+		*r = *hs;
+		hs->type = SCALAR_NULL;
+		clear_eval_error();
 	} else {*/
 		if (result.type == SCALAR_NULL) return 0;
 		*r = result;

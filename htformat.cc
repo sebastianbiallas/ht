@@ -523,12 +523,12 @@ bool ht_format_viewer::continue_search()
 
 int ht_format_viewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
-     return 0;
+	return 0;
 }
 
 int ht_format_viewer::symbol_handler(eval_scalar *result, char *name)
 {
-     return 0;
+	return 0;
 }
 
 bool ht_format_viewer::get_current_offset(FILEOFS *ofs)
@@ -742,13 +742,13 @@ bool ht_format_viewer::show_search_result(ht_search_result *r)
 static int format_viewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
-     return viewer->func_handler(result, name, params);
+	return viewer->func_handler(result, name, params);
 }
 
 static int format_viewer_symbol_handler(eval_scalar *result, char *name)
 {
 	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
-     return viewer->symbol_handler(result, name);
+	return viewer->symbol_handler(result, name);
 }
 
 bool ht_format_viewer::string_to_qword(char *string, qword *q)
@@ -758,14 +758,14 @@ bool ht_format_viewer::string_to_qword(char *string, qword *q)
 		eval_int i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
-          *q = i.value;
-          return true;
+		*q = i.value;
+		return true;
 	} else {
 		char *s;
 		int p;
 		get_eval_error(&s, &p);
-     	ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "%s at pos %d", s, p);
-     }
+		ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "%s at pos %d", s, p);
+	}
 	return false;
 }
 
@@ -1299,6 +1299,7 @@ int ht_uformat_viewer::cursormicroedit_forward()
 	cursorline_get();
 	uformat_viewer_pos p;
 	p = top;
+     p.tag_group = cursor.tag_group;
 	UINT cursor_tag_bitidx = 0;
 
 	cursorline_get();
@@ -2606,21 +2607,21 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 			if (source_object) vstate_save(source_object);
 			switch (cursor_state) {
 				case cursor_state_visible: {
-				     select_mode_pre();
+					select_mode_pre();
 					/* FIXME: magic 42 */
 					if (!find_first_edit_tag_with_offset(&p, 42, offset)
 						&& !find_first_tag(&p, size.h)) break;
 					bool r = set_cursor(p);
-				     select_mode_post(false);
-                         return r;
+					select_mode_post(false);
+					return r;
 				}
 				case cursor_state_invisible:
-				     select_mode_pre();
+					select_mode_pre();
 					p.tag_group = -1;
 					p.tag_idx = -1;
 					bool r = set_cursor(p);
-				     select_mode_post(false);
-                         return r;
+					select_mode_post(false);
+					return r;
 			}
 			break;
 		}
@@ -2632,9 +2633,9 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 bool ht_uformat_viewer::goto_pos(viewer_pos pos, ht_view *source_object)
 {
 	if (source_object) vstate_save(source_object);
-     select_mode_pre();
+	select_mode_pre();
 	set_cursor(pos.u);
-     select_mode_post(false);
+	select_mode_post(false);
 	return true;
 }
 

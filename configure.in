@@ -91,7 +91,7 @@ AC_PATH_PROG(AR, ar)
 AC_PATH_PROG(AR, gar)
 
 if test "x$AR" = "x"; then
-        AC_MSG_ERROR([*** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***])
+	   AC_MSG_ERROR([*** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***])
 fi
 
 dnl Checks for libraries.
@@ -119,7 +119,7 @@ if test "x$NEED_CURSES" = "x1"; then
 	if test "x$CURSES_LIB" = "x"; then
 		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>) CURSES_LIB=curses)
 		if test "x$CURSES_LIB" = "x"; then
-		        AC_MSG_ERROR([*** (n)curses.h needed ***])
+			   AC_MSG_ERROR([*** (n)curses.h needed ***])
 		fi
 	fi
 	HT_LIBS="$HT_LIBS -l$CURSES_LIB"

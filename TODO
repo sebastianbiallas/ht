@@ -57,20 +57,20 @@
 - file manager
 	- file browser
 	- vfs based on ht_listbox
-     - copy, etc. ?!
+	- copy, etc. ?!
 	- vfs ..._viewer to get config_changed
 - elf/pe/etc.-section ref tree optimizationdfgjl
 - stream::set_layered suspicious
 - KEY_RESIZE
 - textedit/file
-     - +get_size,extend,truncate +overwrite -use_getline
-     - highlighter speed !!
-     - bug with getline's pofs ?!
-     - long lines
-     - unindent()
-     - match pair highlight
-     - undo::gettext() should (be able to) use text_editor::snprint_ppos(...)
-     - input separators configurable (right now only creates UNIX-style files)
+	- +get_size,extend,truncate +overwrite -use_getline
+	- highlighter speed !!
+	- bug with getline's pofs ?!
+	- long lines
+	- unindent()
+	- match pair highlight
+	- undo::gettext() should (be able to) use text_editor::snprint_ppos(...)
+	- input separators configurable (right now only creates UNIX-style files)
 - search backwards
 - more history entries: replace e.g.
 - F4/view mode - ask before forgetting changes	
@@ -81,17 +81,17 @@
 - cleanup msg interface
 - auto-documentation (esp. keys & eval-funcs)
 - portability
-     - compile on sun solaris (curses problems (only?) on cf.sf.net)
-     - compile on MacOS X (curses.h, but no ACS_*)
+	- compile on sun solaris (curses problems (only?) on cf.sf.net)
+	- compile on MacOS X (curses.h, but no ACS_*)
 - free le_page_file...
 - detect format length (ne,le,elf)
 - pe/elf/le relocations ?
 - make ht_group_sub work correctly
 - color invert & underlined attribute and transparent chars, codepages ? &&
- 	abstract (e.g. transparent) chars (io/*)
+	abstract (e.g. transparent) chars (io/*)
 - x86 (dis)assembler
-     - options (ambigous & + floats) + beautify (enums)
-     - "short"/"large" branches
+	- options (ambigous & + floats) + beautify (enums)
+	- "short"/"large" branches
 - OBJECT_ID vs HT_ATOM ?
 - object notification (e.g. insertion into groups (c overview),
   dialog-elements content modified )

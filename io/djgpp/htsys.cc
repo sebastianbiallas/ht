@@ -169,15 +169,15 @@ bool sys_is_path_delim(const char c)
 int sys_filename_cmp(const char *a, const char *b)
 {
 	while (*a && *b) {
-          if (sys_is_path_delim(*a) && sys_is_path_delim(*b)) {
+		if (sys_is_path_delim(*a) && sys_is_path_delim(*b)) {
 		} else if (tolower(*a) != tolower(*b)) {
-          	break;
-          } else if (*a != *b) {
-          	break;
-          }
-     	a++;
-          b++;
-     }
+			break;
+		} else if (*a != *b) {
+			break;
+		}
+		a++;
+		b++;
+	}
 	return *a - *b;
 }
 
@@ -190,10 +190,10 @@ static bool open_clipboard()
 	__dpmi_regs r;
 	r.x.ax = 0x1700;   // version
 	__dpmi_int(0x2f, &r);
-     if (r.x.ax == 0x1700) return false;
+	if (r.x.ax == 0x1700) return false;
 	r.x.ax = 0x1701;  // open
 	__dpmi_int(0x2f, &r);     
-     return (r.x.ax != 0);
+	return (r.x.ax != 0);
 }
 
 static void close_clipboard()
@@ -206,69 +206,69 @@ static void close_clipboard()
 bool sys_write_data_to_native_clipboard(const void *data, int size)
 {
 	if (size > 0xffff) return false;
-     if (!open_clipboard()) return false;
-     int sel;
-     word seg = __dpmi_allocate_dos_memory((size+15)>>4, &sel);
-     if (seg == 0xffff) {
-     	close_clipboard();
-     	return false;
-     }
-     dosmemput(data, size, seg*16);
-     
+	if (!open_clipboard()) return false;
+	int sel;
+	word seg = __dpmi_allocate_dos_memory((size+15)>>4, &sel);
+	if (seg == 0xffff) {
+		close_clipboard();
+		return false;
+	}
+	dosmemput(data, size, seg*16);
+	
 	__dpmi_regs r;
 	r.x.ax = 0x1703;
-     
-     r.x.dx = 0x01; // text
-     r.x.es = seg;
-     r.x.bx = 0;
+	
+	r.x.dx = 0x01; // text
+	r.x.es = seg;
+	r.x.bx = 0;
 	r.x.si = size >> 16;
 	r.x.cx = size & 0xffff;
-     
+	
 	__dpmi_int(0x2f, &r);
-     __dpmi_free_dos_memory(sel);
-     close_clipboard();
-     return (r.x.ax != 0);
+	__dpmi_free_dos_memory(sel);
+	close_clipboard();
+	return (r.x.ax != 0);
 }
 
 int sys_get_native_clipboard_data_size()
 {
 	return 10000;
-     if (!open_clipboard()) return 0;
+	if (!open_clipboard()) return 0;
 	__dpmi_regs r;
 	r.x.ax = 0x1704;
-     r.x.dx = 0x07; // text
+	r.x.dx = 0x07; // text
 	__dpmi_int(0x2f, &r);
-     close_clipboard();
-     return ((dword)r.x.dx)<<16+r.x.ax;
+	close_clipboard();
+	return ((dword)r.x.dx)<<16+r.x.ax;
 }
 
 bool sys_read_data_from_native_clipboard(void *data, int max_size)
 {
-     int dz = sys_get_native_clipboard_data_size();
-     if (!open_clipboard()) return false;
-     if (!dz) {
-     	close_clipboard();
-     	return false;
-     }
-     int sel;
-     word seg = __dpmi_allocate_dos_memory((dz+15)>>4, &sel);
-     if (seg == 0xffff) {
-     	close_clipboard();
-     	return false;
-     }
-     
+	int dz = sys_get_native_clipboard_data_size();
+	if (!open_clipboard()) return false;
+	if (!dz) {
+		close_clipboard();
+		return false;
+	}
+	int sel;
+	word seg = __dpmi_allocate_dos_memory((dz+15)>>4, &sel);
+	if (seg == 0xffff) {
+		close_clipboard();
+		return false;
+	}
+	
 	__dpmi_regs r;
 	r.x.ax = 0x1705;
 	r.x.dx = 0x1;
-     r.x.es = seg;
-     r.x.bx = 0;
+	r.x.es = seg;
+	r.x.bx = 0;
 	__dpmi_int(0x2f, &r);
-     if (r.x.ax) {
-          dosmemget(seg*16, MIN(max_size, dz), data);
-     }
-     __dpmi_free_dos_memory(sel);
-     close_clipboard();
-     return (r.x.ax != 0);
+	if (r.x.ax) {
+		dosmemget(seg*16, MIN(max_size, dz), data);
+	}
+	__dpmi_free_dos_memory(sel);
+	close_clipboard();
+	return (r.x.ax != 0);
 }
 
 /*

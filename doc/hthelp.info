@@ -49,14 +49,14 @@ About
 This program is a file viewer, editor and analyzer for text,
 binary, and (especially) executable files.
 
-     This program comes with ABSOLUTELY NO WARRANTY
-     This is free software, and you are welcome to
-     redistribute it under certain conditions
-     For more information please read the GNU General
-     Public License, contained in the file "copying"
-     If you do not have received a copy of this file along
-     with this program, please write to the Free Software
-     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+	This program comes with ABSOLUTELY NO WARRANTY
+	This is free software, and you are welcome to
+	redistribute it under certain conditions
+	For more information please read the GNU General
+	Public License, contained in the file "copying"
+	If you do not have received a copy of this file along
+	with this program, please write to the Free Software
+	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 File: hthelp.info,  Node: Keys,  Prev: Top,  Up: Top
@@ -66,39 +66,39 @@ Keys
 
    * General key bindings
 
-     Return          follow link (if applicable)
-     Backspace       undo "follow link"
-     Space/F6        choose view mode
-     Alt+[1-9]       select window
-     Alt+0           select window list
-     Ctrl+Left/Right scroll left/right
-     Cursor keys     move around
-     Page Up/Down    next/prev page
-     Alt+S           toggle select
-     Ctrl+Ins/Alt+C  copy
-     Shift+Ins/Alt+V insert
-     Ctrl+Del/Alt+D  delete
-     Shift+Del/Alt+X cut
+	Return          follow link (if applicable)
+	Backspace       undo "follow link"
+	Space/F6        choose view mode
+	Alt+[1-9]       select window
+	Alt+0           select window list
+	Ctrl+Left/Right scroll left/right
+	Cursor keys     move around
+	Page Up/Down    next/prev page
+	Alt+S           toggle select
+	Ctrl+Ins/Alt+C  copy
+	Shift+Ins/Alt+V insert
+	Ctrl+Del/Alt+D  delete
+	Shift+Del/Alt+X cut
 
    * Window key bindings
 
-     Alt+F3          close window
-     Ctrl+F5         resize/move mode
+	Alt+F3          close window
+	Ctrl+F5         resize/move mode
 
 
    * Analyser key bindings
 
-     c               continue code analysis at cursor
-     f               follow dword ptr at address
-     n               (re)name current address (empty string to
-                     delete)
-     x               show xrefs (search for xrefs)
-     #               edit comments
-     Ctrl+A          call assembler
-     Ctrl+F          goto start of current function
-                     (indicated in the 2nd line)
-     Ctrl+L          goto previous label
-     Ctrl+T          show recursive function references
+	c               continue code analysis at cursor
+	f               follow dword ptr at address
+	n               (re)name current address (empty string to
+				 delete)
+	x               show xrefs (search for xrefs)
+	#               edit comments
+	Ctrl+A          call assembler
+	Ctrl+F          goto start of current function
+				 (indicated in the 2nd line)
+	Ctrl+L          goto previous label
+	Ctrl+T          show recursive function references
 
 
 
@@ -145,45 +145,45 @@ Supported file formats
 ======================
 
    * Win32 portable executables (PE)
-          - header
-          - import section
-          - delay-import section
-          - export section
-          - resources
-          - image with code/data analyser (x86 & alpha)
+		- header
+		- import section
+		- delay-import section
+		- export section
+		- resources
+		- image with code/data analyser (x86 & alpha)
 
    * UN*X executable and linkable format (ELF)
-          - header
-          - section headers
-          - program headers
-          - symbol tables
-          - image with code/data analyser (x86)
+		- header
+		- section headers
+		- program headers
+		- symbol tables
+		- image with code/data analyser (x86)
 
    * Win16, OS/2 new executables (NE)
-          - header
-          - segments
-          - names
-          - entrypoints
-          - imported names
-          - image with code/data analyser (x86)
+		- header
+		- segments
+		- names
+		- entrypoints
+		- imported names
+		- image with code/data analyser (x86)
 
    * UN*X common object file format (COFF)
-          - header
-          - image with code/data analyser (x86)
+		- header
+		- image with code/data analyser (x86)
 
    * Win, OS/2 linear executables (LE)
-          - header
-          - object table
-          - page table
-          - image (disassembly only)
+		- header
+		- object table
+		- page table
+		- image (disassembly only)
 
    * DOS executables (MZ)
-          - header
-          - relocations
-          - image (disassembly only)
+		- header
+		- relocations
+		- image (disassembly only)
 
    * Java class files (experimental)
-          - header
+		- header
 
 
 File: hthelp.info,  Node: Code and data analyser,  Prev: Features,  Up: Features
@@ -191,13 +191,13 @@ File: hthelp.info,  Node: Code and data analyser,  Prev: Features,  Up: Features
 Code and data analyser
 ======================
 
-     - finds branch sources and destinations recursively
-     - finds procedure entries
-     - creates labels based on this information
-     - creates xref information
-     - interactively analyse unexplored code (press 'c')
-     - create/rename/delete labels (press 'n')
-     - create/edit comments (press '#')
+	- finds branch sources and destinations recursively
+	- finds procedure entries
+	- creates labels based on this information
+	- creates xref information
+	- interactively analyse unexplored code (press 'c')
+	- create/rename/delete labels (press 'n')
+	- create/edit comments (press '#')
 
 
 File: hthelp.info,  Node: Target systems,  Prev: Features,  Up: Features
@@ -207,10 +207,10 @@ Target systems
 
    HT is tested and known to work on at least the following
 systems:
-     - DJGPP
-     - GNU/Linux
-     - FreeBSD
-     - Win32
+	- DJGPP
+	- GNU/Linux
+	- FreeBSD
+	- Win32
 
    HT should be portable to any POSIX-compilant OS supporting
 (n)curses with almost no effort.
@@ -331,23 +331,23 @@ EXPRESSION. Blockop works as follows:
    * START: Start at the offset specified by START
 
    * REPEAT: Evaluate EXPRESSION and store n bytes (byte - 1,
-     word - 2, dword - 4, string - variable) or less (to match
-     END) at the current offset. Stop if END has been reached.
-     Increment current offset by n.  Repeat.
+	word - 2, dword - 4, string - variable) or less (to match
+	END) at the current offset. Stop if END has been reached.
+	Increment current offset by n.  Repeat.
 
 Special variables/functions that can be used in EXPRESSION:
 
 `readbyte(ofs)'
-     read a byte from offset OFS, returns a number
+	read a byte from offset OFS, returns a number
 
 `readstring(ofs, size)'
-     read SIZE bytes from offset OFS, returns a string
+	read SIZE bytes from offset OFS, returns a string
 
 `i'
-     contains the iteration count/index starting with 0
+	contains the iteration count/index starting with 0
 
 `o'
-     contains the current offset
+	contains the current offset
 
 
 File: hthelp.info,  Node: Searching,  Prev: Features,  Up: Features
@@ -403,29 +403,29 @@ current offset in file. With the functions `readbyte(ofs)' and
 
   1. Searching for patterns:
 
-       a. Enter `readbyte(o) == readbyte(o+1)'
-          This will search for two equal bytes ("AA", "55",
-          "!!", etc.).
+	  a. Enter `readbyte(o) == readbyte(o+1)'
+		This will search for two equal bytes ("AA", "55",
+		"!!", etc.).
 
-       b. Enter `(readbyte(o) == readbyte(o+1)+1) &&
-          (readbyte(o)==readbyte(o+2)+2'
-          This will search for three ascending bytes ("ABC",
-          "123", etc).
+	  b. Enter `(readbyte(o) == readbyte(o+1)+1) &&
+		(readbyte(o)==readbyte(o+2)+2'
+		This will search for three ascending bytes ("ABC",
+		"123", etc).
 
   2. Search with special functions:
 
-     With HT you can easily detect the RSA key in the
-     `ADVAPI32.DLL': Search for `entropy(readstring(o, 64)) >
-     82' in expr!=0 mode, and you will find it very quickly.
-     How does it work? `readstring(o, 64)' reads a 64 byte
-     string from current offset and entropy calculates the
-     entropy ("randomness") of a string (result is 0..100).  So
-     the search stops if a entropy greater than 82% (guessed
-     value) is encountered, which normally indicates packed or
-     encryted data.
+	With HT you can easily detect the RSA key in the
+	`ADVAPI32.DLL': Search for `entropy(readstring(o, 64)) >
+	82' in expr!=0 mode, and you will find it very quickly.
+	How does it work? `readstring(o, 64)' reads a 64 byte
+	string from current offset and entropy calculates the
+	entropy ("randomness") of a string (result is 0..100).  So
+	the search stops if a entropy greater than 82% (guessed
+	value) is encountered, which normally indicates packed or
+	encryted data.
 
-     Note: the `entropy()' function is not the best of its
-     kind, if you have a better one please let us know!
+	Note: the `entropy()' function is not the best of its
+	kind, if you have a better one please let us know!
 
 
 

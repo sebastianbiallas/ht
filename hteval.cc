@@ -82,7 +82,7 @@ static int sprint_basen(char *buffer, int base, qword q)
 		b[i] = b[n-i-1];
 		b[n-i-1] = t;
 	}
-     b[n] = 0;
+	b[n] = 0;
 	return n;
 }
 
@@ -100,7 +100,7 @@ static int sprintf_basen(char *buffer, const char *format, int base, qword q)
 		}
 		format++;
 	}
-     buffer[n] = 0;
+	buffer[n] = 0;
 	return n;
 }
 
@@ -142,7 +142,7 @@ void eval_dialog()
 		
 			insert_history_entry(ehist, b, 0);
 
-               // FIXME: debug
+			// FIXME: debug
 //               set_helpmode(1);
 			if (eval(&r, b, NULL, NULL, NULL)) {
 //	               set_helpmode(0, NULL);
@@ -160,11 +160,11 @@ void eval_dialog()
 						x += sprintf(x, "bin0 ");
 						x += sprint_base2(x, lo, true);
 						*(x++) = '\n';
-                              if (hi) {
+						if (hi) {
 							x += sprintf(x, "bin1 ");
 							x += sprint_base2(x, hi, true);
 							*(x++) = '\n';
-                              }
+						}
 						char bb[4];
 						/* big-endian string */
 						x += sprintf(x, "32bit big-endian (e.g. network) string\n\"");
@@ -227,9 +227,9 @@ void eval_dialog()
 				s->isetcursor(pos);
 				sprintf(b, "error at pos %d: %s", pos+1, str);
 			}
-               // FIXME: debug
+			// FIXME: debug
 //               set_helpmode(0);
-               
+			
 			t->settext(b);
 		} else {
 			t->settext(hint);

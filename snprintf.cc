@@ -267,7 +267,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_QWORD) {
 							  qword *q = va_arg (args, qword *);
 							  fmtqword(buffer, &currlen, maxlen, q, 2, min, max, flags);
-                                     break;
+							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 2, min, max, flags);
@@ -283,8 +283,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_QWORD) {
 							  qword *q = va_arg (args, qword *);
 							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
-                                     break;
-                                } else
+							  break;
+						  } else
 								value = va_arg (args, int);
 						  fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
 						  break;
@@ -299,7 +299,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_QWORD) {
 							  qword *q = va_arg (args, qword *);
 							  fmtqword(buffer, &currlen, maxlen, q, 8, min, max, flags);
-                                     break;
+							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 8, min, max, flags);
@@ -315,7 +315,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_QWORD) {
 							  qword *q = va_arg (args, qword *);
 							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
-                                     break;
+							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
@@ -333,7 +333,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_QWORD) {
 							  qword *q = va_arg (args, qword *);
 							  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
-                                     break;
+							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 16, min, max, flags);

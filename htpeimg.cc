@@ -34,9 +34,9 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32 && pe_shared->opt_magic!=COFF_OPTMAGIC_PE64) return 0;
 
-     bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
+	bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
-     LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
+	LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
 	PEAnalyser *p = new PEAnalyser();
 	p->init(pe_shared, file);
 
@@ -73,11 +73,11 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		h += pe_shared->pe32.header_nt.image_base;
 		low = p->createAddress32(l);
 		high = p->createAddress32(h);
-     } else {
+	} else {
 		low = p->createAddress64(to_qword(l) + pe_shared->pe64.header_nt.image_base);
 		high = p->createAddress64(to_qword(h) + pe_shared->pe64.header_nt.image_base);
-     }
-     
+	}
+	
 	ht_analy_sub *analy=new ht_analy_sub();
 	analy->init(file, v, p, low, high);
 	
@@ -89,12 +89,12 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->sendmsg(msg_complete_init, 0);
 
-     Address *tmpaddr;
-     if (pe32) {
-     	tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
-     } else {
-     	tmpaddr = p->createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
-     }
+	Address *tmpaddr;
+	if (pe32) {
+		tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+	} else {
+		tmpaddr = p->createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
+	}
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
 	
@@ -115,11 +115,11 @@ format_viewer_if htpeimage_if = {
 static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-     RVA rva = QWORD_GET_INT(i->value);
+	RVA rva = QWORD_GET_INT(i->value);
 	viewer_pos p;
-     FILEOFS ofs;
+	FILEOFS ofs;
 	if (pe_rva_to_ofs(&aviewer->pe_shared->sections, rva, &ofs)
-     && aviewer->offset_to_pos(ofs, &p)) {
+	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
 		int b;
 		aviewer->convertViewerPosToAddress(p, &a);
@@ -150,7 +150,7 @@ int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist
 		{NULL}
 	};
 	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
-     return ht_aviewer::func_handler(result, name, params);
+	return ht_aviewer::func_handler(result, name, params);
 }
 
 void ht_pe_aviewer::setAnalyser(Analyser *a)

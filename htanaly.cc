@@ -1802,16 +1802,16 @@ restart:
 		BOUNDS_ASSIGN(b, 2, bh-4, 26, 2);
 		ht_button *search_for_xrefs;
 		NEW_OBJECT(search_for_xrefs, ht_button, &b, "~Search for more XRefs", 666);
-          search_for_xrefs->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
+		search_for_xrefs->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		BOUNDS_ASSIGN(b, 29, bh-4, 11, 2);
 		ht_button *delete_xref;
 		NEW_OBJECT(delete_xref, ht_button, &b, "~Delete", 667);
-          delete_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
+		delete_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		// FIXME: disable button when possible
 		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
 		ht_button *new_xref;
 		NEW_OBJECT(new_xref, ht_button, &b, "~New", 668);
-          new_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
+		new_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		char str2[1024];
 		AddrXRef *x;
 		Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
@@ -1879,7 +1879,7 @@ int ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *p
 		{NULL}
 	};
 	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
-     return ht_uformat_viewer::func_handler(result, name, params);
+	return ht_uformat_viewer::func_handler(result, name, params);
 }
 
 int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
@@ -1928,7 +1928,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 	}
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
-     
+	
 bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 {
 	if (!analy) return false;

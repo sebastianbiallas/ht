@@ -51,13 +51,13 @@ static byte *framebuffer2;
 void put_vc(int x, int y, unsigned short *dest, char ch, int vc)
 {
 	if (vc == 0xffff) {
-     	*dest = 0xffff;
-	     int o = y * resx * font_height + x * font_width;
+		*dest = 0xffff;
+		int o = y * resx * font_height + x * font_width;
 		for (int i=0; i<font_height; i++) {
-          	memset(framebuffer2+o, 0, font_width*bytes_per_pixel);
-               o += resx*bytes_per_pixel;
+			memset(framebuffer2+o, 0, font_width*bytes_per_pixel);
+			o += resx*bytes_per_pixel;
 		}
-     } else {
+	} else {
 		int fg, bg;
 		if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc))==VC_TRANSPARENT) {
 			bg=(((unsigned char*)dest)[1])>>4;
@@ -79,35 +79,35 @@ void put_vc(int x, int y, unsigned short *dest, char ch, int vc)
 
 struct FFH {
 	byte magic[4] HTPACKED;
-     byte height HTPACKED;
-     byte dist HTPACKED;
-     byte res0[11] HTPACKED;
+	byte height HTPACKED;
+	byte dist HTPACKED;
+	byte res0[11] HTPACKED;
 };
 
 struct FCHAR {
 	byte width;
-     word data[0];
+	word data[0];
 };
 
 bool loadfont(char *filename)
 {
 	FILE *f = fopen(filename, "rb");
-     if (!f) return false;
-     FFH hdr;
+	if (!f) return false;
+	FFH hdr;
 	fread(&hdr, 1, sizeof hdr, f);
-     unsigned int c = 256 * (2 * hdr.height + 1);
-     font = (byte*)malloc(c);
-     memset(font, 0, c);
+	unsigned int c = 256 * (2 * hdr.height + 1);
+	font = (byte*)malloc(c);
+	memset(font, 0, c);
 	font_width = 1;
 	font_height = hdr.height;
 	font_bytes = 2;
-     if (fread(font, 1, c, f) != c) return false;
-     for (int i=0; i<256; i++) {
+	if (fread(font, 1, c, f) != c) return false;
+	for (int i=0; i<256; i++) {
 		byte width = *(font + (font_height*2+1)*i) /*+1*/;
-          if (width > font_width) font_width = width;
-     }
-     fclose(f);
-     return true;
+		if (width > font_width) font_width = width;
+	}
+	fclose(f);
+	return true;
 }
 
 /*
@@ -116,49 +116,49 @@ bool loadfont(char *filename)
 
 struct VbeInfoBlock {
 	byte magic[4] HTPACKED;
-     word version HTPACKED;
-     dword oem_string_ptr HTPACKED;
-     dword caps HTPACKED;
-     dword video_modes_ptr HTPACKED;
-     word memory HTPACKED;			/* in 64k blocks */
+	word version HTPACKED;
+	dword oem_string_ptr HTPACKED;
+	dword caps HTPACKED;
+	dword video_modes_ptr HTPACKED;
+	word memory HTPACKED;			/* in 64k blocks */
 /* VBE 2.0 */
-     word revison HTPACKED;
-     dword vendor_name_ptr HTPACKED;
-     dword product_name_ptr HTPACKED;
-     dword product_revision_ptr HTPACKED;
-     byte res0[222] HTPACKED;
-     byte res1[256] HTPACKED;
+	word revison HTPACKED;
+	dword vendor_name_ptr HTPACKED;
+	dword product_name_ptr HTPACKED;
+	dword product_revision_ptr HTPACKED;
+	byte res0[222] HTPACKED;
+	byte res1[256] HTPACKED;
 };
 
 struct ModeInfoBlock {
 /* VBE all versions */
-     word mode_attrs;
-     byte wina_attrs;
-     byte winb_attrs;
-     word win_granularity;
-     word win_size;
-     word wina_start;
-     word winb_start;
-     dword win_func_ptr;
-     word bytes_per_scanline;
+	word mode_attrs;
+	byte wina_attrs;
+	byte winb_attrs;
+	word win_granularity;
+	word win_size;
+	word wina_start;
+	word winb_start;
+	dword win_func_ptr;
+	word bytes_per_scanline;
 /* VBE 1.2+ */
-     word resx;
-     word resy;
-     byte char_width;
-     byte char_height;
-     byte planes;
-     byte bits_per_pixel;
-     byte banks;
-     byte memory_model;
-     byte bank_size;
-     byte image_pages;
-     byte res0;
+	word resx;
+	word resy;
+	byte char_width;
+	byte char_height;
+	byte planes;
+	byte bits_per_pixel;
+	byte banks;
+	byte memory_model;
+	byte bank_size;
+	byte image_pages;
+	byte res0;
 /* direct color fields */
-     byte res1[9];
+	byte res1[9];
 /* VBE 2.0 */
-     dword linear_buffer_addr;
-     dword off_screen_ofs;
-     word off_screen_size;			/* in 1k blocks */
+	dword linear_buffer_addr;
+	dword off_screen_ofs;
+	word off_screen_size;			/* in 1k blocks */
 /* pad */
 	byte pad[206];
 };
@@ -168,75 +168,75 @@ struct ModeInfoBlock {
 bool prepare_vesa_mode(int mode)
 {
 	mode = 0x4000 | (mode & 0x1ff);
-     __dpmi_regs regs;
-     
+	__dpmi_regs regs;
+	
 	/* alloc VBE info block in DOS mem */
-     int vbe_info_seg, vbe_info_sel;
-     vbe_info_seg = __dpmi_allocate_dos_memory(PARAGRAPHS(sizeof (VbeInfoBlock)), &vbe_info_sel);
-     if (vbe_info_seg == -1) return false;
-     VbeInfoBlock vbe_info;
+	int vbe_info_seg, vbe_info_sel;
+	vbe_info_seg = __dpmi_allocate_dos_memory(PARAGRAPHS(sizeof (VbeInfoBlock)), &vbe_info_sel);
+	if (vbe_info_seg == -1) return false;
+	VbeInfoBlock vbe_info;
 
 	/* alloc mode info block in DOS mem */
-     int mode_info_seg, mode_info_sel;
-     mode_info_seg = __dpmi_allocate_dos_memory(PARAGRAPHS(sizeof (ModeInfoBlock)), &mode_info_sel);
-     if (mode_info_seg == -1) return false;
-     ModeInfoBlock mode_info;
+	int mode_info_seg, mode_info_sel;
+	mode_info_seg = __dpmi_allocate_dos_memory(PARAGRAPHS(sizeof (ModeInfoBlock)), &mode_info_sel);
+	if (mode_info_seg == -1) return false;
+	ModeInfoBlock mode_info;
 
-     /* fetch VBE 2.0 info block */
-     char *VBE2 = "VBE2";
+	/* fetch VBE 2.0 info block */
+	char *VBE2 = "VBE2";
 	movedata(_go32_my_ds(), (int)&VBE2, vbe_info_sel, 0, 4);
 
-     memset(&regs, 0, sizeof regs);
-     regs.d.eax = 0x4f00;
-     regs.x.es = vbe_info_seg;
-     if (__dpmi_int(0x10, &regs) == -1) return false;
+	memset(&regs, 0, sizeof regs);
+	regs.d.eax = 0x4f00;
+	regs.x.es = vbe_info_seg;
+	if (__dpmi_int(0x10, &regs) == -1) return false;
 	movedata(vbe_info_sel, 0, _go32_my_ds(), (int)&vbe_info, sizeof vbe_info);
 
-     /* fetch mode info block */
-     memset(&regs, 0, sizeof regs);
-     regs.d.eax = 0x4f01;
-     regs.d.ecx = mode;
-     regs.x.es = mode_info_seg;
-     if (__dpmi_int(0x10, &regs) == -1) return false;
+	/* fetch mode info block */
+	memset(&regs, 0, sizeof regs);
+	regs.d.eax = 0x4f01;
+	regs.d.ecx = mode;
+	regs.x.es = mode_info_seg;
+	if (__dpmi_int(0x10, &regs) == -1) return false;
 	movedata(mode_info_sel, 0, _go32_my_ds(), (int)&mode_info, sizeof mode_info);
 
-     /* create linear address from physical address */
-     int memsize = mode_info.image_pages * mode_info.resx * mode_info.resy;
+	/* create linear address from physical address */
+	int memsize = mode_info.image_pages * mode_info.resx * mode_info.resy;
 
-     __dpmi_meminfo addrmap;
-     addrmap.address = mode_info.linear_buffer_addr;
-     addrmap.size = memsize;
+	__dpmi_meminfo addrmap;
+	addrmap.address = mode_info.linear_buffer_addr;
+	addrmap.size = memsize;
 
-     if (__dpmi_physical_address_mapping(&addrmap) == -1) return false;
+	if (__dpmi_physical_address_mapping(&addrmap) == -1) return false;
 
 	lfb_addr = addrmap.address;
-     lfb_size = addrmap.size;
-     if (lfb_size == 0) return false;
+	lfb_size = addrmap.size;
+	if (lfb_size == 0) return false;
 
 	resx = mode_info.resx;
 	resy = mode_info.resy;
 	bytes_per_pixel = (mode_info.bits_per_pixel+7) >> 3;
-     vidmode = mode;
-     
-     __dpmi_free_dos_memory(mode_info_sel);
-     __dpmi_free_dos_memory(vbe_info_sel);
+	vidmode = mode;
+	
+	__dpmi_free_dos_memory(mode_info_sel);
+	__dpmi_free_dos_memory(vbe_info_sel);
 
-     return true;
+	return true;
 }
 
 bool switch_to_vesa_mode()
 {
 	if (!vidmode) return false;
 
-     /* switch to desired video mode */
-     __dpmi_regs regs;
-     memset(&regs, 0, sizeof regs);
-     regs.d.eax = 0x4f02;
-     regs.d.ebx = vidmode;
-     if (__dpmi_int(0x10, &regs) == -1) return false;
+	/* switch to desired video mode */
+	__dpmi_regs regs;
+	memset(&regs, 0, sizeof regs);
+	regs.d.eax = 0x4f02;
+	regs.d.ebx = vidmode;
+	if (__dpmi_int(0x10, &regs) == -1) return false;
 
 // FIXME: return regs.d.eax or sth.
-     return true;
+	return true;
 }
 
 //#define JUST_320_200
@@ -251,44 +251,44 @@ screendrawbuf::screendrawbuf(char *title)
 	cursoroverwrite = false;
 	hidecursor();
 
-     if (!loadfont("P:\\src\\enew\\src\\io\\djgpp-x\\fnt\\system2.fnt"))
-     	HT_ERROR("couldn't load a font");
+	if (!loadfont("P:\\src\\enew\\src\\io\\djgpp-x\\fnt\\system2.fnt"))
+		HT_ERROR("couldn't load a font");
 
 #ifndef JUST_320_200
-     prepare_vesa_mode(0x101);
+	prepare_vesa_mode(0x101);
 #else
-     resx = 320;
-     resy = 200;
-     bytes_per_pixel = 1;
-     lfb_addr = 0xa0000;
-     lfb_size = 0xffff;
+	resx = 320;
+	resy = 200;
+	bytes_per_pixel = 1;
+	lfb_addr = 0xa0000;
+	lfb_size = 0xffff;
 #endif
 
 	screensel = __dpmi_allocate_ldt_descriptors(1);
-     if (screensel == -1) HT_ERROR("couldn't allocate selector for frame buffer");
-     if (__dpmi_set_descriptor_access_rights(screensel, 0xc0f3) == -1)
-     	HT_ERROR("couldn't set access rights of frame buffer selector");
+	if (screensel == -1) HT_ERROR("couldn't allocate selector for frame buffer");
+	if (__dpmi_set_descriptor_access_rights(screensel, 0xc0f3) == -1)
+		HT_ERROR("couldn't set access rights of frame buffer selector");
 	if (__dpmi_set_segment_base_address(screensel, lfb_addr) == -1)
-     	HT_ERROR("couldn't set base address of frame buffer selector");
+		HT_ERROR("couldn't set base address of frame buffer selector");
 	int lfb_size2 = (lfb_size & 0xfffff000) | 0xfff;
-     if (lfb_size2 > lfb_size) lfb_size2 -= 0x1000;
+	if (lfb_size2 > lfb_size) lfb_size2 -= 0x1000;
 	if (__dpmi_set_segment_limit(screensel, lfb_size2) == -1)
-     	HT_ERROR("couldn't set limit of frame buffer selector");
+		HT_ERROR("couldn't set limit of frame buffer selector");
 
 	int fbs = resx * resy * bytes_per_pixel;
-     framebuffer = (byte*)malloc(fbs);
-     memset(framebuffer, 0, fbs);
-     
-     framebuffer2 = (byte*)malloc(resx * resy * bytes_per_pixel);
-     memset(framebuffer2, 0, fbs);
+	framebuffer = (byte*)malloc(fbs);
+	memset(framebuffer, 0, fbs);
+	
+	framebuffer2 = (byte*)malloc(resx * resy * bytes_per_pixel);
+	memset(framebuffer2, 0, fbs);
 
 #ifndef JUST_320_200
-     switch_to_vesa_mode();
+	switch_to_vesa_mode();
 #else
-     asm(
-     	"mov $0x0013, %eax\n"
-          "int $0x10\n"
-     );
+	asm(
+		"mov $0x0013, %eax\n"
+		"int $0x10\n"
+	);
 #endif
 
 	b.x = 0;
@@ -309,9 +309,9 @@ screendrawbuf::~screendrawbuf()
 	setcursor(0, size.h-1);
 	show();*/
 	asm(
-     	"mov $0x0003, %eax\n"
-          "int $0x10\n"
-     );
+		"mov $0x0003, %eax\n"
+		"int $0x10\n"
+	);
 	if (buf) delete buf;
 }
 
@@ -333,98 +333,98 @@ void screendrawbuf::drawbuffer(drawbuf *b, int x, int y, bounds *clipping)
 
 void screendrawbuf::b_line(int x1, int y1, int x2, int y2, int c)
 {
-     UINT fbsize = resx*resy*bytes_per_pixel;
+	UINT fbsize = resx*resy*bytes_per_pixel;
 
-     int d = 0;
-     int dx = x2-x1;
-     int dy = y2-y1;
-     int ix = 1;
-     int iy = 1;
-     int maxx = resx;
-     int maxy = resy;
-     if (dx < 0) {
-     	ix = -ix;
-          dx = -dx;
-     }
-     if (dy < 0) {
-     	iy = -iy;
-          dy = -dy;
-     }
+	int d = 0;
+	int dx = x2-x1;
+	int dy = y2-y1;
+	int ix = 1;
+	int iy = 1;
+	int maxx = resx;
+	int maxy = resy;
+	if (dx < 0) {
+		ix = -ix;
+		dx = -dx;
+	}
+	if (dy < 0) {
+		iy = -iy;
+		dy = -dy;
+	}
 
-     bool swapxy = false;
-     if (dx < dy) {
-     	swapxy = true;
-          int t;
-          t = x1;
-          x1 = y1;
-          y1 = t;
-          
-          t = x2;
-          x2 = y2;
-          y2 = t;
+	bool swapxy = false;
+	if (dx < dy) {
+		swapxy = true;
+		int t;
+		t = x1;
+		x1 = y1;
+		y1 = t;
+		
+		t = x2;
+		x2 = y2;
+		y2 = t;
 
-          t = ix;
-          ix = iy;
-          iy = t;
+		t = ix;
+		ix = iy;
+		iy = t;
 
-          t = dx;
-          dx = dy;
-          dy = t;
+		t = dx;
+		dx = dy;
+		dy = t;
 
-          t = maxx;
+		t = maxx;
 		maxx = maxy;
-          maxy = t;
-     }
-	     if (dx == 0) return;
+		maxy = t;
+	}
+		if (dx == 0) return;
 		if (x1>x2) {
-     		int tx=x1, ty=y1;
-          	x1 = x2;
-	          y1 = y2;
-     	     x2 = tx;
-          	y2 = ty;
-               iy = -iy;
-	     }
-         	int n = y1 - dy*x1/dx;
-          if (x1 < 0) {
-               x1 = 0;
-               y1 = n;
-          }
-          if (y1 < 0) {
-		     if (dy == 0) return;
-               x1 = -n*dx/dy;
-               y1 = 0;
-          }
-          if (x2 > maxx) {
-               x2 = maxx;
-               y2 = dy*maxx/dx+n;
-          }
-          if (y2 > maxy) {
-		     if (dy == 0) return;
-               x2 = (maxy-n)*dx/dy;
-               y2 = maxy;
-          }
-	     int y = y1;
-     	for (int x = x1; x<x2; x++) {
-               UINT a;
-               if (swapxy) {
-               	a = y + x*resx*bytes_per_pixel;
-               } else {
-               	a = x + y*resx*bytes_per_pixel;
-               }
-               if (a < fbsize) framebuffer2[a] = c;
-	          d += dy;
-     	     while (d > dx) {
-          		d -= dx;
-               	y += iy;
+			int tx=x1, ty=y1;
+			x1 = x2;
+			y1 = y2;
+			x2 = tx;
+			y2 = ty;
+			iy = -iy;
+		}
+		int n = y1 - dy*x1/dx;
+		if (x1 < 0) {
+			x1 = 0;
+			y1 = n;
+		}
+		if (y1 < 0) {
+			if (dy == 0) return;
+			x1 = -n*dx/dy;
+			y1 = 0;
+		}
+		if (x2 > maxx) {
+			x2 = maxx;
+			y2 = dy*maxx/dx+n;
+		}
+		if (y2 > maxy) {
+			if (dy == 0) return;
+			x2 = (maxy-n)*dx/dy;
+			y2 = maxy;
+		}
+		int y = y1;
+		for (int x = x1; x<x2; x++) {
+			UINT a;
+			if (swapxy) {
+				a = y + x*resx*bytes_per_pixel;
+			} else {
+				a = x + y*resx*bytes_per_pixel;
 			}
-     	}
+			if (a < fbsize) framebuffer2[a] = c;
+			d += dy;
+			while (d > dx) {
+				d -= dx;
+				y += iy;
+			}
+		}
 }
 
 void screendrawbuf::b_putpixel(int x, int y, int c)
 {
-     UINT fbsize = resx*resy*bytes_per_pixel;
-     UINT a = x + y*resx*bytes_per_pixel;
-     if (a < fbsize) framebuffer2[a] = c;
+	UINT fbsize = resx*resy*bytes_per_pixel;
+	UINT a = x + y*resx*bytes_per_pixel;
+	if (a < fbsize) framebuffer2[a] = c;
 }
 
 void screendrawbuf::text_to_pixel_coord(int tx, int ty, int *px, int *py)
@@ -506,51 +506,51 @@ void screendrawbuf::b_setbounds(bounds *b)
 
 void screendrawbuf::show()
 {
-     if (!font) return;
+	if (!font) return;
 	gotoxy(cursorx+1, cursory+1);
 
 	unsigned short *b = buf;
-     UINT fbsize = resx*resy*bytes_per_pixel;
+	UINT fbsize = resx*resy*bytes_per_pixel;
 	for (int y = 0; y<size.h; y++) {
-	     UINT o = y * resx * font_height;
+		UINT o = y * resx * font_height;
 		for (int x = 0; x<size.w; x++) {
-               if (*b == 0xffff) {
-	               for (int i=0; i<font_height; i++) {
-	                   	int a = o+i*resx*bytes_per_pixel;
-                    	memmove(framebuffer+a, framebuffer2+a, font_width*bytes_per_pixel);
-                    }
-               } else {
-               
-          	int fg = (*b>>8) & 0xf;
-          	int bg = (*b>>12) & 0xf;
-               unsigned char ch = *b & 0xff;
-               /* put font character */
+			if (*b == 0xffff) {
+				for (int i=0; i<font_height; i++) {
+					int a = o+i*resx*bytes_per_pixel;
+					memmove(framebuffer+a, framebuffer2+a, font_width*bytes_per_pixel);
+				}
+			} else {
+			
+			int fg = (*b>>8) & 0xf;
+			int bg = (*b>>12) & 0xf;
+			unsigned char ch = *b & 0xff;
+			/* put font character */
 			byte width = *(font + (font_height*2+1)*ch);
 			int jshift = (font_width-width)/2;
-               for (int i=0; i<font_height; i++) {
-                    byte *chr = font + (font_height*2+1)*ch + i*2 + 1;
-                    word cdata = (chr[1] << 8) | chr[0];
-                   	UINT a = o+i*resx*bytes_per_pixel;
-	               for (int j=0; j<font_width; j++) {
-		               if (a < fbsize) {
-          	          	if ((cdata << jshift) & (1 << (j))) {
-                                   framebuffer[a] = fg;
+			for (int i=0; i<font_height; i++) {
+				byte *chr = font + (font_height*2+1)*ch + i*2 + 1;
+				word cdata = (chr[1] << 8) | chr[0];
+				UINT a = o+i*resx*bytes_per_pixel;
+				for (int j=0; j<font_width; j++) {
+					if (a < fbsize) {
+						if ((cdata << jshift) & (1 << (j))) {
+							framebuffer[a] = fg;
 //     	     				_farpokeb(screensel, a, fg);
 						} else {
-                                   framebuffer[a] = bg;
+							framebuffer[a] = bg;
 //     	     				_farpokeb(screensel, a, bg);
-	                         }
+						}
 					}
-                         a++;
-                    }
-               }
-               
-               }
-               b++;
-               o += font_width;
-     	}
-     }
-     movedata(_go32_my_ds(), (int)framebuffer, screensel, 0, resx*resy*bytes_per_pixel);
+					a++;
+				}
+			}
+			
+			}
+			b++;
+			o += font_width;
+		}
+	}
+	movedata(_go32_my_ds(), (int)framebuffer, screensel, 0, resx*resy*bytes_per_pixel);
 }
 
 void screendrawbuf::getcursor(int *x, int *y)

@@ -89,17 +89,17 @@ void PEAnalyser::beginAnalysis()
 	setLocationTreeOptimizeThreshold(100);
 	setSymbolTreeOptimizeThreshold(100);
 
-     bool pe32 = (pe_shared->opt_magic == COFF_OPTMAGIC_PE32);
-     
+	bool pe32 = (pe_shared->opt_magic == COFF_OPTMAGIC_PE32);
+	
 	/*
 	 *	entrypoint
 	 */
-     Address *entry;
-     if (pe32) {
+	Address *entry;
+	if (pe32) {
 		entry = createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
-     } else {
+	} else {
 		entry = createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
-     }
+	}
 	pushAddress(entry, entry);
 	
 	/*
@@ -121,12 +121,12 @@ void PEAnalyser::beginAnalysis()
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
 	char blub[100];
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
-          Address *secaddr;
-     	if (pe32) {
+		Address *secaddr;
+		if (pe32) {
 			secaddr = createAddress32(s->data_address+pe_shared->pe32.header_nt.image_base);
-          } else {
+		} else {
 			secaddr = createAddress64(to_qword(s->data_address)+pe_shared->pe64.header_nt.image_base);
-          }
+		}
 		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 		addComment(secaddr, 0, "");
 		addComment(secaddr, 0, ";******************************************************************");
@@ -236,11 +236,11 @@ void PEAnalyser::beginAnalysis()
 		char *label;
 		label = import_func_name(d->name, f->byname ? f->name.name : NULL, f->ordinal);
 		Address *faddr;
-          if (pe32) {
+		if (pe32) {
 			faddr = createAddress32(f->address);
-          } else {
+		} else {
 			faddr = createAddress64(to_qword(f->address));
-          }
+		}
 		addComment(faddr, 0, "");
 		addComment(faddr, 0, ";********************************************************");
 		addComment(faddr, 0, buffer);
@@ -350,9 +350,9 @@ Address *PEAnalyser::createAddress()
 		case COFF_MACHINE_ALPHA:
 			return new AddressAlphaFlat32();
 	}
-     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+	if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
 		return new AddressFlat64();
-     }
+	}
 	return new AddressFlat32();
 }
 
@@ -604,11 +604,11 @@ Address *PEAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
 	RVA r;
 	if (pe_ofs_to_rva(&pe_shared->sections, fileofs, &r)) {
-          if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+		if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 			return createAddress32(r+pe_shared->pe32.header_nt.image_base);
-          } else {
+		} else {
 			return createAddress64(to_qword(r)+pe_shared->pe64.header_nt.image_base);
-          }
+		}
 	} else {
 		return new InvalidAddress();
 	}
