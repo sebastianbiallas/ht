@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.61, July 2002}
+@subtitle{Edition 0.7, September 2002}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.6.1
+0.7.0
 @end macro
 
 @macro hturl
@@ -98,6 +98,7 @@ be registered in certain jurisdictions.
 @node Top, , (dir), (dir)
 @section HT Editor
 
+@noindent
 This is HT @htversion{};
 please note that this is a beta version of the program.
 Therefore HT is incomplete and sometimes buggy. Enjoy anyway@dots{}
@@ -114,18 +115,22 @@ Therefore HT is incomplete and sometimes buggy. Enjoy anyway@dots{}
 @section About
 
 @noindent
-This program is a file viewer, editor and analyzer
-for text, binary, and (especially) executable files.
+This program is a file viewer, editor and analyzer for text, binary, and (especially) executable files.
 
 @quotation
-This program comes with ABSOLUTELY NO WARRANTY@*
-This is free software, and you are welcome to@*
-redistribute it under certain conditions@*
-For more information please read the GNU General@*
-Public License, contained in the file "copying"@*
-If you do not have received a copy of this file along@*
-with this program, please write to the Free Software@*
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+@noindent
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 2 as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 @end quotation
 
 @node Key bindings, , Top, Top
@@ -226,6 +231,7 @@ instead of Control or something...
 
 Stefan Weyergraf @email{stefan@@weyergraf.de}
 
+
 Sebastian Biallas @email{sb@@biallas.net}
 
 @node Features, , Top, Top
@@ -255,7 +261,8 @@ Supported file formats
 common object file format (COFF)
 @itemize @w
 @item 
-- header
+- header @*
+- image with code/data analyser (x86)
 @end itemize
 @item 
 executable and linkable format (ELF)
@@ -291,10 +298,11 @@ new executables (NE)
 - header @*
 - segments @*
 - names @*
-- entrypoints 
+- entrypoints @*
+- image with code/data analyser (x86)
 @end itemize
 @item 
-portable executables (PE)
+portable executables (PE32, PE64)
 @itemize @w
 @item
 - header @*
@@ -302,7 +310,15 @@ portable executables (PE)
 - delay-import section @*
 - export section @*
 - resources @*
-- image with code/data analyser (x86 & alpha)
+- image with code/data analyser (x86, ia64, alpha) @*
+- preliminary support for .net executables
+@end itemize
+@item 
+java class files (CLASS)
+@itemize @w
+@item
+- header @*
+- image with code/data analyser (java bytecode disassembler)
 @end itemize
 @item
 Still some to be implemented (M$-OBJ, ARCH, LX)
@@ -448,7 +464,7 @@ searching for intermixed text and control-chars/binary, e.g. @code{"hello world\
 @subsection display: regex
 As the prefix indicates, this search doesn't search in the binary file but
 in the display on screen. HT searches for a regular expression so this can
-be very powerful, e.g. in PE/Image you can search for @code{(add|sub).+?,[78]}.
+be very powerful, e.g. in PE/Image you can search for @code{(add|sub).+?,\ [78]$}.
 This will find all add or sub instructions with second parameter 7 or 8.
 
 @subsection expr nonzero
@@ -470,7 +486,7 @@ Searching for patterns:
 Enter @code{readbyte(o) == readbyte(o+1)}@*
 This will search for two equal bytes ("AA", "55", "!!", etc.).
 @item
-Enter @code{(readbyte(o) == readbyte(o+1)+1) && (readbyte(o)==readbyte(o+2)+2}@*
+Enter @code{(readbyte(o) == readbyte(o+1)+1) && ((readbyte(o)==readbyte(o+2)+2)}@*
 This will search for three ascending bytes ("ABC", "123", etc).
 @end enumerate
 
@@ -482,6 +498,29 @@ Search for @code{entropy(readstring(o, 64)) > 82} in expr!=0 mode, and you will
 find it very quickly. How does it work? @code{readstring(o, 64)} reads a 64 byte string
 from current offset and entropy calculates the entropy ("randomness") of a string (result is 0..100).
 So the search stops if a entropy greater than 82% (guessed value)
+is encountered, which normally indicates packed or encryted data.
+
+Note: the @code{entropy()} function is not the best of its kind, if you know of a better
+one please let us know!
+
+@end enumerate
+
+@node Where to download ?, , Top, Top
+@section Where to download ?
+
+@noindent
+The HT homepage is at 
+@hturl{}
+@noindent
+Downloads are available from the 'download' section. 
+Please also take a look at
+@htsfurl{}
+
+@ifinfo
+@contents
+@end ifinfo
+@bye
+ter than 82% (guessed value)
 is encountered, which normally indicates packed or encryted data.
 
 Note: the @code{entropy()} function is not the best of its kind, if you know of a better

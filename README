@@ -1,7 +1,7 @@
 HT Editor
 =========
 
-   This is HT 0.6.0; please note that this is a beta version of the
+This is HT 0.7.0; please note that this is a beta version of the
 program.  Therefore HT is incomplete and sometimes buggy. Enjoy
 anyway...
 
@@ -11,56 +11,64 @@ About
 This program is a file viewer, editor and analyzer for text, binary,
 and (especially) executable files.
 
-	This program comes with ABSOLUTELY NO WARRANTY
-	This is free software, and you are welcome to
-	redistribute it under certain conditions
-	For more information please read the GNU General
-	Public License, contained in the file "copying"
-	If you do not have received a copy of this file along
-	with this program, please write to the Free Software
-	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+     This program is free software; you can redistribute it and/or
+     modify it under the terms of the GNU General Public License
+     version 2 as published by the Free Software Foundation.
 
-Keys
-====
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+
+Key bindings
+============
 
    * General key bindings
 
-	Return            follow link (if applicable)
-	Backspace         undo "follow link"
-	Space/F6          choose view mode
-	Alt+[1-9]         select window
-	Alt+0             select window list
-	Ctrl+Left/Right   scroll left/right
-	Cursor keys       move around
-	Page Up/Down      next/prev page
-	Alt+S             toggle select
-	Ctrl+Ins/Alt+C    copy
-	Shift+Ins/Alt+V   insert
-	Ctrl+Del/Alt+D    delete
-	Shift+Del/Alt+X   cut
+     Return            follow link (if applicable)
+     Backspace         undo "follow link"
+     Space/F6          choose view mode
+     Alt+[1-9]         select window
+     Alt+0             select window list
+     Ctrl+Left/Right   scroll left/right
+     Cursor keys       move around
+     Page Up/Down      next/prev page
+     Alt+S             toggle select
+     Ctrl+Ins/Alt+C    copy
+     Shift+Ins/Alt+V   insert
+     Ctrl+Del/Alt+D    delete
+     Shift+Del/Alt+X   cut
 
    * Window key bindings
 
-	Alt+F3            close window
-	Ctrl+F5           resize/move mode
-
+     Alt+F3            close window
+     Ctrl+F5           resize/move mode
+                       (in resize/move mode only:)
+     Space             toggle resize/move mode
+     Cursor keys       resize/move window
+     Escape/Return/Ctrl+F5leave resize/move mode
 
    * Analyser key bindings
 
-	c                 continue code analysis at cursor
-	f                 follow dword ptr at address
-	n                 (re)name current address (empty string to delete)
-	x                 show xrefs (search for xrefs)
-	#                 edit comments
-	Ctrl+A            call assembler
-	Ctrl+F            goto start of current function
-				   (indicated in the 2nd line)
-	Ctrl+L            goto previous label
-	Ctrl+T            show recursive function references
+     c                 continue code analysis at cursor
+     f                 follow dword ptr at address
+     n                 name current address (empty string to delete)
+     x                 show xrefs (search for xrefs)
+     #                 edit comments
+     Ctrl+A            call assembler
+     Ctrl+F            goto start of current function
+                       (indicated in the 2nd line)
+     Ctrl+L            goto previous label
+     Ctrl+T            show recursive function references
 
 
 
-Note: HT-posix keyboard support is somewhat experimental. Be warned.
+Note: Some keys don't work in HT-posix. Try using Escape instead of
+Control or something...
 
 Authors
 =======
@@ -72,85 +80,78 @@ Authors
 Features
 ========
 
-   Although HT is beta software and should not always be regarded as
-stable, it contains some very advanced and useful features:
+   HT is beta software and should not always regarded as stable, but
+nevertheless contains some very advanced and useful features:
 
-Supported file formats
-======================
+General features
+================
 
-   * Win32 portable executables (PE)
-		- header
-		- import section
-		- delay-import section
-		- export section
-		- resources
-		- image with code/data analyser (x86 & alpha)
+  1. Supported file formats
+        * common object file format (COFF)
+               - header
+               - image with code/data analyser (x86)
 
-   * UN*X executable and linkable format (ELF)
-		- header
-		- section headers
-		- program headers
-		- symbol tables
-		- image with code/data analyser (x86)
+        * executable and linkable format (ELF)
+               - header
+               - section headers
+               - program headers
+               - symbol tables
+               - image with code/data analyser (x86, ia64, alpha)
 
-   * Win16, OS/2 new executables (NE)
-		- header
-		- segments
-		- names
-		- entrypoints
-		- imported names
-		- image with code/data analyser (x86)
+        * linear executables (LE)
+               - header
+               - object table
+               - page table
+               - image (disassembly only)
 
-   * UN*X common object file format (COFF)
-		- header
-		- image with code/data analyser (x86)
+        * standard dos executables (MZ)
+               - header
+               - relocations
+               - image (disassembly only)
 
-   * Win, OS/2 linear executables (LE)
-		- header
-		- object table
-		- page table
-		- image (disassembly only)
+        * new executables (NE)
+               - header
+               - segments
+               - names
+               - entrypoints
+               - image with code/data analyser (x86)
 
-   * DOS executables (MZ)
-		- header
-		- relocations
-		- image (disassembly only)
+        * portable executables (PE32, PE64)
+               - header
+               - import section
+               - delay-import section
+               - export section
+               - resources
+               - image with code/data analyser (x86, ia64, alpha)
+               - preliminary support for .net executables
 
-   * Java class files (experimental)
-		- header
+        * java class files (CLASS)
+               - header
+               - image with code/data analyser (java bytecode
+               disassembler)
 
-Code and data analyser
-======================
+        * Still some to be implemented (M$-OBJ, ARCH, LX)
 
-	- finds branch sources and destinations recursively
-	- finds procedure entries
-	- creates labels based on this information
-	- creates xref information
-	- interactively analyse unexplored code (press 'c')
-	- create/rename/delete labels (press 'n')
-	- create/edit comments (press '#')
+  2. Code & Data Analyser
+          - finds branch sources and destinations recursively
+          - finds procedure entries
+          - creates labels based on this information
+          - creates xref information
+          - allows to interactively analyse unexplored code (press 'c')
+          - allows to create/rename/delete labels (press 'n')
+          - allows to create/edit comments (press '#')
 
-Target systems
-==============
-
-   HT is tested and known to work on at least the following systems:
-	- DJGPP
-	- GNU/Linux
-	- FreeBSD
-	- Win32
-
-   HT should be portable to any POSIX-compilant OS supporting (n)curses
-with almost no effort.
-
-   Much work is done to enable HT for non-x86 systems.  Alpha, PPC, 68k
-and Sparc have been successfully build and started.  These versions are
-however mostly untested (broader testing anyone ?).
+  3. Target systems
+          - DJGPP
+          - GNU/Linux
+          - FreeBSD
+          - Win32
 
 Configuration files
 ===================
 
-System-wide configuration
--------------------------
+Global configuration
+--------------------
 
    HT automatically creates a file to store its configuration.  It is
 called `~/.htcfg' on Unices and `ht.cfg' (where ht.exe resides) on
@@ -160,10 +161,9 @@ Global history::.
 Per file configuration
 ----------------------
 
-   The analyser (for analysable files) will store its data in an extra
-file called `FILENAME.htcfg', where FILENAME is the name of the
-analysed file. This file contains all information to restore the
-complete state of the analyser.
+   The analyser (for analysable files) will be stored in an extra file
+called `FILENAME.htcfg', where FILENAME is the analysed file. This file
+contains all information to restore the complete state of the analyser.
 
 Clipboard
 =========
@@ -173,9 +173,9 @@ copied and cut text or binary data is stored. Clipboard operations are
 normally binary safe, that means you can copy some binary data out of a
 file and paste it into an input line. Exceptions are only the \0
 character (binary null), it will be converted to a space in places
-where it wouldn't make sense (e.g. file open).
+where it would not make sense (e.g. file open).
 
-   Although the clipboard is not preserved across different HT sessions
+   Although the clipboard won't be saved between different HT sessions
 (ie. you will loose it when exiting HT), you can either save and load it
 or part of it manually (via Edit->paste into/copy from file) or rely on
 the input lines' *Note history: Global history, which is stored and
@@ -186,7 +186,8 @@ Global history
 
    HTs history system is global, which means that you can use it for
 all open files. Histories are also grouped by their context. I.e.
-file-related and regex-search-related dialogs have their own history.
+file-related and regex-search-related dialogs have their own history
+(who would want to open "[0-9][0-9a-z]+" anyway ?).
 
    History entries are stored within the *Note Configuration files::,
 so they can be reused when you relaunch.
@@ -228,35 +229,33 @@ Block operations
 ================
 
    Block operation (Blockop) is a very powerful tool to perform
-modifications on binary files. It is available in hex (i.e.
-raw/uncooked) mode only.
+modifications on binary files. It is available in hex viewer only.
 
    Blockop takes four parameters: START, END, MODE and EXPRESSION.
 Blockop works as follows:
 
    * START: Start at the offset specified by START
 
-   * REPEAT: Evaluate EXPRESSION and store n bytes (byte - 1,  word - 2,
-	dword - 4, string - variable) or less (to match END) at the current
-	offset. Stop if END has been reached. Increment current offset by
-	n.  Repeat.
+   * REPEAT: Evaluate EXPRESSION and store n bytes (1 - byte, 2 - word,
+     4 - dword, variable - string) at the current offset. Increment
+     current offset by n. Stop if END has been reached.
 
 Special variables/functions that can be used in EXPRESSION:
 
 `readbyte(ofs)'
-	read a byte from offset OFS, returns a number
+     read a byte from offset OFS, returns a number
 
 `readstring(ofs, size)'
-	read SIZE bytes from offset OFS, returns a string
+     read SIZE bytes from offset OFS, returns a string
 
 `i'
-	contains the iteration count/index starting with 0
+     contains the iteration count/index starting with 0
 
 `o'
-	contains the current offset
+     contains the current offset
 
-Searching
-=========
+Search and its different modes
+==============================
 
    The search function is one of the most advanced functions of HT.  It
 is invoked through F7, Shift-F7 continues a search from cursor.
@@ -267,8 +266,8 @@ bin: ASCII / Hex
 ----------------
 
    Enter an exact search string either via ascii characters or via
-hexadecimal interpretation. This is the fastest search mode.
-OPTIONS: case-insensitive.
+hexadecimal interpretation. This is the fastest search mode. You may
+specify a case-insensitive search.
 
 bin: eval str
 -------------
@@ -277,7 +276,6 @@ bin: eval str
 4th mode), and HT will then search for the result-string. This is
 pretty useful when searching for intermixed text and
 control-chars/binary, e.g. `"hello world\n\0"'
-OPTIONS: case-insensitive.
 
 display: regex
 --------------
@@ -285,73 +283,52 @@ display: regex
    As the prefix indicates, this search doesn't search in the binary
 file but in the display on screen. HT searches for a regular expression
 so this can be very powerful, e.g. in PE/Image you can search for
-`(add|sub).+?,[78]'.  This will find all add or sub instructions with
-second parameter 7 or 8.
-OPTIONS: case-insensitive.
+`(add|sub).+?,\ [78]$'.  This will find all add or sub instructions
+with second parameter 7 or 8.
 
 expr nonzero
 ------------
 
-   This is the slowest but also most advanced search mode. The search is
-successful if the entered expression evaluates to non-zero (it will be
-evaluated once for every byte). In this mode there are two predefined
-symbols and some functions: I is always the number of current iteration
-and O stands for the current offset in file. With the functions
-`readbyte(ofs)' and `readstring(ofs, size)' you may access the file's
-content.
+   This is the slowest but also most advanced search mode. Enter an
+expression and the search stops if this expression evaluates to
+non-zero (it will be evaluated on every byte). In this mode there are
+two predefined symbols and some functions: I is always the number of
+current iteration and O stands for the current offset in file. With the
+functions `readbyte(ofs)' and `readstring(ofs, size)' you access the
+file's content.
 
    It's easier to understand this with examples:
 
   1. Searching for patterns:
 
-	  a. Enter `readbyte(o) == readbyte(o+1)'
-		This will search for two equal bytes ("AA", "55", "!!", etc.).
+       a. Enter `readbyte(o) == readbyte(o+1)'
+          This will search for two equal bytes ("AA", "55", "!!", etc.).
 
-	  b. Enter `(readbyte(o) == readbyte(o+1)+1) &&
-		(readbyte(o)==readbyte(o+2)+2'
-		This will search for three ascending bytes ("ABC", "123",
-		etc).
+       b. Enter `(readbyte(o) == readbyte(o+1)+1) &&
+          ((readbyte(o)==readbyte(o+2)+2)'
+          This will search for three ascending bytes ("ABC", "123",
+          etc).
 
   2. Search with special functions:
 
-	With HT you can easily detect the RSA key in the `ADVAPI32.DLL':
-	Search for `entropy(readstring(o, 64)) > 82' in expr!=0 mode, and
-	you will find it very quickly. How does it work? `readstring(o,
-	64)' reads a 64 byte string from current offset and entropy
-	calculates the entropy ("randomness") of a string (result is
-	0..100).  So the search stops if a entropy greater than 82%
-	(guessed value) is encountered, which normally indicates packed or
-	encryted data.
+     With HT you can easily detect the RSA key in the `ADVAPI32.DLL':
+     Search for `entropy(readstring(o, 64)) > 82' in expr!=0 mode, and
+     you will find it very quickly. How does it work? `readstring(o,
+     64)' reads a 64 byte string from current offset and entropy
+     calculates the entropy ("randomness") of a string (result is
+     0..100).  So the search stops if a entropy greater than 82%
+     (guessed value) is encountered, which normally indicates packed or
+     encryted data.
 
-	Note: the `entropy()' function is not the best of its kind, if you
-	have a better one please let us know!
+     Note: the `entropy()' function is not the best of its kind, if you
+     know of a better one please let us know!
 
 
-x86 Assembler
-=============
-
-   HT features an assembler for the x86 architecture.  It is capable of
-assembling any command string, that HTs disassembler produces. I.e. it
-can at least produce 386,486,Pentium + MMX + 3dnow instructions.
-Assembling and disassembling is done separately using a single
-compiled-in opcode table.
-
-   If supported the assembler can be invoked in any disassembler view
-by hitting CTRL+A.  If the typed assembler command is ambigous in
-itself (e.g. no memory type given) or if there are multiple opcodes
-possible, alternatives are presented.  If alternatives are presented HT
-tries to select an alternative opcode with the same size as the opcode
-that you had selected when pressing CTRL+A.
-
-Homepage
-========
+Where to download ?
+===================
 
 The HT homepage is at `http://hte.sourceforge.net'
 
-Downloads are available from the 'download' section.  For further
-information and bug reporting look at
-`http://sourceforge.net/projects/hte'
-
-Feel free to *Note mail us: Authors..  Suggestions, criticism and
-patches welcome.
+Downloads are available from the 'download' section.  Please also take
+a look at `http://sourceforge.net/projects/hte'
 
