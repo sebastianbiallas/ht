@@ -67,6 +67,8 @@
 #define cmd_popup_window_project		HT_COMMAND(186)
 #define cmd_popup_dialog_info_loader	HT_COMMAND(187)
 
+#define cmd_vstate_restore			HT_COMMAND(190)
+
 #define cmd_analyser_save			HT_COMMAND(200)
 
 /*
