@@ -619,14 +619,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 		case cmd_view_mode_i:
 			if (file /*&& (file==msg->data1.ptr)*/) {
 				UINT size = file->get_size();
-				bool isdirty = false;
-				file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &isdirty);
-				if (isdirty && (confirmbox("file %s has been modified, apply changes ?",
-				file->get_filename()) == button_yes)) {
-					file->cntl(FCNTL_MODS_FLUSH);
-				} else {
-					file->cntl(FCNTL_MODS_INVD);
-				}
+				file->cntl(FCNTL_MODS_INVD);
 				if (file->set_access_mode(FAM_READ)) {
 					htmsg m;
 					m.msg = cmd_view_mode;
@@ -1477,6 +1470,8 @@ bool ht_uformat_viewer::edit_end()
 {
 	if (!edit()) {
 		hidecursor();
+          set_cursor(cursor);
+#if 0
 		uformat_viewer_pos p = cursor;
 		if (find_first_tag(&p, size.h)) {
 			set_cursor(p);
@@ -1487,6 +1482,7 @@ bool ht_uformat_viewer::edit_end()
 //				assert(0);	/* FIXME: not yet implemented */
 //			}
 		}
+#endif
 		cursorline_dirty();
 		adjust_cursor_idx();
 		update_visual_info();
@@ -1861,31 +1857,17 @@ void ht_uformat_viewer::focus_cursor()
 char *ht_uformat_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
-		case 2: {
-			if (execute) {
-				FILEOFS o;
-				if (get_current_offset(&o)) {
-					char title[128];
-					ht_snprintf(title, sizeof title, "view offset %08x in...", o);
-					ht_view *v = ((ht_app*)app)->popup_view_list(title);
-					if (v) {
-						htmsg m;
-						m.msg = msg_goto_offset;
-						m.type = mt_empty;
-						m.data1.integer = o;	// FIXME: int = FILEOFS
-						v->sendmsg(&m);
-						if (m.msg == msg_empty) {
-							vstate_save();
-							app->focus(v);
-						} else {
-							errorbox("offset %08x is not supported/invalid in '%s'", o, v->desc);
-						}
-					}
+		case 2:
+			if (caps & VC_EDIT) {
+				if (edit()) {
+					if (execute) edit_update();
+					return "save";
+				} else {
+					return "~save";
 				}
 			}
-			return "go ofs";
-		}
-		case 3:
+			break;
+/*		case 3:
 			if (caps & VC_REPLACE) {
 				if (edit()) {
 					if (execute) sendmsg(cmd_file_replace);
@@ -1894,11 +1876,28 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 					return "~replace";
 				}
 			}
-			break;
+			break;*/
 		case 4:
 			if (caps & VC_EDIT) {
 				if (edit()) {
-					if (execute) baseview->sendmsg(cmd_view_mode_i, file, NULL);
+					if (execute) {
+						UINT size = file->get_size();
+						bool isdirty = false;
+						file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &isdirty);
+						if (isdirty && (confirmbox("file %s has been modified, apply changes ?",
+						file->get_filename()) == button_yes)) {
+							file->cntl(FCNTL_MODS_FLUSH);
+						} else {
+							file->cntl(FCNTL_MODS_INVD);
+						}
+						if (size != file->get_size()) {
+							htmsg m;
+							m.msg = msg_filesize_changed;
+							m.type = mt_broadcast;
+							sendmsg(&m);
+						}
+						baseview->sendmsg(cmd_view_mode_i, file, NULL);
+					}
 					return "view";
 				} else {
 					if (execute) baseview->sendmsg(cmd_edit_mode_i, file, NULL);
@@ -1928,16 +1927,30 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 				}
 			}
 			break;
-		case 9:
-			if (caps & VC_EDIT) {
-				if (edit()) {
-					if (execute) edit_update();
-					return "update";
-				} else {
-					return "~update";
+		case 9: {
+			if (execute) {
+				FILEOFS o;
+				if (get_current_offset(&o)) {
+					char title[128];
+					ht_snprintf(title, sizeof title, "view offset %08x in...", o);
+					ht_view *v = ((ht_app*)app)->popup_view_list(title);
+					if (v) {
+						htmsg m;
+						m.msg = msg_goto_offset;
+						m.type = mt_empty;
+						m.data1.integer = o;	// FIXME: int = FILEOFS
+						v->sendmsg(&m);
+						if (m.msg == msg_empty) {
+							vstate_save();
+							app->focus(v);
+						} else {
+							errorbox("offset %08x is not supported/invalid in '%s'", o, v->desc);
+						}
+					}
 				}
 			}
-			break;
+			return "go ofs";
+		}
 	}
 	return ht_format_viewer::func(i, execute);
 }
@@ -2478,15 +2491,23 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			if (request) {
 				switch (request->search_class) {
 					case SC_PHYSICAL: {
-						FILEOFS start, end;
-						if (pos_to_offset(start_pos, &start)
-						&& pos_to_offset(end_pos, &end)) {
-							result = psearch(request, start, end);
+						try {
+							FILEOFS start, end;
+							if (pos_to_offset(start_pos, &start)
+							&& pos_to_offset(end_pos, &end)) {
+								result = psearch(request, start, end);
+							}
+						} catch (ht_exception *e) {
+							errorbox("error: %s", e->what());
 						}
 						break;
 					}
 					case SC_VISUAL: {
-						result = vsearch(request, start_pos, end_pos);
+						try {
+							result = vsearch(request, start_pos, end_pos);
+						} catch (ht_exception *e) {
+							errorbox("error: %s", e->what());
+						}
 						break;
 					}
 				}
