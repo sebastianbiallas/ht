@@ -15,7 +15,6 @@
 - analy.cc: pushAddress(x,y) leaks x if !isValidCodeAddr(x)
 - analy.cc: analyser file storage: thresholds are stored after data structures
   which they are used for.
-- 'follow' is always 32-bit, little-endian.
 
 +dunno
 - update help
@@ -38,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- blockop should support multiple endianesses (currently only big-endian)
 - eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
 - eval: int("-1") does not work
 - eval should warn if number too big/cannot parse

@@ -431,7 +431,7 @@ int ht_sys_file::extend(UINT newsize)
 	char buf[EXTEND_BUFSIZE];
 	memset(buf, 0, sizeof buf);
 	newsize-=s;
-	seek(s);
+	if ((r = seek(s))) return r;
 	while (newsize) {
 		UINT k=MIN(sizeof buf, newsize);
 		UINT l=write(buf, k);
@@ -519,7 +519,7 @@ int ht_stdio_file::extend(UINT newsize)
 	char buf[EXTEND_BUFSIZE];
 	memset(buf, 0, sizeof buf);
 	newsize-=s;
-	seek(s);
+	if ((r = seek(s))) return r;
 	while (newsize) {
 		UINT k=MIN(sizeof buf, newsize);
 		UINT l=write(buf, k);
@@ -865,14 +865,14 @@ void ht_mem_file::init()
 void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 {
 	ht_streamfile::init();
-	ofs=o;
-	buf=(byte*)malloc(size ? size : 1);
-	ibufsize=size;
-	bufsize=size;
+	ofs = o;
+	buf = (byte*)malloc(size ? size : 1);
+	ibufsize = size;
+	bufsize = size;
 	memset(buf, 0, size);
-	pos=0;
-	dsize=0;
-	access_mode=0;
+	pos = 0;
+	dsize = 0;
+	access_mode = 0;
 	if (!set_access_mode(am)) throw new ht_io_exception("unable to open memfile");
 }
 
@@ -890,7 +890,7 @@ void *ht_mem_file::bufptr()
 int ht_mem_file::extend(UINT newsize)
 {
 	while (bufsize<newsize) extendbuf();
-	dsize=newsize;
+	dsize = newsize;
 	return 0;
 }
 

@@ -602,8 +602,6 @@ public:
 	virtual	~ht_data_tagstring();
 };
 
-void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context);
-
 ht_search_result *linear_expr_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_sub *sub, ht_uformat_viewer *ufv, FILEOFS fofs, dword fsize);
 ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize);
 

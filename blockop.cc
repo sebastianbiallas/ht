@@ -26,6 +26,7 @@
 #include "htatom.h"
 #include "htctrl.h"
 #include "htendian.h"
+#include "hteval.h"
 #include "htexcept.h"
 #include "hthist.h"
 #include "htiobox.h"

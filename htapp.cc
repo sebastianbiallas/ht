@@ -64,9 +64,9 @@ extern "C" {
 #include "regex.h"
 }
 
-#define ATOM_HT_APP					MAGICD("APP\x00")
-#define ATOM_HT_PROJECT				MAGICD("APP\x01")
-#define ATOM_HT_PROJECT_ITEM			MAGICD("APP\x02")
+#define ATOM_HT_APP			MAGICD("APP\x00")
+#define ATOM_HT_PROJECT			MAGICD("APP\x01")
+#define ATOM_HT_PROJECT_ITEM		MAGICD("APP\x02")
 #define ATOM_COMPARE_KEYS_PROJECT_ITEM	MAGICD("APP\x10")
 
 #define HT_PROJECT_CONFIG_SUFFIX     	".htprj"
@@ -1564,7 +1564,7 @@ bool ht_app::accept_close_all_windows()
 	return true;
 }
 
-bool ht_app::create_window_log()
+ht_window *ht_app::create_window_log()
 {
 	ht_window *w=get_window_by_type(AWT_LOG);
 	if (w) {
@@ -1599,10 +1599,10 @@ bool ht_app::create_window_log()
 		
 		insert_window(logwindow, AWT_LOG, 0, false, NULL);
 	}
-	return true;
+	return w;
 }
 
-bool ht_app::create_window_term(const char *cmd)
+ht_window *ht_app::create_window_term(const char *cmd)
 {
 	ht_window *w = get_window_by_type(AWT_TERM);
 	if (w) {
@@ -1654,18 +1654,18 @@ bool ht_app::create_window_term(const char *cmd)
 			insert_window(termwindow, AWT_LOG, 0, false, NULL);
 		} else {
 			errorbox("couldn't create child-process (%d)", e);
-			return false;
+			return NULL;
 		}
 	}
-	return true;
+	return w;
 }
 
-bool ht_app::create_window_clipboard()
+ht_window *ht_app::create_window_clipboard()
 {
 	ht_window *w=get_window_by_type(AWT_CLIPBOARD);
 	if (w) {
 		focus(w);
-		return true;
+		return w;
 	} else {
 		bounds b;
 		get_stdbounds_file(&b);
@@ -1709,20 +1709,20 @@ bool ht_app::create_window_clipboard()
 //		insert_window(window, AWT_CLIPBOARD, 0, false, clipboard);
 		insert_window(window, AWT_CLIPBOARD, 0, false, NULL);
 	}
-	return false;
+	return NULL;
 }
-			
-bool ht_app::create_window_file(char *filename, UINT mode, bool allow_duplicates)
+
+ht_window *ht_app::create_window_file(char *filename, UINT mode, bool allow_duplicates)
 {
 	if (mode==FOM_AUTO) mode=autodetect_file_open_mode(filename);
 	switch (mode) {
 		case FOM_BIN: return create_window_file_bin(filename, allow_duplicates);
 		case FOM_TEXT: return create_window_file_text(filename, allow_duplicates);
 	}
-	return false;
+	return NULL;
 }
 
-bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
+ht_window *ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 {
 	bounds b;
 	get_stdbounds_file(&b);
@@ -1730,13 +1730,13 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 	char fullfilename[FILENAME_MAX];
 	if ((e=sys_canonicalize(fullfilename, filename))) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 
 	ht_window *w;
 	if (!allow_duplicates && ((w = get_window_by_filename(fullfilename)))) {
 		focus(w);
-		return true;
+		return w;
 	}
 
 	ht_file *emfile = new ht_file();
@@ -1744,10 +1744,10 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 
 	if ((e = emfile->get_error())) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 
-	if (!doFileChecks(emfile)) return false;
+	if (!doFileChecks(emfile)) return NULL;
 
 	ht_streamfile_modifier *mfile = new ht_streamfile_modifier();
 	mfile->init(emfile, true, 8*1024);
@@ -1757,7 +1757,7 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 			 
 	if ((e=file->get_error())) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 	LOG("loading binary file %s...", fullfilename);
 	file->set_error_func(app_stream_error_func);
@@ -1765,7 +1765,7 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 	return create_window_file_bin(&b, file, fullfilename, true);
 }
 
-bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile)
+ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile)
 {
 	ht_file_window *window = new ht_file_window();
 	window->init(b, title, FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, file);
@@ -1837,10 +1837,10 @@ bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *
 	window->sendmsg(&m);
 
 	insert_window(window, AWT_FILE, 0, isfile, file);
-	return true;
+	return window;
 }
 
-bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
+ht_window *ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 {
 	bounds b, c;
 	get_stdbounds_file(&c);
@@ -1849,13 +1849,13 @@ bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 	char fullfilename[FILENAME_MAX];
 	if ((e=sys_canonicalize(fullfilename, filename))) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 
 	ht_window *w;
 	if (!allow_duplicates && ((w = get_window_by_filename(fullfilename)))) {
 		focus(w);
-		return true;
+		return w;
 	}
 
 	ht_file *emfile = new ht_file();
@@ -1863,10 +1863,10 @@ bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 
 	if ((e=emfile->get_error())) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 
-	if (!doFileChecks(emfile)) return false;
+	if (!doFileChecks(emfile)) return NULL;
 
 	ht_ltextfile *tfile = new ht_ltextfile();
 	tfile->init(emfile, true, NULL);
@@ -1876,7 +1876,7 @@ bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 
 	if ((e=file->get_error())) {
 		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return false;
+		return NULL;
 	}
 
 	LOG("loading text file %s...", fullfilename);
@@ -1885,7 +1885,7 @@ bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 	return create_window_file_text(&b, file, fullfilename, true);
 }
 
-bool ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *title, bool isfile)
+ht_window *ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *title, bool isfile)
 {
 	bounds b=*c;
 
@@ -1943,16 +1943,15 @@ bool ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *ti
 	if (isfile) LOG("%s: done.", title);
 
 	insert_window(window, AWT_FILE, 0, isfile, file);
-
-	return true;
+	return window;
 }
 
-bool ht_app::create_window_help(char *file, char *node)
+ht_window *ht_app::create_window_help(char *file, char *node)
 {
-	ht_window *w=get_window_by_type(AWT_HELP);
+	ht_window *w = get_window_by_type(AWT_HELP);
 	if (w) {
 		focus(w);
-		return true;
+		return w;
 	} else {
 		bounds b, c;
 		battlefield->getbounds(&c);
@@ -2008,21 +2007,21 @@ bool ht_app::create_window_help(char *file, char *node)
 			insert_window(window, AWT_HELP, 0, false, NULL);
 			
 			window->setpalette(palkey_generic_cyan);
-
-			return true;
+			return window;
 		}
 		errorbox("help topic '(%s)%s' not found", file, node);
 		window->done();
 		delete window;
 	}
-	return false;
+	return NULL;
 }
 
-bool ht_app::create_window_project()
+ht_window *ht_app::create_window_project()
 {
 	ht_window *w=get_window_by_type(AWT_PROJECT);
 	if (w) {
 		focus(w);
+		return w;
 	} else {
 		bounds b;
 		get_stdbounds_tool(&b);
@@ -2051,8 +2050,8 @@ bool ht_app::create_window_project()
 		insert_window(project_window, AWT_PROJECT, 0, false, NULL);
 		
 		project_window->setpalette(palkey_generic_cyan);
+		return project_window;
 	}
-	return true;
 }
 
 #if 0
@@ -2093,7 +2092,7 @@ ht_view *create_ofm_single(bounds *c, char *url, ht_vfs_viewer **x)
 }
 #endif
 
-bool ht_app::create_window_ofm(char *url1, char *url2)
+ht_window *ht_app::create_window_ofm(char *url1, char *url2)
 {
 	bounds b;
 	get_stdbounds_file(&b);
@@ -2145,7 +2144,7 @@ bool ht_app::create_window_ofm(char *url1, char *url2)
 	}
 #endif
 	insert_window(window, AWT_OFM, 0, false, NULL);
-	return true;
+	return window;
 }
 
 char *ht_app::defaultpalette()
@@ -2548,13 +2547,14 @@ void ht_app::handlemsg(htmsg *msg)
 		case cmd_file_extend: {
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
 			UINT s = (UINT)msg->data2.integer;
-			if (confirmbox("really extend %s to offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
+			// don't ask. only for truncates
+//			if (confirmbox("really extend %s to offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
 				int oam = f->get_access_mode();
 				if (!(oam & FAM_WRITE)) f->set_access_mode(oam | FAM_WRITE);
 				int e = f->extend(s);
 				if (!(oam & FAM_WRITE)) f->set_access_mode(oam);
 				if (e) errorbox("couldn't extend file to offset %08x/%d: %s", s, s, strerror(e));
-			}
+//			}
 			clearmsg(msg);
 			return;
 		}
@@ -2622,7 +2622,11 @@ void ht_app::handlemsg(htmsg *msg)
 						ht_layer_streamfile *file = new ht_layer_streamfile();
 						file->init(modfile, true);
 
-						create_window_file_bin(&b, file, "Untitled", false);
+						ht_window *w = create_window_file_bin(&b, file, "Untitled", false);
+						htmsg m;
+						m.msg = cmd_file_resize;
+						m.type = mt_empty;
+						w->sendmsg(&m);
 					}
 				}
 			}
@@ -3094,7 +3098,13 @@ void ht_file_window::handlemsg(htmsg *msg)
 				modified = true;
 			}
 			if (modified) {
-				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, "file %s has been modified, save ?", file->get_filename())) {
+				char q[1024];
+				if (file->get_filename()) {
+					ht_snprintf(q, sizeof q, "file %s has been modified, save ?", file->get_filename());
+				} else {
+					ht_snprintf(q, sizeof q, "untitled file has been modified, save ?");
+				}
+				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, q)) {
 					case button_yes: {
 						app->focus(this);
 						htmsg msg;
@@ -3256,3 +3266,4 @@ void done_app()
 	
 	if (screen) delete screen;
 }
+

@@ -22,5 +22,6 @@
 #define __HTEVAL_H__
 
 void eval_dialog();
+void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context);
 
 #endif /* __HTEVAL_H__ */

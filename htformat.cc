@@ -31,6 +31,7 @@
 #include "htatom.h"
 #include "htclipboard.h"
 #include "htctrl.h"
+#include "hteval.h"
 #include "hthist.h"
 #include "htiobox.h"
 #include "htkeyb.h"
@@ -67,120 +68,6 @@ bool compeq_line_id(const LINE_ID &a, const LINE_ID &b)
 		&& (a.id5 == b.id5));
 }
 
-
-#define	FH_HEAD		1
-#define	FH_DESC		2
-
-// FIXME: disfunctional...
-class ht_help_lexer: public ht_syntax_lexer {
-public:
-/* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index)
-	{
-		return VCP(VC_BLUE, VC_TRANSPARENT);
-	}
-
-	virtual	lexer_state getinitstate()
-	{
-		return FH_HEAD;
-	}
-
-	virtual	lexer_token geterrortoken()
-	{
-		return 3;
-	}
-
-	virtual	char *getname()
-	{
-		return "bla";
-	}
-
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
-	{
-		*ret_len = buflen;
-		int ps = *ret_state;
-		if (buflen == 0) *ret_state = FH_HEAD; else *ret_state = FH_DESC;
-		return buflen ? ps : 0;
-	}
-
-	virtual	vcp gettoken_color(lexer_token t)
-	{
-		switch (t) {
-			case FH_HEAD:
-				return VCP(VC_LIGHT(VC_WHITE), VC_TRANSPARENT);
-			case FH_DESC:
-				return VCP(VC_BLACK, VC_TRANSPARENT);
-		}
-		return VCP(VC_RED, VC_TRANSPARENT);
-	}
-};
-
-static void dialog_fhelp(ht_streamfile *f)
-{
-	ht_help_lexer *l = new ht_help_lexer();
-	l->init();
-
-	ht_ltextfile *t = new ht_ltextfile();
-	t->init(f, true, NULL);
-
-	bounds b, c;
-	app->getbounds(&c);
-	b = c;
-	b.w = 70;
-	b.h = 19;
-	b.x = (c.w - b.w) / 2,
-	b.y = (c.h - b.h) / 2;
-	c = b;
-
-	ht_dialog *dialog = new ht_dialog();
-	dialog->init(&b, "eval() - functions", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
-
-	b.x = 0;
-	b.y = 0;
-	b.w -= 2;
-	b.h -= 2;
-
-	ht_text_viewer *v = new ht_text_viewer();
-	v->init(&b, true, t, NULL);
-
-	v->set_lexer(l, true);
-
-	dialog->insert(v);
-
-	b = c;
-	b.x = b.w-2;
-	b.y = 0;
-	b.w = 1;
-	b.h-=2;
-	ht_scrollbar *hs=new ht_scrollbar();
-	hs->init(&b, &dialog->pal, true);
-
-	dialog->setvscrollbar(hs);
-
-	dialog->setpalette(palkey_generic_cyan);
-
-	dialog->run(0);
-
-	v->done();
-	delete v;
-}
-
-void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
-{
-	eval_scalar res;
-	if (eval(&res, "help()", func_handler, symbol_handler, context)) {
-		eval_str s;
-		scalar_context_str(&res, &s);
-		scalar_destroy(&res);
-
-		ht_memmap_file *f = new ht_memmap_file();
-		f->init((byte*)s.value, s.len);
-
-		dialog_fhelp(f);
-
-		string_destroy(&s);
-	}
-}
 
 /*
  *	CLASS ht_search_request
@@ -2099,8 +1986,16 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 						UINT size = file->get_size();
 						bool isdirty = false;
 						file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &isdirty);
-						if (isdirty && (confirmbox("file %s has been modified, apply changes ?",
-						file->get_filename()) == button_yes)) {
+						char q[1024];
+						if (file->get_filename()) {
+							ht_snprintf(q, sizeof q,
+								"file %s has been modified, apply changes ?",
+								file->get_filename());
+						} else {
+							ht_snprintf(q, sizeof q,
+								"untitled file has been modified, apply changes ?");
+						}
+						if (isdirty && (confirmbox(q) == button_yes)) {
 							file->cntl(FCNTL_MODS_FLUSH);
 						} else {
 							file->cntl(FCNTL_MODS_INVD);

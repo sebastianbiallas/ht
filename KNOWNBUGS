@@ -2,15 +2,11 @@
 =============
 
 - big-endian ELF: section header flag details dont work...
+- analyser: 'follow' is always 32-bit, little-endian.
 
-- Blockop should support multiple endianesses (currently only big-endian)
-- Cursor misplacement in image (F4)
+- Cursor misplacement in */image (F4)
 - Help / features / configuration PgDn
-
-- Cancel search should not say "not found"
-- window resize + cursor positioning problems
+- cancelling search yields "not found"
+- window resize + cursor position
 - going to lines with ofs % 16 !=0 (+clipboard)
-
-- various problems on non-x86 machines
-
-see TODO
+- some problems when run on non-x86 systems... (Sparc bus error e.g.)
