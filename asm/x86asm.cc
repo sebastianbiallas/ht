@@ -115,25 +115,25 @@ x86addrcoding modrm32[3][8] = {
 
 /* convert logical operand types to hardware operand types */
 int lop2hop[10][8] = {
-/* X86_OPTYPE_EMPTY */
+	/* X86_OPTYPE_EMPTY */
 	{},
-/* X86_OPTYPE_IMM */
+	/* X86_OPTYPE_IMM */
 	{TYPE_I, TYPE_Is, TYPE_J, TYPE_A, TYPE_Ix},
-/* X86_OPTYPE_REG */
+	/* X86_OPTYPE_REG */
 	{TYPE_R, TYPE_Rx, TYPE_G, TYPE_E},
-/* X86_OPTYPE_SEG */
+	/* X86_OPTYPE_SEG */
 	{TYPE_S, TYPE_Sx},
-/* X86_OPTYPE_MEM */
-	{TYPE_E, TYPE_M, TYPE_O},
-/* X86_OPTYPE_CRX */
+	/* X86_OPTYPE_MEM */
+	{TYPE_E, TYPE_M, TYPE_O, TYPE_Q},
+	/* X86_OPTYPE_CRX */
 	{TYPE_C},
-/* X86_OPTYPE_DRX */
+	/* X86_OPTYPE_DRX */
 	{TYPE_D},
-/* X86_OPTYPE_TRX */
+	/* X86_OPTYPE_TRX */
 	{TYPE_T},
-/* X86_OPTYPE_STX */
+	/* X86_OPTYPE_STX */
 	{TYPE_F, TYPE_Fx},
-/* X86_OPTYPE_MMX */
+	/* X86_OPTYPE_MMX */
 	{TYPE_P, TYPE_Q}
 };
 
@@ -177,12 +177,12 @@ int reg2size[3]= {1, 2, 4};
 
 int iswhitespace(char c)
 {
-	return ((((unsigned char)c)<=' ') && c);
+	return ((unsigned char)c)<=' ' && c;
 }
 
 int isnotwhitespace(char c)
 {
-	return ( !(((unsigned char)c)<=' ') && c);
+	return !(((unsigned char)c)<=' ') && c;
 }
 
 /*
@@ -192,8 +192,8 @@ int isnotwhitespace(char c)
 x86asm::x86asm(int o, int a)
 : Assembler(false)
 {
-	opsize=o;
-	addrsize=a;
+	opsize = o;
+	addrsize = a;
 }
 
 x86asm::~x86asm()
@@ -246,68 +246,67 @@ int x86asm::delete_nonsense_insn(asm_code *code)
 
 void x86asm::emitdisp(dword d, int size)
 {
-	dispsize=size;
-	disp=d;
+	dispsize = size;
+	disp = d;
 }
 
 void x86asm::emitimm(dword i, int size)
 {
-	immsize=size;
-	imm=i;
+	immsize = size;
+	imm = i;
 }
 
 void x86asm::emitfarptr(dword s, dword o, bool big)
 {
 	if (big) {
-		immsize=6;
-		imm=o;
-		imm2=s;
+		immsize = 6;
+		imm = o;
+		imm2 = s;
 	} else {
-		immsize=4;
-		imm=(s<<16) | (o & 0xffff);
+		immsize = 4;
+		imm = (s<<16) | (o & 0xffff);
 	}
 }
 
 void x86asm::emitmodrm(int modrm)
 {
-	if (modrmv==-1) modrmv=0;
-	modrmv=modrm;
+	modrmv = modrm;
 }
 
 void x86asm::emitmodrm_mod(int mod)
 {
-	if (modrmv==-1) modrmv=0;
-	modrmv=(modrmv& ~(3<<6))|((mod&3)<<6);
+	if (modrmv == -1) modrmv = 0;
+	modrmv = (modrmv & ~(3<<6)) | ((mod & 3)<<6);
 }
 
 void x86asm::emitmodrm_reg(int reg)
 {
-	if (modrmv==-1) modrmv=0;
-	modrmv=(modrmv& ~(7<<3))|((reg&7)<<3);
+	if (modrmv == -1) modrmv = 0;
+	modrmv = (modrmv & ~(7<<3)) | ((reg & 7)<<3);
 }
 
 void x86asm::emitmodrm_rm(int rm)
 {
-	if (modrmv==-1) modrmv=0;
-	modrmv=(modrmv& ~(7))|(rm&7);
+	if (modrmv == -1) modrmv = 0;
+	modrmv = (modrmv & ~7) | (rm & 7);
 }
 
 void x86asm::emitsib_base(int base)
 {
-	if (sibv==-1) sibv=0;
-	sibv=(sibv& ~7)|(base&7);
+	if (sibv == -1) sibv = 0;
+	sibv = (sibv & ~7) | (base & 7);
 }
 
 void x86asm::emitsib_index(int index)
 {
-	if (sibv==-1) sibv=0;
-	sibv=(sibv& ~(7<<3))|((index&7)<<3);
+	if (sibv == -1) sibv = 0;
+	sibv = (sibv & ~(7<<3)) | ((index & 7)<<3);
 }
 
 void x86asm::emitsib_scale(int scale)
 {
-	if (sibv==-1) sibv=0;
-	sibv=(sibv& ~(3<<6))|((scale&3)<<6);
+	if (sibv == -1) sibv = 0;
+	sibv = (sibv & ~(3<<6)) | ((scale & 3)<<6);
 }
 
 asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
@@ -317,8 +316,8 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 	
 	addrsize_depend=0;
 	for (int i=0; i<3; i++) {
-		if (insn->op[i].type==X86_OPTYPE_MEM) {
-			addrsize_depend=1;
+		if (insn->op[i].type == X86_OPTYPE_MEM) {
+			addrsize_depend = 1;
 			break;
 		}
 	}
@@ -372,7 +371,8 @@ int x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int
 
 	if (eopsize!=opsize) emitbyte(0x66);
 	if (eaddrsize!=addrsize) emitbyte(0x67);
-/* write lock, rep and/or seg prefixes if needed */
+
+	/* write lock, rep and/or seg prefixes if needed */
 	switch (insn->lockprefix) {
 		case X86_PREFIX_LOCK: emitbyte(0xf0); break;
 	}
@@ -388,7 +388,8 @@ int x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int
 		case X86_PREFIX_FS: emitbyte(0x64); break;
 		case X86_PREFIX_GS: emitbyte(0x65); break;
 	}
-/* write opcodeprefixes and opcode */
+
+	/* write opcodeprefixes and opcode */
 	int i=0;
 	switch (prefix) {
 		case X86ASM_PREFIX_0F0F:
@@ -410,14 +411,16 @@ int x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int
 			emitmodrm(opcodeb);
 			break;
 	}
-/* encode the ops */
+
+	/* encode the ops */
 	for (int i=0; i<3; i++) {
 		if (!encode_op(&insn->op[i], &opcode->op[i], &esizes[i], eopsize, eaddrsize)) {
 			clearcode();
 			return 0;
 		}
 	}
-/* write the rest */
+
+	/* write the rest */
 	if (modrmv!=-1) emitbyte(modrmv);
 	if (sibv!=-1) emitbyte(sibv);
 	switch (dispsize) {
@@ -490,6 +493,11 @@ int x86asm::encode_modrm(x86_insn_op *op, char size, int allow_reg, int allow_me
 			}
 			break;
 		}
+		case X86_OPTYPE_MMX:
+			if (!allow_reg) return 0;
+			emitmodrm_mod(3);
+			emitmodrm_rm(op->mmx);
+			break;
 		default:
 			return 0;
 	}
@@ -526,7 +534,7 @@ int x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eops
 		case TYPE_0:
 			return 1;
 		case TYPE_A:
-/* direct address without ModR/M */
+			/* direct address without ModR/M */
 			if (op->type == X86_OPTYPE_FARPTR) {
 				int size = esizeop(xop->size, eopsize);
 				emitfarptr(op->farptr.seg, op->farptr.offset, size == 6);
@@ -535,57 +543,57 @@ int x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eops
 			}
 			break;
 		case TYPE_C:
-/* reg of ModR/M picks control register */
+			/* reg of ModR/M picks control register */
 			emitmodrm_reg(op->crx);
 			break;
 		case TYPE_D:
-/* reg of ModR/M picks debug register */
+			/* reg of ModR/M picks debug register */
 			emitmodrm_reg(op->drx);
 			break;
 		case TYPE_E:
-/* ModR/M (general reg or memory) */
+			/* ModR/M (general reg or memory) */
 			if (!encode_modrm(op, xop->extendedsize, 1, 1, eopsize, eaddrsize)) return 0;
 			psize=esizeop(xop->extendedsize, eopsize);
 			break;
 		case TYPE_F:
-/* r/m of ModR/M picks a fpu register */
+			/* r/m of ModR/M picks a fpu register */
 			emitmodrm_rm(op->stx);
 			break;
 		case TYPE_Fx:
-/* extra picks a fpu register */
+			/* extra picks a fpu register */
 			return 1;
 		case TYPE_G:
-/* reg of ModR/M picks general register */
+			/* reg of ModR/M picks general register */
 			emitmodrm_reg(op->reg);
 			break;
 		case TYPE_Is: {
-/* signed immediate */
+			/* signed immediate */
 			int size=esizeop(xop->size, eopsize);
 			emitimm(op->imm, size);
 			break;
 		}
 		case TYPE_I: {
-/* unsigned immediate */
+			/* unsigned immediate */
 			int size=esizeop(xop->size, eopsize);
 			emitimm(op->imm, size);
 			break;
 		}
 		case TYPE_Ix:
-/* fixed immediate */
+			/* fixed immediate */
 			return 1;
 		case TYPE_J: {
-/* relative branch offset */
+			/* relative branch offset */
 			int size=esizeop(xop->size, eopsize);
 			emitimm(op->imm-address-code.size-size, size);
 			break;
 		}
 		case TYPE_M:
-/* ModR/M (memory only) */
+			/* ModR/M (memory only) */
 			if (!encode_modrm(op, xop->extendedsize, 0, 1, eopsize, eaddrsize)) return 0;
 			psize=esizeop(xop->extendedsize, eopsize);
 			break;
 		case TYPE_O: {
-/* direct memory without ModR/M */
+			/* direct memory without ModR/M */
 			if (op->mem.base!=X86_REG_NO) return 0;
 			if (op->mem.index!=X86_REG_NO) return 0;
 			psize=esizeop(xop->extendedsize, eopsize);
@@ -600,27 +608,30 @@ int x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eops
 			break;
 		}
 		case TYPE_P:
-/* ModR/M picks MMX register */
+			/* reg of ModR/M picks MMX register */
+			emitmodrm_reg(op->mmx);
 			break;
 		case TYPE_Q:
-/* ModR/M (MMX reg or memory) */
+			/* ModR/M (MMX reg or memory) */
+			if (!encode_modrm(op, xop->extendedsize, 1, 1, eopsize, eaddrsize)) return 0;
+			psize = esizeop(xop->extendedsize, eopsize);
 			break;
 		case TYPE_R:
-/* rm of ModR/M picks general register */
+			/* rm of ModR/M picks general register */
 			emitmodrm_rm(op->reg);
 			break;
 		case TYPE_Rx:
-/* extra picks register */
+			/* extra picks register */
 			return 1;
 		case TYPE_S:
-/* reg of ModR/M picks segment register */
+			/* reg of ModR/M picks segment register */
 			emitmodrm_reg(op->seg);
 			break;
 		case TYPE_Sx:
-/* extra picks segment register */
+			/* extra picks segment register */
 			return 1;
 		case TYPE_T:
-/* reg of ModR/M picks test register */
+			/* reg of ModR/M picks test register */
 			emitmodrm_reg(op->trx);
 			break;
 	}
@@ -770,12 +781,12 @@ int x86asm::fetch_number(char **s, dword *value)
 {
 	char *e;
 	char *t=*s;
-/* c-style numbers */
+	/* c-style numbers */
 	dword i=strtoul(t, &e, 0);
 	if ((*t>='0') && (*t<='9')) {
 		while (strchr("0123456789abcdef", *t) && *t) t++;
 		if (*t=='h') {
-/* assembler style numbers */
+			/* assembler style numbers */
 			i=strtoul(*s, &e, 16);
 			e=t+1;
 		}
@@ -830,7 +841,7 @@ char *x86asm::immlsz2hsz(int size, int opsize)
 
 char *x86asm::lsz2hsz(int size, int opsize)
 {
-	if (opsize==X86_OPSIZE16) {
+	if (opsize == X86_OPSIZE16) {
 		switch (size) {
 			case 1:
 				return hsz8_16;
@@ -886,23 +897,24 @@ int x86asm::match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize)
 
 int x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 {
-	if ((op->type==X86_OPTYPE_EMPTY) && (xop->type==TYPE_0)) return 1;
-	if ((!op->size) && (xop->type!=TYPE_0)) return 1;
+	if (op->type==X86_OPTYPE_EMPTY && xop->type==TYPE_0) return 1;
+	if (!op->size && xop->type!=TYPE_0) return 1;
 	char *hsz = NULL;
-	if (((op->type==X86_OPTYPE_MEM) && (op->mem.floatptr)) || (op->type==X86_OPTYPE_STX)) {
-		return (xop->size==flsz2hsz(op->size));
-	} else if (op->type==X86_OPTYPE_IMM) {
-		if (xop->type==TYPE_Is) {
-			hsz=immlsz2hsz(simmsize(op->imm, esizeop(xop->extendedsize, opsize)), opsize);
-		} else if (xop->type==TYPE_J) {
-			int size=esizeop(xop->size, opsize);
+	if ((op->type==X86_OPTYPE_MEM && op->mem.floatptr)
+	 ||  op->type==X86_OPTYPE_STX) {
+		return xop->size == flsz2hsz(op->size);
+	} else if (op->type == X86_OPTYPE_IMM) {
+		if (xop->type == TYPE_Is) {
+			hsz = immlsz2hsz(simmsize(op->imm, esizeop(xop->extendedsize, opsize)), opsize);
+		} else if (xop->type == TYPE_J) {
+			int size = esizeop(xop->size, opsize);
 			// FIXME: ?!
-			hsz=immlsz2hsz(simmsize(op->imm-address-code.size-size-1, 4), opsize);
+			hsz = immlsz2hsz(simmsize(op->imm - address - code.size - size - 1, 4), opsize);
 		} else {
-			hsz=immlsz2hsz(op->size, opsize);
+			hsz = immlsz2hsz(op->size, opsize);
 		}
 	} else {
-		hsz=lsz2hsz(op->size, opsize);
+		hsz = lsz2hsz(op->size, opsize);
 	}
 	if (hsz) {
 		while (*hsz) {
@@ -978,6 +990,9 @@ int x86asm::match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefi
 void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix)
 {
 	for (int i=0; i<256; i++) {
+		if (i==0xdb) {
+			int a=1;
+		}
 		if (!opcodes[i].name) {
 			x86opc_insn_op_special special=*((x86opc_insn_op_special*)(&opcodes[i].op[0]));
 			if (special.type==SPECIAL_TYPE_GROUP) {
@@ -993,7 +1008,7 @@ void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix)
 
 void x86asm::match_fopcodes(x86asm_insn *insn)
 {
-/* try modrm fopcodes */
+	/* try modrm fopcodes */
 	for (int i=0; i<8; i++) {
 		for (int j=0; j<8; j++) {
 			int n=match_opcode_name(insn->name, x86_modfloat_group_insns[i][j].name);
@@ -1013,7 +1028,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 			}
 		}
 	}
-/* try the rest */
+	/* try the rest */
 	for (int i=0; i<8; i++) {
 		for (int j=0; j<8; j++) {
 			if (x86_float_group_insns[i][j].group==0) {
@@ -1052,62 +1067,75 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 	}
 }
 
-int x86asm::opreg(x86_insn_op *op, char *xop)
+bool x86asm::opreg(x86_insn_op *op, char *xop)
 {
 	for (int i=0; i<3; i++) {
 		for (int j=0; j<8; j++) {
 			if (x86_regs[i][j] && strcmp(xop, x86_regs[i][j])==0) {
-				op->type=X86_OPTYPE_REG;
-				op->size=reg2size[i];
-				op->reg=j;
-				return 1;
+				op->type = X86_OPTYPE_REG;
+				op->size = reg2size[i];
+				op->reg = j;
+				return true;
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
-int x86asm::opseg(x86_insn_op *op, char *xop)
+bool x86asm::opmmx(x86_insn_op *op, char *xop)
+{
+	if (strlen(xop) == 3 && xop[0] == 'm' && xop[1] == 'm'
+	 && xop[2] >= '0' && xop[2] <= '7') {
+		op->type = X86_OPTYPE_MMX;
+		op->size = 8;
+		op->mmx = xop[2] - '0';
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool x86asm::opseg(x86_insn_op *op, char *xop)
 {
 	for (int i=0; i<8; i++) {
 		if (x86_segs[i] && strcmp(xop, x86_segs[i])==0) {
-			op->type=X86_OPTYPE_SEG;
-			op->size=2;
-			op->seg=i;
-			return 1;
+			op->type = X86_OPTYPE_SEG;
+			op->size = 2;
+			op->seg = i;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
-int x86asm::opfarptr(x86_insn_op *op, char *xop)
+bool x86asm::opfarptr(x86_insn_op *op, char *xop)
 {
 	dword seg, offset;
 	char *x = xop;
-	if (!fetch_number(&x, &seg)) return 0;
-	if (*x!=':') return 0;
+	if (!fetch_number(&x, &seg)) return false;
+	if (*x!=':') return false;
 	x++;
-	if (!fetch_number(&x, &offset)) return 0;
-	if (*x) return 0;
-	op->type=X86_OPTYPE_FARPTR;
+	if (!fetch_number(&x, &offset)) return false;
+	if (*x) return false;
+	op->type = X86_OPTYPE_FARPTR;
 	if (offset>0xffff) op->size=6; else op->size=4;
-	op->farptr.seg=seg;
-	op->farptr.offset=offset;
-	return 1;
+	op->farptr.seg = seg;
+	op->farptr.offset = offset;
+	return true;
 }
 
-int x86asm::opimm(x86_insn_op *op, char *xop)
+bool x86asm::opimm(x86_insn_op *op, char *xop)
 {
 	dword i;
-	if (!fetch_number(&xop, &i)) return 0;
-	if (*xop) return 0;
-	op->type=X86_OPTYPE_IMM;
-	if (i>0xffff) op->size=4; else if (i>0xff) op->size=2; else op->size=1;
-	op->imm=i;
-	return 1;
+	if (!fetch_number(&xop, &i)) return false;
+	if (*xop) return false;
+	op->type = X86_OPTYPE_IMM;
+	if (i > 0xffff) op->size=4; else if (i > 0xff) op->size = 2; else op->size = 1;
+	op->imm = i;
+	return true;
 }
 
-int x86asm::opplugimm(x86_insn_op *op, char *xop)
+bool x86asm::opplugimm(x86_insn_op *op, char *xop)
 {
 	dword d;
 	if (imm_eval_proc && imm_eval_proc(imm_eval_context, &xop, &d)) {
@@ -1115,18 +1143,18 @@ int x86asm::opplugimm(x86_insn_op *op, char *xop)
 		op->type=X86_OPTYPE_IMM;
 		if (d>0xffff) op->size=4; else if (d>0xff) op->size=2; else op->size=1;
 		op->imm=d;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-int x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
+bool x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
 {
 /* FIXME: dirty implementation ! */
 	int opsize=0, hsize=0;
 	int floatptr=0;
 
-// typecast
+	// typecast
 	while (strchr(" \t", *s) && *s) s++;
 	if (strncmp(s, "byte", 4)==0) {
 		hsize=1;
@@ -1157,15 +1185,15 @@ int x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
 		floatptr=1;
 	}
 	if (hsize) {
-		if (!strchr(" \t", *s) || !*s) return 0;
+		if (!strchr(" \t", *s) || !*s) return false;
 		while (strchr(" \t", *s) && *s) s++;
-		if (!strncmp(s, "ptr", 3)==0) return 0;
+		if (!strncmp(s, "ptr", 3)==0) return false;
 		opsize=hsize;
 		s+=3;
 		while (strchr(" \t", *s) && *s) s++;
 	}
 
-// segprefixes (e.g. fs:)
+	// segprefixes (e.g. fs:)
 	while (strchr(" \t", *s) && *s) s++;
 	for (int i=0; i<8; i++) {
 		if (x86_segs[i]) {
@@ -1179,7 +1207,6 @@ int x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *s)
 		}
 	}
 
-//
 	if (*s!='[') return 0;
 	s++;
 
@@ -1214,8 +1241,9 @@ cont:
 		if (*t==']') break;
 		if (*t=='*') {
 			if (lasttokenreg==X86_REG_NO) {
-/* FIXME: case "imm*reg" not yet supported ! cleaner implementation needed ! */
-				return 0;
+				/* FIXME: case "imm*reg" not yet supported! 
+				cleaner implementation needed ! */
+				return false;
 			} else {
 				dword v;
 				if (!fetch_number(&s, &v)) return 0;
@@ -1233,7 +1261,7 @@ cont:
 			lasttokenreg=X86_REG_NO;
 			continue;
 		}
-/* test if reg */
+		/* test if reg */
 		for (int i=1; i<3; i++) {
 			for (int j=0; j<8; j++) {
 				if (x86_regs[i][j] && strcmp(t, x86_regs[i][j])==0) {
@@ -1261,7 +1289,8 @@ cont:
 			}
 		}
 		lasttokenreg=X86_REG_NO;
-/* test if number */
+
+		/* test if number */
 		dword v;
 		
 		if (imm_eval_proc && imm_eval_proc(imm_eval_context, &t, &v)) {
@@ -1271,18 +1300,18 @@ cont:
 			if (sign) disp-=v; else disp+=v;
 			continue;
 		}
-		return 0;
+		return false;
 	}
 
 	if ((base==X86_REG_NO) && (index==X86_REG_NO)) {
-/* unsigned disp */
+		/* unsigned disp */
 		if (disp>0xffff) {
 			if (addrsize==X86_ADDRSIZEUNKNOWN) {
 				addrsize=X86_ADDRSIZE32;
 			} else if (addrsize!=X86_ADDRSIZE32) return 0;
 		}
 	} else {
-/* signed disp */
+		/* signed disp */
 		if ((disp>0x7fff) && (disp<0xffff8000)) {
 			if (addrsize==X86_ADDRSIZEUNKNOWN) {
 				addrsize=X86_ADDRSIZE32;
@@ -1299,27 +1328,31 @@ cont:
 	op->mem.floatptr=floatptr;
 //	int r=(addrsize==X86_ADDRSIZE16) ? 1 : 2;
 //	printf("%s.%d: opmem(): size=%d, base = %s, index = %s, scale = %d, disp=%08lx, addrsize = %d\n", __FILE__, __LINE__, opsize, (base==X86_REG_NO) ? "" : x86_regs[r][base], (index==X86_REG_NO) ? "" : x86_regs[r][index], scale, disp, addrsize);
-	return 1;
+	return true;
 }
 
-int x86asm::opspecialregs(x86_insn_op *op, char *xop)
+bool x86asm::opspecialregs(x86_insn_op *op, char *xop)
 {
 	char *e;
 	if (strcmp(xop, "st")==0) {
 		op->type=X86_OPTYPE_STX;
 		op->size=10;
 		op->stx=0;
-		return 1;
+		return true;
 	} else if ((strncmp(xop, "st", 2)==0) && (xop[2]=='(') && (xop[4]==')')) {
 		int w=strtol(xop+3, &e, 10);
-		if ((e!=xop+4) || (w>7)) return 0;
+		if ((e!=xop+4) || (w>7)) return false;
 		op->type=X86_OPTYPE_STX;
 		op->size=10;
 		op->stx=w;
 		return 1;
 	}
 
-	if (strlen(xop)!=3) return 0;	/* FIXME: do we need this ? strtol sets e to next untranslatable char, this case is caught below... */
+	/* FIXME: do we need this? 
+	 * strtol sets e to next untranslatable char, 
+	 * this case is caught below... 
+	 */
+	if (strlen(xop)!=3) return 0;
 
 	int w=strtol(xop+2, &e, 10);
 	if ((*e) || (w>7)) return 0;
@@ -1327,19 +1360,19 @@ int x86asm::opspecialregs(x86_insn_op *op, char *xop)
 		op->type=X86_OPTYPE_CRX;
 		op->size=4;
 		op->crx=w;
-		return 1;
+		return true;
 	} else if (strncmp(xop, "dr", 2)==0) {
 		op->type=X86_OPTYPE_DRX;
 		op->size=4;
 		op->drx=w;
-		return 1;
+		return true;
 	} else if (strncmp(xop, "tr", 2)==0) {
 		op->type=X86_OPTYPE_TRX;
 		op->size=4;
 		op->trx=w;
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 int x86asm::translate_str(asm_insn *asm_insn, const char *s)
@@ -1356,7 +1389,8 @@ int x86asm::translate_str(asm_insn *asm_insn, const char *s)
 	insn->segprefix=X86_PREFIX_NO;
 
 	const char *p = s, *a, *b;
-/* prefixes */
+
+	/* prefixes */
 	while (iswhitespace(*p)) p++;
 	a=p;
 	while (isnotwhitespace(*p)) p++;
@@ -1372,19 +1406,21 @@ int x86asm::translate_str(asm_insn *asm_insn, const char *s)
 		insn->lockprefix=X86_PREFIX_LOCK;
 		s = p;
 	}
-/**/
+
+	/**/
 	splitstr(s, insn->n, (char**)&opp);
 	insn->name=insn->n;
 	for (int i=0; i<3; i++) {
 		if (!*op[i]) break;
 
-		if (!(opplugimm(&insn->op[i], op[i]) ||
-		opreg(&insn->op[i], op[i]) ||
-		opfarptr(&insn->op[i], op[i]) ||
-		opimm(&insn->op[i], op[i]) ||
-		opseg(&insn->op[i], op[i]) ||
-		opmem(insn, &insn->op[i], op[i]) ||
-		opspecialregs(&insn->op[i], op[i]))) {
+		if (!(opplugimm(&insn->op[i], op[i])
+		 || opreg(&insn->op[i], op[i])
+		 || opmmx(&insn->op[i], op[i])
+		 || opfarptr(&insn->op[i], op[i])
+		 || opimm(&insn->op[i], op[i])
+		 || opseg(&insn->op[i], op[i])
+		 || opmem(insn, &insn->op[i], op[i])
+		 || opspecialregs(&insn->op[i], op[i]))) {
 			set_error_msg(X86ASM_ERRMSG_UNKNOWN_SYMBOL, op[i]);
 			return 0;
 		}
@@ -1422,14 +1458,14 @@ void x86asm::splitstr(const char *s, char *name, char *op[3])
 	*op[0]=0;
 	*op[1]=0;
 	*op[2]=0;
-/* find name */
+	/* find name */
 	while (iswhitespace(*s)) s++;
 	a=s;
 	while (isnotwhitespace(*s)) s++;
 	b=s;
 	strncpy(name, a, b-a);
 	name[b-a]=0;
-/* find ops*/
+	/* find ops*/
 	for (int i=0; i<3; i++) {
 		while (iswhitespace(*s)) s++;
 		if (!*s) break;

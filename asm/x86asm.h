@@ -96,13 +96,14 @@ protected:
 	void match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix);
 	int match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize);
 	int match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize);
-	int opfarptr(x86_insn_op *op, char *xop);
-	int opimm(x86_insn_op *op, char *xop);
-	int opplugimm(x86_insn_op *op, char *xop);
-	int opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *xop);
-	int opreg(x86_insn_op *op, char *xop);
-	int opseg(x86_insn_op *op, char *xop);
-	int opspecialregs(x86_insn_op *op, char *xop);
+	bool opfarptr(x86_insn_op *op, char *xop);
+	bool opimm(x86_insn_op *op, char *xop);
+	bool opplugimm(x86_insn_op *op, char *xop);
+	bool opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *xop);
+	bool opreg(x86_insn_op *op, char *xop);
+	bool opmmx(x86_insn_op *op, char *xop);
+	bool opseg(x86_insn_op *op, char *xop);
+	bool opspecialregs(x86_insn_op *op, char *xop);
 	int simmsize(dword imm, int immsize);
 	void splitstr(const char *s, char *name, char *op[3]);
 public:
