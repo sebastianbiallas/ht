@@ -1133,7 +1133,7 @@ void replace_dialog(ht_format_viewer *format, UINT searchmodes)
 			FILEOFS so = start.offset, eo = end.offset;
 			ht_physical_search_result *result;
 
-			format->vstate_save(format);
+			format->vstate_save();
 				
 			try {
 				bool replace_all = false;

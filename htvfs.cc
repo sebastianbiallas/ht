@@ -857,7 +857,7 @@ bool ht_vfs_sub::chdir(char *dir)
 		if (cwd) free(cwd);
 		cwd=strdup(dirname);
 		refreshdir();
-		if (uformat_viewer) uformat_viewer->goto_offset(0);
+		if (uformat_viewer) uformat_viewer->goto_offset(0, false);
 		return true;
 	}
 	return false;
@@ -1405,7 +1405,7 @@ bool ht_vfs_sub::ref(LINE_ID *id)
 				ht_data_direntry *e;
 				while ((e=(ht_data_direntry*)dir->get(i))) {
 					if (cvfs->filename_compare(e->name, f)==0) {
-						if (uformat_viewer) uformat_viewer->goto_offset(i);
+						if (uformat_viewer) uformat_viewer->goto_offset(i, false);
 						break;
 					}
 					i++;
