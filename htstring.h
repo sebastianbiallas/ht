@@ -32,7 +32,7 @@ int ht_stricmp(const char *s1, const char *s2);
 
 int strcicomm(const char *s1, const char *s2);
 int strccomm(const char *s1, const char *s2);
-#define strend(s) (s+strlen(s))
+#define strend(s) ((s)+strlen(s))
 int escape_special_str(char *result, int resultmaxlen, const char *s, const char *specialchars=0, bool bit7=true);
 int escape_special(char *result, int resultmaxlen, const void *s, int len, const char *specialchars=0, bool bit7=true);
 int unescape_special_str(char *result, int resultmaxlen, const char *s);
