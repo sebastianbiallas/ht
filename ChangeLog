@@ -2,8 +2,6 @@
 ==============
 
 version 0.8-trunk:
-
-version 0.8.0pre1:
 	- disassembler:
 		- IBM/Motorola PowerPC (PPC) (new)
 	- file formats:
@@ -16,8 +14,8 @@ version 0.8.0pre1:
 		- fixed buggy ELF reading code partially (thanks rpm28).
 		  further reviewing required.
 		- XCOFF32 support
-		- COFF support for coff files without optional header
-		- COFF big-endian support
+		- support for COFF files without optional header
+		- big-endian COFF support
 	- eval dialog: added function help
 	- eval: not ('~') and logical-not ('!') operators
 	- disassembler interface (int maxlen, not byte maxlen)
