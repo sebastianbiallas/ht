@@ -12,7 +12,7 @@
 - htanaly.cc: menu ifs not used properly (for keys...)
 - (listbox sort order indicators ?)
 - htanaly.cc:473 fix it
-- nicht gut: 'c' geht nicht in edit-mode
+- multiple disassemblers ??? e.g. LE ifsmgr, at entrypoint 16bit, rest 32bit
 
 +dunno
 - update help
@@ -23,19 +23,16 @@
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 - texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
   (because this is handled via local menu)
-- (HT_0_7) has SYSTEM CONFIG FILE changed ??
-- (HT_0_7) update FILE CONFIG FILE VERSION
 - 1”1 will eval to 1
 - [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
 - store.cc:60: getObject quits with invalid config file
 - snprintf.cc needs correct indentation
+- disasm (esp. x86) switch 16/32 correctly
 
 +steves
 - (HT_0_7)
 	- SPARC_SHIT configure
 	- implement POSIX - sys_truncate
-
-- (HT_0_7) use string2qword()
 
 - new instead of malloc
 - ht_strncpy()

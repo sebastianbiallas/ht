@@ -4,27 +4,25 @@
 version 0.7.0:
 	- whole new Address class for the analyser. Much more flexible.
 	  Enables segmented and 64-bit addresses.
-	- sys/djgpp: ff2pstat(...) fixed
-	- got rid of fmt_vaddress
+	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
+	- projects (groups of files)
+	- LE: image/analyser, relocations, VxD
+	- Java: disassembler, image/analyser
+	- NE: relocations improved
+	- IA-64 disassembler + PE64 support
+	- .Net IL disassembler + PE IL support (alpha)
 	- submenus
+	- view current/cursor offset in a different view
 	- tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
 	- htpehead.cc: directory goto works now, OFSs really are RVAs !
-	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
+	- sys/djgpp: ff2pstat(...) fixed
+	- got rid of fmt_vaddress
 	- PE/imports,exports,delay-imports based on ht_listbox
-	- projects (groups of files)
-	- view current/cursor offset in a different view
 	- x86dis: movzx/movsx and "mov mem32/16, seg" param size ambiguity fixed
 	  and many minor fixes
-	- LE/VxD descriptor view added, LE module flags
 	- goto dialog auto-documents available eval() functions
 	- Inter-process communication (IPC) via console redirection
 	  on all existing platforms.
-	- Java disassembler
-	- Java/image and analyser
-	- IA-64 disassembler, PE32+ (aka PE64) support
-	- .Net IL disassembler
-	- PE IL support
-	- NE relocations complete
 	- qword support
 	- new streamfiles: ht_sys_file, ht_stdio_file, ht_temp_file,
 	  ht_null_file
@@ -32,6 +30,9 @@ version 0.7.0:
 	- log-window scrolling fixed
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
+
+     * FIXED: htanaly: nicht gut: 'c' geht nicht in edit-mode
+     * LE * fixes
 
 	* FIXED: texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
 	  (because this is handled via local menu)
