@@ -55,14 +55,14 @@ int_hash coff_machines[] =
 	{0, 0}
 };
 
-int_hash coff_optional_magics[] =
+static int_hash coff_optional_magics[] =
 {
 	{COFF_OPTMAGIC_ROMIMAGE, "ROM image"},
 	{COFF_OPTMAGIC_COFF32, "COFF"},
 	{0, 0}
 };
 
-int_hash coff_optional_sizes[] =
+static int_hash coff_optional_sizes[] =
 {
 	{COFF_OPTSIZE_COFF32, "COFF32"},
 	{COFF_OPTSIZE_XCOFF32, "XCOFF32"},
@@ -198,7 +198,7 @@ ht_mask_ptable coff_section[] = {
 	{0, 0}
 };
 
-ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 	bool coff_bigendian = coff_shared->endian == big_endian;

@@ -27,7 +27,7 @@
 
 #include "lestruct.h"
 
-int_hash le_machines[] =
+static int_hash le_machines[] =
 {
 	{ LE_CPU_286,	"Intel 286" },
 	{ LE_CPU_386,	"Intel 386" },
@@ -41,7 +41,7 @@ int_hash le_machines[] =
 	{0, 0}
 };
 
-int_hash le_os[] =
+static int_hash le_os[] =
 {
 	{ LE_OS_OS2, "OS/2"},
 	{ LE_OS_WIN, "Windows"},
@@ -50,7 +50,7 @@ int_hash le_os[] =
 	{0, 0}
 };
 
-ht_tag_flags_s le_flags[] =
+static ht_tag_flags_s le_flags[] =
 {
 	{-1, "LE - module flags"},
 	{0,  "[00] ?"},
@@ -72,7 +72,7 @@ ht_tag_flags_s le_flags[] =
 	{0, 0}
 };
 
-ht_mask_ptable leheader[]=
+static ht_mask_ptable leheader[]=
 {
 	{"magic",							STATICTAG_EDIT_WORD_LE("00000000")},
 	{"byte order",						STATICTAG_EDIT_BYTE("00000002")},
@@ -131,7 +131,7 @@ ht_mask_ptable leheader[]=
 	{0, 0}
 };
 
-ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 

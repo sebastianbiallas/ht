@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-format_viewer_if *htpe_ifs[] = {
+static format_viewer_if *htpe_ifs[] = {
 	&htpeheader_if,
 	&htpeexports_if,
 	&htpeimports_if,
@@ -46,7 +46,7 @@ format_viewer_if *htpe_ifs[] = {
 	0
 };
 
-ht_view *htpe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htpe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte pemagic[4];
 	FILEOFS h=get_newexe_header_ofs(file);

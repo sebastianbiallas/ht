@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 
-int_hash elf_st_bind[] =
+static int_hash elf_st_bind[] =
 {
 	{ELF_STB_LOCAL, 	"local"},
 	{ELF_STB_GLOBAL, 	"global"},
@@ -36,7 +36,7 @@ int_hash elf_st_bind[] =
 	{0, 0}
 };
 
-int_hash elf_st_type[] =
+static int_hash elf_st_type[] =
 {
 	{ELF_STT_NOTYPE,	"no type"},
 	{ELF_STT_OBJECT,	"object"},
@@ -47,7 +47,7 @@ int_hash elf_st_type[] =
 	{0, 0}
 };
 
-ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 

@@ -30,7 +30,7 @@
 #include "htanaly.h"
 #include "coff_analy.h"
 
-ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 
@@ -121,5 +121,3 @@ void ht_coff_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-
-

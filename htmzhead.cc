@@ -24,7 +24,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_mask_ptable mzheader[]=
+static ht_mask_ptable mzheader[]=
 {
 	{"magic",							STATICTAG_EDIT_WORD_LE("00000000")},
 	{"bytes on last page of file",		STATICTAG_EDIT_WORD_LE("00000002")},
@@ -48,7 +48,7 @@ ht_mask_ptable mzheader[]=
 	{0, 0}
 };
 
-ht_view *htmzheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmzheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_MZ_HEADER, VC_EDIT | VC_SEARCH, file, group);

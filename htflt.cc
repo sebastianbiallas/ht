@@ -30,13 +30,13 @@
 
 #include <stdlib.h>
 
-format_viewer_if *htflt_ifs[] = {
+static format_viewer_if *htflt_ifs[] = {
 	&htfltheader_if,
 	&htfltimage_if,
 	0
 };
 
-ht_view *htflt_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htflt_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte ident[4];
 	file->seek(0);
@@ -90,4 +90,3 @@ void ht_flt::done()
 	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)shared_data;
 	free(flt_shared);
 }
-

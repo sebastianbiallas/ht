@@ -31,13 +31,13 @@
 
 #include <stdlib.h>
 
-format_viewer_if *htmacho_ifs[] = {
+static format_viewer_if *htmacho_ifs[] = {
 	&htmachoheader_if,
 	&htmachoimage_if,
 	0
 };
 
-ht_view *htmacho_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htmacho_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte magic[4];
 	file->seek(0);

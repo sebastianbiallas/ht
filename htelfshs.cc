@@ -26,7 +26,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_mask_ptable elfsectionheader32[]=
+static ht_mask_ptable elfsectionheader32[]=
 {
 	{"name string index",	STATICTAG_EDIT_DWORD_VE("00000000")},
 	{"type",				STATICTAG_EDIT_DWORD_VE("00000004")" ("STATICTAG_DESC_DWORD_VE("00000004", ATOM_ELF_SH_TYPE_STR)")"},
@@ -41,7 +41,7 @@ ht_mask_ptable elfsectionheader32[]=
 	{0, 0}
 };
 
-ht_mask_ptable elfsectionheader64[]=
+static ht_mask_ptable elfsectionheader64[]=
 {
 	{"name string index",	STATICTAG_EDIT_DWORD_VE("00000000")},
 	{"type",				STATICTAG_EDIT_DWORD_VE("00000004")" ("STATICTAG_DESC_DWORD_VE("00000004", ATOM_ELF_SH_TYPE_STR)")"},
@@ -56,7 +56,7 @@ ht_mask_ptable elfsectionheader64[]=
 	{0, 0}
 };
 
-int_hash elf_sh_type[] =
+static int_hash elf_sh_type[] =
 {
 	{ELF_SHT_NULL, 		"null"},
 	{ELF_SHT_PROGBITS,	"progbits"},
@@ -76,7 +76,7 @@ int_hash elf_sh_type[] =
 	{0, 0}
 };
 
-ht_tag_flags_s elf_sh_flags[] =
+static ht_tag_flags_s elf_sh_flags[] =
 {
 	{0,  "[00] writable"},
 	{1,  "[01] alloc"},
@@ -90,7 +90,7 @@ ht_tag_flags_s elf_sh_flags[] =
 	{0, 0}
 };
 
-ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 

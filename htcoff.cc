@@ -36,7 +36,7 @@ format_viewer_if *htcoff_ifs[] = {
 	0
 };
 
-int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
+static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 {
 	// unfortunately COFF has no magic (urgs). so we have to guess
 	// a little bit.
@@ -102,7 +102,7 @@ int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	return true;
 }
 
-ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	FILEOFS h;
 	endianess end;

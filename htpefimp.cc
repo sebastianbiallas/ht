@@ -72,7 +72,7 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	c.h=1;
 				
 	int symbol_num = 0;
-	for (int i=0; i < pef_shared->loader_info_header.importedLibraryCount; i++) {
+	for (uint i=0; i < pef_shared->loader_info_header.importedLibraryCount; i++) {
 		file->seek(pef_shared->loader_info_header_ofs + sizeof pef_shared->loader_info_header
 			+ i*sizeof(PEF_ImportedLibrary));
 		
@@ -86,7 +86,7 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 		ht_pef_import_library *library=new ht_pef_import_library(libname);
 		pef_shared->imports.libs->insert(library);
 
-		for (int j=0; j < lib.importedSymbolCount; j++) {
+		for (uint j=0; j < lib.importedSymbolCount; j++) {
 			file->seek(functions_offset + 4 * (lib.firstImportedSymbol+j));
 			uint32 entry;
 			file->read(&entry, 4);

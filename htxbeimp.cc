@@ -409,8 +409,7 @@ static const char *xbox_exports[] = {
 	"HalWriteSMCScratchRegister"                     // 366  8000016E
 };
 
-
-ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
@@ -533,7 +532,7 @@ ht_xbe_import_function::~ht_xbe_import_function()
  *	CLASS ht_xbe_import_viewer
  */
 
-void	ht_xbe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
+void ht_xbe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
 {
 	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
 	options |= VO_BROWSABLE;
@@ -544,7 +543,7 @@ void	ht_xbe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
 	dosort();
 }
 
-void	ht_xbe_import_viewer::done()
+void ht_xbe_import_viewer::done()
 {
 	ht_text_listbox::done();
 }

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
+static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
 {
 	if (ne_shared->entrypoints) {
 		ht_ne_entrypoint *e = (ht_ne_entrypoint*)ne_shared->entrypoints->get(i);
@@ -39,7 +39,7 @@ void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
 	} /* else trouble :-) */
 }
 
-ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 

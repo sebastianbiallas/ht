@@ -29,14 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-format_viewer_if *htxbe_ifs[] = {
+static format_viewer_if *htxbe_ifs[] = {
 	&htxbeheader_if,
 	&htxbeimports_if,
 	&htxbeimage_if,
 	0
 };
 
-ht_view *htxbe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htxbe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte xbemagic[4];
 

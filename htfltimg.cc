@@ -29,7 +29,7 @@
 #include "fltstruc.h"
 #include "flt_analy.h"
 
-ht_view *htfltimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htfltimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)group->get_shared_data();
 
@@ -119,4 +119,3 @@ void ht_flt_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-

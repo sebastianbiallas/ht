@@ -31,7 +31,7 @@
 #include "htanaly.h"
 #include "ne_analy.h"
 
-ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
@@ -131,5 +131,3 @@ void ht_ne_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-
-

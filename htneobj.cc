@@ -33,16 +33,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-ht_mask_ptable neobj[]=
+static ht_mask_ptable neobj[]=
 {
 	{"offset",	STATICTAG_EDIT_WORD_LE("00000000")},
-	{"size",		STATICTAG_EDIT_WORD_LE("00000002")},
-	{"flags",		STATICTAG_EDIT_WORD_LE("00000004")" "STATICTAG_FLAGS("00000004", ATOM_NE_SEGFLAGS_STR)},
+	{"size",	STATICTAG_EDIT_WORD_LE("00000002")},
+	{"flags",	STATICTAG_EDIT_WORD_LE("00000004")" "STATICTAG_FLAGS("00000004", ATOM_NE_SEGFLAGS_STR)},
 	{"minalloc",	STATICTAG_EDIT_WORD_LE("00000006")},
 	{0, 0}
 };
 
-ht_tag_flags_s ne_segflags[] =
+static ht_tag_flags_s ne_segflags[] =
 {
 	{0,  "[00] data"},
 	{1,  "[01] reserved"},
@@ -63,7 +63,7 @@ ht_tag_flags_s ne_segflags[] =
 	{0, 0}
 };
 
-ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
@@ -99,4 +99,3 @@ format_viewer_if htnesegments_if = {
 	htnesegments_init,
 	0
 };
-

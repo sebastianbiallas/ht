@@ -35,7 +35,7 @@
 
 #include <stdlib.h>
 
-format_viewer_if *htelf_ifs[] = {
+static format_viewer_if *htelf_ifs[] = {
 	&htelfheader_if,
 	&htelfsectionheaders_if,
 	&htelfprogramheaders_if,
@@ -43,7 +43,7 @@ format_viewer_if *htelf_ifs[] = {
 	0
 };
 
-ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	elf_unsigned_char ident[EI_NIDENT];
 	file->seek(0);

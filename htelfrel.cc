@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 
-int_hash elf_r_386_type[] =
+static int_hash elf_r_386_type[] =
 {
 	{ELF_R_386_NONE,		"ELF_R_386_NONE"},
 	{ELF_R_386_32,			"ELF_R_386_32"},
@@ -44,7 +44,7 @@ int_hash elf_r_386_type[] =
 	{0, 0}
 };
 
-ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
@@ -157,4 +157,3 @@ format_viewer_if htelfreloctable_if = {
 	htelfreloctable_init,
 	0
 };
-

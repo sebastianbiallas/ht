@@ -28,7 +28,7 @@
 
 #include "lestruct.h"
 
-ht_mask_ptable le_vxd_header[]=
+static ht_mask_ptable le_vxd_header[]=
 {
 	{"next",							STATICTAG_EDIT_DWORD_LE("00000000")},
 	{"SDK version",					STATICTAG_EDIT_WORD_LE("00000004")},
@@ -55,7 +55,7 @@ ht_mask_ptable le_vxd_header[]=
 	{ NULL, NULL }
 };
 
-ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 	if (!le_shared->is_vxd) return NULL;
@@ -83,4 +83,3 @@ format_viewer_if htlevxd_if = {
 	htlevxd_init,
 	0
 };
-

@@ -28,7 +28,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_tag_flags_s ne_entflags[] =
+static ht_tag_flags_s ne_entflags[] =
 {
 	{-1, "NE - entrypoint flags"},
 	{0,  "[00] exported"},
@@ -37,7 +37,7 @@ ht_tag_flags_s ne_entflags[] =
 	{0, 0}
 };
 
-ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data *)group->get_shared_data();
 
@@ -150,4 +150,3 @@ int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 	return 1;*/
 	return 0;
 }
-

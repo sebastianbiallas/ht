@@ -29,7 +29,7 @@
 #include "machostruc.h"
 #include "macho_analy.h"
 
-ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
 

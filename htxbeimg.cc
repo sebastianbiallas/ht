@@ -27,7 +27,7 @@
 #include "xbestruct.h"
 #include "snprintf.h"
 
-ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
@@ -201,4 +201,3 @@ void ht_xbe_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-

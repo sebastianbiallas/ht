@@ -36,7 +36,6 @@
 #include "htpe.h"
 #include "htpef.h"
 #include "htflt.h"
-#include "htstruct.h"
 #include "htxbe.h"
 
 format_viewer_if *format_viewer_ifs[] =
@@ -56,6 +55,5 @@ format_viewer_if *format_viewer_ifs[] =
 	&htflt_if,
 	&htxbe_if,
 	&htpef_if,
-//	&htstructure_if,
 	NULL
 };

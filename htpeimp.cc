@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 

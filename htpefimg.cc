@@ -204,4 +204,3 @@ void ht_pef_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-

@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-format_viewer_if *htne_ifs[] = {
+static format_viewer_if *htne_ifs[] = {
 	&htneheader_if,
 	&htnesegments_if,
 	&htneimports_if,
@@ -45,7 +45,7 @@ format_viewer_if *htne_ifs[] = {
 	0
 };
 
-int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
+static int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
 {
 	ne_import_rec *a=(ne_import_rec*)key_a;
 	ne_import_rec *b=(ne_import_rec*)key_b;
@@ -62,7 +62,7 @@ int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
 	return a->module - b->module;
 }
 
-ht_view *htne_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htne_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte nemagic[2];
 	FILEOFS h = get_newexe_header_ofs(file);
@@ -522,4 +522,3 @@ bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, NEAddress *Addr)
 	}
 	return false;
 }
-

@@ -25,7 +25,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-int htmzrel_detect(ht_streamfile *file)
+static int htmzrel_detect(ht_streamfile *file)
 {
 	word rcount;
 	file->seek(6);
@@ -33,7 +33,7 @@ int htmzrel_detect(ht_streamfile *file)
 	return rcount;
 }
 
-ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_MZ_REL, VC_EDIT | VC_SEARCH, file, group);
@@ -64,8 +64,3 @@ ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	v->insertsub(m);
 	return v;
 }
-
-/*viewer_int htmzrel_int = {
-	htmzrel_detect,
-	htmzrel_init
-};*/

@@ -37,12 +37,12 @@
 
 #include <string.h>
 
-ht_mask_ptable xbemagic[] = {
+static ht_mask_ptable xbemagic[] = {
 	{"magic",						STATICTAG_EDIT_CHAR("00000000")STATICTAG_EDIT_CHAR("00000001")STATICTAG_EDIT_CHAR("00000002")STATICTAG_EDIT_CHAR("00000003")},
 	{0, 0}
 };
 
-ht_tag_flags_s xbe_init_flags[] =
+static ht_tag_flags_s xbe_init_flags[] =
 {
 	{-1, "XBE - initialisation flags"},
 	{0,  "[00] Mount Utility Drive"},
@@ -52,7 +52,7 @@ ht_tag_flags_s xbe_init_flags[] =
 	{0, 0}
 };
 
-ht_mask_ptable xbeimageheader[] = {
+static ht_mask_ptable xbeimageheader[] = {
 	{"base address",				STATICTAG_EDIT_DWORD_LE("00000104")},
 	{"size of headers",			STATICTAG_EDIT_DWORD_LE("00000108")},
 	{"size of image",			STATICTAG_EDIT_DWORD_LE("0000010c")},
@@ -85,7 +85,7 @@ ht_mask_ptable xbeimageheader[] = {
 	{0, 0}
 };
 
-ht_tag_flags_s xbe_media_flags[] =
+static ht_tag_flags_s xbe_media_flags[] =
 {
 	{-1, "XBE - allowed media flags"},
 	{0,  "[00] Harddisk"},
@@ -103,7 +103,7 @@ ht_tag_flags_s xbe_media_flags[] =
 	{0, 0}
 };
 
-ht_tag_flags_s xbe_region_codes[] =
+static ht_tag_flags_s xbe_region_codes[] =
 {
 	{ -1, "XBE - game region codes"},
 	{ 0,  "[00] USA"},
@@ -114,7 +114,7 @@ ht_tag_flags_s xbe_region_codes[] =
 };
 
 
-ht_mask_ptable xbecertificate[] = {
+static ht_mask_ptable xbecertificate[] = {
 	{"certificate size",				STATICTAG_EDIT_DWORD_LE("00000000")},
 	{"timestamp",				STATICTAG_EDIT_DWORD_LE("00000004")},
 	{"title id",				STATICTAG_EDIT_DWORD_LE("00000008")},
@@ -151,8 +151,7 @@ ht_mask_ptable xbecertificate[] = {
 	{0, 0}	
 };
 
-
-ht_tag_flags_s xbe_section_flags[] =
+static ht_tag_flags_s xbe_section_flags[] =
 {
 	{-1, "XBE - section flags"},
 	{0,  "[00] Writeable"},
@@ -164,7 +163,7 @@ ht_tag_flags_s xbe_section_flags[] =
 	{0, 0}
 };
 
-ht_mask_ptable xbesectionheader[] = {
+static ht_mask_ptable xbesectionheader[] = {
 	{"section flags",				STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_FLAGS("00000000", ATOM_XBE_SECTION_FLAGS_STR)},
 	{"virtual address",			STATICTAG_EDIT_DWORD_LE("00000004")},
 	{"virtual size",			STATICTAG_EDIT_DWORD_LE("00000008")},
@@ -177,7 +176,7 @@ ht_mask_ptable xbesectionheader[] = {
 	{0, 0}
 };
 
-ht_tag_flags_s xbe_library_flags[] =
+static ht_tag_flags_s xbe_library_flags[] =
 {
 	{-1, "XBE - library flags"},
 	{15,  "[15] Debug Build"},
@@ -185,7 +184,7 @@ ht_tag_flags_s xbe_library_flags[] =
 };
 
 
-ht_mask_ptable xbelibraryversion[] = {
+static ht_mask_ptable xbelibraryversion[] = {
 	{"library name",			STATICTAG_EDIT_CHAR("00000000")STATICTAG_EDIT_CHAR("00000001")STATICTAG_EDIT_CHAR("00000002")STATICTAG_EDIT_CHAR("00000003")STATICTAG_EDIT_CHAR("00000004")STATICTAG_EDIT_CHAR("00000005")STATICTAG_EDIT_CHAR("00000006")STATICTAG_EDIT_CHAR("00000007")},
 	{"major version",			STATICTAG_EDIT_WORD_LE("00000008")},
 	{"minor version",			STATICTAG_EDIT_WORD_LE("0000000a")},
@@ -194,8 +193,7 @@ ht_mask_ptable xbelibraryversion[] = {
 	{0, 0}
 };
 
-
-ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 

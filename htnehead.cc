@@ -24,7 +24,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_mask_ptable neheader[]=
+static ht_mask_ptable neheader[]=
 {
 	{"magic",							STATICTAG_EDIT_WORD_LE("00000000")},
 	{"version",						STATICTAG_EDIT_BYTE("00000002")},
@@ -59,7 +59,7 @@ ht_mask_ptable neheader[]=
 	{0, 0}
 };
 
-int_hash ne_os[] =
+static int_hash ne_os[] =
 {
 	{NE_OS_UNKNOWN, "all"},
 	{NE_OS_OS2, "OS/2"},
@@ -68,7 +68,7 @@ int_hash ne_os[] =
 	{0, 0}
 };
 
-ht_tag_flags_s ne_flags[] =
+static ht_tag_flags_s ne_flags[] =
 {
 	{-1, "NE - file characteristics"},
 	{0,  "[00] solo data"},
@@ -90,7 +90,7 @@ ht_tag_flags_s ne_flags[] =
 	{0, 0}
 };
 
-ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 

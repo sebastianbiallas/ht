@@ -37,7 +37,7 @@
 
 #include <string.h>
 
-int_hash pe_optional_magics[] =
+static int_hash pe_optional_magics[] =
 {
 	{COFF_OPTMAGIC_ROMIMAGE, "ROM image"},
 	{COFF_OPTMAGIC_PE32, "PE/PE32"},
@@ -45,7 +45,7 @@ int_hash pe_optional_magics[] =
 	{0, 0}
 };
 
-int_hash pe_subsystems[] =
+static int_hash pe_subsystems[] =
 {
 	{0, "generic"},
 	{PE_SUBSYSTEM_NATIVE, "native"},
@@ -60,12 +60,12 @@ int_hash pe_subsystems[] =
 	{0, 0}
 };
 
-ht_mask_ptable pemagic[] = {
+static ht_mask_ptable pemagic[] = {
 	{"magic",						STATICTAG_EDIT_DWORD_LE("00000000")},
 	{0, 0}
 };
 
-ht_mask_ptable pe32header[] = {
+static ht_mask_ptable pe32header[] = {
 	{"optional magic",				STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_PE_OPTIONAL_MAGICS_STR)},
 	{"major linker version",			STATICTAG_EDIT_BYTE("00000016")},
 	{"minor linker version",			STATICTAG_EDIT_BYTE("00000017")},
@@ -78,7 +78,7 @@ ht_mask_ptable pe32header[] = {
 	{0, 0}
 };
 
-ht_tag_flags_s pe_dll_characteristics[] =
+static ht_tag_flags_s pe_dll_characteristics[] =
 {
 	{-1, "PE - dll characteristics"},
 	{0,  "[00] * reserved"},
@@ -91,7 +91,7 @@ ht_tag_flags_s pe_dll_characteristics[] =
 	{0, 0}
 };
 
-ht_mask_ptable pe32header_nt[] = {
+static ht_mask_ptable pe32header_nt[] = {
 	{"image base",					STATICTAG_EDIT_DWORD_LE("00000030")},
 	{"section alignment",			STATICTAG_EDIT_DWORD_LE("00000034")},
 	{"file alignment",				STATICTAG_EDIT_DWORD_LE("00000038")},
@@ -116,32 +116,32 @@ ht_mask_ptable pe32header_nt[] = {
 	{0, 0}
 };
 
-ht_mask_ptable pe64header_nt[] = {
-	{"image base",					STATICTAG_EDIT_QWORD_LE("0000002c")},
-	{"section alignment",			STATICTAG_EDIT_DWORD_LE("00000034")},
-	{"file alignment",				STATICTAG_EDIT_DWORD_LE("00000038")},
-	{"major OS version",			STATICTAG_EDIT_WORD_LE("0000003c")},
-	{"minor OS version",			STATICTAG_EDIT_WORD_LE("0000003e")},
-	{"major image version",			STATICTAG_EDIT_WORD_LE("00000040")},
-	{"minor image version",			STATICTAG_EDIT_WORD_LE("00000042")},
-	{"major subsystem version",		STATICTAG_EDIT_WORD_LE("00000044")},
-	{"minor subsystem version",		STATICTAG_EDIT_WORD_LE("00000046")},
-	{"Win32 version",				STATICTAG_EDIT_DWORD_LE("00000048")},
-	{"size of image",				STATICTAG_EDIT_DWORD_LE("0000004c")},
-	{"size of headers",				STATICTAG_EDIT_DWORD_LE("00000050")},
-	{"checksum",					STATICTAG_EDIT_DWORD_LE("00000054")},
-	{"subsystem",					STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
-	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")},
-	{"stack reserve",				STATICTAG_EDIT_QWORD_LE("0000005c")},
-	{"stack commit",				STATICTAG_EDIT_QWORD_LE("00000064")},
-	{"heap reserve",				STATICTAG_EDIT_QWORD_LE("0000006c")},
-	{"heap commit",				STATICTAG_EDIT_QWORD_LE("00000074")},
-	{"loader flags",				STATICTAG_EDIT_DWORD_LE("0000007c")},
+static ht_mask_ptable pe64header_nt[] = {
+	{"image base",			STATICTAG_EDIT_QWORD_LE("0000002c")},
+	{"section alignment",		STATICTAG_EDIT_DWORD_LE("00000034")},
+	{"file alignment",		STATICTAG_EDIT_DWORD_LE("00000038")},
+	{"major OS version",		STATICTAG_EDIT_WORD_LE("0000003c")},
+	{"minor OS version",		STATICTAG_EDIT_WORD_LE("0000003e")},
+	{"major image version",		STATICTAG_EDIT_WORD_LE("00000040")},
+	{"minor image version",		STATICTAG_EDIT_WORD_LE("00000042")},
+	{"major subsystem version",	STATICTAG_EDIT_WORD_LE("00000044")},
+	{"minor subsystem version",	STATICTAG_EDIT_WORD_LE("00000046")},
+	{"Win32 version",		STATICTAG_EDIT_DWORD_LE("00000048")},
+	{"size of image",		STATICTAG_EDIT_DWORD_LE("0000004c")},
+	{"size of headers",		STATICTAG_EDIT_DWORD_LE("00000050")},
+	{"checksum",			STATICTAG_EDIT_DWORD_LE("00000054")},
+	{"subsystem",			STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
+	{"dll characteristics",		STATICTAG_EDIT_WORD_LE("0000005a")},
+	{"stack reserve",		STATICTAG_EDIT_QWORD_LE("0000005c")},
+	{"stack commit",		STATICTAG_EDIT_QWORD_LE("00000064")},
+	{"heap reserve",		STATICTAG_EDIT_QWORD_LE("0000006c")},
+	{"heap commit",			STATICTAG_EDIT_QWORD_LE("00000074")},
+	{"loader flags",		STATICTAG_EDIT_DWORD_LE("0000007c")},
 	{"number of directory entries",	STATICTAG_EDIT_DWORD_LE("00000080")},
 	{0, 0}
 };
 
-ht_mask_ptable pe32header_nt_dirs[] = {
+static ht_mask_ptable pe32header_nt_dirs[] = {
 	{"export directory             (rva/size)", STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000000000000", "03", "raw")" "STATICTAG_REF("0000000100000000", "04", "cook")},
 	{"import directory             (rva/size)", STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000000000001", "03", "raw")" "STATICTAG_REF("0000000200000000", "04", "cook")},
 	{"resource directory           (rva/size)", STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000000000002", "03", "raw")" "STATICTAG_REF("0000000300000000", "04", "cook")},
@@ -161,7 +161,7 @@ ht_mask_ptable pe32header_nt_dirs[] = {
 	{0, 0}
 };
 
-ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -368,4 +368,3 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 	}
 	return 1;
 }
-

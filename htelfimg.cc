@@ -29,7 +29,7 @@
 #include "elfstruc.h"
 #include "elf_analy.h"
 
-ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 

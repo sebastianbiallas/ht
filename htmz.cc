@@ -26,14 +26,14 @@
 #include "mzstruct.h"
 #include "stream.h"
 
-format_viewer_if *htmz_ifs[] = {
+static format_viewer_if *htmz_ifs[] = {
 	&htmzheader_if,
 //	&htmzrel_if,
 	&htmzimage_if,
 	0
 };
 
-ht_view *htmz_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htmz_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte magic[2];
 	file->seek(0);

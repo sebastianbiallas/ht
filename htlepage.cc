@@ -30,7 +30,7 @@
 
 #include <stdlib.h>
 
-ht_mask_ptable lepagemap[]=
+static ht_mask_ptable lepagemap[]=
 {
 	{"page high",	STATICTAG_EDIT_WORD_LE("00000000")},
 	{"page low",	STATICTAG_EDIT_BYTE("00000002")},
@@ -38,7 +38,7 @@ ht_mask_ptable lepagemap[]=
 	{0, 0}
 };
 
-ht_view *htlepagemaps_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htlepagemaps_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
@@ -77,4 +77,3 @@ format_viewer_if htlepagemaps_if = {
 	htlepagemaps_init,
 	0
 };
-

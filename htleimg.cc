@@ -32,7 +32,7 @@
 #include "htanaly.h"
 #include "le_analy.h"
 
-ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
@@ -164,4 +164,3 @@ void ht_le_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-

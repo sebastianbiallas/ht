@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-ht_mask_ptable leobj[]=
+static ht_mask_ptable leobj[]=
 {
 	{"virtual size",			STATICTAG_EDIT_DWORD_LE("00000000")},
 	{"relocation base address",	STATICTAG_EDIT_DWORD_LE("00000004")},
@@ -43,7 +43,7 @@ ht_mask_ptable leobj[]=
 	{0, 0}
 };
 
-ht_tag_flags_s le_objflags[] =
+static ht_tag_flags_s le_objflags[] =
 {
 	{0,  "[00] readable"},
 	{1,  "[01] writable"},
@@ -64,7 +64,7 @@ ht_tag_flags_s le_objflags[] =
 	{0, 0}
 };
 
-ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
@@ -84,11 +84,11 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	m->add_mask(t);
 
 	v->insertsub(m);
-	
+
 	for (dword i=0; i<le_shared->hdr.objcnt; i++) {
 		m=new ht_mask_sub();
 		m->init(file, i);
-		
+
 		char n[5];
 		m->add_staticmask_ptable(leobj, h+le_shared->hdr.objtab+i*24, le_bigendian);
 		
@@ -98,7 +98,7 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		bool use32=le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32;
 
 		ht_snprintf(t, sizeof t, "--- object %d USE%d: %s ---", i+1, use32 ? 32 : 16, (char*)&n);
-		
+
 		ht_collapsable_sub *cs=new ht_collapsable_sub();
 		cs->init(file, m, 1, t, 1);
 		v->insertsub(cs);
@@ -112,4 +112,3 @@ format_viewer_if htleobjects_if = {
 	htleobjects_init,
 	0
 };
-

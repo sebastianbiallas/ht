@@ -29,7 +29,7 @@
 #include "x86asm.h"
 #include "x86dis.h"
 
-ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_mz_shared_data *mz_shared=(ht_mz_shared_data *)group->get_shared_data();
 

@@ -38,7 +38,7 @@
 #define LE_SEG_ADDR(i) (LE_shared->objmap.header[(i)].page_map_index-1) *\
 			LE_shared->hdr.pagesize + LE_BASE_ADDR
 
-format_viewer_if *htle_ifs[] = {
+static format_viewer_if *htle_ifs[] = {
 	&htleheader_if,
 	&htlevxd_if,
 	&htlepagemaps_if,
@@ -48,7 +48,7 @@ format_viewer_if *htle_ifs[] = {
 	0
 };
 
-ht_view *htle_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htle_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte lemagic[2];
 	FILEOFS h=get_newexe_header_ofs(file);

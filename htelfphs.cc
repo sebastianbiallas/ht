@@ -26,7 +26,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_mask_ptable elfprogramheader32[]=
+static ht_mask_ptable elfprogramheader32[]=
 {
 	{"type",				STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
 	{"offset",			STATICTAG_EDIT_DWORD_VE("00000004")},
@@ -39,7 +39,7 @@ ht_mask_ptable elfprogramheader32[]=
 	{0, 0}
 };
 
-ht_mask_ptable elfprogramheader64[]=
+static ht_mask_ptable elfprogramheader64[]=
 {
 	{"type",				STATICTAG_EDIT_DWORD_VE("00000000")" ("STATICTAG_DESC_DWORD_VE("00000000", ATOM_ELF_PH_TYPE_STR)")"},
 	{"flags",				STATICTAG_EDIT_DWORD_VE("00000004")" "STATICTAG_FLAGS("00000004", ATOM_ELF_PH_FLAGS_STR)},
@@ -52,7 +52,7 @@ ht_mask_ptable elfprogramheader64[]=
 	{0, 0}
 };
 
-int_hash elf_ph_type[] =
+static int_hash elf_ph_type[] =
 {
 	{ELF_PT_NULL, 		"null"},
 	{ELF_PT_LOAD,		"load"},
@@ -64,7 +64,7 @@ int_hash elf_ph_type[] =
 	{0, 0}
 };
 
-ht_tag_flags_s elf_ph_flags[] =
+static ht_tag_flags_s elf_ph_flags[] =
 {
 	{0,  "[00] executable"},
 	{1,  "[01] writable"},
@@ -72,7 +72,7 @@ ht_tag_flags_s elf_ph_flags[] =
 	{0, 0}
 };
 
-ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 

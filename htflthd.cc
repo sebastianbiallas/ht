@@ -40,7 +40,7 @@ static ht_mask_ptable fltheader[]=
 	{0, 0}
 };
 
-ht_view *htfltheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htfltheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)group->get_shared_data();
 	

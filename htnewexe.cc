@@ -25,23 +25,22 @@
 
 FILEOFS get_newexe_header_ofs(ht_streamfile *file)
 {
-/* look for mz magic */
+	/* look for mz magic */
 	byte mzmagic[2];
 	file->seek(0);
 	file->read(mzmagic, 2);
 	if ((mzmagic[0]!=IMAGE_MZ_MAGIC0) || (mzmagic[1]!=IMAGE_MZ_MAGIC1))
 		return 0;
-/* test if reloc_ofs>=0x40 */
+	/* test if reloc_ofs>=0x40 */
 	word reloc_ofs;
 	file->seek(24);
 	file->read(&reloc_ofs, 2);
 	reloc_ofs = create_host_int(&reloc_ofs, 2, little_endian);
 	if (reloc_ofs<0x40) return 0;
-/* ok seems to be a newexe */
+	/* ok seems to be a newexe */
 	FILEOFS newexe_ofs;
 	file->seek(60);
 	file->read(&newexe_ofs, 4);
 	newexe_ofs = create_host_int(&newexe_ofs, 4, little_endian);
 	return newexe_ofs;
 }
-

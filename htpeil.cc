@@ -40,7 +40,7 @@
 
 #include <string.h>
 
-ht_mask_ptable il_directory[] = {
+static ht_mask_ptable il_directory[] = {
 	{"size",           STATICTAG_EDIT_DWORD_LE("00000000")},
 	{"major version",  STATICTAG_EDIT_WORD_LE("00000004")},
 	{"minor version",  STATICTAG_EDIT_WORD_LE("00000006")},
@@ -50,7 +50,7 @@ ht_mask_ptable il_directory[] = {
 	{0, 0}
 };
 
-ht_mask_ptable metadata_section[] = {
+static ht_mask_ptable metadata_section[] = {
 	{"magic",                 STATICTAG_EDIT_DWORD_LE("00000000")},
 	{"major_version",         STATICTAG_EDIT_WORD_LE("00000004")},
 	{"minor_version",         STATICTAG_EDIT_WORD_LE("00000006")},
@@ -59,7 +59,7 @@ ht_mask_ptable metadata_section[] = {
 	{0, 0}
 };
 
-ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 

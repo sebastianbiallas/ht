@@ -38,7 +38,7 @@
 
 #include <string.h>
 
-int_hash restypes[] = {
+static int_hash restypes[] = {
 	{0x0001, "cursors"},
 	{0x0002, "bitmaps"},
 	{0x0003, "icons"},
@@ -60,7 +60,7 @@ int_hash restypes[] = {
 	{ 0 }
 };
 
-int_hash languages[] = {
+static int_hash languages[] = {
 	{7,  "german"},
 	{9,  "english"},
 	{10, "spanish"},
@@ -81,7 +81,7 @@ static ht_static_treeview *peresource_tree;
 static char peresource_string[128];
 static pe_section_headers *peresource_section_headers;
 
-void read_resource_dir(void *node, int ofs, int level)
+static void read_resource_dir(void *node, int ofs, int level)
 {
 	if (level>2) return; 		/* no deep recursions please (for
 							   currupted resource directories) */
@@ -147,7 +147,7 @@ void read_resource_dir(void *node, int ofs, int level)
 	}
 }
 
-ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -224,7 +224,7 @@ void ht_pe_resource_viewer::done()
 	ht_static_treeview::done();
 }
 
-void	ht_pe_resource_viewer::handlemsg(htmsg *msg)
+void ht_pe_resource_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_vstate_restore:
@@ -235,7 +235,7 @@ void	ht_pe_resource_viewer::handlemsg(htmsg *msg)
 	ht_static_treeview::handlemsg(msg);
 }
 
-void	ht_pe_resource_viewer::select_node(void *node)
+void ht_pe_resource_viewer::select_node(void *node)
 {
 	static_node *s=(static_node*)node;
 
@@ -293,4 +293,3 @@ void ht_pe_resource_viewer::vstate_restore(ht_data *d)
 	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	goto_node(v->node);
 }
-

@@ -30,7 +30,7 @@
 
 /* entry bundle */
 
-ht_tag_flags_s le_entry_bundle_flags[] =
+static ht_tag_flags_s le_entry_bundle_flags[] =
 {
 	{-1, "LE - entrypoint bundle flags"},
 	{0,  "[00] valid"},
@@ -38,7 +38,7 @@ ht_tag_flags_s le_entry_bundle_flags[] =
 	{0, 0}
 };
 
-ht_mask_ptable le_entry_bundle_header[]=
+static ht_mask_ptable le_entry_bundle_header[]=
 {
 	{"number of entries",	STATICTAG_EDIT_BYTE("00000000")},
 	{"bundle flags",		STATICTAG_EDIT_BYTE("00000001")" "STATICTAG_FLAGS("00000001", ATOM_LE_ENTRY_BUNDLE_FLAGS_STR)},
@@ -48,7 +48,7 @@ ht_mask_ptable le_entry_bundle_header[]=
 
 /* entry */
 
-ht_tag_flags_s le_entry_flags[] =
+static ht_tag_flags_s le_entry_flags[] =
 {
 	{-1, "LE - entrypoint flags"},
 	{0,  "[00] exported"},
@@ -56,21 +56,21 @@ ht_tag_flags_s le_entry_flags[] =
 	{0, 0}
 };
 
-ht_mask_ptable le_entry16[]=
+static ht_mask_ptable le_entry16[]=
 {
 	{"flags",		STATICTAG_EDIT_BYTE("00000000")" "STATICTAG_FLAGS("00000000", ATOM_LE_ENTRY_FLAGS_STR)},
 	{"offset",	STATICTAG_EDIT_WORD_LE("00000001")},
 	{0, 0}
 };
 
-ht_mask_ptable le_entry32[]=
+static ht_mask_ptable le_entry32[]=
 {
 	{"flags",		STATICTAG_EDIT_BYTE("00000000")" "STATICTAG_FLAGS("00000000", ATOM_LE_ENTRY_FLAGS_STR)},
 	{"offset",	STATICTAG_EDIT_DWORD_LE("00000001")},
 	{0, 0}
 };
 
-ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
