@@ -453,6 +453,8 @@ UINT autodetect_file_open_mode(char *filename)
 	if (f) {
 		byte buf[AUTODETECT_SIZE];
 		int c=fread(buf, 1, AUTODETECT_SIZE, f);
+          /* empty files are text files */
+          if (!c) return FOM_TEXT;
 		bool is_bin=false;
 		UINT prob_bin_chars=0;
 		for (int i=0; i<c; i++) {
