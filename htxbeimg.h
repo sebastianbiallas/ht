@@ -28,13 +28,13 @@
 extern format_viewer_if htxbeimage_if;
 
 /*
- *	CLASS ht_xbe_aviewer
+ *	ht_xbe_aviewer
  */
-
 class ht_xbe_aviewer: public ht_aviewer {
 public:
 	ht_xbe_shared_data *xbe_shared;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_xbe_shared_data *xbe_shared);
+
+		void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_xbe_shared_data *xbe_shared);
 	virtual int  func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual void setAnalyser(Analyser *a);
 };

@@ -437,24 +437,23 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	FILEOFS ofs;
 	UINT thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
 	UINT *thunktable = (UINT *)malloc(sizeof(xbox_exports));
+	if (!thunktable) goto xbe_read_error;
 	memset(thunktable, 0, sizeof(xbox_exports));
-	
-	if (!xbe_rva_to_ofs(&xbe_shared->sections, thunktablerva, &ofs)) {
-	    goto xbe_read_error;
-	}
-	
-	file->seek(ofs);
-	file->read(thunktable, sizeof(xbox_exports)-4);
-	
-	for (; *thunktable; thunktable++, thunktablerva+=4) {
 
-	    UINT ordinal;
-	    
-	    ordinal = create_host_int(thunktable, 4, little_endian);
-	    ht_xbe_import_function *func = new ht_xbe_import_function(thunktablerva, (char *)xbox_exports[ordinal & 0xfff], ordinal);
-    	    xbe_shared->imports.funcs->insert(func);
-	    function_count++;
-	    
+	if (!xbe_rva_to_ofs(&xbe_shared->sections, thunktablerva, &ofs))
+		goto xbe_read_error;
+
+	file->seek(ofs);
+	if (file->read(thunktable, sizeof(xbox_exports)-4) != sizeof(xbox_exports)-4)
+		goto xbe_read_error;
+
+	for (; *thunktable; thunktable++, thunktablerva+=4) {
+		UINT ordinal;
+
+		ordinal = create_host_int(thunktable, 4, little_endian);
+		ht_xbe_import_function *func = new ht_xbe_import_function(thunktablerva, (char *)xbox_exports[ordinal & 0xfff], ordinal);
+    		xbe_shared->imports.funcs->insert(func);
+		function_count++;
 	}
 	
 
@@ -505,9 +504,8 @@ format_viewer_if htxbeimports_if = {
 };
 
 /*
- *	class ht_xbe_import_function
+ *	ht_xbe_import_function
  */
-
 ht_xbe_import_function::ht_xbe_import_function(RVA a, UINT o)
 {
 	ordinal = o;
@@ -529,9 +527,8 @@ ht_xbe_import_function::~ht_xbe_import_function()
 }
 
 /*
- *	CLASS ht_xbe_import_viewer
+ *	ht_xbe_import_viewer
  */
-
 void ht_xbe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
 {
 	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
@@ -656,5 +653,3 @@ bool ht_xbe_import_viewer::select_entry(void *entry)
 	} else errorbox("can't follow: no image viewer");
 	return true;
 }
-
-

@@ -28,9 +28,8 @@
 extern format_viewer_if htxbeimports_if;
 
 /*
- *	class ht_xbe_import_function
+ *	ht_xbe_import_function
  */
-
 class ht_xbe_import_function: public ht_data {
 public:
 	UINT libidx;
@@ -55,23 +54,22 @@ struct ht_xbe_import {
 };
 
 /*
- *	CLASS ht_xbe_import_viewer
+ *	ht_xbe_import_viewer
  */
-
 class ht_xbe_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
 	UINT sortby;
-/* new */
+	/* new */
 			void dosort();
 public:
 			void	init(bounds *b, char *desc, ht_format_group *fg);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
-/* new */
+	/* new */
 			char *func(UINT i, bool execute);
 };
 

@@ -257,19 +257,19 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 	for (int i=0; i < sc; i++) {
 		ht_mask_sub *n=new ht_mask_sub();
 		n->init(file, i);
-		
+
 		n->add_staticmask_ptable(coff_section, h+20+os+i*40, coff_bigendian);
 
 		char nm[9];
 		memmove(nm, coff_shared->sections.sections[i].name, 8);
-		nm[8]=0;
-		
+		nm[8] = 0;
+
 		char t[32];
-		sprintf(t, "section %d: %s", i, nm);
-		
+		ht_snprintf(t, sizeof t, "section %d: %s", i, nm);
+
 		ht_collapsable_sub *cn=new ht_collapsable_sub();
 		cn->init(file, n, 1, t, 1);
-	
+
 		v->insertsub(cn);
 	}
 	return v;

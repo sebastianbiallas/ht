@@ -52,7 +52,7 @@ static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 
 	v->attachInfoline(head);
 
-/* search for lowest/highest */
+	/* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	XBE_SECTION_HEADER *s=xbe_shared->sections.sections;
 	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
@@ -60,7 +60,7 @@ static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 		if ((s->virtual_address + s->virtual_size > h) && s->virtual_size) h = s->virtual_address + s->virtual_size - 1;
 		s++;
 	}
-/**/
+	/**/
 	Address *low;
 	Address *high;
 	l+=xbe_shared->header.base_address;
@@ -172,7 +172,7 @@ static int xbe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 }
 
 /*
- *	CLASS ht_xbe_aviewer
+ *	ht_xbe_aviewer
  */
 void ht_xbe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_xbe_shared_data *XBE_shared)
 {

@@ -76,16 +76,15 @@ struct ht_xbe_shared_data {
 };
 
 /*
- *	CLASS ht_xbe
+ *	ht_xbe
  */
-
 class ht_xbe: public ht_format_group {
 protected:
 	bool loc_enum;
 public:
 		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
-/* overwritten */
+	/* overwritten */
 	virtual   void loc_enum_start();
 	virtual   bool loc_enum_next(ht_format_loc *loc);
 };

@@ -23,6 +23,7 @@
 #include "htle.h"
 #include "htlehead.h"
 #include "httag.h"
+#include "snprintf.h"
 #include "formats.h"
 
 #include "lestruct.h"
@@ -149,7 +150,7 @@ static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	register_atom(ATOM_LE_OS, le_os);
 
 	char info[128];
-	sprintf(info, "* LE header at offset %08x", le_shared->hdr_ofs);
+	ht_snprintf(info, sizeof info, "* LE header at offset %08x", le_shared->hdr_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(leheader, h, le_bigendian);
 	v->insertsub(m);

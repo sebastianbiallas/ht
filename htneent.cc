@@ -73,6 +73,7 @@ static ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 			ht_snprintf(line, sizeof line, "entrypoints for fixed segment %d [%d entries]", e.seg_index, e.entry_count);
 			m->add_mask(line);
 		}
+		// FIXME: dont use sprintf
 		for (int i=0; i<e.entry_count; i++) {
 			if (e.seg_index==0) {
 			} else if (e.seg_index==0xff) {
