@@ -1615,6 +1615,7 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 					sendmsg(cmd_edit_copy);
 					clearmsg(msg);
 					return;
+				case K_Control_L:
 				case K_Shift_F7:
 					if (!continue_search()) infobox("no further matches");
 					dirtyview();
