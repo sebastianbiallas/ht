@@ -1886,17 +1886,23 @@ char *ht_app::func(UINT i, bool execute)
 
 void ht_app::get_stdbounds_file(bounds *b)
 {
-	bounds c;
-	get_stdbounds_tool(&c);
-	battlefield->getbounds(b);
-	b->x = 0;
-	b->y = 0;
-	b->h -= c.h;
+	if (project) {
+		bounds c;
+		get_stdbounds_tool(&c);
+		battlefield->getbounds(b);
+		b->x = 0;
+		b->y = 0;
+		b->h -= c.h;
+	} else {
+		battlefield->getbounds(b);
+		b->x = 0;
+		b->y = 0;
+     }
 }
 
 void ht_app::get_stdbounds_tool(bounds *b)
 {
-	UINT h = MAX(2*size.h/7, 3);
+	UINT h = MAX(size.h/4, 3);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = b->h - h;
