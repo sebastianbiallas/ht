@@ -36,10 +36,11 @@
                beautiest code alive
 
 +steves
+- !! stream.h:28 #include <io.h>  /* for tell() */  ==> IS NOT POSIX !!
+- !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
-- !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - menus should save last cursor position
 - int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n), bah
 - (HT_0_7) streams
