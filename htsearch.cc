@@ -558,7 +558,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 /* ascii string */
 	c.x=6;
 	c.y=0;
-	c.w=40;
+	c.w=b->w-6;
 	c.h=1;
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
@@ -574,7 +574,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 /* hex string */
 	c.x=6;
 	c.y=2;
-	c.w=40;
+	c.w=b->w-6;
 	c.h=1;
 	ht_hexinputfield *hex=new ht_hexinputfield();
 	hex->init(&c, 64);
@@ -625,8 +625,7 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	c.h=2;
 	ht_string_list *opts=new ht_string_list();
 	opts->init();
-	opts->insert_string("~case insensitive");
-//	opts->insert_string("find all occurencies (~idle)");
+	opts->insert_string("case ~insensitive");
 	option_boxes=new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
@@ -648,7 +647,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 /* string */
 	c.x=0;
 	c.y=1;
-	c.w=40;
+	c.w=b->w;
 	c.h=1;
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
@@ -656,10 +655,10 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 /* string label */
 	c.x=0;
 	c.y=0;
-	c.w=12;
+	c.w=23;
 	c.h=1;
 	ht_label *strlabel=new ht_label();
-	strlabel->init(&c, "eval ~string", str);
+	strlabel->init(&c, "s~earch evaluated string", str);
 	insert(strlabel);
 /* hint */
 /*	c.x=0;
@@ -707,8 +706,7 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	c.h=2;
 	ht_string_list *opts=new ht_string_list();
 	opts->init();
-	opts->insert_string("~case insensitive");
-//	opts->insert_string("find all occurencies (~idle)");
+	opts->insert_string("case ~insensitive");
 	option_boxes=new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
@@ -730,7 +728,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 /* string */
 	c.x=0;
 	c.y=1;
-	c.w=40;
+	c.w=b->w;
 	c.h=1;
 	str=new ht_strinputfield();
 	str->init(&c, 64, history);
@@ -741,7 +739,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	c.w=12;
 	c.h=1;
 	ht_label *strlabel=new ht_label();
-	strlabel->init(&c, "~regular expression", str);
+	strlabel->init(&c, "s~earch regex", str);
 	insert(strlabel);
 
 /* range start */
@@ -781,8 +779,7 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	c.h=2;
 	ht_string_list *opts=new ht_string_list();
 	opts->init();
-	opts->insert_string("~case insensitive");
-//	opts->insert_string("find all occurencies (~idle)");
+	opts->insert_string("case ~insensitive");
 	option_boxes=new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
@@ -804,7 +801,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 /* string */
 	c.x=0;
 	c.y=1;
-	c.w=40;
+	c.w=b->w;
 	c.h=1;
 	str=new ht_strinputfield();
 	str->init(&c, 256, history);
@@ -812,10 +809,10 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 /* string label */
 	c.x=0;
 	c.y=0;
-	c.w=12;
+	c.w=17;
 	c.h=1;
 	ht_label *strlabel=new ht_label();
-	strlabel->init(&c, "~expression", str);
+	strlabel->init(&c, "s~earch expression", str);
 	insert(strlabel);
 /* hint */
 	c.x=0;
@@ -858,19 +855,17 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	relabel->init(&c, "~to ofs", range_end);
 	insert(relabel);
 /* options */
-	c.w=35;
+/*	c.w=35;
 	c.y=8;
 	c.h=2;
 	ht_string_list *opts=new ht_string_list();
 	opts->init();
-//	opts->insert_string("~case insensitive");
-//	opts->insert_string("find all occurencies (~idle)");
 	option_boxes=new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
 	d.state=options;
 	option_boxes->databuf_set(&d);
-	insert(option_boxes);
+	insert(option_boxes);*/
 }
 
 /*
