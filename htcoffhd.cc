@@ -2,7 +2,7 @@
  *	HT Editor
  *	htcoffhd.cc
  *
- *	Copyright (C) 1999- 2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -48,7 +48,7 @@ int_hash coff_machines[] =
 	{COFF_MACHINE_ALPHA_AXP_64, "Alpha AXP 64"},
 	{COFF_MACHINE_MIPSf, "MIPSf"},
 	{COFF_MACHINE_MIPS16f, "MIPS16f"},
-	{COFF_MACHINE_AMD_HAMMER, "AMD Hammer"},
+	{COFF_MACHINE_AMD_HAMMER, "AMD Athlon64 (Hammer)"},
 	{0, 0}
 };
 
@@ -176,10 +176,10 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	char info[128];
 	sprintf(info, "* COFF header at offset %08x", h);
 	m->add_mask(info);
-/* COFF header */
+	/* COFF header */
 	m->add_mask("--- COFF header ---");
 	m->add_staticmask_ptable(coffheader, h, coff_bigendian);
-/* optional header */
+	/* optional header */
 	if (coff_shared->coffheader.optional_header_size>=2) {
 		m->add_mask("--- optional header ---");
 		word opt;
@@ -197,7 +197,7 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 			}
 		}
 	}
-/* section headers */
+	/* section headers */
 	int sc=0, os=0;
 	file->seek(h+2);
 	file->read(&sc, 2);
