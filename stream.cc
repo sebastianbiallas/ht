@@ -24,10 +24,31 @@
 #include "tools.h"
 
 #include <errno.h>
+#include <fcntl.h>
+#include <io.h>		/* for tell() */
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>	/* for mode definitions */
+#include <unistd.h>
+
+/* namespace trick */
+
+inline off_t tell_wrap(int file)
+{
+	return tell(file);
+}
+
+inline ssize_t read_wrap(int fd, void *buffer, size_t length)
+{
+	return read(fd, buffer, length);
+}
+
+inline int write_wrap(int file, const void *buffer, size_t count)
+{
+	return write(file, buffer, count);
+}
 
 /*
  *	CLASS ht_stream
@@ -37,9 +58,9 @@
 
 void	ht_stream::init()
 {
-	   stream_error_func=0;
-	   error=0;
-	   access_mode=0;
+	stream_error_func = NULL;
+	error = 0;
+	access_mode = FAM_NULL;
 }
 
 void	ht_stream::done()
@@ -74,7 +95,7 @@ int	ht_stream::get_error()
 	return error;
 }
 
-char	*ht_stream::get_desc()
+const char *ht_stream::get_desc()
 {
 	return NULL;
 }
@@ -140,7 +161,7 @@ int	ht_layer_stream::get_error()
 	return stream->get_error();
 }
 
-char	*ht_layer_stream::get_desc()
+const char *ht_layer_stream::get_desc()
 {
 	return stream->get_desc();
 }
@@ -226,7 +247,7 @@ int	ht_streamfile::extend(UINT newsize)
 	return ENOSYS;
 }
 
-char	*ht_streamfile::get_filename()
+const char *ht_streamfile::get_filename()
 {
 	return NULL;
 }
@@ -316,12 +337,12 @@ ht_streamfile *ht_layer_streamfile::get_layered()
 	return q ? q : streamfile;
 }
 
-char	*ht_layer_streamfile::get_desc()
+const char *ht_layer_streamfile::get_desc()
 {
 	return streamfile->get_desc();
 }
 
-char	*ht_layer_streamfile::get_filename()
+const char *ht_layer_streamfile::get_filename()
 {
 	return streamfile->get_filename();
 }
@@ -393,35 +414,31 @@ UINT	ht_layer_streamfile::write(const void *buf, UINT size)
 }
 
 /*
- *	CLASS ht_file
+ *	CLASS ht_sys_file
  */
 
-void	ht_file::init(const char *fn, UINT am, UINT om)
+void	ht_sys_file::init(int f, bool ofd, UINT am)
 {
 	ht_streamfile::init();
-	filename = strdup(fn);
-	offset = 0;
-	file = NULL;
-	access_mode = 0;
-     open_mode = om;
-	set_access_mode(am);
-     open_mode = FOM_EXISTS;
+	fd = f;
+     offset = 0;
+     own_fd = ofd;
+     set_access_mode(am);
 }
 
-void	ht_file::done()
+void	ht_sys_file::done()
 {
-	if (filename) free(filename);
-	if (file) fclose(file);
+	if (own_fd && (fd>=0)) close(fd);
 	ht_streamfile::done();
 }
 
 #define EXTEND_BUFSIZE 1024
-int ht_file::extend(UINT newsize)
+int ht_sys_file::extend(UINT newsize)
 {
 	int r=0;
 
 	UINT oldmode=get_access_mode();
-	set_access_mode(FAM_WRITE);
+	if (!(oldmode & FAM_WRITE)) set_access_mode(oldmode | FAM_WRITE);
 
 	UINT s=get_size();
 	char buf[EXTEND_BUFSIZE];
@@ -438,21 +455,105 @@ int ht_file::extend(UINT newsize)
 		newsize-=l;
 	}
 
-	set_access_mode(oldmode);
+	if (!(oldmode & FAM_WRITE)) set_access_mode(oldmode);
 	return r;
 }
 
-char	*ht_file::get_desc()
+const char *ht_sys_file::get_desc()
 {
-	return filename;
+	return "file descriptor based file";
 }
 
-char	*ht_file::get_filename()
+UINT	ht_sys_file::get_size()
 {
-	return filename;
+	int t = tell();
+	lseek(fd, 0, SEEK_END);	/* zero is allowed */
+	int r = tell_wrap(fd);
+	lseek(fd, t, SEEK_SET);
+	return r;
 }
 
-UINT	ht_file::get_size()
+UINT	ht_sys_file::read(void *buf, UINT size)
+{
+	if (!(access_mode & FAM_READ)) return 0;
+	UINT r = read_wrap(fd, buf, size);
+	offset += r;
+	return r;
+}
+
+int	ht_sys_file::seek(FILEOFS o)
+{
+	if (o == offset) return 0;
+	off_t r = lseek(fd, o, SEEK_SET);
+     offset = r;
+	return (offset == o) ? 0 : EIO;
+}
+
+FILEOFS ht_sys_file::tell()
+{
+	return offset;
+}
+
+UINT	ht_sys_file::write(const void *buf, UINT size)
+{
+	if (!(access_mode & FAM_WRITE)) return 0;
+	UINT r = write_wrap(fd, buf, size);
+	offset += r;
+	return r;
+}
+
+/*
+ *	CLASS ht_stdio_file
+ */
+
+void	ht_stdio_file::init(FILE *f, bool ofile, UINT am)
+{
+	ht_streamfile::init();
+	file = f;
+     offset = 0;
+     own_file = ofile;
+     set_access_mode(am);
+}
+
+void	ht_stdio_file::done()
+{
+	if (own_file && file) fclose(file);
+	ht_streamfile::done();
+}
+
+#define EXTEND_BUFSIZE 1024
+int ht_stdio_file::extend(UINT newsize)
+{
+	int r=0;
+
+	UINT oldmode=get_access_mode();
+	if (!(oldmode & FAM_WRITE)) set_access_mode(oldmode | FAM_WRITE);
+
+	UINT s=get_size();
+	char buf[EXTEND_BUFSIZE];
+	memset(buf, 0, sizeof buf);
+	newsize-=s;
+	seek(s);
+	while (newsize) {
+		UINT k=MIN(sizeof buf, newsize);
+		UINT l=write(buf, k);
+		if (l!=k) {
+			r=EIO;
+			break;
+		}
+		newsize-=l;
+	}
+
+	if (!(oldmode & FAM_WRITE)) set_access_mode(oldmode);
+	return r;
+}
+
+const char *ht_stdio_file::get_desc()
+{
+	return "FILE based file";
+}
+
+UINT	ht_stdio_file::get_size()
 {
 	int t = tell();
 	fseek(file, 0, SEEK_END);	/* zero is allowed */
@@ -461,24 +562,66 @@ UINT	ht_file::get_size()
 	return r;
 }
 
-void	ht_file::pstat(pstat_t *s)
+UINT	ht_stdio_file::read(void *buf, UINT size)
 {
-	sys_pstat(s, filename);
-}
-
-UINT	ht_file::read(void *buf, UINT size)
-{
+	if (!(access_mode & FAM_READ)) return 0;
 	UINT r = fread(buf, 1, size, file);
 	offset += r;
 	return r;
 }
 
-int	ht_file::seek(FILEOFS o)
+int	ht_stdio_file::seek(FILEOFS o)
 {
 	if (o == offset) return 0;
 	int r = fseek(file, o, SEEK_SET);
-	if (r == 0) offset = o;
+     if (r == 0) offset = o;
 	return r;
+}
+
+FILEOFS ht_stdio_file::tell()
+{
+	return offset;
+}
+
+UINT	ht_stdio_file::write(const void *buf, UINT size)
+{
+	if (!(access_mode & FAM_WRITE)) return 0;
+	UINT r = fwrite(buf, 1, size, file);
+	offset += r;
+	return r;
+}
+
+/*
+ *	CLASS ht_file
+ */
+
+void	ht_file::init(const char *fn, UINT am, UINT om)
+{
+	filename = strdup(fn);
+     open_mode = om;
+	ht_stdio_file::init(NULL, true, am);
+     open_mode = FOM_EXISTS;
+}
+
+void	ht_file::done()
+{
+	if (filename) free(filename);
+	ht_stdio_file::done();
+}
+
+const char *ht_file::get_desc()
+{
+	return filename;
+}
+
+const char *ht_file::get_filename()
+{
+	return filename;
+}
+
+void	ht_file::pstat(pstat_t *s)
+{
+	sys_pstat(s, filename);
 }
 
 bool	ht_file::set_access_mode(UINT am)
@@ -510,9 +653,9 @@ RETRY:
 		if (am & FAM_READ) mode = "rb";
 		if (am & FAM_WRITE) mode = "rb+";
 	}
-
+     
 	bool retval = true;
-	if (mode) {
+	if (am != FAM_NULL) {
 		pstat_t s;
 		int e = 0;
 		file = fopen(filename, mode);
@@ -532,11 +675,6 @@ RETRY:
 		}
 	}
 	return retval && ht_streamfile::set_access_mode(am);
-}
-
-FILEOFS ht_file::tell()
-{
-	return offset;
 }
 
 int	ht_file::truncate(UINT newsize)
@@ -566,11 +704,30 @@ int	ht_file::vcntl(UINT cmd, va_list vargs)
 	return ht_streamfile::vcntl(cmd, vargs);
 }
 
-UINT	ht_file::write(const void *buf, UINT size)
+/*
+ *	CLASS ht_temp_file
+ */
+
+void	ht_temp_file::init(UINT am)
 {
-	UINT r=fwrite(buf, 1, size, file);
-	offset+=r;
-	return r;
+	ht_stdio_file::init(tmpfile(), true, am);
+}
+
+void	ht_temp_file::done()
+{
+	ht_stdio_file::done();
+}
+
+const char *ht_temp_file::get_desc()
+{
+	return "temporary file";
+}
+
+void	ht_temp_file::pstat(pstat_t *s)
+{
+	s->caps = pstat_size;
+	s->size = get_size();
+	s->size_high = 0;
 }
 
 /*
@@ -589,7 +746,7 @@ void ht_memmap_file::done()
 {
 }
 
-char *ht_memmap_file::get_desc()
+const char *ht_memmap_file::get_desc()
 {
 	return "memmap";
 }
@@ -684,7 +841,7 @@ UINT	ht_mem_file::get_access_mode()
 	return ht_stream::get_access_mode();
 }
 
-char *ht_mem_file::get_desc()
+const char *ht_mem_file::get_desc()
 {
 	return "memfile";
 }

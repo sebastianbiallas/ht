@@ -54,21 +54,20 @@ protected:
 	int	error;
 	UINT	access_mode;
 
-			int	call_error_func();
+	        int		call_error_func();
 public:
-			void	init();
-	virtual	void	done();
+	        void		init();
+	virtual void		done();
 /* new */
-	virtual	void	copy_to(ht_stream *stream);
-	virtual	UINT	get_access_mode();
-	virtual	int	get_error();
-	virtual	char	*get_desc();
-	virtual	bool	set_access_mode(UINT access_mode);
-	virtual	void	set_error(int error);
-	virtual	void	set_error_func(stream_error_func_ptr stream_error_func);
-
-	virtual	UINT	read(void *buf, UINT size);
-	virtual	UINT	write(const void *buf, UINT size);
+	virtual void		copy_to(ht_stream *stream);
+	virtual UINT		get_access_mode();
+	virtual int		get_error();
+	virtual const char *get_desc();
+	virtual UINT		read(void *buf, UINT size);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual void		set_error(int error);
+	virtual void		set_error_func(stream_error_func_ptr stream_error_func);
+	virtual UINT		write(const void *buf, UINT size);
 };
 
 /*
@@ -82,20 +81,19 @@ protected:
 	
 public:
 	
-			void	init(ht_stream *stream, bool own_stream);
-	virtual	void	done();
+	        void		init(ht_stream *stream, bool own_stream);
+	virtual void		done();
 /* overwritten */
-	virtual	void	copy_to(ht_stream *stream);
-	virtual	UINT	get_access_mode();
-	virtual	int	get_error();
-	virtual	char	*get_desc();
-	virtual	bool	set_access_mode(UINT access_mode);
-	virtual	void	set_error(int error);
-	virtual	void	set_error_func(stream_error_func_ptr stream_error_func);
-			void set_stream_ownership(bool own);
-
-	virtual	UINT	read(void *buf, UINT size);
-	virtual	UINT	write(const void *buf, UINT size);
+	virtual void		copy_to(ht_stream *stream);
+	virtual UINT		get_access_mode();
+	virtual int		get_error();
+	virtual const char *get_desc();
+	virtual UINT		read(void *buf, UINT size);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual void		set_error(int error);
+	virtual void		set_error_func(stream_error_func_ptr stream_error_func);
+	        void		set_stream_ownership(bool own);
+	virtual UINT		write(const void *buf, UINT size);
 };
 
 /*
@@ -183,17 +181,17 @@ public:
 class ht_streamfile: public ht_stream {
 public:
 /* new */
-		   int	cntl(UINT cmd, ...);
-	virtual int	extend(UINT newsize);
-	virtual char	*get_filename();
-	virtual ht_streamfile *get_layered();
-	virtual UINT	get_size();
-	virtual void	pstat(pstat_t *s);
-	virtual int	seek(FILEOFS offset);
-	virtual void	set_layered(ht_streamfile *streamfile);
-	virtual FILEOFS tell();
-	virtual int	truncate(UINT newsize);
-	virtual int	vcntl(UINT cmd, va_list vargs);
+		   int			cntl(UINT cmd, ...);
+	virtual int			extend(UINT newsize);
+	virtual const char *	get_filename();
+	virtual ht_streamfile *	get_layered();
+	virtual UINT			get_size();
+	virtual void			pstat(pstat_t *s);
+	virtual int			seek(FILEOFS offset);
+	virtual void			set_layered(ht_streamfile *streamfile);
+	virtual FILEOFS		tell();
+	virtual int			truncate(UINT newsize);
+	virtual int			vcntl(UINT cmd, va_list vargs);
 };
 
 /*
@@ -208,35 +206,82 @@ public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile);
 	virtual void	done();
 /* overwritten */
-	virtual void	copy_to(ht_stream *stream);
-	virtual int	extend(UINT newsize);
-	virtual UINT	get_access_mode();
-	virtual int	get_error();
-	virtual char	*get_desc();
-	virtual char	*get_filename();
-	virtual ht_streamfile *get_layered();
-	virtual UINT	get_size();
-	virtual void	pstat(pstat_t *s);
-	virtual UINT	read(void *buf, UINT size);
-	virtual int	seek(FILEOFS offset);
-	virtual bool	set_access_mode(UINT access_mode);
-	virtual void	set_error(int error);
-	virtual void	set_error_func(stream_error_func_ptr stream_error_func);
-	virtual void	set_layered(ht_streamfile *streamfile);
-		   void	set_streamfile_ownership(bool own);
-	virtual FILEOFS tell();
-	virtual int	truncate(UINT newsize);
-	virtual int	vcntl(UINT cmd, va_list vargs);
-	virtual UINT	write(const void *buf, UINT size);
+	virtual void			copy_to(ht_stream *stream);
+	virtual int			extend(UINT newsize);
+	virtual UINT			get_access_mode();
+	virtual int			get_error();
+	virtual const char *	get_desc();
+	virtual const char *	get_filename();
+	virtual ht_streamfile *	get_layered();
+	virtual UINT			get_size();
+	virtual void			pstat(pstat_t *s);
+	virtual UINT			read(void *buf, UINT size);
+	virtual int			seek(FILEOFS offset);
+	virtual bool			set_access_mode(UINT access_mode);
+	virtual void			set_error(int error);
+	virtual void			set_error_func(stream_error_func_ptr stream_error_func);
+	virtual void			set_layered(ht_streamfile *streamfile);
+		   void			set_streamfile_ownership(bool own);
+	virtual FILEOFS		tell();
+	virtual int			truncate(UINT newsize);
+	virtual int			vcntl(UINT cmd, va_list vargs);
+	virtual UINT			write(const void *buf, UINT size);
+};
+
+/*
+ *	CLASS ht_sys_file
+ */
+
+class ht_sys_file: public ht_streamfile {
+protected:
+	int fd;
+     bool own_fd;
+
+	FILEOFS offset;
+public:
+
+		   void		init(int fd, bool own_fd, UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
+};
+
+/*
+ *	CLASS ht_stdio_file
+ */
+
+class ht_stdio_file: public ht_streamfile {
+protected:
+	FILE *file;
+     bool own_file;
+
+	FILEOFS offset;
+public:
+
+		   void		init(FILE *file, bool own_file, UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
 };
 
 /*
  *	CLASS ht_file
  */
 
-class ht_file: public ht_streamfile {
+class ht_file: public ht_stdio_file {
 protected:
-	FILE *file;
 	char *filename;
      UINT open_mode;
 
@@ -245,22 +290,28 @@ protected:
 	bool	set_access_mode_internal(UINT access_mode);
 public:
 
-		   void	init(const char *filename, UINT access_mode, UINT open_mode);
-	virtual void	done();
+		   void		init(const char *filename, UINT access_mode, UINT open_mode);
+	virtual void		done();
 /* overwritten */
-	virtual int	extend(UINT newsize);
-	virtual char	*get_desc();
-	virtual char	*get_filename();
-	virtual UINT	get_size();
-	virtual void	pstat(pstat_t *s);
-	virtual int	seek(FILEOFS offset);
-	virtual bool	set_access_mode(UINT access_mode);
-	virtual FILEOFS tell();
-	virtual int	truncate(UINT newsize);
-	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual const char *get_desc();
+	virtual const char *get_filename();
+	virtual void		pstat(pstat_t *s);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual int		truncate(UINT newsize);
+	virtual int		vcntl(UINT cmd, va_list vargs);
+};
 
-	virtual UINT	read(void *buf, UINT size);
-	virtual UINT	write(const void *buf, UINT size);
+/*
+ *	CLASS ht_temp_file
+ */
+
+class ht_temp_file: public ht_stdio_file {
+public:
+		   void		init(UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual const char *get_desc();
+	virtual void		pstat(pstat_t *s);
 };
 
 /*
@@ -274,15 +325,15 @@ protected:
 	byte *buf;
 
 public:
-		   void	init(byte *buf, UINT size = 0);
-	virtual void	done();
+		   void		init(byte *buf, UINT size = 0);
+	virtual void		done();
 /* overwritten */
-	virtual char	*get_desc();
-	virtual UINT	get_size();
-	virtual UINT	read(void *buf, UINT size);
-	virtual int	seek(FILEOFS offset);
-	virtual FILEOFS tell();
-	virtual UINT	write(const void *buf, UINT size);
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
 };
 
 /*
@@ -296,29 +347,29 @@ protected:
 	UINT bufsize, dsize, ibufsize;
 	byte *buf;
 
-	virtual UINT	extendbufsize(UINT bufsize);
-	virtual UINT	shrinkbufsize(UINT bufsize);
-		   void	extendbuf();
-		   void	shrinkbuf();
-		   void	resizebuf(UINT newsize);
+	virtual UINT		extendbufsize(UINT bufsize);
+	virtual UINT		shrinkbufsize(UINT bufsize);
+		   void		extendbuf();
+		   void		shrinkbuf();
+		   void		resizebuf(UINT newsize);
 public:
-		   void	init();
-		   void	init(FILEOFS ofs, UINT size, UINT access_mode);
-	virtual void	done();
+		   void		init();
+		   void		init(FILEOFS ofs, UINT size, UINT access_mode);
+	virtual void		done();
 /* overwritten */
-	virtual int	extend(UINT newsize);
-	virtual UINT	get_access_mode();
-	virtual char	*get_desc();
-	virtual UINT	get_size();
-	virtual void	pstat(pstat_t *s);
-	virtual UINT	read(void *buf, UINT size);
-	virtual int	seek(FILEOFS offset);
-	virtual bool	set_access_mode(UINT access_mode);
-	virtual FILEOFS tell();
-	virtual int	truncate(UINT newsize);
-	virtual UINT	write(const void *buf, UINT size);
+	virtual int		extend(UINT newsize);
+	virtual UINT		get_access_mode();
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual void		pstat(pstat_t *s);
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual FILEOFS 	tell();
+	virtual int		truncate(UINT newsize);
+	virtual UINT		write(const void *buf, UINT size);
 /* new */
-		   void  *bufptr();
+		   void*		bufptr();
 };
 
 /*
