@@ -81,7 +81,7 @@ void clearmsg(htmsg *msg)
  *	CLASS ht_text
  */
 
-void ht_text::settext(char *text)
+void ht_text::settext(const char *text)
 {
 }
 
@@ -89,7 +89,7 @@ void ht_text::settext(char *text)
  *	CLASS ht_view
  */
 
-void ht_view::init(bounds *b, int o, char *d)
+void ht_view::init(bounds *b, int o, const char *d)
 {
 	Object::init();
 	VIEW_DEBUG_NAME("ht_view");
@@ -773,7 +773,7 @@ void ht_view::unrelocate_to(ht_view *view)
  *	CLASS ht_group
  */
 
-void ht_group::init(bounds *b, int options, char *desc)
+void ht_group::init(bounds *b, int options, const char *desc)
 {
 	first=0;
 	current=0;
@@ -1261,7 +1261,7 @@ void ht_group::store(ht_object_stream *s)
  *	CLASS ht_xgroup
  */
 
-void ht_xgroup::init(bounds *b, int options, char *desc)
+void ht_xgroup::init(bounds *b, int options, const char *desc)
 {
 	ht_group::init(b, options, desc);
 	VIEW_DEBUG_NAME("ht_xgroup");
@@ -1438,7 +1438,7 @@ void	ht_scrollbar::store(ht_object_stream *s)
  *	CLASS ht_frame
  */
 
-void ht_frame::init(bounds *b, char *desc, UINT s, UINT n)
+void ht_frame::init(bounds *b, const char *desc, UINT s, UINT n)
 {
 	ht_view::init(b, VO_RESIZE, desc);
 	VIEW_DEBUG_NAME("ht_frame");
@@ -1613,7 +1613,7 @@ void ht_frame::store(ht_object_stream *s)
  *	CLASS ht_window
  */
 
-void	ht_window::init(bounds *b, char *desc, UINT framestyle, UINT num)
+void	ht_window::init(bounds *b, const char *desc, UINT framestyle, UINT num)
 {
 	ht_group::init(b, VO_SELECTABLE | VO_SELBOUND | VO_BROWSABLE, desc);
 	VIEW_DEBUG_NAME("ht_window");

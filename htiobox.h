@@ -32,8 +32,8 @@
 #define btmask_all			32
 #define btmask_none			64
 
-int msgbox(int buttonmask, char *title, bool modal, statictext_align align, char *format, ...);
-int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, bounds *b, char *format, ...);
+int msgbox(int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...);
+int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, bounds *b, const char *format, ...);
 
 #define errorbox(a...) msgbox(btmask_ok, "error", false, align_center, a)
 #define infobox(a...) msgbox(btmask_ok, "information", false, align_center, a)
@@ -50,8 +50,8 @@ int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_al
 #define warnbox_modal(a...) msgbox(btmask_ok, "warning", true, align_center, a)
 #define confirmbox_modal(a...) msgbox(btmask_yes+btmask_no, "confirmation", true, align_center, a)
 
-int inputbox(char *title, char *Label, char *result, int limit, dword histid=0);
-int inputboxrect(bounds *b, char *title, char *Label, char *result, int limit, dword histid=0);
+bool inputbox(const char *title, const char *label, char *result, int limit, dword histid=0);
+bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid=0);
 
 void get_std_progress_indicator_metrics(bounds *b);
 

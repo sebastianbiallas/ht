@@ -147,7 +147,7 @@ public:
 
 /*debug:*/char *view_debug_name;
 
-			void	init(bounds *b, int options, char *desc);
+			void	init(bounds *b, int options, const char *desc);
 	virtual	void done();
 /* new */
 			void *allocdatabuf(void *handle);
@@ -231,7 +231,7 @@ public:
 	ht_view 	*first, *current, *last;
 	void		*shared_data;
 
-			void	init(bounds *b, int options, char *desc);
+			void	init(bounds *b, int options, const char *desc);
 	virtual	void done();
 /* overwritten */
 	virtual	int childcount();
@@ -274,7 +274,7 @@ public:
 
 class ht_xgroup: public ht_group {
 public:
-			void	init(bounds *b, int options, char *desc);
+			void	init(bounds *b, int options, const char *desc);
 	virtual	void done();
 /* overwritten */
 	virtual	int countselectables();
@@ -318,7 +318,7 @@ public:
 class ht_text: public ht_view {
 public:
 /* new */
-	virtual	void settext(char *text);
+	virtual	void settext(const char *text);
 };
 
 /*
@@ -347,7 +347,7 @@ protected:
 	virtual	vcp getcurcol_normal();
 	virtual	vcp getcurcol_killer();
 public:
-			void	init(bounds *b, char *desc, UINT style, UINT number=0);
+			void	init(bounds *b, const char *desc, UINT style, UINT number=0);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();
@@ -383,7 +383,7 @@ protected:
 	
 			bool next_action_state();
 public:
-			void	init(bounds *b, char *desc, UINT framestyle, UINT number=0);
+			void	init(bounds *b, const char *desc, UINT framestyle, UINT number=0);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();

@@ -131,7 +131,7 @@ protected:
 /* new */
 	virtual	char *func(UINT i, bool execute);
 public:
-			void init(bounds *b, char *desc, UINT caps);
+			void init(bounds *b, const char *desc, UINT caps);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -163,7 +163,7 @@ protected:
 public:
 	ht_format_group *format_group;
 	
-			void init(bounds *b, char *desc, UINT caps, ht_streamfile *file, ht_format_group *format_group);
+			void init(bounds *b, const char *desc, UINT caps, ht_streamfile *file, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -248,7 +248,7 @@ protected:
 			
 			bool edit();
 public:
-			void init(bounds *b, int options, char *desc, ht_streamfile *file, bool own_file, bool editable_file, format_viewer_if **ifs, ht_format_group *format_group);
+			void init(bounds *b, int options, const char *desc, ht_streamfile *file, bool own_file, bool editable_file, format_viewer_if **ifs, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
 	virtual	int childcount();
@@ -384,7 +384,7 @@ protected:
 public:
 	UINT search_caps;
 	
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group);
+			void init(bounds *b, const char *desc, int caps, ht_streamfile *file, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
 	virtual	void clear_viewer_pos(viewer_pos *p);

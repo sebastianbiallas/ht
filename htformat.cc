@@ -109,7 +109,7 @@ ht_visual_search_result::ht_visual_search_result() :
  *	CLASS ht_format_group
  */
 
-void ht_format_group::init(bounds *b, int options, char *desc, ht_streamfile *f, bool own_f, bool editable_f, format_viewer_if **i, ht_format_group *format_group)
+void ht_format_group::init(bounds *b, int options, const char *desc, ht_streamfile *f, bool own_f, bool editable_f, format_viewer_if **i, ht_format_group *format_group)
 {
 	ht_format_viewer::init(b, desc, 0, f, format_group);
 	VIEW_DEBUG_NAME("ht_format_group");
@@ -375,7 +375,7 @@ void ht_format_group::setgroup(ht_group *_group)
  *	CLASS ht_viewer
  */
 
-void ht_viewer::init(bounds *b, char *desc, UINT c)
+void ht_viewer::init(bounds *b, const char *desc, UINT c)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_BROWSABLE | VO_SELECTABLE | VO_MOVE | VO_RESIZE, desc);
 	caps = c;
@@ -449,7 +449,7 @@ void ht_viewer::handlemsg(htmsg *msg)
  *	CLASS ht_format_viewer
  */
 
-void ht_format_viewer::init(bounds *b, char *desc, UINT caps, ht_streamfile *f, ht_format_group *fg)
+void ht_format_viewer::init(bounds *b, const char *desc, UINT caps, ht_streamfile *f, ht_format_group *fg)
 {
 	ht_viewer::init(b, desc, caps);
 	options |= VO_FORMAT_VIEW;
@@ -862,7 +862,7 @@ public:
 	FILEOFS sel_end;
 };
 
-void ht_uformat_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group)
+void ht_uformat_viewer::init(bounds *b, const char *desc, int caps, ht_streamfile *file, ht_format_group *format_group)
 {
 	tagpal.data=NULL;
 	tagpal.size=0;

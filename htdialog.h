@@ -58,7 +58,7 @@ protected:
 	virtual	char *defaultpalette();
 			ht_queued_msg *dequeuemsg();
 public:
-			void	init(bounds *b, char *desc, UINT framestyle);
+			void	init(bounds *b, const char *desc, UINT framestyle);
 	virtual	void	done();
 /* overwritten */
 	virtual	int alone();
@@ -235,7 +235,7 @@ protected:
 /* overwritten */
 	virtual	char *defaultpalette();
 public:
-			void	init(bounds *b, char *text, int value);
+			void	init(bounds *b, const char *text, int value);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();
@@ -428,14 +428,14 @@ protected:
 /* overwritten */
 	virtual	char *defaultpalette();
 public:
-			void	init(bounds *b, char *text, statictext_align align, bool breaklines=true, bool transparent=false);
+			void	init(bounds *b, const char *text, statictext_align align, bool breaklines=true, bool transparent=false);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();
 	virtual	char *gettext();
 /* new */
 	virtual	vcp gettextcolor();
-	virtual	void settext(char *text);
+	virtual	void settext(const char *text);
 };
 
 /*
@@ -539,7 +539,7 @@ protected:
 /* overwritten */
 	virtual	char *defaultpalette();
 public:
-			void	init(bounds *b, char *text, ht_view *connected);
+			void	init(bounds *b, const char *text, ht_view *connected);
 	virtual	void	done();
 /* overwritten */
 	virtual	void draw();
@@ -559,7 +559,7 @@ public:
 	
 			void	init(bounds *b, char *hint);
 /* new */
-			void settext(char *text);
+			void settext(const char *text);
 };
 
 /*

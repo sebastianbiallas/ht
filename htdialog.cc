@@ -36,7 +36,7 @@
  *	CLASS ht_dialog
  */
 
-void ht_dialog::init(bounds *b, char *desc, UINT framestyle)
+void ht_dialog::init(bounds *b, const char *desc, UINT framestyle)
 {
 	ht_window::init(b, desc, framestyle);
 	VIEW_DEBUG_NAME("ht_dialog");
@@ -1289,7 +1289,7 @@ void ht_hexinputfield::setnibble(byte a)
  *	CLASS ht_button
  */
 
-void ht_button::init(bounds *b, char *Text, int Value)
+void ht_button::init(bounds *b, const char *Text, int Value)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_POSTPROCESS, "some button");
 	VIEW_DEBUG_NAME("ht_button");
@@ -1428,6 +1428,7 @@ void ht_listbox_title::setText(int cols, ...)
 	va_list vargs;
 	va_start(vargs, cols);
 	setTextv(cols, vargs);
+     va_end(vargs);
 	va_end(vargs);
 }
 
@@ -2341,7 +2342,7 @@ void ht_statictext_align(ht_statictext_linedesc *d, statictext_align align, int 
 	}
 }
 
-void ht_statictext::init(bounds *b, char *t, statictext_align al, bool breakl, bool trans)
+void ht_statictext::init(bounds *b, const char *t, statictext_align al, bool breakl, bool trans)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_RESIZE, "some statictext");
 	VIEW_DEBUG_NAME("ht_statictext");
@@ -2469,7 +2470,7 @@ char *ht_statictext::gettext()
 	return text;
 }
 
-void ht_statictext::settext(char *_text)
+void ht_statictext::settext(const char *_text)
 {
 	if (text) delete text;
 	text=ht_strdup(_text);
@@ -2674,7 +2675,7 @@ ht_listbox_ptr::~ht_listbox_ptr()
  *	CLASS ht_label
  */
 
-void ht_label::init(bounds *b, char *_text, ht_view *_connected)
+void ht_label::init(bounds *b, const char *_text, ht_view *_connected)
 {
 	ht_view::init(b, VO_POSTPROCESS, 0);
 	text = ht_strdup(_text);
@@ -2757,7 +2758,7 @@ char *ht_progress_indicator::defaultpalette()
 	return palkey_generic_dialog_default;
 }
 
-void ht_progress_indicator::settext(char *t)
+void ht_progress_indicator::settext(const char *t)
 {
 	text->settext(t);
 }

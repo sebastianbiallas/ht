@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int imsgbox(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, char *buf)
+int imsgbox(bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, char *buf)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | (modal ? 0 : FS_MOVE | FS_RESIZE));
@@ -145,7 +145,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, statictext_align
 	return r;
 }
 
-int msgbox(int buttonmask, char *title, bool modal, statictext_align align, char *format, ...)
+int msgbox(int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...)
 {
 	char buf[1024];
 	va_list arg;
@@ -170,7 +170,7 @@ int msgbox(int buttonmask, char *title, bool modal, statictext_align align, char
 	return imsgbox(&b, buttonmask, title, modal, align, buf);
 }
 
-int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, char *format, ...)
+int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...)
 {
 	char buf[1024];
 	va_list arg;
@@ -181,7 +181,7 @@ int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_al
 	return imsgbox(b, buttonmask, title, modal, align, buf);
 }
 
-int inputbox(char *title, char *Label, char *result, int limit, dword histid)
+bool inputbox(const char *title, const char *label, char *result, int limit, dword histid)
 {
 	bounds b;
 	app->getbounds(&b);
@@ -189,10 +189,10 @@ int inputbox(char *title, char *Label, char *result, int limit, dword histid)
 	b.y = (b.h - 8) / 2;
 	b.w = 60;
 	b.h = 8;
-	return inputboxrect(&b, title, Label, result, limit, histid);
+	return inputboxrect(&b, title, label, result, limit, histid);
 }
 
-int inputboxrect(bounds *b, char *title, char *Label, char *result, int limit, dword histid)
+bool inputboxrect(bounds *b, const char *title, const char *Label, char *result, int limit, dword histid)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);

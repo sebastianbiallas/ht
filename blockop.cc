@@ -531,7 +531,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
  *
  */
 
-bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, char *string_desc, FILEOFS *ofs)
+bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FILEOFS *ofs)
 {
 	if (string && *string && stringlen<64) {
 		char str[64];
