@@ -31,8 +31,10 @@
 
 enum endianess {big_endian, little_endian};
 void create_foreign_int(void *buf, int i, int size, endianess to_endianess);
+void create_foreign_int64(void *buf, const qword i, int size, endianess to_endianess);
 int create_host_int(const void *buf, int size, endianess from_endianess);
-void create_host_struct(void *buf, byte *table, endianess from);
+qword create_host_int64(const void *buf, endianess from_endianess);
+void create_host_struct(void *buf, const byte *table, endianess from);
 
 #endif /* __HTENDIAN_H__ */
 

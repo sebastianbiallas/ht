@@ -58,8 +58,6 @@ void create_foreign_int(void *buf, int i, int size, endianess to_endianess)
 					break;
 			}
 			break;
-		case 8:
-			break;          
 	}
 }
 
@@ -85,29 +83,58 @@ int create_host_int(const void *buf, int size, endianess from_endianess)
 					return (b[3]<<24) | (b[2]<<16) | (b[1]<<8) | b[0];
 			}
 			break;
-		case 8:
-			break;
 	}
 	assert(0);
 	return 0;
 }
 
-void create_host_int64(qword *q, void *src, endianess from_endianess)
+void create_foreign_int64(void *buf, const qword i, int size, endianess to_endianess)
 {
-	byte *b = (byte*)src;
-	switch (from_endianess) {
+	byte *b = (byte*)buf;
+     dword hi = QWORD_GET_HI(i);
+     dword lo = QWORD_GET_LO(i);
+	switch (to_endianess) {
 		case big_endian:
-			q->hi = (b[0]<<24) | (b[1]<<16) | (b[2]<<8) | b[3];
-			q->lo = (b[4]<<24) | (b[5]<<16) | (b[6]<<8) | b[7];
+			b[0]=hi>>24;
+			b[1]=hi>>16;
+			b[2]=hi>>8;
+			b[3]=hi;
+			b[4]=lo>>24;
+			b[5]=lo>>16;
+			b[6]=lo>>8;
+			b[7]=lo;
 			break;
 		case little_endian:
-			q->lo = (b[3]<<24) | (b[2]<<16) | (b[1]<<8) | b[0];
-			q->hi = (b[7]<<24) | (b[6]<<16) | (b[5]<<8) | b[4];
+			b[0]=lo;
+			b[1]=lo>>8;
+			b[2]=lo>>16;
+			b[3]=lo>>24;
+			b[4]=hi;
+			b[5]=hi>>8;
+			b[6]=hi>>16;
+			b[7]=hi>>24;
 			break;
 	}
 }
 
-void create_host_struct(void *buf, byte *table, endianess from)
+qword create_host_int64(const void *buf, endianess from_endianess)
+{
+	byte *b = (byte*)buf;
+     qword q;
+	switch (from_endianess) {
+		case big_endian:
+			QWORD_SET_HI(q, (b[0]<<24) | (b[1]<<16) | (b[2]<<8) | b[3]);
+			QWORD_SET_LO(q, (b[4]<<24) | (b[5]<<16) | (b[6]<<8) | b[7]);
+			break;
+		case little_endian:
+			QWORD_SET_HI(q, (b[7]<<24) | (b[6]<<16) | (b[5]<<8) | b[4]);
+			QWORD_SET_LO(q, (b[3]<<24) | (b[2]<<16) | (b[1]<<8) | b[0]);
+			break;
+	}
+     return q;
+}
+
+void create_host_struct(void *buf, const byte *table, endianess from)
 {
 	byte *buf2 = (byte *)buf;
 	while (*table) {
@@ -116,23 +143,22 @@ void create_host_struct(void *buf, byte *table, endianess from)
 			switch (table2) {
 				case STRUCT_ENDIAN_BYTE: {
 					byte a = create_host_int(buf2, STRUCT_ENDIAN_BYTE, from);
-					memcpy(buf2, &a, table2);
+					memcpy(buf2, &a, STRUCT_ENDIAN_BYTE);
 					break;
 				}
 				case STRUCT_ENDIAN_WORD: {
 					word a = create_host_int(buf2, STRUCT_ENDIAN_WORD, from);
-					memcpy(buf2, &a, table2);
+					memcpy(buf2, &a, STRUCT_ENDIAN_WORD);
 					break;
 				}
 				case STRUCT_ENDIAN_DWORD: {
 					dword a = create_host_int(buf2, STRUCT_ENDIAN_DWORD, from);
-					memcpy(buf2, &a, table2);
+					memcpy(buf2, &a, STRUCT_ENDIAN_DWORD);
 					break;
 				}
 				case STRUCT_ENDIAN_QWORD: {
-					qword q;
-					create_host_int64(&q, buf2, from);
-					memcpy(buf2, &q, sizeof q);
+					qword q = create_host_int64(buf2, from);
+					memcpy(buf2, &q, STRUCT_ENDIAN_QWORD);
 					break;
 				}
 				default: {
