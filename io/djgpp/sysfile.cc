@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *   sysfile.cc - file system functions for DJGPP
+ *	sysfile.cc - file system functions for DJGPP
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *

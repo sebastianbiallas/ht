@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *   syskeyb.cc - keyboard access functions for DJGPP
+ *	syskeyb.cc - keyboard access functions for DJGPP
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *

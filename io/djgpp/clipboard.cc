@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *   clipboard.cc - DJGPP-specific (windows-)clipboard functions
+ *	clipboard.cc - DJGPP-specific (windows-)clipboard functions
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *

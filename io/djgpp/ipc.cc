@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *   ipc.cc - DJGPP-specific inter-process communication (IPC) functions
+ *	ipc.cc - DJGPP-specific inter-process communication (IPC) functions
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *

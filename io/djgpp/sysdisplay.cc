@@ -50,6 +50,15 @@ void put_vc(uint16 *dest, int rawchar, vcp vc)
 	*dest=( ((bg<<4)|fg) <<8)|((byte)rawchar);
 }
 
+int mapCharToSystemCP(char chr, int codepage)
+{
+	switch (codepage) {
+     	case CP_DEVICE: return chr;
+          case CP_WINDOWS: return chr;
+     }
+	return chr;
+}
+
 /*
  *	Class DjgppSystemDisplay
  */
@@ -70,8 +79,8 @@ public:
 						DjgppSystemDisplay(const char *title);
 	virtual				~DjgppSystemDisplay();
 /* implements Display */
-	virtual	void			fill(int x, int y, int w, int h, vcp color, char chr, int codepage = CP_SYSTEM);
-	virtual	int			nprint(int x, int y, vcp color, char *str, int strlen, int codepage = CP_SYSTEM);
+	virtual	void			fill(int x, int y, int w, int h, vcp color, char chr, int codepage = CP_DEVICE);
+	virtual	int			nprint(int x, int y, vcp color, char *str, int strlen, int codepage = CP_DEVICE);
      virtual	bool			read(int &rawchar, vcp &color, int x, int y);
 	virtual	void			setBounds(const Bounds &b);
 /* new */
