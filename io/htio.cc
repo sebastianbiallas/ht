@@ -254,7 +254,7 @@ int sys_common_canonicalize(char *result, const char *filename, const char *cwd,
 {
 	char *o = result;
 	if (!sys_path_is_absolute(filename, delim)) {
-		if (cwd) strcpy(o, cwd); else *o = 0;
+		if (cwd) strcpy(o, cwd); else return EINVAL;
 		int ol = strlen(o);
 		if (ol && !delim(o[ol-1])) {
 			o[ol] = '/';
