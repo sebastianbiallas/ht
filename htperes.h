@@ -28,6 +28,11 @@
  */
 
 class ht_pe_resource_viewer: public ht_static_treeview {
+private:
+/* new */
+	virtual	ht_data *vstate_create();
+			bool vstate_save();
+	virtual	void vstate_restore(ht_data *d);
 public:
 			void init(bounds *b, char *desc);
 	virtual	void done();

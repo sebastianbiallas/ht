@@ -83,8 +83,8 @@ static pe_section_headers *peresource_section_headers;
 
 void read_resource_dir(void *node, int ofs, int level)
 {
-	if (level>2) return; 		/* no infinite recursion please (for
-					   currupted resource directories) */
+	if (level>2) return; 		/* no deep recursions please (for
+							   currupted resource directories) */
 	PE_RESOURCE_DIRECTORY dir;
 // get directory
 	peresource_file->seek(peresource_dir_ofs+ofs);
@@ -109,11 +109,11 @@ void read_resource_dir(void *node, int ofs, int level)
 				rm += sprintf(rm, "%s [%d]", name, subdir.name_count+subdir.id_count);
 				free(name);
 			} else {
-				char *s = (!level) ? s = matchhash((short)entry.name, restypes) : NULL;
+				char *s = (!level) ? s = matchhash(entry.name & 0xffff, restypes) : NULL;
 				if (s) {
-					rm += sprintf(rm, "ID %04x, %s [%d]", (short)entry.name, s, subdir.name_count+subdir.id_count);
+					rm += sprintf(rm, "ID %04x, %s [%d]", entry.name & 0xffff, s, subdir.name_count+subdir.id_count);
 				} else {
-					rm += sprintf(rm, "ID %04x [%d]", (short)entry.name, subdir.name_count+subdir.id_count);
+					rm += sprintf(rm, "ID %04x [%d]", entry.name & 0xffff, subdir.name_count+subdir.id_count);
 				}
 			}
 			void *n = peresource_tree->add_child(node, peresource_string);
@@ -121,9 +121,9 @@ void read_resource_dir(void *node, int ofs, int level)
 		} else {
 			char *s = matchhash((char)entry.name, languages);
 			if (s) {
-				rm += sprintf(rm, "resource, %s (%04x) ", s, (short)entry.name);
+				rm += sprintf(rm, "resource, %s (%04x) ", s, entry.name & 0xffff);
 			} else {
-				rm += sprintf(rm, "resource, unknown language (%04x) ", (short)entry.name);
+				rm += sprintf(rm, "resource, unknown language (%04x) ", entry.name & 0xffff);
 			}
 
 			PE_RESOURCE_DATA_ENTRY data;
@@ -226,43 +226,13 @@ void ht_pe_resource_viewer::done()
 
 void	ht_pe_resource_viewer::handlemsg(htmsg *msg)
 {
-//	int i=0;
+	switch (msg->msg) {
+		case msg_vstate_restore:
+			vstate_restore((ht_data*)msg->data1.ptr);
+               clearmsg(msg);
+               return;
+     }
 	ht_static_treeview::handlemsg(msg);
-/*	if (msg->msg==htm_keypressed) {
-		switch (msg->data1.integer) {
-			case K_F12: i++;
-			case K_F11: i++;
-			case K_F10: i++;
-			case K_F9: i++;
-			case K_F8: i++;
-			case K_F7: i++;
-			case K_F6: i++;
-			case K_F5: i++;
-			case K_F4: i++;
-			case K_F3: i++;
-			case K_F2: i++;
-			case K_F1: {
-				i++;
-				htmsg m;
-				m.msg=htm_funcquery;
-				m.type=htmt_nothing;
-				m.data1.integer=i;
-				sendmsg(&m);
-				if (m.msg==htm_funcquery_return) {
-					((ht_view*)m.data2.ptr)->sendmsg(htm_funcexec, i);
-					clearmsg(msg);
-					return;
-				}
-				break;
-			}
-		}
-	} else if (msg->msg==htm_funcexec) {
-		((ht_app*)app)->func(msg->data1.integer, 0);
-		clearmsg(msg);
-	} else if (msg->msg==htm_funcname) {
-		msg->msg=htm_funcname_return;
-		msg->data1.str=((ht_app*)app)->func(msg->data1.integer, 1);
-	}*/
 }
 
 void	ht_pe_resource_viewer::select_node(void *node)
@@ -282,11 +252,48 @@ void	ht_pe_resource_viewer::select_node(void *node)
 			c=c->next;
 		}
 		if (hexv) {
+          	vstate_save();
 			hexv->goto_offset(((ht_pe_resource_leaf*)s->data)->offset, this);
 			hexv->pselect_set(((ht_pe_resource_leaf*)s->data)->offset,
 				((ht_pe_resource_leaf*)s->data)->offset+((ht_pe_resource_leaf*)s->data)->size);
 			app->focus(hexv);
 		}
 	}
+}
+
+// we expect ht_static_treeview to be really static
+// e.g. node must not be deleted
+
+class ht_pe_resource_viewer_vstate: public ht_data {
+public:
+	void *node;
+};
+
+ht_data *ht_pe_resource_viewer::vstate_create()
+{
+     ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
+	v->node = get_cursor_node();
+     return v;
+}
+
+bool ht_pe_resource_viewer::vstate_save()
+{
+	ht_data *vs = vstate_create();
+	if (vs) {
+		htmsg m;
+		m.msg = msg_vstate_save;
+		m.type = mt_empty;
+		m.data1.ptr = vs;
+		m.data2.ptr = this;
+		app->sendmsg(&m);
+		return true;
+	}
+	return false;
+}
+
+void ht_pe_resource_viewer::vstate_restore(ht_data *d)
+{
+     ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
+	goto_node(v->node);
 }
 
