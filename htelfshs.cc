@@ -110,7 +110,7 @@ ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 		m->init(file, 0);
 
 		char info[128];
-		sprintf(info, "* ELF section headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF section headers at offset %08x", h);
 
 		m->add_mask(info);
 
@@ -125,7 +125,7 @@ ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 			file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name);
 			char *s = fgetstrz(file);
 			char t[1024];	/* FIXME: possible buffer overflow */
-			sprintf(t, "section %d: %s", i, s);
+			ht_snprintf(t, sizeof t, "section %d: %s", i, s);
 			elf_shared->shnames[i] = s;
 
 			n->add_staticmask_ptable(elfsectionheader32, h+i*elf_shared->header32.e_shentsize, elf_bigendian);
@@ -149,7 +149,7 @@ ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 		m->init(file, 0);
 
 		char info[128];
-		sprintf(info, "* ELF section headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF section headers at offset %08x", h);
 
 		m->add_mask(info);
 
@@ -165,7 +165,7 @@ ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 			file->seek(so+elf_shared->sheaders.sheaders64[i].sh_name);
 			char *s=fgetstrz(file);
 			char t[1024];
-			sprintf(t, "section %d: %s", i, s);
+			ht_snprintf(t, sizeof t, "section %d: %s", i, s);
 			elf_shared->shnames[i]=s;
 
 			n->add_staticmask_ptable(elfsectionheader64, h+i*elf_shared->header64.e_shentsize, elf_bigendian);

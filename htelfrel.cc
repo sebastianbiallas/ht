@@ -77,7 +77,7 @@ ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *g
 	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name);
 	char *reloctab_name=fgetstrz(file);
 	char desc[128];
-	sprintf(desc, DESC_ELF_RELOCTAB, reloctab_name, reloctab_shidx);
+	ht_snprintf(desc, sizeof desc, DESC_ELF_RELOCTAB, reloctab_name, reloctab_shidx);
 	free(reloctab_name);
 	
 	ht_uformat_viewer *v=new ht_uformat_viewer();

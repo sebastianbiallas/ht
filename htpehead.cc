@@ -181,7 +181,7 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	s=new ht_mask_sub();
 	s->init(file, 0);
 	char info[128];
-	sprintf(info, "* PE header at offset %08x", h);
+	ht_snprintf(info, sizeof info, "* PE header at offset %08x", h);
 	s->add_mask(info);
 	v->insertsub(s);
 

@@ -194,7 +194,7 @@ ht_view *htelfheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* ELF header at offset %08x", elf_shared->header_ofs);
+	ht_snprintf(info, sizeof info, "* ELF header at offset %08x", elf_shared->header_ofs);
 	register_atom(ATOM_ELF_CLASS, elf_class);
 	register_atom(ATOM_ELF_DATA, elf_data);
 	register_atom(ATOM_ELF_OS_ABI, elf_os_abi);

@@ -90,7 +90,7 @@ ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 		m->init(file, 0);
 	
 		char info[128];
-		sprintf(info, "* ELF program headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF program headers at offset %08x", h);
 	
 		m->add_mask(info);
 
@@ -103,7 +103,7 @@ ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 			char t[32];
 			char *etype=matchhash(elf_shared->pheaders.pheaders32[i].p_type, elf_ph_type);
 			if (!etype) etype="?";
-			sprintf(t, "entry %d (%s)", i, etype);
+			ht_snprintf(t, sizeof t, "entry %d (%s)", i, etype);
 		
 			n->add_staticmask_ptable(elfprogramheader32, h+i*elf_shared->header32.e_phentsize, elf_bigendian);
 		
@@ -126,7 +126,7 @@ ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 		m->init(file, 0);
 	
 		char info[128];
-		sprintf(info, "* ELF program headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF program headers at offset %08x", h);
 	
 		m->add_mask(info);
 
@@ -139,7 +139,7 @@ ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_grou
 			char t[32];
 			char *etype=matchhash(elf_shared->pheaders.pheaders64[i].p_type, elf_ph_type);
 			if (!etype) etype="?";
-			sprintf(t, "entry %d (%s)", i, etype);
+			ht_snprintf(t, sizeof t, "entry %d (%s)", i, etype);
 		
 			n->add_staticmask_ptable(elfprogramheader64, h+i*elf_shared->header64.e_phentsize, elf_bigendian);
 		
