@@ -78,11 +78,19 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		if ((MAX_RELOC_TOKEN_LEN+1) < o)
+		if ((MAX_RELOC_TOKEN_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
-		else          
+		else
 			k = NULL;
                
+          /*
+          SB: im nachfolgenden code-teil werden 9 nichts-sagende variablen
+          gebraucht:
+          b,c,e,k,l,mm,o,(q,)r,s
+          durch verschaerftes draufgucken erfaehrt man vielleicht (!),
+          dass s, e start/end und o wahrscheinlich offset heisst.
+          l ist eine laenge (?) r, k werden enumeriert, was ist mm?
+          */
 		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
 			if (k->value >= o+c) break;
 
@@ -93,10 +101,15 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 				k->value + MAX_RELOC_TOKEN_LEN - o - c : 0;
 
 			byte b[MAX_RELOC_TOKEN_LEN];
+               // SB: warum das (memset mit 0)?
 			memset(b, 0, sizeof b);
+               // SB: warum hier sizeof und oben MAX_RELOC_TOKEN_LEN ?
 			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
-			assert(mm+s <= sizeof b);
+               if (mm+s>8) {
+               	int a=1;
+               }
+               assert(mm+s <= sizeof b);
 
 			memmove(b+s, ((byte*)buf)+e, mm);
 			reloc_apply(r, b);
@@ -115,7 +128,7 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		if ((MAX_RELOC_TOKEN_LEN+1) < o)
+		if ((MAX_RELOC_TOKEN_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		else
 			k = NULL;
