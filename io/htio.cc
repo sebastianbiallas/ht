@@ -568,20 +568,31 @@ ht_key ht_metakey(ht_key key)
 	return K_INVALID;
 }
 
-int ht_keys[K_COUNT];
+static int ht_keys1[K_COUNT];
+static int ht_keys2[K_COUNT];
+static int ht_keys3[K_COUNT];
 
 ht_key ht_rawkey2key(int rawkey)
 {
 	for (int i=0; i<K_COUNT; i++) {
-		if (ht_keys[i]==(int)rawkey) return (ht_key)i;
+		if (ht_keys1[i]==(int)rawkey) return (ht_key)i;
+		if (ht_keys2[i]==(int)rawkey) return (ht_key)i;
+		if (ht_keys3[i]==(int)rawkey) return (ht_key)i;
 	}
 	return K_INVALID;
 }
 
 void ht_set_key(ht_key key, int rawkey)
 {
-	if ((int)key<K_COUNT) {
-		ht_keys[(int)key] = rawkey;
+	int i = (int)key;
+	if (i<K_COUNT) {
+		if (rawkey == -1) {
+			ht_keys1[i] = -1;
+			ht_keys2[i] = -1;
+			ht_keys3[i] = -1;
+		}
+		else if ((ht_keys1[i] == -1) || (ht_keys1[i] == rawkey)) ht_keys1[i] = rawkey;
+		else if ((ht_keys2[i] == -1) || (ht_keys2[i] == rawkey)) ht_keys2[i] = rawkey;
+		else if ((ht_keys3[i] == -1) || (ht_keys3[i] == rawkey)) ht_keys3[i] = rawkey;
 	}
 }
-
