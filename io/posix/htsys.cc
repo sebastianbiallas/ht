@@ -157,7 +157,7 @@ int sys_filename_cmp(const char *a, const char *b)
  
 static int child_pid = -1;
 
-void SIGCHLD_sigaction(int i, siginfo_t *info, void *v)
+void SIGCHLD_signal(int i)
 {
 	int j;
 	waitpid(child_pid, &j, WNOHANG);
@@ -241,13 +241,7 @@ int sys_get_caps()
 bool init_system()
 {
 	setuid( getuid() );
-	struct sigaction sa;
-	
-	sa.sa_sigaction = SIGCHLD_sigaction;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO;
-	
-	sigaction(SIGCHLD, &sa, NULL);
+	(void)signal(SIGCHLD, SIGCHLD_signal);
 	return true;
 }
 

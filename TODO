@@ -39,6 +39,7 @@
 - document commandline options in help
 
 +steves
+- get rid of bnstr()!!!
 - ./configure should not fail if it can't find lex/flex (and probably other including
 	but not limited to yacc)
 - eval: no signed division (there should be an operator s/ with "-7 s/ 7 == -1")
