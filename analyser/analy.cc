@@ -2016,7 +2016,7 @@ void Analyser::setDisasm(Disassembler *d)
 {
 	disasm = d;
 	if (disasm) {
-     	int t;
+		int t;
 		disasm->getOpcodeMetrics(t, max_opcode_length, t, t, t);
 	} else {
 		max_opcode_length = 1;
