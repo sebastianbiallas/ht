@@ -17,7 +17,7 @@
 - listbox-search
 - qword *, /, %: better impl...
 - FILEOFS 64+ bits
-(HT_1_0) - freeze/stabilize config file formats / APIs
+- (HT_1_0) freeze/stabilize config file formats / APIs
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 - texteditor: ctrl-y doenst work at all in 'edit comments' (analyser)
   (because this is handled via local menu)
@@ -33,15 +33,14 @@
 	- features configurable
 	- SPARC_SHIT configure
 	- implement POSIX - sys_truncate
-     - HT crash when only htcfg-header in ht.cfg
-- (HT_0_7) eval: strcmp() [no params], bad error msg (too short)
-- eval: int("123") cant eval qword (only dword)
-- (HT_0_7) eval: string(-1), crash
-- (HT_0_7) eval: float(-1), wrong value (float("-1") correct)
-- (HT_0_7) texteditor: syntax-highlight broken (main.cc, press enter somewhere)
-- (HT_0_7) help broken (press f1)
-- (HT_0_7) "non interactive (!) program" is misleading (I can start and use rhide)
-
+	- "non interactive (!) program" is misleading (I can start and use rhide)
+	- eval: strcmp() [no params], bad error msg (too short)
+	- eval: int("123") cant eval qword (only dword)
+	- eval: string(-1), crash
+	- eval: float(-1), wrong value (float("-1") correct)
+	- texteditor: syntax-highlight broken (main.cc, press enter somewhere)
+	- help broken (press f1)
+	- FIXED ?: HT crash when only htcfg-header in ht.cfg
 - (HT_0_8) directory structure
 	- move source files (especially object system) into separate directories,
 	  solve name problems (ht* only when necessary for ht obj system)
@@ -49,7 +48,7 @@
 	- homogenous/heterogenous lists
 	- save on readonly/locked file
 	- stream::set_layered suspicious
-     - use exceptions
+	- use exceptions
 - (HT_0_8) the next big changes (htvision rewrites)
 	- rewrite menus, disable menu-entries (and multiple context menus ?)
 	- handlemsg should not have to handle keypressed. new concepts needed
@@ -59,11 +58,18 @@
 	- cleanup msg interface
 	- auto-documentation (e.g. keys)
 
+<<<<<<< TODO
+- syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
+  better use bsearch() (ANSI, POSIX)
+- relfile::read/write: enum_next mysteria
+- !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
+=======
 - syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
   better use bsearch() (ANSI, POSIX)
 - goto eval help
 
 - texteditor as dialog-widget should have attachable scrollbar
+>>>>>>> 1.41
 - open file: wildcards
 - search
 	- search should prefill start/end ofs from selection (if applicable)
