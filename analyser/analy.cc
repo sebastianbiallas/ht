@@ -2156,7 +2156,7 @@ char	*Analyser::getDisasmStrFormatted(Address *Addr)
 /*
  *
  */
-char *Analyser::getName()
+const char *Analyser::getName()
 {
 	return "generic";
 }
@@ -2164,7 +2164,7 @@ char *Analyser::getName()
 /*
  *
  */
-char *Analyser::getType()
+const char *Analyser::getType()
 {
 	return "generic";
 }

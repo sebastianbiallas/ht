@@ -27,33 +27,33 @@
 
 class CoffAnalyser: public Analyser {
 public:
-	ht_coff_shared_data *coff_shared;
-	ht_streamfile 		*file;
-	Area				*validarea;
+	ht_coff_shared_data 	*coff_shared;
+	ht_streamfile 			*file;
+	Area					*validarea;
 
-			void		init(ht_coff_shared_data *Coff_shared, ht_streamfile *File);
-			int 		load(ht_object_stream *f);
-	virtual	void		done();
-	virtual	OBJECT_ID	object_id();
+			void			init(ht_coff_shared_data *Coff_shared, ht_streamfile *File);
+			int 			load(ht_object_stream *f);
+	virtual	void			done();
+	virtual	OBJECT_ID		object_id();
 
-	virtual	void		beginAnalysis();
-	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
-			bool		convertAddressToRVA(Address *addr, RVA *r);
-	virtual	Address	*createAddress();
-			Address	*createAddress32(dword addr);
-	virtual   Assembler *createAssembler();
-	virtual	char		*getName();
-	virtual	char		*getSegmentNameByAddress(Address *Addr);
-	virtual   char		*getType();
-	virtual	void 	initCodeAnalyser();
-	virtual	void 	initUnasm();
-	virtual	void 	log(const char *msg);
-	virtual	Address	*nextValid(Address *Addr);
-	virtual	void		store(ht_object_stream *f);
-	virtual	int		queryConfig(int mode);
-	virtual	Address	*fileofsToAddress(FILEOFS fileofs);
-	virtual	FILEOFS	addressToFileofs(Address *Addr);
-	virtual	bool 	validAddress(Address *Addr, tsectype action);
+	virtual	void			beginAnalysis();
+	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size);
+			bool			convertAddressToRVA(Address *addr, RVA *r);
+	virtual	Address		*createAddress();
+			Address		*createAddress32(dword addr);
+	virtual   Assembler 	*createAssembler();
+	virtual	const char	*getName();
+	virtual	char			*getSegmentNameByAddress(Address *Addr);
+	virtual   const char	*getType();
+	virtual	void 		initCodeAnalyser();
+	virtual	void 		initUnasm();
+	virtual	void 		log(const char *msg);
+	virtual	Address		*nextValid(Address *Addr);
+	virtual	void			store(ht_object_stream *f);
+	virtual	int			queryConfig(int mode);
+	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
+	virtual	FILEOFS		addressToFileofs(Address *Addr);
+	virtual	bool 		validAddress(Address *Addr, tsectype action);
 };
 
 #endif

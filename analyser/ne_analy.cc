@@ -360,7 +360,7 @@ char *NEAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-char	*NEAnalyser::getName()
+const char *NEAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -368,7 +368,7 @@ char	*NEAnalyser::getName()
 /*
  *
  */
-char *NEAnalyser::getType()
+const char *NEAnalyser::getType()
 {
 	return "NE/Analyser";
 }

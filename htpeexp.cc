@@ -58,7 +58,7 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	word *eordt=NULL;
 	ht_mem_file *efile;
 	ht_streamfile *origfile = file;
-	char *filename = file->get_filename();
+	const char *filename = file->get_filename();
 	char *esectionbuf;
 	char eline[256];
 	FILEOFS ename_ofs;

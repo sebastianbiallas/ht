@@ -754,7 +754,7 @@ void ht_aviewer::generateOutputDialog()
 	dialog->insert(v2);
 
 	char pname[HT_NAME_MAX+16];
-	char *filename = file->get_filename();
+	const char *filename = file->get_filename();
 	if (filename) {
 		pname[HT_NAME_MAX-1] = 0;
 		strncpy(pname, filename, HT_NAME_MAX-1);
@@ -947,7 +947,7 @@ void ht_aviewer::exportFileDialog()
 	dialog->insert(v2);
 
 	char pname[HT_NAME_MAX+16];
-	char *filename = file->get_filename();
+	const char *filename = file->get_filename();
 	if (filename) {
 		pname[HT_NAME_MAX-1] = 0;
 		strncpy(pname, filename, HT_NAME_MAX-1);

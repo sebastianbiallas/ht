@@ -521,7 +521,7 @@ char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-char	*ElfAnalyser::getName()
+const char *ElfAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -529,7 +529,7 @@ char	*ElfAnalyser::getName()
 /*
  *
  */
-char *ElfAnalyser::getType()
+const char *ElfAnalyser::getType()
 {
 	return "ELF/Analyser";
 }

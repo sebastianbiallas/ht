@@ -328,7 +328,7 @@ char *CoffAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-char	*CoffAnalyser::getName()
+const char *CoffAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -336,7 +336,7 @@ char	*CoffAnalyser::getName()
 /*
  *
  */
-char *CoffAnalyser::getType()
+const char *CoffAnalyser::getType()
 {
 	return "COFF/Analyser";
 }

@@ -194,7 +194,7 @@ char *ClassAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-char	*ClassAnalyser::getName()
+const char *ClassAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -202,7 +202,7 @@ char	*ClassAnalyser::getName()
 /*
  *
  */
-char *ClassAnalyser::getType()
+const char *ClassAnalyser::getType()
 {
 	return "Java-Class/Analyser";
 }

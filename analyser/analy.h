@@ -399,8 +399,8 @@ public:
 			char			*getDisasmStr(Address *Addr, int &length);
 			char			*getDisasmStrFormatted(Address *Addr);
 			int			getDisplayMode();
-	virtual   char			*getName();
-	virtual   char			*getType();
+	virtual   const char	*getName();
+	virtual   const char	*getType();
 			ht_tree		*getXRefs(Address *Addr);
 			bool			isDirty();
 			void			makeDirty();

@@ -415,7 +415,7 @@ char *PEAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-char	*PEAnalyser::getName()
+const char *PEAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -423,7 +423,7 @@ char	*PEAnalyser::getName()
 /*
  *
  */
-char *PEAnalyser::getType()
+const char *PEAnalyser::getType()
 {
 	return "PE/Analyser";
 }
