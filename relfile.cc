@@ -58,7 +58,7 @@ int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 			return 0;
 		}
 		case FCNTL_SET_RELOC: {
-			enabled = va_arg(vargs, bool);
+			enabled = (bool)(va_arg(vargs, int));
 			return 0;
 		}
 	}
