@@ -111,6 +111,15 @@ struct PEF_ImportedLibrary {
 #define PEF_TOC_SYMBOL		3	// direct data area (table of contents) symbol
 #define PEF_GLUE_SYMBOL		4	// linker-inserted glue symbol
 
+struct PEF_LoaderRelocationHeader {
+	uint16	sectionIndex;
+	uint16	reservedA;
+	uint32	relocCount;
+	uint32	firstRelocOffset;
+};
+
+//#define	PEF_
+
 extern byte PEF_SECTION_HEADER_struct[];
 extern byte PEF_CONTAINER_HEADER_struct[];
 extern byte PEF_LOADER_INFO_HEADER_struct[];

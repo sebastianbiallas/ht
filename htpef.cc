@@ -117,7 +117,7 @@ void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 		file->read(&pef_shared->loader_info_header, sizeof pef_shared->loader_info_header);
 		create_host_struct(&pef_shared->loader_info_header, PEF_LOADER_INFO_HEADER_struct, pef_shared->byte_order);
 	}
-	
+
 	/* init ifs */
 	ht_format_group::init_ifs(ifs);
 }

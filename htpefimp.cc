@@ -70,12 +70,12 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 
 	c.y--;
 	c.h=1;
-				
+
 	int symbol_num = 0;
 	for (uint i=0; i < pef_shared->loader_info_header.importedLibraryCount; i++) {
 		file->seek(pef_shared->loader_info_header_ofs + sizeof pef_shared->loader_info_header
 			+ i*sizeof(PEF_ImportedLibrary));
-		
+
 		PEF_ImportedLibrary lib;
 		file->read(&lib, sizeof lib);
 		create_host_struct(&lib, PEF_ImportedLibrary_struct, pef_shared->byte_order);

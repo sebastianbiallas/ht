@@ -124,6 +124,12 @@ static ht_mask_ptable pef_loader_info_header[]=
 	{0, 0}
 };
 
+/*static ht_mask_ptable pef_loader_reloc_header[]=
+{
+	{""},
+	{0, 0}
+};*/
+
 ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
@@ -161,6 +167,9 @@ ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		ht_collapsable_sub *cs = new ht_collapsable_sub();
 		cs->init(file, m, 1, info, 1);
 		v->insertsub(cs);
+		/* relocation headers */
+//		pef_shared->loader_info_header_ofs + sizeof pef_shared->loader_info_header
+//			+ pef_shared->loader_info_header.importedLibraryCount*sizeof(PEF_ImportedLibrary)
 	}
 	
 	return v;
