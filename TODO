@@ -31,6 +31,8 @@
 - classread/view.cc
     - rename to match PE/ELF/LE,etc.'s structure
     - shared data not freed
+- LE_analy infoline ofs
+- segmented addresses + eval()
 
 +steves
 - (HT_0_7)
@@ -75,7 +77,6 @@
 	- search with invalid start/end offset
 - menus should save last cursor position
 - int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n), bah
-- get rid of globalerror (cause its ugly)
 - getbounds rel coords
 - disable buttons (disable menu-entries, disable messages)
 - file manager
@@ -103,7 +104,7 @@
 	- compile on MacOS X (curses.h, but no ACS_*)
 - detect format length (ne,le,elf)
 - LE: use byte/word order (no examples)
-- pe/elf/le relocations ?
+- pe/elf relocations ?
 - make ht_group_sub work correctly
 - color invert & underlined attribute and transparent chars, codepages ? &&
 	abstract (e.g. transparent) chars (io/*)
