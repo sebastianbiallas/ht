@@ -657,6 +657,7 @@ int Analyser::load(ht_object_stream *st)
 
 	if (st->get_error()) return st->get_error();
 
+//	st->getObject((Object*)analy_disasm, "analy_disasm");
 	GET_OBJECT(st, analy_disasm);
 	GET_OBJECT(st, disasm);     
 	if (analy_disasm) {

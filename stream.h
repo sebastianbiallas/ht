@@ -151,7 +151,7 @@ public:
 #define GET_INT_HEX(st, d) d=st->getIntHex(4, #d)
 #define GET_QWORD_DEC(st, d) d=st->getQWordDec(8, #d)
 #define GET_QWORD_HEX(st, d) d=st->getQwordHex(8, #d)
-#define GET_OBJECT(st, o) st->getObject((Object *)o, #o)
+#define GET_OBJECT(st, o) st->getObject(*(Object**)&o, #o)
 #define GET_STRING(st, d) d=st->getString(#d)
 
 /*

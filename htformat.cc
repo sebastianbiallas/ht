@@ -2164,7 +2164,7 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 					}
 				}
 			}
-			return "go ofs";
+			return "viewin...";
 		}
 	}
 	return ht_format_viewer::func(i, execute);

@@ -1,12 +1,10 @@
  HT ChangeLog
 ==============
 
-version 0.8.0:
+version 0.9.0 (repository htdata):
 	- rewrite
-	- new disassembler: PowerPC
-	- many bugs fixed
 
-version 0.7-trunk:
+version 0.7-trunk (to be 0.8):
 	- PowerPC (PPC) disassembler
 	- ELF: PPC support
 	- Mach-O file format support (header and image, PPC-only, experimental)
@@ -21,6 +19,7 @@ version 0.7-trunk:
 	- fixed bug in Java class processing code: errors always crash HT
 	- fixed: 0xcafebabe in mach_kernel... made classread more strict
 	- Mach-O little-endian support
+	- fixed object streaming bug in GET_OBJECT (only when compiled with GCC 3.3+)
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
