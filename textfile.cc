@@ -852,7 +852,9 @@ UINT	ht_ltextfile::write(const void *buf, UINT size)
 	UINT line;
 	UINT pofs;
 	byte *b = (byte*)buf;
+	UINT r = 0;
 	if (convert_ofs2line(o, &line, &pofs)) {
+		r = size;
 		while (size) {
 			int lelen;
 			UINT s;
@@ -872,6 +874,6 @@ UINT	ht_ltextfile::write(const void *buf, UINT size)
 			pofs = 0;
 		}
 	}
-	return 0;
+	ofs += r;
+	return r;
 }
-
