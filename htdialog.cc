@@ -2285,7 +2285,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 
 	if (cnt<2) return;
 	
-	list = (ht_text_listbox_item **)malloc(cnt*4);
+	list = (ht_text_listbox_item **)malloc(cnt*sizeof(void *));
 	tmp = first;
 	while (tmp) {
 		list[i++] = tmp;
