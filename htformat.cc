@@ -4361,7 +4361,8 @@ void ht_hex_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
 	if (fsize) {
-		line_id->id1 = (fsize & ~0xf)+fofs;
+     	int k = fsize + (fofs & 0xf);
+		line_id->id1 = (k & ~0xf) + (fofs & ~0xf);
 	} else {
 		line_id->id1 = fofs;
 	}
