@@ -96,7 +96,7 @@ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 				long value, int base, int min, int max, int flags);
 static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
-				qword *value, int base, int min, int max, int flags);
+				sint64 value, int base, int min, int max, int flags);
 static void fmtfp(char *buffer, size_t *currlen, size_t maxlen,
 			    LDOUBLE fvalue, int min, int max, int flags);
 static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
@@ -265,11 +265,11 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_LLONG)
 								value = (LLONG)va_arg (args, unsigned LLONG);
 						  else if (cflags == DP_C_QWORD) {
-							  qword *q = va_arg (args, qword *);
-							  fmtqword(buffer, &currlen, maxlen, q, 2, min, max, flags);
+							  sint64 *q = va_arg (args, sint64 *);
+							  fmtqword(buffer, &currlen, maxlen, *q, 2, min, max, flags);
 							  break;
 						  } else
-								value = (long)va_arg (args, unsigned int);
+                                     value = (long)va_arg (args, unsigned int);
 						  fmtint (buffer, &currlen, maxlen, value, 2, min, max, flags);
 						  break;
 				    case 'd':
@@ -281,8 +281,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_LLONG)
 								value = va_arg (args, LLONG);
 						  else if (cflags == DP_C_QWORD) {
-							  qword *q = va_arg (args, qword *);
-							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
+							  sint64 *q = va_arg (args, sint64 *);
+							  fmtqword(buffer, &currlen, maxlen, *q, 10, min, max, flags);
 							  break;
 						  } else
 								value = va_arg (args, int);
@@ -297,8 +297,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_LLONG)
 								value = (long)va_arg (args, unsigned LLONG);
 						  else if (cflags == DP_C_QWORD) {
-							  qword *q = va_arg (args, qword *);
-							  fmtqword(buffer, &currlen, maxlen, q, 8, min, max, flags);
+							  sint64 *q = va_arg (args, sint64 *);
+							  fmtqword(buffer, &currlen, maxlen, *q, 8, min, max, flags);
 							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
@@ -313,8 +313,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_LLONG)
 								value = (LLONG)va_arg (args, unsigned LLONG);
 						  else if (cflags == DP_C_QWORD) {
-							  qword *q = va_arg (args, qword *);
-							  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
+							  sint64 *q = va_arg (args, sint64 *);
+							  fmtqword(buffer, &currlen, maxlen, *q, 10, min, max, flags);
 							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
@@ -331,8 +331,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  else if (cflags == DP_C_LLONG)
 								value = (LLONG)va_arg (args, unsigned LLONG);
 						  else if (cflags == DP_C_QWORD) {
-							  qword *q = va_arg (args, qword *);
-							  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
+							  sint64 *q = va_arg (args, sint64 *);
+							  fmtqword(buffer, &currlen, maxlen, *q, 16, min, max, flags);
 							  break;
 						  } else
 								value = (long)va_arg (args, unsigned int);
@@ -559,12 +559,12 @@ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 }
 
 static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
-				qword *value, int base, int min, int max, int flags)
+				sint64 value, int base, int min, int max, int flags)
 {
 #undef MAX_CONVERT_PLACES
 #define MAX_CONVERT_PLACES 80
 	   int signvalue = 0;
-	   qword uvalue;
+	   uint64 uvalue;
 	   char convert[MAX_CONVERT_PLACES];
 	   int place = 0;
 	   int spadlen = 0; /* amount to space pad */
@@ -574,12 +574,12 @@ static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
 	   if (max < 0)
 			 max = 0;
 	   
-	   uvalue = *value;
+	   uvalue = to_uint64(value);
 	   
 	   if (!(flags & DP_F_UNSIGNED)) {
-			 if (*value < to_qword(0)) {
+			 if (value < to_sint64(0)) {
 				    signvalue = '-';
-				    uvalue = to_qword(0)-(*value);
+				    uvalue = to_uint64(-value);
 			 } else {
 				    if (flags & DP_F_PLUS)  /* Do a sign (+/i) */
 						  signvalue = '+';
