@@ -244,8 +244,7 @@ ht_mask_ptable aloc_hdr[] =
   { 0, 0}     
 };
 
-static void 
-attrib_view(ht_group_sub *g, ht_streamfile *f, 
+static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		  unsigned *idx, classfile *c, attrib_info *a)
 {
   ht_group_sub *g2, *g3;
@@ -458,8 +457,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
   }
 }
 
-static void 
-mf_view(ht_group_sub *g, ht_streamfile *f, 
+static void mf_view(ht_group_sub *g, ht_streamfile *f,
 	   unsigned *idx, classfile *c, mf_info *mf)
 {
   ht_group_sub *g2, *g3;
@@ -681,8 +679,7 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
   }
 }
 
-void
-cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, 
+void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
 		  ht_format_group *g, FILEOFS header_ofs)
 {
   ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA,
@@ -692,8 +689,7 @@ cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
   ht_format_group::init_ifs(ifs);
 }
 
-void
-cview::done()
+void cview::done()
 {
   ht_class_shared_data *clazz = (ht_class_shared_data *)shared_data;
   if (clazz) {
@@ -713,8 +709,7 @@ static format_viewer_if *htcls_ifs[] = {
   0
 };
 
-static ht_view *
-class_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *class_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
   u1 magic[4];
 

@@ -226,7 +226,7 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	shared->methods = new ht_stree();
 	shared->methods->init(compare_keys_ht_data);
      shared->image = new ht_mem_file();
-     shared->image->init(0, 1024, FAM_READ|FAM_WRITE);
+     shared->image->init(0, 1024, FAM_READ | FAM_WRITE | FAM_CREATE);
 	clazz->offset = offset = 0;
 	clazz->magic  = READ4();
 	if (clazz->magic != 0xCAFEBABE) {
@@ -330,6 +330,7 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	} else {
 		clazz->attribs = 0;
 	}
+     shared->image->set_access_mode(FAM_READ);
 	return shared;
 }
 
