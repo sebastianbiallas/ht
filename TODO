@@ -37,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- asm: "lea eax, [ebp+esp]" yields "lea eax, [ebp]"
 - blockop should support multiple endianesses (currently only big-endian)
 - eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
 - eval: int("-1") does not work
