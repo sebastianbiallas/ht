@@ -522,9 +522,9 @@ void	AnalyserOutput::generatePage(Address *from, int lines)
 
 OutAddr *AnalyserOutput::getAddr(Address *Addr)
 {
-			char tbuf[1024];
-			Addr->stringify(tbuf, 1024, 0);
-			DPRINTF("%s -- ",tbuf);
+	char tbuf[1024];
+	Addr->stringify(tbuf, 1024, 0);
+	DPRINTF("%s -- ",tbuf);
 	if (!addr->isValid() || Addr->compareTo(addr) != 0) {
 		assert(addr != Addr);
 		DPRINTF("not cached1 --");

@@ -269,7 +269,7 @@ char *PPCDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 			} else if (ppc_insn->op[opidx].op->bits == 3) {
 				is += sprintf(is, "%scr%d", cs_default, ppc_insn->op[opidx].creg);
 			} else {
-               	static const char *cbnames[4] = { "lt", "gt", "eq", "so" };
+				static const char *cbnames[4] = { "lt", "gt", "eq", "so" };
 				int cr;
 				int cc;
 				cr = ppc_insn->op[opidx].creg >> 2;
