@@ -128,22 +128,22 @@ ht_mask_ptable pe64header_nt[] = {
 };
 
 ht_mask_ptable pe32header_nt_dirs[] = {
-	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000000000000", "04", "goto")},
-	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000000000001", "04", "goto")},
-	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000000000002", "04", "goto")},
-	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000018")" "STATICTAG_EDIT_DWORD_LE("0000001c")" "STATICTAG_REF("0000000000000003", "04", "goto")},
-	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000020")" "STATICTAG_EDIT_DWORD_LE("00000024")" "STATICTAG_REF("0000000000000004", "04", "goto")},
-	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000028")" "STATICTAG_EDIT_DWORD_LE("0000002c")" "STATICTAG_REF("0000000000000005", "04", "goto")},
-	{"debug directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000030")" "STATICTAG_EDIT_DWORD_LE("00000034")" "STATICTAG_REF("0000000000000006", "04", "goto")},
-	{"description string (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000038")" "STATICTAG_EDIT_DWORD_LE("0000003c")" "STATICTAG_REF("0000000000000007", "04", "goto")},
-	{"machine value (GP) (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000040")" "STATICTAG_EDIT_DWORD_LE("00000044")" "STATICTAG_REF("0000000000000008", "04", "goto")},
-	{"thread local storage (TLS) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000048")" "STATICTAG_EDIT_DWORD_LE("0000004c")" "STATICTAG_REF("0000000000000009", "04", "goto")},
-	{"load configuration directory (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000050")" "STATICTAG_EDIT_DWORD_LE("00000054")" "STATICTAG_REF("000000000000000a", "04", "goto")},
-	{"bound import directory (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000058")" "STATICTAG_EDIT_DWORD_LE("0000005c")" "STATICTAG_REF("000000000000000b", "04", "goto")},
-	{"import address table (IAT) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000060")" "STATICTAG_EDIT_DWORD_LE("00000064")" "STATICTAG_REF("000000000000000c", "04", "goto")},
-	{"delay import descriptor (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000068")" "STATICTAG_EDIT_DWORD_LE("0000006c")" "STATICTAG_REF("000000000000000d", "04", "goto")},
-	{"COM+ runtime header (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000070")" "STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_REF("000000000000000e", "04", "goto")},
-	{"reserved (15) (rva/size)",				STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_REF("000000000000000f", "04", "goto")},
+	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000000000000", "03", "raw")" "STATICTAG_REF("0000000100000000", "04", "cook")},
+	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000000000001", "03", "raw")" "STATICTAG_REF("0000000200000000", "04", "cook")},
+	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000000000002", "03", "raw")" "STATICTAG_REF("0000000300000000", "04", "cook")},
+	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000018")" "STATICTAG_EDIT_DWORD_LE("0000001c")" "STATICTAG_REF("0000000000000003", "03", "raw")},
+	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000020")" "STATICTAG_EDIT_DWORD_LE("00000024")" "STATICTAG_REF("0000000000000004", "03", "raw")},
+	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000028")" "STATICTAG_EDIT_DWORD_LE("0000002c")" "STATICTAG_REF("0000000000000005", "03", "raw")},
+	{"debug directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000030")" "STATICTAG_EDIT_DWORD_LE("00000034")" "STATICTAG_REF("0000000000000006", "03", "raw")},
+	{"description string (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000038")" "STATICTAG_EDIT_DWORD_LE("0000003c")" "STATICTAG_REF("0000000000000007", "03", "raw")},
+	{"machine value (GP) (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000040")" "STATICTAG_EDIT_DWORD_LE("00000044")" "STATICTAG_REF("0000000000000008", "03", "raw")},
+	{"thread local storage (TLS) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000048")" "STATICTAG_EDIT_DWORD_LE("0000004c")" "STATICTAG_REF("0000000000000009", "03", "raw")},
+	{"load configuration directory (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000050")" "STATICTAG_EDIT_DWORD_LE("00000054")" "STATICTAG_REF("000000000000000a", "03", "raw")},
+	{"bound import directory (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000058")" "STATICTAG_EDIT_DWORD_LE("0000005c")" "STATICTAG_REF("000000000000000b", "03", "raw")},
+	{"import address table (IAT) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000060")" "STATICTAG_EDIT_DWORD_LE("00000064")" "STATICTAG_REF("000000000000000c", "03", "raw")},
+	{"delay import descriptor (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000068")" "STATICTAG_EDIT_DWORD_LE("0000006c")" "STATICTAG_REF("000000000000000d", "03", "raw")},
+	{"COM+ runtime header (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000070")" "STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_REF("000000000000000e", "03", "raw")},
+	{"reserved (15) (rva/size)",				STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_REF("000000000000000f", "03", "raw")},
 	{0, 0}
 };
 
@@ -293,7 +293,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 				}
 				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
-					vstate_save(NULL);
+					vstate_save();
 					hexv->goto_offset(ofs, NULL);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
@@ -301,26 +301,24 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 			}
 			break;
 		}
-#if 0
 		case 1:
 			if (pe_shared->v_exports) {
-				vstate_save(NULL);
+				vstate_save();
 				app->focus(pe_shared->v_exports);
 			}
 			break;
 		case 2:
 			if (pe_shared->v_imports) {
-				vstate_save(NULL);
+				vstate_save();
 				app->focus(pe_shared->v_imports);
 			}
 			break;
 		case 3:
 			if (pe_shared->v_resources) {
-				vstate_save(NULL);
+				vstate_save();
 				app->focus(pe_shared->v_resources);
 			}
 			break;
-#endif
 	}
 	return 1;
 }
