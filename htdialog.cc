@@ -1381,7 +1381,7 @@ void	ht_listbox_title::init(bounds *b)
 	growmode = MK_GM(GMH_FIT, GMV_FIT);
 	texts = NULL;
 	listbox = NULL;
-	cols = NULL;
+	cols = 0;
 }
 
 void	ht_listbox_title::done()
