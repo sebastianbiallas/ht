@@ -162,6 +162,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 void ht_elf::done()
 {
+	ht_format_group::done();
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	if (elf_shared->shnames) {
 		for (UINT i=0; i < elf_shared->sheaders.count; i++)
@@ -180,7 +181,6 @@ void ht_elf::done()
 			break;
 	}
 	free(elf_shared);
-	ht_format_group::done();
 }
 
 UINT ht_elf::find_reloc_section_for(UINT si)
