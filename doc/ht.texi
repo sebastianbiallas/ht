@@ -279,9 +279,11 @@ linear executables (LE)
 @itemize @w
 @item
 - header @*
+- VxD descriptor @*
 - object table @*
 - page table @*
-- image (disassembly only)
+- image with code/data analyser (x86) @*
+- auto-relocation layer (only internal refs for now)
 @end itemize
 @item 
 standard dos executables (MZ)
@@ -299,7 +301,8 @@ new executables (NE)
 - segments @*
 - names @*
 - entrypoints @*
-- image with code/data analyser (x86)
+- image with code/data analyser (x86) @*
+- auto-relocation layer (pretty complete)
 @end itemize
 @item 
 portable executables (PE32, PE64)

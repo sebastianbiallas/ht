@@ -3,64 +3,84 @@
 <title>HT Editor Documentation</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name=description content="HT Editor Documentation">
-<meta name=generator content="makeinfo 4.2">
-<link href="http://www.gnu.org/software/texinfo/" rel=generator-home>
+<meta name=generator content="makeinfo 4.1">
+<link href="http://texinfo.org/" rel=generator-home>
 </head>
 <body>
 <h1>HT Editor Documentation</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
 <p><hr>
-Knoten:<a name="Top">Top</a>,
-Vorheriger:<a rel=previous accesskey=p href="#dir">(dir)</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#dir">(dir)</a>
+Node:<a name="Top">Top</a>,
+Previous:<a rel=previous href="#dir">(dir)</a>,
+Up:<a rel=up href="#dir">(dir)</a>
 <br>
 
 <h3>HT Editor</h3>
 
-<p>This is HT 0.7.0;
-please note that this is a beta version of the program. 
+<p>
+
+This is HT 0.7.0;
+please note that this is a beta version of the program.
 Therefore HT is incomplete and sometimes buggy. Enjoy anyway<small>...</small>
 
+
 <ul>
-<li><a accesskey=1 href="#About">About</a>: 
-<li><a accesskey=2 href="#Key%20bindings">Key bindings</a>: 
-<li><a accesskey=3 href="#Features">Features</a>: 
-<li><a accesskey=4 href="#Authors">Authors</a>: 
-<li><a accesskey=5 href="#Where%20to%20download%20%3f">Where to download ?</a>: 
+<li><a href="#About">About</a>: 
+<li><a href="#Key%20bindings">Key bindings</a>: 
+<li><a href="#Features">Features</a>: 
+<li><a href="#Authors">Authors</a>: 
+<li><a href="#Where%20to%20download%20%3f">Where to download ?</a>: 
 </ul>
 
 <p><hr>
-Knoten:<a name="About">About</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Top">Top</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
+Node:<a name="About">About</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
 <br>
 
 <h3>About</h3>
 
-<p>This program is a file viewer, editor and analyzer for text, binary, and (especially) executable files.
+<p>
+
+This program is a file viewer, editor and analyzer for text, binary, and (especially) executable files.
 
 <blockquote>
 
-<p>This program is free software; you can redistribute it and/or modify
+This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 2 as published by
 the Free Software Foundation.
 
-<p>This program is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
-<p>You should have received a copy of the GNU General Public License
+    
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 </blockquote>
 
 <p><hr>
-Knoten:<a name="Key%20bindings">Key bindings</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Top">Top</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
+Node:<a name="Key%20bindings">Key bindings</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
 <br>
 
 <h3>Key bindings</h3>
+
+<p>
 
 <ul>
 
@@ -111,78 +131,85 @@ Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
 
 <li>Analyser key bindings
 
-<p><table><tr align="left"><td valign="top">c
+<p><table><tr align="left"><td valign="top">c                    
 </td><td valign="top">continue code analysis at cursor
-<br></td></tr><tr align="left"><td valign="top">f
+<br></td></tr><tr align="left"><td valign="top">f                    
 </td><td valign="top">follow dword ptr at address
-<br></td></tr><tr align="left"><td valign="top">n
-</td><td valign="top">name current address
+<br></td></tr><tr align="left"><td valign="top">n                    
+</td><td valign="top">name current address 
 (empty string to delete)
-<br></td></tr><tr align="left"><td valign="top">x
+<br></td></tr><tr align="left"><td valign="top">x                    
 </td><td valign="top">show xrefs (search for xrefs)
-<br></td></tr><tr align="left"><td valign="top">#
+<br></td></tr><tr align="left"><td valign="top">#                    
 </td><td valign="top">edit comments
-<br></td></tr><tr align="left"><td valign="top">Ctrl+A
+<br></td></tr><tr align="left"><td valign="top">Ctrl+A               
 </td><td valign="top">call assembler
-<br></td></tr><tr align="left"><td valign="top">Ctrl+F
+<br></td></tr><tr align="left"><td valign="top">Ctrl+F               
 </td><td valign="top">goto start of current function<br>
 (indicated in the 2nd line)
-<br></td></tr><tr align="left"><td valign="top">Ctrl+L
+<br></td></tr><tr align="left"><td valign="top">Ctrl+L               
 </td><td valign="top">goto previous label
-<br></td></tr><tr align="left"><td valign="top">Ctrl+T
+<br></td></tr><tr align="left"><td valign="top">Ctrl+T               
 </td><td valign="top">show recursive function references
 
 <br></td></tr></table>
 
 </ul>
 
+
 <br><p>
-<p>Note: Some keys don't work in HT-posix. Try using Escape
+<p>
+Note: Some keys don't work in HT-posix. Try using Escape
 instead of Control or something...
 
 <p><hr>
-Knoten:<a name="Authors">Authors</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Top">Top</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
+Node:<a name="Authors">Authors</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
 <br>
 
 <h3>Authors</h3>
 
-<p>Stefan Weyergraf <a href="mailto:stefan@weyergraf.de">stefan@weyergraf.de</a>
+<p>
+Stefan Weyergraf <a href="mailto:stefan@weyergraf.de">stefan@weyergraf.de</a>
 
-<p>Sebastian Biallas <a href="mailto:sb@biallas.net">sb@biallas.net</a>
+
+Sebastian Biallas <a href="mailto:sb@biallas.net">sb@biallas.net</a>
 
 <p><hr>
-Knoten:<a name="Features">Features</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Top">Top</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
+Node:<a name="Features">Features</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
 <br>
 
 <h3>Features</h3>
 
-<p>HT is beta software and should not always regarded as stable, but
+<p>
+HT is beta software and should not always regarded as stable, but
 nevertheless contains some very advanced and useful features:
 
+
 <ul>
-<li><a accesskey=1 href="#General%20features">General features</a>: 
-<li><a accesskey=2 href="#Configuration%20files">Configuration files</a>: 
-<li><a accesskey=3 href="#Clipboard">Clipboard</a>: 
-<li><a accesskey=4 href="#Global%20history">Global history</a>: 
-<li><a accesskey=5 href="#Expression%20evaluation">Expression evaluation</a>: 
-<li><a accesskey=6 href="#Block%20operations">Block operations</a>: 
-<li><a accesskey=7 href="#Search%20and%20its%20different%20modes">Search and its different modes</a>: 
+<li><a href="#General%20features">General features</a>: 
+<li><a href="#Configuration%20files">Configuration files</a>: 
+<li><a href="#Clipboard">Clipboard</a>: 
+<li><a href="#Global%20history">Global history</a>: 
+<li><a href="#Expression%20evaluation">Expression evaluation</a>: 
+<li><a href="#Block%20operations">Block operations</a>: 
+<li><a href="#Search%20and%20its%20different%20modes">Search and its different modes</a>: 
 </ul>
 
 <p><hr>
-Knoten:<a name="General%20features">General features</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="General%20features">General features</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>General features</h3>
 
+<p>
 <ol type=1 start=1>
-<li>Supported file formats
+</p><li>Supported file formats
 <ul>
 <li>common object file format (COFF)
 <ul>
@@ -200,9 +227,11 @@ Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
 <li>linear executables (LE)
 <ul>
 <li>- header <br>
+- VxD descriptor <br>
 - object table <br>
 - page table <br>
-- image (disassembly only)
+- image with code/data analyser (x86) <br>
+- auto-relocation layer (only internal refs for now)
 </ul>
 <li>standard dos executables (MZ)
 <ul>
@@ -216,7 +245,8 @@ Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
 - segments <br>
 - names <br>
 - entrypoints <br>
-- image with code/data analyser (x86)
+- image with code/data analyser (x86) <br>
+- auto-relocation layer (pretty complete)
 </ul>
 <li>portable executables (PE32, PE64)
 <ul>
@@ -255,118 +285,127 @@ Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
 </ol>
 
 <p><hr>
-Knoten:<a name="Configuration%20files">Configuration files</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Configuration%20files">Configuration files</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Configuration files</h3>
 
+<p>
+
 <h4>Global configuration</h4>
 
-<p>HT automatically creates a file to store its configuration. 
-It is called <code>~/.htcfg</code> on Unices and <code>ht.cfg</code> (where
-ht.exe resides) on Windows. More specifically it contains HT's registry
-and the Siehe<a href="#Global%20history">Global history</a>.
+<p>HT automatically creates a file to store its configuration.
+It is called <code>~/.htcfg</code> on Unices and <code>ht.cfg</code> (where 
+ht.exe resides) on Windows. More specifically it contains HT's registry 
+and the See <a href="#Global%20history">Global history</a>.
+
 
 <h4>Per file configuration</h4>
 
-<p>The analyser (for analysable files) will be stored in an extra file called
+<p>The analyser (for analysable files) will be stored in an extra file called 
 <code>FILENAME.htcfg</code>, where FILENAME is the analysed file. This file contains
 all information to restore the complete state of the analyser.
 
 <p><hr>
-Knoten:<a name="Clipboard">Clipboard</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Clipboard">Clipboard</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Clipboard</h3>
 
-<p>All open files and dialogs use the common clipboard, where all
-copied and cut text or binary data is stored. Clipboard operations are
+<p>
+All open files and dialogs use the common clipboard, where all
+copied and cut text or binary data is stored. Clipboard operations are 
 normally binary safe, that means you can copy some binary data out of a
 file and paste it into an input line. Exceptions are only the \0 character
 (binary null), it will be converted to a space in places where it would not
-make sense (e.g. file open).
+make sense (e.g. file open). 
 
-<p>Although the clipboard won't be saved between different HT sessions
+Although the clipboard won't be saved between different HT sessions
 (ie. you will loose it when exiting HT), you can either save and load it
 or part of it manually (via Edit-&gt;paste into/copy from file) or rely on
-the input lines' Siehe<a href="#Global%20history">history</a>, which is stored and
+the input lines' See <a href="#Global%20history">history</a>, which is stored and
 retrieved from the config file automatically.
 
 <p><hr>
-Knoten:<a name="Global%20history">Global history</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Global%20history">Global history</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Global history</h3>
 
-<p>HTs history system is global, which means that you can use it for all open
-files. Histories are also grouped by their context. I.e. file-related and
-regex-search-related dialogs have their own history (who would want to
+<p>
+HTs history system is global, which means that you can use it for all open
+files. Histories are also grouped by their context. I.e. file-related and 
+regex-search-related dialogs have their own history (who would want to 
 open "[0-9][0-9a-z]+" anyway ?).
 
-<p>History entries are stored within the Siehe<a href="#Configuration%20files">Configuration files</a>, so they
+History entries are stored within the See <a href="#Configuration%20files">Configuration files</a>, so they
 can be reused when you relaunch.
 
-<p>You can delete a history entry by pressing DEL inside the history popup.
+You can delete a history entry by pressing DEL inside the history popup.
 
 <p><hr>
-Knoten:<a name="Expression%20evaluation">Expression evaluation</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Expression%20evaluation">Expression evaluation</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Expression evaluation</h3>
 
-<p>HT contains a very powerful expression evaluator which is used in all dialogs
+<p>
+HT contains a very powerful expression evaluator which is used in all dialogs
 where expressions are expected. These are mainly blockoperation, goto,
 search and of course evaluate itself (Edit-&gt;Evaluate).
 
-<p>You can use all standard math operators (+ - / * % **), logical operators
+You can use all standard math operators (+ - / * % **), logical operators
 (! &amp;&amp; || ^^), relational operators (== != &lt; &gt; &lt;= &gt;=),
 bit operators (~ &amp; | ^), string operators (. for concatenation),
-parenthesis, the ternary operator (a?b:c), functions and symbols
+parenthesis, the ternary operator (a?b:c), functions and symbols 
 (both depending on context).
 
-<p>The evaluator uses integer, string and float types depending on context. You
+The evaluator uses integer, string and float types depending on context. You
 can always convert a result via the <code>int()</code>, <code>string()</code> and <code>float()</code> functions
 to appropriate type. Try Edit-&gt;Evaluate to see how it works<small>...</small>
+
 
 <h4>Functions and symbols</h4>
 
 <p>You can always use the standard buildin math (<code>round</code>, <code>sin</code>, <code>random</code>, etc.) and
 string (<code>strcmp</code>, <code>strchr</code>, <code>sprintf</code>, etc.) functions, they work more or less like the corresponding
-C functions (actually they ARE more or less wrappers for them); see <code>eval/eval.y</code> for
-details (sorry but a detailed help would get outdated rather soon). 
-When using Siehe<a href="#Block%20operations">Block operations</a>, or searching you have some
+C functions (actually they ARE more or less wrappers for them); see <code>eval/eval.y</code> for 
+details (sorry but a detailed help would get outdated rather soon).
+When using See <a href="#Block%20operations">Block operations</a>, or searching you have some 
 context depending functions and symbols; see these sections for explanation.
 
 <p><hr>
-Knoten:<a name="Block%20operations">Block operations</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Block%20operations">Block operations</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Block operations</h3>
 
-<p>Block operation (Blockop) is a very powerful tool to perform modifications
+<p>
+Block operation (Blockop) is a very powerful tool to perform modifications
 on binary files. It is available in hex viewer only.
 
-<p>Blockop takes four parameters: <var>start</var>, <var>end</var>, <var>mode</var> and
+Blockop takes four parameters: <var>start</var>, <var>end</var>, <var>mode</var> and
 <var>expression</var>. Blockop works as follows:
 
 <ul>
 <li>START: Start at the offset specified by <var>start</var>
 <li>REPEAT: Evaluate <var>expression</var> and store n bytes (1 - byte, 2 - word,
 4 - dword, variable - string) at the current offset. Increment current offset
-by n. Stop if <var>end</var> has been reached. 
+by n. Stop if <var>end</var> has been reached.
 </ul>
 
-<p>Special variables/functions that can be used in <var>expression</var>:
+
+Special variables/functions that can be used in <var>expression</var>:
 
 <dl>
 <dt><code>readbyte(ofs)</code>
@@ -380,22 +419,25 @@ by n. Stop if <var>end</var> has been reached.
 </dl>
 
 <p><hr>
-Knoten:<a name="Search%20and%20its%20different%20modes">Search and its different modes</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Features">Features</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Features">Features</a>
+Node:<a name="Search%20and%20its%20different%20modes">Search and its different modes</a>,
+Previous:<a rel=previous href="#Features">Features</a>,
+Up:<a rel=up href="#Features">Features</a>
 <br>
 
 <h3>Search and its different modes</h3>
 
-<p>The search function is one of the most advanced functions of HT. 
-It is invoked through F7, Shift-F7 continues a search from cursor. 
+<p>
+The search function is one of the most advanced functions of HT.
+It is invoked through F7, Shift-F7 continues a search from cursor.
 Depending on context (ie. file type and mode) the following modes are enabled:
+
 
 <h4>bin: ASCII / Hex</h4>
 
 <p>Enter an exact search string either via ascii characters or via hexadecimal
-interpretation. This is the fastest search mode. You may specify a
+interpretation. This is the fastest search mode. You may specify a 
 case-insensitive search.
+
 
 <h4>bin: eval str</h4>
 
@@ -403,62 +445,68 @@ case-insensitive search.
 and HT will then search for the result-string. This is pretty useful when
 searching for intermixed text and control-chars/binary, e.g. <code>"hello world\n\0"</code>
 
+
 <h4>display: regex</h4>
 
 <p>As the prefix indicates, this search doesn't search in the binary file but
 in the display on screen. HT searches for a regular expression so this can
-be very powerful, e.g. in PE/Image you can search for <code>(add|sub).+?,\ [78]$</code>. 
+be very powerful, e.g. in PE/Image you can search for <code>(add|sub).+?,\ [78]$</code>.
 This will find all add or sub instructions with second parameter 7 or 8.
+
 
 <h4>expr nonzero</h4>
 
 <p>This is the slowest but also most advanced search mode. Enter an expression
-and the search stops if this expression evaluates to non-zero (it will be
+and the search stops if this expression evaluates to non-zero (it will be 
 evaluated on every byte). In this mode there are two predefined symbols
 and some functions: <var>i</var> is always the number of current iteration and
 <var>o</var> stands for the current offset in file. With the functions <code>readbyte(ofs)</code>
 and <code>readstring(ofs, size)</code> you access the file's content.
 
-<p>It's easier to understand this with examples:
+It's easier to understand this with examples:
 
 <ol type=1 start=1>
-</p><li>Searching for patterns:
+</p><li>Searching for patterns: 
 
 <ol type=a start=1>
 <li>Enter <code>readbyte(o) == readbyte(o+1)</code><br>
-This will search for two equal bytes ("AA", "55", "!!", etc.). 
+This will search for two equal bytes ("AA", "55", "!!", etc.).
 <li>Enter <code>(readbyte(o) == readbyte(o+1)+1) &amp;&amp; ((readbyte(o)==readbyte(o+2)+2)</code><br>
 This will search for three ascending bytes ("ABC", "123", etc).
 </ol>
 
 <li>Search with special functions:
 
-<p>With HT you can easily detect the RSA key in the <code>ADVAPI32.DLL</code>:
+With HT you can easily detect the RSA key in the <code>ADVAPI32.DLL</code>:
 Search for <code>entropy(readstring(o, 64)) &gt; 82</code> in expr!=0 mode, and you will
 find it very quickly. How does it work? <code>readstring(o, 64)</code> reads a 64 byte string
-from current offset and entropy calculates the entropy ("randomness") of a string (result is 0..100). 
+from current offset and entropy calculates the entropy ("randomness") of a string (result is 0..100).
 So the search stops if a entropy greater than 82% (guessed value)
 is encountered, which normally indicates packed or encryted data.
 
-<p>Note: the <code>entropy()</code> function is not the best of its kind, if you know of a better
+Note: the <code>entropy()</code> function is not the best of its kind, if you know of a better
 one please let us know!
 
 </ol>
 
 <p><hr>
-Knoten:<a name="Where%20to%20download%20%3f">Where to download ?</a>,
-Vorheriger:<a rel=previous accesskey=p href="#Top">Top</a>,
-Aufw&auml;rts:<a rel=up accesskey=u href="#Top">Top</a>
+Node:<a name="Where%20to%20download%20%3f">Where to download ?</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
 <br>
 
 <h3>Where to download ?</h3>
 
-<p>The HT homepage is at
+<p>
+
+The HT homepage is at 
 <a href="http://hte.sourceforge.net">http://hte.sourceforge.net</a>
 
-<p>Downloads are available from the 'download' section. 
+Downloads are available from the 'download' section. 
 Please also take a look at
 <a href="http://sourceforge.net/projects/hte">http://sourceforge.net/projects/hte</a>
+
+
 
 </body></html>
 
