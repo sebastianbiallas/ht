@@ -3639,19 +3639,9 @@ void ht_uformat_viewer::scroll_down(int n)
 
 bool ht_uformat_viewer::qword_to_offset(qword q, FILEOFS *ofs)
 {
-/*	eval_scalar r;
-	if (eval(&r, string, NULL, NULL, NULL)) {
-		eval_int i;
-		scalar_context_int(&r, &i);
-		scalar_destroy(&r);
-		*ofs = QWORD_GET_INT(i.value);
-		return true;
-	}
-	char *s;
-	int p;
-	get_eval_error(&s, &p);
-	sprintf(globalerror, "%s at pos %d", s, p);*/
-	return false;
+// FIXME: not "The Right Thing(tm)"
+	*ofs = QWORD_GET_INT(q);
+	return true;
 }
 
 void ht_uformat_viewer::update_micropos()
