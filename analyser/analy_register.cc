@@ -26,6 +26,7 @@
 #include "analy_java.h"
 #include "analy_ia64.h"
 #include "analy_il.h"
+#include "analy_ppc.h"
 #include "analy_x86.h"
 #include "class_analy.h"
 #include "code_analy.h"
@@ -43,6 +44,7 @@ BUILDER(ATOM_ANALY_X86, AnalyX86Disassembler)
 BUILDER(ATOM_ANALY_IA64, AnalyIA64Disassembler)
 BUILDER(ATOM_ANALY_IL, AnalyILDisassembler)
 BUILDER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
+BUILDER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
 
 BUILDER(ATOM_CODE_ANALYSER, CodeAnalyser)
 BUILDER(ATOM_DATA_ANALYSER, DataAnalyser)
@@ -70,6 +72,7 @@ bool init_analyser()
 	REGISTER(ATOM_ANALY_IA64, AnalyIA64Disassembler)
 	REGISTER(ATOM_ANALY_IL, AnalyILDisassembler)
 	REGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
+	REGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
 
 	REGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	REGISTER(ATOM_DATA_ANALYSER, DataAnalyser)
@@ -99,6 +102,7 @@ void done_analyser()
 	UNREGISTER(ATOM_ANALY_IA64, AnalyIA64Disassembler)
 	UNREGISTER(ATOM_ANALY_IL, AnalyILDisassembler)
 	UNREGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
+	UNREGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
 
 	UNREGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	UNREGISTER(ATOM_DATA_ANALYSER, DataAnalyser)

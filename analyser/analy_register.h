@@ -31,6 +31,7 @@
 #define ATOM_ANALY_IA64 MAGICD("AAS\x02")
 #define ATOM_ANALY_IL MAGICD("AAS\x03")
 #define ATOM_ANALY_JAVA MAGICD("AAS\x04")
+#define ATOM_ANALY_PPC MAGICD("AAS\x05")
 
 /*
  *	ANX.: analyser objects

@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	analy.cc
  *
@@ -36,9 +36,9 @@
 #include "snprintf.h"
 #include "tools.h"
 
+#define DPRINTF(msg...)
 //#undef DPRINTF
 //#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
-#define DPRINTF(msg...)
 
 int global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 

@@ -33,6 +33,7 @@
 #include "ildis.h"
 #include "javadis.h"
 #include "x86dis.h"
+#include "ppcdis.h"
 
 /*
  *	CLASS Assembler
@@ -271,6 +272,7 @@ BUILDER(ATOM_DISASM_X86_VXD, x86dis_vxd)
 BUILDER(ATOM_DISASM_ALPHA, Alphadis)
 BUILDER(ATOM_DISASM_JAVA, javadis)
 BUILDER(ATOM_DISASM_IA64, IA64Disassembler)
+BUILDER(ATOM_DISASM_PPC, PPCDisassembler)
 
 bool init_asm()
 {
@@ -279,11 +281,13 @@ bool init_asm()
 	REGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	REGISTER(ATOM_DISASM_JAVA, javadis)
 	REGISTER(ATOM_DISASM_IA64, IA64Disassembler)
+	REGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	return true;
 }
 
 void done_asm()
 {
+	UNREGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	UNREGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	UNREGISTER(ATOM_DISASM_JAVA, javadis)
 	UNREGISTER(ATOM_DISASM_ALPHA, Alphadis)

@@ -2,6 +2,7 @@
 ==============
 
 version 0.8.0:
+	- new disassembler: PowerPC
 	- rewrite
 	- many bugs fixed
 
