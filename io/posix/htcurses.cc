@@ -67,8 +67,11 @@ int cursor_overwrite = 0;
 
 short colormap[64];
 
+//#define TEST
+
 screendrawbuf::screendrawbuf(char *title)
 {
+#ifndef TEST
 	bounds b;
 	buf=0;
 	int colors[8]={ COLOR_BLACK, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN, COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE };
@@ -128,6 +131,7 @@ screendrawbuf::screendrawbuf(char *title)
 	b_setbounds(&b);
 
 	show();
+#endif	
 }
 
 screendrawbuf::~screendrawbuf()
@@ -224,7 +228,7 @@ void screendrawbuf::drawbuffer(drawbuf *b, int x, int y, bounds *clipping)
 
 void screendrawbuf::show()
 {
-#if 1
+#ifndef TEST
 	drawbufch *ch=buf;
 	int c=-1;
 	for (int iy=0; iy<size.h; iy++) {
@@ -247,16 +251,13 @@ void screendrawbuf::show()
 				ch++;
 			}
 	}
-#endif	
 	curs_set(0);
 	refresh();
 	move(cursory, cursorx);
 	if (cursor_visible) {
 		if (cursor_overwrite) curs_set(2); else curs_set(1);
 	}
-//	setsyx(cursory, cursorx);
-//	fprintf(stdout, "\033[%i%d;%dH", 0, cursory+1, cursorx+1);
-//move(0,0);addch('5');
+#endif	
 }
 
 void screendrawbuf::getcursor(int *x, int *y)
