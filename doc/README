@@ -133,6 +133,10 @@ General features
                - image with code/data analyser (java bytecode
                disassembler)
 
+        * Mach exe/link format (MachO)
+               - header
+               - image with code/data analyser (ppc)
+
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 
   2. Code & Data Analyser

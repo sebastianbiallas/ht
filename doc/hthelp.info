@@ -201,6 +201,10 @@ General features
                - image with code/data analyser (java bytecode
                disassembler)
 
+        * Mach exe/link format (MachO)
+               - header
+               - image with code/data analyser (ppc)
+
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 
   2. Code & Data Analyser
@@ -445,12 +449,12 @@ Node: Key bindings1743
 Node: Authors3231
 Node: Features3389
 Node: General features3770
-Node: Configuration files6012
-Node: Clipboard6662
-Node: Global history7475
-Node: Expression evaluation8028
-Node: Block operations9409
-Node: Search and its different modes10310
-Node: Where to download ?13000
+Node: Configuration files6129
+Node: Clipboard6779
+Node: Global history7592
+Node: Expression evaluation8145
+Node: Block operations9526
+Node: Search and its different modes10427
+Node: Where to download ?13117
 
 End Tag Table

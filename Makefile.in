@@ -192,7 +192,8 @@ cmds.cc cmds.h qword.cc qword.h snprintf.cc snprintf.h htpeil.cc htpeil.h \
 ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h terminal.cc terminal.h \
 vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
 htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
-htmachoimg.cc htmachoimg.h
+htmachoimg.cc htmachoimg.h fltstruc.h fltstruc.cc htflt.cc htflt.h htflthd.cc \
+htflthd.h htfltimg.cc htfltimg.h
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -237,7 +238,8 @@ am_ht_OBJECTS = htdoc.$(OBJEXT) blockop.$(OBJEXT) common.$(OBJEXT) \
 	classimg.$(OBJEXT) terminal.$(OBJEXT) vfs.$(OBJEXT) \
 	vfsview.$(OBJEXT) htlevxd.$(OBJEXT) lestruct.$(OBJEXT) \
 	htmacho.$(OBJEXT) htmachohd.$(OBJEXT) machostruc.$(OBJEXT) \
-	htmachoimg.$(OBJEXT)
+	htmachoimg.$(OBJEXT) fltstruc.$(OBJEXT) htflt.$(OBJEXT) \
+	htflthd.$(OBJEXT) htfltimg.$(OBJEXT)
 ht_OBJECTS = $(am_ht_OBJECTS)
 ht_DEPENDENCIES = $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a \
 	$(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a \
@@ -253,20 +255,22 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/cmds.Po ./$(DEPDIR)/coff_s.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/common.Po ./$(DEPDIR)/cplus-dem.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/cstream.Po ./$(DEPDIR)/defreg.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/elfstruc.Po ./$(DEPDIR)/formats.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htanaly.Po ./$(DEPDIR)/htapp.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htatom.Po ./$(DEPDIR)/htcfg.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htclipboard.Po ./$(DEPDIR)/htcoff.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htcoffhd.Po ./$(DEPDIR)/htcoffimg.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htctrl.Po ./$(DEPDIR)/htdata.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htdebug.Po ./$(DEPDIR)/htdialog.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htdisasm.Po ./$(DEPDIR)/htdoc.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htelf.Po ./$(DEPDIR)/htelfhd.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htelfimg.Po ./$(DEPDIR)/htelfphs.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htelfrel.Po ./$(DEPDIR)/htelfshs.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htelfsym.Po ./$(DEPDIR)/htendian.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/hteval.Po ./$(DEPDIR)/htexcept.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htfinfo.Po ./$(DEPDIR)/htformat.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/elfstruc.Po ./$(DEPDIR)/fltstruc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/formats.Po ./$(DEPDIR)/htanaly.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htapp.Po ./$(DEPDIR)/htatom.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htcfg.Po ./$(DEPDIR)/htclipboard.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htcoff.Po ./$(DEPDIR)/htcoffhd.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htcoffimg.Po ./$(DEPDIR)/htctrl.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htdata.Po ./$(DEPDIR)/htdebug.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htdialog.Po ./$(DEPDIR)/htdisasm.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htdoc.Po ./$(DEPDIR)/htelf.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htelfhd.Po ./$(DEPDIR)/htelfimg.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htelfphs.Po ./$(DEPDIR)/htelfrel.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htelfshs.Po ./$(DEPDIR)/htelfsym.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htendian.Po ./$(DEPDIR)/hteval.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htexcept.Po ./$(DEPDIR)/htfinfo.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htflt.Po ./$(DEPDIR)/htflthd.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htfltimg.Po ./$(DEPDIR)/htformat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/hthex.Po ./$(DEPDIR)/hthist.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htidle.Po ./$(DEPDIR)/htiobox.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htle.Po ./$(DEPDIR)/htleent.Po \
@@ -408,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cstream.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defreg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elfstruc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fltstruc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/formats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htanaly.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htapp.Po@am__quote@
@@ -434,6 +439,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hteval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htexcept.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htfinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htflt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htflthd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htfltimg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htformat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hthex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hthist.Po@am__quote@

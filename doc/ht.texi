@@ -323,6 +323,13 @@ java class files (CLASS)
 - header @*
 - image with code/data analyser (java bytecode disassembler)
 @end itemize
+@item 
+Mach exe/link format (MachO)
+@itemize @w
+@item
+- header @*
+- image with code/data analyser (ppc) @*
+@end itemize
 @item
 Still some to be implemented (M$-OBJ, ARCH, LX)
 @end itemize
