@@ -218,7 +218,7 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
 	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset+section_headers->base_ofs) &&
 		(ofs<s->data_offset+section_headers->base_ofs+s->data_size)) {
-			*rva=ofs-s->data_offset+section_headers->base_ofs+s->data_address;
+			*rva=ofs-(s->data_offset+section_headers->base_ofs)+s->data_address;
 			return 1;
 		}
 		s++;
