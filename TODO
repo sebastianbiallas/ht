@@ -11,6 +11,8 @@
 - listbox column titles ? (+ sort order indicators ?)
 - htanaly.cc: menu ifs not used properly (for keys...)
 - convert all %q to %qd and %Q to %qx
+- implement ht_static_treeview::get_cursor_node() correctly
+- implement ht_static_treeview::goto_node() at all
 - static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
   is this a correct quicksort? (THIS WOULD DEFINITLY BE EMBARRASING)
 
@@ -23,7 +25,16 @@
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 - [FIXED ?]int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 
++dontknowhow2fix
+- "~case insensitive" in search isnt accessable via alt-c (->copy)
+
++dontunderstandreport
+- new binary/resize/(F9??)/blockop
+
 +steves
+- search
+	- search should prefill start/end ofs from selection (if applicable)
+	- search with invalid start/end offset
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - !! (HT_0_6c / HT_0_7) commit ./depcomp(.sh)? to cvs (branch+trunk) !!
 - filemanger/options title ://reg instead of reg://
@@ -34,25 +45,19 @@
 - "~case insensitive" in search isnt accessable via alt-c (->copy)
 - (HT_0_7) (texteditor) fix at least
   * save on readonly/locked file
-  * "open multiple / change all / f10 / save all -->but not all saved" bug
 - exports/dimports in PE32+ broken
-- new binary/resize/(F9??)/blockop
 - get rid of globalerror (cause its ugly)
 - [x86]
   668338ff     cmp     word ptr [eax], ffff   <----------- cant be assembled
   668138ffff   cmp     word ptr [eax], ffff   <----------- ok
 - [x86] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
-- search should prefill start/end ofs from selection (if applicable)
 - getbounds rel coords
 - the symbol $ (current ofs) should work in all goto dialogs (like in xx/image)
-- some (e.g. search) dialogs say "(moving) - space to switch"
-  in move (ctrl-f5) mode, although they arent resizeable
 - disable buttons (disable menu-entries, disable messages)
 - mk(s)temp is posix ??
 - scrap "project" menu (kaputtgemergt)
 - ht_format_viewer::vstate_save(ht_view *focused) remove param ?! (testing...)
   and: goto_offset(ht_view *to_hist or so....
-- search with invalid start/end offset
 (LINUX) - registry
 (LINUX) 	- more types (bool), script convert
 (LINUX) - eval (auto-doc, interface)

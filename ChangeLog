@@ -16,6 +16,12 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     *
+     * htdisasm: follow
+	* FIXED: some (e.g. search) dialogs say "(moving) - space to switch"
+	  in move (ctrl-f5) mode, although they arent resizeable
+	* "open multiple / change all / f10 / save all -->but not all saved" bug fixed
+
      * no ia64 in pe32/elf32, no x86 in pe64/elf64
      * htformat: string eval interface changed heaviliy funcs should
        now be easily extendable through inheritance and more
