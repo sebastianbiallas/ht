@@ -29,16 +29,14 @@
 - disasm (esp. x86) switch 16/32 correctly
 - elf_analy.cc:114 free object ???
 - classread/view.cc
-    - rename to match PE/ELF/LE,etc.'s behaviour
+    - rename to match PE/ELF/LE,etc.'s structure
     - shared data not freed
 
 +steves
 - (HT_0_7)
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
-     - help crlf -cr
-     - x86_insn_op::user is int[4] but misused as void*[4] in vxd disasm,
-       this wont work on alpha and other 64bit architectures
 
+- httext line wrapping
 - new instead of malloc
 - terminal.cc: terminal line buffering
 - textviewer: vi-mania: '/' searches, 'n' continues
@@ -48,7 +46,7 @@
 - (HT_0_8) features configurable
 - (HT_0_8) directory structure
 	- move source files (especially object system) into separate directories,
-	  solve name problems (ht* only when necessary for ht obj system)
+	  solve name problems
 - (HT_0_8) data2/string2/stream2/store2/debug2
 	- homogenous/heterogenous lists
 	- save on readonly/locked file
@@ -76,10 +74,6 @@
 - get rid of globalerror (cause its ugly)
 - getbounds rel coords
 - disable buttons (disable menu-entries, disable messages)
-(LINUX) - features configurable
-(LINUX) 	- SPARC_SHIT configure
-(LINUX) - implement POSIX - sys_truncate
-- SPARC: only machine word aligned accesses
 - file manager
 	- file browser
 	- vfs based on ht_listbox
