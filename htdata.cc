@@ -228,7 +228,7 @@ void ht_stree::destroy()
 
 void ht_stree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 {
-	if (node_count > 2) {
+	if (node_count > 1) {
 		ht_tree_node **ltable=(ht_tree_node**)malloc(sizeof (ht_tree_node*) * node_count);
 		ht_tree_node **l=ltable;
 		/* create ltable from tree */
