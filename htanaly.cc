@@ -1663,10 +1663,10 @@ void ht_aviewer::showComments(Address *Addr)
 	text_editor->init(&b, false, text_file, NULL, TEXTEDITOPT_UNDO);
 	dialog->insert(text_editor);
 
-     /* FIXME: scrollbar
+	/* FIXME: scrollbar
 	BOUNDS_ASSIGN(b, 56, 1, 1, 10);
-     */
-     
+	*/
+	
 	ht_button *b1;
 	BOUNDS_ASSIGN(b, 18, 12, 9, 2);
 	NEW_OBJECT(b1, ht_button, &b, "O~k", button_ok);
@@ -1856,37 +1856,37 @@ restart:
 				break;
 			case 667:
 				if (xcount) {
-                    	analy->deleteXRef(Addr, (Address*)data.cursor_id);
+					analy->deleteXRef(Addr, (Address*)data.cursor_id);
 					analy->makeDirty();
 					analy_sub->output->invalidateCache();
-                    }
+				}
 				break;
 			case 668: {
-               	char result[256];
+				char result[256];
 				ht_snprintf(str, sizeof str, "add xref from %y", Addr);
-                    result[0] = 0;
-                    while (inputbox(str, "to ~address: ", result, 255, HISTATOM_GOTO)) {
-                    	viewer_pos res_pos;
+				result[0] = 0;
+				while (inputbox(str, "to ~address: ", result, 255, HISTATOM_GOTO)) {
+					viewer_pos res_pos;
 					if (!string_to_pos(result, &res_pos)) {
 						errorbox(globalerror);
 						continue;
 					}
-                         Address *a;
-                         if (!convertViewerPosToAddress(res_pos, &a)) {
+					Address *a;
+					if (!convertViewerPosToAddress(res_pos, &a)) {
 						errorbox("invalid address");
-	                         delete a;
-                              continue;
-                         }
-                         if (!analy->addXRef(Addr, a, xrefoffset)) {
-                         	// FIXME: some error msg
-                         }
-                         delete a;
+						delete a;
+						continue;
+					}
+					if (!analy->addXRef(Addr, a, xrefoffset)) {
+						// FIXME: some error msg
+					}
+					delete a;
 					analy->makeDirty();
 					analy_sub->output->invalidateCache();
-                         break;
-                    }
+					break;
+				}
 				break;
-               }
+			}
 			case button_ok:
 				if (xcount) gotoAddress((Address*)data.cursor_id, this);
 				break;
