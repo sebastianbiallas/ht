@@ -62,7 +62,7 @@ int get_helpmode()
 void set_helpmode(int flag, char *name)
 {
 	helpmode = flag;
-     int l = strlen(name);
+     int l = name ? strlen(name) : (MAX_FUNCNAME_LEN+1);
      if (l>MAX_FUNCNAME_LEN) {
      	*helpname = 0;
      	return;
