@@ -9,6 +9,7 @@ version 0.7.1+:
 	- FIXED: blockop doenst set "file is modified"
 	- FIXED: main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
 	- PE/header: can now follow bound import directory link (it's offset not RVA !)
+	- ELF/section headers: some flags were displayed invalid
 	- many bugs fixed
 
 version 0.7.1:

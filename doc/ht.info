@@ -290,7 +290,7 @@ how it works...
 Functions and symbols
 ---------------------
 
-   You can always use the standard buildin math (`round', `sin',
+   You can always use the standard built-in math (`round', `sin',
 `random', etc.) and string (`strcmp', `strchr', `sprintf', etc.)
 functions, they work more or less like the corresponding C functions
 (actually they ARE more or less wrappers for them); see `eval/eval.y'
@@ -427,8 +427,8 @@ Node: Configuration files5957
 Node: Clipboard6604
 Node: Global history7413
 Node: Expression evaluation7962
-Node: Block operations9337
-Node: Search and its different modes10229
-Node: Where to download ?12899
+Node: Block operations9338
+Node: Search and its different modes10230
+Node: Where to download ?12900
 
 End Tag Table

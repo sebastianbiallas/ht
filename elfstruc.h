@@ -210,12 +210,12 @@ struct ELF_HEADER64 {
 
 /* indices */
 #define ELF_SHN_UNDEF		0
-#define ELF_SHN_ABS			0xfff1
+#define ELF_SHN_ABS		0xfff1
 #define ELF_SHN_COMMON		0xfff2
 
 /* sh_type */
 #define ELF_SHT_NULL		0
-#define ELF_SHT_PROGBITS		1
+#define ELF_SHT_PROGBITS	1
 #define ELF_SHT_SYMTAB		2
 #define ELF_SHT_STRTAB		3
 #define ELF_SHT_RELA		4
@@ -223,7 +223,7 @@ struct ELF_HEADER64 {
 #define ELF_SHT_DYNAMIC		6
 #define ELF_SHT_NOTE		7
 #define ELF_SHT_NOBITS		8
-#define ELF_SHT_REL			9
+#define ELF_SHT_REL		9
 #define ELF_SHT_SHLIB		10
 #define ELF_SHT_DYNSYM		11
 
@@ -232,14 +232,15 @@ struct ELF_HEADER64 {
 #define ELF_SHT_PREINIT_ARRAY	16
 
 /* sh_flags */
-#define ELF_SHF_WRITE		1
-#define ELF_SHF_ALLOC		2
-#define ELF_SHF_EXECINSTR	4
-#define ELF_SHF_MERGE		8
-#define ELF_SHF_STRINGS		16
-#define ELF_SHF_INFO_LINK	32
-#define ELF_SHF_LINK_ORDER	64
-#define ELF_SHF_OS_NONCONFORMING	128
+#define ELF_SHF_WRITE			(1<<0)
+#define ELF_SHF_ALLOC			(1<<1)
+#define ELF_SHF_EXECINSTR		(1<<2)
+// 1<<3 missing
+#define ELF_SHF_MERGE			(1<<4)
+#define ELF_SHF_STRINGS			(1<<5)
+#define ELF_SHF_INFO_LINK		(1<<6)
+#define ELF_SHF_LINK_ORDER		(1<<7)
+#define ELF_SHF_OS_NONCONFORMING	(1<<8)
 
 struct ELF_SECTION_HEADER32 {
 	elf32_word sh_name;
