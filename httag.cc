@@ -29,6 +29,30 @@
 #include <string.h>
 /**/
 
+// these 3 functions are evil. but they are only used in statictag_to_tag().
+// they should go sometime...
+static dword hexb(char *s)
+{
+	byte b=*(byte*)s;
+	b-='0';
+	if (b>9) b-='a'-'0'-10;
+	byte c=*(byte*)(s+1);
+	c-='0';
+	if (c>9) c-='a'-'0'-10;
+	return (b<<4)+c;
+}
+
+static dword hexw(char *s)
+{
+	return (hexb(s)<<8) | hexb(s+2);
+}
+
+static dword hexd(char *s)
+{
+	return (hexw(s)<<16) | hexw(s+4);
+}
+//
+
 TAGSTRING *tag_make_sel(TAGSTRING *buf, char *string)
 {
 	return tag_make_ref(buf, 0, 0, 0, 0, string);
