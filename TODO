@@ -14,6 +14,7 @@
 - implement ht_static_treeview::goto_node() at all
 - static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list):
   is this a correct quicksort? (THIS WOULD DEFINITLY BE EMBARRASING)
+- exports/dimports in PE32+ broken
 
 +dunno
 - update help
@@ -27,6 +28,7 @@
 - (HT_0_7) has SYSTEM CONFIG FILE changed ??
 - (HT_0_7) update FILE CONFIG FILE VERSION
 - 1”1 will eval to 1
+- [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
 
 +reported_but_think_its_ok
 - void ht_disasm_viewer::handlemsg(htmsg *msg):
@@ -34,8 +36,6 @@
                beautiest code alive
 
 +steves
-- disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
-  (like in analyser modes)
 - texteditor: ctrl-y (delete line) doesnt work on last line
 - search
 	- search should prefill start/end ofs from selection (if applicable)
@@ -46,15 +46,9 @@
 - (HT_0_7) streams
 	save on readonly/locked file
 	stream::set_layered suspicious
-- exports/dimports in PE32+ broken
 - get rid of globalerror (cause its ugly)
-- [x86 asm] 'jmp 1+2' doenst work but 'mov [1+2], ax' ??
-- [x86 asm] (known bug / per design)
-  80780101        cmp byte ptr [eax+0x1], 0x1
-  80b80100000001  cmp byte ptr [eax+0x1], 0x1 <============ cant be assembled
 - getbounds rel coords
 - disable buttons (disable menu-entries, disable messages)
-- mk(s)temp is posix ??
 (LINUX) - registry
 (LINUX) 	- more types (bool), script convert
 (LINUX) - features configurable
@@ -79,7 +73,6 @@
 	- input separators configurable (right now only creates UNIX-style files)
 - search backwards
 - more history entries: replace e.g.
-- F4/view mode - ask before forgetting changes	
 - vfs -empty, mkdir, cd, dont work - no cursor
 - vfs: window resizing...
 - improve edit_time/dialog ?!

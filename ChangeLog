@@ -16,6 +16,11 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+	* F4/view mode - ask before forgetting changes
+     * some project tweaks (ask before create, close before open)
+	* disasm/x86 (assemble, ctrl-a) should prefill opcode from cursor
+	  (like in analyser modes)
+
 	* file->open project->some_new_project does create some_new_project.htprj (auto add extension)
      * FIXED: mov mem32/16, seg (special_param_ambiguity)
 	* FIXED: x86asm: "jmp/call ecx", invalid opcode table entry
