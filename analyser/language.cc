@@ -156,8 +156,9 @@ void analy_c_string::render_string(char *result, int maxlen)
 	assert(maxlen);
 	maxlen--;
 	int Len = MIN(len, maxlen);
-	if (Len) memcpy(result, string, Len);
-	result[Len]=0;
+	if (Len) Len--;
+     memcpy(result, string, Len);
+	result[Len]=0;          
 }
 
 int analy_c_string::string_test(const byte *s, int testlen, int &foundlen)
@@ -195,7 +196,7 @@ int analy_unicode_string::string_test(const byte *s, int testlen, int &foundlen)
 		return -1;
 	}
 	int len = np-a;
-	foundlen = len*2;
+	foundlen = len*2+2;
 	int res = analy_string__raw_test(a, len);
 	free(a);
 	return res;

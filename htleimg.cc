@@ -22,6 +22,7 @@
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htleimg.h"
+#include "htsearch.h"
 #include "htstring.h"
 #include "formats.h"
 #include "tools.h"
@@ -50,6 +51,7 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	c.h -= 2;
 	ht_le_aviewer *v = new ht_le_aviewer();
 	v->init(&c, DESC_LE_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, myfile, group, p, le_shared);
+     v->search_caps = SEARCHMODE_VREGEX;
 
 	c.y -= 2;
 	c.h = 2;
@@ -120,6 +122,30 @@ char *ht_le_aviewer::func(UINT i, bool execute)
 		}
 	}
 	return ht_aviewer::func(i, execute);
+}
+
+bool ht_le_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+{
+	if (!analy) return false;
+	Address *a = ((LEAnalyser*)analy)->realFileofsToAddress(ofs);
+	bool res = convertAddressToViewerPos(a, p);
+	delete a;
+	return res;
+}
+
+bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+{
+	if (analy) {
+		Address *addr;
+		if (!convertViewerPosToAddress(p, &addr)) return false;
+		FILEOFS o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
+		delete addr;
+		if (o!=INVALID_FILE_OFS) {
+			*ofs=o;
+			return true;
+		}
+	}
+	return false;
 }
 
 bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)

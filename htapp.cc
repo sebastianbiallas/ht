@@ -2425,14 +2425,13 @@ void ht_app::handlemsg(htmsg *msg)
 						return;
 					}
 					break;
-/* FIXME: experimental */
+#ifdef S111111111111111111111111111111111111111111
+				/* FIXME: experimental */
 				case K_Control_F9:
 					((ht_app*)app)->create_window_term("main.exe");
 					clearmsg(msg);
 					return;
-/* FIXME: experimental */
-/* enable this if you want to (re)create a defreg.* */
-/*				case K_Alt_R: {
+				case K_Alt_R: {
 					char *n = "./ht.reg";
 					ht_file *f = new ht_file();
 					f->init(n, FAM_WRITE, FOM_CREATE);
@@ -2452,19 +2451,18 @@ void ht_app::handlemsg(htmsg *msg)
 					
 					clearmsg(msg);
 					return;
-				}*/
-/* FIXME: experimental */				
-/*				case K_Alt_T:
+				}
+				case K_Alt_T:
 					create_window_ofm("reg:/", "local:/");
 					clearmsg(msg);
 					return;*/
-/* FIXME: experimental */				
-/*				case K_Control_A:
+				case K_Control_A:
 					create_window_help("/HT/res/info/intidx.info", "Top");
 //					create_window_help("c:/djgpp/projects/enew/res/info/ibnidx.info", "Interrupts By Number");
 					dirtyview();
 					clearmsg(msg);
-					return;*/
+					return;
+#endif
 				case K_Space:
 					sendmsg(cmd_popup_dialog_view_list);
 					clearmsg(msg);

@@ -38,9 +38,9 @@
 +steves
 - (HT_0_7)
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
-	- remove experimental code in textedit.cc
-	- LE binary search does not work
-
+	- remove experimental code in htapp.cc
+     
+- LE binary search does not work
 - IPC-djgpp: recognize gui progs and close window !?
 - httext line wrapping, ctrl+page_down ?!
 - new instead of malloc

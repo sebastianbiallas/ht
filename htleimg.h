@@ -41,6 +41,8 @@ public:
 	virtual char *func(UINT i, bool execute);
 	virtual void setAnalyser(Analyser *a);
 	virtual bool get_current_real_offset(FILEOFS *ofs);
+	virtual bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
+	virtual bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
 };
 
 #endif /* !__HTLEIMG_H__ */

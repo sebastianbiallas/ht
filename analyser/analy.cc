@@ -1078,7 +1078,7 @@ void	Analyser::dataAccess(Address *Addr, taccess access)
 			if (str) {
 				char string1[256], string2[31];
 				str->render_string(string2, sizeof string2);
-				ht_snprintf(string1, sizeof string1, "%s_%s_", str->name(), string2);
+				ht_snprintf(string1, sizeof string1, "%s_%s", str->name(), string2);
 				make_valid_name(string2, string1);
 				if (addAddressSymbol(Addr, string2, label_data)) {
 					addComment(Addr, 0, "");
