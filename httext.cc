@@ -26,6 +26,11 @@
 
 ht_view *httext_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
+	/* no httext for file > 5 MiB */
+	if (file->get_size() > 5*1024*1024) {
+		return NULL;
+	}
+
 	ht_text_viewer2 *v=new ht_text_viewer2();
 	v->init(b, TEXT_DESC, 0/*VC_EDIT | VC_GOTO | VC_SEARCH | VC_BLOCKOP | VC_TRUNCATE*/, file, group);
 
