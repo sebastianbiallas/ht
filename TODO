@@ -38,10 +38,12 @@
 	- LE binary search does not work
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 	- dtree leaks now dead nodes
+	- remove experimental code in textedit.cc
 	- project window is smaller than min_window_size (original size cant
-	be restored after resize)
+	  be restored after resize)
 	- remove relfile.cc german comments (better even: fix them)
 
+- IPC-djgpp: recognize gui progs and close window !?
 - text-edit, highlighting bug
 #include
 //#include
