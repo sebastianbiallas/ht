@@ -133,18 +133,15 @@ static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 	return 0;
 }
 
-static int pe_viewer_func_section(eval_scalar *result, eval_str *str)
+static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-     int section;
-     char str2[COFF_SIZEOF_SHORT_NAME+1];
-     memset(str2, 0, COFF_SIZEOF_SHORT_NAME+1);
-     memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
-	if (pe_section_name_to_section(&aviewer->pe_shared->sections, str2, &section)) {
+     UINT i = QWORD_GET_INT(q->value);
+	if (!QWORD_GET_HI(q->value) && (i+1 < aviewer->pe_shared->sections.section_count)) {
 		viewer_pos p;
 		FILEOFS ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
-                             aviewer->pe_shared->sections.sections[section].data_address,
+                             aviewer->pe_shared->sections.sections[i].data_address,
 		                  &ofs)
 		 && aviewer->offset_to_pos(ofs, &p)) {
 			Address *a;
@@ -157,6 +154,23 @@ static int pe_viewer_func_section(eval_scalar *result, eval_str *str)
 		} else {
 //			set_eval_error("invalid file offset or no corresponding RVA for '0%xh'", rva);
 		}     
+     } else {
+		set_eval_error("no section number %qd", &q->value);
+     }
+	return 0;
+}
+
+static int pe_viewer_func_section_str(eval_scalar *result, eval_str *str)
+{
+	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
+     int section;
+     char str2[COFF_SIZEOF_SHORT_NAME+1];
+     memset(str2, 0, COFF_SIZEOF_SHORT_NAME+1);
+     memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
+	if (pe_section_name_to_section(&aviewer->pe_shared->sections, str2, &section)) {
+          eval_scalar i;
+		scalar_create_int_c(&i, section);
+     	return pe_viewer_func_section_int(result, &i.scalar.integer);
      }
 	return 0;
 }
@@ -174,8 +188,9 @@ void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, h
 int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 	eval_func myfuncs[] = {
-		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT}},
-		{"section", (void*)&pe_viewer_func_section, {SCALAR_STR}},
+		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT}, "returns address of rva"},
+		{"section", (void*)&pe_viewer_func_section_int, {SCALAR_INT}, "returns address of section (by name)"},
+		{"section", (void*)&pe_viewer_func_section_str, {SCALAR_STR}, "returns address of section (by number)"},
 		{NULL}
 	};
 	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
