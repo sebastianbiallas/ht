@@ -99,7 +99,7 @@ ht_key ht_getkey()
 			if (HT_SHIFT_KEY(r2) == r2) r = HT_SHIFT_KEY(r);
 		}
 	}
-	r = get_modifier(r);
+//	r = get_modifier(r);
 	k = ht_rawkey2key(r);
 	if ((k == K_INVALID) && (r <= 255)) return (ht_key)r;
 	return k;
@@ -282,6 +282,8 @@ int ht_raw_getkey()
 		c = getch();
 		if ((c==-1) || (c=='\e')) c='\e'; else c=HT_META_KEY(c);
 	}
+	if ((unsigned int)c>=0x100) c = get_modifier(c);
+//	fprintf(stderr, "getrawkey() %d/0x%x\n", c, c);
 	return c;
 }
 
