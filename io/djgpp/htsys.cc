@@ -127,8 +127,12 @@ int sys_findnext(pfind_t *pfind)
 
 int sys_pstat(pstat_t *s, const char *filename)
 {
+	char fn[HT_NAME_MAX];
+	strncpy(fn, filename, sizeof fn);
+	int flen = strlen(fn);
+	if (flen && sys_is_path_delim(fn[flen-1]) && (flen !=3) || (fn[1]!=':')) fn[flen-1] = 0;
 	struct stat st;
-	int e=stat(filename, &st);
+	int e=stat(fn, &st);
 	if (e) return e;
 	s->caps=pstat_mtime|pstat_mode_usr|pstat_mode_w|pstat_size/*|pstat_cluster*/|pstat_mode_type;
 	s->mtime=st.st_mtime;

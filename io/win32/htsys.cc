@@ -123,8 +123,12 @@ int sys_findclose(pfind_t *pfind)
 
 int sys_pstat(pstat_t *s, const char *filename)
 {
+	char fn[HT_NAME_MAX];
+	strncpy(fn, filename, sizeof fn);
+	int flen = strlen(fn);
+	if (flen && sys_is_path_delim(fn[flen-1]) && (flen !=3) || (fn[1]!=':')) fn[flen-1] = 0;
 	struct stat st;
-	int e=stat(filename, &st);
+	int e=stat(fn, &st);
 	if (e) return ENOENT;
 	s->caps=pstat_ctime|pstat_mtime|pstat_atime|pstat_uid|pstat_gid|pstat_mode_all|pstat_size|pstat_inode;
 	s->ctime=st.st_ctime;
