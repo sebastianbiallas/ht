@@ -81,7 +81,7 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 /* make a memfile out of this section */
 	efile=new ht_mem_file();
-	efile->init(eofs, esize, FAM_READ | FAM_WRITE);
+	efile->init(eofs, esize, FAM_CREATE | FAM_READ | FAM_WRITE);
 	esectionbuf=(char*)malloc(esize);
 	file->seek(eofs);
 	file->read(esectionbuf, esize);

@@ -742,7 +742,7 @@ bool	ht_mem_file::set_access_mode(UINT access_mode)
 	     if (access_mode & FAM_APPEND) {
                if (seek(get_size()) != 0) return false;
           } else {
-          	if (seek(0) != 0) return false;
+          	if (seek(ofs) != 0) return false;
           }
 	     return true;
      }
