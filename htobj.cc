@@ -1724,7 +1724,8 @@ void ht_window::handlemsg(htmsg *msg)
 					}
 				}
 			} else {
-				if (msg->data1.integer == K_Control_F5) {
+				if ((msg->data1.integer == K_Control_F5) ||
+				 (msg->data1.integer == K_Control_R)) {
 					sendmsg(cmd_window_resizemove);
 				}
 				break;

@@ -190,7 +190,8 @@ pestruct.cc coff_s.cc mzstruct.cc defreg.h defreg.c htdisasm.cc htdisasm.h \
 htcoffimg.cc htcoffimg.h nestruct.cc htneimg.cc htneimg.h htneimp.cc htneimp.h \
 cmds.cc cmds.h qword.cc qword.h snprintf.cc snprintf.h htpeil.cc htpeil.h \
 ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h terminal.cc terminal.h \
-vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc
+vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
+htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -233,7 +234,8 @@ am_ht_OBJECTS = htdoc.$(OBJEXT) blockop.$(OBJEXT) common.$(OBJEXT) \
 	cmds.$(OBJEXT) qword.$(OBJEXT) snprintf.$(OBJEXT) \
 	htpeil.$(OBJEXT) ilstruct.$(OBJEXT) log.$(OBJEXT) \
 	classimg.$(OBJEXT) terminal.$(OBJEXT) vfs.$(OBJEXT) \
-	vfsview.$(OBJEXT) htlevxd.$(OBJEXT) lestruct.$(OBJEXT)
+	vfsview.$(OBJEXT) htlevxd.$(OBJEXT) lestruct.$(OBJEXT) \
+	htmacho.$(OBJEXT) htmachohd.$(OBJEXT) machostruc.$(OBJEXT)
 ht_OBJECTS = $(am_ht_OBJECTS)
 ht_DEPENDENCIES = $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a \
 	$(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a \
@@ -268,7 +270,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/htle.Po ./$(DEPDIR)/htleent.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htlehead.Po ./$(DEPDIR)/htleimg.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htleobj.Po ./$(DEPDIR)/htlepage.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/htlevxd.Po ./$(DEPDIR)/htmenu.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htlevxd.Po ./$(DEPDIR)/htmacho.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htmachohd.Po ./$(DEPDIR)/htmenu.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htmz.Po ./$(DEPDIR)/htmzhead.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htmzimg.Po ./$(DEPDIR)/htmzrel.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htne.Po ./$(DEPDIR)/htneent.Po \
@@ -285,17 +288,17 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/httag.Po ./$(DEPDIR)/httext.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/httree.Po ./$(DEPDIR)/ilstruct.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/lestruct.Po ./$(DEPDIR)/log.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/mfile.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/mzstruct.Po ./$(DEPDIR)/nestruct.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/pestruct.Po ./$(DEPDIR)/process.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/qword.Po ./$(DEPDIR)/regex.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/relfile.Po ./$(DEPDIR)/snprintf.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/store.Po ./$(DEPDIR)/stream.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/syntax.Po ./$(DEPDIR)/terminal.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/textedit.Po ./$(DEPDIR)/textfile.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tools.Po ./$(DEPDIR)/vfs.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/vfsview.Po ./$(DEPDIR)/vxd.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/vxdserv.Po
+@AMDEP_TRUE@	./$(DEPDIR)/machostruc.Po ./$(DEPDIR)/main.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mfile.Po ./$(DEPDIR)/mzstruct.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/nestruct.Po ./$(DEPDIR)/pestruct.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/process.Po ./$(DEPDIR)/qword.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/regex.Po ./$(DEPDIR)/relfile.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/snprintf.Po ./$(DEPDIR)/store.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/stream.Po ./$(DEPDIR)/syntax.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/terminal.Po ./$(DEPDIR)/textedit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/textfile.Po ./$(DEPDIR)/tools.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/vfs.Po ./$(DEPDIR)/vfsview.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/vxd.Po ./$(DEPDIR)/vxdserv.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -440,6 +443,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htleobj.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htlepage.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htlevxd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htmacho.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htmachohd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htmz.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htmzhead.Po@am__quote@
@@ -473,6 +478,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ilstruct.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lestruct.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/machostruc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mzstruct.Po@am__quote@
