@@ -82,7 +82,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 	asm_insn *insn = a->alloc_insn();
 	asm_code *ac = NULL;
 	while (inputbox(a->get_name(), "~instruction:", instr, 255, HISTATOM_ASSEMBLER)) {
-		if ((a->prepare_str(insn, instr)) && (ac = a->encode(insn, 0, cpuaddr))) {
+		if ((a->translate_str(insn, instr)) && (ac = a->encode(insn, 0, cpuaddr))) {
 			break;
 		} else {
 			errorbox("%s: %s", a->get_name(), a->get_error_msg());
