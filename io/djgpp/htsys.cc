@@ -196,23 +196,23 @@ int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, i
 	close(save_stderr);
 	lseek(fdout, 0, SEEK_SET);
 	lseek(fderr, 0, SEEK_SET);
-     ht_null_file *nf = new ht_null_file();
-     nf->init();
-     *in = nf;
-     ht_sys_file *sf;
-     sf = new ht_sys_file();
-     sf->init(fdout, true, FAM_READ);
-     *out = sf;
-     sf = new ht_sys_file();
-     sf->init(fderr, true, FAM_READ);
-     *err = sf;
+	ht_null_file *nf = new ht_null_file();
+	nf->init();
+	*in = nf;
+	ht_sys_file *sf;
+	sf = new ht_sys_file();
+	sf->init(fdout, true, FAM_READ);
+	*out = sf;
+	sf = new ht_sys_file();
+	sf->init(fderr, true, FAM_READ);
+	*err = sf;
 	return 0;
 }
 
 bool sys_ipc_is_valid(int handle)
 {
-// FIXME: implement it
-        return false;
+// no multitasking, never valid
+	return false;
 }
 
 int sys_ipc_terminate(int handle)

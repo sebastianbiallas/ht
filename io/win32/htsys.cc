@@ -192,7 +192,7 @@ class ht_win32_file: public ht_streamfile {
 private:
 	HANDLE h;
 public:
-	        void init(HANDLE h);
+		   void init(HANDLE h);
 /* overwritten */
 	virtual UINT		read(void *buf, UINT size);
 	virtual UINT		write(const void *buf, UINT size);

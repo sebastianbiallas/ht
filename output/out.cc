@@ -360,8 +360,8 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 		// data
 		if (analy->validAddress(addr, scvalid)) {
 			if (cur_addr && (cur_addr->type.type != dt_unknown)
-               && (cur_addr->type.type != dt_unknown_data)
-               && (cur_addr->type.type != dt_code)) {
+			&& (cur_addr->type.type != dt_unknown_data)
+			&& (cur_addr->type.type != dt_code)) {
 				switch (cur_addr->type.type) {
 					case dt_int: {
 						bytes_line += cur_addr->type.length;

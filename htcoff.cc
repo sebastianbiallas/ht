@@ -143,7 +143,7 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 void ht_coff::done()
 {
 	ht_format_group::done();
-     free(shared_data);
+	free(shared_data);
 }
 
 /*

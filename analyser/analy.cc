@@ -1800,7 +1800,7 @@ Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *loc, l
 		if (!(labels->location)) {
 			labels->location = loc;
 			if (type != label_unknown) labels->type = type;
-          }
+		}
 	} else {
 		labels = (Symbol *) smalloc0(sizeof(Symbol));
 		labels->name = ht_strdup(label);
