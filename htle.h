@@ -54,6 +54,10 @@
 #define ATOM_LE_ENTRY_BUNDLE_FLAGS		0x4c450005
 #define ATOM_LE_ENTRY_BUNDLE_FLAGS_STR	 "4c450005"
 
+#define LEAddress uint32
+
+#define LE_BASE_ADDR	0x8000000
+
 struct ht_le_shared_data {
 	endianess byteorder;
 	dword hdr_ofs;
@@ -70,6 +74,7 @@ struct ht_le_shared_data {
 	LE_VXD_DESCRIPTOR vxd_desc;
 	ht_streamfile *linear_file;
 	ht_reloc_file *reloc_file;
+     LEAddress *le_addr;
 };
 
 class ht_le: public ht_format_group {
@@ -118,11 +123,12 @@ public:
 
 class ht_le_reloc_entry: public ht_data {
 public:
-	uint32 target_ofs;
+	UINT ofs;	// FIXME: hack
+	LEAddress addr;
 	uint8 address_type;
 	uint8 reloc_type;
 
-	ht_le_reloc_entry(uint32 target_ofs, uint8 address_type, uint8 reloc_type);
+	ht_le_reloc_entry(UINT ofs, LEAddress addr, uint8 address_type, uint8 reloc_type);
 };
 
 /*
@@ -138,6 +144,21 @@ protected:
 public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_le_shared_data *data);
 };
+
+FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, UINT i);
+LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, UINT i);
+UINT LE_get_seg_psize(ht_le_shared_data *LE_shared, UINT i);
+UINT LE_get_seg_vsize(ht_le_shared_data *LE_shared, UINT i);
+
+bool LE_addr_to_segment(ht_le_shared_data *LE_shared, LEAddress Addr, int *segment);
+bool LE_addr_is_physical(ht_le_shared_data *LE_shared, LEAddress Addr);
+bool LE_addr_to_ofs(ht_le_shared_data *LE_shared, LEAddress Addr, FILEOFS *ofs);
+
+bool LE_ofs_to_addr(ht_le_shared_data *LE_shared, FILEOFS ofs, LEAddress *Addr);
+
+LEAddress LE_MAKE_ADDR(ht_le_shared_data *LE_shared, uint16 seg, uint32 ofs);
+uint16 LE_ADDR_SEG(ht_le_shared_data *LE_shared, LEAddress a);
+uint32 LE_ADDR_OFS(ht_le_shared_data *LE_shared, LEAddress a);
 
 #endif /* __HTLE_H__ */
 

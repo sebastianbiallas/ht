@@ -43,7 +43,7 @@ typedef struct {
 #define QWORD_GET_LO(q) ((q).lo)
 
 #define QWORD_GET_INT(q) ((q).lo)
-#define QWORD_GET_FLOAT(q) ((((float)QWORD_GET_HI(q))*4294967296.0) + ((float)QWORD_GET_LO(q)))
+#define QWORD_GET_FLOAT(q) ( (((float)QWORD_GET_HI(q))*4294967296.0) + ((float)QWORD_GET_LO(q)))
 
 #ifdef __cplusplus
 extern "C" {

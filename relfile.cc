@@ -67,6 +67,9 @@ int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 
 void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 {
+	if (o == 12935) {
+      	int sdf = 24 ;
+     }
 	relocs->insert(new ht_data_uint(o), reloc);
 }
 
@@ -74,18 +77,18 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 {
 	FILEOFS o = tell();
 	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
-	/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
-	if (enabled && (o >= MAX_RELOC_TOKEN_LEN+1)) {
+	/* FIXME: relocs will not work before offset 1 */
+	if (enabled) {
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+          if ((MAX_RELOC_TOKEN_LEN+1) < o)
+          	k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		else
+          	k->value = 0;
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
-			if (k->value < o - (MAX_RELOC_TOKEN_LEN+1)) {
-				/* FIXME: why does this happen ??? it shouldnt !!! */
-				break;
-			}
+
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
 
@@ -108,20 +111,21 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 
 UINT	ht_reloc_file::write(const void *buf, UINT size)
 {
-	/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
 	FILEOFS o;
-	if (enabled && ((o = tell()) >= MAX_RELOC_TOKEN_LEN+1)) {
+	/* FIXME: relocs will not work before offset 1 */
+	if (enabled) {
+          o = tell();
 		UINT c = size;
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
-		k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+          if ((MAX_RELOC_TOKEN_LEN+1) < o)
+          	k->value = o - (MAX_RELOC_TOKEN_LEN+1);
+		else
+          	k->value = 0;
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
 			if (k->value >= o+c) break;
-			if (k->value < o - (MAX_RELOC_TOKEN_LEN+1)) {
-				/* FIXME: why does this happen ??? it shouldnt !!! */
-				break;
-			}
+
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
 

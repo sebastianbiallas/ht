@@ -2696,7 +2696,7 @@ void ht_app::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		case cmd_popup_window_help:
-			create_window_help("hthelp.info", "Top");
+			create_window_help(MAGIC_HT_HELP, "Top");
 			clearmsg(msg);
 			return;
 		case msg_project_changed: {

@@ -60,18 +60,10 @@
 	- cleanup msg interface
 	- auto-documentation (e.g. keys)
 
-<<<<<<< TODO
 - syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
   better use bsearch() (ANSI, POSIX)
-- relfile::read/write: enum_next mysteria
-- !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-=======
-- syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
-  better use bsearch() (ANSI, POSIX)
-- goto eval help
 
 - texteditor as dialog-widget should have attachable scrollbar
->>>>>>> 1.41
 - open file: wildcards
 - search
 	- search should prefill start/end ofs from selection (if applicable)
@@ -81,8 +73,6 @@
 - get rid of globalerror (cause its ugly)
 - getbounds rel coords
 - disable buttons (disable menu-entries, disable messages)
-(LINUX) - registry
-(LINUX) 	- more types (bool), script convert
 (LINUX) - features configurable
 (LINUX) 	- SPARC_SHIT configure
 (LINUX) - implement POSIX - sys_truncate

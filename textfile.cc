@@ -377,6 +377,7 @@ bool ht_ltextfile::get_char(UINT line, char *ch, UINT pos)
 	return false;
 }
 
+
 bool ht_ltextfile::getline(UINT line, UINT pofs, void *buf, UINT buflen, UINT *retlen, lexer_state *state)
 {
 /* <debug> */
@@ -443,16 +444,17 @@ UINT ht_ltextfile::getlinelength_i(ht_ltextfile_line *e)
 
 void ht_ltextfile::insert_lines(UINT before, UINT count, void **line_ends, int *line_end_lens)
 {
-	ht_ltextfile_line *e;
+	ht_ltextfile_line *e = fetch_line(before);
+     int instate = e->instate;
 	while (count--) {
-		e=new ht_ltextfile_line();
-		e->is_in_memory=true;
-		e->instate=0;
-		e->on_disk.ofs=0xffffffff;
-		e->on_disk.len=0;
-		e->in_memory.data=(char*)malloc(1);
-		e->in_memory.len=0;
-		e->nofs=0;
+		e = new ht_ltextfile_line();
+		e->is_in_memory = true;
+		e->instate = instate;
+		e->on_disk.ofs = 0xffffffff;
+		e->on_disk.len = 0;
+		e->in_memory.data = (char*)malloc(1);
+		e->in_memory.len = 0;
+		e->nofs = 0;
 		if (line_ends && line_end_lens) {
 			e->lineendlen = *line_end_lens++;
 			memmove(e->lineend, *line_ends++, e->lineendlen);
@@ -464,7 +466,7 @@ void ht_ltextfile::insert_lines(UINT before, UINT count, void **line_ends, int *
 	}
 	dirty_parse(before);
 	dirty_nofs(before);
-	dirty=true;
+	dirty = true;
 }
 
 void ht_ltextfile::insert_chars(UINT line, UINT ofs, void *chars, UINT len)
@@ -784,9 +786,10 @@ void ht_ltextfile::update_parse(UINT target)
 
 	lexer_state instate=0;
 	if (line) {
-//		instate = next_instate(line-1);
-		e = fetch_line(line);
-		instate = e->instate;
+		instate = next_instate(line-1);
+// FIXME: function help works with this already...
+/*		e = fetch_line(line);
+		instate = e->instate;*/
 	} else {
 		if (lexer) instate = lexer->getinitstate();
 	}

@@ -39,6 +39,10 @@
 
 #define STREAM_COPYBUF_SIZE	(64*1024)
 
+ht_stream::~ht_stream()
+{
+}
+
 void	ht_stream::init()
 {
 	stream_error_func = NULL;

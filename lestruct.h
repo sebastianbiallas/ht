@@ -162,10 +162,10 @@ struct LE_HEADER {
 
 #define LE_OBJECT_FLAG_USE32            (1<<13)
 
-#define LE_SIZEOF_OBJECT_HEADER	24
+#define LE_SIZEOF_OBJECT				24
 
-struct LE_OBJECT_HEADER	{
-	dword	virtual_size HTPACKED;
+struct LE_OBJECT	{
+	dword	vsize HTPACKED;
 	dword	base_reloc_addr HTPACKED;
 	dword	flags HTPACKED;
 	dword	page_map_index HTPACKED;
@@ -210,10 +210,21 @@ struct LE_ENTRYPOINT32 {
  */
 
 #define   LE_FIXUP_ADDR_TYPE_MASK		(15<<0)
+#define		LE_FIXUP_ADDR_TYPE_0_8		0
+#define		LE_FIXUP_ADDR_TYPE_16_0		2
+#define		LE_FIXUP_ADDR_TYPE_16_16		3
+#define		LE_FIXUP_ADDR_TYPE_0_16		5
+#define		LE_FIXUP_ADDR_TYPE_16_32		6
+#define		LE_FIXUP_ADDR_TYPE_0_32		7
+#define		LE_FIXUP_ADDR_TYPE_REL32		8
 #define   LE_FIXUP_ADDR_16_16			(1<<4)
 #define   LE_FIXUP_ADDR_MULTIPLE		(1<<5)
 
 #define   LE_FIXUP_RELOC_TYPE_MASK		(3<<0)
+#define        LE_FIXUP_RELOC_TYPE_INTERNAL		0
+#define        LE_FIXUP_RELOC_TYPE_IMPORT_ORD	1
+#define        LE_FIXUP_RELOC_TYPE_IMPORT_NAME	2
+#define        LE_FIXUP_RELOC_TYPE_OSFIXUP		3	// ?
 #define   LE_FIXUP_RELOC_ADDITIVE		(1<<2)
 #define   LE_FIXUP_RELOC_TARGET32		(1<<4)
 #define   LE_FIXUP_RELOC_ADDITIVE32	(1<<5)
@@ -226,7 +237,7 @@ struct LE_FIXUP {
 };
 
 // if address_type == 8, reloc_type = 0
-struct LE_FIXUP_INTERNAL {
+struct LE_FIXUP_INTERNAL16 {
 	uint8	seg HTPACKED;
 	uint16	ofs HTPACKED;
 };
@@ -265,17 +276,17 @@ struct LE_VXD_DESCRIPTOR {
  */
 
 struct ht_le_objmap {
-	LE_OBJECT_HEADER *header;
-	dword *psize;
-	dword *vsize;
-	int count;
+	LE_OBJECT *header;
+	UINT *psize;
+	UINT *vsize;
+	UINT count;
 };
 
 struct ht_le_pagemap {
-	dword *offset;
-	dword *psize;
-	dword *vsize;
-	int count;
+	UINT *offset;
+	UINT *psize;
+	UINT *vsize;
+	UINT count;
 };
 
 /**/
@@ -288,6 +299,7 @@ extern byte LE_VXD_DESCRIPTOR_struct[];
 extern byte LE_FIXUP_INTERNAL_struct[];
 extern byte LE_OBJECT_HEADER_struct[];
 extern byte LE_PAGE_MAP_ENTRY_struct[];
+extern byte LE_FIXUP_INTERNAL16_struct[];
 
 #endif /* __LESTRUCT_H_ */
 

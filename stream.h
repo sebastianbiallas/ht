@@ -56,6 +56,8 @@ protected:
 
 		   int		call_error_func();
 public:
+	virtual 			~ht_stream();
+
 		   void		init();
 	virtual void		done();
 /* new */

@@ -21,11 +21,26 @@
 #ifndef __HTLEIMG_H__
 #define __HTLEIMG_H__
 
-#include "stream.h"
-
+#include "htanaly.h"
+#include "htle.h"
 #include "formats.h"
 
 extern format_viewer_if htleimage_if;
+
+/*
+ *	CLASS ht_le_aviewer
+ */
+
+class ht_le_aviewer: public ht_aviewer {
+public:
+	ht_le_shared_data *le_shared;
+	ht_streamfile *file;
+	
+	        void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_le_shared_data *le_shared);
+/* overwritten */
+	virtual char *func(UINT i, bool execute);
+	virtual void setAnalyser(Analyser *a);
+};
 
 #endif /* !__HTLEIMG_H__ */
 
