@@ -697,11 +697,12 @@ void x86dis::prefixes()
 
 int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 {
-	int regc=0, memc=0;
+	int regc=0, memc=0, segc=0;
 	for (int i=0; i<3; i++) {
 		switch (disasm_insn->op[i].type) {
-			case X86_OPTYPE_REG:
 			case X86_OPTYPE_SEG:
+               	segc++;
+			case X86_OPTYPE_REG:
 			case X86_OPTYPE_CRX:
 			case X86_OPTYPE_DRX:
 			case X86_OPTYPE_TRX:
@@ -714,7 +715,8 @@ int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 				break;
 		}
 	}
-	return (memc && (!regc))
+	return (memc && !regc)
+     	|| (memc && segc)
 		|| (strcmp(disasm_insn->name, "movzx") == 0)
 		|| (strcmp(disasm_insn->name, "movsx") == 0);
 }
