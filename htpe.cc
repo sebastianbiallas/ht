@@ -135,15 +135,15 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 /* read section headers */
 	int os=pe_shared->coffheader.optional_header_size;
 	pe_shared->sections.section_count=pe_shared->coffheader.section_count;
-	
-	file->seek(header_ofs+os+24);
+
+	file->seek(header_ofs+os+sizeof(COFF_HEADER)+4/*magic*/);
 	pe_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(pe_shared->sections.section_count * sizeof *pe_shared->sections.sections);
 	file->read(pe_shared->sections.sections, pe_shared->sections.section_count*sizeof *pe_shared->sections.sections);
-	
+
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		create_host_struct(&pe_shared->sections.sections[i], COFF_SECTION_HEADER_struct, little_endian);
 	}
-	
+
 	shared_data = pe_shared;
 
 	ht_format_group::init_ifs(ifs);
@@ -151,8 +151,10 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 
 void ht_pe::done()
 {
-	ht_pe_shared_data *pe_shared = (ht_pe_shared_data*)shared_data;
 	ht_format_group::done();
+
+	ht_pe_shared_data *pe_shared = (ht_pe_shared_data*)shared_data;
+
 	if (pe_shared->exports.funcs) {
 		pe_shared->exports.funcs->destroy();
 		delete pe_shared->exports.funcs;
@@ -334,8 +336,8 @@ bool pe_ofs_is_valid(pe_section_headers *section_headers, FILEOFS ofs)
 bool pe_section_name_to_section(pe_section_headers *section_headers, const char *name, int *section)
 {
 	COFF_SECTION_HEADER *s = section_headers->sections;
-     int slen = strlen(name);
-     slen = MIN(slen, COFF_SIZEOF_SHORT_NAME);
+	int slen = strlen(name);
+	slen = MIN(slen, COFF_SIZEOF_SHORT_NAME);
 	for (UINT i=0; i < section_headers->section_count; i++) {
 		if (strncmp(name, (char*)&s->name, slen) == 0) {
 			*section = i;
