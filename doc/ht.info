@@ -1,4 +1,4 @@
-Dies ist ht.info, hergestellt von Makeinfo Version 4.2 aus ht.texi.
+This is ht.info, produced by makeinfo version 4.5 from ht.texi.
 
 START-INFO-DIR-ENTRY
 * ht: (ht.info).             HT Editor.
@@ -26,7 +26,7 @@ File: ht.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-This is HT 0.8.0pre; please note that this is a beta version of the
+This is HT 0.8.0pre1; please note that this is a beta version of the
 program.  Therefore HT is incomplete and sometimes buggy. Enjoy
 anyway...
 
@@ -145,7 +145,7 @@ General features
 ================
 
   1. Supported file formats
-        * common object file format (COFF)
+        * common object file format (COFF/XCOFF32)
                - header
                - image with code/data analyser (x86)
 
@@ -155,7 +155,7 @@ General features
                - program headers
                - symbol tables
                - image with code/data analyser (x86, IA-64, Alpha,
-               PowerPC)
+               PowerPC) and relocations
 
         * linear executables (LE)
                - header
@@ -195,6 +195,16 @@ General features
         * Mach exe/link format (MachO)
                - header
                - image with code/data analyser (x86, PowerPC)
+          X-Box executable (XBE)
+               - header
+               - imports
+               - image with code/data analyser (x86)
+          Flat (FLT)
+               - header
+               - image with data analyser (no disassembler yet)
+          PowerPC executable format (PEF)
+               - header
+               - imports - image with code/data analyser (PowerPC)
 
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 
@@ -422,18 +432,18 @@ a look at `http://sourceforge.net/projects/hte'
 
 
 Tag Table:
-Node: Top581
-Node: About886
-Node: Key bindings1715
-Node: Authors3234
-Node: Features3388
-Node: General features3765
-Node: Configuration files6095
-Node: Clipboard6742
-Node: Global history7551
-Node: Expression evaluation8100
-Node: Block operations9476
-Node: Search and its different modes10368
-Node: Where to download ?13038
+Node: Top577
+Node: About883
+Node: Key bindings1712
+Node: Authors3231
+Node: Features3385
+Node: General features3762
+Node: Configuration files6493
+Node: Clipboard7140
+Node: Global history7949
+Node: Expression evaluation8498
+Node: Block operations9874
+Node: Search and its different modes10766
+Node: Where to download ?13436
 
 End Tag Table

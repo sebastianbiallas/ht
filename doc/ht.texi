@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.8.0pre, Nov 2003}
+@subtitle{Edition 0.8.0pre1, Mar 2004}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.8.0pre
+0.8.0pre1
 @end macro
 
 @macro hturl
@@ -258,7 +258,7 @@ nevertheless contains some very advanced and useful features:
 Supported file formats
 @itemize @bullet
 @item 
-common object file format (COFF)
+common object file format (COFF/XCOFF32)
 @itemize @w
 @item 
 - header @*
@@ -272,7 +272,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, IA-64, Alpha, PowerPC)
+- image with code/data analyser (x86, IA-64, Alpha, PowerPC) and relocations
 @end itemize
 @item 
 linear executables (LE)
@@ -329,6 +329,26 @@ Mach exe/link format (MachO)
 @item
 - header @*
 - image with code/data analyser (x86, PowerPC) @*
+@end itemize
+X-Box executable (XBE)
+@itemize @w
+@item
+- header @*
+- imports @*
+- image with code/data analyser (x86) @*
+@end itemize
+Flat (FLT)
+@itemize @w
+@item
+- header @*
+- image with data analyser (no disassembler yet) @*
+@end itemize
+PowerPC executable format (PEF)
+@itemize @w
+@item
+- header @*
+- imports
+- image with code/data analyser (PowerPC) @*
 @end itemize
 @item
 Still some to be implemented (M$-OBJ, ARCH, LX)
