@@ -5,7 +5,7 @@ LFLAGS=
 AUTOMAKE_OPTIONS=foreign
 
 noinst_LIBRARIES = libhteval.a
-libhteval_a_SOURCES = eval.y eval.h lex.l lex.h evalx.c evalx.h evaltype.h
+libhteval_a_SOURCES = evalparse.y evalparse.h eval.cc eval.h lex.l lex.h evalx.c evalx.h evaltype.h
 INCLUDES = -I.
 
 #bin_PROGRAMS = testeval
