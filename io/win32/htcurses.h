@@ -53,6 +53,8 @@
 #define CHAR_ARROW_DOWN (unsigned char)'\x19'
 #define CHAR_ARROWBIG_UP (unsigned char)'\x1e'
 #define CHAR_ARROWBIG_DOWN (unsigned char)'\x1f'
+#define CHAR_ARROWBIG_RIGHT '>'
+#define CHAR_ARROWBIG_LEFT '<'
 #define CHAR_RADIO	(unsigned char)'\x7'
 
 class screendrawbuf: public genericdrawbuf {
