@@ -242,15 +242,15 @@ void screendrawbuf::getcursor(int *x, int *y)
 void screendrawbuf::hidecursor()
 {
 	if (cursor_visible) {
+		COORD xy;
+		xy.X=size.w-1;
+		xy.Y=size.h-1;
+		SetConsoleCursorPosition(output, xy);
 		CONSOLE_CURSOR_INFO ci;
 		ci.dwSize = 0xd;
 		ci.bVisible = false;
 		if (!SetConsoleCursorInfo(output, &ci)) {
 		}
-		COORD xy;
-		xy.X=size.w-1;
-		xy.Y=size.h-1;
-		SetConsoleCursorPosition(output, xy);
 		cursor_visible = false;
 	}
 }

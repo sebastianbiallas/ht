@@ -2004,6 +2004,8 @@ void ht_text_viewer::set_lexer(ht_syntax_lexer *l, bool own_l)
 		lexer->done();
 		delete lexer;
 	}
+	// FIXME: is this "the right thing"?
+	if (l) l->config_changed();
 	lexer=l;
 	own_lexer=own_l;
 	textfile->set_lexer(l);
@@ -2368,11 +2370,12 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			m->init("~Texteditor");
 			if (undo_list) {
 				char buf[30], buf2[20];
-				if (undo_list->current_position) {
+				// FIXME: implementme correctly/better
+/*				if (undo_list->current_position) {
 					((ht_undo_data*)undo_list->get(undo_list->current_position-1))->gettext(buf2, sizeof buf2);
 				} else {
-					buf2[0] = 0;
-				}
+				}*/
+				buf2[0] = 0;
 				ht_snprintf(buf, sizeof buf, "~Undo %s", buf2);
 			
 				m->insert_entry(buf, "Alt+U", cmd_text_editor_undo, 0, 1);
@@ -2380,7 +2383,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 				m->insert_entry("~Protocol", "Alt+P", cmd_text_editor_protocol, K_Alt_P, 1);
 				m->insert_separator();
 			}
-			m->insert_entry("Change ~highlight", "Alt+H", cmd_text_viewer_change_highlight, K_Alt_H, 1);
+			m->insert_entry("Change ~highlight", "", cmd_text_viewer_change_highlight, 0, 1);
 			m->insert_separator();
 			// FIXME: somewhat hacked
 			m->insert_entry("~Delete line", "Control+Y", cmd_text_editor_delete_line, 0, 1);
