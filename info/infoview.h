@@ -24,7 +24,7 @@
 #include "textedit.h"
 #include "textfile.h"
 
-#define MAGIC_HT_HELP "HtHeLp.InFo$$"
+#define MAGIC_HT_HELP "$$HTHELP"
 
 /*
  *	CLASS info_node

@@ -522,7 +522,7 @@ bool ht_info_viewer::igotonode(char *f, char *n, bool add2hist)
 	if ((fl>=0) && (strcmp(f+fl, MAGIC_HT_HELP) == 0)) {
 		infotext = strdup(htinfo);
 		strcpy(ncwd, "");
-		strcpy(nfile, f);
+		strcpy(nfile, MAGIC_HT_HELP);
 	} else {
 		char ff[HT_NAME_MAX], cff[HT_NAME_MAX];
 		cff[0] = 0;
