@@ -16,9 +16,9 @@ void yyerror (char *s)
 %}
 
 %union {
-	scalar_t scalar;
+	eval_scalar scalar;
 	char *ident;
-	scalarlist_t scalars;
+	eval_scalarlist scalars;
 };
 
 %token <scalar> EVAL_INT

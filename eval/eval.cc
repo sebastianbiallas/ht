@@ -39,8 +39,8 @@ int debug_dump_ident;
 #define MAX_SYMBOLNAME_LEN	32
 #define MAX_ERRSTR_LEN		64
 
-static eval_func_handler_t eval_func_handler;
-static eval_symbol_handler_t eval_symbol_handler;
+static eval_func_handler g_eval_func_handler;
+static eval_symbol_handler g_eval_symbol_handler;
 static void *eval_context;
 
 qword f2i(double f)
@@ -49,6 +49,41 @@ qword f2i(double f)
 	if (f>0) r = (int)(f+.5); else r = (int)(f-.5);
      // FIXME
 	return to_qword(r);
+}
+
+static qword ipow(qword a, qword b)
+{
+	qword r = to_qword(1);
+     qword m = to_qword(1) << 63;
+     while (m != to_qword(0)) {
+         	r *= r;
+          if ((b & m) != to_qword(0)) {
+          	r *= a;
+		}
+          m = m >> 1;
+     }
+     return r;
+}
+
+static int sprint_basen(char *buffer, int base, qword q)
+{
+	static char *chars="0123456789abcdef";
+	if ((base<2) || (base>16)) return 0;
+	int n = 0;
+	char *b = buffer;
+	while (q != to_qword(0)) {
+		int c = QWORD_GET_INT(q % to_qword(base));
+		*buffer++ = chars[c];
+		n++;
+		q /= to_qword(base);
+	}
+	for (int i=0; i < n/2; i++) {
+		char t = b[i];
+		b[i] = b[n-i-1];
+		b[n-i-1] = t;
+	}
+     b[n] = 0;
+	return n;
 }
 
 char *binstr2cstr(char *s, int len)
@@ -124,17 +159,17 @@ void set_eval_error_ex(int pos, char *format, ...)
 
 #ifdef EVAL_DEBUG
 
-void integer_dump(int_t *i)
+void integer_dump(eval_int *i)
 {
 	printf("%d", i->value);
 }
 
-void float_dump(ht_float_t *f)
+void float_dump(eval_float *f)
 {
 	printf("%f", f->value);
 }
 
-void string_dump(str_t *s)
+void string_dump(eval_str *s)
 {
 	int i;
 	for (i=0; i<s->len; i++) {
@@ -148,7 +183,7 @@ void string_dump(str_t *s)
 
 #endif
 
-void string_destroy(str_t *s)
+void string_destroy(eval_str *s)
 {
 	if (s->value) free(s->value);
 }
@@ -157,22 +192,22 @@ void string_destroy(str_t *s)
  *	SCALARLIST
  */
 
-void scalarlist_set(scalarlist_t *l, scalar_t *s)
+void scalarlist_set(eval_scalarlist *l, eval_scalar *s)
 {
 	l->count=1;
-	l->scalars=(scalar_t*)malloc(sizeof (scalar_t) * l->count);
+	l->scalars=(eval_scalar*)malloc(sizeof (eval_scalar) * l->count);
 	l->scalars[0]=*s;
 }
 
-void scalarlist_concat(scalarlist_t *l, scalarlist_t *a, scalarlist_t *b)
+void scalarlist_concat(eval_scalarlist *l, eval_scalarlist *a, eval_scalarlist *b)
 {
 	l->count=a->count+b->count;
-	l->scalars=(scalar_t*)malloc(sizeof (scalar_t) * l->count);
-	memmove(l->scalars, a->scalars, sizeof (scalar_t) * a->count);
-	memmove(l->scalars+a->count, b->scalars, sizeof (scalar_t) * b->count);
+	l->scalars=(eval_scalar*)malloc(sizeof (eval_scalar) * l->count);
+	memmove(l->scalars, a->scalars, sizeof (eval_scalar) * a->count);
+	memmove(l->scalars+a->count, b->scalars, sizeof (eval_scalar) * b->count);
 }
 
-void scalarlist_destroy(scalarlist_t *l)
+void scalarlist_destroy(eval_scalarlist *l)
 {
 	int i;
 	if (l && l->scalars) {
@@ -183,14 +218,14 @@ void scalarlist_destroy(scalarlist_t *l)
 	}		
 }
 
-void scalarlist_destroy_gentle(scalarlist_t *l)
+void scalarlist_destroy_gentle(eval_scalarlist *l)
 {
 	if (l && l->scalars) free(l->scalars);
 }
 
 #ifdef EVAL_DEBUG
 
-void scalarlist_dump(scalarlist_t *l)
+void scalarlist_dump(eval_scalarlist *l)
 {
 	int i;
 	for (i=0; i<l->count; i++) {
@@ -207,13 +242,13 @@ void scalarlist_dump(scalarlist_t *l)
  *	SCALAR
  */
 
-void scalar_setint(scalar_t *s, int_t *i)
+void scalar_setint(eval_scalar *s, eval_int *i)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer=*i;
 }
 
-void scalar_setstr(scalar_t *s, str_t *t)
+void scalar_setstr(eval_scalar *s, eval_str *t)
 {
 	s->type=SCALAR_STR;
 	s->scalar.str=*t;
@@ -221,7 +256,7 @@ void scalar_setstr(scalar_t *s, str_t *t)
 
 #ifdef EVAL_DEBUG
 
-void scalar_dump(scalar_t *s)
+void scalar_dump(eval_scalar *s)
 {
 	switch (s->type) {
 		case SCALAR_STR: {
@@ -243,27 +278,27 @@ void scalar_dump(scalar_t *s)
 
 #endif
 
-void scalar_create_int(scalar_t *s, int_t *t)
+void scalar_create_int(eval_scalar *s, eval_int *t)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer=*t;
 }
 
-void scalar_create_int_c(scalar_t *s, int i)
+void scalar_create_int_c(eval_scalar *s, int i)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer.value=to_qword(i);
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
-void scalar_create_int_q(scalar_t *s, qword q)
+void scalar_create_int_q(eval_scalar *s, qword q)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer.value=q;
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
-void scalar_create_str(scalar_t *s, str_t *t)
+void scalar_create_str(eval_scalar *s, eval_str *t)
 {
 	s->type=SCALAR_STR;
 	s->scalar.str.value=(char*)malloc(t->len ? t->len : 1);
@@ -271,33 +306,32 @@ void scalar_create_str(scalar_t *s, str_t *t)
 	s->scalar.str.len=t->len;
 }
 
-void scalar_create_str_c(scalar_t *s, char *cstr)
+void scalar_create_str_c(eval_scalar *s, char *cstr)
 {
-	str_t t;
+	eval_str t;
 	t.value=cstr;
 	t.len=strlen(cstr);
 	scalar_create_str(s, &t);
 }
 
-void scalar_create_float(scalar_t *s, ht_float_t *t)
+void scalar_create_float(eval_scalar *s, eval_float *t)
 {
 	s->type=SCALAR_FLOAT;
 	s->scalar.floatnum=*t;
 }
 
-void scalar_create_float_c(scalar_t *s, double f)
+void scalar_create_float_c(eval_scalar *s, double f)
 {
 	s->type=SCALAR_FLOAT;
 	s->scalar.floatnum.value=f;
 }
 
-void scalar_context_str(scalar_t *s, str_t *t)
+void scalar_context_str(eval_scalar *s, eval_str *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
 			char buf[16];
-               // FIXME
-//			sprintf(buf, "%d", s->scalar.integer.value);
+               sprint_basen(buf, 10, s->scalar.integer.value);
 			t->value=(char*)strdup(buf);
 			t->len=strlen(buf);
 			break;
@@ -320,7 +354,7 @@ void scalar_context_str(scalar_t *s, str_t *t)
 	}					
 }
 
-void scalar_context_int(scalar_t *s, int_t *t)
+void scalar_context_int(eval_scalar *s, eval_int *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
@@ -330,7 +364,7 @@ void scalar_context_int(scalar_t *s, int_t *t)
 		case SCALAR_STR: {
 			char *x=binstr2cstr(s->scalar.str.value, s->scalar.str.len);
                // FIXME
-			t->value=/*strtol(x, (char**)NULL, 10)*/to_qword(0);
+			t->value=to_qword((int)strtol(x, (char**)NULL, 10));
 			t->type=TYPE_UNKNOWN;
 			free(x);
 			break;
@@ -345,22 +379,21 @@ void scalar_context_int(scalar_t *s, int_t *t)
 	}					
 }
 
-void scalar_context_float(scalar_t *s, ht_float_t *t)
+void scalar_context_float(eval_scalar *s, eval_float *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
-          	// FIXME
-			t->value = 0/*s->scalar.integer.value*/;
+			t->value = QWORD_GET_FLOAT(s->scalar.integer.value);
 			break;
 		}
 		case SCALAR_STR:  {
-			char *x=binstr2cstr(s->scalar.str.value, s->scalar.str.len);
-			t->value=strtod(x, (char**)NULL);
+			char *x = binstr2cstr(s->scalar.str.value, s->scalar.str.len);
+			t->value = strtod(x, (char**)NULL);
 			free(x);
 			break;
 		}			
 		case SCALAR_FLOAT: {
-			*t=s->scalar.floatnum;
+			*t = s->scalar.floatnum;
 			break;
 		}
 		default:
@@ -368,7 +401,7 @@ void scalar_context_float(scalar_t *s, ht_float_t *t)
 	}					
 }
 
-void string_concat(str_t *s, str_t *a, str_t *b)
+void string_concat(eval_str *s, eval_str *a, eval_str *b)
 {
 	s->value=(char*)malloc(a->len+b->len ? a->len+b->len : 1);
 	memmove(s->value, a->value, a->len);
@@ -381,9 +414,9 @@ void string_concat(str_t *s, str_t *a, str_t *b)
 	b->len=0;
 }
 
-void scalar_concat(scalar_t *s, scalar_t *a, scalar_t *b)
+void scalar_concat(eval_scalar *s, eval_scalar *a, eval_scalar *b)
 {
-	str_t as, bs, rs;
+	eval_str as, bs, rs;
 	scalar_context_str(a, &as);
 	scalar_context_str(b, &bs);
 	string_concat(&rs, &as, &bs);
@@ -391,7 +424,7 @@ void scalar_concat(scalar_t *s, scalar_t *a, scalar_t *b)
 	s->scalar.str=rs;
 }
 
-void scalar_destroy(scalar_t *s)
+void scalar_destroy(eval_scalar *s)
 {
 	switch (s->type) {
 		case SCALAR_STR:
@@ -402,7 +435,7 @@ void scalar_destroy(scalar_t *s)
 	}
 }
 
-int string_compare(str_t *a, str_t *b)
+int string_compare(eval_str *a, eval_str *b)
 {
 	if (a->len==b->len) {
 		return memcmp(a->value, b->value, a->len);
@@ -410,9 +443,9 @@ int string_compare(str_t *a, str_t *b)
 	return a->len-b->len;
 }
 
-int scalar_strop(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
+int scalar_strop(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 {
-	str_t as, bs;
+	eval_str as, bs;
 	int r;
 	int c;
 	scalar_context_str(xa, &as);
@@ -435,19 +468,9 @@ int scalar_strop(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 	return 1;
 }
 
-int ipow(int a, int b)
+int scalar_float_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 {
-	b %= sizeof (int) * 8;
-	int i, r = 1;
-	for (i=0; i<b; i++) {
-		r *= a;
-	}
-	return r;
-}
-
-int scalar_float_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
-{
-	ht_float_t ai, bi;
+	eval_float ai, bi;
 	float a, b, r;
 	scalar_context_float(xa, &ai);
 	scalar_context_float(xb, &bi);
@@ -485,9 +508,9 @@ int scalar_float_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 	return 1;
 }
 
-int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
+int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 {
-	int_t ai, bi;
+	eval_int ai, bi;
 	qword a, b, r;
 	scalar_context_int(xa, &ai);
 	scalar_context_int(xb, &bi);
@@ -518,7 +541,8 @@ int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 		case '|': r=a|b; break;
 		case '^': r=a^b; break;
           // FIXME
-//		case EVAL_POW: r=ipow(a,b); break;
+		case EVAL_POW: r=ipow(a, b); break;
+//		case EVAL_POW: r=to_qword((int)pow(QWORD_GET_INT(a),QWORD_GET_INT(b))); break;
 		case EVAL_SHL: r=a<<QWORD_GET_LO(b); break;
 		case EVAL_SHR: r=a>>QWORD_GET_LO(b); break;
 		case EVAL_EQ: r=to_qword(a==b); break;
@@ -541,7 +565,7 @@ int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 	return 1;
 }
 
-int scalar_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
+int scalar_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 {
 	int r;
 	if ((xa->type==SCALAR_FLOAT) || (xb->type==SCALAR_FLOAT)) {
@@ -554,16 +578,16 @@ int scalar_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op)
 	return r;
 }
 	
-void scalar_negset(scalar_t *xr, scalar_t *xa)
+void scalar_negset(eval_scalar *xr, eval_scalar *xa)
 {
 	if (xa->type==SCALAR_FLOAT) {
-		ht_float_t a;
+		eval_float a;
 		a=xa->scalar.floatnum;
 	
 		xr->type=SCALAR_FLOAT;
 		xr->scalar.floatnum.value=-a.value;
 	} else {
-		int_t a;
+		eval_int a;
 		scalar_context_int(xa, &a);
 	
 		xr->type=SCALAR_INT;
@@ -573,9 +597,9 @@ void scalar_negset(scalar_t *xr, scalar_t *xa)
 	scalar_destroy(xa);
 }
 
-void scalar_miniif(scalar_t *xr, scalar_t *xa, scalar_t *xb, scalar_t *xc)
+void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc)
 {
-	int_t a;
+	eval_int a;
 	scalar_context_int(xa, &a);
 	if (a.value != to_qword(0)) {
 		*xr = *xb;
@@ -589,9 +613,9 @@ void scalar_miniif(scalar_t *xr, scalar_t *xa, scalar_t *xb, scalar_t *xc)
  *	BUILTIN FUNCTIONS
  */
 
-int func_char(scalar_t *r, int_t *i)
+int func_char(eval_scalar *r, eval_int *i)
 {
-	str_t s;
+	eval_str s;
 	char c = QWORD_GET_LO(i->value);
 	s.value=&c;
 	s.len=1;
@@ -599,33 +623,33 @@ int func_char(scalar_t *r, int_t *i)
 	return 1;
 }
 
-int func_float(scalar_t *r, ht_float_t *p)
+int func_float(eval_scalar *r, eval_float *p)
 {
 	scalar_create_float(r, p);
 	return 1;
 }
 
-int func_fmax(scalar_t *r, ht_float_t *p1, ht_float_t *p2)
+int func_fmax(eval_scalar *r, eval_float *p1, eval_float *p2)
 {
 	r->type=SCALAR_FLOAT;
 	r->scalar.floatnum.value=(p1->value>p2->value) ? p1->value : p2->value;
 	return 1;
 }
 
-int func_fmin(scalar_t *r, ht_float_t *p1, ht_float_t *p2)
+int func_fmin(eval_scalar *r, eval_float *p1, eval_float *p2)
 {
 	r->type=SCALAR_FLOAT;
 	r->scalar.floatnum.value=(p1->value<p2->value) ? p1->value : p2->value;
 	return 1;
 }
 
-int func_int(scalar_t *r, int_t *p)
+int func_int(eval_scalar *r, eval_int *p)
 {
 	scalar_create_int(r, p);
 	return 1;
 }
 
-int func_ord(scalar_t *r, str_t *s)
+int func_ord(eval_scalar *r, eval_str *s)
 {
 	if (s->len>=1) {
 		scalar_create_int_c(r, s->value[0]);
@@ -635,32 +659,32 @@ int func_ord(scalar_t *r, str_t *s)
 	return 0;		
 }
 
-int func_max(scalar_t *r, int_t *p1, int_t *p2)
+int func_max(eval_scalar *r, eval_int *p1, eval_int *p2)
 {
 	scalar_create_int(r, (p1->value>p2->value) ? p1 : p2);
 	return 1;
 }
 
-int func_min(scalar_t *r, int_t *p1, int_t *p2)
+int func_min(eval_scalar *r, eval_int *p1, eval_int *p2)
 {
 	scalar_create_int(r, (p1->value<p2->value) ? p1 : p2);
 	return 1;
 }
 
-int func_random(scalar_t *r, int_t *p1)
+int func_random(eval_scalar *r, eval_int *p1)
 {
      qword d = to_qword(rand());
 	scalar_create_int_q(r, (p1->value != to_qword(0)) ? (d % p1->value):to_qword(0));
 	return 1;
 }
 
-int func_rnd(scalar_t *r)
+int func_rnd(eval_scalar *r)
 {
 	scalar_create_int_c(r, rand() % 10);
 	return 1;
 }
 
-int func_round(scalar_t *r, ht_float_t *p)
+int func_round(eval_scalar *r, eval_float *p)
 {
 	r->type=SCALAR_INT;
 	r->scalar.integer.value=f2i(p->value+0.5);
@@ -668,7 +692,7 @@ int func_round(scalar_t *r, ht_float_t *p)
 	return 1;
 }
 
-int func_strchr(scalar_t *r, str_t *p1, str_t *p2)
+int func_strchr(eval_scalar *r, eval_str *p1, eval_str *p2)
 {
 	if (p2->len) {
 		if (p1->len) {
@@ -687,7 +711,7 @@ int func_strchr(scalar_t *r, str_t *p1, str_t *p2)
 	}
 }
 
-int func_strcmp(scalar_t *r, str_t *p1, str_t *p2)
+int func_strcmp(eval_scalar *r, eval_str *p1, eval_str *p2)
 {
 	int r2=memcmp(p1->value, p2->value, MIN(p1->len, p2->len));
 	if (r2) {
@@ -704,39 +728,39 @@ int func_strcmp(scalar_t *r, str_t *p1, str_t *p2)
 	return 1;     
 }
 
-int func_string(scalar_t *r, str_t *p)
+int func_string(eval_scalar *r, eval_str *p)
 {
 	scalar_create_str(r, p);
 	return 1;
 }
 
-int func_strlen(scalar_t *r, str_t *p1)
+int func_strlen(eval_scalar *r, eval_str *p1)
 {
 	scalar_create_int_c(r, p1->len);
 	return 1;
 }
 
-int func_strncmp(scalar_t *r, str_t *p1, str_t *p2, int_t *p3)
+int func_strncmp(eval_scalar *r, eval_str *p1, eval_str *p2, eval_int *p3)
 {
 	return 1;
 }
 
-int func_strrchr(scalar_t *r, str_t *p1, str_t *p2)
+int func_strrchr(eval_scalar *r, eval_str *p1, eval_str *p2)
 {
 	return 1;
 }
 
-int func_strstr(scalar_t *r, str_t *p1, str_t *p2)
+int func_strstr(eval_scalar *r, eval_str *p1, eval_str *p2)
 {
 
 	return 1;
 }
 
-int func_substr(scalar_t *r, str_t *p1, int_t *p2, int_t *p3)
+int func_substr(eval_scalar *r, eval_str *p1, eval_int *p2, eval_int *p3)
 {
 	if (p2->value >= to_qword(0) && p3->value > to_qword(0)) {
 		if (p2->value < to_qword(p1->len)) {
-			str_t s;
+			eval_str s;
 			s.len = QWORD_GET_LO(MIN(p3->value, to_qword(p1->len)-p2->value));
 			s.value = &p1->value[QWORD_GET_LO(p2->value)];
 			scalar_create_str(r, &s);
@@ -749,7 +773,7 @@ int func_substr(scalar_t *r, str_t *p1, int_t *p2, int_t *p3)
 	return 1;
 }
 
-int func_trunc(scalar_t *r, ht_float_t *p)
+int func_trunc(eval_scalar *r, eval_float *p)
 {
 	r->type=SCALAR_INT;
 	r->scalar.integer.value=f2i(p->value);
@@ -757,14 +781,14 @@ int func_trunc(scalar_t *r, ht_float_t *p)
 	return 1;
 }
 
-#define EVALFUNC_FMATH1(name) int func_##name(scalar_t *r, ht_float_t *p)\
+#define EVALFUNC_FMATH1(name) int func_##name(eval_scalar *r, eval_float *p)\
 {\
 	r->type=SCALAR_FLOAT;\
 	r->scalar.floatnum.value=name(p->value);\
 	return 1;\
 }
 
-#define EVALFUNC_FMATH1i(name) int func_##name(scalar_t *r, ht_float_t *p)\
+#define EVALFUNC_FMATH1i(name) int func_##name(eval_scalar *r, eval_float *p)\
 {\
 	r->type=SCALAR_INT;\
 	r->scalar.integer.value=f2i(name(p->value));\
@@ -772,7 +796,7 @@ int func_trunc(scalar_t *r, ht_float_t *p)
 	return 1;\
 }
 
-#define EVALFUNC_FMATH2(name) int func_##name(scalar_t *r, ht_float_t *p1, ht_float_t *p2)\
+#define EVALFUNC_FMATH2(name) int func_##name(eval_scalar *r, eval_float *p1, eval_float *p2)\
 {\
 	r->type=SCALAR_FLOAT;\
 	r->scalar.floatnum.value=name(p1->value, p2->value);\
@@ -821,7 +845,7 @@ void sprintf_puts(char **b, char *blimit, char *buf)
 	}
 }
 
-int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
+int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *s)
 {
 	char cfmt[32];
 	char buf[512];
@@ -838,7 +862,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
 			case 'x':
 			case 'X':
 			case 'c': {
-				int_t i;
+				eval_int i;
 				scalar_context_int(s, &i);
 				
 				sprintf(buf, cfmt, i.value);
@@ -848,7 +872,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
 			}
 			case 's': {
 				char *q=cfmt+1;
-				str_t t;
+				eval_str t;
 /*				int l;*/
 				scalar_context_str(s, &t);
 				
@@ -894,7 +918,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
 			case 'F':
 			case 'g':
 			case 'G': {
-				ht_float_t f;
+				eval_float f;
 				scalar_context_float(s, &f);
 				
 				sprintf(buf, cfmt, f.value);
@@ -913,13 +937,13 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s)
 	return 0;
 }
 
-int func_sprintf(scalar_t *r, str_t *format, scalarlist_t *scalars)
+int func_sprintf(eval_scalar *r, eval_str *format, eval_scalarlist *scalars)
 {
 	char buf[512];		/* FIXME: possible buffer overflow */
 	char *b=buf;
 	char *fmt;
 	int fmtl;
-	scalar_t *s=scalars->scalars;
+	eval_scalar *s=scalars->scalars;
 	
 	fmt=format->value;
 	fmtl=format->len;
@@ -958,13 +982,13 @@ int func_sprintf(scalar_t *r, str_t *format, scalarlist_t *scalars)
  *	FUNCTIONS
  */
 
-int func_eval(scalar_t *r, str_t *p)
+int func_eval(eval_scalar *r, eval_str *p)
 {
 	char *q=(char*)malloc(p->len+1);
 	int x;
 	memmove(q, p->value, p->len);
 	q[p->len]=0;
-	x=eval(r, q, eval_func_handler, eval_symbol_handler, eval_context);
+	x=eval(r, q, g_eval_func_handler, g_eval_symbol_handler, eval_context);
 	free(q);
 /*     if (get_eval_error(NULL, NULL)) {
 		eval_error_pos+=lex_current_buffer_pos();
@@ -972,7 +996,7 @@ int func_eval(scalar_t *r, str_t *p)
 	return x;
 }
 
-int func_error(scalar_t *r, str_t *s)
+int func_error(eval_scalar *r, eval_str *s)
 {
 	char c[1024];
 	bin2str(c, s->value, MIN((unsigned int)s->len, sizeof c));
@@ -980,7 +1004,7 @@ int func_error(scalar_t *r, str_t *s)
 	return 0;
 }
 
-evalfunc_t builtin_evalfuncs[]=	{
+eval_func builtin_evalfuncs[]=	{
 /* eval */
 	{ "eval", (void*)&func_eval, {SCALAR_STR}, "evaluate string" },
 /* type juggling */
@@ -1053,7 +1077,7 @@ evalfunc_t builtin_evalfuncs[]=	{
 	{ NULL, NULL }
 };
 
-protomatch_t match_evalfunc_proto(char *name, scalarlist_t *params, evalfunc_t *proto)
+eval_protomatch match_evalfunc_proto(char *name, eval_scalarlist *params, eval_func *proto)
 {
 	int j;
 	int protoparams=0;
@@ -1071,14 +1095,14 @@ protomatch_t match_evalfunc_proto(char *name, scalarlist_t *params, evalfunc_t *
 	return (protoparams==params->count) ? PROTOMATCH_OK : PROTOMATCH_PARAM_FAIL;
 }
 
-int exec_evalfunc(scalar_t *r, scalarlist_t *params, evalfunc_t *proto)
+int exec_evalfunc(eval_scalar *r, eval_scalarlist *params, eval_func *proto)
 {
 	int j;
 	int retv;
-	scalar_t sc[MAX_EVALFUNC_PARAMS];
+	eval_scalar sc[MAX_EVALFUNC_PARAMS];
 	void *pptrs[MAX_EVALFUNC_PARAMS];
 	int protoparams=0;
-	scalarlist_t *sclist=0;
+	eval_scalarlist *sclist=0;
 	char *errmsg;
 	int errpos;
 
@@ -1121,11 +1145,11 @@ int exec_evalfunc(scalar_t *r, scalarlist_t *params, evalfunc_t *proto)
 				DEBUG_DUMP_SCALAR(&sc[j], "param %d: float=", j);
 				break;
 			case SCALAR_VARARGS: {
-				sclist=(scalarlist_t*)malloc(sizeof (scalarlist_t));
+				sclist=(eval_scalarlist*)malloc(sizeof (eval_scalarlist));
 				sclist->count=params->count-j;
 				if (sclist->count) {
-					sclist->scalars=(scalar_t*)malloc(sizeof (scalar_t) * sclist->count);
-					memmove(sclist->scalars, &params->scalars[j], sizeof (scalar_t) * sclist->count);
+					sclist->scalars=(eval_scalar*)malloc(sizeof (eval_scalar) * sclist->count);
+					memmove(sclist->scalars, &params->scalars[j], sizeof (eval_scalar) * sclist->count);
 				} else {
 					sclist->scalars=NULL;
 				}					
@@ -1144,7 +1168,7 @@ int exec_evalfunc(scalar_t *r, scalarlist_t *params, evalfunc_t *proto)
 	}
 	if (params->count == protoparams) {
 		DEBUG_DUMP_INDENT_IN;
-		retv=((int(*)(scalar_t*,void*,void*,void*,void*,void*,void*,void*,void*))proto->func)(r, pptrs[0], pptrs[1], pptrs[2], pptrs[3], pptrs[4], pptrs[5], pptrs[6], pptrs[7]);
+		retv=((int(*)(eval_scalar*,void*,void*,void*,void*,void*,void*,void*,void*))proto->func)(r, pptrs[0], pptrs[1], pptrs[2], pptrs[3], pptrs[4], pptrs[5], pptrs[6], pptrs[7]);
 		DEBUG_DUMP_INDENT_OUT;
 	} else {
 		retv=0;
@@ -1181,10 +1205,10 @@ int exec_evalfunc(scalar_t *r, scalarlist_t *params, evalfunc_t *proto)
 	return retv;
 }
 
-int evalsymbol(scalar_t *r, char *sname)
+int evalsymbol(eval_scalar *r, char *sname)
 {
 	int s=0;
-	if (eval_symbol_handler) s=eval_symbol_handler(r, sname);
+	if (g_eval_symbol_handler) s = g_eval_symbol_handler(r, sname);
 	if (!get_eval_error(NULL, NULL) && !s) {
 		char sname_short[MAX_SYMBOLNAME_LEN+1];
 		sname_short[MAX_SYMBOLNAME_LEN]=0;
@@ -1194,7 +1218,7 @@ int evalsymbol(scalar_t *r, char *sname)
 	return s;
 }
 
-int std_eval_func_handler(scalar_t *r, char *fname, scalarlist_t *params, evalfunc_t *protos)
+int std_eval_func_handler(eval_scalar *r, char *fname, eval_scalarlist *params, eval_func *protos)
 {
 	char fname_short[MAX_FUNCNAME_LEN+1];
 	
@@ -1215,18 +1239,18 @@ int std_eval_func_handler(scalar_t *r, char *fname, scalarlist_t *params, evalfu
 	return 0;
 }
 
-int evalfunc(scalar_t *r, char *fname, scalarlist_t *params)
+int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params)
 {
 	char fname_short[MAX_FUNCNAME_LEN+1];
 	
 	int s;
-	if (eval_func_handler) {
-		s=eval_func_handler(r, fname, params);
+	if (g_eval_func_handler) {
+		s = g_eval_func_handler(r, fname, params);
 		if (get_eval_error(NULL, NULL)) return 0;
 		if (s) return s;
 	}
 	
-	s=std_eval_func_handler(r, fname, params, builtin_evalfuncs);
+	s = std_eval_func_handler(r, fname, params, builtin_evalfuncs);
 	if (get_eval_error(NULL, NULL)) return 0;
 	if (s) return s;
 	
@@ -1244,15 +1268,16 @@ void *eval_get_context()
 
 void eval_set_context(void *context)
 {
-	eval_context=context;
+	eval_context = context;
 }
 
-void eval_set_func_handler(eval_func_handler_t func_handler)
+void eval_set_func_handler(eval_func_handler func_handler)
 {
-	eval_func_handler=func_handler;
+	g_eval_func_handler = func_handler;
 }
 
-void eval_set_symbol_handler(eval_symbol_handler_t symbol_handler)
+void eval_set_symbol_handler(eval_symbol_handler symbol_handler)
 {
-	eval_symbol_handler=symbol_handler;
+	g_eval_symbol_handler = symbol_handler;
 }
+

@@ -44,9 +44,9 @@ void yyerror (char *s)
 
 #line 18 "evalparse.y"
 typedef union {
-	scalar_t scalar;
+	eval_scalar scalar;
 	char *ident;
-	scalarlist_t scalars;
+	eval_scalarlist scalars;
 } YYSTYPE;
 #include <stdio.h>
 
@@ -820,7 +820,7 @@ yyreduce:
 
 case 1:
 #line 54 "evalparse.y"
-{ *(scalar_t*)resultptr=yyvsp[0].scalar; ;
+{ *(eval_scalar*)resultptr=yyvsp[0].scalar; ;
     break;}
 case 2:
 #line 57 "evalparse.y"
@@ -978,7 +978,7 @@ case 36:
 case 37:
 #line 111 "evalparse.y"
 {
-			scalarlist_t s;
+			eval_scalarlist s;
 			s.count=0;
 			s.scalars=NULL;
 			yyval.scalars = s;

@@ -2,13 +2,13 @@
 #include "eval.h"
 #include "lex.h"
 
-extern int yyparse(scalar_t *result);
+extern int yyparse(eval_scalar *result);
 	
-int eval(scalar_t *r, const char *str, eval_func_handler_t func_handler, eval_symbol_handler_t symbol_handler, void *context)
+int eval(eval_scalar *r, const char *str, eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
 	void *oldbuffer = lex_current_buffer();
 	void *strbuffer = lex_scan_string_buffer(str);
-	scalar_t result;
+	eval_scalar result;
 
 	DEBUG_DUMP("evaluating \"%s\":", str);
 	DEBUG_DUMP_INDENT_IN;

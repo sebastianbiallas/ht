@@ -1,7 +1,7 @@
 typedef union {
-	scalar_t scalar;
+	eval_scalar scalar;
 	char *ident;
-	scalarlist_t scalars;
+	eval_scalarlist scalars;
 } YYSTYPE;
 #define	EVAL_INT	257
 #define	EVAL_STR	258

@@ -39,8 +39,8 @@ extern "C" {
 
 #include "evaltype.h"
 
-typedef int (*eval_func_handler_t)(scalar_t *result, char *name, scalarlist_t *params);
-typedef int (*eval_symbol_handler_t)(scalar_t *result, char *name);
+typedef int (*eval_func_handler)(eval_scalar *result, char *name, eval_scalarlist *params);
+typedef int (*eval_symbol_handler)(eval_scalar *result, char *name);
 
 #include "lex.h"
 #include "evalx.h"
@@ -81,77 +81,77 @@ void set_eval_error_ex(int pos, char *format, ...);
 
 #ifdef EVAL_DEBUG
 
-void integer_dump(int_t *i);
-void float_dump(ht_float_t *f);
-void string_dump(str_t *s);
+void integer_dump(eval_int *i);
+void float_dump(eval_float *f);
+void string_dump(eval_str *s);
 
 #endif
 
-void string_destroy(str_t *s);
+void string_destroy(eval_str *s);
 
 /*
  *	SCALARLIST
  */
 
-void scalarlist_set(scalarlist_t *l, scalar_t *s);
-void scalarlist_concat(scalarlist_t *l, scalarlist_t *a, scalarlist_t *b);
-void scalarlist_destroy(scalarlist_t *l);
-void scalarlist_destroy_gentle(scalarlist_t *l);
+void scalarlist_set(eval_scalarlist *l, eval_scalar *s);
+void scalarlist_concat(eval_scalarlist *l, eval_scalarlist *a, eval_scalarlist *b);
+void scalarlist_destroy(eval_scalarlist *l);
+void scalarlist_destroy_gentle(eval_scalarlist *l);
 
 #ifdef EVAL_DEBUG
-void scalarlist_dump(scalarlist_t *l);
+void scalarlist_dump(eval_scalarlist *l);
 #endif
 
 /*
  *	SCALAR
  */
 
-void scalar_setint(scalar_t *s, int_t *i);
-void scalar_setstr(scalar_t *s, str_t *t);
+void scalar_setint(eval_scalar *s, eval_int *i);
+void scalar_setstr(eval_scalar *s, eval_str *t);
 
 #ifdef EVAL_DEBUG
-void scalar_dump(scalar_t *s);
+void scalar_dump(eval_scalar *s);
 #endif
 
-void scalar_create_int(scalar_t *s, int_t *t);
-void scalar_create_int_c(scalar_t *s, int i);
-void scalar_create_int_q(scalar_t *s, qword q);
-void scalar_create_str(scalar_t *s, str_t *t);
-void scalar_create_str_c(scalar_t *s, char *cstr);
-void scalar_create_float(scalar_t *s, ht_float_t *t);
-void scalar_create_float_c(scalar_t *s, double f);
-void scalar_context_str(scalar_t *s, str_t *t);
-void scalar_context_int(scalar_t *s, int_t *t);
-void scalar_context_float(scalar_t *s, ht_float_t *t);
-void string_concat(str_t *s, str_t *a, str_t *b);
-void scalar_concat(scalar_t *s, scalar_t *a, scalar_t *b);
-void scalar_destroy(scalar_t *s);
-int string_compare(str_t *a, str_t *b);
-int scalar_strop(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op);
-int scalar_float_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op);
-int scalar_int_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op);
-int scalar_op(scalar_t *xr, scalar_t *xa, scalar_t *xb, int op);
-void scalar_negset(scalar_t *xr, scalar_t *xa);
-void scalar_miniif(scalar_t *xr, scalar_t *xa, scalar_t *xb, scalar_t *xc);
+void scalar_create_int(eval_scalar *s, eval_int *t);
+void scalar_create_int_c(eval_scalar *s, int i);
+void scalar_create_int_q(eval_scalar *s, qword q);
+void scalar_create_str(eval_scalar *s, eval_str *t);
+void scalar_create_str_c(eval_scalar *s, char *cstr);
+void scalar_create_float(eval_scalar *s, eval_float *t);
+void scalar_create_float_c(eval_scalar *s, double f);
+void scalar_context_str(eval_scalar *s, eval_str *t);
+void scalar_context_int(eval_scalar *s, eval_int *t);
+void scalar_context_float(eval_scalar *s, eval_float *t);
+void string_concat(eval_str *s, eval_str *a, eval_str *b);
+void scalar_concat(eval_scalar *s, eval_scalar *a, eval_scalar *b);
+void scalar_destroy(eval_scalar *s);
+int string_compare(eval_str *a, eval_str *b);
+int scalar_strop(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
+int scalar_float_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
+int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
+int scalar_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
+void scalar_negset(eval_scalar *xr, eval_scalar *xa);
+void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc);
 void sprintf_puts(char **b, char *blimit, char *buf);
-int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, scalar_t *s);
-int func_sprintf(scalar_t *r, str_t *format, scalarlist_t *scalars);
+int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *s);
+int func_sprintf(eval_scalar *r, eval_str *format, eval_scalarlist *scalars);
 
 /*
  *	FUNCTIONS
  */
 
-int func_eval(scalar_t *r, str_t *p);
-int func_error(scalar_t *r, str_t *s);
-protomatch_t match_evalfunc_proto(char *name, scalarlist_t *params, evalfunc_t *proto);
-int exec_evalfunc(scalar_t *r, scalarlist_t *params, evalfunc_t *proto);
-int evalsymbol(scalar_t *r, char *sname);
-int std_eval_func_handler(scalar_t *r, char *fname, scalarlist_t *params, evalfunc_t *protos);
-int evalfunc(scalar_t *r, char *fname, scalarlist_t *params);
+int func_eval(eval_scalar *r, eval_str *p);
+int func_error(eval_scalar *r, eval_str *s);
+eval_protomatch match_evalfunc_proto(char *name, eval_scalarlist *params, eval_func *proto);
+int exec_evalfunc(eval_scalar *r, eval_scalarlist *params, eval_func *proto);
+int evalsymbol(eval_scalar *r, char *sname);
+int std_eval_func_handler(eval_scalar *r, char *fname, eval_scalarlist *params, eval_func *protos);
+int evalfunc(eval_scalar *r, char *fname, eval_scalarlist *params);
 void *eval_get_context();
 void eval_set_context(void *context);
-void eval_set_func_handler(eval_func_handler_t func_handler);
-void eval_set_symbol_handler(eval_symbol_handler_t symbol_handler);
+void eval_set_func_handler(eval_func_handler func_handler);
+void eval_set_symbol_handler(eval_symbol_handler symbol_handler);
 
 #ifdef __cplusplus
 }

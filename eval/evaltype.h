@@ -15,21 +15,21 @@ typedef enum {
 	TYPE_BYTE,
 	TYPE_WORD,
 	TYPE_DWORD
-} inttype_t;
+} eval_inttype;
 
 typedef struct {
 	qword value;
-	inttype_t type;
-} int_t;
+	eval_inttype type;
+} eval_int;
 
 typedef struct {
 	double value;
-} ht_float_t;
+} eval_float;
 
 typedef struct {
 	char *value;
 	int len;
-} str_t;
+} eval_str;
 
 typedef enum {
 	SCALAR_NULL=0,
@@ -37,36 +37,36 @@ typedef enum {
 	SCALAR_STR,
 	SCALAR_FLOAT,
 	SCALAR_VARARGS
-} scalartype_t;
+} eval_scalartype;
 
 typedef union {
-	int_t integer;
-	str_t str;
-	ht_float_t floatnum;
-} scalarbody_t;
+	eval_int integer;
+	eval_str str;
+	eval_float floatnum;
+} eval_scalarbody;
 
 typedef struct {
-	scalartype_t type;
-	scalarbody_t scalar;
-} scalar_t;
+	eval_scalartype type;
+	eval_scalarbody scalar;
+} eval_scalar;
 
 typedef struct {
 	int count;
-	scalar_t *scalars;
-} scalarlist_t;
+	eval_scalar *scalars;
+} eval_scalarlist;
 
 typedef struct {
 	char *name;
 	void *func;
-	scalartype_t ptype[MAX_EVALFUNC_PARAMS];
+	eval_scalartype ptype[MAX_EVALFUNC_PARAMS];
 	char *desc;
-} evalfunc_t;
+} eval_func;
 
 typedef enum {
 	PROTOMATCH_OK=0,
 	PROTOMATCH_NAME_FAIL,
 	PROTOMATCH_PARAM_FAIL
-} protomatch_t;
+} eval_protomatch;
 
 #endif /* EVALTYPE_H */
 

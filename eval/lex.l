@@ -36,7 +36,7 @@ static int char2int(char a, int base)
 	return i;
 }
 
-static int parse_float(scalar_t *f, char *fpn)
+static int parse_float(eval_scalar *f, char *fpn)
 {
 	char *end;
 	double d;
@@ -49,7 +49,7 @@ static int parse_float(scalar_t *f, char *fpn)
 	return 0;		
 }
 
-static int parse_integer(scalar_t *i, char *num, int base, int lenmod)
+static int parse_integer(eval_scalar *i, char *num, int base, int lenmod)
 {
 	qword k=int_to_qword(0);
 	int l=strlen(num)+lenmod;
@@ -66,7 +66,7 @@ static int parse_integer(scalar_t *i, char *num, int base, int lenmod)
 	return 1;
 }
 
-static int parse_cstring(scalar_t *r, char *s, int len)
+static int parse_cstring(eval_scalar *r, char *s, int len)
 {
 	char *result;
 
@@ -142,7 +142,7 @@ static int parse_cstring(scalar_t *r, char *s, int len)
 	return 1;
 }
 
-static int parse_pstring(scalar_t *s, char *cstr, int len)
+static int parse_pstring(eval_scalar *s, char *cstr, int len)
 {
 	int alloclen=len;
 	if (!len) alloclen=1;
