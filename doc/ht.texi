@@ -207,6 +207,14 @@ Analyser key bindings
 @tab show xrefs (search for xrefs)
 @item #                    
 @tab edit comments
+@item s
+@tab define a string
+@item i
+@tab define an integer (32bit)
+@item h
+@tab define a halfword (16bit)
+@item b
+@tab define a byte (8bit)
 @item Ctrl+A               
 @tab call assembler
 @item Ctrl+F               
