@@ -1663,6 +1663,19 @@ bool ht_app::create_window_clipboard()
 
 		window->setvscrollbar(hs);*/
 
+          bounds k;
+		k = b;
+		k.x=3;
+		k.y=k.h-2;
+		k.w-=7;
+		k.h=1;
+		ht_statictext *ind=new ht_statictext();
+		ind->init(&k, NULL, align_left, false, true);
+		ind->disable_buffering();
+		ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
+
+		window->setpindicator(ind);
+
 		b.x=0;
 		b.y=0;
 		b.w-=2;
@@ -1946,7 +1959,13 @@ bool ht_app::create_window_help(char *file, char *node)
 		infoviewer->init(&b);
 		window->insert(infoviewer);
 
-		if (infoviewer->gotonode(file, node)) {
+          char ff[HT_NAME_MAX], cwd[HT_NAME_MAX];
+
+          cwd[0] = 0;
+		getcwd(cwd, sizeof cwd);
+
+		if ((sys_common_canonicalize(ff, file, cwd, sys_is_path_delim) == 0) &&
+          (infoviewer->gotonode(ff, node))) {
 			insert_window(window, AWT_HELP, 0, false, NULL);
 			
 			window->setpalette(palkey_generic_cyan);
@@ -2280,9 +2299,9 @@ void ht_app::handlemsg(htmsg *msg)
 			UINT i=get_window_listindex((ht_window*)battlefield->current);
 			ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 			if ((e) && (e->layer)) {
-				char fn[FILENAME_MAX];
-				fn[0]=0;
-				if (inputbox("Save as", "~Filename", fn, sizeof fn, HISTATOM_FILE) == button_ok) {
+				char fn[HT_NAME_MAX];
+				fn[0] = 0;
+				if (file_chooser("Save as", fn, sizeof fn)) {
 					int err;
 					bool work = true;
 
@@ -2472,9 +2491,9 @@ void ht_app::handlemsg(htmsg *msg)
                (sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
                : "non-interactive (!) command",
                cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
-				create_window_term(cmd);
-				clearmsg(msg);
+               	if (cmd[0]) create_window_term(cmd);
 			}
+			clearmsg(msg);
 			return;
 		}
 		case cmd_file_extend: {
@@ -2570,10 +2589,10 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_edit_paste_into_file: {
-			char filename[129];
-			filename[0]=0;
-			if (inputbox("clipboard - paste into file", "filename", filename, 128, HISTATOM_FILE)==button_ok) {
-				ht_file *f=new ht_file();
+			char filename[HT_NAME_MAX];
+			filename[0] = 0;
+			if (file_chooser("clipboard - paste into file", filename, sizeof filename)) {
+				ht_file *f = new ht_file();
 				f->init(filename, FAM_WRITE, FOM_CREATE);
 				if (!f->get_error()) {
 					clipboard_paste(f, 0);
@@ -2585,11 +2604,11 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_edit_copy_from_file: {
-			char filename[129];
-			filename[0]=0;
-			if (inputbox("clipboard - copy from file", "filename", filename, 128, HISTATOM_FILE)==button_ok) {
-				char desc[256];	/* secure */
-				ht_file *f=new ht_file();
+			char filename[HT_NAME_MAX];
+			filename[0] = 0;
+			if (file_chooser("clipboard - copy from file", filename, sizeof filename)) {
+				char desc[HT_NAME_MAX+5];
+				ht_file *f = new ht_file();
 				f->init(filename, FAM_READ, FOM_EXISTS);
 				if (!f->get_error()) {
 					ht_snprintf(desc, sizeof desc, "file %s", f->get_filename());
@@ -2602,9 +2621,9 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_project_open: {
-			char fn[FILENAME_MAX];
+			char fn[HT_NAME_MAX];
 			fn[0] = 0;
-			if (inputbox("Open project", "~Project filename", fn, sizeof fn, HISTATOM_FILE) == button_ok) {
+			if (file_chooser("Open project", fn, sizeof fn)) {
 				sendmsg(cmd_project_close);
 				project_opencreate(fn);
 			}

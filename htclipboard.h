@@ -51,6 +51,7 @@ protected:
 	UINT lastwritecount;
 	UINT lastentrycount;
 
+			void get_pindicator_str(char *buf);
 			void selection_changed();
 public:
 			void init(bounds *b, char *desc, int caps, ht_clipboard *clipboard, ht_format_group *format_group);
