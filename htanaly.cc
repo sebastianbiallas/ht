@@ -568,7 +568,7 @@ bool ht_aviewer::convertViewerPosToAddress(const viewer_pos &p, Address **a)
 
 bool ht_aviewer::convertAddressToViewerPos(Address *a, viewer_pos *p)
 {
-	if (a->isValid()) {
+	if (a && a->isValid()) {
 		clear_viewer_pos(p);
 		p->u.sub = analy_sub;
 		a->putIntoArray((byte*)&(p->u.line_id.id2));
