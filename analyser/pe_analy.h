@@ -41,7 +41,7 @@ public:
 			bool		convertAddressToRVA(Address *addr, RVA *r);
 	virtual	Address	*createAddress();
 			Address	*createAddress32(dword addr);
-			Address	*createAddress64(dword high_addr, dword low_addr);
+			Address	*createAddress64(qword high_addr);
 	virtual   Assembler *createAssembler();
 	virtual	char		*getName();
 	virtual   char		*getType();

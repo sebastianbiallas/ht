@@ -18,26 +18,27 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "analy.h"
 #include "analy_alpha.h"
+#include "analy_ia64.h"
 #include "analy_il.h"
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "global.h"
 #include "pe_analy.h"
-
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htpe.h"
 #include "htstring.h"
+#include "ilopc.h"
 #include "pestruct.h"
 #include "x86asm.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
  *
@@ -87,11 +88,18 @@ void PEAnalyser::beginAnalysis()
 
 	setLocationTreeOptimizeThreshold(100);
 	setSymbolTreeOptimizeThreshold(100);
+
+     bool pe32 = (pe_shared->opt_magic == COFF_OPTMAGIC_PE32);
+     
 	/*
 	 *	entrypoint
 	 */
-	Address *entry=createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
-
+     Address *entry;
+     if (pe32) {
+		entry = createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+     } else {
+		entry = createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
+     }
 	pushAddress(entry, entry);
 	
 	/*
@@ -113,7 +121,12 @@ void PEAnalyser::beginAnalysis()
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
 	char blub[100];
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
-		Address *secaddr = createAddress32(s->data_address+pe_shared->pe32.header_nt.image_base);
+          Address *secaddr;
+     	if (pe32) {
+			secaddr = createAddress32(s->data_address+pe_shared->pe32.header_nt.image_base);
+          } else {
+			secaddr = createAddress64(to_qword(s->data_address)+pe_shared->pe64.header_nt.image_base);
+          }
 		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 		addComment(secaddr, 0, "");
 		addComment(secaddr, 0, ";******************************************************************");
@@ -152,7 +165,12 @@ void PEAnalyser::beginAnalysis()
 	int *entropy = random_permutation(export_count);
 	for (int i=0; i<export_count; i++) {
 		ht_pe_export_function *f=(ht_pe_export_function *)pe_shared->exports.funcs->get(*(entropy+i));
-		Address *faddr = createAddress32(f->address);
+          Address *faddr;
+          if (pe32) {
+			faddr = createAddress32(f->address);
+          } else {
+			faddr = createAddress64(to_qword(f->address));
+          }
 		if (validAddress(faddr, scvalid)) {
 			char *label;
 			if (f->byname) {
@@ -180,7 +198,12 @@ void PEAnalyser::beginAnalysis()
 		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->imports.libs->get(f->libidx);
 		char *label;
 		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
-		Address *faddr = createAddress32(f->address);
+		Address *faddr;
+          if (pe32) {
+			faddr = createAddress32(f->address);
+          } else {
+			faddr = createAddress64(to_qword(f->address));
+          }
 		addComment(faddr, 0, "");
 		if (!assignSymbol(faddr, label, label_func)) {
 			// multiple import of a function (duplicate labelname)
@@ -208,7 +231,12 @@ void PEAnalyser::beginAnalysis()
 		}
 		char *label;
 		label = import_func_name(d->name, f->byname ? f->name.name : NULL, f->ordinal);
-		Address *faddr = createAddress32(f->address);
+		Address *faddr;
+          if (pe32) {
+			faddr = createAddress32(f->address);
+          } else {
+			faddr = createAddress64(to_qword(f->address));
+          }
 		addComment(faddr, 0, "");
 		addComment(faddr, 0, ";********************************************************");
 		addComment(faddr, 0, buffer);
@@ -270,6 +298,9 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 	} else if (oid == ATOM_ADDRESS_ALPHA_FLAT_32) {
 		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
+	} else if (oid == ATOM_ADDRESS_FLAT_64) {
+		*r = QWORD_GET_INT(((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base);
+		return true;
 	}
 	return false;
 }
@@ -294,10 +325,9 @@ Address *PEAnalyser::createAddress32(dword addr)
 /*
  *
  */
-Address *PEAnalyser::createAddress64(dword high_addr, dword low_addr)
+Address *PEAnalyser::createAddress64(qword addr)
 {
-	assert(0);
-	return NULL;
+	return new AddressFlat64(addr);
 }
 
 Address *PEAnalyser::createAddress()
@@ -310,7 +340,10 @@ Address *PEAnalyser::createAddress()
 		case COFF_MACHINE_ALPHA:
 			return new AddressAlphaFlat32();
 	}
-	return new AddressX86Flat32();
+     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+		return new AddressFlat64();
+     }
+	return new AddressFlat32();
 }
 
 /*
@@ -480,6 +513,10 @@ void PEAnalyser::initUnasm()
 			DPRINTF("no apropriate disassembler for POWER PC\n");
 			warnbox("No disassembler for POWER PC!");
 			break;
+          case COFF_MACHINE_IA64:
+			analy_disasm = new AnalyIA64Disassembler();
+			((AnalyIA64Disassembler*)analy_disasm)->init(this);
+			break;          
 		case COFF_MACHINE_UNKNOWN:
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", pe_shared->coffheader.machine);
@@ -545,7 +582,11 @@ Address *PEAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
 	RVA r;
 	if (pe_ofs_to_rva(&pe_shared->sections, fileofs, &r)) {
-		return createAddress32(r+pe_shared->pe32.header_nt.image_base);
+          if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+			return createAddress32(r+pe_shared->pe32.header_nt.image_base);
+          } else {
+			return createAddress64(to_qword(r)+pe_shared->pe64.header_nt.image_base);
+          }
 	} else {
 		return new InvalidAddress();
 	}
