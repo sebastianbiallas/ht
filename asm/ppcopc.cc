@@ -107,11 +107,9 @@ static int valid_bo(uint32 value)
 	switch (value & 0x14) {
 		default:
 		case 0:
-			return 1;
 		case 0x4:
-			return (value & 0x2) == 0;
 		case 0x10:
-			return (value & 0x8) == 0;
+			return 1;
 		case 0x14:
 			return value == 0x14;
 	}
@@ -139,7 +137,8 @@ static uint32 extract_boe(uint32 insn, bool *invalid)
 	uint32 value;
 
 	value = (insn >> 21) & 0x1f;
-	if (invalid != NULL && ! valid_bo (value)) *invalid = 1;
+	bool da = valid_bo (value);
+	if (invalid != NULL && ! da) *invalid = 1;
 	return value & 0x1e;
 }
 

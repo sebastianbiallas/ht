@@ -95,7 +95,7 @@ dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 
 			/* Operands that are marked FAKE are simply ignored.  We
 			   already made sure that the extract function considered
-                  the instruction to be valid.  */
+			   the instruction to be valid.  */
 			if ((operand->flags & PPC_OPERAND_FAKE) != 0) continue;
 
 			insn.op[opidx].op = operand;
@@ -108,7 +108,7 @@ dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 				if ((operand->flags & PPC_OPERAND_SIGNED) != 0 && (value & (1 << (operand->bits - 1))) != 0) {
 					value -= 1 << operand->bits;
 				}
-               }
+			}
 
 			/* If the operand is optional, and the value is zero, don't
 			   print anything.  */
@@ -118,7 +118,7 @@ dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 			}
 
 			if (need_comma) {
-//				fprintf(out, ", ");
+				//fprintf(out, ", ");
 				need_comma = false;
 			}
 
@@ -136,7 +136,7 @@ dis_insn *PPCDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 			} else {
 				insn.op[opidx++].creg = value;
 				if (operand->bits == 3) {
-//					fprintf(out, "cr%d", value);
+					//fprintf(out, "cr%d", value);
 				} else {
 
 //					static const char *cbnames[4] = { "lt", "gt", "eq", "so" };
