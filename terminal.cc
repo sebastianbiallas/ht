@@ -96,6 +96,7 @@ bool Terminal::update()
 	FD_SET(out, &wfds);
 	FD_SET(err, &wfds);
 	FD_SET(in, &rfds);
+     // FIXME: FreeBSD problems here
 	struct timeval timeout;
 	
 	timeout.tv_sec = 0;
