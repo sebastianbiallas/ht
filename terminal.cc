@@ -47,7 +47,7 @@ void Terminal::init(ht_streamfile *_in, ht_streamfile *_out, ht_streamfile *_err
 void Terminal::done()
 {
 	in->done();
-    	delete in;
+	delete in;
 	out->done();
 	delete out;
 	err->done();
