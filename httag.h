@@ -34,10 +34,13 @@
 #define HT_STATICTAG_SEL_CH			"\e\x81"
 
 struct ht_tag_sel {
-	byte escape;
-	byte magic;
-	ID id128_1, id128_2, id128_3, id128_4;
-	byte strlen;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	ID id128_1 HTPACKED;
+     ID id128_2 HTPACKED;
+     ID id128_3 HTPACKED;
+     ID id128_4 HTPACKED;
+	byte strlen HTPACKED;
 };
 
 /* FLAGS-TAG */
@@ -49,15 +52,15 @@ struct ht_tag_sel {
 #define HT_STATICTAG_FLAGS_CH			"\e\x82"
 
 struct ht_tag_flags {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
-	ID id;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
+	ID id HTPACKED;
 };
 
 struct ht_tag_flags_s {
-	char bitidx;
-	char *desc;
+	char bitidx HTPACKED;
+	char *desc HTPACKED;
 };
 
 /* GROUP-TAG */
@@ -68,8 +71,8 @@ struct ht_tag_flags_s {
 #define HT_STATICTAG_GROUP_CH			"\e\x83"
 
 struct ht_tag_group {
-	byte escape;
-	byte magic;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
 };
 
 /* COLOR-TAG */
@@ -80,9 +83,9 @@ struct ht_tag_group {
 #define HT_STATICTAG_COLOR_CH			"\e\x84"
 
 struct ht_tag_color {
-	byte escape;
-	byte magic;
-	dword color;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	dword color HTPACKED;
 };
 
 /* EDIT-BYTE-TAG */
@@ -95,33 +98,33 @@ struct ht_tag_color {
 #define HT_STATICTAG_EDIT_BYTE_CH		"\e\x90"
 
 struct ht_tag_edit_byte {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT WORD */
 
 struct ht_tag_edit_word_generic {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT DWORD */
 
 struct ht_tag_edit_dword_generic {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT QWORD */
 
 struct ht_tag_edit_qword_generic {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT-WORD-TAG (little-endian) */
@@ -215,9 +218,9 @@ struct ht_tag_edit_qword_generic {
 #define HT_STATICTAG_EDIT_TIME_CH		"\e\x9a"
 
 struct ht_tag_edit_time {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT-CHAR-TAG */
@@ -230,9 +233,9 @@ struct ht_tag_edit_time {
 #define HT_STATICTAG_EDIT_CHAR_CH		"\e\x9b"
 
 struct ht_tag_edit_char {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* EDIT-BIT-TAG */
@@ -245,10 +248,10 @@ struct ht_tag_edit_char {
 #define HT_STATICTAG_EDIT_BIT_CH		"\e\x9c"
 
 struct ht_tag_edit_bit {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
-	byte bitidx;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
+	byte bitidx HTPACKED;
 };
 
 /* EDIT-SELVIS-TAG */
@@ -260,10 +263,10 @@ struct ht_tag_edit_bit {
 #define HT_STATICTAG_EDIT_SELVIS_CH	"\e\x9d"
 
 struct ht_tag_edit_selvis {
-	byte escape;
-	byte magic;
-	FILEOFS offset;
-	char ch;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	FILEOFS offset HTPACKED;
+	char ch HTPACKED;
 };
 
 /* DESC-BYTE-TAG */
@@ -274,34 +277,34 @@ struct ht_tag_edit_selvis {
 #define HT_STATICTAG_DESC_BYTE_CH		"\e\xa0"
 
 struct ht_tag_desc_byte {
-	byte escape;
-	byte magic;
-	ID id;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	ID id HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* DESC WORD */
 struct ht_tag_desc_word_generic {
-	byte escape;
-	byte magic;
-	ID id;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	ID id HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* DESC DWORD */
 struct ht_tag_desc_dword_generic {
-	byte escape;
-	byte magic;
-	ID id;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	ID id HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* DESC QWORD */
 struct ht_tag_desc_qword_generic {
-	byte escape;
-	byte magic;
-	ID id;
-	FILEOFS offset;
+	byte escape HTPACKED;
+	byte magic HTPACKED;
+	ID id HTPACKED;
+	FILEOFS offset HTPACKED;
 };
 
 /* DESC-WORD-TAG (little-endian) */
