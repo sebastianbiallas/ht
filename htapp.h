@@ -341,7 +341,7 @@ public:
 			bool create_window_log();
 			bool create_window_ofm(char *url1, char *url2);
 			bool create_window_project();
-			bool create_window_term();
+			bool create_window_term(const char *cmd);
 			void	delete_window(ht_window *window);
 			ht_window *get_window_by_filename(char *filename);
 			ht_window *get_window_by_number(UINT number);

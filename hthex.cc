@@ -100,11 +100,12 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 
 			dirtyview();
 			return;
-		case msg_get_scrollinfo:
+/*		case msg_get_scrollinfo:
 			switch (msg->data1.integer) {
 				case gsi_pindicator: {
 					get_pindicator_str((char*)msg->data2.ptr);
-					break;
+					clearmsg(msg);
+					return;
 				}
 				case gsi_hscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
@@ -112,7 +113,8 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 						p->pstart = 0;
 						p->psize = 100;
 					}
-					break;
+					clearmsg(msg);
+					return;
 				}
 				case gsi_vscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
@@ -120,11 +122,11 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 						p->pstart = 0;
 						p->psize = 100;
 					}
-					break;
+					clearmsg(msg);
+					return;
 				}
 			}
-			clearmsg(msg);
-			return;
+			break;*/
 		case cmd_hex_entropy: {
 			FILEOFS ofs;
 			if (get_current_offset(&ofs)) {

@@ -190,15 +190,6 @@ void TerminalViewer::handlemsg(htmsg *msg)
 				}
 			}
 			break;
-		case msg_get_scrollinfo:
-			switch (msg->data1.integer) {
-				case gsi_pindicator: {
-					get_pindicator_str((char*)msg->data2.ptr);
-					break;
-				}
-			}
-			clearmsg(msg);
-			return;
 	}
 	return ht_text_viewer::handlemsg(msg);
 }
@@ -216,3 +207,4 @@ void TerminalViewer::get_pindicator_str(char *buf)
 {
 	sprintf(buf, term->connected() ? " connected " : " disconnected ");
 }
+

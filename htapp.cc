@@ -1278,11 +1278,11 @@ void ht_logviewer::handlemsg(htmsg *msg)
 						p->pstart = 0;
 						p->psize = 100;
 					}
-					break;
+					clearmsg(msg);
+					return;
 				}
 			}
-			clearmsg(msg);
-			return;
+			break;
 		case msg_log_changed: {
 			ofs = lines->count()-size.h;
 			if (ofs < 0) ofs = 0;
@@ -1429,6 +1429,7 @@ void ht_app::init(bounds *pq)
 	file->insert_entry("Open ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
 	file->insert_separator();
+	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Alt_Z, 1);
 	file->insert_entry("~Quit", "F10", cmd_quit, 0, 1);
 	m->insert_menu(file);
 
@@ -1580,7 +1581,7 @@ bool ht_app::create_window_log()
 	return true;
 }
 
-bool ht_app::create_window_term()
+bool ht_app::create_window_term(const char *cmd)
 {
 	ht_window *w = get_window_by_type(AWT_TERM);
 	if (w) {
@@ -1616,8 +1617,8 @@ bool ht_app::create_window_term()
 
 		ht_streamfile *in, *out, *err;
 		int handle;
-		int e = 0;
-		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "/usr/bin/gdb")) == 0) {
+		int e;
+		if ((e = sys_ipc_exec(&in, &out, &err, &handle, cmd, 0)) == 0) {
 			Terminal *terminal = new Terminal();
 			terminal->init(in, out, err, handle);
 
@@ -2421,11 +2422,6 @@ void ht_app::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 /* FIXME: experimental */				
-				case K_Alt_Z:
-					create_window_term();
-					clearmsg(msg);
-					return;
-/* FIXME: experimental */				
 /*				case K_Control_A:
 					create_window_help("/HT/res/info/intidx.info", "Top");
 //					create_window_help("c:/djgpp/projects/enew/res/info/ibnidx.info", "Interrupts By Number");
@@ -2467,6 +2463,18 @@ void ht_app::handlemsg(htmsg *msg)
 				msg->msg=msg_retval;
 				msg->data1.str=s;
 			} else clearmsg(msg);
+			return;
+		}
+		case cmd_file_exec_cmd: {
+			char cmd[HT_NAME_MAX];
+			cmd[0] = 0;
+			if (inputbox("execute shell command",
+               (sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
+               : "non-interactive (!) command",
+               cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
+				create_window_term(cmd);
+				clearmsg(msg);
+			}
 			return;
 		}
 		case cmd_file_extend: {

@@ -181,15 +181,19 @@ int sys_filename_cmp(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
-int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options)
 {
+     if (options & HT_IPC_NONBLOCKING) return ENOSYS;
+	int save_stdin = dup(STDIN_FILENO);
 	int save_stdout = dup(STDOUT_FILENO);
 	int save_stderr = dup(STDERR_FILENO);
 	int fdout = sys_tmpfile();
 	int fderr = sys_tmpfile();
+	close(STDIN_FILENO);
 	dup2(fdout, STDOUT_FILENO);
 	dup2(fderr, STDERR_FILENO);
 	/*int r = */system(cmd);
+	dup2(save_stdin, STDIN_FILENO);
 	dup2(save_stdout, STDOUT_FILENO);
 	dup2(save_stderr, STDERR_FILENO);
 	close(save_stdout);
@@ -217,7 +221,12 @@ bool sys_ipc_is_valid(int handle)
 
 int sys_ipc_terminate(int handle)
 {
-// do nothing
+// already terminated, do nothing
+	return 0;
+}
+
+int sys_get_caps()
+{
 	return 0;
 }
 

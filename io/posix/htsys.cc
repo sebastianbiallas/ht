@@ -160,7 +160,7 @@ void SIGCHLD_sigaction(int i, siginfo_t *info, void *v)
 	child_pid = -1;
 }
 
-int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options)
 {
 	if (child_pid != -1) return EBUSY;
 	int in_fds[2];
@@ -223,6 +223,11 @@ int sys_ipc_terminate(int handle)
 		return 0;
 	}		
 	return EINVAL;
+}
+
+int sys_get_caps()
+{
+	return SYSCAP_NONBLOCKING_IPC;
 }
 
 /*

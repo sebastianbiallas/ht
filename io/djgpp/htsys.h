@@ -46,9 +46,11 @@ int sys_get_native_clipboard_data_size();
 bool sys_read_data_from_native_clipboard(void *data, int max_size);
 
 #include "stream.h"	// FIXME: ARGH
-int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd);
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options);
 bool sys_ipc_is_valid(int handle);
 int sys_ipc_terminate(int handle);
+
+int sys_get_caps();
 
 /*
  *	INIT
@@ -63,3 +65,4 @@ bool init_system();
 void done_system();
 
 #endif /* __HTSYS_H__ */
+

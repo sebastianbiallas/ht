@@ -96,6 +96,12 @@
 
 #define pstat_mode_all		(pstat_mode_usr|pstat_mode_grp|pstat_mode_oth|pstat_mode_r|pstat_mode_w|pstat_mode_x|pstat_mode_type)
 
+/* sys_ipc_exec(...) options param flags */
+#define HT_IPC_NONBLOCKING	1
+
+/* system capabilities */
+#define SYSCAP_NONBLOCKING_IPC	1
+
 struct pstat_t {
 	dword	caps;
 	time_t	ctime;
@@ -514,3 +520,4 @@ void ht_set_key(ht_key key, int rawkey);
 ht_key ht_rawkey2key(int rawkey);
 
 #endif /* __IO_H__ */
+

@@ -35,6 +35,7 @@
 #define cmd_file_new				HT_COMMAND(103)
 #define cmd_file_save				HT_COMMAND(104)
 #define cmd_file_saveas				HT_COMMAND(105)
+#define cmd_file_exec_cmd			HT_COMMAND(106)
 
 #define cmd_edit_cut				HT_COMMAND(120)
 #define cmd_edit_delete				HT_COMMAND(121)

@@ -1,20 +1,40 @@
  HT ChangeLog
 ==============
 
-version 0.6.1:
-	- sys/djgpp: ff2pstat(...) fixed
-	- got rid of fmt_vaddress
+version 0.7.0:
 	- whole new Address class for the analyser. Much more flexible.
 	  Enables truly segmented and 64-bit addrs.
+	- sys/djgpp: ff2pstat(...) fixed
+	- got rid of fmt_vaddress
 	- submenus
 	- tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
 	- htpehead.cc: directory goto works now, OFSs really are RVAs !
 	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
-	- PE/imports,exports,delay-imports based on listbox + quickfinder
-	- projects
-	- view current offset in a different view
-	- x86dis: movzx/movsx param size ambiguity fixed
+	- PE/imports,exports,delay-imports based on ht_listbox
+	- projects (groups of files)
+	- view current/cursor offset in a different view
+	- x86dis: movzx/movsx and "mov mem32/16, seg" param size ambiguity fixed
+	  and many minor fixes
+	- LE/VxD descriptor view added, LE module flags
+	- goto dialog auto-documents available eval() functions
+	- Inter-process communication (IPC) via console redirection
+	  on all existing platforms.
+	- Java disassembler
+	- Java/image and analyser
+	- IA-64 disassembler, PE32+ (aka PE64) support
+	- .Net IL disassembler
+	- PE IL support
+	- NE relocations complete
+	- qword support
+	- new streamfiles: ht_sys_file, ht_stdio_file, ht_temp_file,
+	  ht_null_file
+	- some memory leaks killed (Valgrind sessions)
+	- log-window scrolling fixed
+	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
+
+     * UI file/execute for new sys_ipc_* functions
+     * htsys: new function sys_get_caps(), changed if to sys_ipc_exec(...)
 
 	* htpeimg.cc: "section(ANY)"
 	* infoview copes with CRLF
@@ -50,7 +70,7 @@ version 0.6.1:
 	         (fixed simmsize() again)
 
 	* fixed x86asm bug (signed immediates)
-	* stream: ht_sys_file, ht_stdio_file, ht_temp_file,
+	* stream: new are: ht_sys_file, ht_stdio_file, ht_temp_file.-
 	  tmpnam() not used anymore
 	* stream: interface beautified (use of const)
 	* project add item fixed

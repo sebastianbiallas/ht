@@ -2209,7 +2209,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			switch (msg->data1.integer) {
 				case gsi_pindicator: {
 					get_pindicator_str((char*)msg->data2.ptr);
-					break;
+					clearmsg(msg);
+					return;
 				}
 				case gsi_hscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
@@ -2217,7 +2218,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 						p->pstart = 0;
 						p->psize = 100;
 					}
-					break;
+					clearmsg(msg);
+					return;
 				}
 				case gsi_vscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
@@ -2225,11 +2227,11 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 						p->pstart = 0;
 						p->psize = 100;
 					}
-					break;
+					clearmsg(msg);
+					return;
 				}
 			}
-			clearmsg(msg);
-			return;
+               break;
 		case msg_complete_init:
 			complete_init();
 			clearmsg(msg);
@@ -2595,6 +2597,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					dirtyview();
 					return;
 				}
+                    case K_Control_L:
 				case K_Shift_F7:
 					if (!continue_search()) infobox("no further matches");
 					dirtyview();

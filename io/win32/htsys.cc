@@ -228,37 +228,28 @@ UINT ht_win32_file::write(const void *buf, UINT size)
 
 BOOL CreateChildProcess(DWORD *pid, const char *cmd, HANDLE in, HANDLE out, HANDLE err)
 {
-	PROCESS_INFORMATION piProcInfo;
-	STARTUPINFO siStartInfo;
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
 
-	ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-	siStartInfo.cb = sizeof(STARTUPINFO);
-	siStartInfo.dwFlags = STARTF_USESTDHANDLES;
-	siStartInfo.hStdInput = in;
-	siStartInfo.hStdOutput = out;
-	siStartInfo.hStdError = err;
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = in;
+	si.hStdOutput = out;
+	si.hStdError = err;
 
-#if 0
-	TCHAR shellCmd[_MAX_PATH];
-	if(!GetEnvironmentVariable(_T("ComSpec"), shellCmd, _MAX_PATH)) return FALSE;
-#ifdef _UNICODE
-	_tcscat( shellCmd, _T(" /U") );
-#else
-	_tcscat( shellCmd, _T(" /A") );
-#endif
-#endif
 	TCHAR shellCmd[_MAX_PATH];
 	strcpy(shellCmd, cmd);
 	BOOL ret = CreateProcess(NULL, shellCmd, NULL, NULL, TRUE, 0/*DETACHED_PROCESS*/,
-		NULL, NULL, &siStartInfo, &piProcInfo);
+		NULL, NULL, &si, &pi);
 
-	if (ret) *pid = piProcInfo.dwProcessId;
+	if (ret) *pid = pi.dwProcessId;
 	return ret;
 }
 
 static HANDLE myPID = NULL;
 
-int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options)
 {
 	if (myPID != NULL) return EBUSY;
 	HANDLE old_out = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -327,6 +318,11 @@ int sys_ipc_terminate(int handle)
 	}
 	myPID = NULL;
 	return EINVAL;
+}
+
+int sys_get_caps()
+{
+	return SYSCAP_NONBLOCKING_IPC;
 }
 
 /*
