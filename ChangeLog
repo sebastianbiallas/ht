@@ -27,6 +27,7 @@ version 0.8.0:
 	- fixed bug in x86-assembler (correct opcode for [ebp+esp])
 	- fixed buggy ELF reading code partially (thanks rpm28).
 	  further reviewing required.
+	- minor fixes in eval-lexer
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

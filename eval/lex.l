@@ -70,14 +70,18 @@ static int parse_cstring(eval_scalar *r, char *s, int len)
 {
 	char *result;
 
-	int alloclen=len;
-	if (!len) alloclen=1;
+	int alloclen = len;
+	if (alloclen < 1) alloclen = 1;
 
-	r->type=SCALAR_STR;
-	r->scalar.str.value=(char*)malloc(alloclen);
-/* translate */
-	result=r->scalar.str.value;
-	
+	r->type = SCALAR_STR;
+	r->scalar.str.value = (char*)malloc(alloclen);
+	if (!r->scalar.str.value) return 0;
+
+	result = r->scalar.str.value;
+
+	// may not end with '\\'
+	if (len && s[len-1] == '\\') return 0;
+
 	while (s && *s && len) {
 		if (*s == '\\') {
 			s++;len--;if (!len) break;
