@@ -24,6 +24,7 @@
 #include "httag.h"
 #include "htstring.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include "lestruct.h"
 
@@ -49,7 +50,7 @@ ht_view *htlepagemaps_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	m->init(file, 0);
 
 	char t[64];
-	sprintf(t, "* LE page maps at offset %08x", h+le_shared->hdr.pagemap);
+	ht_snprintf(t, sizeof t, "* LE page maps at offset %08x", h+le_shared->hdr.pagemap);
 	m->add_mask(t);
 
 	v->insertsub(m);
@@ -61,7 +62,7 @@ ht_view *htlepagemaps_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 		m=new ht_mask_sub();
 		m->init(file, i);
 		
-		sprintf(t, "--- page %d at %08x ---", i+1, le_shared->pagemap.offset[i]);
+		ht_snprintf(t, sizeof t, "--- page %d at %08x ---", i+1, le_shared->pagemap.offset[i]);
 		m->add_staticmask_ptable(lepagemap, h+le_shared->hdr.pagemap+i*4, le_bigendian);
 		ht_collapsable_sub *cs=new ht_collapsable_sub();
 		cs->init(file, m, 1, t, 1);

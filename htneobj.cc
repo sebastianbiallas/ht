@@ -26,6 +26,7 @@
 #include "httag.h"
 #include "htstring.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include "nestruct.h"
 
@@ -76,7 +77,7 @@ ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 
 	char t[64];
 
-	sprintf(t, "* NE segment table at offset %08x", h+ne_shared->hdr.segtab);
+	ht_snprintf(t, sizeof t, "* NE segment table at offset %08x", h+ne_shared->hdr.segtab);
 	m->add_mask(t);
 	m->add_mask("note: 0 means 65536 for segment size and minalloc");
 
@@ -85,7 +86,7 @@ ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 		NE_SEGMENT s;
 		file->read(&s, sizeof s);
 		create_host_struct(&s, NE_SEGMENT_struct, little_endian);
-		sprintf(t, "--- segment %d (%s) ---", i+1, (s.flags & NE_DATA) ? "data" : "code");
+		ht_snprintf(t, sizeof t, "--- segment %d (%s) ---", i+1, (s.flags & NE_DATA) ? "data" : "code");
 		m->add_mask(t);
 		m->add_staticmask_ptable(neobj, h+ne_shared->hdr.segtab+i*8, false);
 	}

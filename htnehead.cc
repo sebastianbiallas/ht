@@ -22,6 +22,7 @@
 #include "htne.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 ht_mask_ptable neheader[]=
 {
@@ -103,7 +104,7 @@ ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	register_atom(ATOM_NE_FLAGS, ne_flags);
 
 	char info[128];
-	sprintf(info, "* NE header at offset %08x", ne_shared->hdr_ofs);
+	ht_snprintf(info, sizeof info, "* NE header at offset %08x", ne_shared->hdr_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(neheader, h, false);
 	v->insertsub(m);

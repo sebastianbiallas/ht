@@ -24,6 +24,7 @@
 #include "htlehead.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include "lestruct.h"
 
@@ -82,7 +83,7 @@ ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 	register_atom(ATOM_LE_ENTRY_BUNDLE_FLAGS, le_entry_bundle_flags);
 	char info[128];
 	
-	sprintf(info, "* LE entry header at offset %08x", h+le_shared->hdr.enttab);
+	ht_snprintf(info, sizeof info, "* LE entry header at offset %08x", h+le_shared->hdr.enttab);
 
 /* FIXME: false */
 	bool le_bigendian = false;
@@ -114,7 +115,7 @@ ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 				m->add_staticmask_ptable(le_entry16, o, le_bigendian);
 				o+=1+2;
 			}
-			sprintf(t, "--- entry %d (%s) ---", i+1, flags_str);
+			ht_snprintf(t, sizeof t, "--- entry %d (%s) ---", i+1, flags_str);
 
 			ht_collapsable_sub *cs=new ht_collapsable_sub();
 			cs->init(file, m, 1, t, 1);

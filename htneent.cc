@@ -50,7 +50,7 @@ ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 	register_atom(ATOM_NE_ENTFLAGS, ne_entflags);
 
 	char line[1024], *l;	/* possible buffer overflow */
-	sprintf(line, "* NE entrypoint table at offset %08x", h+ne_shared->hdr.enttab);
+	ht_snprintf(line, sizeof line, "* NE entrypoint table at offset %08x", h+ne_shared->hdr.enttab);
 	m->add_mask(line);
 
 	FILEOFS o = h + ne_shared->hdr.enttab;

@@ -214,7 +214,7 @@ ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	s=new ht_mask_sub();
 	s->init(file, 0);
 	char info[128];
-	sprintf(info, "* XBE header");
+	ht_snprintf(info, sizeof info, "* XBE header");
 	s->add_mask(info);
 	v->insertsub(s);
 

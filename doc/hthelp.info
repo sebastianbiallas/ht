@@ -1,4 +1,4 @@
-Dies ist hthelp.info, hergestellt von Makeinfo Version 4.6 aus
+Dies ist hthelp.info, hergestellt von Makeinfo Version 4.5 aus
 ht.texi.
 
 START-INFO-DIR-ENTRY
@@ -121,7 +121,7 @@ File: hthelp.info,  Node: Authors,  Prev: Top,  Up: Top
 Authors
 =======
 
-Stefan Weyergraf <stefan@weyergraf.de>
+   Stefan Weyergraf <stefan@weyergraf.de>
 
    Sebastian Biallas <sb@biallas.net>
 
@@ -131,8 +131,8 @@ File: hthelp.info,  Node: Features,  Prev: Top,  Up: Top
 Features
 ========
 
-HT is beta software and should not always regarded as stable,
-but nevertheless contains some very advanced and useful
+   HT is beta software and should not always regarded as
+stable, but nevertheless contains some very advanced and useful
 features:
 
 * Menu:
@@ -232,18 +232,18 @@ Configuration files
 Global configuration
 --------------------
 
-HT automatically creates a file to store its configuration.  It
-is called `~/.htcfg' on Unices and `ht.cfg' (where ht.exe
+   HT automatically creates a file to store its configuration.
+It is called `~/.htcfg' on Unices and `ht.cfg' (where ht.exe
 resides) on Windows. More specifically it contains HT's registry
 and the *Note Global history::.
 
 Per file configuration
 ----------------------
 
-The analyser (for analysable files) will be stored in an extra
-file called `FILENAME.htcfg', where FILENAME is the analysed
-file. This file contains all information to restore the
-complete state of the analyser.
+   The analyser (for analysable files) will be stored in an
+extra file called `FILENAME.htcfg', where FILENAME is the
+analysed file. This file contains all information to restore
+the complete state of the analyser.
 
 
 File: hthelp.info,  Node: Clipboard,  Prev: Features,  Up: Features
@@ -251,8 +251,8 @@ File: hthelp.info,  Node: Clipboard,  Prev: Features,  Up: Features
 Clipboard
 =========
 
-All open files and dialogs use the common clipboard, where all
-copied and cut text or binary data is stored. Clipboard
+   All open files and dialogs use the common clipboard, where
+all copied and cut text or binary data is stored. Clipboard
 operations are normally binary safe, that means you can copy
 some binary data out of a file and paste it into an input line.
 Exceptions are only the \0 character (binary null), it will be
@@ -272,8 +272,8 @@ File: hthelp.info,  Node: Global history,  Prev: Features,  Up: Features
 Global history
 ==============
 
-HTs history system is global, which means that you can use it
-for all open files. Histories are also grouped by their
+   HTs history system is global, which means that you can use
+it for all open files. Histories are also grouped by their
 context. I.e. file-related and regex-search-related dialogs
 have their own history (who would want to open "[0-9][0-9a-z]+"
 anyway ?).
@@ -290,10 +290,10 @@ File: hthelp.info,  Node: Expression evaluation,  Prev: Features,  Up: Features
 Expression evaluation
 =====================
 
-HT contains a very powerful expression evaluator which is used
-in all dialogs where expressions are expected. These are mainly
-blockoperation, goto, search and of course evaluate itself
-(Edit->Evaluate).
+   HT contains a very powerful expression evaluator which is
+used in all dialogs where expressions are expected. These are
+mainly blockoperation, goto, search and of course evaluate
+itself (Edit->Evaluate).
 
    You can use all standard math operators (+ - / * % **),
 logical operators (! && || ^^), relational operators (== != < >
@@ -309,14 +309,15 @@ Edit->Evaluate to see how it works...
 Functions and symbols
 ---------------------
 
-You can always use the standard built-in math (`round', `sin',
-`random', etc.) and string (`strcmp', `strchr', `sprintf',
-etc.) functions, they work more or less like the corresponding
-C functions (actually they ARE more or less wrappers for them);
-see `eval/eval.y' for details (sorry but a detailed help would
-get outdated rather soon).  When using *Note Block
-operations::, or searching you have some context depending
-functions and symbols; see these sections for explanation.
+   You can always use the standard built-in math (`round',
+`sin', `random', etc.) and string (`strcmp', `strchr',
+`sprintf', etc.) functions, they work more or less like the
+corresponding C functions (actually they ARE more or less
+wrappers for them); see `eval/eval.y' for details (sorry but a
+detailed help would get outdated rather soon).  When using
+*Note Block operations::, or searching you have some context
+depending functions and symbols; see these sections for
+explanation.
 
 
 File: hthelp.info,  Node: Block operations,  Prev: Features,  Up: Features
@@ -324,7 +325,7 @@ File: hthelp.info,  Node: Block operations,  Prev: Features,  Up: Features
 Block operations
 ================
 
-Block operation (Blockop) is a very powerful tool to perform
+   Block operation (Blockop) is a very powerful tool to perform
 modifications on binary files. It is available in hex viewer
 only.
 
@@ -358,30 +359,31 @@ File: hthelp.info,  Node: Search and its different modes,  Prev: Features,  Up: 
 Search and its different modes
 ==============================
 
-The search function is one of the most advanced functions of HT.
-It is invoked through F7, Shift-F7 continues a search from
+   The search function is one of the most advanced functions of
+HT.  It is invoked through F7, Shift-F7 continues a search from
 cursor.  Depending on context (ie. file type and mode) the
 following modes are enabled:
 
 bin: ASCII / Hex
 ----------------
 
-Enter an exact search string either via ascii characters or via
-hexadecimal interpretation. This is the fastest search mode.
-You may specify a case-insensitive search.
+   Enter an exact search string either via ascii characters or
+via hexadecimal interpretation. This is the fastest search
+mode. You may specify a case-insensitive search.
 
 bin: eval str
 -------------
 
-Enter an expression, it will be evaluated ONCE (difference to
-the 4th mode), and HT will then search for the result-string.
-This is pretty useful when searching for intermixed text and
-control-chars/binary, e.g. `"hello world\n\0"'
+   Enter an expression, it will be evaluated ONCE (difference
+to the 4th mode), and HT will then search for the
+result-string. This is pretty useful when searching for
+intermixed text and control-chars/binary, e.g. `"hello
+world\n\0"'
 
 display: regex
 --------------
 
-As the prefix indicates, this search doesn't search in the
+   As the prefix indicates, this search doesn't search in the
 binary file but in the display on screen. HT searches for a
 regular expression so this can be very powerful, e.g. in
 PE/Image you can search for `(add|sub).+?,\ [78]$'.  This will
@@ -390,13 +392,13 @@ find all add or sub instructions with second parameter 7 or 8.
 expr nonzero
 ------------
 
-This is the slowest but also most advanced search mode. Enter
-an expression and the search stops if this expression evaluates
-to non-zero (it will be evaluated on every byte). In this mode
-there are two predefined symbols and some functions: I is
-always the number of current iteration and O stands for the
-current offset in file. With the functions `readbyte(ofs)' and
-`readstring(ofs, size)' you access the file's content.
+   This is the slowest but also most advanced search mode.
+Enter an expression and the search stops if this expression
+evaluates to non-zero (it will be evaluated on every byte). In
+this mode there are two predefined symbols and some functions:
+I is always the number of current iteration and O stands for
+the current offset in file. With the functions `readbyte(ofs)'
+and `readstring(ofs, size)' you access the file's content.
 
    It's easier to understand this with examples:
 
@@ -445,14 +447,14 @@ Node: Top585
 Node: About894
 Node: Key bindings1742
 Node: Authors3230
-Node: Features3385
-Node: General features3763
-Node: Configuration files6137
-Node: Clipboard6782
-Node: Global history7592
-Node: Expression evaluation8142
-Node: Block operations9517
-Node: Search and its different modes10415
-Node: Where to download ?13089
+Node: Features3388
+Node: General features3769
+Node: Configuration files6143
+Node: Clipboard6793
+Node: Global history7606
+Node: Expression evaluation8159
+Node: Block operations9540
+Node: Search and its different modes10441
+Node: Where to download ?13131
 
 End Tag Table

@@ -22,6 +22,7 @@
 #include "htmzhead.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 ht_mask_ptable mzheader[]=
 {
@@ -54,7 +55,7 @@ ht_view *htmzheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* MZ header at offset %08x (paragraph=16 bytes, page=512 bytes)", 0);	/* FIXME: hmm, seems to be always 0 ?! */
+	ht_snprintf(info, sizeof info, "* MZ header at offset %08x (paragraph=16 bytes, page=512 bytes)", 0);	/* FIXME: hmm, seems to be always 0 ?! */
 	m->add_mask(info);
 	m->add_staticmask_ptable(mzheader, 0, false);
 	v->insertsub(m);

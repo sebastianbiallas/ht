@@ -23,6 +23,7 @@
 #include "htpal.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 int htmzrel_detect(ht_streamfile *file)
 {
@@ -47,7 +48,7 @@ ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* MZ relocations at offset %08x", r);
+	ht_snprintf(info, sizeof info, "* MZ relocations at offset %08x", r);
 	m->add_mask(info);
 	for (int i=rc; i>0; i--) {
 		int so;

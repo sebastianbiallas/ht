@@ -24,6 +24,7 @@
 #include "httag.h"
 #include "htstring.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include <string.h>
 
@@ -214,7 +215,7 @@ ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	register_atom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
 	register_atom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
 	char info[128];
-	sprintf(info, "* COFF header at offset %08x", h);
+	ht_snprintf(info, sizeof info, "* COFF header at offset %08x", h);
 	m->add_mask(info);
 	/* COFF header */
 	m->add_mask("--- COFF header ---");

@@ -25,6 +25,7 @@
 #include "htstring.h"
 #include "htformat.h"
 #include "formats.h"
+#include "snprintf.h"
 #include "x86asm.h"
 #include "x86dis.h"
 
@@ -41,7 +42,7 @@ ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* MZ image at offset %08x", o);
+	ht_snprintf(info, sizeof info, "* MZ image at offset %08x", o);
 	m->add_mask(info);
 	v->insertsub(m);
 

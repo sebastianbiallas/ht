@@ -25,6 +25,7 @@
 #include "httag.h"
 #include "htstring.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include "lestruct.h"
 
@@ -79,7 +80,7 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	bool le_bigendian = false;
 
 	char t[64];
-	sprintf(t, "* LE object headers at offset %08x", h+le_shared->hdr.objtab);
+	ht_snprintf(t, sizeof t, "* LE object headers at offset %08x", h+le_shared->hdr.objtab);
 	m->add_mask(t);
 
 	v->insertsub(m);
@@ -96,7 +97,7 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 		bool use32=le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32;
 
-		sprintf(t, "--- object %d USE%d: %s ---", i+1, use32 ? 32 : 16, (char*)&n);
+		ht_snprintf(t, sizeof t, "--- object %d USE%d: %s ---", i+1, use32 ? 32 : 16, (char*)&n);
 		
 		ht_collapsable_sub *cs=new ht_collapsable_sub();
 		cs->init(file, m, 1, t, 1);

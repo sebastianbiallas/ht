@@ -342,7 +342,7 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* Mach-O header at offset %08x", macho_shared->header_ofs);
+	ht_snprintf(info, sizeof info, "* Mach-O header at offset %08x", macho_shared->header_ofs);
 /*	register_atom(ATOM_ELF_CLASS, elf_class);
 	register_atom(ATOM_ELF_DATA, elf_data);
 	register_atom(ATOM_ELF_OS_ABI, elf_os_abi);
@@ -364,12 +364,12 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				char segname[17];
 				ht_snprintf(segname, sizeof segname, "%s", c->segname);
 			    	char info[128];
-				sprintf(info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
+				ht_snprintf(info, sizeof info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, isbigendian);
 				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
 				for (UINT j=0; j<c->nsects; j++) {
-					sprintf(info, "**** section %d ****", j);
+					ht_snprintf(info, sizeof info, "**** section %d ****", j);
 					m->add_mask(info);
 					m->add_staticmask_ptable(macho_section_header, ofs+sofs, isbigendian);
 					sofs += 9*4+16+16;
@@ -378,13 +378,13 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			}
 			case LC_SYMTAB: {
 			    	char info[128];
-				sprintf(info, "** SYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** SYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_SYMSEG: {
 			    	char info[128];
-				sprintf(info, "** SYMSEG cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** SYMSEG cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
@@ -392,7 +392,7 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			case LC_THREAD: {
 				MACHO_THREAD_COMMAND *c = &macho_shared->cmds.cmds[i]->thread;
 			    	char info[128];
-				sprintf(info, "** %s", (macho_shared->cmds.cmds[i]->cmd.cmd == LC_UNIXTHREAD) ? "UNIXTHREAD" : "THREAD");
+				ht_snprintf(info, sizeof info, "** %s", (macho_shared->cmds.cmds[i]->cmd.cmd == LC_UNIXTHREAD) ? "UNIXTHREAD" : "THREAD");
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_thread_header, ofs, isbigendian);
 				switch (macho_shared->header.cputype) {
@@ -415,85 +415,85 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			}
 /*			case LC_THREAD: {
 			    	char info[128];
-				sprintf(info, "** THREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				ht_snprintf(info, sizeof info, "** THREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_UNIXTHREAD: {
 			    	char info[128];
-				sprintf(info, "** UNIXTHREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				ht_snprintf(info, sizeof info, "** UNIXTHREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
 				m->add_mask(info);
 				break;
 			}*/
 			case LC_LOADFVMLIB: {
 			    	char info[128];
-				sprintf(info, "** LOADFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** LOADFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_IDFVMLIB: {
 			    	char info[128];
-				sprintf(info, "** IDFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** IDFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_IDENT: {
 			    	char info[128];
-				sprintf(info, "** IDENT (obsolete) cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** IDENT (obsolete) cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_FVMFILE: {
 			    	char info[128];
-				sprintf(info, "** FVMFILE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** FVMFILE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_PREPAGE: {
 			    	char info[128];
-				sprintf(info, "** PREPAGE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** PREPAGE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_DYSYMTAB: {
 			    	char info[128];
-				sprintf(info, "** DYSYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** DYSYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_LOAD_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** LOAD_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** LOAD_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_ID_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** ID_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** ID_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_LOAD_DYLINKER: {
 			    	char info[128];
-				sprintf(info, "** LOAD_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** LOAD_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_ID_DYLINKER: {
 			    	char info[128];
-				sprintf(info, "** ID_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** ID_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_PREBOUND_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** PREBOUND_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** PREBOUND_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			default: {
 			    	char info[128];
-				sprintf(info, "** unsupported load command %08x, size %08x", macho_shared->cmds.cmds[i]->cmd.cmd, macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				ht_snprintf(info, sizeof info, "** unsupported load command %08x, size %08x", macho_shared->cmds.cmds[i]->cmd.cmd, macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 			}
 		}
