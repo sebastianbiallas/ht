@@ -154,12 +154,6 @@ int VfsListbox::changeURL(const char *url)
 	char path[VFS_DIR_MAX+1];
 	if (sys_common_canonicalize(path, pathptr, NULL, newVfs->isPathDelim()) !=0) return EINVAL;
 
-	/* stat and find out if its a dir*/
-	pstat_t s;
-	int e;
-	if ((e = newVfs->pstat(&s, path)) != 0) return e;
-	if (!(s.caps & pstat_mode_type) || !(HT_S_ISDIR(s.mode))) return ENOTDIR;
-
 	/* add trailing path delimiter if needed */
 	int l = strlen(path)-1;
 	if ((l==-1) || !newVfs->isPathDelim()(path[l])) {
@@ -168,6 +162,13 @@ int VfsListbox::changeURL(const char *url)
 		path[l+1] = delim;
 		path[l+2] = 0;
 	}
+
+	/* stat and find out if its a dir*/
+	pstat_t s;
+	int e;
+	if ((e = newVfs->pstat(&s, path)) != 0) return e;
+	if (!(s.caps & pstat_mode_type) || !(HT_S_ISDIR(s.mode))) return ENOTDIR;
+
 	/* code to position cursor when doing "cd .." */
 	char spath[VFS_DIR_MAX+1];
 	char spath2[VFS_DIR_MAX+1];
