@@ -81,7 +81,7 @@ void PEFAnalyser::beginAnalysis()
 		Address *secaddr;
 		secaddr = createAddress32(s32->defaultAddress);
 		if (validAddress(secaddr, scvalid)) {
-			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i, getSegmentNameByAddress(secaddr));
 			addComment(secaddr, 0, "");
 			addComment(secaddr, 0, ";******************************************************************");
 			addComment(secaddr, 0, blub);
@@ -443,8 +443,12 @@ char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 	PEFAddress ea;
 	if (!convertAddressToPEFAddress(Addr, &ea)) return NULL;
 	if (!pef_addr_to_section(sections, ea, &i)) return NULL;
-//	strncpy(pef_sectionname, pef_shared->shnames[i], 32);
-	strcpy(pef_sectionname, "nyi");
+	if (pef_shared->sheaders.sheaders[i].nameOffset == 0xffffffff) {
+		ht_snprintf(pef_sectionname, sizeof pef_sectionname, "unnamed%d", i);
+	} else {
+//		strncpy(pef_sectionname, pef_shared->shnames[i], 32);
+		strcpy(pef_sectionname, "nyi");
+	}
 	pef_sectionname[32]=0;
 	return pef_sectionname;
 }
