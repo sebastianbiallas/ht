@@ -49,6 +49,7 @@ public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t);
 	virtual 	void done();
 /* overwritten */
+	virtual	char *func(UINT i, bool execute);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);

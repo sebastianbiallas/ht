@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	htdisasm.cc
  *
@@ -215,6 +215,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Local-Disasm");
 			m->insert_entry("~Assemble", "Ctrl+A", cmd_disasm_call_assembler, K_Control_A, 1);
+// FIXME: wrong implementation
 			m->insert_entry("~Toggle 16/32", NULL, cmd_disasm_toggle1632, 0, 1);
 
 			msg->msg = msg_retval;
@@ -276,6 +277,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_disasm_toggle1632: {
+// FIXME: very beautiful...
 			op1632 ^= 1;
 			if (op1632) {
 				((x86asm *)assem)->opsize = X86_OPSIZE16;
@@ -340,6 +342,17 @@ int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 		return 1;
 	}
 	return ht_uformat_viewer::symbol_handler(result, name);
+}
+
+char *ht_disasm_viewer::func(UINT i, bool execute)
+{
+	switch (i) {
+// FIXME: wrong implementation
+		case 3:
+			if (execute) sendmsg(cmd_disasm_toggle1632);
+			return op1632 ? (char*)"use32" : (char*)"use16";
+	}
+	return ht_uformat_viewer::func(i, execute);
 }
 
 /*
