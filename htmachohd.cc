@@ -331,7 +331,7 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, true);
 
 	FILEOFS ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
-	for (uint i=0; i<macho_shared->cmds.count; i++) {
+	for (UINT i=0; i<macho_shared->cmds.count; i++) {
 		switch (macho_shared->cmds.cmds[i]->cmd.cmd) {
 			case LC_SEGMENT: {
 				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds.cmds[i];
@@ -342,7 +342,7 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, true);
 				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
-				for (uint j=0; j<c->nsects; j++) {
+				for (UINT j=0; j<c->nsects; j++) {
 					sprintf(info, "**** section %d ****", j);
 					m->add_mask(info);
 					m->add_staticmask_ptable(macho_section_header, ofs+sofs, true);

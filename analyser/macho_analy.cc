@@ -69,7 +69,7 @@ void MachoAnalyser::beginAnalysis()
 	/*
 	 *	entrypoints
 	 */
-	uint entrypoint_count = 0;
+	UINT entrypoint_count = 0;
 	pp = macho_shared->cmds.cmds;
 	for (UINT i=0; i < macho_shared->cmds.count; i++) {
 		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
@@ -139,7 +139,7 @@ void MachoAnalyser::beginAnalysis()
 		if ((*pp)->cmd.cmd == LC_SYMTAB) {
 			MACHO_SYMTAB_COMMAND *s = (MACHO_SYMTAB_COMMAND*)*pp;
 			int *entropy = random_permutation(s->nsyms);
-			for (uint j=0; j<s->nsyms; j++) {
+			for (UINT j=0; j<s->nsyms; j++) {
 				file->seek(s->symoff+entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
 				MACHO_SYMTAB_NLIST nlist;
 				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;

@@ -84,11 +84,11 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	create_host_struct(&macho_shared->header, MACHO_HEADER_struct, big_endian);
 
 	/* read commands */
-	uint nsections = 0;
+	UINT nsections = 0;
 	ofs = header_ofs+sizeof macho_shared->header;
 	macho_shared->cmds.count = macho_shared->header.ncmds;
 	macho_shared->cmds.cmds = (MACHO_COMMAND_U**)malloc(sizeof (MACHO_COMMAND_U*) * macho_shared->header.ncmds);
-	for (uint i=0; i<macho_shared->cmds.count; i++) {
+	for (UINT i=0; i<macho_shared->cmds.count; i++) {
 		MACHO_COMMAND cmd;
 		file->seek(ofs);
 		file->read(&cmd, sizeof cmd);
@@ -128,12 +128,12 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	ofs = header_ofs+sizeof macho_shared->header;
 	macho_shared->sections.count = nsections;
 	macho_shared->sections.sections = (MACHO_SECTION*)malloc(sizeof (MACHO_SECTION) * macho_shared->sections.count);
-	uint sec = 0;
-	for (uint i=0; i<macho_shared->cmds.count; i++) {
+	UINT sec = 0;
+	for (UINT i=0; i<macho_shared->cmds.count; i++) {
 		if (macho_shared->cmds.cmds[i]->cmd.cmd == LC_SEGMENT) {
 			FILEOFS sofs = ofs+sizeof (MACHO_SEGMENT_COMMAND);
 			file->seek(sofs);
-			for (uint j=0; j<macho_shared->cmds.cmds[i]->segment.nsects; j++) {
+			for (UINT j=0; j<macho_shared->cmds.cmds[i]->segment.nsects; j++) {
 				file->read(&macho_shared->sections.sections[sec], sizeof (MACHO_SECTION));
 				create_host_struct(&macho_shared->sections.sections[sec], MACHO_SECTION_struct, big_endian);
 				sec++;

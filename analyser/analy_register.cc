@@ -33,6 +33,7 @@
 #include "coff_analy.h"
 #include "data_analy.h"
 #include "elf_analy.h"
+#include "flt_analy.h"
 #include "ne_analy.h"
 #include "pe_analy.h"
 #include "le_analy.h"
@@ -59,6 +60,7 @@ BUILDER(ATOM_NE_ANALYSER, NEAnalyser)
 BUILDER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 BUILDER(ATOM_LE_ANALYSER, LEAnalyser)
 BUILDER(ATOM_MACHO_ANALYSER, MachoAnalyser)
+BUILDER(ATOM_FLT_ANALYSER, FLTAnalyser)
 
 BUILDER(ATOM_ADDRESS_INVALID, InvalidAddress)
 BUILDER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -88,6 +90,7 @@ bool init_analyser()
 	REGISTER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 	REGISTER(ATOM_LE_ANALYSER, LEAnalyser)
 	REGISTER(ATOM_MACHO_ANALYSER, MachoAnalyser)
+	REGISTER(ATOM_FLT_ANALYSER, FLTAnalyser)
 
 	REGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	REGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -119,6 +122,7 @@ void done_analyser()
 	UNREGISTER(ATOM_CLASS_ANALYSER, ClassAnalyser)
 	UNREGISTER(ATOM_LE_ANALYSER, LEAnalyser)
 	UNREGISTER(ATOM_MACHO_ANALYSER, MachoAnalyser)
+	UNREGISTER(ATOM_FLT_ANALYSER, FLTAnalyser)
 
 	UNREGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	UNREGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
