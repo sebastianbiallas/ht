@@ -39,7 +39,6 @@
 #include "htstring.h"
 #include "htsys.h"
 #include "httree.h"
-#include "htvfs.h"
 #include "infoview.h"
 #include "snprintf.h"
 #include "stream.h"
@@ -47,6 +46,8 @@
 #include "textedit.h"
 #include "textfile.h"
 #include "tools.h"
+
+#include "vfsview.h"
 
 #include "formats.h"
 
@@ -162,53 +163,231 @@ bool file_new_dialog(UINT *mode)
 	return retval;
 }
 
+/*
+ *	class FileBrowserVfsListbox
+ */
+ 
+class FileBrowser;
+
+#define FileBrowserVfsListboxData VfsListboxData
+
+class FileBrowserVfsListbox: public VfsListbox {
+protected:
+	FileBrowser *file_browser;
+public:
+			void	init(bounds *b, ht_list *vfs_list, ht_text *show_pos, FileBrowser *file_browser);
+/* overwritten */
+	virtual	void state_changed();
+};
+
+/*
+ *	class FileBrowser
+ */
+ 
+struct FileBrowserData {
+	ht_strinputfield_data name;
+	ht_listbox_data listbox;
+};
+
+class FileBrowser: public ht_dialog {
+protected:
+	ht_strinputfield *name_input;
+	FileBrowserVfsListbox *listbox;
+public:
+	virtual	void	init(bounds *b, bounds *clientarea, const char *title, const char *starturl);
+/* new */
+	virtual	bool extract_url(char *buf);
+	virtual	void listbox_changed();
+};
+
+/**/
+void	FileBrowserVfsListbox::init(bounds *b, ht_list *vfs_list, ht_text *show_pos, FileBrowser *fb)
+{
+	file_browser = NULL;
+	VfsListbox::init(b, vfs_list, show_pos);
+	file_browser = fb;
+}
+
+void FileBrowserVfsListbox::state_changed()
+{
+	if (file_browser) file_browser->listbox_changed();
+	VfsListbox::state_changed();
+}
+
+/**/
+void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const char *starturl)
+{
+	ht_dialog::init(n, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
+	bounds b = *clientarea, c;
+/* name (input) */
+	c = b;
+	c.x = 1;
+	c.y = 1;
+	c.w -= 2;
+	c.h = 1;
+
+	ht_list *hist=(ht_list*)find_atom(HISTATOM_FILE);
+	
+	name_input=new ht_strinputfield();
+	name_input->init(&c, 128, hist);
+
+	insert(name_input);
+	
+/* name (text) */
+	c = b;
+	c.x = 1;
+	c.y = 0;
+	c.w = 9;
+	c.h = 1;
+
+	ht_label *name_text=new ht_label();
+	name_text->init(&c, "~name", name_input);
+
+	insert(name_text);
+
+/* vfslistbox */
+	c = b;
+	c.x = 1;
+	c.y = 4;
+	c.w -= 2;
+	c.h -= 4;
+	listbox = new FileBrowserVfsListbox();
+	listbox->init(&c, virtual_fs_list, NULL, this);
+	listbox->changeURL(starturl);
+
+	insert(listbox);
+
+/* vfslistbox (text) */
+	c = b;
+	c.x = 1;
+	c.y = 3;
+	c.w = 9;
+	c.h = 1;
+
+	ht_label *name_listbox=new ht_label();
+	name_listbox->init(&c, "~files", listbox);
+
+	insert(name_listbox);
+}
+
+bool FileBrowser::extract_url(char *buf)
+{
+	ht_strinputfield_data i;
+	name_input->databuf_get(&i);
+/*     ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
+	vfs_extra *x = (vfs_extra*)t->extra_data;*/
+	Vfs *vfs = listbox->getCurVfs();
+     if (vfs) {
+		int buflen = ht_snprintf(buf, VFS_URL_MAX, "%s:", listbox->getCurProto());
+		char fname[VFS_URL_MAX];
+		bin2str(fname, i.text, i.textlen);
+     	vfs->canonicalize(buf+buflen, fname, listbox->getCurDir());
+		return true;
+	}
+	return false;
+}
+
+void FileBrowser::listbox_changed()
+{
+	FileBrowserVfsListboxData l;
+	listbox->databuf_get(&l);
+	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(l.cursor_id);
+     if (t) {
+		vfs_extra *x = (vfs_extra*)t->extra_data;
+		ht_strinputfield_data i;
+		i.textlen = strlen(x->name);
+		i.text = (byte*)x->name;
+		name_input->databuf_set(&i);
+	}
+}
+/**/
+
+bool file_chooser(const char *title, char *buf, int bufsize)
+{
+	bounds b, c;
+	
+	app->getbounds(&b);
+
+	c = b;
+	b.w = 60;
+	b.h = 20;
+	b.x = (c.w - b.w) / 2,
+	b.y = (c.h - b.h) / 2;
+
+	c = b;
+	c.x = 0;
+	c.y = 0;
+	c.w -= 2;
+	c.h -= 3;
+
+	// FIXME: hacked!
+	char cwd[HT_NAME_MAX];
+	strcpy(cwd, "local:");
+	if (!getcwd(cwd+6, (sizeof cwd)-6)) {
+		cwd[6] = 0;
+	}
+
+	FileBrowser *d = new FileBrowser();
+	d->init(&b, &c, title, cwd);
+	
+	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
+	
+/* go! */
+	if (d->run(false)) {
+		char b[VFS_URL_MAX];
+		d->extract_url(b);
+
+		// FIXME: urls not fully supported...
+		if (strcmp(b, "local:")) {
+			ht_snprintf(buf, bufsize, "%s", b+6);
+
+			if (hist) insert_history_entry(hist, buf, 0);
+
+			d->done();
+			delete d;
+			return true;
+		}
+	}
+	d->done();
+	delete d;
+	return false;
+}
+/**/
+
 bool file_open_dialog(char **name, UINT *mode)
 {
 	bounds b, c;
 	
 	app->getbounds(&b);
 
-	b.x = (b.w - 60) / 2,
-	b.y = (b.h - 8) / 2;
+	c = b;
 	b.w = 60;
-	b.h = 8;
+	b.h = 20;
+	b.x = (c.w - b.w) / 2,
+	b.y = (c.h - b.h) / 2;
+
+	c = b;
+	c.x = 0;
+	c.y = 0;
+	c.w -= 2;
+	c.h -= 5;
+
+	// FIXME: hacked!
+	char cwd[HT_NAME_MAX];
+	strcpy(cwd, "local:");
+	if (!getcwd(cwd+6, (sizeof cwd)-6)) {
+		cwd[6] = 0;
+	}
+
+	FileBrowser *d = new FileBrowser();
+	d->init(&b, &c, "open file", cwd);
 	
-	ht_dialog *d=new ht_dialog();
-	d->init(&b, "open file", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
+	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
 	
-	b.x=0;
-	b.y=0;
-		
-/* name (input) */
-	c=b;
-	c.x=10;
-	c.y=1;
-	c.w-=4+c.x;
-	c.h=1;
-
-	ht_list *hist=(ht_list*)find_atom(HISTATOM_FILE);
-	
-	ht_strinputfield *name_input=new ht_strinputfield();
-	name_input->init(&c, 128, hist);
-
-	d->insert(name_input);
-	
-/* name (text) */
-	c=b;
-	c.x=1;
-	c.y=1;
-	c.w=9;
-	c.h=1;
-
-	ht_label *name_text=new ht_label();
-	name_text->init(&c, "~filename", name_input);
-
-	d->insert(name_text);
-
 /* mode (input) */
 	c=b;
-	c.x=10;
-	c.y=3;
+	c.x=6;
+	c.y=b.h-4;
 	c.w=12;
 	c.h=1;
 
@@ -224,7 +403,7 @@ bool file_open_dialog(char **name, UINT *mode)
 /* mode (text) */
 	c=b;
 	c.x=1;
-	c.y=3;
+	c.y=b.h-4;
 	c.w=9;
 	c.h=1;
 
@@ -232,32 +411,35 @@ bool file_open_dialog(char **name, UINT *mode)
 	mode_text->init(&c, "~mode", mode_input);
 
 	d->insert(mode_text);
-	
-//
+/* go! */
 	if (d->run(false)) {
 		struct {
-			ht_strinputfield_data name;
+			FileBrowserData browser;
 			ht_listpopup_data mode;
 		} data;
 
 		d->databuf_get(&data);
 
-		switch (data.mode.cursor_id) {
-			case 0: *mode=FOM_AUTO; break;
-			case 1: *mode=FOM_BIN; break;
-			case 2: *mode=FOM_TEXT; break;
-		}
+		char buf[VFS_URL_MAX];
+		d->extract_url(buf);
 
-		*name=(char*)malloc(data.name.textlen+1);
-		bin2str(*name, data.name.text, data.name.textlen);
-		
-		if (hist) insert_history_entry(hist, *name, 0);
-		
-		d->done();
-		delete d;
-		return true;
+		// FIXME: urls not fully supported...
+		if (strcmp(buf, "local:")) {
+			*name = strdup(buf+6);
+
+			if (hist) insert_history_entry(hist, *name, 0);
+
+			switch (data.mode.cursor_id) {
+				case 0: *mode=FOM_AUTO; break;
+				case 1: *mode=FOM_BIN; break;
+				case 2: *mode=FOM_TEXT; break;
+			}
+
+			d->done();
+			delete d;
+			return true;
+		}
 	}
-	
 	d->done();
 	delete d;
 	return false;
@@ -622,12 +804,10 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		case cmd_project_add_item: {
 			if (project) {
 				char fn[FILENAME_MAX];
-				fn[0] = 0;
-				if (inputbox("Add project item", "~Filename", fn, sizeof fn, HISTATOM_FILE) == button_ok) {
+				if (file_chooser("Add project item", fn, sizeof fn)) {
 					char ffn[HT_NAME_MAX];
 					char dir[HT_NAME_MAX];
-					getcwd(dir, sizeof dir);
-					if ((sys_common_canonicalize(ffn, fn, dir, sys_is_path_delim) == 0)
+					if ((sys_common_canonicalize(ffn, fn, NULL, sys_is_path_delim) == 0)
 					&& (sys_basename(fn, ffn) == 0)
 					&& (sys_dirname(dir, ffn) == 0)) {
 						ht_project_item *p = new ht_project_item();
@@ -642,32 +822,28 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		}
 		case cmd_project_remove_item: {
 			int p = pos;
-			if (count && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
+			if (calc_count() && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
 				cursor_up(1);
 				project->del(p);
 				update();
 				if (p) cursor_down(1);
 				dirtyview();
+                    rearrangeColumns();
 			}
 			clearmsg(msg);
 			return;
 		}
-		case msg_keypressed:
+		case msg_keypressed: {
 			switch (msg->data1.integer) {
 				case K_Return: {
-					if (count) {
-						int p = pos;
-						ht_project_item *i = (ht_project_item *)project->get(p);
-						char fn[HT_NAME_MAX];
-						if (sys_common_canonicalize(fn, i->get_filename(), i->get_path(), sys_is_path_delim)==0) {
-							((ht_app*)app)->create_window_file(fn, FOM_AUTO, false);
-						}
+					if (calc_count() && select_entry(e_cursor)) {
+						clearmsg(msg);
+						return;
 					}
-					clearmsg(msg);
-					break;
 				}
 			}
-		break;
+			break;
+		}
 	}
 	ht_listbox::handlemsg(msg);
 }
@@ -706,8 +882,15 @@ char	*ht_project_listbox::quickfind_completition(char *s)
 	return res;
 }
 
-void ht_project_listbox::select_entry(void *entry)
+bool ht_project_listbox::select_entry(void *entry)
 {
+	int p = pos;
+	ht_project_item *i = (ht_project_item *)project->get(p);
+	char fn[HT_NAME_MAX];
+	if (sys_common_canonicalize(fn, i->get_filename(), i->get_path(), sys_is_path_delim)==0) {
+		((ht_app*)app)->create_window_file(fn, FOM_AUTO, false);
+	}
+	return true;
 }
 
 void ht_project_listbox::set_project(ht_project *p)
@@ -1238,10 +1421,10 @@ void ht_app::init(bounds *pq)
 
 	ht_static_context_menu *file=new ht_static_context_menu();
 	file->init("~File");
-	file->insert_entry("~New...", 0, cmd_file_new, 0, 1);
-	file->insert_entry("~Open...", 0, cmd_file_open, 0, 1);
-	file->insert_entry("~Save", 0, cmd_file_save, 0, 1);
-	file->insert_entry("Save ~As...", 0, cmd_file_saveas, 0, 1);
+	file->insert_entry("~New...", NULL, cmd_file_new, 0, 1);
+	file->insert_entry("~Open...", "F3", cmd_file_open, 0, 1);
+	file->insert_entry("~Save", NULL, cmd_file_save, 0, 1);
+	file->insert_entry("Save ~As...", NULL, cmd_file_saveas, 0, 1);
 	file->insert_separator();
 	file->insert_entry("Open ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
@@ -1434,7 +1617,7 @@ bool ht_app::create_window_term()
 		ht_streamfile *in, *out, *err;
 		int handle;
 		int e = 0;
-		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "make")) == 0) {
+		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "/usr/bin/gdb")) == 0) {
 			Terminal *terminal = new Terminal();
 			terminal->init(in, out, err, handle);
 
@@ -1449,7 +1632,7 @@ bool ht_app::create_window_term()
 			insert_window(termwindow, AWT_LOG, 0, false, NULL);
 		} else {
 			errorbox("couldn't create child-process (%d)", e);
-		    	return false;
+			return false;
 		}
 	}
 	return true;
@@ -1524,6 +1707,11 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 	ht_file *emfile=new ht_file();
 	emfile->init(fullfilename, FAM_READ, FOM_EXISTS);
 	
+	if ((e=emfile->get_error())) {
+		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
+		return false;
+	}
+
 	ht_streamfile_modifier *mfile=new ht_streamfile_modifier();
 	mfile->init(emfile, true, 8*1024);
 
@@ -1808,6 +1996,7 @@ bool ht_app::create_window_project()
 	return true;
 }
 
+#if 0
 ht_view *create_ofm_single(bounds *c, char *url, ht_vfs_viewer **x)
 {
 	bounds b=*c;
@@ -1843,6 +2032,7 @@ ht_view *create_ofm_single(bounds *c, char *url, ht_vfs_viewer **x)
 	*x=v;
 	return g;
 }
+#endif
 
 bool ht_app::create_window_ofm(char *url1, char *url2)
 {
@@ -1851,7 +2041,18 @@ bool ht_app::create_window_ofm(char *url1, char *url2)
 
 	ht_window *window=new ht_window();
 	window->init(&b, "file manager", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
+#if 1
+	b.w-=2;
+	b.h-=2;
 
+	VfsListbox2 *l = new VfsListbox2();
+	l->init(&b, virtual_fs_list, window->getframe());
+
+//     l->changeURL("local:/bp/././..");
+	l->changeURL(url1);
+
+	window->insert(l);
+#else
 	bounds b1, b2, b3;
 
 	ht_vfs_viewer *v1, *v2=NULL;
@@ -1883,7 +2084,7 @@ bool ht_app::create_window_ofm(char *url1, char *url2)
 		v1->set_assoc_vfs_viewer(v2);
 		v2->set_assoc_vfs_viewer(v1);
 	}
-
+#endif
 	insert_window(window, AWT_OFM, 0, false, NULL);
 	return true;
 }
@@ -1958,6 +2159,9 @@ char *ht_app::func(UINT i, bool execute)
 		case 1:
 			if (execute) sendmsg(cmd_popup_window_help);
 			return "help";
+		case 3:
+			if (execute) sendmsg(cmd_file_open);
+			return "open";
 		case 6:
 			if (execute) sendmsg(cmd_popup_dialog_view_list);
 			return "mode";
@@ -2213,7 +2417,7 @@ void ht_app::handlemsg(htmsg *msg)
 				}
 /* FIXME: experimental */				
 				case K_Alt_T:
-					create_window_ofm("reg://", "file://");
+					create_window_ofm("reg:/", "local:/");
 					clearmsg(msg);
 					return;
 /* FIXME: experimental */				
@@ -2460,7 +2664,7 @@ void ht_app::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		case cmd_popup_window_options:
-			create_window_ofm("reg://", NULL);
+			create_window_ofm("reg:/", NULL);
 			clearmsg(msg);
 			return;
 		case cmd_popup_window_help:
@@ -2512,7 +2716,7 @@ OBJECT_ID ht_app::object_id()
 	return ATOM_HT_APP;
 }
 
-int my_compare_func(const char *a, const char *b)
+static int my_compare_func(const char *a, const char *b)
 {
 	return strcmp(a, b);
 }
@@ -2868,6 +3072,18 @@ ht_list *build_vfs_list()
 	ht_clist *vfslist=new ht_clist();
 	vfslist->init();
 
+#if 1
+/* LocalFS */
+	LocalFs *localfs = new LocalFs();
+	localfs->init();
+
+/* RegistryFS */
+	RegistryFs *registryfs = new RegistryFs();
+	registryfs->init();
+
+	vfslist->insert(localfs);
+	vfslist->insert(registryfs);
+#else
 /* file_vfs */
 	ht_file_vfs *file_vfs=new ht_file_vfs();
 	file_vfs->init();
@@ -2878,6 +3094,8 @@ ht_list *build_vfs_list()
 
 	vfslist->insert(file_vfs);
 	vfslist->insert(reg_vfs);
+#endif
+
 /**/
 	return vfslist;
 }

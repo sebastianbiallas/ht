@@ -235,7 +235,7 @@ public:
 	virtual	int numColumns();
 	virtual	void *quickfind(char *s);
 	virtual	char	*quickfind_completition(char *s);
-	virtual	void select_entry(void *entry);
+	virtual	bool select_entry(void *entry);
 /* new */
 			char *func(UINT i, bool execute);
 			void set_project(ht_project *project);
