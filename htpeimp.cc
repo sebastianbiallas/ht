@@ -388,7 +388,7 @@ char *ht_pe_import_viewer::func(UINT i, bool execute)
 				dosort();
 			}
 			return grouplib ? (char*)"nbylib" : (char*)"bylib";
-		case 3:
+		case 4:
 			if (execute) {
 				if (sortby != 1) {
 					sortby = 1;
@@ -396,7 +396,7 @@ char *ht_pe_import_viewer::func(UINT i, bool execute)
 				}
 			}
 			return "byaddr";
-		case 4:
+		case 5:
 			if (execute) {
 				if (sortby != 2) {
 					sortby = 2;

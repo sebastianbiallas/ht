@@ -254,14 +254,14 @@ char *ht_pe_export_viewer::func(UINT i, bool execute)
 				sort(1, &sortord);
 			}
 			return "sortord";
-		case 3:
+		case 4:
 			if (execute) {
 				sortord.col = 1;
 				sortord.compare_func = strcmp;
 				sort(1, &sortord);
 			}
 			return "sortva";
-		case 4:
+		case 5:
 			if (execute) {
 				sortord.col = 2;
 				sortord.compare_func = strcmp;

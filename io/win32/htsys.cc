@@ -79,10 +79,10 @@ int sys_findfirst(const char *dirname, pfind_t *pfind)
 	char *s=Dirname;
 	while ((s=strchr(s, '/'))) *s='\\';
 	strcat(Dirname, "*.*");
-	
+
 	pfind->findstate=malloc(sizeof (winfindstate));
 	winfindstate *wfs=(winfindstate*)pfind->findstate;
-	
+
 	wfs->fhandle = FindFirstFile(Dirname, &wfs->find_data);
 	free(Dirname);
 	if (wfs->fhandle == INVALID_HANDLE_VALUE) {
