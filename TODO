@@ -36,10 +36,10 @@
 
 +steves
 =======
+- open file: wildcards
 - !! [FREEBSD] doesnt compile: !!
   terminal.cc:100 timeout bla
 - !! [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
-- textedit.cc:2498 unneccesarry compare (temp)
 - search
 	- search should prefill start/end ofs from selection (if applicable)
 	- search with invalid start/end offset
@@ -123,8 +123,6 @@
 - searchmode bin/regex: rewrite regex ?
 - "Ctrl-X" vs. "Ctrl+X"
 - only frames have desc, rest view_debug_name
-- assert through exceptionz ?
-- get/setdata instead of view_state_* ?
 - program modularization (dynamically linkable and built-in modules) ???
 - scripting engine for simple formats (or even more ?)
 
