@@ -229,9 +229,9 @@ void	ht_pe_resource_viewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_vstate_restore:
 			vstate_restore((ht_data*)msg->data1.ptr);
-               clearmsg(msg);
-               return;
-     }
+			clearmsg(msg);
+			return;
+	}
 	ht_static_treeview::handlemsg(msg);
 }
 
@@ -252,17 +252,14 @@ void	ht_pe_resource_viewer::select_node(void *node)
 			c=c->next;
 		}
 		if (hexv) {
-          	vstate_save();
-			hexv->goto_offset(((ht_pe_resource_leaf*)s->data)->offset, this);
+			vstate_save();
+			hexv->goto_offset(((ht_pe_resource_leaf*)s->data)->offset, false);
 			hexv->pselect_set(((ht_pe_resource_leaf*)s->data)->offset,
 				((ht_pe_resource_leaf*)s->data)->offset+((ht_pe_resource_leaf*)s->data)->size);
 			app->focus(hexv);
 		}
 	}
 }
-
-// we expect ht_static_treeview to be really static
-// e.g. node must not be deleted
 
 class ht_pe_resource_viewer_vstate: public ht_data {
 public:
@@ -271,9 +268,9 @@ public:
 
 ht_data *ht_pe_resource_viewer::vstate_create()
 {
-     ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
+	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	v->node = get_cursor_node();
-     return v;
+	return v;
 }
 
 bool ht_pe_resource_viewer::vstate_save()
@@ -293,7 +290,7 @@ bool ht_pe_resource_viewer::vstate_save()
 
 void ht_pe_resource_viewer::vstate_restore(ht_data *d)
 {
-     ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
+	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	goto_node(v->node);
 }
 
