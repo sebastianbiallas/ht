@@ -94,10 +94,10 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 			m.msg=msg_filesize_changed;
 			m.type=mt_broadcast;
 			sendsubmsg(&m);
-			
+
 			uf_initialized=false;
 			complete_init();
-			
+
 			dirtyview();
 			return;
 		case msg_get_scrollinfo:
