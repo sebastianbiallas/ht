@@ -84,10 +84,10 @@ struct NE_HEADER {
  */
 
 struct NE_SEGMENT {
-	word offset;
-	word size;
-	word flags;
-	word minalloc;
+	word offset HTPACKED;
+	word size HTPACKED;
+	word flags HTPACKED;
+	word minalloc HTPACKED;
 };
 
 #define NE_DATA		0x0001
@@ -149,9 +149,9 @@ struct NE_ENTRYPOINT_FIXED {
 /* relocations */
 
 struct NE_RELOC_HEADER {
-	byte type;
-	byte flags;
-	word src_ofs;
+	byte type HTPACKED;
+	byte flags HTPACKED;
+	word src_ofs HTPACKED;
 };
 
 #define NE_RF_ADD			0x04		  /* Additive fixup */
