@@ -27,16 +27,6 @@
 #include "terminal.h"
 #include "unistd.h"
 
-inline static ssize_t read_wrap(int fd, void *buffer, size_t length)
-{
-	return read(fd, buffer, length);
-}
-
-inline static int write_wrap(int file, const void *buffer, size_t count)
-{
-	return write(file, buffer, count);
-}
-
 /*
  *	CLASS Terminal
  */
@@ -68,7 +58,7 @@ bool Terminal::append(int file)
 	byte *buf=(byte*)malloc(bufsize);
 	int r, w = 0;
 	do {
-		r = read_wrap(file, buf, bufsize);
+		r = ::read(file, buf, bufsize);
 		if (r<0) break;
 		w += r;
 		ht_ltextfile::write(buf, r);
@@ -86,7 +76,7 @@ UINT Terminal::write(const void *buf, UINT size)
 {
 	if (connected()) {
 		UINT r = ht_ltextfile::write(buf, size);
-		write_wrap(in, buf, size);
+		::write(in, buf, size);
 		return r;
 	}
 	return 0;		
