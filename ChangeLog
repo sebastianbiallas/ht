@@ -22,7 +22,7 @@ version 0.7.0:
 	  and many minor fixes
 	- goto dialog auto-documents available eval() functions
 	- Inter-process communication (IPC) via console redirection
-	  on all existing platforms.
+	  on all existing platforms. Primitive terminal emulation.
 	- qword support
 	- new streamfiles: ht_sys_file, ht_stdio_file, ht_temp_file,
 	  ht_null_file
@@ -30,6 +30,10 @@ version 0.7.0:
 	- log-window scrolling fixed
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
+
+	* docu LE updates
+	* argh: file/new and file/save fixes
+	* POSIX sys_truncate
 
 	* further Valgrinding
 	* help hang bug fixed

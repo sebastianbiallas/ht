@@ -35,12 +35,13 @@
 +steves
 - (HT_0_7)
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
-	- implement POSIX - sys_truncate
+     - help crlf -cr
      - x86_insn_op::user is int[4] but misused as void*[4] in vxd disasm,
        this wont work on alpha and other 64bit architectures
 
 - new instead of malloc
-- terminal.cc: terminal needs line buffering
+- terminal.cc: terminal line buffering
+- textviewer: vi-mania: '/' searches, 'n' continues
 
 - FIXED ?: HT crash when only htcfg-header in ht.cfg
 
