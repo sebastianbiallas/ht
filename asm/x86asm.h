@@ -47,9 +47,10 @@ struct x86addrcoding {
 #define X86ASM_ALLOW_AMBIGUOUS		0x00000001		/* IF SET: allow "mov [0], 1" 	ELSE: deny "mov [0], 1" (ambiguous) */
 
 class x86asm: public Assembler {
-protected:
+public:
 	int opsize;
 	int addrsize;
+protected:
 	int esizes[3];
 
 	int modrmv;

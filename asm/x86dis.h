@@ -53,9 +53,10 @@ struct x86dis_insn {
  */
 
 class x86dis: public Disassembler {
+public:
+	int opsize, addrsize;
 protected:
 	x86dis_insn insn;
-	int opsize, addrsize;
 	char insnstr[256];
 /* initme! */
 	unsigned char *codep, *ocodep;
