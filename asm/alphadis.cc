@@ -282,7 +282,6 @@ void	Alphadis::store(ht_object_stream *f)
 
 char	*Alphadis::str(dis_insn *disasm_insn, int style)
 {
-
 	return strf(disasm_insn, style, "");
 }
 
