@@ -59,6 +59,12 @@ cygwin*)
 	NEED_CURSES=0
 	HAVE_PIPE=1
 ;;
+mingw32*)
+	IO_DIR=win32
+	echo "*** MINGW32, building native Win32 version" 1>&2
+	NEED_CURSES=0
+	HAVE_PIPE=1
+;;
 *) 
 	echo "configure: warning: $target_os: unknown target OS, assuming POSIX-compatible..." 1>&2
 	IO_DIR=posix
