@@ -42,6 +42,7 @@
 #include "infoview.h"
 #include "snprintf.h"
 #include "stream.h"
+#include "terminal.h"
 #include "textedit.h"
 #include "textfile.h"
 #include "tools.h"
@@ -367,7 +368,7 @@ int file_project_load_fcfg_func(ht_object_stream *f, void *context)
 int app_stream_error_func(ht_stream *stream)
 {
 	int err=stream->get_error();
-	char *name = stream->get_desc();
+	const char *name = stream->get_desc();
 	if (err & STERR_SYSTEM) {
 		err=err&0xffff;
 		switch (err) {
@@ -554,7 +555,7 @@ void *ht_project_listbox::getfirst()
 	if (project && project->count()) {
 		return (void*)1;
 	} else {
-		return (void*)NULL;
+		return NULL;
 	}
 }
 
@@ -628,7 +629,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 						ht_project_item *p = new ht_project_item();
 						p->init(fn, dir);
 						((ht_project*)project)->insert(p);
-						sendmsg(msg_project_changed);
+						app->sendmsg(msg_project_changed);
 					}
 				}
 			}
@@ -1392,6 +1393,47 @@ bool ht_app::create_window_log()
 	return true;
 }
 
+bool ht_app::create_window_term()
+{
+	ht_window *w = get_window_by_type(AWT_TERM);
+	if (w) {
+		focus(w);
+	} else {
+		bounds b;
+		get_stdbounds_file(&b);
+
+		ht_window *termwindow=new ht_window();
+		termwindow->init(&b, "terminal", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
+		
+		bounds k=b;
+		k.x=b.w-2;
+		k.y=0;
+		k.w=1;
+		k.h-=2;
+		ht_scrollbar *hs=new ht_scrollbar();
+		hs->init(&k, &termwindow->pal, true);
+
+		termwindow->setvscrollbar(hs);
+
+          FILE *in, *out, *err;
+		sys_ipc_exec(&in, &out, &err, "gcc");
+
+          Terminal *terminal = new Terminal();
+          terminal->init(in, out, err);
+
+		b.x=0;
+		b.y=0;
+		b.w-=2;
+		b.h-=2;
+		TerminalViewer *termviewer=new TerminalViewer();
+		termviewer->init(&b, terminal, true);
+		termwindow->insert(termviewer);
+		
+		insert_window(termwindow, AWT_LOG, 0, false, NULL);
+	}
+	return true;
+}
+
 bool ht_app::create_window_clipboard()
 {
 	ht_window *w=get_window_by_type(AWT_CLIPBOARD);
@@ -2151,6 +2193,11 @@ void ht_app::handlemsg(htmsg *msg)
 /* FIXME: experimental */				
 				case K_Alt_T:
 					create_window_ofm("reg://", "file://");
+					clearmsg(msg);
+					return;
+/* FIXME: experimental */				
+				case K_Alt_Z:
+					create_window_term();
 					clearmsg(msg);
 					return;
 /* FIXME: experimental */				
