@@ -1339,9 +1339,10 @@ bool ht_app::create_window_log()
 	if (w) {
 		focus(w);
 	} else {
-// FIXME:  get_stdbounds_tool(&b) ?
 		bounds b;
-		get_stdbounds_file(&b);
+		battlefield->getbounds(&b);
+          b.x = 0;
+          b.y = 0;
 
 		ht_window *logwindow=new ht_window();
 		logwindow->init(&b, "log window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);

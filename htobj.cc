@@ -611,12 +611,14 @@ void ht_view::resize_group(int rx, int ry)
 	} else if (growmode & GM_RIGHT) {
 		px=rx;
 	} else /* GM_LEFT */ {
+     	/* ok, nothing to do */
 	}
 	if (growmode & GM_VDEFORM) {
 		sy=ry;
 	} else if (growmode & GM_BOTTOM) {
 		py=ry;
 	} else /* GM_TOP */ {
+     	/* ok, nothing to do */
 	}
 	move(px, py);
 	resize(sx, sy);
@@ -795,12 +797,6 @@ void ht_group::init(bounds *b, int options, char *desc)
 	shared_data=0;
 
 	growmode = GM_HDEFORM | GM_VDEFORM;
-
-/* FIXME: debug */
-	if (options & VO_OWNBUFFER) {
-		HT_WARN("class 'ht_group' should not have own buffer !");
-	}
-/**/
 }
 
 void ht_group::done()

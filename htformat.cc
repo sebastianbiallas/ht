@@ -375,12 +375,12 @@ void ht_format_group::setgroup(ht_group *_group)
  *	CLASS ht_viewer
  */
 
-void ht_viewer::init(bounds *b, char *desc, UINT _caps)
+void ht_viewer::init(bounds *b, char *desc, UINT c)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_BROWSABLE | VO_SELECTABLE | VO_MOVE | VO_RESIZE, desc);
-	caps=_caps;
+	caps = c;
 	
-	growmode=GM_VDEFORM | GM_HDEFORM;
+	growmode = GM_VDEFORM | GM_HDEFORM;
 }
 
 void ht_viewer::done()
@@ -1816,7 +1816,7 @@ char *ht_uformat_viewer::func(UINT i, bool execute)
 							vstate_save(NULL);
 							app->focus(v);
 						} else {
-							errorbox("offset %08x is invalid for view '%s'", o, v->desc);
+							errorbox("offset %08x is not supported/invalid in '%s'", o, v->desc);
 						}
 					}
 				}
@@ -2551,18 +2551,22 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 		if (p.sub->convert_ofs_to_id(offset, &p.line_id)) {
 			if (source_object) vstate_save(source_object);
 			switch (cursor_state) {
-				case cursor_state_visible:
+				case cursor_state_visible: {
+				     select_mode_pre();
 					/* FIXME: magic 42 */
-					if (find_first_edit_tag_with_offset(&p, 42, offset)) {
-						return set_cursor(p);
-					} else if (find_first_tag(&p, size.h)) {
-						return set_cursor(p);
-					}
-					break;
+					if (!find_first_edit_tag_with_offset(&p, 42, offset)
+						&& !find_first_tag(&p, size.h)) break;
+					bool r = set_cursor(p);
+				     select_mode_post(false);
+                         return r;
+				}
 				case cursor_state_invisible:
+				     select_mode_pre();
 					p.tag_group = -1;
 					p.tag_idx = -1;
-					return set_cursor(p);
+					bool r = set_cursor(p);
+				     select_mode_post(false);
+                         return r;
 			}
 			break;
 		}
@@ -2574,7 +2578,9 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 bool ht_uformat_viewer::goto_pos(viewer_pos pos, ht_view *source_object)
 {
 	if (source_object) vstate_save(source_object);
+     select_mode_pre();
 	set_cursor(pos.u);
+     select_mode_post(false);
 	return true;
 }
 

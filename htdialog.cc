@@ -1392,6 +1392,8 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_RESIZE, 0);
 
+	growmode = GM_HDEFORM | GM_VDEFORM;
+
 	bounds c=*b;
 	c.x=c.w-1;
 	c.y=0;
