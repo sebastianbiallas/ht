@@ -21,7 +21,7 @@
 #include "cmds.h"
 
 #define CMD_NAME(n) {n, #n}
-
+/*
 cmd_name cmd_names[] = {
 CMD_NAME(cmd_quit),
 CMD_NAME(cmd_file_open),
@@ -43,7 +43,8 @@ CMD_NAME(cmd_window_switch_resizemove),
 CMD_NAME(cmd_window_close),
 
 CMD_NAME(cmd_popup_dialog_eval),
-CMD_NAME(cmd_popup_dialog_wlist),
+CMD_NAME(cmd_popup_dialog_view_list),
+CMD_NAME(cmd_popup_dialog_window_list),
 CMD_NAME(cmd_popup_window_log),
 CMD_NAME(cmd_popup_window_help),
 
@@ -60,4 +61,4 @@ CMD_NAME(cmd_file_truncate),
 CMD_NAME(cmd_file_extend),
 {0, 0}
 };
-
+*/

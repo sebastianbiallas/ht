@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	htpeimp.cc
  *
@@ -18,7 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "formats.h"
+#include "htanaly.h"
 #include "htctrl.h"
 #include "htdata.h"
 #include "htendian.h"
@@ -30,25 +31,24 @@
 #include "stream.h"
 #include "htstring.h"
 #include "httag.h"
+#include "log.h"
+#include "pe_analy.h"
+#include "snprintf.h"
 #include "tools.h"
-#include "formats.h"
 
 #include <stdlib.h>
 #include <string.h>
-
-/* FIXME: */
-static ht_pe_import *g_import;
 
 ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return 0;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
 	dword sec_rva, sec_size;
 	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
 	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
-	if (!sec_rva || !sec_size) return 0;
+	if (!sec_rva || !sec_size) return NULL;
 
 	int h0=new_timer();
 	start_timer(h0);
@@ -58,34 +58,30 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 	c=*b;
 	g=new ht_group();
-	g->init(&c, VO_RESIZE, "pe/imports-g");
+	g->init(&c, VO_RESIZE, DESC_PE_IMPORTS"-g");
 	ht_statictext *head;
 
 	int dll_count=0;
 	int function_count=0;
-//	ht_cached_stream *cached_file=0;
 
 	c.y++;
 	c.h--;
-	ht_uformat_viewer *v=new ht_pe_import_viewer();
-	v->init(&c, DESC_PE_IMPORTS, VC_SEARCH, file, group);
+	ht_pe_import_viewer *v=new ht_pe_import_viewer();
+	v->init(&c, DESC_PE_IMPORTS, group);
 
 	c.y--;
 	c.h=1;
 
 	PE_IMPORT_DESCRIPTOR import;
-	int dofs;
-	int f;
-	int dll_index;
+	FILEOFS dofs;
+	UINT dll_index;
 	char iline[256];
 	
-	ht_pe_import_mask *m = NULL;
-
 /* get import directory offset */
 	/* 1. get import directory rva */
 	FILEOFS iofs;
-	dword irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
-	dword isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+	RVA irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
+	UINT isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 	LOG("%s: PE: reading import directory at offset %08x, rva %08x, size %08x...", file->get_filename(), iofs, irva, isize);
@@ -95,22 +91,8 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 /* doesn't work because import information is NOT contained into
    the import directory !!! only the import dir header. (I !love M$) */
 
-/*     htfile *ifile;
-	char *isectionbuf;
-	ifile=new htmemfile(iofs, isize);
-	isectionbuf=(char*)malloc(isize);
-	file->seek(iofs);
-	file->read(isectionbuf, isize);
-	ifile->write(isectionbuf, isize);
-	file=ifile;
-	delete isectionbuf;*/
-
-//	cached_file=new ht_cached_stream(file, 128*1024, CACHED_STREAM_CACHE_READS, 2048);
-//     file=cached_file;		/* we dont need to care about "file" */
-
 /*** read import directory ***/
 	dofs = iofs;
-	f = 0;
 	dll_index = 0;
 
 	while (1) {
@@ -130,21 +112,20 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 /*
  *	First thunk (FT)
- *   The first thunk table is what will be overwritten in run-time with
- *	the function entry-points. So the program will refer to this table
- *	as if it contained them.
+ *   The first thunk table will be overwritten by the system/loader with
+ *	the function entry-points. So the program will treat this table
+ *	as if it contained just imported addresses.
  */
-		dword fthunk_rva = import.first_thunk;
+		RVA fthunk_rva = import.first_thunk;
 		FILEOFS fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
 /*
- *   FT vs original FT
- * 	I saw executables that have the original FT ptr set to 0 and seem to
+ *   ...and Original First Thunk (OFT)
+ * 	I saw executables that have the OFT ptr set to 0 and seem to
  *	use the FT ptr instead, but also some that have both !=0 and use
  *	the original one (bound executables).
- * 	I don't know if this is right... please tell me if you find out :-)
  */
-		dword thunk_rva;
+		RVA thunk_rva;
 		FILEOFS thunk_ofs;
 		if (import.original_first_thunk) {
 			thunk_rva = import.original_first_thunk;
@@ -157,7 +138,7 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		pe_shared->imports.libs->insert(lib);
 
 		PE_THUNK_DATA thunk;
-		dword thunk_count = 0;
+		UINT thunk_count = 0;
 		file->seek(thunk_ofs);
 		while (1) {
 			file->read(&thunk, sizeof thunk);
@@ -201,7 +182,6 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 			thunk_rva+=4;
 			fthunk_ofs+=4;
 			fthunk_rva+=4;
-			f++;
 		}
 		
 		dll_index++;
@@ -215,21 +195,29 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 //	LOG("%s: PE: %d ticks (%d msec) to read imports", file->get_name(), get_timer_tick(h0), get_timer_msec(h0));
 	delete_timer(h0);
 
-//     delete cached_file;
-
-	sprintf(iline, "Library        FT_VA    Name/Ordinal    %d imports from %d libraries", function_count, dll_count);
+	ht_snprintf(iline, sizeof iline, "* PE import directory at offset %08x (%d functions from %d libraries)", iofs, function_count, dll_count);
 	head=new ht_statictext();
 	head->init(&c, iline, align_left);
 
-	sprintf(iline, "* PE import directory at offset %08x", iofs);
-
-	m=new ht_pe_import_mask();
-	m->init(file, &pe_shared->imports, iline);
-
-	v->insertsub(m);
-
 	g->insert(head);
 	g->insert(v);
+//
+	for (UINT i=0; i<pe_shared->imports.funcs->count(); i++) {
+		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->imports.funcs->get(i);
+		assert(func);
+		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->imports.libs->get(func->libidx);
+		assert(lib);
+		char addr[32], name[256];
+		ht_snprintf(addr, sizeof addr, "%08x", func->address);
+		if (func->byname) {
+			ht_snprintf(name, sizeof name, "%s", func->name.name);
+		} else {
+			ht_snprintf(name, sizeof name, "%04x (by ordinal)", func->ordinal);
+		}
+		v->insert_str(i, lib->name, addr, name);
+	}
+//
+	v->update();
 
 	g->setpalette(palkey_generic_window_default);
 
@@ -238,30 +226,21 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 pe_read_error:
 	delete_timer(h0);
 	errorbox("%s: PE import section seems to be corrupted.", file->get_filename());
-//	if (cached_file) delete cached_file;
 	g->done();
 	delete g;
-	if (m) {
-		m->done();
-		delete m;
-	}		
 	v->done();
 	delete v;
-	return 0;
+	return NULL;
 }
 
 format_viewer_if htpeimports_if = {
 	htpeimports_init,
-	0
+	NULL
 };
 
 /*
  *	class ht_pe_import_library
  */
-
-ht_pe_import_library::ht_pe_import_library()
-{
-}
 
 ht_pe_import_library::ht_pe_import_library(char *n)
 {
@@ -270,37 +249,28 @@ ht_pe_import_library::ht_pe_import_library(char *n)
 
 ht_pe_import_library::~ht_pe_import_library()
 {
-	free(name);
+	if (name) free(name);
 }
 
 /*
  *	class ht_pe_import_function
  */
 
-ht_pe_import_function::ht_pe_import_function()
-{
-	libidx = 0;
-	name.name = 0;
-	name.hint = 0;
-	ordinal = 0;
-	address = 0;
-}
-
-ht_pe_import_function::ht_pe_import_function(int li, dword a, int o)
+ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, UINT o)
 {
 	libidx = li;
 	ordinal = o;
 	address = a;
-	byname = 0;
+	byname = false;
 }
 
-ht_pe_import_function::ht_pe_import_function(int li, dword a, char *n, int h)
+ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, char *n, UINT h)
 {
 	libidx= li;
 	name.name = ht_strdup(n);
 	name.hint = h;
 	address = a;
-	byname = 1;
+	byname = true;
 }
 
 ht_pe_import_function::~ht_pe_import_function()
@@ -312,208 +282,115 @@ ht_pe_import_function::~ht_pe_import_function()
  *	CLASS ht_pe_import_viewer
  */
 
-void ht_pe_import_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
+void	ht_pe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
 {
-	ht_uformat_viewer::init(b, desc, caps, file, group);
-	VIEW_DEBUG_NAME("ht_pe_import_viewer");
+	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
+	options |= VO_BROWSABLE;
+	desc = strdup(Desc);
+	format_group = fg;
+	grouplib = false;
+	sortby = 1;
+	dosort();
 }
 
-void ht_pe_import_viewer::done()
+void	ht_pe_import_viewer::done()
 {
-	ht_uformat_viewer::done();
+	ht_text_listbox::done();
+}
+
+void ht_pe_import_viewer::dosort()
+{
+	ht_text_listbox_sort_order sortord[2];
+	UINT l, s;
+	if (grouplib) {
+		l = 0;
+		s = 1;
+	} else {
+		l = 1;
+		s = 0;
+	}
+	sortord[l].col = 0;
+	sortord[l].compare_func = strcmp;
+	sortord[s].col = sortby;
+	sortord[s].compare_func = strcmp;
+	sort(2, sortord);
 }
 
 char *ht_pe_import_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
+		case 2:
+			if (execute) {
+				grouplib = !grouplib;
+				dosort();
+			}
+			return grouplib ? (char*)"nbylib" : (char*)"bylib";
 		case 3:
 			if (execute) {
-				((ht_pe_import_mask*)cursor_sub)->sortbyva();
-				dirtyview();
+				if (sortby != 1) {
+					sortby = 1;
+					dosort();
+				}
 			}
-			return "sortva";
+			return "byaddr";
 		case 4:
 			if (execute) {
-				((ht_pe_import_mask*)cursor_sub)->sortbyname();
-				dirtyview();
+				if (sortby != 2) {
+					sortby = 2;
+					dosort();
+				}
 			}
-			return "sortname";
-		case 5:
-			if (execute) {
-				((ht_pe_import_mask*)cursor_sub)->unsort();
-				dirtyview();
-			}
-			return "unsort";
+			return "byname";
 	}
-	return ht_uformat_viewer::func(i, execute);
+	return NULL;
 }
 
-int ht_pe_import_viewer::ref_sel(ID id_low, ID id_high)
+void ht_pe_import_viewer::handlemsg(htmsg *msg)
 {
+	switch (msg->msg) {
+		case msg_funcexec:
+			if (func(msg->data1.integer, 1)) {
+				clearmsg(msg);
+				return;
+			}
+			break;
+		case msg_funcquery: {
+			char *s=func(msg->data1.integer, 0);
+			if (s) {
+				msg->msg=msg_retval;
+				msg->data1.str=s;
+			}
+			break;
+		}
+		case msg_keypressed: {
+			if (msg->data1.integer == K_Return) {
+				select_entry(e_cursor);
+				clearmsg(msg);
+			}
+			break;
+		}
+	}
+	ht_text_listbox::handlemsg(msg);
+}
+
+void ht_pe_import_viewer::select_entry(void *entry)
+{
+	ht_text_listbox_item *i = (ht_text_listbox_item *)entry;
+
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
-	if (pe_shared->v_image->goto_address(id_low, this)) {
-		app->focus(pe_shared->v_image);
-	} else errorbox("can't follow: %s %08x is not valid !", "import address", id_low);
-	return 1;
+	ht_pe_import_function *e = (ht_pe_import_function*)pe_shared->imports.funcs->get(i->id);
+	if (!e) return;
+	if (pe_shared->v_image) {
+		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
+		PEAnalyser *a = (PEAnalyser*)av->analy;
+		Address *addr = a->createAddress32(e->address);
+		if (av->gotoAddress(addr, NULL)) {
+			app->focus(av);
+			vstate_save();
+		} else errorbox("can't follow: %s %08x is not valid !", "import address", addr);
+		delete addr;
+	} else errorbox("can't follow: no image viewer");
 }
 
-/*
- *	CLASS ht_pe_import_mask
- */
-
-void ht_pe_import_mask::init(ht_streamfile *file, ht_pe_import *i, char *f)
-{
-	ht_sub::init(file);
-	firstline = ht_strdup(f);
-	import = i;
-	sort_path = 0;
-	sort_va = 0;
-	sort_name = 0;
-}
-
-void ht_pe_import_mask::done()
-{
-	free(firstline);
-	if (sort_va) free(sort_va);
-	if (sort_name) free(sort_name);
-	ht_sub::done();
-}
-
-bool ht_pe_import_mask::convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2)
-{
-	*id2 = 0;
-	*id1 = addr;
-	return true;
-}
-
-bool ht_pe_import_mask::convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr)
-{
-	*addr = id1;
-	return true;
-}
-
-void ht_pe_import_mask::first_line_id(ID *id1, ID *id2)
-{
-	*id1=0;
-	*id2=0;
-}
-
-bool ht_pe_import_mask::getline(char *line, ID id1, ID id2)
-{
-	if (id1>=1) {
-		char *l=line;
-		UINT i=id1-1;
-		if (sort_path) i=sort_path[i];
-		ht_pe_import_function *f=(ht_pe_import_function*)import->funcs->get(i);
-
-		ht_pe_import_library *lib=(ht_pe_import_library*)import->libs->get(f->libidx);
-		if (f->byname) {
-/* FIXME: what about the hint ? */
-			l+=sprintf(l, "%-14s %08x ", lib->name, f->address);
-			l=tag_make_ref(l, f->address, 0, f->name.name);
-		} else {
-			char ord[5];
-			sprintf(ord, "%04x", f->ordinal);
-			l+=sprintf(l, "%-14s %08x ", lib->name, f->address);
-			l=tag_make_ref(l, f->address, 0, ord);
-		}
-		*l=0;
-	} else {
-		strcpy(line, firstline);
-	}
-	return 1;
-}
-
-void ht_pe_import_mask::last_line_id(ID *id1, ID *id2)
-{
-	*id1=import->funcs->count();
-	*id2=0;
-}
-
-int ht_pe_import_mask::next_line_id(ID *id1, ID *id2, int n)
-{
-	UINT c=import->funcs->count()+1;
-	if (*id1+n>=c) {
-		int r=c-*id1-1;
-		*id1=c-1;
-		return r;
-	}
-	*id1+=n;
-	return n;
-}
-
-int ht_pe_import_mask::prev_line_id(ID *id1, ID *id2, int n)
-{
-	if ((UINT)n>*id1) {
-		int r=*id1;
-		*id1=0;
-		return r;
-	}
-	*id1-=n;
-	return n;
-}
-
-int compare_import_va(UINT *i1, UINT *i2)
-{
-	ht_pe_import_function *f1=(ht_pe_import_function *)g_import->funcs->get(*i1);
-	ht_pe_import_function *f2=(ht_pe_import_function *)g_import->funcs->get(*i2);
-	if (f1->address>f2->address) return 1; else
-	if (f1->address<f2->address) return -1; else
-		return 0;
-}
-
-void ht_pe_import_mask::sortbyva()
-{
-	if (!sort_va) {
-		int c=import->funcs->count();
-		sort_va=(UINT*)malloc(sizeof (UINT) * c);
-		for (int i=0; i<c; i++) {
-			sort_va[i]=i;
-		}
-		g_import=import;
-		qsort(sort_va, c, sizeof (UINT), (int (*)(const void *, const void*))compare_import_va);
-	}
-	sort_path=sort_va;
-}
-
-int compare_import_name(UINT *i1, UINT *i2)
-{
-	ht_pe_import_function *f1=(ht_pe_import_function *)g_import->funcs->get(*i1);
-	ht_pe_import_function *f2=(ht_pe_import_function *)g_import->funcs->get(*i2);
-	if (f1->byname) {
-		if (f2->byname) {
-			return strcmp(f1->name.name, f2->name.name);
-		} else {
-			return 1;
-		}
-	} else {
-		if (f2->byname) {
-			return -1;
-		} else {
-			if (f1->ordinal>f2->ordinal) return 1; else
-			if (f1->ordinal<f2->ordinal) return -1; else
-				return 0;
-		}
-	}
-}
-
-void ht_pe_import_mask::sortbyname()
-{
-	if (!sort_name) {
-		int c=import->funcs->count();
-		sort_name=(UINT*)malloc(sizeof (UINT) * c);
-		for (int i=0; i<c; i++) {
-			sort_name[i]=i;
-		}
-		g_import=import;
-		qsort(sort_name, c, sizeof (UINT), (int (*)(const void *, const void*))compare_import_name);
-	}
-	sort_path=sort_name;
-}
-
-void ht_pe_import_mask::unsort()
-{
-	sort_path=0;
-}
 

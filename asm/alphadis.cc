@@ -59,34 +59,34 @@
 #define MAKE_PAL(opcode)		(opcode & 0x3ffffff)
 #define MAKE_HINT(opcode)	(opcode & 0x3fff)
 
-alphadis::alphadis():disassembler()
+Alphadis::Alphadis():Disassembler()
 {
 	insn.valid = false;
 }
 
-alphadis::~alphadis()
+Alphadis::~Alphadis()
 {
 }
 
-dis_insn *alphadis::create_invalid_insn()
+dis_insn *Alphadis::createInvalidInsn()
 {
 	insn.valid = false;
 	return &insn;
 }
 
-int alphadis::load(ht_object_stream *f)
+int Alphadis::load(ht_object_stream *f)
 {
-	return disassembler::load(f);
+	return Disassembler::load(f);
 }
 
-int find_alpha_instruction(opcode_tab_entry *table, int f)
+int find_alpha_instruction(alpha_opcode_tab_entry *table, int f)
 {
 	int i=0;
 	while (f > (table+i)->fcode) i++;
 	return i;
 }
 
-dis_insn *alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *Alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
 {
 	// alpha code instructions must be 32 bits long
 	if (maxlen < 4) {
@@ -95,7 +95,7 @@ dis_insn *alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
 		insn.size = maxlen;
 		insn.table = 0;
 		// FIXME: this reads to much bytes!
-		insn.data = *(dword *)code;
+		UNALIGNED_MOVE(insn.data, *(dword *)code);
 	} else {
 		insn.valid = true;
 		insn.size = 4;
@@ -250,34 +250,51 @@ dis_insn *alphadis::decode(byte *code, byte maxlen, CPU_ADDR addr)
 	return &insn;
 }
 
-int	alphadis::getmaxopcodelength()
+dis_insn *Alphadis::duplicateInsn(dis_insn *disasm_insn)
+{
+     alphadis_insn *insn = (alphadis_insn *)malloc(sizeof (alphadis_insn));
+     *insn = *(alphadis_insn *)disasm_insn;
+     return insn;
+}
+
+int	Alphadis::getMaxOpcodeLength()
 {
 	// alpha opcodes are 32 bits long
 	return 4;
 }
 
-char *alphadis::get_name()
+void Alphadis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
+{
+	min_length = 4;
+	max_length = 4;
+	min_look_ahead = 4;
+	avg_look_ahead = 4;
+	addr_align = 4;
+}
+
+char *Alphadis::getName()
 {
 	return "alpha/disassembler";
 }
 
-byte	alphadis::getsize(dis_insn *disasm_insn)
+byte	Alphadis::getSize(dis_insn *disasm_insn)
 {
 	return ((alphadis_insn*)disasm_insn)->size;
 }
 
-OBJECT_ID alphadis::object_id()
+OBJECT_ID Alphadis::object_id()
 {
 	return ATOM_DISASM_ALPHA;
 }
 
-void	alphadis::store(ht_object_stream *f)
+void	Alphadis::store(ht_object_stream *f)
 {
-	disassembler::store(f);
+	Disassembler::store(f);
 }
 
-char	*alphadis::str(dis_insn *disasm_insn, int style)
+char	*Alphadis::str(dis_insn *disasm_insn, int style)
 {
+
 	return strf(disasm_insn, style, "");
 }
 
@@ -286,7 +303,7 @@ char	*alphadis::str(dis_insn *disasm_insn, int style)
 #define A_REG_C alpha_reg_names[alpha_insn->regC]
 #define A_NAME (alpha_insn->table+alpha_insn->code)->name
 
-char	*alphadis::strf(dis_insn *disasm_insn, int style, char *format)
+char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 {
 	if (style & DIS_STYLE_HIGHLIGHT) enable_highlighting();
 	
@@ -362,10 +379,9 @@ char	*alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 			CPU_ADDR caddr;
 			caddr.addr32.offset = (dword)alpha_insn->data;
 			int slen;
-			char *p;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : 0;
 			if (s) {
-				p = insnstr + sprintf(insnstr, "%-10s %s %s(%s%s%s),%s ", A_NAME, A_REG_A, cs_symbol, cs_default, A_REG_B, cs_symbol, cs_default);
+				char *p = insnstr + sprintf(insnstr, "%-10s %s %s(%s%s%s),%s ", A_NAME, A_REG_A, cs_symbol, cs_default, A_REG_B, cs_symbol, cs_default);
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
@@ -383,7 +399,7 @@ char	*alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 	return insnstr;     
 }
 
-bool	alphadis::valid_insn(dis_insn *disasm_insn)
+bool	Alphadis::validInsn(dis_insn *disasm_insn)
 {
 	return ((alphadis_insn *)disasm_insn)->valid;
 }

@@ -20,6 +20,8 @@
 
 #include "htio.h"
 
+#include "htsys.h"		// for sys_is_path_delim
+
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -123,92 +125,94 @@
 #define S_IXOTH 0
 #endif
 
-int sys_basename(const char *filename, char *basename)
+int sys_basename(char *result, const char *filename)
 {
+// FIXME: use is_path_delim
 	char *slash1 = strrchr(filename, '/');
 	char *slash2 = strrchr(filename, '\\');
 	char *slash=(slash1>slash2) ? slash1 : slash2;
 	if (slash) {
 		int l=strlen(filename);
-		strncpy(basename, slash+1, l-(slash-filename)-1);
-		basename[l-(slash-filename)-1]=0;
+		strncpy(result, slash+1, l-(slash-filename)-1);
+		result[l-(slash-filename)-1]=0;
 		return 0;
 	}
-	strcpy(basename, filename);
+	strcpy(result, filename);
 	return 0;
 }
 
-int sys_dirname(const char *filename, char *dirname)
+int sys_dirname(char *result, const char *filename)
 {
+// FIXME: use is_path_delim
 	char *slash1 = strrchr(filename, '/');
 	char *slash2 = strrchr(filename, '\\');
-	char *slash=(slash1>slash2) ? slash1 : slash2;
+	char *slash = (slash1>slash2) ? slash1 : slash2;
 	if (slash) {
-		strncpy(dirname, filename, slash-filename);
-		dirname[slash-filename]=0;
+		strncpy(result, filename, slash-filename);
+		result[slash-filename] = 0;
 		return 0;
 	}
-	strcpy(dirname, ".");
+	strcpy(result, ".");
 	return 0;
 }
 
 /* filename and pathname must be canonicalized */
-int sys_relname(const char *filename, const char *pathname, char *relname)
+int sys_relname(char *result, const char *filename, const char *cwd)
 {
-	const char *f=filename, *p=pathname;
-	while ((*f==*p) && (*f)) {
+	const char *f = filename, *p = cwd;
+	while ((*f == *p) && (*f)) {
 		f++;
 		p++;
 	}
-	if (*f=='/') f++;
-	const char *last=f, *h=f;
+	if (*f == '/') f++;
+	const char *last = f, *h = f;
 	while (*h) {
-		if (*h=='/') {
-			*(relname++)='.';
-			*(relname++)='.';
-			*(relname++)='/';
-			last=h+1;
+		if (*h == '/') {
+			*(result++) = '.';
+			*(result++) = '.';
+			*(result++) = '/';
+			last = h+1;
 		}
 		h++;
 	}
 	while (f<last) {
-		*(relname++)=*f;
+		*(result++) = *f;
 		f++;
 	}
-	*relname=0;
-	strcat(relname, last);
+	*result = 0;
+	strcat(result, last);
 	return 0;
 }
 
 int sys_ht_mode(int mode)
 {
-	int m=0;
+	int m = 0;
 	if (S_ISREG(mode)) {
-		m|=HT_S_IFREG;
+		m |= HT_S_IFREG;
 	} else if (S_ISBLK(mode)) {
-		m|=HT_S_IFBLK;
+		m |= HT_S_IFBLK;
 	} else if (S_ISCHR(mode)) {
-		m|=HT_S_IFCHR;
+		m |= HT_S_IFCHR;
 	} else if (S_ISDIR(mode)) {
-		m|=HT_S_IFDIR;
+		m |= HT_S_IFDIR;
 	} else if (S_ISFIFO(mode)) {
-		m|=HT_S_IFFIFO;
+		m |= HT_S_IFFIFO;
 	} else if (S_ISLNK(mode)) {
-		m|=HT_S_IFLNK;
+		m |= HT_S_IFLNK;
 	} else if (S_ISSOCK(mode)) {
-		m|=HT_S_IFSOCK;
+		m |= HT_S_IFSOCK;
 	}
-	if (mode & S_IRUSR) m|=HT_S_IRUSR;
-	if (mode & S_IRGRP) m|=HT_S_IRGRP;
-	if (mode & S_IROTH) m|=HT_S_IROTH;
+	if (mode & S_IRUSR) m |= HT_S_IRUSR;
+	if (mode & S_IRGRP) m |= HT_S_IRGRP;
+	if (mode & S_IROTH) m |= HT_S_IROTH;
 	
-	if (mode & S_IWUSR) m|=HT_S_IWUSR;
-	if (mode & S_IWGRP) m|=HT_S_IWGRP;
-	if (mode & S_IWOTH) m|=HT_S_IWOTH;
+	if (mode & S_IWUSR) m |= HT_S_IWUSR;
+	if (mode & S_IWGRP) m |= HT_S_IWGRP;
+	if (mode & S_IWOTH) m |= HT_S_IWOTH;
 	
-	if (mode & S_IXUSR) m|=HT_S_IXUSR;
-	if (mode & S_IXGRP) m|=HT_S_IXGRP;
-	if (mode & S_IXOTH) m|=HT_S_IXOTH;
+	if (mode & S_IXUSR) m |= HT_S_IXUSR;
+	if (mode & S_IXGRP) m |= HT_S_IXGRP;
+	if (mode & S_IXOTH) m |= HT_S_IXOTH;
 	return m;
 }
 
@@ -237,10 +241,10 @@ static int flatten_path(char *path, is_path_delim delim)
 	return pp;
 }
 
-int sys_common_canonicalize(char *in_name, char *out_name, char *cwd, is_path_delim delim)
+int sys_common_canonicalize(char *result, const char *filename, const char *cwd, is_path_delim delim)
 {
-	char *o = out_name;
-	if (!delim(*in_name)) {
+	char *o = result;
+	if (!delim(*filename)) {
 		if (cwd) strcpy(o, cwd); else *o = 0;
 		int ol = strlen(o);
 		if (ol && !delim(o[ol-1])) {
@@ -248,9 +252,20 @@ int sys_common_canonicalize(char *in_name, char *out_name, char *cwd, is_path_de
 			o[ol+1] = 0;
 		}
 	} else *o = 0;
-	strcat(o, in_name);
+	strcat(o, filename);
 	int k = flatten_path(o, delim);
 	return (k==0) ? 0 : EINVAL;
+}
+
+char *sys_filename_suffix(const char *fn)
+{
+	const char *s = NULL;
+	while (fn && *fn) {
+		if (sys_is_path_delim(*fn)) s = fn+1;
+		fn++;
+	}
+	char *p = s ? strrchr(s, '.') : NULL;
+	return p ? p+1 : NULL;
 }
 
 /*

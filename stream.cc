@@ -100,7 +100,7 @@ UINT	ht_stream::read(void *buf, UINT size)
 	return 0;
 }
 
-UINT	ht_stream::write(void *buf, UINT size)
+UINT	ht_stream::write(const void *buf, UINT size)
 {
 	return 0;
 }
@@ -170,7 +170,7 @@ UINT	ht_layer_stream::read(void *buf, UINT size)
 	return stream->read(buf, size);
 }
 
-UINT	ht_layer_stream::write(void *buf, UINT size)
+UINT	ht_layer_stream::write(const void *buf, UINT size)
 {
 	return stream->write(buf, size);
 }
@@ -189,23 +189,23 @@ void ht_object_stream::done()
 	ht_layer_stream::done();
 }
 
-int  ht_object_stream::get_int(int size, char *desc)
+int  ht_object_stream::getInt(int size, char *desc)
 {
-	return get_int_hex(size, desc);
+	return getIntHex(size, desc);
 }
 
-UINT ht_object_stream::record_start(UINT size)
+UINT ht_object_stream::recordStart(UINT size)
 {
 	return 0;
 }
 
-void ht_object_stream::record_end(UINT a)
+void ht_object_stream::recordEnd(UINT a)
 {
 }
 
-void ht_object_stream::put_int(int a, int size, char *desc)
+void ht_object_stream::putInt(int a, int size, char *desc)
 {
-	put_int_hex(a, size, desc);
+	putIntHex(a, size, desc);
 }
 
 /*
@@ -387,7 +387,7 @@ int	ht_layer_streamfile::vcntl(UINT cmd, va_list vargs)
 	return streamfile->vcntl(cmd, vargs);
 }
 
-UINT	ht_layer_streamfile::write(void *buf, UINT size)
+UINT	ht_layer_streamfile::write(const void *buf, UINT size)
 {
 	return streamfile->write(buf, size);
 }
@@ -396,13 +396,13 @@ UINT	ht_layer_streamfile::write(void *buf, UINT size)
  *	CLASS ht_file
  */
 
-void	ht_file::init(char *fn, UINT am)
+void	ht_file::init(const char *fn, UINT am)
 {
 	ht_streamfile::init();
-	filename=strdup(fn);
-	offset=0;
-	file=0;
-	access_mode=0;
+	filename = strdup(fn);
+	offset = 0;
+	file = NULL;
+	access_mode = 0;
 	set_access_mode(am);
 }
 
@@ -466,23 +466,23 @@ void	ht_file::pstat(pstat_t *s)
 
 UINT	ht_file::read(void *buf, UINT size)
 {
-	UINT r=fread(buf, 1, size, file);
-	offset+=r;
+	UINT r = fread(buf, 1, size, file);
+	offset += r;
 	return r;
 }
 
 int	ht_file::seek(FILEOFS o)
 {
-	if (o==offset) return 0;
-	int r=fseek(file, o, SEEK_SET);
-	if (r==0) offset=o;
+	if (o == offset) return 0;
+	int r = fseek(file, o, SEEK_SET);
+	if (r == 0) offset = o;
 	return r;
 }
 
 bool	ht_file::set_access_mode(UINT am)
 {
-	UINT orig_access_mode=access_mode;
-	bool r=set_access_mode_internal(am);
+	UINT orig_access_mode = access_mode;
+	bool r = set_access_mode_internal(am);
 	if (!r) set_access_mode_internal(orig_access_mode);
 	return r;
 }
@@ -490,44 +490,45 @@ bool	ht_file::set_access_mode(UINT am)
 bool	ht_file::set_access_mode_internal(UINT am)
 {
 RETRY:
-	if (access_mode==am) return true;
+	if (access_mode == am) return true;
 	if (file) {
 		fclose(file);
-		file=NULL;
+		file = NULL;
 	}
-	access_mode=FAM_UNDEFINED;
-	char *mode=NULL;
+	access_mode = FAM_UNDEFINED;
+	char *mode = NULL;
 
 	if (am & FAM_APPEND) {
-		mode="ab+";
+		mode = "ab+";
 	} else if (am & FAM_CREATE) {
-		if (am & FAM_WRITE) mode="wb";
-		if (am & FAM_READ) mode="wb+";
+		if (am & FAM_WRITE) mode = "wb";
+		if (am & FAM_READ) mode = "wb+";
 	} else {
-		if (am & FAM_READ) mode="rb";
-		if (am & FAM_WRITE) mode="rb+";
+		if (am & FAM_READ) mode = "rb";
+		if (am & FAM_WRITE) mode = "rb+";
 	}
 
+	bool retval = true;
 	if (mode) {
 		pstat_t s;
-		int e=0;
-		file=fopen(filename, mode);
-		if (!file) e=errno;
+		int e = 0;
+		file = fopen(filename, mode);
+		if (!file) e = errno;
 		if (!e) {
-			e=sys_pstat(&s, filename);
+			e = sys_pstat(&s, filename);
 			if (!e) {
-				if (HT_S_ISDIR(s.mode)) e=EISDIR; else
-					if (!HT_S_ISREG(s.mode)) e=EINVAL;
+				if (HT_S_ISDIR(s.mode)) e = EISDIR; else
+					if (!HT_S_ISREG(s.mode)) e = EINVAL;
 			}
 		}
 		if (e) {
 			set_error(e | STERR_SYSTEM);
-			if ((stream_error_func) && (stream_error_func(this)==SERR_RETRY))
+			if ((stream_error_func) && (stream_error_func(this) == SERR_RETRY))
 				goto RETRY;
-			return false;
+			retval = false;
 		}
 	}
-	return ht_streamfile::set_access_mode(am);
+	return retval && ht_streamfile::set_access_mode(am);
 }
 
 FILEOFS ht_file::tell()
@@ -537,53 +538,15 @@ FILEOFS ht_file::tell()
 
 int	ht_file::truncate(UINT newsize)
 {
-/* FIXME: gotta find a way, a better way... */
-#define COPYBUFSIZE	32*1024
-	char tempfile[PATH_MAX+20];
-	sys_dirname(filename, tempfile);
-
-	strcat(tempfile, "/");
-
-	char *n=tempfile+strlen(tempfile);
-	int i=0;
-	FILE *exists;
-	do {
-		sprintf(n, "ht%06d.tmp", i++);
-		errno=0;
-		exists=fopen(tempfile, "rb");
-		if (exists) fclose(exists);
-	} while ((errno!=ENOENT) || exists);
-	
-	int e=0;
-
-	int old_access_mode=access_mode;
-	set_access_mode(FAM_UNDEFINED);
-
-	e=rename(filename, tempfile);
-	if (e==0) {
-		FILE *o=fopen(tempfile, "rb");
-		FILE *n=fopen(filename, "wb");
-		void *buf=malloc(COPYBUFSIZE);
-		while (newsize) {
-			UINT q=fread(buf, 1, COPYBUFSIZE, o);
-			if (!q) {
-				e=EIO;
-				set_error(e | STERR_SYSTEM);
-				break;
-			}
-			if (q>newsize) q=newsize;
-			fwrite(buf, 1, q, n);
-			newsize-=q;
-		}
-		fclose(o);
-		fclose(n);
-		remove(tempfile);
-		free(buf);
+     int e;
+     int old_access_mode = access_mode;
+	if (set_access_mode(FAM_UNDEFINED)) {
+		e = sys_truncate(filename, newsize);
 	} else {
-		set_error(e | STERR_SYSTEM);
-	}
+     	e = EACCES;
+     }
+
 	set_access_mode(old_access_mode);
-	
 	return e;
 }
 
@@ -600,7 +563,7 @@ int	ht_file::vcntl(UINT cmd, va_list vargs)
 	return ht_streamfile::vcntl(cmd, vargs);
 }
 
-UINT	ht_file::write(void *buf, UINT size)
+UINT	ht_file::write(const void *buf, UINT size)
 {
 	UINT r=fwrite(buf, 1, size, file);
 	offset+=r;
@@ -611,7 +574,7 @@ UINT	ht_file::write(void *buf, UINT size)
  *	CLASS ht_memmap_file
  */
 
-void ht_memmap_file::init(byte *b, UINT s = 0)
+void ht_memmap_file::init(byte *b, UINT s)
 {
 	ht_streamfile::init();
 	buf = b;
@@ -651,7 +614,7 @@ FILEOFS ht_memmap_file::tell()
 	return pos;
 }
 
-UINT ht_memmap_file::write(void *b, UINT size)
+UINT ht_memmap_file::write(const void *b, UINT size)
 {
 	memmove(((byte*)buf)+pos, b, size);
 	pos+=size;
@@ -668,10 +631,10 @@ UINT ht_memmap_file::write(void *b, UINT size)
 
 void ht_mem_file::init()
 {
-	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE);
+	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE, FAM_READ | FAM_WRITE);
 }
 
-void ht_mem_file::init(FILEOFS o, UINT size)
+void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 {
 	ht_streamfile::init();
 	ofs=o;
@@ -681,6 +644,8 @@ void ht_mem_file::init(FILEOFS o, UINT size)
 	memset(buf, 0, size);
 	pos=0;
 	dsize=0;
+	access_mode=0;
+	set_access_mode(am);
 }
 
 void ht_mem_file::done()
@@ -791,7 +756,7 @@ int ht_mem_file::truncate(UINT newsize)
 	return 0;
 }
 
-UINT ht_mem_file::write(void *b, UINT size)
+UINT ht_mem_file::write(const void *b, UINT size)
 {
 	while (pos+size>=bufsize) extendbuf();
 	memmove(((byte*)buf)+pos, b, size);
@@ -852,7 +817,7 @@ char *getstrz(ht_stream *stream)
 	return str;
 }
 
-void putstrz(ht_stream *stream, char *str)
+void putstrz(ht_stream *stream, const char *str)
 {
 	stream->write(str, strlen(str)+1);
 }
@@ -867,7 +832,7 @@ char *getstrp(ht_stream *stream)
 	return str;
 }
 
-void putstrp(ht_stream *stream, char *str)
+void putstrp(ht_stream *stream, const char *str)
 {
 	unsigned char l=strlen(str);
 	stream->write(&l, 1);
@@ -889,7 +854,7 @@ char *getstrw(ht_stream *stream)
 	return a;
 }
 
-void putstrw(ht_stream *stream, char *str)
+void putstrw(ht_stream *stream, const char *str)
 {
 	/* FIXME: someone implement me ? */
 }

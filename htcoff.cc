@@ -18,10 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "coff_analy.h"
 #include "coff_s.h"
-#include "htanaly.h"
-#include "htapp.h"
+#include "log.h"
 #include "htcoff.h"
 #include "htcoffhd.h"
 #include "htcoffimg.h"
@@ -94,25 +92,6 @@ format_viewer_if htcoff_if = {
 };
 
 /*
- *	CLASS ht_coff_aviewer
- */
-
-void ht_coff_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, analyser *Analyser, ht_coff_shared_data *Coff_shared)
-{
-	ht_aviewer::init(b, desc, caps, File, format_group, Analyser);
-	coff_shared = Coff_shared;
-	file = File;
-}
-
-void ht_coff_aviewer::set_analyser(analyser *a)
-{
-	((coff_analyser *)a)->coff_shared = coff_shared;
-	((coff_analyser *)a)->file = file;
-	analy = a;
-	analy_sub->set_analyser(a);
-}
-
-/*
  *	CLASS ht_coff
  */
 void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h)
@@ -170,7 +149,7 @@ void ht_coff::done()
  *	rva conversion routines
  */
 
-int coff_rva_to_section(coff_section_headers *section_headers, ADDR rva, int *section)
+int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -186,7 +165,7 @@ int coff_rva_to_section(coff_section_headers *section_headers, ADDR rva, int *se
 	return 0;
 }
 
-int coff_rva_to_ofs(coff_section_headers *section_headers, ADDR rva, dword *ofs)
+int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -200,7 +179,7 @@ int coff_rva_to_ofs(coff_section_headers *section_headers, ADDR rva, dword *ofs)
 	return 0;
 }
 
-int coff_rva_is_valid(coff_section_headers *section_headers, ADDR rva)
+int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -215,7 +194,7 @@ int coff_rva_is_valid(coff_section_headers *section_headers, ADDR rva)
 	return 0;
 }
 
-int coff_rva_is_physical(coff_section_headers *section_headers, ADDR rva)
+int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -232,7 +211,7 @@ int coff_rva_is_physical(coff_section_headers *section_headers, ADDR rva)
  *	ofs conversion routines
  */
 
-int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, ADDR *rva)
+int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -246,7 +225,7 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, ADDR *rva)
 	return 0;
 }
 
-int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, ADDR *section)
+int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -260,7 +239,7 @@ int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, ADDR *
 	return 0;
 }
 
-int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, ADDR *rva, ADDR *section)
+int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section)
 {
 	int r=coff_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
@@ -271,7 +250,7 @@ int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs
 
 int coff_ofs_is_valid(coff_section_headers *section_headers, dword ofs)
 {
-	ADDR rva;
+	RVA rva;
 	return coff_ofs_to_rva(section_headers, ofs, &rva);
 }
 

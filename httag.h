@@ -22,6 +22,7 @@
 #define __HTTAG_H__
 
 #include "global.h"
+#include "htio.h"
 #include "stream.h"
 
 /* SELECTION-TAG */
@@ -35,7 +36,7 @@
 struct ht_tag_sel {
 	byte escape;
 	byte magic;
-	ID id64_low, id64_high;
+	ID id128_1, id128_2, id128_3, id128_4;
 	byte strlen;
 };
 
@@ -384,8 +385,8 @@ enum tag_endian { tag_endian_big, tag_endian_little, tag_endian_var };
 #define palidx_tags_sel_tag_cursor_unfocused		7
 #define palidx_tags_sel_tag					8
 
-#define STATICTAG_SEL(len8, str) HT_STATICTAG_SEL_CH "0000000000000000" len8 str
-#define STATICTAG_REF(id64, len8, str) HT_STATICTAG_SEL_CH id64 len8 str
+#define STATICTAG_SEL(len8, str) HT_STATICTAG_SEL_CH "0000000000000000" "0000000000000000" len8 str
+#define STATICTAG_REF(id64, len8, str) HT_STATICTAG_SEL_CH id64 "0000000000000000" len8 str
 #define STATICTAG_FLAGS(ofs32, id32) HT_STATICTAG_FLAGS_CH ofs32 id32
 #define STATICTAG_GROUP() HT_STATICTAG_GROUP_CH
 #define STATICTAG_COLOR(color8) HT_STATICTAG_COLOR_CH color8
@@ -425,7 +426,9 @@ typedef char TAGSTRING;
 void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, dword relocation, bool std_bigendian);
 
 TAGSTRING *tag_findnext(TAGSTRING *tagstring);
-void tag_get_id(TAGSTRING *tagstring, dword *id64_low, dword *id64_high);
+
+vcp tag_get_color(TAGSTRING *tagstring);
+void tag_get_id(TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4);
 int tag_get_len(TAGSTRING *tagstring);
 dword tag_get_offset(TAGSTRING *tagstring);
 int tag_get_size(TAGSTRING *tagstring);
@@ -434,7 +437,7 @@ int tag_get_seltextlen(TAGSTRING *tagstring);
 char* tag_get_seltext(TAGSTRING *tagstring);
 int tag_get_micropos(TAGSTRING *tagstring, int i);
 int tag_get_microsize(TAGSTRING *tagstring);
-int tag_get_desc_id(TAGSTRING *tagstring, dword *id);
+bool tag_get_desc_id(TAGSTRING *tagstring, dword *id);
 
 void tag_set_offset(TAGSTRING *tagstring, dword offset);
 void tag_set_value(TAGSTRING *tagstring, dword value);
@@ -455,8 +458,8 @@ TAGSTRING *tag_get_group(TAGSTRING *tagstring, int group);
 int tag_get_class(TAGSTRING *tagstring);
 
 TAGSTRING *tag_make_sel(TAGSTRING *buf, char *string);
-TAGSTRING *tag_make_ref(TAGSTRING *buf, dword id64_low, dword id64_high, char *string);
-TAGSTRING *tag_make_ref_len(TAGSTRING *buf, dword id64_low, dword id64_high, char *string, int strlen);
+TAGSTRING *tag_make_ref(TAGSTRING *buf, dword id128_1, dword id128_2, dword id128_3, dword id128_4, char *string);
+TAGSTRING *tag_make_ref_len(TAGSTRING *buf, dword id128_1, dword id128_2, dword id128_3, dword id128_4, char *string, int strlen);
 TAGSTRING *tag_make_flags(TAGSTRING *buf, dword id, dword offset);
 TAGSTRING *tag_make_group(TAGSTRING *buf);
 TAGSTRING *tag_make_color(TAGSTRING *buf, dword color);

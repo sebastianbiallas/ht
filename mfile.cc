@@ -48,7 +48,7 @@ UINT ht_mod_page::read(PAGEOFS pofs, byte *buf, UINT len)
 	return s;
 }
 
-UINT ht_mod_page::write(PAGEOFS pofs, byte *buf, UINT len)
+UINT ht_mod_page::write(PAGEOFS pofs, const byte *buf, UINT len)
 {
 	UINT s = len;
 	if (pofs+s > size) s = size-pofs;
@@ -383,7 +383,7 @@ int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-UINT ht_streamfile_modifier::write(void *buf, UINT s)
+UINT ht_streamfile_modifier::write(const void *buf, UINT s)
 {
 	if (!active) return ht_layer_streamfile::write(buf, s);
 	FILEOFS o = tell();

@@ -30,13 +30,10 @@ extern format_viewer_if htpedelayimports_if;
  *	CLASS ht_pe_dimport_viewer
  */
 
-class ht_pe_dimport_viewer: public ht_uformat_viewer {
+class ht_pe_dimport_viewer: public ht_pe_import_viewer {
 public:
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group);
-	virtual	void done();
 /* overwritten */
-	virtual	char *func(UINT i, bool execute);
-	virtual	int ref_sel(ID id_low, ID id_high);
+	virtual	void select_entry(void *entry);
 };
 
 #endif /* !__HTPEDIMP_H__ */

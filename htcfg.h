@@ -25,9 +25,9 @@
 #include "stream.h"
 
 #if defined(WIN32) || defined(__WIN32__) || defined(MSDOS) || defined(DJGPP)
-#define PROJECT_CONFIG_FILE_NAME "ht.cfg"
+#define SYSTEM_CONFIG_FILE_NAME "ht.cfg"
 #else
-#define PROJECT_CONFIG_FILE_NAME ".htcfg"
+#define SYSTEM_CONFIG_FILE_NAME ".htcfg"
 #endif
 
 enum loadstore_result {
@@ -41,33 +41,42 @@ enum loadstore_result {
 	LS_ERROR_CORRUPTED
 };
 
-/*	PROJECT CONFIG FILE VERSION HISTORY
+/*	SYSTEM CONFIG FILE VERSION HISTORY
  *	Version 2: HT 0.4.4
  *	Version 3: HT 0.4.5
  *	Version 4: HT 0.5.0
- *	Version 5: HT 0.5.1
+ *	Version 5: HT 0.6.0
  */
 
-#define ht_projectconfig_magic			"HTCP"
-#define ht_projectconfig_fileversion		5
+#define ht_systemconfig_magic				"HTCP"
+#define ht_systemconfig_fileversion		5
 
 /*	FILE CONFIG FILE VERSION HISTORY
  *	Version 1: HT 0.5.0
- *	Version 2: HT 0.5.1
+ *	Version 2: HT 0.6.0
  */
 
 #define ht_fileconfig_magic				"HTCF"
 #define ht_fileconfig_fileversion			2
 
-extern char *projectconfig_file;
-loadstore_result save_projectconfig();
-bool load_projectconfig(loadstore_result *result, int *error_info);
+/*	PROJECT CONFIG FILE VERSION HISTORY
+ *	Version 1: HT 0.6.1
+ */
+
+#define ht_projectconfig_magic			"HTPR"
+#define ht_projectconfig_fileversion		1
+
+/**/
+
+extern char *systemconfig_file;
+loadstore_result save_systemconfig();
+bool load_systemconfig(loadstore_result *result, int *error_info);
 
 typedef int (*load_fcfg_func)(ht_object_stream *f, void *context);
 typedef void (*store_fcfg_func)(ht_object_stream *f, void *context);
 
-loadstore_result save_fileconfig(char *fileconfig_file, store_fcfg_func store_func, void *context);
-loadstore_result load_fileconfig(char *fileconfig_file, load_fcfg_func load_func, void *context, int *error_info);
+loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT version, store_fcfg_func store_func, void *context);
+loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT version, load_fcfg_func load_func, void *context, int *error_info);
 
 /*
  *	INIT

@@ -32,50 +32,69 @@
 #define palclasskey_analyser						"analyser"
 #define palkey_analyser_default					"default"
 
-void	analyser_ht_output::init(analyser *Analy)
+void	AnalyserHtOutput::init(Analyser *Analy)
 {
-	analyser_output::init(Analy);
+	AnalyserOutput::init(Analy);
 	analy_pal.data=NULL;
 	analy_pal.size=0;
-	reloadpalette();
+	reloadPalette();
 }
 
-void analyser_ht_output::done()
+void AnalyserHtOutput::done()
 {
 	if (analy_pal.data) free(analy_pal.data);
-	analyser_output::done();
+	AnalyserOutput::done();
 }
 
-vcp analyser_ht_output::getcolor_analy(UINT pal_index)
+vcp AnalyserHtOutput::getcolor_analy(UINT pal_index)
 {
 	return getcolorv(&analy_pal, pal_index);
 }
 
-void analyser_ht_output::reloadpalette()
+void AnalyserHtOutput::reloadPalette()
 {
 	if (analy_pal.data) {
-		free(analy_pal.data);
-		analy_pal.data = NULL;
+	    free(analy_pal.data);
+	    analy_pal.data = NULL;
 	}	    
 	load_pal(palclasskey_analyser, palkey_analyser_default, &analy_pal);
 }
 
-void analyser_ht_output::begin_addr()
+void	AnalyserHtOutput::beginAddr()
 {
-	analyser_output::begin_addr();
+	AnalyserOutput::beginAddr();
 }
 
-void analyser_ht_output::begin_line()
+void	AnalyserHtOutput::beginLine()
 {
-	analyser_output::begin_line();
-	if (line==0) {
-		char temp[9];
-		sprintf(temp, HEX8FORMAT8, addr);
+	AnalyserOutput::beginLine();
+	if (analy->mode & ANALY_SHOW_ADDRESS) {
+		char temp[20];
+		if (line==0) {
+#if 0
+			char temp2[20];
+			addr->stringify(temp2, sizeof temp2, ADDRESS_STRING_FORMAT_COMPACT);
+			int s = strlen(temp2);
+			int s2 = addr->stringSize();
+			memset(temp, ' ', s2);
+			memcpy(&temp[(s2-s)/2], temp2, s);
+			temp[s2]=0;
+#endif
+			// FIXME:sda lksdfj
+			addr->stringify(temp, sizeof temp, ADDRESS_STRING_FORMAT_LEADING_WHITESPACE);
+			char temp2[20];
+			last = addr->stringify(temp2, sizeof temp2, ADDRESS_STRING_FORMAT_COMPACT);
+		} else {
+			int s = addr->stringSize();
+			memset(temp, ' ', s);
+			memset(&temp[s-last], '.', last);
+//			memcpy(&temp[(s-3)/2], (void*)"...", 3);
+			temp[s] = 0;
+		}
+		// FIXME: buffer bla
 		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, temp);
-	} else {
-		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, "   ...  ");
 	}
-     
+	
 	if (analy->explored->contains(addr)) {
 		write(" ! ");
 	} else {
@@ -85,36 +104,32 @@ void analyser_ht_output::begin_line()
 	work_buffer_edit_bytes_insert = work_buffer;
 }
 
-void	analyser_ht_output::emit_edit_bytes(ADDR Addr, int count)
-{
-
-}
-
-int	analyser_ht_output::element_len(char *s)
+int	AnalyserHtOutput::elementLength(char *s)
 {
 	return tag_strlen(s);
 }
 
-void	analyser_ht_output::end_addr()
+void	AnalyserHtOutput::endAddr()
 {
-	analyser_output::end_addr();
+	AnalyserOutput::endAddr();
 }
 
-void	analyser_ht_output::end_line()
+void	AnalyserHtOutput::endLine()
 {
 	if ((analy->mode & ANALY_EDIT_BYTES) && bytes_line) {
-		if (analy->valid_addr(addr, scinitialized)) {
+		if (analy->validAddress(addr, scinitialized)) {
 
-			FILEADDR a=analy->file_addr(addr);
+			// FIXME: bufferbla ? and ugly
+			FILEOFS a=analy->addressToFileofs(addr);
 			assert(a != INVALID_FILE_OFS);
 
 			char workbuf2[1024];
 			char *work_buffer2 = workbuf2;
-               
+			
 			for (int i=0; i < bytes_line; i++) {
 				work_buffer2 = tag_make_edit_byte(work_buffer2, a+i);
 			}
-			for (int i=0; i <= analy->maxopcodelength*2-bytes_line*2; i++) {
+			for (int i=0; i <= analy->max_opcode_length*2-bytes_line*2; i++) {
 				*(work_buffer2++)=' ';
 			}
 
@@ -125,24 +140,34 @@ void	analyser_ht_output::end_line()
 			work_buffer += (work_buffer2-workbuf2);
 		}
 	}
-	analyser_output::end_line();
+	AnalyserOutput::endLine();
 }
 
-char *analyser_ht_output::external_link(char *s, int type1, int type2, void *special)
+char *AnalyserHtOutput::externalLink(char *s, int type1, int type2, int type3, int type4, void *special)
 {
-	*(tag_make_ref(tmpbuffer, type1, type2, s)) = 0;
+	*(tag_make_ref(tmpbuffer, type1, type2, type3, type4, s)) = 0;
 	return tmpbuffer;
 }
 
 
-char *analyser_ht_output::link(char *s, ADDR Addr)
+char *AnalyserHtOutput::link(char *s, Address *Addr)
 {
-	*(tag_make_ref(tmpbuffer, Addr, 0, s)) = 0;
+	// FIXNEW
+     if (Addr->byteSize()==4) {
+		dword d;
+		Addr->putIntoArray((byte*)&d);
+		*(tag_make_ref(tmpbuffer, d, 0, 0, 0, s)) = 0;
+     } else {
+		qword d;
+		Addr->putIntoArray((byte*)&d);
+		*(tag_make_ref(tmpbuffer, d.hi, d.lo, 0, 0, s)) = 0;
+     }
 	return tmpbuffer;
 }
 
-void analyser_ht_output::put_element(int element_type, char *element)
+void AnalyserHtOutput::putElement(int element_type, char *element)
 {
+	// bufferbla's
 	switch (element_type) {
 		case ELEMENT_TYPE_PRE_COMMENT:
 			work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));

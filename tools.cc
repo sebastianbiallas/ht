@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *	htanaly.cc
+ *	tools.cc
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -67,6 +67,9 @@ int *random_permutation(int max)
 	return table;
 }
 
+/*
+ *	entropy shit
+ */
 #define LN2 0.693147180559945309417232121458177
 
 double calc_entropy(byte *buf, int size)

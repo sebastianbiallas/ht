@@ -22,7 +22,20 @@
 #define __HTCOFFIMG_H__
 
 #include "formats.h"
+#include "htanaly.h"
+#include "htcoff.h"
 
 extern format_viewer_if htcoffimage_if;
 
+/*
+ *	CLASS ht_coff_aviewer
+ */
+
+class ht_coff_aviewer: public ht_aviewer {
+public:
+	ht_coff_shared_data *coff_shared;
+	ht_streamfile *file;
+		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *analyser, ht_coff_shared_data *coff_shared);
+	virtual void setAnalyser(Analyser *a);
+};
 #endif /* !__HTCOFFIMG_H__ */

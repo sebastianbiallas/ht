@@ -120,8 +120,13 @@ typedef struct _classfile {
   attrib_info **attribs;
 } classfile;
 
-extern classfile *class_read(ht_stream *);
-extern void class_unread (classfile *);
+struct ht_class_shared_data {
+	ht_dtree	*methods;
+	classfile	*file;
+};
+
+extern ht_class_shared_data *class_read(ht_stream *);
+extern void class_unread (ht_class_shared_data *);
 extern attrib_info *attribute_read (ht_stream *, classfile *);
 
 class cview : public ht_format_group {
@@ -131,6 +136,30 @@ public:
   virtual void done();
 };
 
+#define ClassAddress dword
+class ClassMethodPosition: public ht_data {
+	ClassAddress start;
+	FILEOFS filestart;
+	UINT length;
+public:
+	ClassMethodPosition(ClassAddress start, FILEOFS filestart, UINT length);
+	int compareTo(ClassMethodPosition *b);
+};
+
+class ClassMethod: public ht_data {
+	char *name;     
+public:
+			ClassMethod(char *name);
+	virtual	~ClassMethod();
+};
+
+int compare_keys_ClassMethodPosition(ht_data *key_a, ht_data *key_b);
+
+#define DESC_JAVA			"java - class file"
+#define DESC_JAVA_HEADERS	"java/headers"
+#define DESC_JAVA_IMAGE		"java/image"
+
 extern format_viewer_if htcls_if;
 
-#endif /* _CLASS_H */ 
+#endif /* _CLASS_H */
+

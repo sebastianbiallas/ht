@@ -21,8 +21,22 @@
 #ifndef __HTPEIMG_H__
 #define __HTPEIMG_H__
 
+#include "htanaly.h"
+#include "htpe.h"
 #include "formats.h"
 
 extern format_viewer_if htpeimage_if;
+
+/*
+ *	CLASS ht_pe_aviewer
+ */
+
+class ht_pe_aviewer: public ht_aviewer {
+public:
+	ht_pe_shared_data *pe_shared;
+	ht_streamfile *file;
+		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_pe_shared_data *pe_shared);
+	virtual void setAnalyser(Analyser *a);
+};
 
 #endif /* !__HTPEIMG_H__ */

@@ -32,6 +32,7 @@
 #include "htkeyb.h"
 #include "htstring.h"
 #include "process.h"
+#include "snprintf.h"
 
 extern "C" {
 #include "evalx.h"
@@ -41,7 +42,7 @@ extern "C" {
  *	CLASS ht_blockop_dialog
  */
 
-void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history=0)
+void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history)
 {
 	ht_dialog::init(b, "operate on block", FS_TITLE | FS_KILLER | FS_MOVE);
 	bounds c;
@@ -64,7 +65,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 	insert(start);
 	if (prerange) {
 		char t[16];
-		sprintf(t, "0x%x", pstart);
+		ht_snprintf(t, sizeof t, "0x%x", pstart);
 		ht_inputfield_data d;
 		d.textlen=strlen(t);
 		d.text=(byte*)t;
@@ -89,7 +90,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 	insert(end);
 	if (prerange) {
 		char t[16];
-		sprintf(t, "0x%x", pend);
+		ht_snprintf(t, sizeof t, "0x%x", pend);
 		ht_inputfield_data d;
 		d.textlen=strlen(t);
 		d.text=(byte*)t;
@@ -327,7 +328,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 	char status[64];
 	ht_blockop_str_context *ctx = (ht_blockop_str_context*)context;
 	if (ctx->expr_const) {
-		sprintf(status, "operating (constant string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
@@ -343,7 +344,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 			return false;
 		}
 	} else {
-		sprintf(status, "operating (variable string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (variable string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		scalar_t r;
 		str_t sr;
@@ -445,7 +446,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 	ht_blockop_int_context *ctx = (ht_blockop_int_context*)context;
 	char status[64];
 	if (ctx->expr_const) {
-		sprintf(status, "operating (constant integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (constant integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		byte ibuf[4];
 		create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
@@ -462,7 +463,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			return false;
 		}
 	} else {
-		sprintf(status, "operating (variable integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
+		ht_snprintf(status, sizeof status, "operating (variable integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
 		scalar_t r;
 		int_t ir;
@@ -527,7 +528,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 	
 	ht_blockop_dialog *d=new ht_blockop_dialog();
 	d->init(&b, pstart, pend, 0);
-	if (d->run(0)) {
+	if (d->run(false)) {
 		ht_blockop_dialog_data t;
 		d->databuf_get(&t);
 		
@@ -549,14 +550,14 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 					case 1: esize++;
 /* element type: dword */
 					case 2: {
-						char a[1024];	/* FIXME: possible buffer overflow */
-						bin2str(a, t.action.text, t.action.textlen);
+						char a[256];
+						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
 						
 						char addr[128];
-						bin2str(addr, t.start.text, t.start.textlen);
+						bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
-						bin2str(addr, t.end.text, t.end.textlen);
+						bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
 						
 						esize = esizes[esize];
@@ -574,14 +575,14 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 					}
 /* element type: string */
 					case 3: {
-						char a[1024];	/* FIXME: possible buffer overflow */
-						bin2str(a, t.action.text, t.action.textlen);
+						char a[256];
+						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
 
 						char addr[128];
-						bin2str(addr, t.start.text, t.start.textlen);
+						bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
-						bin2str(addr, t.end.text, t.end.textlen);
+						bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
 						insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
 						
 						ht_data *ctx = NULL;

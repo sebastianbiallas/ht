@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 
-#include "htapp.h"
 #include "htle.h"
 #include "htlehead.h"
 #include "htleimg.h"
@@ -29,6 +28,7 @@
 #include "htlepage.h"
 #include "htnewexe.h"
 #include "lestruct.h"
+#include "log.h"
 
 format_viewer_if *htle_ifs[] = {
 	&htleheader_if,

@@ -22,6 +22,7 @@
 #include "htatom.h"
 #include "htdebug.h"
 #include "htstring.h"
+#include "stream.h"
 #include "tools.h"
 
 #include <ctype.h>
@@ -458,25 +459,25 @@ char *mkhexq(char *buf, qword q)
  *	CLASS ht_data_string
  */
 
-ht_data_string::ht_data_string(char *s)
+ht_data_string::ht_data_string(const char *s)
 {
-	value=ht_strdup(s);
+	value = ht_strdup(s);
 }
 
 ht_data_string::~ht_data_string()
 {
-	if (value) delete value;
+	if (value) free(value);
 }
 
 int ht_data_string::load(ht_object_stream *f)
 {
-	value=f->get_string(0);
+	value = f->getString(NULL);
 	return f->get_error();
 }
 
 void ht_data_string::store(ht_object_stream *f)
 {
-	f->put_string(value, 0);
+	f->putString(value, NULL);
 }
 
 OBJECT_ID ht_data_string::object_id()

@@ -35,20 +35,20 @@
 int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...);
 int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, int align, bounds *b, char *format, ...);
 
-#define errorbox(a...) msgbox(btmask_ok, "error", 0, align_center, a)
-#define infobox(a...) msgbox(btmask_ok, "information", 0, align_center, a)
-#define warnbox(a...) msgbox(btmask_ok, "warning", 0, align_center, a)
-#define confirmbox(a...) msgbox(btmask_yes+btmask_no, "confirmation", 0, align_center, a)
+#define errorbox(a...) msgbox(btmask_ok, "error", false, align_center, a)
+#define infobox(a...) msgbox(btmask_ok, "information", false, align_center, a)
+#define warnbox(a...) msgbox(btmask_ok, "warning", false, align_center, a)
+#define confirmbox(a...) msgbox(btmask_yes+btmask_no, "confirmation", false, align_center, a)
 
-#define errorbox_c(a...) msgbox(btmask_ok, "error", 0, align_custom, a)
-#define infobox_c(a...) msgbox(btmask_ok, "information", 0, align_custom, a)
-#define warnbox_c(a...) msgbox(btmask_ok, "warning", 0, align_custom, a)
-#define confirmbox_c(a...) msgbox(btmask_yes+btmask_no, "confirmation", 0, align_custom, a)
+#define errorbox_c(a...) msgbox(btmask_ok, "error", false, align_custom, a)
+#define infobox_c(a...) msgbox(btmask_ok, "information", false, align_custom, a)
+#define warnbox_c(a...) msgbox(btmask_ok, "warning", false, align_custom, a)
+#define confirmbox_c(a...) msgbox(btmask_yes+btmask_no, "confirmation", false, align_custom, a)
 
-#define errorbox_modal(a...) msgbox(btmask_ok, "error", 1, align_center, a)
-#define infobox_modal(a...) msgbox(btmask_ok, "information", 1, align_center, a)
-#define warnbox_modal(a...) msgbox(btmask_ok, "warning", 1, align_center, a)
-#define confirmbox_modal(a...) msgbox(btmask_yes+btmask_no, "confirmation", 1, align_center, a)
+#define errorbox_modal(a...) msgbox(btmask_ok, "error", true, align_center, a)
+#define infobox_modal(a...) msgbox(btmask_ok, "information", true, align_center, a)
+#define warnbox_modal(a...) msgbox(btmask_ok, "warning", true, align_center, a)
+#define confirmbox_modal(a...) msgbox(btmask_yes+btmask_no, "confirmation", true, align_center, a)
 
 int inputbox(char *title, char *Label, char *result, int limit, dword histid=0);
 int inputboxrect(bounds *b, char *title, char *Label, char *result, int limit, dword histid=0);

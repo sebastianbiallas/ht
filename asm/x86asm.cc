@@ -190,7 +190,7 @@ int isnotwhitespace(char c)
  */
 
 x86asm::x86asm(int o, int a)
-: assembler(false)
+: Assembler(false)
 {
 	opsize=o;
 	addrsize=a;
@@ -312,7 +312,7 @@ void x86asm::emitsib_scale(int scale)
 
 asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 {
-	assembler::encode(asm_insn, options, cur_address);
+	Assembler::encode(asm_insn, options, cur_address);
 	x86asm_insn *insn=(x86asm_insn*)asm_insn;
 	
 	addrsize_depend=0;

@@ -31,10 +31,11 @@
 class ht_reloc_file: public ht_layer_streamfile {
 protected:
 	ht_tree *relocs;
+     bool enabled;
 
 /* new */
 	virtual void	reloc_apply(ht_data *reloc, byte *data) = 0;
-	virtual void	reloc_unapply(ht_data *reloc, byte *data) = 0;
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data) = 0;
 public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile);
 	virtual void	done();
@@ -42,7 +43,8 @@ public:
 		   void	finalize();
 		   void	insert_reloc(FILEOFS o, ht_data *reloc);
 	virtual UINT	read(void *buf, UINT size);
-	virtual UINT	write(void *buf, UINT size);
+	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 #endif /* __RELFILE_H__ */

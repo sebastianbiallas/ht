@@ -21,7 +21,6 @@
 #ifndef __HTNE_H__
 #define __HTNE_H__
 
-#include "htanaly.h"
 #include "htobj.h"
 #include "formats.h"
 #include "relfile.h"
@@ -53,13 +52,36 @@ struct ne_segment_headers {
 	NE_SEGMENT *segments;
 };
 
+class ne_import_rec: public ht_data {
+public:
+	UINT addr;
+	UINT module;
+	bool byname;
+	union {
+		UINT name_ofs;
+		UINT ord;
+	};
+
+	ne_import_rec(UINT a, UINT mod, bool b, UINT i)
+	{
+		addr = a;
+		module = mod;
+		byname = b;
+		ord = i;
+	}
+};
+
+class ht_aviewer;
 struct ht_ne_shared_data {
 	dword hdr_ofs;
 	NE_HEADER hdr;
 	ne_segment_headers segments;
+	UINT modnames_count;
+	char **modnames;
 	UINT fake_segment;
 	ht_list *entrypoints;
-	ht_format_viewer *v_image;
+	ht_tree *imports;
+	ht_aviewer *v_image;
 };
 
 class ht_ne: public ht_format_group {
@@ -78,18 +100,6 @@ public:
 };
 
 extern format_viewer_if htne_if;
-
-/*
- *	CLASS ht_ne_aviewer
- */
-
-class ht_ne_aviewer: public ht_aviewer {
-public:
-	ht_ne_shared_data *ne_shared;
-	ht_streamfile *file;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, analyser *Analyser, ht_ne_shared_data *ne_shared);
-	virtual void set_analyser(analyser *a);
-};
 
 /*
  *	CLASS ht_ne_entrypoint
@@ -130,7 +140,7 @@ protected:
 	ht_ne_shared_data *data;
 /* overwritten */
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual void	reloc_unapply(ht_data *reloc, byte *data);
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_ne_shared_data *data);
 };
@@ -140,17 +150,20 @@ public:
  */
 
 FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, UINT i);
-ADDR NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i);
+dword NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i);
 UINT NE_get_seg_psize(ht_ne_shared_data *NE_shared, UINT i);
 UINT NE_get_seg_vsize(ht_ne_shared_data *NE_shared, UINT i);
 
-bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, ADDR Addr, int *segment);
-bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, ADDR Addr);
-bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, ADDR Addr, FILEOFS *ofs);
+bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, dword Addr, int *segment);
+bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, dword Addr);
+bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, dword Addr, FILEOFS *ofs);
 
-bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, ADDR *Addr);
+bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, dword *Addr);
 
+#define NEAddress dword
 #define NE_MAKE_ADDR(seg, ofs) ((seg)*0x10000+(ofs))
+#define NE_ADDR_SEG(a) ((a)>>16)
+#define NE_ADDR_OFS(a) ((a)&0xffff)
 
 #endif /* __HTNE_H__ */
 

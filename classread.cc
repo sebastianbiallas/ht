@@ -7,6 +7,7 @@
  *	classread.cc
  *
  *	Copyright (C) 2001 Stanley Gambarin <stanleyg76@yahoo.com>
+ *	Copyright (C) 2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -47,6 +48,26 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
  
+
+ClassMethodPosition::ClassMethodPosition(ClassAddress s, FILEOFS f, UINT l)
+{
+	start = s;
+	filestart = f;
+	length = l;
+}
+
+int ClassMethodPosition::compareTo(ClassMethodPosition *b)
+{
+	if ((start+length-1) < b->start) return -1;
+	if (start > (b->start+b->length-1)) return 1;
+	return 0;
+}
+
+
+int compare_keys_ClassMethodPosition(ht_data *key_a, ht_data *key_b)
+{
+	return ((ClassMethodPosition*)key_a)->compareTo((ClassMethodPosition*)key_b);
+}
 
 /* extract name from a utf8 constant pool entry */
 static char *
@@ -140,12 +161,13 @@ attribute_read (ht_stream *htio, classfile *clazz)
 
 /* read and return method info */
 static mf_info *
-read_fieldmethod (ht_stream *htio, classfile *clazz)
+read_fieldmethod (ht_stream *htio, ht_class_shared_data *shared)
 {
   mf_info *m;
   u2 idx;
   int i;
-
+  classfile *clazz = shared->file;
+  
   m = (mf_info *)calloc (1, sizeof (*m));
   if (!m) {
     return NULL;
@@ -171,15 +193,20 @@ read_fieldmethod (ht_stream *htio, classfile *clazz)
 }
 
 /* read and return classfile */
-classfile *
+ht_class_shared_data *
 class_read (ht_stream *htio)
 {
+  ht_class_shared_data *shared;
   classfile *clazz;
   u2 count;
   u2 cpcount, index;
   int i;
   
+  shared = (ht_class_shared_data *)malloc (sizeof (ht_class_shared_data));
   clazz = (classfile *)malloc (sizeof (*clazz));
+  shared->file = clazz;
+  shared->methods = new ht_dtree();
+  shared->methods->init(compare_keys_ClassMethodPosition);
   if (!clazz) {
     return NULL;
   }
@@ -230,7 +257,7 @@ class_read (ht_stream *htio)
 	 return NULL;
     }
     for (i=0; i<(int)count; i++) {
-	 clazz->fields[i] = read_fieldmethod (htio, clazz);
+	 clazz->fields[i] = read_fieldmethod (htio, shared);
     }
   } else {
     clazz->fields = 0;
@@ -243,7 +270,7 @@ class_read (ht_stream *htio)
 	 return NULL;
     }
     for (i=0; i<(int)count; i++) {
-	 clazz->methods[i] = read_fieldmethod (htio, clazz);
+	 clazz->methods[i] = read_fieldmethod (htio, shared);
     }
   } else {
     clazz->methods = 0;
@@ -264,13 +291,15 @@ class_read (ht_stream *htio)
   } else {
     clazz->attribs = 0;
   }
-  return clazz;
+  return shared;
 }
+
 void
-class_unread (classfile *clazz)
+class_unread (ht_class_shared_data *shared)
 {
   u1 tag;
   unsigned i, j;
+  classfile *clazz = shared->file;
 
   if (!clazz) {
     return;
@@ -313,4 +342,5 @@ class_unread (classfile *clazz)
   if (clazz->attribs_count) {
     free (clazz->attribs);
   }
+  free(shared);
 }

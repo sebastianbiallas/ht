@@ -18,8 +18,10 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <string.h>
+
 #include "cmds.h"
-#include "htapp.h"
+#include "htctrl.h"
 #include "htiobox.h"
 #include "hthex.h"
 #include "htmenu.h"
@@ -27,7 +29,10 @@
 #include "stream.h"
 #include "tools.h"
 
-#include <string.h>
+extern "C" {
+#include "evalx.h"
+#include "regex.h"
+}
 
 ht_view *hthex_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
@@ -86,8 +91,8 @@ bool ht_hex_viewer::get_hscrollbar_pos(int *pstart, int *psize)
 {
 	int s=file->get_size();
 	if (s) {
-		int z=MIN(size.h*16, s-(int)top_id1);
-		return scrollbar_pos(top_id1, z, s, pstart, psize);
+		int z=MIN(size.h*16, s-(int)top.line_id.id1);
+		return scrollbar_pos(top.line_id.id1, z, s, pstart, psize);
 	}
 	return false;
 }
@@ -145,7 +150,7 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 		}
 		case msg_contextmenuquery: {
 			ht_static_context_menu *m=new ht_static_context_menu();
-			m->init("~Local (Hex)");
+			m->init("~Local-Hex");
 			m->insert_entry("~Block operations", "Ctrl+B", cmd_file_blockop, K_Control_B, 1);
 			m->insert_entry("~Entropy", "Ctrl+T", cmd_hex_entropy, K_Control_T, 1);
 
@@ -157,16 +162,37 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-bool ht_hex_viewer::address_to_offset(fmt_vaddress addr, FILEOFS *ofs)
+bool ht_hex_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 {
-	*ofs=addr;
-	return 1;
+	*ofs = p.u.line_id.id1 + p.u.tag_idx;
+	return true;
 }
 
-bool ht_hex_viewer::offset_to_address(FILEOFS ofs, fmt_vaddress *addr)
+bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
-	*addr=ofs;
-	return 1;
+	clear_viewer_pos(p);
+	p->u.sub = first_sub;
+	p->u.line_id.id1 = ofs  & (~0xf);
+	p->u.line_id.id2 = 0;
+	p->u.tag_idx = ofs  & 0xf;
+	return true;
+}
+
+bool ht_hex_viewer::string_to_pos(char *string, viewer_pos *pos)
+{
+	scalar_t r;
+	if (eval(&r, string, NULL, NULL, NULL)) {
+		int_t i;
+		scalar_context_int(&r, &i);
+		scalar_destroy(&r);
+		offset_to_pos(i.value, pos);
+		return true;
+	}
+	char *s;
+	int p;
+	get_eval_error(&s, &p);
+	sprintf(globalerror, "%s at pos %d", s, p);
+	return false;
 }
 
 /*

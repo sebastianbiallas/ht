@@ -39,7 +39,7 @@ public:
 	virtual	void	done();
 /* overwritten */
 	virtual	UINT	read(void *buf, UINT size);
-	virtual	UINT	write(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 protected:
 			bool flush_compressed();
 			bool flush_uncompressed();

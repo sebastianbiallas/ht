@@ -27,3 +27,4 @@
 extern format_viewer_if htelfsymboltable_if;
 
 #endif /* !__HTELFSYM_H__ */
+

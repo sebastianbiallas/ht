@@ -37,16 +37,17 @@
 #include "htinfo.h"
 #include "htreg.h"
 #include "htsys.h"
+#include "log.h"
 #include "stddata.h"
 
 #include <string.h>
 
 char *htcopyrights[]=
 {
-	ht_name" "ht_version" ("HT_SYS_NAME")",
+	ht_name" "ht_version" ("HT_SYS_NAME") "__TIME__" on "__DATE__,
 	ht_copyright1,
 	ht_copyright2,
-	0
+	NULL
 };
 
 void add_file_history_entry(char *n)
@@ -106,7 +107,7 @@ void done()
 void load_file(char *fn, UINT mode)
 {
 	add_file_history_entry(fn);
-	((ht_app*)app)->create_window_file(fn, mode);
+	((ht_app*)app)->create_window_file(fn, mode, true);
 }
 
 void show_help()
@@ -117,7 +118,10 @@ void show_help()
 void params(int argc, char *argv[])
 {
 	int escaped_params_start = 0;
-
+	// FIXME: FOM_AUTO should be standardmode
+	int load_mode = FOM_BIN;
+	bool showhelp = false;
+	
 #define EXPECT_PARAMEND(b) if ((j+1)!=len) { LOG_EX(LOG_ERROR, "syntax error in options"); b;}
 #define EXPECT_PARAMS(p, b) if (i+p+1 > argc) { LOG_EX(LOG_ERROR, "syntax error in options"); b;}
 #define NOTHING ((void)(0))
@@ -131,6 +135,12 @@ void params(int argc, char *argv[])
 					escaped_params_start = i+1;
 					break;
 				}
+				if (strcmp(argv[i], "--auto") == 0) {
+					EXPECT_PARAMS(1, NOTHING) else {
+						load_file(argv[i+1], FOM_AUTO);
+						i++;
+					}
+				} else
 				if (strcmp(argv[i], "--bin") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
 						load_file(argv[i+1], FOM_BIN);
@@ -138,7 +148,13 @@ void params(int argc, char *argv[])
 					}
 				} else
 				if (strcmp(argv[i], "--help") == 0) {
-					show_help();
+					showhelp = true;
+				} else
+				if (strcmp(argv[i], "--project") == 0) {
+					EXPECT_PARAMS(1, NOTHING) else {
+						((ht_app*)app)->project_opencreate(argv[i+1]);
+						i++;
+					}
 				} else
 				if (strcmp(argv[i], "--text") == 0) {
 					EXPECT_PARAMS(1, NOTHING) else {
@@ -152,6 +168,21 @@ void params(int argc, char *argv[])
 			} else {
 				for (int j=1; j<len; j++) {
 					switch (argv[i][j]) {
+						case 'A':
+							load_mode = FOM_AUTO;
+							break;
+						case 'B':
+							load_mode = FOM_BIN;
+							break;
+						case 'T':
+							load_mode = FOM_TEXT;
+							break;
+						case 'a':
+							EXPECT_PARAMEND(break);
+							EXPECT_PARAMS(1, break);
+							load_file(argv[i+1], FOM_AUTO);
+							i++;
+							break;
 						case 'b':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
@@ -159,12 +190,18 @@ void params(int argc, char *argv[])
 							i++;
 							break;
 						case 'h':
-							show_help();
+							showhelp = true;
 							break;
 						case 't':
 							EXPECT_PARAMEND(break);
 							EXPECT_PARAMS(1, break);
 							load_file(argv[i+1], FOM_TEXT);
+							i++;
+							break;
+						case 'p':
+							EXPECT_PARAMEND(break);
+							EXPECT_PARAMS(1, break);
+							((ht_app*)app)->project_opencreate(argv[i+1]);
 							i++;
 							break;
 						default:
@@ -174,27 +211,24 @@ void params(int argc, char *argv[])
 				}
 			}
 		} else {
-//			*search_str_pos++ = argv[i];
 			add_file_history_entry(argv[i]);
-// FIXME: no auto-detection for now, cause it wont work properly...
-//			load_file(argv[i], FOM_AUTO);
-			load_file(argv[i], FOM_BIN);
+			load_file(argv[i], load_mode);
 		}
 	}
 	if (escaped_params_start) {
 		char **s = &argv[escaped_params_start];
 		while (*s) {
-//          	*search_str_pos++ = *s++;
 			add_file_history_entry(*s);
-			load_file(*s, FOM_BIN);
+			load_file(*s, load_mode);
 			s++;
 		}
 	}
+	if (showhelp) show_help();
 }
 
 int main(int argc, char *argv[])
 {
-	this_app=argv[0];
+	appname = argv[0];
 
 	if (!init()) {
 		int init_failed = htstate;
@@ -211,12 +245,12 @@ int main(int argc, char *argv[])
 		copyrights++;
 	}
 
-	int projectconfig_version = 0;   // -1 for older and 1 for newer file found
-	int projectconfig_magic = 0;     // !=0 meens wrong magic found
+	int systemconfig_version = 0;   // -1 for older and 1 for newer file found
+	int systemconfig_magic = 0;     // !=0 meens wrong magic found
 
 	loadstore_result load;
 	int error_info;
-	if (!load_projectconfig(&load, &error_info)) {
+	if (!load_systemconfig(&load, &error_info)) {
 		switch (load) {
 			case LS_OK:
 				break;
@@ -229,21 +263,21 @@ int main(int argc, char *argv[])
 				break;
 			case LS_ERROR_MAGIC:
 			case LS_ERROR_FORMAT:
-				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("PROJECT_CONFIG_FILE_NAME") has", "invalid", "magic");
-				projectconfig_magic = true;
+				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "invalid", "magic");
+				systemconfig_magic = true;
 				break;
 			case LS_ERROR_VERSION:
-				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("PROJECT_CONFIG_FILE_NAME") has", "wrong", "version");
-				if (error_info < ht_projectconfig_fileversion) {
-					projectconfig_version = -1;
+				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "version");
+				if (error_info < ht_systemconfig_fileversion) {
+					systemconfig_version = -1;
 				} else {
-					projectconfig_version = 1;
+					systemconfig_version = 1;
 				}
 				break;
 			case LS_ERROR_CORRUPTED:
 //				done();
 				if (screen) delete screen;
-				printf("\n\n\nfatal error loading configuration file (%s)", projectconfig_file);
+				printf("\n\n\nfatal error loading configuration file (%s)", systemconfig_file);
 				if (error_info) {
 					printf(":\nerror near line %d\n", error_info);
 				} else {
@@ -258,7 +292,7 @@ int main(int argc, char *argv[])
 	params(argc, argv);
 
 	try {
-		((ht_app*)app)->run(0);
+		((ht_app*)app)->run(false);
 	} catch (ht_io_exception *x) {
 		done();
 		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x->what());
@@ -276,30 +310,30 @@ int main(int argc, char *argv[])
 	loadstore_result save=LS_OK;
 	bool save_config = true;
 
-	if (projectconfig_magic) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("PROJECT_CONFIG_FILE_NAME") has", "wrong", "magic")!=button_ok) {
+	if (systemconfig_magic) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "magic")!=button_ok) {
 			save_config = false;
 		}
 	}
 
-	if (projectconfig_version < 0) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("PROJECT_CONFIG_FILE_NAME") has", "older", "version")!=button_ok) {
+	if (systemconfig_version < 0) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "older", "version")!=button_ok) {
 			save_config = false;
 		}
-	} else if (projectconfig_version > 0) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("PROJECT_CONFIG_FILE_NAME") has", "NEWER", "version")!=button_ok) {
+	} else if (systemconfig_version > 0) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "NEWER", "version")!=button_ok) {
 			save_config = false;
 		}
 	}
 
 	if (save_config) {
 		LOG("saving config...");
-		save=save_projectconfig();
+		save = save_systemconfig();
 	}
 	LOG("exit.");
 	done();
 	if (save!=LS_OK) {
-		printf("save_projectfile(): error\n");
+		printf("save_systemconfig(): error\n");
 		return 1;
 	}
 	return 0;

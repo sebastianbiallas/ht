@@ -62,6 +62,8 @@
 #define CHAR_ARROW_DOWN ACS_DARROW
 #define CHAR_ARROWBIG_UP ACS_UARROW
 #define CHAR_ARROWBIG_DOWN ACS_DARROW
+#define CHAR_ARROWBIG_RIGHT '>'
+#define CHAR_ARROWBIG_LEFT '<'
 #define CHAR_RADIO ACS_BULLET
 
 class screendrawbuf: public genericdrawbuf {

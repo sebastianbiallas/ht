@@ -19,7 +19,6 @@
  */
  
 #include "cstream.h"
-#include "htapp.h"
 #include "htcfg.h"
 #include "htctrl.h"
 #include "htdebug.h"
@@ -80,17 +79,17 @@ struct config_header {
 };
 
 /*
- *	project configs
+ *	system configs
  */
 
-char *projectconfig_file;
+char *systemconfig_file;
 
 /**/
 
-loadstore_result save_projectconfig()
+loadstore_result save_systemconfig()
 {
-	ht_file *f=new ht_file();
-	f->init(projectconfig_file, FAM_WRITE | FAM_CREATE);
+	ht_file *f = new ht_file();
+	f->init(systemconfig_file, FAM_WRITE | FAM_CREATE);
 	if (f->get_error()) {
 		f->done();
 		delete f;
@@ -100,24 +99,24 @@ loadstore_result save_projectconfig()
 /* write project config header */
 	config_header h;
 
-	memmove(h.magic, ht_projectconfig_magic, sizeof h.magic);
+	memmove(h.magic, ht_systemconfig_magic, sizeof h.magic);
 
 	char q[16];
 
-	int project_ostream_type = get_config_dword("misc/config format");
+	int system_ostream_type = get_config_dword("misc/config format");
 	
-	sprintf(q, "%04x", ht_projectconfig_fileversion);
+	sprintf(q, "%04x", ht_systemconfig_fileversion);
 	memmove(h.version, q, sizeof h.version);
 
-	sprintf(q, "%02x", project_ostream_type);
+	sprintf(q, "%02x", system_ostream_type);
 	memmove(h.stream_type, q, sizeof h.stream_type);
 
 	f->write(&h, sizeof h);
 	
 /* write object stream type */
-	ht_object_stream *d=create_object_stream(f, project_ostream_type);
+	ht_object_stream *d = create_object_stream(f, system_ostream_type);
 	   
-	switch (project_ostream_type) {
+	switch (system_ostream_type) {
 		case object_stream_bin:
 			break;
 		case object_stream_txt:
@@ -137,10 +136,10 @@ loadstore_result save_projectconfig()
 	return LS_OK;
 }
 
-bool load_projectconfig(loadstore_result *result, int *error_info)
+bool load_systemconfig(loadstore_result *result, int *error_info)
 {
-	ht_file *f=new ht_file();
-	f->init(projectconfig_file, FAM_READ);
+	ht_file *f = new ht_file();
+	f->init(systemconfig_file, FAM_READ);
 	switch (f->get_error()) {
 		case 0:break;
 		case STERR_SYSTEM | ENOENT:
@@ -164,14 +163,15 @@ bool load_projectconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 	
-	if (memcmp(h.magic, ht_projectconfig_magic, sizeof h.magic)!=0) {
+	if (memcmp(h.magic, ht_systemconfig_magic, sizeof h.magic)!=0) {
 		*result = LS_ERROR_MAGIC;
 		f->done();
 		delete f;
 		return false;
 	}
 
-	if (hexw((char*)h.version)!=ht_projectconfig_fileversion) {
+// FIXME: bad code, no conversion errors reported
+	if (hexw((char*)h.version) != ht_systemconfig_fileversion) {
 		*result = LS_ERROR_VERSION;
 		*error_info = hexw((char*)h.version);
 		f->done();
@@ -179,10 +179,10 @@ bool load_projectconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 
-	dword object_stream_type=hexb((char*)h.stream_type);
+	dword object_stream_type = hexb((char*)h.stream_type);
 
 /* object stream type */
-	ht_object_stream *d=create_object_stream(f, object_stream_type);
+	ht_object_stream *d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		*result = LS_ERROR_FORMAT;
 		f->done();
@@ -196,7 +196,7 @@ bool load_projectconfig(loadstore_result *result, int *error_info)
 		*error_info = 0;
 		if (d->get_error()) {
 			if (object_stream_type==object_stream_txt)
-				*error_info = ((ht_object_stream_txt*)d)->get_error_line();
+				*error_info = ((ht_object_stream_txt*)d)->getErrorLine();
 		}
 		f->done();
 		delete f;
@@ -215,7 +215,7 @@ bool load_projectconfig(loadstore_result *result, int *error_info)
 
 /**/
 
-loadstore_result save_fileconfig(char *fileconfig_file, store_fcfg_func store_func, void *context)
+loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT version, store_fcfg_func store_func, void *context)
 {
 	ht_file *f=new ht_file();
 	f->init(fileconfig_file, FAM_WRITE | FAM_CREATE);
@@ -228,13 +228,13 @@ loadstore_result save_fileconfig(char *fileconfig_file, store_fcfg_func store_fu
 /* write file config header */
 	config_header h;
 
-	memmove(h.magic, ht_fileconfig_magic, sizeof h.magic);
+	memmove(h.magic, magic, sizeof h.magic);
 
 	char q[16];
 
 	int file_ostream_type = get_config_dword("misc/config format");
 	
-	sprintf(q, "%04x", ht_fileconfig_fileversion);
+	sprintf(q, "%04x", version);
 	memmove(h.version, q, sizeof h.version);
 
 	sprintf(q, "%02x", file_ostream_type);
@@ -243,7 +243,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, store_fcfg_func store_fu
 	f->write(&h, sizeof h);
 
 /* object stream type */
-	ht_object_stream *d=create_object_stream(f, file_ostream_type);
+	ht_object_stream *d = create_object_stream(f, file_ostream_type);
 	   
 	switch (file_ostream_type) {
 		case object_stream_bin:
@@ -264,7 +264,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, store_fcfg_func store_fu
 	return LS_OK;
 }
 
-loadstore_result load_fileconfig(char *fileconfig_file, load_fcfg_func load_func, void *context, int *error_info)
+loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT version, load_fcfg_func load_func, void *context, int *error_info)
 {
 	ht_file *f=new ht_file();
 	f->init(fileconfig_file, FAM_READ);
@@ -288,9 +288,10 @@ loadstore_result load_fileconfig(char *fileconfig_file, load_fcfg_func load_func
 		return LS_ERROR_MAGIC;
 	}
 	
-	if (memcmp(h.magic, ht_fileconfig_magic, sizeof h.magic)!=0) return LS_ERROR_MAGIC;
+	if (memcmp(h.magic, magic, sizeof h.magic)!=0) return LS_ERROR_MAGIC;
 
-	if (hexw((char*)h.version)!=ht_fileconfig_fileversion) {
+// FIXME: bad code, no conversion errors reported
+	if (hexw((char*)h.version) != version) {
 		f->done();
 		delete f;
 		*error_info = hexw((char*)h.version);
@@ -300,7 +301,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, load_fcfg_func load_func
 	dword object_stream_type=hexb((char*)h.stream_type);
 
 /* object stream type */
-	ht_object_stream *d=create_object_stream(f, object_stream_type);
+	ht_object_stream *d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		f->done();
 		delete f;
@@ -312,7 +313,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, load_fcfg_func load_func
 		*error_info = 0;
 		if (d->get_error()) {
 			if (object_stream_type==object_stream_txt)
-				*error_info = ((ht_object_stream_txt*)d)->get_error_line();
+				*error_info = ((ht_object_stream_txt*)d)->getErrorLine();
 		}
 		f->done();
 		delete f;
@@ -336,18 +337,18 @@ bool init_cfg()
 {
 #if defined(WIN32) || defined(__WIN32__) || defined(MSDOS) || defined(DJGPP)
 	char d[1024];	/* FIXME: !!!! */
-	sys_dirname(this_app, d);
-	char *b="/"PROJECT_CONFIG_FILE_NAME;
-	projectconfig_file=(char*)malloc(strlen(d)+strlen(b)+1);
-	strcpy(projectconfig_file, d);
-	strcat(projectconfig_file, b);
+	sys_dirname(d, appname);
+	char *b = "/"SYSTEM_CONFIG_FILE_NAME;
+	systemconfig_file = (char*)malloc(strlen(d)+strlen(b)+1);
+	strcpy(systemconfig_file, d);
+	strcat(systemconfig_file, b);
 #else
-	char *home=getenv("HOME");
-	char *b="/"PROJECT_CONFIG_FILE_NAME;
-	if (!home) home="";
-	projectconfig_file=(char*)malloc(strlen(home)+strlen(b)+1);
-	strcpy(projectconfig_file, home);
-	strcat(projectconfig_file, b);
+	char *home = getenv("HOME");
+	char *b = "/"SYSTEM_CONFIG_FILE_NAME;
+	if (!home) home = "";
+	systemconfig_file = (char*)malloc(strlen(home)+strlen(b)+1);
+	strcpy(systemconfig_file, home);
+	strcat(systemconfig_file, b);
 #endif
 	return true;
 }
@@ -358,6 +359,6 @@ bool init_cfg()
 
 void done_cfg()
 {
-	free(projectconfig_file);
+	free(systemconfig_file);
 }
 

@@ -24,6 +24,7 @@
 #include "global.h"
 #include "stream.h"
 #include "htformat.h"
+#include "htsys.h"
 
 /*
  *	CLASS ht_clipboard
@@ -37,7 +38,7 @@ public:
 			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	UINT	write(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 /* new */
 			void clear();
 };

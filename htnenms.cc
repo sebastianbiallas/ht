@@ -24,6 +24,7 @@
 #include "htnenms.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,11 +49,11 @@ ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 
-	char line[1024];	/* possible buffer overflow */
+	char line[256];	/* secure */
 	char *n;
 	int i;
 
-	sprintf(line, "* NE resident names table at offset %08x", h+ne_shared->hdr.restab);
+	ht_snprintf(line, sizeof line, "* NE resident names table at offset %08x", h+ne_shared->hdr.restab);
 	m->add_mask(line);
 
 	file->seek(h+ne_shared->hdr.restab);
@@ -62,9 +63,9 @@ ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		file->read(buf, 2);
 		word ent = create_host_int(buf, 2, little_endian);
 		if (!i) {
-			sprintf(line, "description: %s", n);
+			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {
-			sprintf(line, "%04x %s", ent, n);
+			ht_snprintf(line, sizeof line, "%04x %s", ent, n);
 			assign_entrypoint_name(ne_shared, ent, n);
 		}
 		free(n);
@@ -74,7 +75,7 @@ ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	free(n);
 
 	m->add_mask("----------------------------------------------------------------");
-	sprintf(line, "* NE non-resident names table at offset %08x", ne_shared->hdr.nrestab);
+	ht_snprintf(line, sizeof line, "* NE non-resident names table at offset %08x", ne_shared->hdr.nrestab);
 	m->add_mask(line);
 
 	file->seek(ne_shared->hdr.nrestab);
@@ -84,9 +85,9 @@ ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		file->read(buf, 2);
 		word ent = create_host_int(buf, 2, little_endian);
 		if (!i) {
-			sprintf(line, "description: %s", n);
+			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {
-			sprintf(line, "%04x %s", ent, n);
+			ht_snprintf(line, sizeof line, "%04x %s", ent, n);
 			assign_entrypoint_name(ne_shared, ent, n);
 		}
 		free(n);
@@ -102,5 +103,5 @@ ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 format_viewer_if htnenames_if = {
 	htnenames_init,
-	0
+	NULL
 };

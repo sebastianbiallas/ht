@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "log.h"
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htpeimg.h"
@@ -37,13 +37,13 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return 0;
 
 	LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
-	pe_analyser *p = new pe_analyser();
+	PEAnalyser *p = new PEAnalyser();
 	p->init(pe_shared, file);
 
 	bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_PE_IMAGE"-g");
-	analy_infoline *head;
+	AnalyInfoline *head;
 
 	c.y+=2;
 	c.h-=2;
@@ -52,32 +52,41 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	c.y-=2;
 	c.h=2;
-	head=new analy_infoline();
+	head=new AnalyInfoline();
 	head->init(&c, v, ANALY_STATUS_DEFAULT);
 
-	v->attach_infoline(head);
+	v->attachInfoline(head);
 
 /* search for lowest/highest */
-	ADDR l=(ADDR)-1, h=0;
+	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
-		if (s->data_address<l) l=s->data_address;
-		if (s->data_address+s->data_size>h) h=s->data_address+s->data_size;
+		if (s->data_address < l) l = s->data_address;
+		if ((s->data_address + s->data_size > h) && s->data_size) h = s->data_address + s->data_size - 1;
 		s++;
 	}
 /**/
-	l+=pe_shared->pe32.header_nt.image_base;
-	h+=pe_shared->pe32.header_nt.image_base;
+	l += pe_shared->pe32.header_nt.image_base;
+	h += pe_shared->pe32.header_nt.image_base;
+
+	Address *low = p->createAddress32(l);
+	Address *high = p->createAddress32(h);
 
 	ht_analy_sub *analy=new ht_analy_sub();
-	analy->init(file, p, l, h);
+	analy->init(file, v, p, low, high);
+	
+	delete low;
+	delete high;
+	
 	v->analy_sub = analy;
 	v->insertsub(analy);
 
 	v->sendmsg(msg_complete_init, 0);
-	
-	v->goto_address(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
 
+	Address *tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+	v->gotoAddress(tmpaddr, NULL);
+	delete tmpaddr;
+	
 	g->insert(head);
 	g->insert(v);
 
@@ -91,4 +100,22 @@ format_viewer_if htpeimage_if = {
 	htpeimage_init,
 	0
 };
+
+/*
+ *	CLASS ht_pe_aviewer
+ */
+void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_pe_shared_data *PE_shared)
+{
+	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
+	pe_shared = PE_shared;
+	file = File;
+}
+
+void ht_pe_aviewer::setAnalyser(Analyser *a)
+{
+	((PEAnalyser *)a)->pe_shared = pe_shared;
+	((PEAnalyser *)a)->file = file;
+	analy = a;
+	analy_sub->setAnalyser(a);
+}
 

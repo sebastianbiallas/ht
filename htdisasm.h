@@ -29,7 +29,7 @@
 
 extern format_viewer_if htdisasm_if;
 
-void dialog_assemble(ht_format_viewer *f, fmt_vaddress vaddr, CPU_ADDR cpuaddr, assembler *a, disassembler *disasm, char *default_str);
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, char *default_str, UINT want_length);
 
 /*
  *	CLASS ht_disasm_viewer
@@ -37,17 +37,18 @@ void dialog_assemble(ht_format_viewer *f, fmt_vaddress vaddr, CPU_ADDR cpuaddr, 
 
 class ht_disasm_viewer: public ht_uformat_viewer {
 protected:
-	assembler *assem;
-	disassembler *disasm;
+	Assembler *assem;
+	Disassembler *disasm;
 public:
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, assembler *a, disassembler *d);
+			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d);
 	virtual 	void done();
 /* overwritten */
-	virtual	bool address_to_offset(fmt_vaddress addr, FILEOFS *ofs);
+	virtual	bool pos_to_offset(viewer_pos addr, FILEOFS *ofs);
+	virtual	bool string_to_pos(char *string, viewer_pos *addr);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	bool offset_to_address(FILEOFS ofs, fmt_vaddress *addr);
+	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *addr);
 };
 
 /*
@@ -56,21 +57,20 @@ public:
 
 class ht_disasm_sub: public ht_linear_sub {
 private:
-	disassembler *disasm;
+	Disassembler *disasm;
 	bool own_disasm;
 	int display_style;
 public:
-			void init(ht_streamfile *file, FILEOFS ofs, int size, disassembler *disasm, bool own_disasm, int display_style);
+			void init(ht_streamfile *file, FILEOFS ofs, int size, Disassembler *disasm, bool own_disasm, int display_style);
 	virtual 	void done();
 /* overwritten */
-	virtual	bool convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2);
-	virtual	bool convert_ofs_to_id(FILEOFS offset, ID *id1, ID *id2);
-	virtual	bool convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr);
-	virtual	void first_line_id(ID *id1, ID *id2);
-	virtual	bool getline(char *line, ID id1, ID id2);
-	virtual	void last_line_id(ID *id1, ID *id2);
-	virtual	int next_line_id(ID *id1, ID *id2, int n);
-	virtual	int prev_line_id(ID *id1, ID *id2, int n);
+	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
+	virtual	bool convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset);
+	virtual	void first_line_id(LINE_ID *line_id);
+	virtual	bool getline(char *line, const LINE_ID line_id);
+	virtual	void last_line_id(LINE_ID *line_id);
+	virtual	int next_line_id(LINE_ID *line_id, int n);
+	virtual	int prev_line_id(LINE_ID *line_id, int n);
 };
 
 #endif /* !__HTDISASM_H__ */

@@ -320,6 +320,10 @@ struct ELF_PROGRAM_HEADER64 {
 #define ELF32_ST_TYPE(i)		((i)&0xf)
 #define ELF32_ST_INFO(b,t)	(((b)>>4)|((t)&0xf))
 
+#define ELF64_ST_BIND(i)		((i)>>4)
+#define ELF64_ST_TYPE(i)		((i)&0xf)
+#define ELF64_ST_INFO(b,t)	(((b)>>4)|((t)&0xf))
+
 struct ELF_SYMBOL32 {
 	elf32_word st_name;
 	elf32_addr st_value;
@@ -393,5 +397,12 @@ extern byte ELF_PROGRAM_HEADER64_struct[];
 extern byte ELF_SYMBOL64_struct[];
 extern byte ELF_REL64_struct[];
 extern byte ELF_RELA64_struct[];
+
+struct ELFAddress {
+	union {
+     	dword a32;
+          qword a64;
+     };
+};
 
 #endif /* __ELFSTRUC_H__ */

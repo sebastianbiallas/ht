@@ -23,6 +23,7 @@
 #include "htdialog.h"
 #include "hthist.h"
 #include "htiobox.h"
+#include "snprintf.h"
 #include "tools.h"
 
 #include <stdarg.h>
@@ -146,10 +147,10 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 
 int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...)
 {
-	char buf[1024];	/* FIXME: possible buffer overflow ! */
+	char buf[1024];
 	va_list arg;
 	va_start(arg, format);
-	vsprintf(buf, format, arg);
+	ht_vsnprintf(buf, 1024, format, arg);
 	va_end(arg);
 
 	char *s=buf;
@@ -171,10 +172,10 @@ int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...
 
 int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, int align, char *format, ...)
 {
-	char buf[1024];	/* FIXME: possible buffer overflow ! */
+	char buf[1024];
 	va_list arg;
 	va_start(arg, format);
-	vsprintf(buf, format, arg);
+	ht_vsnprintf(buf, 1024, format, arg);
 	va_end(arg);
 
 	return imsgbox(b, buttonmask, title, modal, align, buf);

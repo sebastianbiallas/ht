@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "formats.h"
 #include "htapp.h"
 #include "htctrl.h"
 #include "htdialog.h"
@@ -29,10 +30,11 @@
 #include "htobj.h"
 #include "htpe.h"
 #include "htperes.h"
-#include "stream.h"
 #include "htstring.h"
 #include "httree.h"
+#include "log.h"
 #include "pestruct.h"
+#include "stream.h"
 
 #include <string.h>
 
@@ -86,7 +88,7 @@ void read_resource_dir(void *node, int ofs, int level)
 	PE_RESOURCE_DIRECTORY dir;
 // get directory
 	peresource_file->seek(peresource_dir_ofs+ofs);
-	peresource_file->read(&dir, sizeof dir);
+	if (peresource_file->read(&dir, sizeof dir) != (sizeof dir)) return;
 	create_host_struct(&dir, PE_RESOURCE_DIRECTORY_struct, little_endian);
 // get entries
 	PE_RESOURCE_DIRECTORY_ENTRY entry;
@@ -105,9 +107,9 @@ void read_resource_dir(void *node, int ofs, int level)
 				peresource_file->seek(peresource_dir_ofs+entry.name & 0x7fffffff);
 				char *name = getstrw(peresource_file);
 				rm += sprintf(rm, "%s [%d]", name, subdir.name_count+subdir.id_count);
-				delete name;
+				free(name);
 			} else {
-				char *s = (!level) ? s = matchhash((short)entry.name, restypes) : 0;
+				char *s = (!level) ? s = matchhash((short)entry.name, restypes) : NULL;
 				if (s) {
 					rm += sprintf(rm, "ID %04x, %s [%d]", (short)entry.name, s, subdir.name_count+subdir.id_count);
 				} else {
@@ -149,12 +151,12 @@ ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return 0;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
 	dword sec_rva, sec_size;
 	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
 	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
-	if (!sec_rva || !sec_size) return 0;
+	if (!sec_rva || !sec_size) return NULL;
 
 	ht_static_treeview *t=new ht_pe_resource_viewer();
 	t->init(b, DESC_PE_RESOURCES);
@@ -181,12 +183,13 @@ ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 
 	t->adjust(root, true);
 	t->update();
+	pe_shared->v_resources = t;
 	return t;
 pe_read_error:
 	errorbox("%s: PE resource directory seems to be corrupted.", file->get_filename());
 	t->done();
 	delete t;
-	return 0;
+	return NULL;
 }
 
 format_viewer_if htperesources_if = {
@@ -258,7 +261,7 @@ void	ht_pe_resource_viewer::select_node(void *node)
 		ht_group *vr_group=group;
 		while (strcmp(vr_group->desc, VIEWERGROUP_NAME)) vr_group=vr_group->group;
 		ht_view *c=vr_group->getfirstchild();
-		ht_format_viewer *hexv=0;
+		ht_format_viewer *hexv = NULL;
 		while (c) {
 			if (c->desc && (strcmp(c->desc, DESC_HEX)==0)) {
 				hexv=(ht_format_viewer*)c;

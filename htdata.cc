@@ -21,6 +21,7 @@
 #include "htatom.h"
 #include "htdata.h"
 #include "htdebug.h"
+#include "stream.h"
 #include "tools.h"
 
 #include <string.h>
@@ -46,13 +47,13 @@ ht_data_uint::ht_data_uint(UINT v)
 
 int ht_data_uint::load(ht_object_stream *s)
 {
-	value=s->get_int_hex(4, 0);
+	value=s->getIntHex(4, NULL);
 	return s->get_error();
 }
 
 void ht_data_uint::store(ht_object_stream *s)
 {
-	s->put_int_hex(value, 4, 0);
+	s->putIntHex(value, 4, NULL);
 }
 
 OBJECT_ID ht_data_uint::object_id()
@@ -71,13 +72,13 @@ ht_data_dword::ht_data_dword(dword v)
 
 int ht_data_dword::load(ht_object_stream *s)
 {
-	value=s->get_int_hex(4, 0);
+	value=s->getIntHex(4, NULL);
 	return s->get_error();
 }
 
 void ht_data_dword::store(ht_object_stream *s)
 {
-	s->put_int_hex(value, 4, 0);
+	s->putIntHex(value, 4, NULL);
 }
 
 OBJECT_ID ht_data_dword::object_id()
@@ -116,13 +117,13 @@ ht_data_mem::~ht_data_mem()
 
 int ht_data_mem::load(ht_object_stream *s)
 {
-	value=s->get_binary(size, 0);
+	value=s->getBinary(size, NULL);
 	return s->get_error();
 }
 
 void ht_data_mem::store(ht_object_stream *s)
 {
-	s->put_binary(value, size, 0);
+	s->putBinary(value, size, NULL);
 }
 
 OBJECT_ID ht_data_mem::object_id()
@@ -424,7 +425,8 @@ ht_tree_node *ht_stree::get_rightmost_node(ht_tree_node *node)
 
 bool ht_stree::insert(ht_data *key, ht_data *value)
 {
-	if ((!key) || (!value)) return false;
+//	if ((!key) || (!value)) return false;
+	if (!key) return false;
 	ht_tree_node **n=&root;
 	while (*n) {
 		int c=compare_keys(key, (*n)->key);
@@ -451,14 +453,31 @@ void ht_stree::insert_ltable(ht_tree_node **start, ht_tree_node **end)
 	}
 }
 
+void stree_load(ht_object_stream *s, ht_tree_node **n, UINT *node_count, int l, int r)
+{
+	if (l>r) {
+		*n = NULL;
+		return;
+	}
+	*n = new ht_tree_node();
+	int m = (l+r)/2;
+	stree_load(s, &(*n)->left, node_count, l, m-1);
+
+	(*n)->key = s->getObject(NULL);
+	(*n)->value = s->getObject(NULL);
+	(*node_count)++;
+
+	stree_load(s, &(*n)->right, node_count, m+1, r);
+}
+
 int ht_stree::load(ht_object_stream *s)
 {
-	void *d=find_atom(s->get_int_hex(4, 0));
+	void *d=find_atom(s->getIntHex(4, NULL));
 	if (!d) return 1;
 	compare_keys=(compare_keys_func_ptr)d;
 	
-	UINT c=s->get_int_dec(4, 0);
-
+	UINT c=s->getIntDec(4, NULL);
+#if 0
 	root=NULL;
 	node_count=0;
 	
@@ -470,21 +489,29 @@ int ht_stree::load(ht_object_stream *s)
 		insert(key, value);
 	}
 	balance();
+#else
+	root=NULL;
+	node_count=0;
+
+	stree_load(s, &root, &node_count, 0, c-1);
+	assert(node_count == c);
+	
+#endif
 	return s->get_error();
 }
 
 void ht_stree::store(ht_object_stream *s)
 {
-	s->put_int_hex(find_atom_rev((void*)compare_keys), 4, 0);
+	s->putIntHex(find_atom_rev((void*)compare_keys), 4, NULL);
 	
-	s->put_int_dec(count(), 4, 0);
+	s->putIntDec(count(), 4, NULL);
 	
 	ht_data *key=NULL;
 	ht_data *value;
 	while ((key=enum_next(&value, key))) {
 		if (value) {
-			s->put_object(key, 0);
-			s->put_object(value, 0);
+			s->putObject(key, NULL);
+			s->putObject(value, NULL);
 		}
 	}
 }
@@ -531,6 +558,7 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 		/* create ltable from tree */
 		UINT new_node_count = node_count-dead_node_count;
 		ht_tree_node **ltable = (ht_tree_node**)malloc(sizeof (ht_tree_node*) * new_node_count);
+		assert(ltable);
 		ht_tree_node **l = ltable;
 		populate_ltable(&l, root);
 
@@ -773,7 +801,9 @@ bool ht_list::sort()
  *	CLASS ht_clist
  */
 
-#define HT_CLIST_ENTRY_COUNT_START	32
+#define HT_CLIST_ENTRY_COUNT_START		32
+
+// exponential growth factor: num/den
 #define HT_CLIST_ENTRY_COUNT_EXT_NUM	3
 #define HT_CLIST_ENTRY_COUNT_EXT_DEN	2
 
@@ -842,7 +872,7 @@ void ht_clist::do_remove(UINT i)
 	c_entry_count--;
 }
 
-object *ht_clist::duplicate()
+Object *ht_clist::duplicate()
 {
 	ht_clist *d=new ht_clist();
 	d->init(compare_keys);
@@ -915,13 +945,13 @@ int  ht_clist::load(ht_object_stream *s)
 	items=(ht_data**)malloc(c_size * sizeof (ht_data*));
 	c_entry_count=0;
 	
-	void *d=find_atom(s->get_int_hex(4, 0));
+	void *d=find_atom(s->getIntHex(4, NULL));
 //	if (!d) return 1;
 	compare_keys=(compare_keys_func_ptr)d;
 	
-	int c=s->get_int_dec(4, "item_count");
+	int c=s->getIntDec(4, "item_count");
 	for (int i=0; i<c; i++) {
-		ht_data *d=s->get_object("item");
+		ht_data *d=s->getObject("item");
 		if (s->get_error()) break;
 		prepend(d);
 	}
@@ -986,10 +1016,10 @@ bool ht_clist::sort()
 
 void ht_clist::store(ht_object_stream *s)
 {
-	s->put_int_hex(find_atom_rev((void*)compare_keys), 4, 0);
-	s->put_int_dec(c_entry_count, 4, "item_count");
+	s->putIntHex(find_atom_rev((void*)compare_keys), 4, NULL);
+	s->putIntDec(c_entry_count, 4, "item_count");
 	for (int i=c_entry_count-1; i>=0; i--) {
-		s->put_object(items[i], "item");
+		s->putObject(items[i], "item");
 	}
 }
 
@@ -1178,6 +1208,11 @@ char *matchhash(int value, int_hash *hash_table)
  *	compare procedures
  */
 
+int compare_keys_ht_data(ht_data *key_a, ht_data *key_b)
+{
+	return key_a->compareTo(key_b);
+}
+
 int compare_keys_int(ht_data *key_a, ht_data *key_b)
 {
 	int a=((ht_data_uint*)key_a)->value;
@@ -1212,6 +1247,7 @@ bool init_data()
 	REGISTER(ATOM_HT_STREE, ht_stree);
 	REGISTER(ATOM_HT_CLIST, ht_clist);
 	
+	register_atom(ATOM_COMPARE_KEYS_HT_DATA, (void*)compare_keys_ht_data);
 	register_atom(ATOM_COMPARE_KEYS_INT, (void*)compare_keys_int);
 	register_atom(ATOM_COMPARE_KEYS_UINT, (void*)compare_keys_uint);
 	
@@ -1224,6 +1260,7 @@ bool init_data()
 
 void done_data()
 {
+	unregister_atom(ATOM_COMPARE_KEYS_HT_DATA);
 	unregister_atom(ATOM_COMPARE_KEYS_INT);
 	unregister_atom(ATOM_COMPARE_KEYS_UINT);
 	

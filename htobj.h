@@ -33,35 +33,40 @@ struct palette {
 };
 
 /* messages */
-#define msg_message			0x00000000
-#define HT_MESSAGE(m)		(msg_message+(m))
+#define msg_message				0x00000000
+#define HT_MESSAGE(m)			(msg_message+(m))
 
-#define msg_empty 			HT_MESSAGE(0)
-#define msg_retval			HT_MESSAGE(1)
-#define msg_draw 			HT_MESSAGE(2)
-#define msg_resize 			HT_MESSAGE(3)
-#define msg_keypressed 		HT_MESSAGE(4)
-#define msg_kill			HT_MESSAGE(5)
-#define msg_complete_init	HT_MESSAGE(6)
-#define msg_funcexec		HT_MESSAGE(7)
-#define msg_funcquery		HT_MESSAGE(8)
-#define msg_menucapquery		HT_MESSAGE(9)
-#define msg_menuquery		HT_MESSAGE(10)
-#define msg_button_pressed	HT_MESSAGE(11)
-#define msg_dirtyview		HT_MESSAGE(12)
-#define msg_vs_restore		HT_MESSAGE(13)
-#define msg_config_changed	HT_MESSAGE(14)
-#define msg_accept_close		HT_MESSAGE(15)
-#define msg_file_changed		HT_MESSAGE(16)
-#define msg_get_scrollinfo	HT_MESSAGE(17)
-#define msg_get_analyser		HT_MESSAGE(18)
-#define msg_set_analyser		HT_MESSAGE(19)
-#define msg_postinit		HT_MESSAGE(20)
-#define msg_contextmenuquery	HT_MESSAGE(21)
+#define msg_empty 				HT_MESSAGE(0)
+#define msg_retval				HT_MESSAGE(1)
+#define msg_draw 				HT_MESSAGE(2)
+#define msg_resize 				HT_MESSAGE(3)
+#define msg_keypressed 			HT_MESSAGE(4)
+#define msg_kill				HT_MESSAGE(5)
+#define msg_complete_init		HT_MESSAGE(6)
+#define msg_funcexec			HT_MESSAGE(7)
+#define msg_funcquery			HT_MESSAGE(8)
+#define msg_menucapquery			HT_MESSAGE(9)
+#define msg_menuquery			HT_MESSAGE(10)
+#define msg_button_pressed		HT_MESSAGE(11)
+#define msg_dirtyview			HT_MESSAGE(12)
+#define msg_config_changed		HT_MESSAGE(13)
+#define msg_accept_close			HT_MESSAGE(14)
+#define msg_file_changed			HT_MESSAGE(15)
+#define msg_get_scrollinfo		HT_MESSAGE(16)
+#define msg_get_analyser			HT_MESSAGE(17)
+#define msg_set_analyser			HT_MESSAGE(18)	// (Analyser *)
+#define msg_postinit			HT_MESSAGE(19)
+#define msg_contextmenuquery		HT_MESSAGE(20)
+#define msg_project_changed		HT_MESSAGE(21)
+#define msg_vstate_save			HT_MESSAGE(22)	// (Object *data, ht_view *)
+#define msg_vstate_restore		HT_MESSAGE(23) // (Object *data)
+#define msg_goto_offset			HT_MESSAGE(24) // (FILEOFS ofs)
 
-#define gsi_pindicator		1
-#define gsi_hscrollbar		2
-#define gsi_vscrollbar		3
+#define msg_filesize_changed		HT_MESSAGE(100)
+
+#define gsi_pindicator			1
+#define gsi_hscrollbar			2
+#define gsi_vscrollbar			3
 
 struct gsi_scrollbar_t {
 	int pstart;
@@ -108,7 +113,7 @@ void clearmsg(htmsg *msg);
 
 enum cursor_mode {cm_normal, cm_overwrite};
 
-class ht_view: public object {
+class ht_view: public Object {
 protected:
 			bool view_is_dirty;
 			

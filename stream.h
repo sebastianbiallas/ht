@@ -68,7 +68,7 @@ public:
 	virtual	void	set_error_func(stream_error_func_ptr stream_error_func);
 
 	virtual	UINT	read(void *buf, UINT size);
-	virtual	UINT	write(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 };
 
 /*
@@ -95,7 +95,7 @@ public:
 			void set_stream_ownership(bool own);
 
 	virtual	UINT	read(void *buf, UINT size);
-	virtual	UINT	write(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 };
 
 /*
@@ -108,43 +108,43 @@ public:
 	virtual void	done();
 	
 /* new */
-	virtual void	*get_binary(int size, char *desc) = 0;
-	virtual void	get_binary(void *p, int size, char *desc) = 0;
-	virtual bool	get_bool(char *desc) = 0;
-		   int	get_int(int size, char *desc);
-	virtual int	get_int_dec(int size, char *desc) = 0;
-	virtual int	get_int_hex(int size, char *desc) = 0;
-	virtual object	*get_object(char *name) = 0;
-	virtual void	get_object(object *&o, char *name) = 0;
-	virtual void	get_separator() = 0;
-	virtual char	*get_string(char *desc) = 0;
-	virtual UINT	record_start(UINT size);
-	virtual void	record_end(UINT);
-	virtual void	put_binary(void *mem, int size, char *desc) = 0;
-	virtual void	put_bool(bool b, char *desc) = 0;
-	virtual void	put_info(char *info) = 0;
-		   void	put_int(int a, int size, char *desc);
-	virtual void	put_int_dec(int a, int size, char *desc) = 0;
-	virtual void	put_int_hex(int a, int size, char *desc) = 0;
-	virtual void	put_object(object *obj, char *name) = 0;
-	virtual void	put_separator() = 0;
-	virtual void	put_string(char *string, char *desc) = 0;
+	virtual void	*getBinary(int size, char *desc) = 0;
+	virtual void	getBinary(void *p, int size, char *desc) = 0;
+	virtual bool	getBool(char *desc) = 0;
+		   int	getInt(int size, char *desc);
+	virtual int	getIntDec(int size, char *desc) = 0;
+	virtual int	getIntHex(int size, char *desc) = 0;
+	virtual Object	*getObject(char *name) = 0;
+	virtual void	getObject(Object *&o, char *name) = 0;
+	virtual void	getSeparator() = 0;
+	virtual char	*getString(char *desc) = 0;
+	virtual UINT	recordStart(UINT size);
+	virtual void	recordEnd(UINT);
+	virtual void	putBinary(void *mem, int size, char *desc) = 0;
+	virtual void	putBool(bool b, char *desc) = 0;
+	virtual void	putInfo(char *info) = 0;
+		   void	putInt(int a, int size, char *desc);
+	virtual void	putIntDec(int a, int size, char *desc) = 0;
+	virtual void	putIntHex(int a, int size, char *desc) = 0;
+	virtual void	putObject(Object *obj, char *name) = 0;
+	virtual void	putSeparator() = 0;
+	virtual void	putString(char *string, char *desc) = 0;
 };
 
-#define PUT_BINARY(st, d, size) st->put_binary(d, size, #d)
-#define PUT_BOOL(st, d) st->put_bool(d, #d)
-#define PUT_INT(st, d) st->put_int(d, 4, #d)
-#define PUT_INT_DEC(st, d) st->put_int_dec(d, 4, #d)
-#define PUT_INT_HEX(st, d) st->put_int_hex(d, 4, #d)
-#define PUT_OBJECT(st, o) st->put_object(o, #o)
-#define PUT_STRING(st, d) st->put_string(d, #d)
+#define PUT_BINARY(st, d, size) st->putBinary(d, size, #d)
+#define PUT_BOOL(st, d) st->putBool(d, #d)
+#define PUT_INT(st, d) st->putInt(d, 4, #d)
+#define PUT_INT_DEC(st, d) st->putIntDec(d, 4, #d)
+#define PUT_INT_HEX(st, d) st->putIntHex(d, 4, #d)
+#define PUT_OBJECT(st, o) st->putObject(o, #o)
+#define PUT_STRING(st, d) st->putString(d, #d)
 
-#define GET_BOOL(st, d) d=st->get_bool(#d)
-#define GET_INT(st, d) d=st->get_int(4, #d)
-#define GET_INT_DEC(st, d) d=st->get_int_dec(4, #d)
-#define GET_INT_HEX(st, d) d=st->get_int_hex(4, #d)
-#define GET_OBJECT(st, o) st->get_object((object *)o, #o)
-#define GET_STRING(st, d) d=st->get_string(#d)
+#define GET_BOOL(st, d) d=st->getBool(#d)
+#define GET_INT(st, d) d=st->getInt(4, #d)
+#define GET_INT_DEC(st, d) d=st->getIntDec(4, #d)
+#define GET_INT_HEX(st, d) d=st->getIntHex(4, #d)
+#define GET_OBJECT(st, o) st->getObject((Object *)o, #o)
+#define GET_STRING(st, d) d=st->getString(#d)
 
 /*
  *	CLASS ht_streamfile
@@ -153,10 +153,12 @@ public:
 /* cntl cmd */
 #define FCNTL_MODS_INVD				0x00000001
 #define FCNTL_MODS_FLUSH				0x00000002
-#define FCNTL_MODS_IS_DIRTY			0x00000003	// +offset +range
+#define FCNTL_MODS_IS_DIRTY			0x00000003	// FILEOFS offset, UINT range
 #define FCNTL_MODS_CLEAR_DIRTY		0x00000004
-#define FCNTL_MODS_CLEAR_DIRTY_RANGE	0x00000005	// +offset +range
+#define FCNTL_MODS_CLEAR_DIRTY_RANGE	0x00000005	// FILEOFS offset, UINT range
 #define FCNTL_FLUSH_STAT				0x00000006
+#define FCNTL_GET_RELOC				0x00000007	// bool *enabled
+#define FCNTL_SET_RELOC				0x00000008	// bool enable
 
 #define IS_DIRTY_SINGLEBIT			0x80000000
 
@@ -214,7 +216,7 @@ public:
 	virtual FILEOFS tell();
 	virtual int	truncate(UINT newsize);
 	virtual int	vcntl(UINT cmd, va_list vargs);
-	virtual UINT	write(void *buf, UINT size);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 /*
@@ -228,10 +230,10 @@ protected:
 
 	FILEOFS offset;
 
-	bool	set_access_mode_internal(dword access_mode);
+	bool	set_access_mode_internal(UINT access_mode);
 public:
 
-		   void	init(char *filename, UINT access_mode);
+		   void	init(const char *filename, UINT access_mode);
 	virtual void	done();
 /* overwritten */
 	virtual int	extend(UINT newsize);
@@ -246,7 +248,7 @@ public:
 	virtual int	vcntl(UINT cmd, va_list vargs);
 
 	virtual UINT	read(void *buf, UINT size);
-	virtual UINT	write(void *buf, UINT size);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 /*
@@ -268,7 +270,7 @@ public:
 	virtual UINT	read(void *buf, UINT size);
 	virtual int	seek(FILEOFS offset);
 	virtual FILEOFS tell();
-	virtual UINT	write(void *buf, UINT size);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 /*
@@ -289,7 +291,7 @@ protected:
 		   void	resizebuf(UINT newsize);
 public:
 		   void	init();
-		   void	init(FILEOFS ofs, UINT size);
+		   void	init(FILEOFS ofs, UINT size, UINT access_mode);
 	virtual void	done();
 /* overwritten */
 	virtual int	extend(UINT newsize);
@@ -301,7 +303,7 @@ public:
 	virtual int	seek(FILEOFS offset);
 	virtual FILEOFS tell();
 	virtual int	truncate(UINT newsize);
-	virtual UINT	write(void *buf, UINT size);
+	virtual UINT	write(const void *buf, UINT size);
 /* new */
 		   void  *bufptr();
 };
@@ -313,15 +315,15 @@ public:
 /* 0-terminated ASCII */
 char *fgetstrz(ht_streamfile *file);
 char *getstrz(ht_stream *stream);
-void putstrz(ht_stream *stream, char *str);
+void putstrz(ht_stream *stream, const char *str);
 
 /* pascal-style ASCII */
 char *getstrp(ht_stream *stream);
-void putstrp(ht_stream *stream, char *str);
+void putstrp(ht_stream *stream, const char *str);
 
 /* 0-terminated wide/unicode */
 char *getstrw(ht_stream *stream);
-void putstrw(ht_stream *stream, char *str);
+void putstrw(ht_stream *stream, const char *str);
 
 char *ht_strerror(int error);
 

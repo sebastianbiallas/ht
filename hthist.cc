@@ -91,9 +91,9 @@ ht_history_entry::~ht_history_entry()
 
 int ht_history_entry::load(ht_object_stream *s)
 {
-	desc=s->get_string(NULL);
+	desc=s->getString(NULL);
 
-	UINT size=s->get_int(4, NULL);
+	UINT size=s->getInt(4, NULL);
 
 	if (size) {
 		datafile=new ht_mem_file();
@@ -102,7 +102,7 @@ int ht_history_entry::load(ht_object_stream *s)
 		data=new ht_object_stream_bin();
 		data->init(datafile);
 
-		void *d=s->get_binary(size, NULL);
+		void *d=s->getBinary(size, NULL);
 		datafile->write(d, size);
 		free(d);
 	} else {
@@ -115,15 +115,15 @@ int ht_history_entry::load(ht_object_stream *s)
 
 void ht_history_entry::store(ht_object_stream *s)
 {
-	s->put_string(desc, NULL);
+	s->putString(desc, NULL);
 
 	if (datafile) {
 		UINT size=datafile->get_size();
 	
-		s->put_int(size, 4, NULL);
-		s->put_binary(datafile->bufptr(), size, NULL);
+		s->putInt(size, 4, NULL);
+		s->putBinary(datafile->bufptr(), size, NULL);
 	} else {
-		s->put_int(0, 4, NULL);
+		s->putInt(0, 4, NULL);
 	}
 }
 
@@ -173,21 +173,21 @@ void destroy_hist_atom(UINT atom)
 void store_history(ht_object_stream *s)
 {
 	UINT count=sizeof hist_atoms / sizeof hist_atoms[0];
-	s->put_int_dec(count, 4, NULL);
+	s->putIntDec(count, 4, NULL);
 	for (UINT i=0; i<count; i++) {
-		s->put_int_hex(hist_atoms[i], 4, NULL);
+		s->putIntHex(hist_atoms[i], 4, NULL);
 		ht_clist *c=(ht_clist*)find_atom(hist_atoms[i]);
-		s->put_object(c, NULL);
+		s->putObject(c, NULL);
 	}
 }
 
 bool load_history(ht_object_stream *s)
 {
-	UINT count=s->get_int_dec(4, NULL);
+	UINT count=s->getIntDec(4, NULL);
 	for (UINT i=0; i<count; i++) {
-		int atom=s->get_int_hex(4, NULL);
+		int atom=s->getIntHex(4, NULL);
 		destroy_hist_atom(atom);
-		ht_clist *c=(ht_clist*)s->get_object(NULL);
+		ht_clist *c=(ht_clist*)s->getObject(NULL);
 		register_atom(atom, c);
 	}
 	return 1;

@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	htne.cc
  *
@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "log.h"
 #include "htendian.h"
 #include "htiobox.h"
 #include "htne.h"
@@ -29,7 +29,6 @@
 #include "htneobj.h"
 #include "htneimg.h"
 #include "htnewexe.h"
-#include "ne_analy.h"
 #include "nestruct.h"
 #include "tools.h"
 
@@ -45,6 +44,23 @@ format_viewer_if *htne_ifs[] = {
 	&htneimage_if,
 	0
 };
+
+int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
+{
+	ne_import_rec *a=(ne_import_rec*)key_a;
+	ne_import_rec *b=(ne_import_rec*)key_b;
+	if (a->module == b->module) {
+		if (a->byname == b->byname) {
+			if (a->byname) {
+				return a->name_ofs - b->name_ofs;
+			} else {
+				return a->ord - b->ord;
+			}
+		}
+		return a->byname - b->byname;
+	}
+	return a->module - b->module;
+}
 
 ht_view *htne_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
@@ -78,6 +94,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 	ne_shared->fake_segment = 0;
 	ne_shared->hdr_ofs = h;
 	ne_shared->entrypoints = NULL;
+	ne_shared->imports = NULL;
 	ne_shared->v_image = NULL;
 
 	file->seek(h);
@@ -138,6 +155,22 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 	}
 
 	ne_shared->entrypoints = ep;
+
+/* read module names */
+	o = h + ne_shared->hdr.modtab;
+	FILEOFS no = h + ne_shared->hdr.imptab;
+	file->seek(o);
+	ne_shared->modnames_count = ne_shared->hdr.cmod;
+	ne_shared->modnames = (char**)malloc(sizeof *ne_shared->modnames * ne_shared->modnames_count);
+	for (UINT i=0; i<ne_shared->hdr.cmod; i++) {
+		char buf[2];
+		file->seek(o+i*2);
+		if (file->read(buf, 2) != 2) break;
+		int w = create_host_int(buf, 2, little_endian);
+		file->seek(no+w);
+		ne_shared->modnames[i] = getstrp(file);
+	}
+
 /* do relocations */
 	if (reloc_needed) {
 		ht_ne_reloc_file *rf = new ht_ne_reloc_file();
@@ -162,6 +195,17 @@ void ht_ne::done()
 	ht_format_group::done();
 
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data*)shared_data;
+
+	if (ne_shared->segments.segments) {
+		free(ne_shared->segments.segments);
+	}
+	
+	if (ne_shared->modnames) {
+		for (UINT i=0; i<ne_shared->modnames_count; i++) {
+			free(ne_shared->modnames[i]);
+		}
+	}
+	
 	if (ne_shared->entrypoints) {
 		ne_shared->entrypoints->destroy();
 		delete ne_shared->entrypoints;
@@ -197,10 +241,10 @@ bool ht_ne::create_fake_segment()
 	ne_shared->segments.segment_count++;
 	free(ne_shared->segments.segments);
 	ne_shared->segments.segments = newsegs;
-	newsegs[i].offset = 0xffff;
+	newsegs[i].offset = 0;
 	newsegs[i].size = 0;
 	newsegs[i].flags = NE_DATA;
-	newsegs[i].minalloc = 0xffff;
+	newsegs[i].minalloc = 0;		// 64k
 	ne_shared->fake_segment = i;
 	return true;
 }
@@ -209,9 +253,14 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data*)shared_data;
 	if (!create_fake_segment()) return false;
-	/* if bound only relocate first segment. Is this "The Right Thing" ? */
+
+	ht_stree *imports = new ht_stree();
+	imports->init(compare_keys_ne_import_rec);
+
+	int fake_entry_count = 0;
+	/* if selfload only relocate first segment. Is this "The Right Thing" ? */
 	/* Works for me though. */
-	UINT c = (ne_shared->hdr.flags & NE_FLAGS_BOUND) ? 1 : ne_shared->segments.segment_count;
+	UINT c = (ne_shared->hdr.flags & NE_FLAGS_SELFLOAD) ? 1 : ne_shared->segments.segment_count;
 	for (dword i = 0; i < c; i++) {
 		if (ne_shared->segments.segments[i].flags & NE_HASRELOC) {
 			FILEOFS seg_ofs = NE_get_seg_ofs(ne_shared, i);
@@ -246,7 +295,11 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 						file->read(&sreloc, sizeof sreloc);
 						create_host_struct(&sreloc, NE_RELOC_IMPORT_struct, little_endian);
 						f += sizeof sreloc;
-						if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, 0xf2, 0)) return false;
+						if (imports->insert(new ne_import_rec(fake_entry_count, sreloc.module, false, sreloc.ord), NULL)) {
+//							if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, 0xf2, sreloc.ord)) return false;
+							if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, ne_shared->fake_segment+1, fake_entry_count)) return false;
+							fake_entry_count++;
+						}
 						break;
 					}
 					case NE_RF_IMPORT_NAME: {
@@ -254,7 +307,11 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 						file->read(&sreloc, sizeof sreloc);
 						create_host_struct(&sreloc, NE_RELOC_IMPORT_struct, little_endian);
 						f += sizeof sreloc;
-						if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, 0xf3, 0)) return false;
+						if (imports->insert(new ne_import_rec(fake_entry_count, sreloc.module, true, sreloc.name_ofs), NULL)) {
+//							if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, 0xf3, sreloc.name_ofs)) return false;
+							if (!relocate_single(rf, i, seg_ofs + reloc.src_ofs, reloc.type, reloc.flags, ne_shared->fake_segment+1, fake_entry_count)) return false;
+							fake_entry_count++;
+						}
 						break;
 					}
 					case NE_RF_OSFIXUP: {
@@ -269,6 +326,7 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 			}
 		}
 	}
+	ne_shared->imports = imports;
 	return true;
 }
 
@@ -285,10 +343,10 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 			case NE_RT_PTR48:
 			case NE_RT_OFS32:
 				break;
+			case NE_RT_OFS8:
 			/* FIXME: we would want to read a word (offset) out of
 			   the file, but we can't because there's just one relocated
-			   byte. What wrong ? */
-			case NE_RT_OFS8:
+			   byte. What's wrong ? */
 			/* unknown relocation record */
 			default:
 				return false;
@@ -298,30 +356,12 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 		file->read(buf, 2);
 		word r = create_host_int(buf, 2, little_endian);
 		if (r == 0xffff) break;
-		ADDR a = NE_MAKE_ADDR(seg+1, r);
-		if (!NE_addr_to_ofs(ne_shared, a, &ofs))
+		NEAddress a = NE_MAKE_ADDR(seg+1, r);
+		if (!NE_addr_to_ofs(ne_shared, a, &ofs)) {
 			return false;
+		}
 	}
 	return true;
-}
-
-/*
- *	CLASS ht_ne_aviewer
- */
-
-void ht_ne_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, analyser *Analyser, ht_ne_shared_data *NE_shared)
-{
-	ht_aviewer::init(b, desc, caps, File, format_group, Analyser);
-	ne_shared = NE_shared;
-	file = File;
-}
-
-void ht_ne_aviewer::set_analyser(analyser *a)
-{
-	((ne_analyser*)a)->ne_shared = ne_shared;
-	((ne_analyser*)a)->file = file;
-	analy = a;
-	analy_sub->set_analyser(a);
 }
 
 /*
@@ -387,8 +427,9 @@ void ht_ne_reloc_file::reloc_apply(ht_data *reloc, byte *data)
 	}
 }
 
-void ht_ne_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
+bool ht_ne_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
 {
+	return false;
 //	ht_ne_reloc_entry *e = (ht_ne_reloc_entry*)reloc;
 }
 
@@ -401,29 +442,28 @@ FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, UINT i)
 		return (NE_shared->segments.segments[i].offset << NE_shared->hdr.align);
 }
 
-ADDR NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i)
+NEAddress NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i)
 {
 		return (i+1)*0x10000;
 }
 
 UINT NE_get_seg_psize(ht_ne_shared_data *NE_shared, UINT i)
 {
-// FIXME: documented like this everywhere, but doesnt work for dmcolor.dll e.g.
-//		return NE_shared->segments.segments[i].size ? NE_shared->segments.segments[i].size : 0x10000;
-		return NE_shared->segments.segments[i].size;
+		return (NE_shared->segments.segments[i].size || !NE_shared->segments.segments[i].offset)
+			   ? NE_shared->segments.segments[i].size : 0x10000;
+//		return NE_shared->segments.segments[i].size;
 }
 
 UINT NE_get_seg_vsize(ht_ne_shared_data *NE_shared, UINT i)
 {
-// FIXME: documented like this everywhere, but doesnt work for dmcolor.dll e.g.
-//		return NE_shared->segments.segments[i].minalloc ? NE_shared->segments.segments[i].minalloc : 0x10000;
-		return NE_shared->segments.segments[i].minalloc;
+		return NE_shared->segments.segments[i].minalloc ? NE_shared->segments.segments[i].minalloc : 0x10000;
+//		return NE_shared->segments.segments[i].minalloc;
 }
 
-bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, ADDR Addr, int *segment)
+bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, NEAddress Addr, int *segment)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
-		ADDR base = NE_get_seg_addr(NE_shared, i);
+		NEAddress base = NE_get_seg_addr(NE_shared, i);
 		UINT evsize = MAX(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + evsize)) {
 			*segment = i;
@@ -433,20 +473,20 @@ bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, ADDR Addr, int *segment)
 	return false;
 }
 
-bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, ADDR Addr)
+bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, NEAddress Addr)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
-		ADDR base = NE_get_seg_addr(NE_shared, i);
+		NEAddress base = NE_get_seg_addr(NE_shared, i);
 		UINT epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + epsize)) return true;
 	}
 	return false;
 }
 
-bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, ADDR Addr, FILEOFS *ofs)
+bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, NEAddress Addr, FILEOFS *ofs)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
-		ADDR base = NE_get_seg_addr(NE_shared, i);
+		NEAddress base = NE_get_seg_addr(NE_shared, i);
 		UINT epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + epsize)) {
 			*ofs = NE_get_seg_ofs(NE_shared, i) + (Addr - base);
@@ -456,7 +496,7 @@ bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, ADDR Addr, FILEOFS *ofs)
 	return false;
 }
 
-bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, ADDR *Addr)
+bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, NEAddress *Addr)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
 		FILEOFS sofs = NE_get_seg_ofs(NE_shared, i);
@@ -467,5 +507,4 @@ bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, ADDR *Addr)
 	}
 	return false;
 }
-
 

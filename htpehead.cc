@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "formats.h"
 #include "htapp.h"
 #include "htatom.h"
 #include "htcoff.h"
@@ -30,7 +31,6 @@
 #include "htpehead.h"
 #include "httag.h"
 #include "htstring.h"
-#include "formats.h"
 
 #include "pestruct.h"
 
@@ -103,22 +103,22 @@ ht_mask_ptable pe32header_nt[] = {
 };
 
 ht_mask_ptable pe32header_nt_dirs[] = {
-	{"export directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_REF("0000000100000000", "04", "goto")},
-	{"import directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_EDIT_DWORD_LE("00000080")" "STATICTAG_REF("0000000200000000", "04", "goto")},
-	{"resource directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("00000084")" "STATICTAG_EDIT_DWORD_LE("00000088")" "STATICTAG_REF("0000000300000000", "04", "goto")},
-	{"exception directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("0000008c")" "STATICTAG_EDIT_DWORD_LE("00000090")" "STATICTAG_REF("0000000000000003", "04", "goto")},
-	{"security directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("00000094")" "STATICTAG_EDIT_DWORD_LE("00000098")" "STATICTAG_REF("0000000000000004", "04", "goto")},
-	{"base relocation table (ofs/size)",		STATICTAG_EDIT_DWORD_LE("0000009c")" "STATICTAG_EDIT_DWORD_LE("000000a0")" "STATICTAG_REF("0000000000000005", "04", "goto")},
-	{"debug directory (ofs/size)",			STATICTAG_EDIT_DWORD_LE("000000a4")" "STATICTAG_EDIT_DWORD_LE("000000a8")" "STATICTAG_REF("0000000000000006", "04", "goto")},
-	{"description string (ofs/size)",			STATICTAG_EDIT_DWORD_LE("000000ac")" "STATICTAG_EDIT_DWORD_LE("000000b0")" "STATICTAG_REF("0000000000000007", "04", "goto")},
-	{"machine value (GP) (ofs/size)",			STATICTAG_EDIT_DWORD_LE("000000b4")" "STATICTAG_EDIT_DWORD_LE("000000b8")" "STATICTAG_REF("0000000000000008", "04", "goto")},
-	{"thread local storage (TLS) (ofs/size)",	STATICTAG_EDIT_DWORD_LE("000000bc")" "STATICTAG_EDIT_DWORD_LE("000000c0")" "STATICTAG_REF("0000000000000009", "04", "goto")},
-	{"load configuration directory (ofs/size)",	STATICTAG_EDIT_DWORD_LE("000000c4")" "STATICTAG_EDIT_DWORD_LE("000000c8")" "STATICTAG_REF("000000000000000a", "04", "goto")},
-	{"bound import directory (ofs/size)",		STATICTAG_EDIT_DWORD_LE("000000cc")" "STATICTAG_EDIT_DWORD_LE("000000d0")" "STATICTAG_REF("000000000000000b", "04", "goto")},
-	{"import address table (IAT) (ofs/size)",	STATICTAG_EDIT_DWORD_LE("000000d4")" "STATICTAG_EDIT_DWORD_LE("000000d8")" "STATICTAG_REF("000000000000000c", "04", "goto")},
-	{"delay import descriptor (ofs/size)",		STATICTAG_EDIT_DWORD_LE("000000dc")" "STATICTAG_EDIT_DWORD_LE("000000e0")" "STATICTAG_REF("000000000000000d", "04", "goto")},
-	{"COM+ runtime header (ofs/size)",			STATICTAG_EDIT_DWORD_LE("000000e4")" "STATICTAG_EDIT_DWORD_LE("000000e8")" "STATICTAG_REF("000000000000000e", "04", "goto")},
-	{"reserved (15) (ofs/size)",				STATICTAG_EDIT_DWORD_LE("000000ec")" "STATICTAG_EDIT_DWORD_LE("000000f0")" "STATICTAG_REF("000000000000000f", "04", "goto")},
+	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_REF("0000000100000000", "04", "goto")},
+	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_EDIT_DWORD_LE("00000080")" "STATICTAG_REF("0000000200000000", "04", "goto")},
+	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000084")" "STATICTAG_EDIT_DWORD_LE("00000088")" "STATICTAG_REF("0000000300000000", "04", "goto")},
+	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("0000008c")" "STATICTAG_EDIT_DWORD_LE("00000090")" "STATICTAG_REF("0000000000000003", "04", "goto")},
+	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000094")" "STATICTAG_EDIT_DWORD_LE("00000098")" "STATICTAG_REF("0000000000000004", "04", "goto")},
+	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("0000009c")" "STATICTAG_EDIT_DWORD_LE("000000a0")" "STATICTAG_REF("0000000000000005", "04", "goto")},
+	{"debug directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000a4")" "STATICTAG_EDIT_DWORD_LE("000000a8")" "STATICTAG_REF("0000000000000006", "04", "goto")},
+	{"description string (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000ac")" "STATICTAG_EDIT_DWORD_LE("000000b0")" "STATICTAG_REF("0000000000000007", "04", "goto")},
+	{"machine value (GP) (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000b4")" "STATICTAG_EDIT_DWORD_LE("000000b8")" "STATICTAG_REF("0000000000000008", "04", "goto")},
+	{"thread local storage (TLS) (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000bc")" "STATICTAG_EDIT_DWORD_LE("000000c0")" "STATICTAG_REF("0000000000000009", "04", "goto")},
+	{"load configuration directory (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000c4")" "STATICTAG_EDIT_DWORD_LE("000000c8")" "STATICTAG_REF("000000000000000a", "04", "goto")},
+	{"bound import directory (rva/size)",		STATICTAG_EDIT_DWORD_LE("000000cc")" "STATICTAG_EDIT_DWORD_LE("000000d0")" "STATICTAG_REF("000000000000000b", "04", "goto")},
+	{"import address table (IAT) (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000d4")" "STATICTAG_EDIT_DWORD_LE("000000d8")" "STATICTAG_REF("000000000000000c", "04", "goto")},
+	{"delay import descriptor (rva/size)",		STATICTAG_EDIT_DWORD_LE("000000dc")" "STATICTAG_EDIT_DWORD_LE("000000e0")" "STATICTAG_REF("000000000000000d", "04", "goto")},
+	{"COM+ runtime header (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000e4")" "STATICTAG_EDIT_DWORD_LE("000000e8")" "STATICTAG_REF("000000000000000e", "04", "goto")},
+	{"reserved (15) (rva/size)",				STATICTAG_EDIT_DWORD_LE("000000ec")" "STATICTAG_EDIT_DWORD_LE("000000f0")" "STATICTAG_REF("000000000000000f", "04", "goto")},
 	{0, 0}
 };
 
@@ -235,11 +235,11 @@ void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *f
 	VIEW_DEBUG_NAME("ht_pe_header_viewer");
 }
 
-int ht_pe_header_viewer::ref_sel(ID id_low, ID id_high)
+int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
-	switch (id_high) {
+	switch (id->id2) {
 		case 0: {
 			// FIXME: God forgive us...
 			ht_group *vr_group=group;
@@ -255,33 +255,35 @@ int ht_pe_header_viewer::ref_sel(ID id_low, ID id_high)
 			}
 			// ok now.
 			if (hexv && (pe_shared->opt_magic == COFF_OPTMAGIC_PE32)) {
-				FILEOFS offset = pe_shared->pe32.header_nt.directory[id_low].address;
-				UINT size = pe_shared->pe32.header_nt.directory[id_low].size;
-				if (hexv->goto_address(offset, this)) {
-					hexv->pselect_set(offset, offset+size);
+				UINT rva = pe_shared->pe32.header_nt.directory[id->id1].address;
+				UINT size = pe_shared->pe32.header_nt.directory[id->id1].size;
+				FILEOFS ofs = 0;
+				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
+                         vstate_save(NULL);
+					hexv->goto_offset(ofs, NULL);
+					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
-				} else errorbox("can't follow: %s %08x is not valid !", "directory offset", offset);
+				} else errorbox("can't follow: %s %08x is not valid !", "directory RVA", rva);
 			}
 			break;
 		}
 		case 1:
 			if (pe_shared->v_exports) {
-				pe_shared->v_exports->push_vs_history(this);
+                    vstate_save(NULL);
 				app->focus(pe_shared->v_exports);
 			}
 			break;
 		case 2:
 			if (pe_shared->v_imports) {
-				pe_shared->v_imports->push_vs_history(this);
+                    vstate_save(NULL);
 				app->focus(pe_shared->v_imports);
 			}
 			break;
 		case 3:
-// FIXME: not a *_viewer ... !!!
-/*          	if (pe_shared->v_resources) {
-				pe_shared->v_resources->push_vs_history(this);
+          	if (pe_shared->v_resources) {
+                    vstate_save(NULL);
 				app->focus(pe_shared->v_resources);
-			}*/
+			}
 			break;
 	}
 	return 1;

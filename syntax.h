@@ -43,6 +43,9 @@ enum lexer_rule_string_type {
 	LRST_REGEX,
 	LRST_CHARSET,
 	LRST_WHITESPACE,
+	LRST_QSTRING,			/* '[^']*' */
+	LRST_DQSTRING,			/* "[^"]*" */
+//     LRST_DQSTRING2,		/* "([^"]|\")*" */
 	LRST_ANYCHAR,
 	LRST_IDENTIFIER
 };
@@ -60,7 +63,7 @@ struct syntax_lexer_rule {
  *	CLASS ht_syntax_lexer
  */
 
-class ht_syntax_lexer: public object {
+class ht_syntax_lexer: public Object {
 public:
 /* new */
 	virtual	void config_changed();

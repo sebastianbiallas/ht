@@ -41,7 +41,7 @@ public:
 			~ht_mod_page();
 /* new */
 	virtual UINT	read(PAGEOFS pofs, byte *buf, UINT len);
-	virtual UINT	write(PAGEOFS pofs, byte *buf, UINT len);
+	virtual UINT	write(PAGEOFS pofs, const byte *buf, UINT len);
 };
 
 /*
@@ -93,7 +93,7 @@ public:
 	virtual FILEOFS tell();
 	virtual int	truncate(UINT newsize);
 	virtual int	vcntl(UINT cmd, va_list vargs);
-	virtual UINT	write(void *buf, UINT size);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 #endif /* __MFILE_H__ */

@@ -34,6 +34,7 @@ void	ht_reloc_file::init(ht_streamfile *s, bool os)
 	ht_layer_streamfile::init(s, os);
 	relocs = new ht_stree();
 	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
+     enabled = true;
 }
 
 void	ht_reloc_file::done()
@@ -48,6 +49,22 @@ void ht_reloc_file::finalize()
 	relocs->set_compare_keys(compare_keys_uint);
 }
 
+int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
+{
+	switch (cmd) {
+		case FCNTL_GET_RELOC: {
+               bool *e = va_arg(vargs, bool*);
+               *e = enabled;
+			return 0;
+          }
+		case FCNTL_SET_RELOC: {
+               enabled = va_arg(vargs, bool);
+			return 0;
+		}
+	}
+	return ht_layer_streamfile::vcntl(cmd, vargs);
+}
+
 void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 {
 	relocs->insert(new ht_data_uint(o), reloc);
@@ -55,46 +72,51 @@ void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 
 UINT	ht_reloc_file::read(void *buf, UINT size)
 {
-	FILEOFS o = tell();
 	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
-	ht_data_uint q;
-/* FIXME: relocs wiil not work before ca. offset 8 */
-	ht_data *r;
-	ht_data_uint *k = &q;
-	k->value = o-MAX_RELOC_TOKEN_LEN-1;
-	while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
-		UINT s = (k->value < o) ? o - k->value : 0;
-		UINT e = (k->value > o) ? k->value - o : 0;
-		if (e >= c) break;
-		byte b[MAX_RELOC_TOKEN_LEN];
-		memset(b, 0, sizeof b);
-		UINT mm = MIN(c - e, sizeof b - s);
-		memmove(b+s, ((byte*)buf)+e, mm);
-		reloc_apply(r, b);
-		memmove(((byte*)buf)+e, b+s, mm);
+	if (enabled) {
+		FILEOFS o = tell();
+		ht_data_uint q;
+		/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
+		ht_data *r;
+		ht_data_uint *k = &q;
+		k->value = o-MAX_RELOC_TOKEN_LEN-1;
+		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
+			UINT s = (k->value < o) ? o - k->value : 0;
+			UINT e = (k->value > o) ? k->value - o : 0;
+			if (e >= c) break;
+			byte b[MAX_RELOC_TOKEN_LEN];
+			memset(b, 0, sizeof b);
+			UINT mm = MIN(c - e, sizeof b - s);
+			memmove(b+s, ((byte*)buf)+e, mm);
+			reloc_apply(r, b);
+			memmove(((byte*)buf)+e, b+s, mm);
+		}
 	}
 	return ret;
 }
 
-UINT	ht_reloc_file::write(void *buf, UINT size)
+UINT	ht_reloc_file::write(const void *buf, UINT size)
 {
-	FILEOFS o = tell();
-	UINT c = size;
-	ht_data_uint q;
-/* FIXME: relocs wiil not work before ca. offset 8 */
-	ht_data *r;
-	ht_data_uint *k = &q;
-	k->value = o-MAX_RELOC_TOKEN_LEN-1;
-	while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
-		UINT s = (k->value < o) ? o - k->value : 0;
-		UINT e = (k->value > o) ? k->value - o : 0;
-		if (e >= c) break;
-		byte b[MAX_RELOC_TOKEN_LEN];
-		memset(b, 0, sizeof b);
-		UINT mm = MIN(c - e, sizeof b - s);
-		memmove(b+s, ((byte*)buf)+e, mm);
-		reloc_unapply(r, b);
-		memmove(((byte*)buf)+e, b+s, mm);
+	if (enabled) {
+		FILEOFS o = tell();
+		UINT c = size;
+		ht_data_uint q;
+		/* FIXME: relocs will not work before ca. file offset MAX_RELOC_TOKEN_LEN */
+		ht_data *r;
+		ht_data_uint *k = &q;
+		k->value = o-MAX_RELOC_TOKEN_LEN-1;
+		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
+			UINT s = (k->value < o) ? o - k->value : 0;
+			UINT e = (k->value > o) ? k->value - o : 0;
+			if (e >= c) break;
+			byte b[MAX_RELOC_TOKEN_LEN];
+			memset(b, 0, sizeof b);
+			UINT mm = MIN(c - e, sizeof b - s);
+			memmove(b+s, ((byte*)buf)+e, mm);
+			if (!reloc_unapply(r, b)) return 0;
+			// FIXME: violation of const in param "const void *buf"
+			memmove(((byte*)buf)+e, b+s, mm);
+		}
 	}
 	return ht_layer_streamfile::write(buf, size);
 }

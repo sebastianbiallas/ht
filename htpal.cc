@@ -26,6 +26,7 @@
 #include "htpal.h"
 #include "htreg.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "tools.h"
 
 // include indices
@@ -172,7 +173,7 @@ pal_layout *find_pal_layout(pal_class *layouts, char *pal_class, int *lsize)
 	return pl;
 }
 
-int find_pal_entry_idx(pal_layout *layout, char *name)
+int find_pal_entry_idx(pal_layout *layout, const char *name)
 {
 	while (layout->name) {
 		if (strcmp(layout->name, name) == 0) return layout->idx;
@@ -184,8 +185,8 @@ int find_pal_entry_idx(pal_layout *layout, char *name)
 bool load_pal(char *pal_class, char *pal_flavour, palette *p)
 {
 	if ((!pal_flavour) || (!pal_class)) return false;
-	char dir[1024];	/* FIXME: possible buffer overflow ! */
-	sprintf(dir, "%s/%s/%s", palettekey, pal_class, pal_flavour);
+	char dir[256];		/* secure */
+	ht_snprintf(dir, sizeof dir, "%s/%s/%s", palettekey, pal_class, pal_flavour);
 
 	int psize = 0;
 	pal_layout *pl = find_pal_layout(pal_layouts, pal_class, &psize);
@@ -197,7 +198,7 @@ bool load_pal(char *pal_class, char *pal_flavour, palette *p)
 
 	ht_registry_node_type t;
 	palette_entry *d;
-	char *n = NULL;
+	const char *n = NULL;
 	ht_registry_node_type rnt_pal = registry->lookup_node_type(rnt_palette_name);
 	while ((n = registry->enum_next((ht_registry_data **)&d, &t, dir, n))) {
 		if (t == rnt_pal) {
@@ -214,7 +215,7 @@ bool load_pal(char *pal_class, char *pal_flavour, palette *p)
  *	CLASS palette_entry
  */
  
-palette_entry::palette_entry(UINT _idx=0, vcp _color=0)
+palette_entry::palette_entry(UINT _idx, vcp _color)
 {
 	idx=_idx;
 	color=_color;
@@ -255,7 +256,7 @@ bool palette_entry::editdialog(char *keyname)
 	l2->init(&b, "~background", bgc);
 	d->insert(l2);
 
-	if (d->run(0)) {
+	if (d->run(false)) {
 		ht_color_block_data fgd, bgd;
 		fgc->databuf_get(&fgd);
 		bgc->databuf_get(&bgd);
@@ -270,8 +271,8 @@ bool palette_entry::editdialog(char *keyname)
 
 int palette_entry::load(ht_object_stream *f)
 {
-	idx=f->get_int_hex(4, 0);
-	color=f->get_int_hex(4, 0);
+	idx=f->getIntHex(4, 0);
+	color=f->getIntHex(4, 0);
 	return f->get_error();
 }
 
@@ -282,8 +283,8 @@ OBJECT_ID palette_entry::object_id()
 
 void palette_entry::store(ht_object_stream *f)
 {
-	f->put_int_hex(idx, 4, 0);
-	f->put_int_hex(color, 4, 0);
+	f->putIntHex(idx, 4, 0);
+	f->putIntHex(color, 4, 0);
 }
 
 void palette_entry::strvalue(char *buf32bytes)

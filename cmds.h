@@ -36,24 +36,35 @@
 #define cmd_file_save				HT_COMMAND(104)
 #define cmd_file_saveas				HT_COMMAND(105)
 
-#define cmd_edit_cut				HT_COMMAND(106)
-#define cmd_edit_delete				HT_COMMAND(107)
-#define cmd_edit_copy				HT_COMMAND(108)
-#define cmd_edit_paste				HT_COMMAND(109)
-#define cmd_edit_show_clipboard		HT_COMMAND(110)
-#define cmd_edit_clear_clipboard		HT_COMMAND(111)
-#define cmd_edit_copy_from_file		HT_COMMAND(112)
-#define cmd_edit_paste_into_file		HT_COMMAND(113)
+#define cmd_edit_cut				HT_COMMAND(120)
+#define cmd_edit_delete				HT_COMMAND(121)
+#define cmd_edit_copy				HT_COMMAND(122)
+#define cmd_edit_paste				HT_COMMAND(123)
+#define cmd_edit_show_clipboard		HT_COMMAND(124)
+#define cmd_edit_clear_clipboard		HT_COMMAND(125)
+#define cmd_edit_copy_from_file		HT_COMMAND(126)
+#define cmd_edit_paste_into_file		HT_COMMAND(127)
+#define cmd_edit_copy_native			HT_COMMAND(128)
+#define cmd_edit_paste_native			HT_COMMAND(129)
 
-#define cmd_window_resizemove			HT_COMMAND(114)
-#define cmd_window_switch_resizemove	HT_COMMAND(115)
-#define cmd_window_close				HT_COMMAND(116)
+#define cmd_window_resizemove			HT_COMMAND(140)
+#define cmd_window_switch_resizemove	HT_COMMAND(141)
+#define cmd_window_close				HT_COMMAND(142)
 
-#define cmd_popup_dialog_eval			HT_COMMAND(117)
-#define cmd_popup_dialog_wlist		HT_COMMAND(118)
-#define cmd_popup_window_log			HT_COMMAND(119)
-#define cmd_popup_window_help			HT_COMMAND(120)
-#define cmd_popup_window_options		HT_COMMAND(121)
+#define cmd_project_open				HT_COMMAND(160)
+#define cmd_project_close			HT_COMMAND(161)
+#define cmd_project_add_item			HT_COMMAND(162)
+#define cmd_project_remove_item		HT_COMMAND(163)
+#define cmd_project_edit_item			HT_COMMAND(164)
+
+#define cmd_popup_dialog_eval			HT_COMMAND(180)
+#define cmd_popup_dialog_view_list		HT_COMMAND(181)
+#define cmd_popup_dialog_window_list	HT_COMMAND(182)
+#define cmd_popup_window_log			HT_COMMAND(183)
+#define cmd_popup_window_help			HT_COMMAND(184)
+#define cmd_popup_window_options		HT_COMMAND(185)
+#define cmd_popup_window_project		HT_COMMAND(186)
+#define cmd_popup_dialog_info_loader	HT_COMMAND(187)
 
 #define cmd_analyser_save			HT_COMMAND(200)
 
@@ -89,7 +100,7 @@
  
 #define cmd_disasm_call_assembler		HT_COMMAND(2000)
 
-typedef bool (*cmd_handler)(htmsg_param *data1, htmsg_param *data2);
+/*typedef bool (*cmd_handler)(htmsg_param *data1, htmsg_param *data2);
 
 struct cmd_rec {
 	CMD cmd;
@@ -103,6 +114,6 @@ struct cmd_name {
 	char *name;
 };
 
-extern cmd_name cmd_names[];
+extern cmd_name cmd_names[];*/
 
 #endif /* __CMDS_H__ */

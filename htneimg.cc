@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "log.h"
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htneimg.h"
@@ -36,13 +36,13 @@ ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
 	LOG("%s: NE: loading image (starting analyser)...", file->get_filename());
-	ne_analyser *p = new ne_analyser();
+	NEAnalyser *p = new NEAnalyser();
 	p->init(ne_shared, file);
 
 	bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_NE_IMAGE"-g");
-	analy_infoline *head;
+	AnalyInfoline *head;
 
 	c.y += 2;
 	c.h -= 2;
@@ -51,32 +51,38 @@ ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	c.y-=2;
 	c.h=2;
-	head=new analy_infoline();
+	head=new AnalyInfoline();
 	head->init(&c, v, ANALY_STATUS_DEFAULT);
 
-	v->attach_infoline(head);
+	v->attachInfoline(head);
 
 /* search for lowest/highest */
-	ADDR l=(ADDR)-1, h=0;
+	NEAddress l=(NEAddress)-1, h=0;
 	NE_SEGMENT *s = ne_shared->segments.segments;
 	for (UINT i=0; i<ne_shared->segments.segment_count; i++) {
-		ADDR base = (i+1)*0x10000;
+		NEAddress base = (i+1)*0x10000;
 		UINT evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		if (base < l) l = base;
-		if (base + evsize > h) h = base + evsize;
+		if ((base + evsize > h) && (evsize)) h = base + evsize - 1;
 		s++;
 	}
 /**/
+	Address *low = p->createAddress1616(NE_ADDR_SEG(l), NE_ADDR_OFS(l));
+	Address *high = p->createAddress1616(NE_ADDR_SEG(h), NE_ADDR_OFS(h));
 	ht_analy_sub *analy=new ht_analy_sub();
-	analy->init(file, p, l, h);
+	analy->init(file, v, p, low, high);
 	v->analy_sub = analy;
 	v->insertsub(analy);
+     delete high;
+     delete low;
 
 	v->sendmsg(msg_complete_init, 0);
 
-	if (!(ne_shared->hdr.flags & NE_FLAGS_BOUND)) {
-		v->goto_address(ne_shared->hdr.csip);
-	} /* else what ? */
+	if (!(ne_shared->hdr.flags & NE_FLAGS_SELFLOAD)) {
+		Address *tmpaddr = p->createAddress1616(NE_ADDR_SEG(ne_shared->hdr.csip), NE_ADDR_OFS(ne_shared->hdr.csip));
+		v->gotoAddress(tmpaddr, NULL);
+		delete tmpaddr;
+	} /* FIXME: else what ? */
 
 	g->insert(head);
 	g->insert(v);
@@ -91,4 +97,39 @@ format_viewer_if htneimage_if = {
 	htneimage_init,
 	0
 };
+
+/*
+ *	CLASS ht_ne_aviewer
+ */
+
+void ht_ne_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_ne_shared_data *NE_shared)
+{
+	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
+	ne_shared = NE_shared;
+	file = File;
+}
+
+char *ht_ne_aviewer::func(UINT i, bool execute)
+{
+	switch (i) {
+		case 3: {
+          	bool e = false;
+			file->cntl(FCNTL_GET_RELOC, &e);
+			if (execute) {
+				file->cntl(FCNTL_SET_RELOC, !e);
+			}
+			return e ? (char*)"unrelocate" : (char*)"relocate";
+		}
+	}
+	return ht_aviewer::func(i, execute);
+}
+
+void ht_ne_aviewer::setAnalyser(Analyser *a)
+{
+	((NEAnalyser*)a)->ne_shared = ne_shared;
+	((NEAnalyser*)a)->file = file;
+	analy = a;
+	analy_sub->setAnalyser(a);
+}
+
 

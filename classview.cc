@@ -22,13 +22,12 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
 #include "htatom.h"
 #include "httag.h"
 #include "stream.h"
 #include <stdlib.h>
 #include "class.h"
-//#include "classanal.h"
+#include "classimg.h"
 
 #define ATOM_CLS_ACCESS     0xcafebab0
 #define ATOM_CLS_ACCESS_STR  "cafebab0"
@@ -77,7 +76,7 @@ ht_mask_ptable cls_class1_hdr[] =
 };
 ht_mask_ptable cls_class2_hdr[] = 
 {
-  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")\
+  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
 " "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
   { "this class",                 STATICTAG_EDIT_WORD_BE ("00000002")},
   { "super class",                STATICTAG_EDIT_WORD_BE ("00000004")},
@@ -506,10 +505,10 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
   char info[128];
   unsigned i, j, idx = 0;
 
-  clazz = (classfile *)group->get_shared_data();
+  clazz = ((ht_class_shared_data *)group->get_shared_data())->file;
   if (clazz) {
     ht_uformat_viewer *v = new ht_uformat_viewer();
-    v->init(b, "info", VC_EDIT, file, group);
+    v->init(b, DESC_JAVA_HEADERS, VC_EDIT, file, group);
     register_atom (ATOM_CLS_ACCESS, access_flags);
     register_atom (ATOM_CLS_CPOOL,  cpool_tags);
 
@@ -677,54 +676,37 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
   }
 }
 
-static ht_view *
-class_image(bounds *b, ht_streamfile *file, ht_format_group *group)
+void
+cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, 
+		  ht_format_group *g, FILEOFS header_ofs)
 {
-  classfile *clazz;
+  ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA,
+				    f, false, true, 0, g);
+				    
+  shared_data = (void*)class_read(f);
+  ht_format_group::init_ifs(ifs);
+}
 
-  clazz = (classfile *)group->get_shared_data();
+void
+cview::done()
+{
+  ht_class_shared_data *clazz = (ht_class_shared_data *)shared_data;
   if (clazz) {
-    ht_uformat_viewer *v = new ht_uformat_viewer();
-    v->init(b, "image", VC_EDIT, file, group);
-    /* need to insert more code here */
-    return v;
-  } else {
-    return NULL;
+    class_unread(clazz);
   }
+  ht_format_group::done();
 }
 
 static format_viewer_if htcls_cview = {
   &class_view,
   0
 };
-static format_viewer_if htcls_cimg = {
-  &class_image,
-  0
-};
+
 static format_viewer_if *htcls_ifs[] = {
   &htcls_cview,
-  &htcls_cimg,
+  &htclassimage_if,
   0
 };
-
-void
-cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, 
-		  ht_format_group *g, FILEOFS header_ofs)
-{
-  ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, "class", 
-				    f, false, true, 0, g);
-  shared_data = (void *)class_read(f);
-  ht_format_group::init_ifs(ifs);
-}
-void
-cview::done()
-{
-  classfile *clazz = (classfile *)shared_data;
-  if (clazz) {
-    class_unread(clazz);
-  }
-  ht_format_group::done();
-}
 
 static ht_view *
 class_init(bounds *b, ht_streamfile *file, ht_format_group *group)

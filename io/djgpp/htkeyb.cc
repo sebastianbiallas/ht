@@ -52,6 +52,8 @@ int ht_raw_getkey()
 			case 0x14f:	/* K_End */
 			case 0x152:	/* K_Insert */
 			case 0x153:	/* K_Delete */
+			case 0x173:	/* K_Control_Left */
+			case 0x174:	/* K_Control_Right */
 				k=SHIFT_KEY(k);
 				break;
 		}
@@ -233,7 +235,9 @@ ht_key_keycode ht_dj_key_defs[] = {
 	{K_Shift_Home,			SHIFT_KEY(0x147)},
 	{K_Shift_End,			SHIFT_KEY(0x14f)},
 	{K_Shift_Insert,		SHIFT_KEY(0x152)},
-	{K_Shift_Delete,		SHIFT_KEY(0x153)}
+	{K_Shift_Delete,		SHIFT_KEY(0x153)},
+	{K_Control_Shift_Left,	SHIFT_KEY(0x173)},
+	{K_Control_Shift_Right,	SHIFT_KEY(0x174)}
 };
 
 /*

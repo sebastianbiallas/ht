@@ -23,25 +23,25 @@
 
 #include "global.h"
 
-struct opcode_tab_entry {
+struct alpha_opcode_tab_entry {
 	word	fcode;
 	char	*name;
 	byte	type;
 };
 
 extern char *alpha_reg_names[];
-extern opcode_tab_entry alpha_instr_tbl[];
-extern opcode_tab_entry alpha_instr_tbl_ext10[];
-extern opcode_tab_entry alpha_instr_tbl_ext11[];
-extern opcode_tab_entry alpha_instr_tbl_ext12[];
-extern opcode_tab_entry alpha_instr_tbl_ext13[];
-extern opcode_tab_entry alpha_instr_tbl_ext14[];
-extern opcode_tab_entry alpha_instr_tbl_ext15[];
-extern opcode_tab_entry alpha_instr_tbl_ext16[];
-extern opcode_tab_entry alpha_instr_tbl_ext17[];
-extern opcode_tab_entry alpha_instr_tbl_ext18[];
-extern opcode_tab_entry alpha_instr_tbl_ext1a[];
-extern opcode_tab_entry alpha_instr_tbl_ext1c[];
+extern alpha_opcode_tab_entry alpha_instr_tbl[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext10[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext11[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext12[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext13[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext14[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext15[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext16[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext17[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext18[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext1a[];
+extern alpha_opcode_tab_entry alpha_instr_tbl_ext1c[];
 
 #define REG_ZERO	0x1f
 #define REG_FLOAT	0x20

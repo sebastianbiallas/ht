@@ -1,21 +1,21 @@
 /*
- *      HT Editor
- *      store.cc
+ *	HT Editor
+ *	store.cc
  *
- *      Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
- *      This program is free software; you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License version 2 as
- *      published by the Free Software Foundation.
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License version 2 as
+ *	published by the Free Software Foundation.
  *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
  *
- *      You should have received a copy of the GNU General Public License
- *      along with this program; if not, write to the Free Software
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "htendian.h"
@@ -28,48 +28,56 @@
 #include <errno.h>
 #include <string.h>
 
-char hexchars2[]="0123456789abcdef";
+static char hexchars2[]="0123456789abcdef";
 
 /*
  *	CLASS ht_object_stream_inter
  */
  
-object *ht_object_stream_inter::get_object(char *name)
+Object *ht_object_stream_inter::getObject(char *name)
 {
-	object *o;
-	get_object(o, name);
+	Object *o;
+	getObject(o, name);
 	return o;
 }
 
-void ht_object_stream_inter::get_object(object *&o, char *name)
+void ht_object_stream_inter::getObject(Object *&o, char *name)
 {
-	OBJECT_ID id=get_int_hex(4, "id");
-	object_builder b=(object_builder)find_atom(id);
-	if (b) {
-		o=b();
-		if (o->load(this)!=0) {
-//               o->done();
-			delete o;
+	OBJECT_ID id=getIntHex(4, "id");
+     if (id) {
+		object_builder b=(object_builder)find_atom(id);
+		if (b) {
+			o=b();
+			if (o->load(this)!=0) {
+//	               o->done();
+				delete o;
+				o = NULL;
+			}
+		} else {
+			/* object not registered! */
+			assert(0);
 			o = NULL;
-		}
+          }
 	} else {
 		o = NULL;
 	}
 }
 
-void ht_object_stream_inter::put_object(object *obj, char *name)
+void ht_object_stream_inter::putObject(Object *obj, char *name)
 {
-	OBJECT_ID o;
-	object_builder b=0;
 	if (obj) {
-		o=obj->object_id();
-		b=(object_builder)find_atom(o);
-	}
-	if (b) {
-		put_int_hex(o, 4, "id");
-		obj->store(this);
+		OBJECT_ID o=obj->object_id();
+		object_builder b=(object_builder)find_atom(o);;
+		if (b) {
+			putIntHex(o, 4, "id");
+			obj->store(this);
+		} else {
+			/* object not registered! */
+			assert(0);
+			putIntHex(0, 4, "id");
+		}
 	} else {
-		put_int_hex(0, 4, "id");
+		putIntHex(0, 4, "id");
 	}
 }
 
@@ -82,33 +90,33 @@ void	ht_object_stream_bin::init(ht_stream *s)
 	ht_object_stream_inter::init(s);
 }
  
-void *ht_object_stream_bin::get_binary(int size, char *desc)
+void *ht_object_stream_bin::getBinary(int size, char *desc)
 {
 	void *p = smalloc(size);
 	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 	return p;
 }
 
-void	ht_object_stream_bin::get_binary(void *p, int size, char *desc)
+void	ht_object_stream_bin::getBinary(void *p, int size, char *desc)
 {
 	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-bool ht_object_stream_bin::get_bool(char *desc)
+bool ht_object_stream_bin::getBool(char *desc)
 {
 	bool b;
 	if (stream->read(&b, 1) != 1) set_error(EIO | STERR_SYSTEM);
 	return b;
 }
 
-int  ht_object_stream_bin::get_int_dec(int size, char *desc)
+int  ht_object_stream_bin::getIntDec(int size, char *desc)
 {
-	return get_int_hex(size, desc);
+	return getIntHex(size, desc);
 }
 
-int  ht_object_stream_bin::get_int_hex(int size, char *desc)
+int  ht_object_stream_bin::getIntHex(int size, char *desc)
 {
-	if (size>8) assert(0);
+     assert(size <= 8);
 	byte neta[8];
 	int a;
 	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
@@ -116,51 +124,51 @@ int  ht_object_stream_bin::get_int_hex(int size, char *desc)
 	return a;
 }
 
-void ht_object_stream_bin::get_separator()
+void ht_object_stream_bin::getSeparator()
 {
 	// empty
 }
 
-char *ht_object_stream_bin::get_string(char *desc)
+char *ht_object_stream_bin::getString(char *desc)
 {
 	return getstrz(stream);
 }
 
-void ht_object_stream_bin::put_binary(void *mem, int size, char *desc)
+void ht_object_stream_bin::putBinary(void *mem, int size, char *desc)
 {
 	if (stream->write(mem, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-void ht_object_stream_bin::put_bool(bool b, char *desc)
+void ht_object_stream_bin::putBool(bool b, char *desc)
 {
 	b = (b)?1:0;
 	if (stream->write(&b, 1) != 1) set_error(EIO | STERR_SYSTEM);
 }
 
-void ht_object_stream_bin::put_info(char *info)
+void ht_object_stream_bin::putInfo(char *info)
 {
 	// empty
 }
 
-void ht_object_stream_bin::put_int_dec(int a, int size, char *desc)
+void ht_object_stream_bin::putIntDec(int a, int size, char *desc)
 {
-	put_int_hex(a, size, desc);
+	putIntHex(a, size, desc);
 }
 
-void ht_object_stream_bin::put_int_hex(int a, int size, char *desc)
+void ht_object_stream_bin::putIntHex(int a, int size, char *desc)
 {
-	if (size>8) assert(0);
+     assert(size <= 8);
 	byte neta[8];
 	create_foreign_int(neta, a, size, big_endian);
 	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-void ht_object_stream_bin::put_separator()
+void ht_object_stream_bin::putSeparator()
 {
 	// empty
 }
 
-void ht_object_stream_bin::put_string(char *string, char *desc)
+void ht_object_stream_bin::putString(char *string, char *desc)
 {
 	UINT len = strlen(string)+1;
 	if (stream->write(string, len) != len) set_error(EIO | STERR_SYSTEM);
@@ -179,154 +187,154 @@ void ht_object_stream_txt::init(ht_stream *s)
 	errorline = 0;
 }
 
-void *ht_object_stream_txt::get_binary(int size, char *desc)
+void *ht_object_stream_txt::getBinary(int size, char *desc)
 {
 	void *p=smalloc(size);
-	get_binary(p, size, desc);
+	getBinary(p, size, desc);
 	return p;
 }
 
-void	ht_object_stream_txt::get_binary(void *p, int size, char *desc)
+void	ht_object_stream_txt::getBinary(void *p, int size, char *desc)
 {
-	read_desc(desc);
+	readDesc(desc);
 	expect('=');
 	expect('[');
 	byte *pp=(byte *)p;
 	for (int i=0; i<size; i++) {
-		skip_white();
+		skipWhite();
 
 		int bb;
-		if ((bb = hexdigit(cur))==-1) set_syntax_error();
+		if ((bb = hexdigit(cur))==-1) setSyntaxError();
 		int b = bb*16;
 
-		read_char();
-		if ((bb = hexdigit(cur))==-1) set_syntax_error();
+		readChar();
+		if ((bb = hexdigit(cur))==-1) setSyntaxError();
 		b += bb;
 
 		*pp++=b;
 
-		read_char();
+		readChar();
 	}
 	expect(']');
 }
 
-bool ht_object_stream_txt::get_bool(char *desc)
+bool ht_object_stream_txt::getBool(char *desc)
 {
-	read_desc(desc);
+	readDesc(desc);
 	expect('=');
-	skip_white();     
+	skipWhite();
 	if (cur=='f') {
-		read_desc("false");
+		readDesc("false");
 		return false;
 	} else {
-		read_desc("true");
+		readDesc("true");
 		return true;
 	}
 }
 
-int  ht_object_stream_txt::get_int_dec(int size, char *desc)
+int  ht_object_stream_txt::getIntDec(int size, char *desc)
 {
-	return get_int_hex(size, desc);
+	return getIntHex(size, desc);
 }
 
-int  ht_object_stream_txt::get_int_hex(int size, char *desc)
+int  ht_object_stream_txt::getIntHex(int size, char *desc)
 {
-	read_desc(desc);
+	readDesc(desc);
 	expect('=');
-	skip_white();
-	if (mapchar[cur]!='0') set_syntax_error();
+	skipWhite();
+	if (mapchar[cur]!='0') setSyntaxError();
 	char str[12];
 	char *s=str;
 	do {
 		*s++ = cur;
-		read_char();
+		readChar();
 		if (get_error()) return 0;
 	} while (mapchar[cur]=='0' || mapchar[cur]=='A');
 	*s=0; s=str;
 	dword a;
-	if (!bnstr(&s, &a, 10)) set_syntax_error();
+	if (!bnstr(&s, &a, 10)) setSyntaxError();
 	return a;
 }
 
-void	ht_object_stream_txt::get_object(object *&o, char *name)
+void	ht_object_stream_txt::getObject(Object *&o, char *name)
 {
-	read_desc(name);
+	readDesc(name);
 	expect('=');
 	expect('{');
 	if (!get_error()) {
-		ht_object_stream_inter::get_object(o, name);
+		ht_object_stream_inter::getObject(o, name);
 	} else {
 		o = NULL;
 	}
 	expect('}');
 }
 
-void ht_object_stream_txt::get_separator()
+void ht_object_stream_txt::getSeparator()
 {
 	// do nothing
 }
 
-char *ht_object_stream_txt::get_string(char *desc)
+char *ht_object_stream_txt::getString(char *desc)
 {
-	read_desc(desc);
+	readDesc(desc);
 	expect('=');
-	skip_white();
+	skipWhite();
 	if (cur=='"') {
 		char str[1024]; // FIXME: the good old buffer overflow
 		char *s=str;
 		do {
-			read_char();
+			readChar();
 			*s++=cur;
 			if (cur=='\\') {
-				read_char();
+				readChar();
 				*s++=cur;
 				cur = 0; // hackish
 			}
 			if (get_error()) return NULL;
 		} while (cur!='"');
 		s--;*s=0;
-		read_char();
+		readChar();
 		int str2l = strlen(str)+1;
 		char *str2 = (char *)smalloc(str2l);
 		unescape_special_str(str2, str2l, str);
 		return str2;
 	} else {
-		read_desc("NULL");
+		readDesc("NULL");
 		return NULL;
 	}
 }
 
-void ht_object_stream_txt::put_binary(void *mem, int size, char *desc)
+void ht_object_stream_txt::putBinary(void *mem, int size, char *desc)
 {
-	put_desc(desc);
-	put_char('[');
+	putDesc(desc);
+	putChar('[');
 	for(int i=0; i<size; i++) {
 		byte a = *((byte *)mem+i);
-		put_char(hexchars2[(a & 0xf0) >> 4]);
-		put_char(hexchars2[(a & 0x0f)]);
-		if (i+1<size) put_char(' ');
+		putChar(hexchars2[(a & 0xf0) >> 4]);
+		putChar(hexchars2[(a & 0x0f)]);
+		if (i+1<size) putChar(' ');
 	}
-	put_s("]\n");
+	putS("]\n");
 }
 
-void ht_object_stream_txt::put_bool(bool b, char *desc)
+void ht_object_stream_txt::putBool(bool b, char *desc)
 {
-	put_desc(desc);
-	if (b) put_s("true"); else put_s("false");
-	put_char('\n');
+	putDesc(desc);
+	if (b) putS("true"); else putS("false");
+	putChar('\n');
 }
 
-void ht_object_stream_txt::put_info(char *info)
+void ht_object_stream_txt::putInfo(char *info)
 {
-	put_indent();
-	put_s("# ");
-	put_s(info);
-	put_char('\n');
+	putIndent();
+	putS("# ");
+	putS(info);
+	putChar('\n');
 }
 
-void ht_object_stream_txt::put_int_dec(int a, int size, char *desc)
+void ht_object_stream_txt::putIntDec(int a, int size, char *desc)
 {
-	put_desc(desc);
+	putDesc(desc);
 	int b;
 	switch (size) {
 		case 1:
@@ -340,12 +348,12 @@ void ht_object_stream_txt::put_int_dec(int a, int size, char *desc)
 	}
 	char number[12];
 	sprintf(number, "%d\n", a);
-	put_s(number);
+	putS(number);
 }
 
-void ht_object_stream_txt::put_int_hex(int a, int size, char *desc)
+void ht_object_stream_txt::putIntHex(int a, int size, char *desc)
 {
-	put_desc(desc);
+	putDesc(desc);
 	int b;
 	switch (size) {
 		case 1:
@@ -359,44 +367,44 @@ void ht_object_stream_txt::put_int_hex(int a, int size, char *desc)
 	}
 	char number2[12];
 	sprintf(number2, "0x%x\n", b);
-	put_s(number2);
+	putS(number2);
 }
 
-void	ht_object_stream_txt::put_object(object *obj, char *name)
+void	ht_object_stream_txt::putObject(Object *obj, char *name)
 {
-	put_desc(name);
-	put_s("{\n");
+	putDesc(name);
+	putS("{\n");
 	indent++;
-	ht_object_stream_inter::put_object(obj, name);
+	ht_object_stream_inter::putObject(obj, name);
 	indent--;
-	put_indent();
-	put_s("}\n");
+	putIndent();
+	putS("}\n");
 }
 
-void ht_object_stream_txt::put_separator()
+void ht_object_stream_txt::putSeparator()
 {
-	put_indent();
-	put_s("# ------------------------ \n");
+	putIndent();
+	putS("# ------------------------ \n");
 }
 
-void ht_object_stream_txt::put_string(char *string, char *desc)
+void ht_object_stream_txt::putString(char *string, char *desc)
 {
-	put_desc(desc);
+	putDesc(desc);
 	if (string) {
 		int strl=strlen(string)*4+1;
 		char *str = (char*)smalloc(strl);
-		put_char('"');
+		putChar('"');
 		escape_special_str(str, strl, string, "\"");
-		put_s(str);
-		put_char('"');
+		putS(str);
+		putChar('"');
 		free(str);
 	} else {
-		put_s("NULL");
+		putS("NULL");
 	}
-	put_char('\n');
+	putChar('\n');
 }
 
-void	ht_object_stream_txt::set_syntax_error()
+void	ht_object_stream_txt::setSyntaxError()
 {
 	if (!errorline) {
 		set_error(EIO | STERR_SYSTEM);
@@ -404,31 +412,31 @@ void	ht_object_stream_txt::set_syntax_error()
 	}
 }
 
-int	ht_object_stream_txt::get_error_line()
+int	ht_object_stream_txt::getErrorLine()
 {
 	return errorline;
 }
 
 void	ht_object_stream_txt::expect(char c)
 {
-	skip_white();
-	if (cur!=c) set_syntax_error();
-	read_char();
+	skipWhite();
+	if (cur!=c) setSyntaxError();
+	readChar();
 }
 
-void	ht_object_stream_txt::skip_white()
+void	ht_object_stream_txt::skipWhite()
 {
 	while (1) {
 		switch (mapchar[cur]) {
 			case '\n':
 				line++;  // fallthrough
 			case ' ':
-				read_char();
+				readChar();
 				if (get_error()) return;
 				break;
 			case '#':
 				do {
-					read_char();
+					readChar();
 					if (get_error()) return;
 				} while (cur!='\n');
 				break;
@@ -437,44 +445,44 @@ void	ht_object_stream_txt::skip_white()
 	}
 }
 
-char	ht_object_stream_txt::read_char()
+char	ht_object_stream_txt::readChar()
 {
-	if (stream->read(&cur, 1) != 1) set_syntax_error();
+	if (stream->read(&cur, 1) != 1) setSyntaxError();
 	return cur;
 }
 
-void	ht_object_stream_txt::read_desc(char *desc)
+void	ht_object_stream_txt::readDesc(char *desc)
 {
-	skip_white();
+	skipWhite();
 	if (!desc) desc="data";
 	while (*desc) {
-		if (*desc!=cur) set_syntax_error();
-		read_char();
+		if (*desc!=cur) setSyntaxError();
+		readChar();
 		desc++;
 	}
 }
 
-void ht_object_stream_txt::put_desc(char *desc)
+void ht_object_stream_txt::putDesc(char *desc)
 {
-	put_indent();
-	if (desc) put_s(desc); else put_s("data");
-	put_char('=');
+	putIndent();
+	if (desc) putS(desc); else putS("data");
+	putChar('=');
 }
 
-void ht_object_stream_txt::put_indent()
+void ht_object_stream_txt::putIndent()
 {
-	for(int i=0; i<indent; i++) put_char(' ');
+	for(int i=0; i<indent; i++) putChar(' ');
 }
 
-void ht_object_stream_txt::put_char(char c)
+void ht_object_stream_txt::putChar(char c)
 {
-	if (stream->write(&c, 1) != 1) set_syntax_error();
+	if (stream->write(&c, 1) != 1) setSyntaxError();
 }
 
-void ht_object_stream_txt::put_s(char *s)
+void ht_object_stream_txt::putS(char *s)
 {
 	UINT len=strlen(s);
-	if (stream->write(s, len) != len) set_syntax_error();
+	if (stream->write(s, len) != len) setSyntaxError();
 }
 
 /*
@@ -509,26 +517,26 @@ void	*ht_object_stream_memmap::duppa(void *p, int size)
 	}
 }
 
-void *ht_object_stream_memmap::get_binary(int size, char *desc)
+void *ht_object_stream_memmap::getBinary(int size, char *desc)
 {
 	void *pp;
 	stream->read(&pp, sizeof pp);
 	return pp;
 }
 
-void	ht_object_stream_memmap::get_binary(void *p, int size, char *desc)
+void	ht_object_stream_memmap::getBinary(void *p, int size, char *desc)
 {
 	void *pp;
 	stream->read(&pp, sizeof pp);
 	memmove(p, pp, size);
 }
 
-int  ht_object_stream_memmap::get_int_dec(int size, char *desc)
+int  ht_object_stream_memmap::getIntDec(int size, char *desc)
 {
-	return get_int_hex(size, desc);
+	return getIntHex(size, desc);
 }
 
-int  ht_object_stream_memmap::get_int_hex(int size, char *desc)
+int  ht_object_stream_memmap::getIntHex(int size, char *desc)
 {
 	if (size>8) assert(0);
 	byte neta[8];
@@ -542,37 +550,37 @@ int  ht_object_stream_memmap::get_int_hex(int size, char *desc)
 	return a;
 }
 
-char	*ht_object_stream_memmap::get_string(char *desc)
+char	*ht_object_stream_memmap::getString(char *desc)
 {
 	char *pp;
 	stream->read(&pp, sizeof pp);
 	return pp;
 }
 
-UINT	ht_object_stream_memmap::record_start(UINT size)
+UINT	ht_object_stream_memmap::recordStart(UINT size)
 {
 	return ((ht_streamfile*)stream)->tell()+size;
 }
 
-void	ht_object_stream_memmap::record_end(UINT a)
+void	ht_object_stream_memmap::recordEnd(UINT a)
 {
 	FILEOFS o =((ht_streamfile*)stream)->tell();
 	if (o>a) HT_ERROR("kput");
 	((ht_streamfile*)stream)->seek(a);
 }
 
-void	ht_object_stream_memmap::put_binary(void *mem, int size, char *desc)
+void	ht_object_stream_memmap::putBinary(void *mem, int size, char *desc)
 {
 	void *pp = mem ? duppa(mem, size) : NULL;
 	stream->write(&pp, sizeof pp);
 }
 
-void	ht_object_stream_memmap::put_int_dec(int a, int size, char *desc)
+void	ht_object_stream_memmap::putIntDec(int a, int size, char *desc)
 {
-	put_int_hex(a, size, desc);
+	putIntHex(a, size, desc);
 }
 
-void	ht_object_stream_memmap::put_int_hex(int a, int size, char *desc)
+void	ht_object_stream_memmap::putIntHex(int a, int size, char *desc)
 {
 	if (size>8) assert(0);
 	byte neta[8];
@@ -584,7 +592,7 @@ void	ht_object_stream_memmap::put_int_hex(int a, int size, char *desc)
 	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-void	ht_object_stream_memmap::put_string(char *string, char *desc)
+void	ht_object_stream_memmap::putString(char *string, char *desc)
 {
 	char *pp = string ? (char*)duppa(string, strlen(string)+1) : NULL;
 	stream->write(&pp, sizeof pp);

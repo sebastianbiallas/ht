@@ -33,24 +33,27 @@
  *	Commands
  */
 
-#define cmd_analyser_call_assembler	HT_COMMAND(501)
-#define cmd_analyser_this_function	HT_COMMAND(502)
+#define cmd_analyser_call_assembler     HT_COMMAND(501)
+#define cmd_analyser_this_function      HT_COMMAND(502)
 #define cmd_analyser_previous_label	HT_COMMAND(503)
-#define cmd_analyser_continue		HT_COMMAND(504)
-#define cmd_analyser_comments		HT_COMMAND(505)
-#define cmd_analyser_name_addr		HT_COMMAND(506)
-#define cmd_analyser_xrefs		HT_COMMAND(507)
-#define cmd_analyser_follow		HT_COMMAND(508)
-#define cmd_analyser_follow_ex		HT_COMMAND(509)
-#define cmd_analyser_pause_resume	HT_COMMAND(510)
-#define cmd_analyser_del_addr_bindings	HT_COMMAND(511)
-#define cmd_analyser_call_chain		HT_COMMAND(512)
-#define cmd_analyser_generate_output	HT_COMMAND(513)
-#define cmd_analyser_data_string	HT_COMMAND(514)
-#define cmd_analyser_info		HT_COMMAND(515)
+#define cmd_analyser_continue           HT_COMMAND(504)
+#define cmd_analyser_comments           HT_COMMAND(505)
+#define cmd_analyser_name_addr          HT_COMMAND(506)
+#define cmd_analyser_xrefs              HT_COMMAND(507)
+#define cmd_analyser_follow             HT_COMMAND(508)
+#define cmd_analyser_follow_ex          HT_COMMAND(509)
+#define cmd_analyser_pause_resume       HT_COMMAND(510)
+#define cmd_analyser_del_addr_bindings  HT_COMMAND(511)
+#define cmd_analyser_call_chain         HT_COMMAND(512)
+#define cmd_analyser_generate_output    HT_COMMAND(513)
+#define cmd_analyser_data_string        HT_COMMAND(514)
+#define cmd_analyser_info               HT_COMMAND(515)
+#define cmd_analyser_symbols            HT_COMMAND(516)
+#define cmd_analyser_export_file		HT_COMMAND(517)
 
 /* FIXME: srt-experimental */
-#define cmd_analyser_srt		HT_COMMAND(550)
+
+#define cmd_analyser_srt				HT_COMMAND(550)
 
 class ht_aviewer;
 
@@ -58,7 +61,7 @@ class ht_aviewer;
  *
  */
 
-class analyser_information: public ht_statictext {
+class AnalyserInformation: public ht_statictext {
 	ht_aviewer	*analy;     
 	char			buf[1024];
 	int			addrs, labels;
@@ -73,14 +76,14 @@ public:
 /*
  *
  */
-class symbolbox: public ht_listbox {
+class SymbolBox: public ht_listbox {
 public:
-	analyser	*analy;
+	Analyser	*analy;
 	char		*str;
 	int		idle_count;
 	int		symbols;
 
-			void init(bounds *b, analyser *Analy);
+			void init(bounds *b, Analyser *Analy);
 	virtual   void done();
 	virtual   int  calc_count();
 	virtual   int  cursor_adjust();
@@ -88,7 +91,6 @@ public:
 	virtual   void *getfirst();
 	virtual   void *getlast();
 	virtual   void *getnext(void *entry);
-	virtual   void *getnth(int n);
 	virtual   void *getprev(void *entry);
 	virtual   char *getstr(int col, void *entry);
 	virtual	bool idle();
@@ -97,20 +99,20 @@ public:
 	virtual	char	*quickfind_completition(char *s);
 };
 
-struct call_chain_node {
-	call_chain_node *next, *prev, *child;
+struct CallChainNode {
+	CallChainNode *next, *prev, *child;
 	bool examined;
-	ADDR xa;
-	ADDR fa;
-	taddr *faddr;
+	Address *xa;
+	Address *fa;
+	Location *faddr;
 	bool expanded;
 };
 
-class call_chain: public ht_treeview {
-		analyser		*analy;
-		call_chain_node *root;
+class CallChain: public ht_treeview {
+		Analyser		*analy;
+		CallChainNode *root;
 public:
-			   void	init(bounds *b, analyser *Analy, ADDR a, char *desc);
+			   void	init(bounds *b, Analyser *analy, Address *a, char *desc);
 		virtual void	done();
 		virtual void	adjust(void *node, bool expand);
 		virtual void   *get_child(void *node, int i);
@@ -122,8 +124,8 @@ public:
 		virtual bool	is_expanded(void *node);
 		virtual void	select_node(void *node);
 private:
-	call_chain_node	*create_node(ADDR A);
-			void		examine_node(call_chain_node *n);
+	CallChainNode		*createNode(Address *a);
+			void		examineNode(CallChainNode *n);
 };
 /*
  *
@@ -135,17 +137,17 @@ private:
 #define ANALY_STATUS_ARG_FUNCTION 'f'
 #define ANALY_STATUS_ARG_OFFSET 'o'
 
-class analy_infoline: public ht_statictext {
+class AnalyInfoline: public ht_statictext {
 public:
 	ht_aviewer	*analy;
 	char			*s;
-	dword		fofs;
-	ADDR			addr;
+	FILEOFS		fofs;
+	Address		*addr;
 	char			*displayformat;
 			void	init(bounds *b, ht_aviewer *A, char *Format);
 	virtual	void done();
 	virtual	char *gettext();
-			void update(ADDR cursor_addr, ADDR ecursor_addr);
+			void update(Address *cursor_addr, FILEOFS ecursor_addr);
 			bool valid();
 };
 
@@ -153,24 +155,24 @@ public:
  *	CLASS ht_analy_sub
  */
 
+class ht_aviewer;
 class ht_analy_sub: public ht_sub {
 public:
-	analyser		*analy;
-	ADDR			lowestaddress, highestaddress;
-	analyser_ht_output *output;
+	Analyser		*analy;
+	Address        *lowestaddress, *highestaddress;
+	AnalyserHtOutput *output;
+	ht_aviewer	*aviewer;
 	
-			void init(ht_streamfile *file, analyser *A, ADDR Lowestaddress, ADDR Highestaddress);
+			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
-	virtual	bool convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2);
-	virtual	bool convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr);
-	virtual	bool convert_ofs_to_id(FILEOFS offset, ID *id1, ID *id2);
-	virtual	bool closest_line_id(ID *id1, ID *id2);
-	virtual	void	first_line_id(ID *id1, ID *id2);
-	virtual	bool	getline(char *line, ID id1, ID id2);
-	virtual	void	last_line_id(ID *id1, ID *id2);
-	virtual	int	next_line_id(ID *id1, ID *id2, int n);
-	virtual	int	prev_line_id(ID *id1, ID *id2, int n);
-			void	set_analyser(analyser *Analy);
+	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
+	virtual	bool closest_line_id(LINE_ID *line_id);
+	virtual	void	first_line_id(LINE_ID *line_id);
+	virtual	bool	getline(char *line, const LINE_ID line_id);
+	virtual	void	last_line_id(LINE_ID *line_id);
+	virtual	int	next_line_id(LINE_ID *line_id, int n);
+	virtual	int	prev_line_id(LINE_ID *line_id, int n);
+			void	setAnalyser(Analyser *Analy);
 	virtual	ht_search_result *search(ht_search_request *search, FILEOFS start, FILEOFS end);
 };
 
@@ -181,36 +183,42 @@ public:
 class ht_aviewer: public ht_uformat_viewer {
 public:
 	int idle_count;
-	analyser *analy;
+	Analyser *analy;
 	int last_active;
-	analy_infoline *infoline;
+	AnalyInfoline *infoline;
 	ht_analy_sub *analy_sub;
 	bool one_load_hack;
 	bool pause;
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, analyser *Analy);
+			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy);
 	virtual	void	done();
-	virtual	bool address_to_offset(fmt_vaddress addr, FILEOFS *ofs);
-			bool address_to_string(char *result, fmt_vaddress vaddr);
-			void	attach_infoline(analy_infoline *V);
-			bool can_create_address(ADDR addr, bool error_msg);
-			void data_string_dialog();
+			bool convertAddressToViewerPos(Address *a, viewer_pos *p);
+			bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
+			void	attachInfoline(AnalyInfoline *V);
+			bool canCreateAddress(Address *addr, bool error_msg);
+			void dataStringDialog();
+			void exportFileDialog();
 	virtual	char *func(UINT i, bool execute);
-			void generate_output_dialog();
+			void generateOutputDialog();
+			bool getCurrentAddress(Address **a);
 	virtual	bool get_current_offset(FILEOFS *ofs);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
+			bool gotoAddress(Address *a, ht_view *source_object);
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	idle();
-	virtual	bool offset_to_address(FILEOFS ofs, fmt_vaddress *addr);
-	virtual	int	ref_sel(ID id_low, ID id_high);
+	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
+	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
+			bool pos_to_string(viewer_pos p, char *result, int maxlen);
+	virtual	int	ref_sel(LINE_ID *id);
 	virtual	void reloadpalette();
-	virtual	void set_analyser(analyser *a) = 0;
-			void show_call_chain(ADDR Addr);
-			void show_comments(ADDR Addr);
-			void show_info(ADDR Addr);
-			void show_xrefs(ADDR Addr);
-			void search_for_xrefs(ADDR Addr);
-	virtual	bool string_to_address(char *string, fmt_vaddress *vaddr);
+	virtual	void setAnalyser(Analyser *a) = 0;
+			void showCallChain(Address *addr);
+			void showComments(Address *addr);
+			void showInfo(Address *addr);
+			void showSymbols(Address *addr);
+			void showXRefs(Address *addr);
+			void searchForXRefs(Address *addr);
+	virtual	bool string_to_pos(char *string, viewer_pos *p);
 };
 
 #endif

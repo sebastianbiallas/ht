@@ -23,7 +23,7 @@ extern "C" {
 #include "evalx.h"
 }
 #include "cmds.h"
-#include "htapp.h"
+#include "htctrl.h"
 #include "htdialog.h"
 #include "htmenu.h"
 #include "htobj.h"
@@ -32,12 +32,128 @@ extern "C" {
 #include "htiobox.h"
 #include "textedit.h"
 #include "tools.h"
+#include "snprintf.h"
 
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+/**/
+#include "htatom.h"
+#include "hthist.h"
+#include "htsearch.h"
+
+static ht_search_request* create_request_hexascii(text_search_pos *start, text_search_pos *end, ht_view *f, UINT search_class)
+{
+	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
+	ht_hexascii_search_form_data d;
+	form->databuf_get(&d);
+	
+	ht_fxbin_search_request *request;
+	
+	if (!d.str.textlen) {
+		throw new ht_io_exception("%s: string is empty", "hex/ascii");
+	}
+/*	if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
+	&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {*/
+		request = new ht_fxbin_search_request(search_class,
+			d.options.state & 1 ? SF_FXBIN_CASEINSENSITIVE: 0,
+			d.str.textlen, d.str.text);
+/*	} else {
+		request = NULL;
+	}*/
+	return request;
+}
+
+typedef ht_search_request* (*create_request_func)(text_search_pos *ret_start, text_search_pos *ret_end, ht_view *form, UINT search_class);
+
+struct ht_text_search_method {
+	char *name;
+	UINT search_class;			// SC_*
+	UINT search_mode_mask;		// SEARCHMODE_*
+	HT_ATOM histid;
+	create_form_func create_form;
+	create_request_func create_request;
+	create_desc_func create_desc;
+};
+
+static ht_text_search_method text_search_methods[] =
+{
+	{ "bin: hex/ascii", SC_PHYSICAL, SEARCHMODE_BIN, HISTATOM_SEARCH_BIN,
+		create_form_hexascii, create_request_hexascii, create_desc_hexascii }
+};
+
+ht_search_request *text_search_dialog(ht_text_viewer *text_viewer, UINT searchmodes, const text_viewer_pos *end_pos)
+{
+	ht_search_request *result = NULL;
+	bounds b;
+	b.w = 50;
+	b.h = 15;
+	b.x = (screen->size.w-b.w)/2;
+	b.y = (screen->size.h-b.h)/2;
+	ht_search_dialog *dialog = new ht_search_dialog();
+	dialog->init(&b);
+
+	bounds k;
+	dialog->search_mode_xgroup->getbounds(&k);
+
+	k.x = 0;
+	k.y = 0;
+
+	int modes = 0;
+	int i = 0;
+	ht_text_search_method *q = text_search_methods;
+	while (q->name) {
+		if (q->search_mode_mask & searchmodes) {
+			bounds v = k;
+			ht_view *form = q->create_form(&v, q->histid);
+			dialog->insert_search_mode(i, q->name, form);
+			modes++;
+		}
+		q++;
+		i++;
+	}
+	
+//	dialog->select_search_mode(lastsearchmodeid);
+	
+	if (dialog->run(false)) {
+		int modeid = dialog->get_search_modeid();
+//		lastsearchmodeid = modeid;
+
+		ht_text_search_method *s = &text_search_methods[modeid];
+		ht_view *form = dialog->get_search_modeform();
+
+		text_search_pos start, end;
+
+		try {
+/* create history entry */
+			if (s->create_desc) {
+				char hist_desc[1024];
+				s->create_desc(hist_desc, sizeof hist_desc, form);
+				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, form);
+			}
+/* search */
+			switch (s->search_class) {
+				case SC_PHYSICAL: {
+					text_viewer_pos cursor;
+					text_viewer->get_cursor_pos(&cursor);
+					start.offset = 0;
+					text_viewer->pos_to_offset(&cursor, &start.offset);
+					end.offset = 0xffffffff;
+					break;
+				}
+			}
+			result = s->create_request(&start, &end, form, s->search_class);
+		} catch (ht_exception *e) {
+			errorbox("error: %s", e->what());
+		}
+	}
+	dialog->done();
+	delete dialog;
+	return result;
+}
 
 /*
  *	CLASS ht_undo_data
@@ -100,8 +216,7 @@ void ht_undo_data_delete_string::gettext(char *text, UINT maxlen)
 {
 	char *buf = (char *) malloc(len+1);
 	bin2str(buf, string, len);
-	// FIXME snprintf
-	sprintf(text, "deletion of '%s' at %d:%d", buf, bpos.line+1, bpos.pofs+1);
+	ht_snprintf(text, maxlen, "deletion of '%s' at %d:%d", buf, bpos.line+1, bpos.pofs+1);
 	free(buf);
 }
 
@@ -183,8 +298,7 @@ void ht_undo_data_delete_string2::gettext(char *text, UINT maxlen)
 {
 	char *buf = (char *) malloc(len+1);
 	bin2str(buf, string, len);
-	// FIXME snprintf
-	sprintf(text, "deletion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
+	ht_snprintf(text, maxlen, "deletion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
 	free(buf);
 }
 
@@ -267,8 +381,7 @@ void ht_undo_data_insert_string::gettext(char *text, UINT maxlen)
 {
 	char *buf = (char *) malloc(len+1);
 	bin2str(buf, string, len);
-	// FIXME snprintf
-	sprintf(text, "insertion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
+	ht_snprintf(text, maxlen, "insertion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
 	free(buf);
 }
 
@@ -377,8 +490,7 @@ void ht_undo_data_overwrite_string::gettext(char *text, UINT maxlen)
 {
 	char *buf = (char *) malloc(len+1);
 	bin2str(buf, string, len);
-	// FIXME snprintf
-	sprintf(text, "insertion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
+	ht_snprintf(text, maxlen, "insertion of '%s' at %d:%d", buf, apos.line+1, apos.pofs+1);
 	free(buf);
 }
 
@@ -445,7 +557,7 @@ UINT ht_undo_data_split_line::getsize()
 
 void ht_undo_data_split_line::gettext(char *text, UINT maxlen)
 {
-	sprintf(text, "split line at %d:%d", apos.line+1, apos.pofs+1);
+	ht_snprintf(text, maxlen, "split line at %d:%d", apos.line+1, apos.pofs+1);
 }
 
 OBJECT_ID ht_undo_data_split_line::object_id()
@@ -497,7 +609,7 @@ UINT ht_undo_data_join_line::getsize()
 
 void ht_undo_data_join_line::gettext(char *text, UINT maxlen)
 {
-	sprintf(text, "join lines %d and %d", bpos.line+1, bpos.line+2);
+	ht_snprintf(text, maxlen, "join lines %d and %d", bpos.line+1, bpos.line+2);
 }
 
 OBJECT_ID ht_undo_data_join_line::object_id()
@@ -643,7 +755,7 @@ UINT ht_undo_data_insert_block::getsize()
 
 void ht_undo_data_insert_block::gettext(char *text, UINT maxlen)
 {
-	sprintf(text, "insert block ...");
+	ht_snprintf(text, maxlen, "insert block ...");
 }
 
 OBJECT_ID ht_undo_data_insert_block::object_id()
@@ -698,7 +810,8 @@ UINT ht_undo_data_delete_block::getsize()
 
 void ht_undo_data_delete_block::gettext(char *text, UINT maxlen)
 {
-	sprintf(text, "delete block ...");
+	// FIXME
+	ht_snprintf(text, maxlen, "delete block ...");
 }
 
 OBJECT_ID ht_undo_data_delete_block::object_id()
@@ -875,6 +988,8 @@ void ht_text_viewer::init(bounds *b, bool own_t, ht_textfile *t, ht_list *l)
 	show_EOF = false;
 	highlight_wrap = true;
 
+	last_search_request = NULL;
+
 	config_changed();
 }
 
@@ -906,10 +1021,10 @@ void ht_text_viewer::clipboard_copy_cmd()
 {
 	if (text_viewer_pos_compare(&sel_start, &sel_end)<0) {
 		FILEOFS s, e;
-		if (textfile->convert_line2ofs(sel_start.line, sel_start.pofs, &s) &&
-		textfile->convert_line2ofs(sel_end.line, sel_end.pofs, &e)) {
-			char dsc[1024]; /* FIXME: possible buffer overflow */
-			sprintf(dsc, "%s::%s", textfile->get_desc(), desc);
+		if (textfile->convert_line2ofs(sel_start.line, sel_start.pofs, &s)
+		   && textfile->convert_line2ofs(sel_end.line, sel_end.pofs, &e)) {
+			char dsc[1024];
+			ht_snprintf(dsc, sizeof dsc, "%s::%s", textfile->get_desc(), desc);
 			clipboard_copy(dsc, textfile, s, e-s);
 		}
 	}
@@ -926,6 +1041,32 @@ void ht_text_viewer::config_changed()
 
 	if (lexer) lexer->config_changed();
 	ht_view::config_changed();
+}
+
+bool ht_text_viewer::continue_search()
+{
+	if (last_search_request) {
+		ht_search_result *r = NULL;
+		FILEOFS o, no;
+		text_viewer_pos cursor;
+		get_cursor_pos(&cursor);
+		o = 0;
+		pos_to_offset(&cursor, &o);
+		no = o+1;
+		try {
+			if (last_search_request->search_class == SC_PHYSICAL) {
+				text_search_pos start, end;
+				start.offset = no;
+				end.offset = last_search_end_ofs;
+				r = search(last_search_request, &start, &end);
+			}
+		} catch (ht_exception *e) {
+			errorbox("error: %s", e->what());
+		}
+		
+		if (r) return show_search_result(r);
+	}
+	return false;
 }
 
 UINT ht_text_viewer::cursor_up(UINT n)
@@ -1001,6 +1142,12 @@ void ht_text_viewer::cursor_pput(UINT dx)
 			cursorx = size.w-1;
 		}
 	}
+}
+
+void ht_text_viewer::cursor_set(text_viewer_pos *pos)
+{
+	goto_line(pos->line);
+	cursor_pput(pos->pofs);
 }
 
 void ht_text_viewer::cursor_vput(UINT vx)
@@ -1150,6 +1297,28 @@ char *ht_text_viewer::func(UINT i, bool execute)
 			}
 			return "goto";
 		}
+		case 7: {
+			if (execute) {
+				text_viewer_pos end_pos;
+				UINT search_caps = SEARCHMODE_BIN;
+				ht_search_request *request = text_search_dialog(this, search_caps, &end_pos);
+				ht_search_result *result = NULL;
+				if (request) {
+					text_search_pos start, end;
+					text_viewer_pos cursor;
+					get_cursor_pos(&cursor);
+					pos_to_offset(&cursor, &start.offset);
+					end.offset = 0xffffffff;
+					result = search(request, &start, &end);
+					if (result) {
+						// FIXME: !!!!!!!!?
+						if (!show_search_result(result)) infobox("couldn't display result (internal error)");
+						delete result;
+					} else infobox("not found");
+				}
+			}
+			return "search";
+		}
 		default:
 			return false;
 	}
@@ -1159,6 +1328,12 @@ char *ht_text_viewer::func(UINT i, bool execute)
 vcp ht_text_viewer::get_bgcolor()
 {
 	return getcolor(palidx_generic_body);
+}
+
+void ht_text_viewer::get_cursor_pos(text_viewer_pos *cursor)
+{
+	cursor->pofs = physical_cursorx();
+	cursor->line = cursory;
 }
 
 cursor_mode ht_text_viewer::get_cursor_mode()
@@ -1213,6 +1388,7 @@ UINT ht_text_viewer::get_line_vlength(UINT line)
 
 void ht_text_viewer::get_pindicator_str(char *buf)
 {
+	// FIXME api
 	ht_syntax_lexer *l = get_lexer();
 	const char *ln = l ? l->getname() : NULL;
 	buf += sprintf(buf, " %d:%d ", top_line+cursory+1, xofs+cursorx+1);
@@ -1242,7 +1418,7 @@ bool ht_text_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 
 bool ht_text_viewer::goto_line(UINT line)
 {
-	if (line > textfile->linecount()) {
+	if (line >= textfile->linecount()) {
 		return false;
 	}
 	if ((line >= top_line) && (line - top_line < (UINT)size.h)) {
@@ -1271,7 +1447,9 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 					selectcursor=!selectcursor;
 					clearmsg(msg);
 					return;
+				case K_Control_Shift_Right:
 				case K_Control_Right: {
+					sel=(k==K_Control_Shift_Right) != selectcursor;
 					char line[1024];
 					UINT linelen;
 					UINT i=0;
@@ -1285,8 +1463,10 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 							if (phase ^ ((line[px]>='0' && line[px]<='9') || (line[px]>='A' && line[px]<='Z') || (line[px]>='a' && line[px]<='z') || line[px]=='_')) {
 								phase = !phase;
 								if (phase) {
+									if (sel) select_start();
 									goto_line(top_line+cursory+i);
 									cursor_pput(px);
+									if (sel) select_end();
 									dirtyview();
 									clearmsg(msg);
 									return;
@@ -1299,7 +1479,9 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 						i++;
 					}
 				}
+				case K_Control_Shift_Left:
 				case K_Control_Left: {
+					sel=(k==K_Control_Shift_Left) != selectcursor;
 					char line[1024];
 					UINT linelen;
 					int i=top_line+cursory;
@@ -1321,8 +1503,10 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 					}
 					return;
 					bloed3:
+					if (sel) select_start();
 					goto_line(i);
 					cursor_pput(px);
+					if (sel) select_end();
 					dirtyview();
 					clearmsg(msg);
 					return;
@@ -1429,6 +1613,11 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 				case K_Alt_C:
 				case K_Control_Insert:
 					sendmsg(cmd_edit_copy);
+					clearmsg(msg);
+					return;
+				case K_Shift_F7:
+					if (!continue_search()) infobox("no further matches");
+					dirtyview();
 					clearmsg(msg);
 					return;
 			}
@@ -1610,9 +1799,14 @@ void ht_text_viewer::popup_change_highlight()
 	delete d;
 }
 
+bool ht_text_viewer::pos_to_offset(text_viewer_pos *pos, FILEOFS *ofs)
+{
+	return textfile->convert_line2ofs(pos->line, pos->pofs, ofs);
+}
+
 int ht_text_viewer::ppos_str(char *buf, UINT bufsize, text_viewer_pos *ppos)
 {
-	return sprintf(buf, "some pos");
+	return ht_snprintf(buf, bufsize, "some pos");
 }
 
 void ht_text_viewer::render_meta(UINT x, UINT y, text_viewer_pos *pos, vcp color)
@@ -1717,6 +1911,20 @@ UINT ht_text_viewer::scroll_right(UINT n)
 	return n;
 }
 
+ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search_pos *s, text_search_pos *e)
+{
+	switch (request->search_class) {
+		case SC_PHYSICAL: {
+			FILEOFS start = s->offset, end = e->offset;
+			last_search_end_ofs = end;
+			return linear_bin_search(request, start, end, textfile, 0, 0xffffffff);
+			/* FIXME: nyi */
+			/* textfile->get_size() */
+		}
+	}
+	return NULL;
+}
+
 void ht_text_viewer::select_add(text_viewer_pos *s, text_viewer_pos *e)
 {
 	text_viewer_pos start=*s, end=*e;
@@ -1800,6 +2008,21 @@ void ht_text_viewer::set_textfile(ht_textfile *t, bool own_t)
 	}
 	textfile=t;
 	own_textfile=own_t;
+}
+
+bool ht_text_viewer::show_search_result(ht_search_result *result)
+{
+	switch (result->search_class) {
+		case SC_PHYSICAL: {
+			ht_physical_search_result *r = (ht_physical_search_result*)result;
+			text_viewer_pos start, end;
+			textfile->convert_ofs2line(r->offset, &start.line, &start.pofs);
+			textfile->convert_ofs2line(r->offset+r->size, &end.line, &end.pofs);
+			select_set(&start, &end);
+			cursor_set(&start);
+		}
+	}
+	return true;
 }
 
 /*
@@ -1942,8 +2165,17 @@ char *ht_text_editor::func(UINT i, bool execute)
 	switch (i) {
 		case 2:
 			if (execute) {
-				if (textfile->get_filename()) sendmsg(cmd_file_save);
-					else app->sendmsg(cmd_file_saveas);
+				if (textfile->get_filename()) {
+                    	sendmsg(cmd_file_save);
+                    } else {
+                    	// FIXME: !! call undolist->mark_clean() !!
+                    	app->sendmsg(cmd_file_saveas);
+					bool dirty = true;
+					textfile->cntl(FCNTL_MODS_IS_DIRTY, 0, 0x7fffffff, &dirty);
+					if (undo_list && !dirty) {
+						undo_list->mark_clean();
+					}
+                    }
 			}
 			return "save";
 	}
@@ -2121,13 +2353,13 @@ void ht_text_editor::handlemsg(htmsg *msg)
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Texteditor");
 			if (undo_list) {
-				char buf[1024], buf2[1024];
+				char buf[30], buf2[20];
 				if (undo_list->current_position) {
-					((ht_undo_data*)undo_list->get(undo_list->current_position-1))->gettext(buf2, 1024);
+					((ht_undo_data*)undo_list->get(undo_list->current_position-1))->gettext(buf2, sizeof buf2);
 				} else {
 					buf2[0] = 0;
 				}
-				sprintf(buf, "~Undo %s", buf2);
+				ht_snprintf(buf, sizeof buf, "~Undo %s", buf2);
 			
 				m->insert_entry(buf, "Alt+U", cmd_text_editor_undo, 0, 1);
 				m->insert_entry("~Redo", "Alt+R", cmd_text_editor_redo, 0, 1);
@@ -2248,27 +2480,19 @@ bool ht_text_editor::save()
 	dirtyview();
 	
 	char tempfile[PATH_MAX+20];
-	sys_dirname(textfile->get_filename(), tempfile);
 
-	strcat(tempfile, "/");
+     ht_file *temp = NULL;
+	tempfile[0] = 0;
+     if (tmpnam(tempfile)) {
+		temp = new ht_file();
+		temp->init(tempfile, FAM_CREATE | FAM_WRITE);
+     }
 
-	char *n=tempfile+strlen(tempfile);
-	int i=0;
-	FILE *exists;
-	do {
-		sprintf(n, "ht%06d.tmp", i++);
-		errno=0;
-		exists=fopen(tempfile, "rb");
-		if (exists) fclose(exists);
-	} while ((errno!=ENOENT) || exists);
-	
-	ht_file *temp=new ht_file();
-	temp->init(tempfile, FAM_CREATE | FAM_WRITE);
-
-	if (temp->get_error()) {
+	if ((!temp) || (temp->get_error())) {
 		errorbox("couldn't create tempfile %s", tempfile);
 		return false;
 	}
+
 	ht_streamfile *old = textfile->get_layered();
 	char *oldname = strdup(textfile->get_filename());
 
@@ -2356,7 +2580,7 @@ void ht_text_editor::show_protocol()
 	list->update();
 	list->goto_item(list->getbyid(cp));
 	dialog->insert(list);
-	if (dialog->run(0) == button_ok) {
+	if (dialog->run(false) == button_ok) {
 		ht_listbox_data d;
 		list->databuf_get(&d);
 		int a = d.cursor_id;

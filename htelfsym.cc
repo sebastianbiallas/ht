@@ -24,6 +24,7 @@
 #include "htelfsym.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include <stdlib.h>
 
@@ -83,8 +84,8 @@ ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *
 	
 	register_atom(ATOM_ELF_ST_BIND, elf_st_bind);
 	
-	char t[1024];	/* FIXME: possible buffer overflow ! */
-	sprintf(t, "* ELF symtab at offset %08x", h);
+	char t[256];   /* FIXME: possible buffer overflow ! */
+	ht_snprintf(t, sizeof t, "* ELF symtab at offset %08x", h);
 	
 	m->add_mask(t);
 

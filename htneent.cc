@@ -26,6 +26,7 @@
 #include "htneent.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 ht_tag_flags_s ne_entflags[] =
 {
@@ -66,10 +67,10 @@ ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 /*			sprintf(line, "null entries [%d]", e.entry_count);
 			m->add_mask(line);*/
 		} else if (e.seg_index==0xff) {
-			sprintf(line, "entrypoints for movable segment [%d entries]", e.entry_count);
+			ht_snprintf(line, sizeof line, "entrypoints for movable segment [%d entries]", e.entry_count);
 			m->add_mask(line);
 		} else {
-			sprintf(line, "entrypoints for fixed segment %d [%d entries]", e.seg_index, e.entry_count);
+			ht_snprintf(line, sizeof line, "entrypoints for fixed segment %d [%d entries]", e.seg_index, e.entry_count);
 			m->add_mask(line);
 		}
 		for (int i=0; i<e.entry_count; i++) {
@@ -81,7 +82,7 @@ ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 				*(l++)=':';
 				l=tag_make_edit_word(l, o+4, tag_endian_little);
 				*(l++)=' ';
-				l=tag_make_ref(l, o, 0xff, "goto");
+				l=tag_make_ref(l, o, 0xff, 0, 0, "goto");
 				l+=sprintf(l, " flags=");
 				l=tag_make_edit_byte(l, o);
 				*(l++)=' ';
@@ -94,7 +95,7 @@ ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 				l+=sprintf(l, "%04x:    ", index);
 				l=tag_make_edit_word(l, o+1, tag_endian_little);
 				*(l++)=' ';
-				l=tag_make_ref(l, o, e.seg_index, "goto");
+				l=tag_make_ref(l, o, e.seg_index, 0, 0, "goto");
 				l+=sprintf(l, " flags=");
 				l=tag_make_edit_byte(l, o);
 				*(l++)=' ';
@@ -114,7 +115,7 @@ ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 
 format_viewer_if htneentrypoints_if = {
 	htneentrypoints_init,
-	0
+	NULL
 };
 
 /*
@@ -123,9 +124,10 @@ format_viewer_if htneentrypoints_if = {
 
 int ht_ne_entrypoint_viewer::ref_sel(ID id_low, ID id_high)
 {
+/*   FIXNEW
 	UINT seg = id_high;
 	FILEOFS o = id_low;
-	fmt_vaddress a = 0;
+	ADDR a;
 	if (seg == 0xff) {
 		NE_ENTRYPOINT_MOVABLE e;
 		file->seek(o);
@@ -142,9 +144,9 @@ int ht_ne_entrypoint_viewer::ref_sel(ID id_low, ID id_high)
 
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)format_group->get_shared_data();
 
-	if (ne_shared->v_image->goto_address(a, this)) {
+	if (ne_shared->v_image->goto_address2(a, this)) {
 		app->focus(ne_shared->v_image);
-	} else errorbox("can't follow: address %08x is not valid !", a);
-	return 1;
+	} else errorbox("can't follow: address %y is not valid !", a);
+	return 1;*/
 }
 

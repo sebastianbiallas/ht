@@ -23,7 +23,6 @@
 
 #include "elfstruc.h"
 #include "formats.h"
-#include "htanaly.h"
 #include "htendian.h"
 #include "htformat.h"
 #include "relfile.h"
@@ -119,18 +118,6 @@ struct ht_elf_shared_data {
 };
 
 /*
- *	CLASS ht_elf_aviewer
- */
-
-class ht_elf_aviewer: public ht_aviewer {
-public:
-	ht_elf_shared_data *elf_shared;
-	ht_streamfile *file;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, analyser *Analyser, ht_elf_shared_data *elf_shared);
-	virtual void set_analyser(analyser *a);
-};
-
-/*
  *	CLASS ht_elf
  */
 
@@ -174,7 +161,7 @@ protected:
 	ht_elf_shared_data *data;
 /* overwritten */
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual void	reloc_unapply(ht_data *reloc, byte *data);
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
 };
@@ -182,13 +169,14 @@ public:
 bool elf_phys_and_mem_section(elf_section_header *s, UINT elfclass);
 bool elf_valid_section(elf_section_header *s, UINT elfclass);
 
-bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ADDR addr, int *section);
-bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ADDR addr, dword *ofs);
-bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ADDR addr);
+bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section);
+bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs);
+bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr);
 //bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ADDR addr);
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *addr);
-bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *section);
-//bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *addr, ADDR *section);
+bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr);
+bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, dword *section);
+//bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr, int *section);
 
 #endif /* !__HTELF_H__ */
+

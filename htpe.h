@@ -23,8 +23,8 @@
 
 #include "formats.h"
 #include "pestruct.h"
-#include "htanaly.h"
 #include "htpeexp.h"
+#include "htpeil.h"
 #include "htpeimp.h"
 #include "htpedimp.h"
 
@@ -35,6 +35,7 @@
 #define DESC_PE_EXPORTS "pe/exports"
 #define DESC_PE_RESOURCES "pe/resources"
 #define DESC_PE_IMAGE "pe/image"
+#define DESC_PE_IL "pe/il"
 
 #define ATOM_PE_MACHINES 			0x50450000
 #define ATOM_PE_MACHINES_STR			 "50450000"
@@ -69,26 +70,16 @@ struct ht_pe_shared_data {
 		} pe32;
 	};
 	pe_section_headers sections;
+	ht_pe_il *il;
 	ht_pe_export exports;
 	ht_pe_import imports;
 	ht_pe_import dimports;
 	ht_format_viewer *v_header;
-	ht_format_viewer *v_exports;
-	ht_format_viewer *v_imports;
-	ht_format_viewer *v_dimports;
-	ht_format_viewer *v_image;
-};
-
-/*
- *	CLASS ht_pe_aviewer
- */
-
-class ht_pe_aviewer: public ht_aviewer {
-public:
-	ht_pe_shared_data *pe_shared;
-	ht_streamfile *file;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, analyser *Analyser, ht_pe_shared_data *pe_shared);
-	virtual void set_analyser(analyser *a);
+	ht_view *v_exports;
+	ht_view *v_imports;
+	ht_view *v_dimports;
+	ht_view *v_resources;
+	ht_format_viewer *v_image;	
 };
 
 /*
@@ -106,13 +97,13 @@ public:
 	virtual   bool loc_enum_next(ht_format_loc *loc);
 };
 
-bool pe_rva_to_section(pe_section_headers *section_headers, ADDR rva, int *section);
-bool pe_rva_to_ofs(pe_section_headers *section_headers, ADDR rva, FILEOFS *ofs);
-bool pe_rva_is_valid(pe_section_headers *section_headers, ADDR rva);
-bool pe_rva_is_physical(pe_section_headers *section_headers, ADDR rva);
+bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *section);
+bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FILEOFS *ofs);
+bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva);
+bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva);
 
-bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, ADDR *rva);
-bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, ADDR *section);
-bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, ADDR *rva, ADDR *section);
+bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva);
+bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section);
+bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section);
 
 #endif /* !__HTPE_H__ */

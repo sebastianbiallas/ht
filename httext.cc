@@ -46,16 +46,51 @@ format_viewer_if httext_if = {
  *	CLASS ht_text_viewer2
  */
 
-bool ht_text_viewer2::address_to_offset(fmt_vaddress addr, FILEOFS *ofs)
+/*bool ht_text_viewer2::offset_to_pos(FILEOFS ofs, viewer_pos *pos)
 {
-	*ofs=addr;
-	return 1;
+	pos->u.sub = first_sub;
+	pos->u.line_id.id1 = ofs;
+	pos->u.line_id.id2 = 0;
+	pos->u.tag_idx = 0;
+	pos->u.tag_group = 0;
+	return true;
 }
 
-bool ht_text_viewer2::offset_to_address(FILEOFS ofs, fmt_vaddress *addr)
+bool ht_text_viewer2::pos_to_offset(viewer_pos pos, FILEOFS *ofs)
 {
-	*addr=ofs;
-	return 1;
+	*ofs = pos.u.line_id.id1;
+	return true;
+}*/
+
+void ht_text_viewer2::handlemsg(htmsg *msg)
+{
+	switch (msg->msg) {
+     	case msg_keypressed:
+          	switch (msg->data1.integer) {
+               	case K_Left: {
+                    	// FIXME: send cmd_bla when available
+                    	htmsg m;
+                         m.msg = msg_keypressed;
+                         m.type = mt_empty;
+                         m.data1.integer = K_Control_Left;
+                    	sendmsg(&m);
+                         clearmsg(msg);
+                         return;
+				}
+               	case K_Right: {
+                    	// FIXME: send cmd_bla when available
+                    	htmsg m;
+                         m.msg = msg_keypressed;
+                         m.type = mt_empty;
+                         m.data1.integer = K_Control_Right;
+                    	sendmsg(&m);
+                         clearmsg(msg);
+                         return;
+				}
+               }
+               break;
+     }
+     return ht_uformat_viewer::handlemsg(msg);
 }
 
 /*
@@ -89,6 +124,19 @@ void ht_text_sub::init(ht_streamfile *file, FILEOFS offset, int size)
 void ht_text_sub::done()
 {
 	ht_linear_sub::done();
+}
+
+bool ht_text_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+{
+     clear_line_id(line_id);
+     line_id->id1 = offset;
+     prev_line_id(line_id, 1);
+     return true;
+}
+
+bool ht_text_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
+{
+	return false;
 }
 
 UINT ht_text_sub::find_linelen_backwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int *le_len)
@@ -146,44 +194,47 @@ UINT ht_text_sub::find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int
 	UINT readlen=(maxbuflen>TEXT_SUB_READSIZE) ? TEXT_SUB_READSIZE : maxbuflen;
 	byte *bufp;
 	UINT s;
-	UINT len=0;
+	UINT len = 0;
 
-	if (le_len) *le_len=0;
+	if (le_len) *le_len = 0;
 	do {
 		file->seek(ofs);
-		s=file->read(buf, readlen);
+		s = file->read(buf, readlen);
 		int l;
-		bufp=match_lineend_forwd(buf, s, &l);
+		bufp = match_lineend_forwd(buf, s, &l);
 		if (bufp) {
-			len+=bufp-buf+l;
-			if (len>TEXT_SUB_MAX_LINELEN) {
-				len=TEXT_SUB_MAX_LINELEN;
-				break;
-			}
-			if (le_len) *le_len=l;
-			break;
-		} else len+=s;
-		if (len>TEXT_SUB_MAX_LINELEN) {
-			len=TEXT_SUB_MAX_LINELEN;
+			len += bufp-buf+l;
+			if (le_len) *le_len = l;
 			break;
 		}
-/* make sure current and next read overlap
-   to guarantee proper lineend-matching */
-		ofs+=s-(TEXT_SUB_MAX_LINEENDLEN-1);
-	} while (s>TEXT_SUB_MAX_LINEENDLEN);
+          if (s != readlen) {
+          	len += s;
+          	break;
+          }
+		/* make sure current and next read overlap
+		   to guarantee proper lineend-matching */
+          if (s > (TEXT_SUB_MAX_LINEENDLEN-1)) {
+			len += s-(TEXT_SUB_MAX_LINEENDLEN-1);
+          }
+		ofs += s-(TEXT_SUB_MAX_LINEENDLEN-1);
+	} while (s == readlen);
+	if (len > TEXT_SUB_MAX_LINELEN) {
+		len = TEXT_SUB_MAX_LINELEN;
+          if (le_len) *le_len = 0;
+	}
 	return len;
 }
 
-void ht_text_sub::first_line_id(ID *id1, ID *id2)
+void ht_text_sub::first_line_id(LINE_ID *line_id)
 {
-	*id1=0;
-	*id2=0;
+	clear_line_id(line_id);
+	line_id->id1 = 0;
 }
 
-bool ht_text_sub::getline(char *line, ID id1, ID id2)
+bool ht_text_sub::getline(char *line, const LINE_ID line_id)
 {
-	byte *bufp=(byte*)line;
-	FILEOFS ofs=id1;
+	byte *bufp = (byte*)line;
+	FILEOFS ofs = line_id.id1;
 	int ll;
 	UINT l=find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, &ll);
 	if (l) {
@@ -201,12 +252,12 @@ bool ht_text_sub::getline(char *line, ID id1, ID id2)
 	return false;
 }
 
-void ht_text_sub::last_line_id(ID *id1, ID *id2)
+void ht_text_sub::last_line_id(LINE_ID *line_id)
 {
-	FILEOFS ofs=fofs+fsize;
-	UINT l=find_linelen_backwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
-	*id1=ofs-l;
-	*id2=0;
+	clear_line_id(line_id);
+	FILEOFS ofs = fofs+fsize;
+	UINT l = find_linelen_backwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
+	line_id->id1 = ofs-l;
 }
 
 byte *ht_text_sub::match_lineend_forwd(byte *buf, UINT buflen, int *le_len)
@@ -243,9 +294,9 @@ byte *ht_text_sub::match_lineend_backwd(byte *buf, UINT buflen, int *le_len)
 	return result;
 }
 
-int ht_text_sub::next_line_id(ID *id1, ID *id2, int n)
+int ht_text_sub::next_line_id(LINE_ID *line_id, int n)
 {
-	FILEOFS ofs=*id1;
+	FILEOFS ofs = line_id->id1;
 	int r=0;
 	while (n--) {
 		UINT l=find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
@@ -253,13 +304,13 @@ int ht_text_sub::next_line_id(ID *id1, ID *id2, int n)
 		if (!l) break;
 		r++;
 	}
-	*id1=ofs;
+	line_id->id1 = ofs;
 	return r;
 }
 
-int ht_text_sub::prev_line_id(ID *id1, ID *id2, int n)
+int ht_text_sub::prev_line_id(LINE_ID *line_id, int n)
 {
-	FILEOFS ofs=*id1;
+	FILEOFS ofs = line_id->id1;
 	int r=0;
 	while (n--) {
 		UINT l=find_linelen_backwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
@@ -267,7 +318,7 @@ int ht_text_sub::prev_line_id(ID *id1, ID *id2, int n)
 		if (!l) break;
 		r++;
 	}
-	*id1=ofs;
+	line_id->id1 = ofs;
 	return r;
 }
 

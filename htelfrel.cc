@@ -24,6 +24,7 @@
 #include "htelfrel.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include <stdlib.h>
 
@@ -87,8 +88,8 @@ ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *g
 	
 	register_atom(ATOM_ELF_R_386_TYPE, elf_r_386_type);
 
-	char t[1024];	/* FIXME: possible buffer overflow ! */
-	sprintf(t, "* ELF relocation table at offset %08x, relocates section %d, symtab %d", h, si_dest, si_symbol);
+	char t[256];	/* FIXME: possible buffer overflow ! */
+	ht_snprintf(t, sizeof t, "* ELF relocation table at offset %08x, relocates section %d, symtab %d", h, si_dest, si_symbol);
 
 	m->add_mask(t);
 

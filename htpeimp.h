@@ -33,7 +33,6 @@ class ht_pe_import_library: public ht_data {
 public:
 	char *name;
 
-	ht_pe_import_library();
 	ht_pe_import_library(char *name);
 	~ht_pe_import_library();
 };
@@ -44,20 +43,19 @@ public:
 
 class ht_pe_import_function: public ht_data {
 public:
-	int libidx;
-	int byname;
+	UINT libidx;
+	bool byname;
 	union {
-		int ordinal;
+		UINT ordinal;
 		struct {
 			char *name;
-			int hint;
+			UINT hint;
 		} name;
 	};
-	dword address;
+	RVA address;
 
-	ht_pe_import_function();
-	ht_pe_import_function(int libidx, dword address, int ordinal);
-	ht_pe_import_function(int libidx, dword address, char *name, int hint);
+	ht_pe_import_function(UINT libidx, RVA address, UINT ordinal);
+	ht_pe_import_function(UINT libidx, RVA address, char *name, UINT hint);
 	~ht_pe_import_function();
 };
 
@@ -70,41 +68,21 @@ struct ht_pe_import {
  *	CLASS ht_pe_import_viewer
  */
 
-class ht_pe_import_viewer: public ht_uformat_viewer {
+class ht_pe_import_viewer: public ht_itext_listbox {
+protected:
+	ht_format_group *format_group;
+	bool grouplib;
+	UINT sortby;
+/* new */
+			void dosort();
 public:
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group);
+			void	init(bounds *b, char *desc, ht_format_group *fg);
 	virtual	void	done();
 /* overwritten */
-	virtual	char *func(UINT i, bool execute);
-	virtual	int ref_sel(ID id_low, ID id_high);
-};
-
-/*
- *	CLASS ht_pe_import_mask
- */
-
-class ht_pe_import_mask: public ht_sub {
-protected:
-	ht_pe_import *import;
-	UINT *sort_path;
-	UINT *sort_va;
-	UINT *sort_name;
-	char *firstline;
-public:
-			void init(ht_streamfile *file, ht_pe_import *import, char *firstline);
-	virtual 	void done();
-/* overwritten */
-	virtual	bool convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2);
-	virtual	bool convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr);
-	virtual	void first_line_id(ID *id1, ID *id2);
-	virtual	bool getline(char *line, ID id1, ID id2);
-	virtual	void last_line_id(ID *id1, ID *id2);
-	virtual	int next_line_id(ID *id1, ID *id2, int n);
-	virtual	int prev_line_id(ID *id1, ID *id2, int n);
+	virtual	void handlemsg(htmsg *msg);
+	virtual	void select_entry(void *entry);
 /* new */
-			void sortbyva();
-			void sortbyname();
-			void unsort();
+			char *func(UINT i, bool execute);
 };
 
 #endif /* !__HTPEIMP_H__ */

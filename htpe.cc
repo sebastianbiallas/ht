@@ -18,18 +18,17 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "analy.h"
-#include "htapp.h"
+#include "log.h"
 #include "htendian.h"
 #include "htnewexe.h"
 #include "htpe.h"
 #include "htpehead.h"
 #include "htpeexp.h"
+#include "htpeil.h"
 #include "htpeimp.h"
 #include "htpedimp.h"
 #include "htpeimg.h"
 #include "htperes.h"
-#include "pe_analy.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -42,6 +41,7 @@ format_viewer_if *htpe_ifs[] = {
 	&htpeimports_if,
 	&htpedelayimports_if,
 	&htperesources_if,
+	&htpeil_if,
 	&htpeimage_if,
 	0
 };
@@ -64,24 +64,6 @@ format_viewer_if htpe_if = {
 	htpe_init,
 	0
 };
-
-/*
- *	CLASS ht_pe_aviewer
- */
-void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, analyser *Analyser, ht_pe_shared_data *PE_shared)
-{
-	ht_aviewer::init(b, desc, caps, File, format_group, Analyser);
-	pe_shared = PE_shared;
-	file = File;
-}
-
-void ht_pe_aviewer::set_analyser(analyser *a)
-{
-	((pe_analyser *)a)->pe_shared = pe_shared;
-	((pe_analyser *)a)->file = file;
-	analy = a;
-	analy_sub->set_analyser(a);
-}
 
 /*
  *	CLASS ht_pe
@@ -112,10 +94,12 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	pe_shared->imports.libs = new ht_clist();
 	pe_shared->imports.libs->init();
 
+	pe_shared->il = NULL;
 	pe_shared->v_image = NULL;
 	pe_shared->v_dimports = NULL;
 	pe_shared->v_imports = NULL;
 	pe_shared->v_exports = NULL;
+     pe_shared->v_resources = NULL;
 	pe_shared->v_header = NULL;
 
 /* read header */
@@ -231,7 +215,7 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
  *	rva conversion routines
  */
 
-bool pe_rva_to_ofs(pe_section_headers *section_headers, ADDR rva, FILEOFS *ofs)
+bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -245,7 +229,7 @@ bool pe_rva_to_ofs(pe_section_headers *section_headers, ADDR rva, FILEOFS *ofs)
 	return 0;
 }
 
-bool pe_rva_to_section(pe_section_headers *section_headers, ADDR rva, int *section)
+bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -259,7 +243,7 @@ bool pe_rva_to_section(pe_section_headers *section_headers, ADDR rva, int *secti
 	return 0;
 }
 
-bool pe_rva_is_valid(pe_section_headers *section_headers, ADDR rva)
+bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -272,7 +256,7 @@ bool pe_rva_is_valid(pe_section_headers *section_headers, ADDR rva)
 	return 0;
 }
 
-bool pe_rva_is_physical(pe_section_headers *section_headers, ADDR rva)
+bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -289,7 +273,7 @@ bool pe_rva_is_physical(pe_section_headers *section_headers, ADDR rva)
  *	ofs conversion routines
  */
 
-bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, ADDR *rva)
+bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -303,7 +287,7 @@ bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, ADDR *rva)
 	return 0;
 }
 
-bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, ADDR *section)
+bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -317,7 +301,7 @@ bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, ADDR *s
 	return 0;
 }
 
-bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, ADDR *rva, ADDR *section)
+bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section)
 {
 	int r=pe_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
@@ -328,7 +312,7 @@ bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs,
 
 bool pe_ofs_is_valid(pe_section_headers *section_headers, FILEOFS ofs)
 {
-	ADDR rva;
+	RVA rva;
 	return pe_ofs_to_rva(section_headers, ofs, &rva);
 }
 

@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "htapp.h"
 #include "htclipboard.h"
 #include "htctrl.h"
 #include "htdialog.h"
@@ -119,8 +118,8 @@ int ht_dialog::run(bool modal)
 	ht_view *drawer=modal ? this : app;
 	screen->getcursor(&oldx, &oldy);
 	setstate(ds_normal, 0);
-	((ht_app*)app)->insert(this);
-	((ht_app*)app)->focus(this);
+	((ht_group*)app)->insert(this);
+	((ht_group*)app)->focus(this);
 	baseview=this;
 	drawer->sendmsg(msg_draw, 0);
 	screen->show();
@@ -143,7 +142,7 @@ int ht_dialog::run(bool modal)
 	int return_val;
 	int state=getstate(&return_val);
 	screen->setcursor(oldx, oldy);
-	((ht_app*)app)->remove(this);
+	((ht_group*)app)->remove(this);
 	app->focus(orig_focused);
 	baseview=orig_baseview;
 	if (state!=ds_term_cancel) {
@@ -153,6 +152,62 @@ int ht_dialog::run(bool modal)
 	}
 }
 
+/*int ht_dialog::run(bool modal)
+{
+	ht_view *orig_focused=app->getselected(), *orig_baseview=baseview;
+	int oldx, oldy;
+	ht_view *drawer=modal ? this : app;
+	screen->getcursor(&oldx, &oldy);
+	setstate(ds_normal, 0);
+
+	bounds b, c;
+	getbounds(&b);
+	((ht_group*)baseview)->insert(this);
+	getbounds(&c);
+	b.x -= c.x;
+	b.y -= c.y;
+	move(b.x, b.y);
+
+	baseview->focus(this);
+	baseview=this;
+	drawer->sendmsg(msg_draw, 0);
+	screen->show();
+	while (getstate(0)==ds_normal) {
+		if (ht_keypressed()) {
+			ht_key k=ht_getkey();
+			sendmsg(msg_keypressed, k);
+			drawer->sendmsg(msg_draw, 0);
+			screen->show();
+		}
+		ht_queued_msg *q;
+		while ((q=dequeuemsg())) {
+			htmsg m=q->msg;
+			q->target->sendmsg(&m);
+			sendmsg(msg_draw);
+			delete q;
+		}
+		if (!modal) do_idle();
+	}
+	int return_val;
+	int state=getstate(&return_val);
+	screen->setcursor(oldx, oldy);
+
+	getbounds(&b);
+	((ht_group*)orig_baseview)->remove(this);
+	getbounds(&c);
+	b.x -= c.x;
+	b.y -= c.y;
+	move(b.x, b.y);
+
+	baseview=orig_baseview;
+	baseview->focus(orig_focused);
+	if (state!=ds_term_cancel) {
+		return return_val;
+	} else {
+		return 0;
+	}
+}*/
+
 void ht_dialog::queuemsg(ht_view *target, htmsg *msg)
 {
 	ht_queued_msg *q=new ht_queued_msg();
@@ -161,10 +216,10 @@ void ht_dialog::queuemsg(ht_view *target, htmsg *msg)
 	msgqueue->enqueue(q);
 }
 
-void ht_dialog::setstate(int _state, int _return_val)
+void ht_dialog::setstate(int st, int retval)
 {
-	state=_state;
-	return_val=_return_val;
+	state = st;
+	return_val = retval;
 }
 
 /*
@@ -261,7 +316,7 @@ void ht_checkboxes::draw()
 
 void ht_checkboxes::getdata(ht_object_stream *s)
 {
-	s->put_int_dec(state, 4, NULL);
+	s->putIntDec(state, 4, NULL);
 }
 
 void ht_checkboxes::handlemsg(htmsg *msg)
@@ -319,7 +374,7 @@ void ht_checkboxes::handlemsg(htmsg *msg)
 
 void ht_checkboxes::setdata(ht_object_stream *s)
 {
-	state=s->get_int_dec(4, NULL);
+	state=s->getIntDec(4, NULL);
 	dirtyview();
 }
 
@@ -373,7 +428,7 @@ void ht_radioboxes::draw()
 
 void ht_radioboxes::getdata(ht_object_stream *s)
 {
-	s->put_int_dec(sel, 4, NULL);
+	s->putIntDec(sel, 4, NULL);
 }
 
 void ht_radioboxes::handlemsg(htmsg *msg)
@@ -416,7 +471,7 @@ void ht_radioboxes::handlemsg(htmsg *msg)
 
 void ht_radioboxes::setdata(ht_object_stream *s)
 {
-	sel=s->get_int_dec(4, NULL);
+	sel=s->getIntDec(4, NULL);
 }
 
 
@@ -546,11 +601,11 @@ void ht_history_popup_dialog::init(bounds *b, ht_list *hist)
 
 void ht_history_popup_dialog::getdata(ht_object_stream *s)
 {
-	s->put_int_dec(listbox->pos, 4, NULL);
+	s->putIntDec(listbox->pos, 4, NULL);
 	if (history->count()) {
-		s->put_string(((ht_history_entry*)history->get(listbox->pos))->desc, NULL);
+		s->putString(((ht_history_entry*)history->get(listbox->pos))->desc, NULL);
 	} else {
-		s->put_string(NULL, NULL);
+		s->putString(NULL, NULL);
 	}
 }
 
@@ -569,14 +624,17 @@ void ht_history_popup_dialog::setdata(ht_object_stream *s)
  *	CLASS ht_inputfield
  */
 
-void ht_inputfield::init(bounds *b, int _maxtextlen, ht_list *_history=0)
+void ht_inputfield::init(bounds *b, int Maxtextlen, ht_list *hist)
 {
 	ht_view::init(b, VO_SELECTABLE, "some inputfield");
 	VIEW_DEBUG_NAME("ht_inputfield");
-	textv=(byte*)malloc(_maxtextlen+1);
+	
+	history=hist;
+	maxtextlenv=Maxtextlen;
+	
+	textv=(byte*)malloc(maxtextlenv+1);
 	curcharv=textv;
 	textlenv=0;
-	maxtextlenv=_maxtextlen;
 	selstartv=0;
 	selendv=0;
 
@@ -590,7 +648,6 @@ void ht_inputfield::init(bounds *b, int _maxtextlen, ht_list *_history=0)
 	insert=1;
 	ofs=0;
 	attachedto=0;
-	history=_history;
 }
 
 void ht_inputfield::done()
@@ -625,12 +682,12 @@ void ht_inputfield::freebuf()
 
 void ht_inputfield::getdata(ht_object_stream *s)
 {
-	UINT h=s->record_start(datasize());
+	UINT h=s->recordStart(datasize());
 	if (!attachedto) {
-		s->put_int_dec(*textlen, 4, NULL);
-		s->put_binary(*text, *textlen, NULL);
+		s->putIntDec(*textlen, 4, NULL);
+		s->putBinary(*text, *textlen, NULL);
 	}
-	s->record_end(h);
+	s->recordEnd(h);
 }
 
 int ht_inputfield::insertbyte(byte *pos, byte b)
@@ -696,14 +753,14 @@ void ht_inputfield::select_add(byte *start, byte *end)
 
 void ht_inputfield::setdata(ht_object_stream *s)
 {
-	UINT h=s->record_start(datasize());
+	UINT h=s->recordStart(datasize());
 	if (!attachedto) {
 		textlen=&textlenv;
-		*textlen=s->get_int_dec(4, NULL);
+		*textlen=s->getIntDec(4, NULL);
 		
 		if (*textlen>*maxtextlen) *textlen=*maxtextlen;
 		
-		s->get_binary(*text, *textlen, NULL);
+		s->getBinary(*text, *textlen, NULL);
 		
 		curchar=&curcharv;
 		*curchar=*text+*textlen;
@@ -719,7 +776,7 @@ void ht_inputfield::setdata(ht_object_stream *s)
 		ofs=0;
 	}
 	
-	s->record_end(h);
+	s->recordEnd(h);
 	dirtyview();
 }
 
@@ -727,7 +784,7 @@ void ht_inputfield::setdata(ht_object_stream *s)
  *	CLASS ht_strinputfield
  */
 
-void ht_strinputfield::init(bounds *b, int maxstrlen, ht_list *history=0)
+void ht_strinputfield::init(bounds *b, int maxstrlen, ht_list *history)
 {
 	ht_inputfield::init(b, maxstrlen, history);
 	VIEW_DEBUG_NAME("ht_strinputfield");
@@ -816,10 +873,10 @@ void ht_strinputfield::handlemsg(htmsg *msg)
 			case K_Left:
 				is_virgin=0;
 				if (*curchar>*text) {
-				    (*curchar)--;
-				    if ((k==K_Shift_Left) != selectmode) {
-					select_add(*curchar, *curchar+1);
-				    }
+					(*curchar)--;
+					if ((k==K_Shift_Left) != selectmode) {
+						select_add(*curchar, *curchar+1);
+					}
 				}				    
 				correct_viewpoint();
 				dirtyview();
@@ -892,10 +949,10 @@ void ht_strinputfield::handlemsg(htmsg *msg)
 			case K_Shift_Home:
 			case K_Home:
 				is_virgin=0;
-				*curchar=*text;
 				if ((k==K_Shift_Home) != selectmode) {
 					select_add(*curchar, *text);
 				}					
+				*curchar=*text;
 				correct_viewpoint();
 				dirtyview();
 				clearmsg(msg);
@@ -903,10 +960,10 @@ void ht_strinputfield::handlemsg(htmsg *msg)
 			case K_Shift_End:
 			case K_End:
 				is_virgin=0;
-				*curchar=*text+*textlen;
 				if ((k==K_Shift_End) != selectmode) {
 					select_add(*curchar, *text+*textlen);
 				}						
+				*curchar=*text+*textlen;
 				correct_viewpoint();
 				dirtyview();
 				clearmsg(msg);
@@ -987,7 +1044,7 @@ void ht_strinputfield::history_dialog()
 		b.h=8;
 		ht_history_popup_dialog *l=new ht_history_popup_dialog();
 		l->init(&b, history);
-		if (l->run(0)) {
+		if (l->run(false)) {
 			ht_listpopup_dialog_data d;
 			l->databuf_get(&d);
 
@@ -1232,12 +1289,12 @@ void ht_hexinputfield::setnibble(byte a)
  *	CLASS ht_button
  */
 
-void ht_button::init(bounds *b, char *_text, int _value)
+void ht_button::init(bounds *b, char *Text, int Value)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_POSTPROCESS, "some button");
 	VIEW_DEBUG_NAME("ht_button");
-	value=_value;
-	text=ht_strdup(_text);
+	value=Value;
+	text=ht_strdup(Text);
 	pressed=0;
 	magicchar=strchr(text, '~');
 	if (magicchar) {
@@ -1319,7 +1376,19 @@ void ht_button::push()
  *	ht_listbox
  */
 
-void ht_listbox::init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND)
+class ht_listbox_vstate: public ht_data {
+public:
+	void *e_top;
+     void *e_cursor;
+
+     ht_listbox_vstate(void *top, void *cursor)
+     {
+     	e_top = top;
+          e_cursor = cursor;
+     }
+};
+
+void ht_listbox::init(bounds *b, UINT Listboxcaps)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_RESIZE, 0);
 
@@ -1517,8 +1586,8 @@ void *ht_listbox::getbyid(UINT id)
 void ht_listbox::getdata(ht_object_stream *s)
 {
 /* FIXME: fixme */
-	s->put_int_dec(getid(e_top), 4, NULL);
-	s->put_int_dec(getid(e_cursor), 4, NULL);
+	s->putIntDec(getid(e_top), 4, NULL);
+	s->putIntDec(getid(e_cursor), 4, NULL);
 }
 
 UINT ht_listbox::getid(void *entry)
@@ -1566,8 +1635,17 @@ void ht_listbox::goto_item(void *entry)
 
 void ht_listbox::handlemsg(htmsg *msg)
 {
-	if (msg->msg==msg_keypressed) {
-		switch (msg->data1.integer) {
+	switch (msg->msg) {
+		case msg_vstate_restore: {
+          	ht_listbox_vstate *vs = (ht_listbox_vstate*)msg->data1.ptr;
+			e_top = vs->e_top;
+			e_cursor = vs->e_cursor;
+               update();
+// FIXME: what about deleting entries !!!
+			clearmsg(msg);
+			return;
+		}
+		case msg_keypressed: switch (msg->data1.integer) {
 			case K_Control_PageUp:
 			case K_Home:
 				clear_quickfind();
@@ -1682,6 +1760,7 @@ void ht_listbox::handlemsg(htmsg *msg)
 				}
 			}
 		}
+          break;
 	}
 	ht_view::handlemsg(msg);
 }
@@ -1728,14 +1807,12 @@ bool ht_listbox::seek(int index)
 
 void ht_listbox::select_entry(void *entry)
 {
-	e_cursor = e_top = entry;
-	cursor = 0;
 }
 
 void ht_listbox::setdata(ht_object_stream *s)
 {
-	e_top = getbyid(s->get_int_dec(4, NULL));
-	e_cursor = getbyid(s->get_int_dec(4, NULL));
+	e_top = getbyid(s->getIntDec(4, NULL));
+	e_cursor = getbyid(s->getIntDec(4, NULL));
 	update();
 }
 
@@ -1743,20 +1820,51 @@ void	ht_listbox::store(ht_object_stream *f)
 {
 }
 
+ht_data *ht_listbox::vstate_create()
+{
+	return new ht_listbox_vstate(e_top, e_cursor);
+}
+
+void ht_listbox::vstate_save()
+{
+	ht_data *vs = vstate_create();
+	if (vs) {
+     	htmsg m;
+          m.msg = msg_vstate_save;
+          m.type = mt_empty;
+          m.data1.ptr = vs;
+          m.data2.ptr = this;
+          app->sendmsg(&m);
+     }
+}
+
 /*
  *	must be called if data has changed
  */
 void ht_listbox::update()
 {
+	void *entry = getfirst();
+	count = calc_count();
+	visible_height = MIN(size.h, count);
+	if (count <= size.h) {
+		if (!e_cursor) e_cursor = getfirst();
+		cursor = 0;
+		while (entry && (cursor < visible_height)) {
+			if (entry == e_cursor) {
+				e_top = getfirst();
+				goto ok;
+			}
+			entry = getnext(entry);
+			cursor++;
+		}
+	}
 	if (!e_top) {
 		e_top = getfirst();
-	}
+	}     
 	if (!e_cursor) e_cursor = e_top;
-	count = calc_count();
-	visible_height=MIN(size.h, count);
-	void *entry = e_top;
+	entry = e_top;
 	cursor = 0;
-	while ((entry) && (cursor<visible_height)) {
+	while (entry && (cursor < visible_height)) {
 		if (entry == e_cursor) goto ok;
 		entry = getnext(entry);
 		cursor++;
@@ -1784,7 +1892,7 @@ void ht_listbox::update_cursor()
  *	ht_text_listbox
  */
 
-void	ht_text_listbox::init(bounds *b, int Cols, int Keycol, UINT Listboxcaps=LISTBOX_QUICKFIND)
+void	ht_text_listbox::init(bounds *b, int Cols, int Keycol, UINT Listboxcaps)
 {
 	cols = Cols;
 	keycol = Keycol;
@@ -1873,8 +1981,9 @@ char *ht_text_listbox::getstr(int col, void *entry)
 	memset(return_str, ' ', widths[col]);
 	return_str[widths[col]] = 0;
 	if (entry && (col < cols)) {
-		memmove(return_str, ((ht_text_listbox_item *)entry)->data[col],
-			   strlen(((ht_text_listbox_item *)entry)->data[col]));
+		char *str = ((ht_text_listbox_item *)entry)->data[col];
+		int sl = strlen(str);
+		memmove(return_str, str, MIN(1024, sl));
 	}
 	return return_str;
 }
@@ -1966,7 +2075,7 @@ int ht_text_listboxcomparatio(ht_text_listbox_item *a, ht_text_listbox_item *b, 
 	return 0;
 }
 
-void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list)
+static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list)
 {
 	int m=(l+r)/2;
 	int L=l;
@@ -1993,10 +2102,10 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 	ht_text_listbox_item *tmp;
 	int i=0;
 	int cnt = calc_count();
-	
+
 	if (cnt<2) return;
 	
-	list = (ht_text_listbox_item **)malloc(cnt*4);
+	list = (ht_text_listbox_item **)malloc(cnt*sizeof(ht_text_listbox_item *));
 	tmp = first;
 	while (tmp) {
 		list[i++] = tmp;
@@ -2009,10 +2118,11 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 
 	for (i=0; i<cnt; i++) {
 		if (list[i]->id == c_id) {
+			pos = i;
 			e_cursor = list[i];
 		}
 	}
-	
+
 	first = list[0];
 	last = list[cnt-1];
 	first->prev = NULL;
@@ -2046,7 +2156,7 @@ void ht_text_listbox::update()
  *	CLASS ht_itext_listbox
  */
 
-void	ht_itext_listbox::init(bounds *b, int Cols=1, int Keycol=0)
+void	ht_itext_listbox::init(bounds *b, int Cols, int Keycol)
 {
 	ht_text_listbox::init(b, Cols, Keycol);
 }
@@ -2258,13 +2368,13 @@ void ht_listpopup_dialog::getdata(ht_object_stream *s)
 	ht_listbox_data d;
 	listbox->databuf_get(&d);
 
-	s->put_int_dec(d.cursor_id, 4, NULL);
+	s->putIntDec(d.cursor_id, 4, NULL);
 
 	ht_text_listbox_item *cursor = (ht_text_listbox_item*) listbox->getbyid(d.cursor_id);
 	if (cursor) {
-		s->put_string(cursor->data[0], NULL);
+		s->putString(cursor->data[0], NULL);
 	} else {
-		s->put_string(NULL, NULL);
+		s->putString(NULL, NULL);
 	}
 }
 
@@ -2293,8 +2403,8 @@ void ht_listpopup_dialog::select_prev()
 
 void ht_listpopup_dialog::setdata(ht_object_stream *s)
 {
-	int cursor_id=s->get_int_dec(4, NULL);
-	s->get_string(NULL);	/* ignored */
+	int cursor_id=s->getIntDec(4, NULL);
+	s->getString(NULL);	/* ignored */
 	
 	listbox->seek(cursor_id);
 }
@@ -2388,7 +2498,7 @@ int ht_listpopup::run_listpopup()
 {
 	int r;
 	listpopup->relocate_to(this);
-	r=listpopup->run(0);
+	r=listpopup->run(false);
 	listpopup->unrelocate_to(this);
 	return r;
 }
@@ -2514,14 +2624,15 @@ void ht_progress_indicator::settext(char *t)
 
 int vcs[16]={VC_BLACK, VC_BLUE, VC_GREEN, VC_CYAN, VC_RED, VC_MAGENTA, VC_YELLOW, VC_WHITE,   VC_LIGHT(VC_BLACK), VC_LIGHT(VC_BLUE), VC_LIGHT(VC_GREEN), VC_LIGHT(VC_CYAN), VC_LIGHT(VC_RED), VC_LIGHT(VC_MAGENTA), VC_LIGHT(VC_YELLOW), VC_LIGHT(VC_WHITE)};
 
-void ht_color_block::init(bounds *b, int selected, int _flags)
+void ht_color_block::init(bounds *b, int selected, int Flags)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_SELECTABLE, 0);
 	VIEW_DEBUG_NAME("ht_color_block");
+	flags=Flags;
+	
 	ht_color_block_data d;
 	d.color=selected;
 	databuf_set(&d);
-	flags=_flags;
 	if (flags & cf_light) colors=16; else colors=8;
 }
 
@@ -2563,7 +2674,7 @@ void ht_color_block::draw()
 
 void ht_color_block::getdata(ht_object_stream *s)
 {
-	s->put_int_dec((color==-1) ? VC_TRANSPARENT : vcs[color], 4, NULL);
+	s->putIntDec((color==-1) ? VC_TRANSPARENT : vcs[color], 4, NULL);
 }
 
 void ht_color_block::handlemsg(htmsg *msg)
@@ -2601,7 +2712,7 @@ void ht_color_block::handlemsg(htmsg *msg)
 
 void ht_color_block::setdata(ht_object_stream *s)
 {
-	int c=s->get_int_dec(4, NULL);
+	int c=s->getIntDec(4, NULL);
 	if (c==VC_TRANSPARENT) color=-1; else {
 		for (int i=0; i<16; i++) if (vcs[i]==c) {
 			color=i;

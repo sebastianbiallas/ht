@@ -25,8 +25,6 @@
 #include "htdialog.h"
 #include "htformat.h"
 
-#define msg_filesize_changed			HT_MESSAGE(100)
-
 // file open modes
 
 #define FOM_AUTO					0
@@ -39,6 +37,7 @@
 /*
  *	CLASS ht_status
  */
+
 #define STATUS_DEFAULT_FORMAT "%a %L %t %d"
 #define STATUS_ESCAPE '%'
 #define STATUS_ANALY_ACTIVE 'a'
@@ -102,15 +101,30 @@ public:
 
 class ht_log_msg: public ht_data {
 public:
-	int color;
+	vcp color;
 	char *msg;
-	ht_log_msg(char *Msg, int Color);
+	ht_log_msg(vcp Color, char *Msg);
 	~ht_log_msg();
+};
+
+typedef unsigned int LogColor;
+
+class ht_log: public ht_clist {
+protected:
+	UINT maxlinecount;
+
+	void deletefirstline();
+	void	insertline(LogColor c, char *line);
+public:
+			void init(compare_keys_func_ptr compare_keys = 0);
+/* new */
+			void log(LogColor c, char *line);
 };
 
 class ht_logviewer: public ht_viewer {
 private:
-	ht_clist *log;
+	ht_log *lines;
+	bool own_lines;
 	int ofs, xofs;
 	ht_window *window;
 
@@ -120,7 +134,7 @@ private:
 	bool get_hscrollbar_pos(int *pstart, int *psize);
 	void update();
 public:
-			void init(bounds *b, ht_clist *log, ht_window *window);
+			void init(bounds *b, ht_window *window, ht_log *log, bool own_log);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();
@@ -128,13 +142,116 @@ public:
 };
 
 /*
+ *	CLASS ht_vstate_history_entry
+ */
+
+class ht_vstate_history_entry: public ht_data {
+public:
+	Object *data;
+     ht_view *view;
+
+     ht_vstate_history_entry(Object *data, ht_view *view);
+     ~ht_vstate_history_entry();
+};
+
+/*
  *	CLASS ht_file_window
  */
 
 class ht_file_window: public ht_window {
+protected:
+	ht_list *vstate_history;
+     int vstate_history_pos;
+     
+			void add_vstate_history(ht_vstate_history_entry *e);
 public:
 	ht_streamfile	*file;
+
 			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *file);
+	virtual	void done();
+/* overwritten */
+	virtual	void handlemsg(htmsg *msg);
+};
+
+/*
+ *	CLASS ht_project
+ */
+
+class ht_project: public ht_sorted_list {
+protected:
+	char *filename;
+public:
+		   void init(char *filename);
+	virtual void done();
+/* overwritten */
+	virtual int	load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual void	store(ht_object_stream *s);
+/* new */
+		   char *get_filename();
+};
+
+/*
+ *	CLASS ht_project_item
+ */
+
+class ht_project_item: public ht_data {
+protected:
+	char *filename;
+	char *path;
+public:
+		   void init(char *filename, char *path);
+	virtual void done();
+/* overwritten */
+	virtual int	load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual void	store(ht_object_stream *s);
+/* new */
+	const char *get_filename();
+	const char *get_path();
+};
+
+/*
+ *	CLASS ht_project_listbox
+ */
+
+class ht_project_listbox: public ht_listbox {
+protected:
+	ht_project *project;
+	UINT colwidths[4];
+	
+public:
+			void	init(bounds *b, ht_project *project);
+/* overwritten */
+	virtual   int  calc_count();
+	virtual 	void draw();
+	virtual   void *getfirst();
+	virtual   void *getlast();
+	virtual   void *getnext(void *entry);
+	virtual   void *getnth(int n);
+	virtual   void *getprev(void *entry);
+	virtual   char *getstr(int col, void *entry);
+	virtual	void handlemsg(htmsg *msg);
+	virtual	int num_cols();
+	virtual	void *quickfind(char *s);
+	virtual	char	*quickfind_completition(char *s);
+	virtual	void select_entry(void *entry);
+/* new */
+			char *func(UINT i, bool execute);
+			void set_project(ht_project *project);
+};
+
+/*
+ *	CLASS ht_project_window
+ */
+
+class ht_project_window: public ht_window {
+protected:
+	ht_project **project;
+	ht_project_listbox *plb;
+public:
+
+			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **project);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -143,6 +260,13 @@ public:
 /*
  *	CLASS ht_app_window_entry
  */
+
+#define AWT_LOG		0
+#define AWT_CLIPBOARD	1
+#define AWT_HELP		2
+#define AWT_FILE		3
+#define AWT_OFM		4
+#define AWT_PROJECT		5
 
 class ht_app_window_entry: public ht_data {
 public:
@@ -165,8 +289,6 @@ class ht_app: public ht_dialog {
 protected:
 	ht_sorted_list *windows;
 
-	ht_clist *log;
-	
 	ht_list *syntax_lexers;
 
 	ht_keyline *keyline;
@@ -177,9 +299,6 @@ protected:
 	int exit_program;
 
 /* new */
-			void log_deletefirstline();
-			void	log_insertline(int c, char *line);
-	
 			bool create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);
 			bool create_window_file_text(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);
 			
@@ -187,10 +306,11 @@ protected:
 			UINT find_free_window_number();
 			void	insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 			
-			ht_window *get_window_by_number(UINT number);
-			ht_window *get_window_by_type(UINT type);
 			UINT get_window_number(ht_window *window);
 			UINT get_window_listindex(ht_window *window);
+
+			void get_stdbounds_file(bounds *b);
+			void get_stdbounds_tool(bounds *b);
 			
 			int	popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, ht_list *structure, int depth, int *currenti, ht_view *currentv);
 /* overwritten */
@@ -212,31 +332,23 @@ public:
 	virtual	void store(ht_object_stream *f);
 /* new */
 			bool create_window_clipboard();
-			bool create_window_file(char *filename, UINT mode);
-			bool create_window_file_bin(char *filename);
-			bool create_window_file_text(char *filename);
+			bool create_window_file(char *filename, UINT mode, bool allow_duplicates);
+			bool create_window_file_bin(char *filename, bool allow_duplicates);
+			bool create_window_file_text(char *filename, bool allow_duplicates);
 			bool create_window_help(char *file, char *node);
 			bool create_window_log();
 			bool create_window_ofm(char *url1, char *url2);
+			bool create_window_project();
 			void	delete_window(ht_window *window);
-			void logl(int c, char *line);
-			void logf(int c, char *lineformat, ...);
-			void	popup_view_list();
-			void	popup_window_list();
+			ht_window *get_window_by_filename(char *filename);
+			ht_window *get_window_by_number(UINT number);
+			ht_window *get_window_by_type(UINT type);
+			ht_view *popup_view_list(char *dialog_title);
+			ht_window *popup_window_list(char *dialog_title);
+			void project_opencreate(char *filename);
 };
 
-/*
- *	exports
- */
-
-extern char *globalerror;
-
-#define LOG_NORMAL 0
-#define LOG_WARN 1
-#define LOG_ERROR 2
-
-#define LOG(a...) ((ht_app*)app)->logf(LOG_NORMAL, a);
-#define LOG_EX(c, a...) ((ht_app*)app)->logf(c, a);
+extern ht_log *loglines;
 
 /*
  *	INIT

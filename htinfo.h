@@ -28,7 +28,7 @@
  */
 
 #define ht_name "ht"
-#define ht_version "0.6.0b"
+#define ht_version "0.6.1"
 
 #define ht_author1 "Stefan Weyergraf"
 #define ht_mail1 "stefan@weyergraf.de"

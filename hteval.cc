@@ -18,8 +18,9 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
 #include "htatom.h"
+#include "htctrl.h"
+#include "htendian.h"
 #include "hthist.h"
 #include "htiobox.h"
 #include "htstring.h"
@@ -30,7 +31,7 @@ extern "C" {
 #include "evalx.h"
 }
 
-int sprintf_base2(char *x, dword value)
+int sprint_base2(char *x, dword value)
 {
 	char *ix=x;
 	dword m=0x80000000;
@@ -52,13 +53,13 @@ void eval_dialog()
 {
 	bounds b, c;
 	app->getbounds(&c);
-	b.w=c.w/2+1;
-	b.h=c.h/2+1;
+	b.w=41;
+	b.h=14;
 	b.x=(c.w-b.w)/2;
 	b.y=(c.h-b.h)/2;
 	ht_dialog *d=new ht_dialog();
 	c=b;
-	char *hint="type an integer, float or string expression to evaluate";
+	char *hint="type integer, float or string expression to evaluate";
 	
 	d->init(&b, "evaluate", FS_TITLE | FS_MOVE | FS_RESIZE);
 
@@ -76,11 +77,10 @@ void eval_dialog()
 	t->growmode=GM_VDEFORM;
 	d->insert(t);
 
-	while (d->run(0)!=button_cancel) {
+	while (d->run(false) != button_cancel) {
 		ht_strinputfield_data str;
 		scalar_t r;
 		char b[1024];
-		char c[256];
 		s->databuf_get(&str);
 		if (str.textlen) {
 			bin2str(b, str.text, str.textlen);
@@ -90,27 +90,51 @@ void eval_dialog()
 			if (eval(&r, b, NULL, NULL, NULL)) {
 				switch (r.type) {
 					case SCALAR_INT: {
-						char *x=b;
-						x+=sprintf(x, "integer:\n");
-						x+=sprintf(x, "hex  %x\n", r.scalar.integer.value);
-						x+=sprintf(x, "dec  %u\n", r.scalar.integer.value);
-						x+=sprintf(x, "sdec %d\n", r.scalar.integer.value);
-						x+=sprintf(x, "oct  %o\n", r.scalar.integer.value);
-						x+=sprintf(x, "bin  ");
-						x+=sprintf_base2(x, r.scalar.integer.value);
-						*(x++)='\n';
-						*x=0;
+						char *x = b;
+						int i = r.scalar.integer.value;
+						x += sprintf(x, "integer:\n");
+						x += sprintf(x, "hex  %x\n", i);
+						x += sprintf(x, "dec  %u\n", i);
+						x += sprintf(x, "sdec %d\n", i);
+						x += sprintf(x, "oct  %o\n", i);
+						x += sprintf(x, "bin  ");
+						x += sprint_base2(x, i);
+						*(x++) = '\n';
+						char bb[4];
+						/* big-endian string */
+						x += sprintf(x, "bstr \"");
+						create_foreign_int(bb, i, 4, big_endian);
+						bin2str(x, bb, 4);
+						x += 4;
+						*(x++) = '"';
+						*(x++) = '\n';
+						/* little-endian string */
+						x += sprintf(x, "lstr \"");
+						create_foreign_int(bb, i, 4, little_endian);
+						bin2str(x, bb, 4);
+						x += 4;
+						*(x++) = '"';
+						*(x++) = '\n';
+						/* finish */
+						*x = 0;
 						break;
 					}
 					case SCALAR_STR: {
 						char *x=b;
 						x+=sprintf(x, "string:\n");
 						/* c-escaped */
-						escape_special(c, sizeof c, r.scalar.str.value, r.scalar.str.len, NULL, true);
-						x+=sprintf(x, "c-escaped \"%s\"\n", c);
+						x+=sprintf(x, "c-escaped \"");
+						x+=escape_special(x, 0xff, r.scalar.str.value, r.scalar.str.len, NULL, true);
+						*(x++)='"';
+						*(x++)='\n';
 						/* raw */
-						bin2str(c, r.scalar.str.value, MIN((UINT)r.scalar.str.len, sizeof c-1));
-						x+=sprintf(x, "raw       '%s'\n", c);
+						x+=sprintf(x, "raw       '");
+						int ll = MIN((UINT)r.scalar.str.len, 0xff);
+						bin2str(x, r.scalar.str.value, ll);
+						x+=ll;
+						*(x++)='\'';
+						*(x++)='\n';
+						*x=0;
 						break;
 					}
 					case SCALAR_FLOAT:
@@ -125,7 +149,7 @@ void eval_dialog()
 				int pos=0;
 				get_eval_error(&str, &pos);
 				s->isetcursor(pos);
-				sprintf(b, "error at pos %d: %s", pos, str);
+				sprintf(b, "error at pos %d: %s", pos+1, str);
 			}
 			t->settext(b);
 		} else {

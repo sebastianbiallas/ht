@@ -63,7 +63,7 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		n[4]=0;
 		sprintf(t, "object %d USE%d: %s (psize=%08x, vsize=%08x)", i+1, use32 ? 32 : 16, n, le_shared->objmap.psize[i], le_shared->objmap.vsize[i]);
 
-		disassembler *disasm;
+		Disassembler *disasm;
 
 		if (use32) {
 			disasm = new x86dis_le(X86_OPSIZE32, X86_ADDRSIZE32);
@@ -162,7 +162,7 @@ FILEOFS ht_le_page_file::tell()
 	return ofs;
 }
 
-UINT ht_le_page_file::write(void *buf, UINT size)
+UINT ht_le_page_file::write(const void *buf, UINT size)
 {
 	dword mofs, msize;
 	int c=0;

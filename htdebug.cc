@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// FIXME: auto-detect ?
 #define CPU_CLOCK 500000000
 
 void ht_assert_failed(char *file, int line, char *assertion)
@@ -54,87 +55,6 @@ void ht_error(char *file, int line, char *format,...)
 	exit(1);
 }
 
-#define QWORD_ZERO(c) { c.hi=0; c.lo=0; }
-#define QWORD_ISZERO(c) (!(c.hi || c.lo))
-
-#define QWORD_ASSIGN32(c, n) { c.hi=0; c.lo=n; }
-
-#define QWORD_EVEN(c) (!QWORD_ODD(c))
-#define QWORD_ODD(c) (c.lo & 1)
-
-int qword_cmp(qword *a, qword *b)
-{
-	int r=a->hi - b->hi;
-	if (r) return r;
-	return a->lo - b->lo;
-}
-
-void qword_shl(qword *result, qword *a, int b)
-{
-	result->hi=a->hi << b;
-	result->hi|=a->lo >> (32-b);
-	result->lo=a->lo << b;
-}
-
-void qword_shr(qword *result, qword *a, int b)
-{
-	result->hi=a->hi >> b;
-	result->lo|=a->hi << (32-b);
-	result->lo=a->lo >> b;
-}
-
-void qword_add(qword *result, qword *a, qword *b)
-{
-	qword r;
-	r.lo = a->lo + b->lo;
-	r.hi = a->hi + b->hi + ((r.lo < a->lo) ? 1 : 0);
-	*result=r;
-}
-
-void qword_sub(qword *result, qword *a, qword *b)
-{
-	qword r;
-	r.hi = a->hi - b->hi - ((a->lo < b->lo) ? 1 : 0);
-	r.lo = a->lo - b->lo;
-	*result=r;
-}
-
-void qword_mul(qword *result, qword *a, qword *b)
-{
-	qword x, y, z;
-	x=*a;
-	y=*b;
-	QWORD_ZERO(z);
-	while (!QWORD_ISZERO(y)) {
-		if (QWORD_ODD(y)) qword_add(&z, &z, &x);
-		qword_shl(&x, &x, 1);
-		qword_shr(&y, &y, 1);
-	}
-	*result=z;
-}
-
-void qword_div(qword *result, qword *a, qword *b)
-{
-	qword x, y, q, t;
-	x=*a;
-	y=*b;
-	QWORD_ZERO(q);
-	QWORD_ASSIGN32(t, 1);
-	while (qword_cmp(&y, &x) < 0) {
-		qword_shl(&y, &y, 1);
-		qword_shl(&t, &t, 1);
-	}
-	while (!QWORD_ISZERO(t)) {
-		if (qword_cmp(&x, &y) >= 0) {
-			qword_sub(&x, &x, &y);
-			qword_add(&q, &q, &t);
-		}
-		qword_shr(&y, &y, 1);
-		qword_shr(&t, &t, 1);
-	}
-	*result=q;
-}
-
 #ifdef DJGPP
 
 #define MAX_TIMERS 20
@@ -162,10 +82,8 @@ timer_handle new_timer()
 		} else return -1;
 	}
 	handle[h]=1;
-	timer_start[h].hi=0;
-	timer_start[h].lo=0;
-	timer_end[h].hi=0;
-	timer_end[h].lo=0;
+	timer_start[h] = to_qword(0);
+	timer_end[h] = to_qword(0);
 	return h;
 }
 
@@ -196,11 +114,10 @@ void delete_timer(timer_handle h)
 void get_timer_tick_internal(timer_handle h, timepoint *p)
 {
 	if ((h<0) || (h>handle_count)) {
-		p->hi=0;
-		p->lo=0;
+		*p = to_qword(0);
 		return;
 	}
-	qword_sub(p, &timer_end[h], &timer_start[h]);
+	*p = timer_end[h] - timer_start[h];
 }
 
 dword get_timer_sec(timer_handle h)
@@ -208,10 +125,7 @@ dword get_timer_sec(timer_handle h)
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
 	get_timer_tick_internal(h, &t);
-	qword d;
-	d.hi=0;
-	d.lo=CPU_CLOCK;
-	qword_div(&t, &t, &d);
+	t = t / to_qword(CPU_CLOCK);
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 
@@ -220,10 +134,7 @@ dword get_timer_msec(timer_handle h)
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
 	get_timer_tick_internal(h, &t);
-	qword d;
-	d.hi=0;
-	d.lo=CPU_CLOCK/1000;
-	qword_div(&t, &t, &d);
+     t = t / to_qword(CPU_CLOCK/1000);
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 

@@ -1,5 +1,5 @@
 /* 
- *	The HT Editor
+ *	HT Editor
  *	x86opc.h
  *
  *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)

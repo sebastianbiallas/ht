@@ -26,16 +26,24 @@
 
 #define HT_SYS_NAME			"DJGPP"
 
-int sys_canonicalize(char *filename, char *fullfilename);
+#define SYS_SUPPORT_NATIVE_CLIPBOARD
+#define SYS_NATIVE_CLIPBOARD_NAME "Windows Clipboard"
+
+int sys_canonicalize(char *result, const char *filename);
 int sys_findclose(pfind_t *pfind);
-int sys_findfirst(char *dirname, pfind_t *pfind);
+int sys_findfirst(const char *dirname, pfind_t *pfind);
 int sys_findnext(pfind_t *pfind);
-int sys_pstat(pstat_t *s, char *filename);
+int sys_pstat(pstat_t *s, const char *filename);
 void sys_suspend();
 int sys_get_free_mem();
-int sys_truncate(char *filename, FILEOFS ofs);
-int sys_deletefile(char *filename);
+int sys_truncate(const char *filename, FILEOFS ofs);
+int sys_deletefile(const char *filename);
 bool sys_is_path_delim(char c);
+int sys_filename_cmp(const char *a, const char *b);
+
+bool sys_write_data_to_native_clipboard(const void *data, int size);
+int sys_get_native_clipboard_data_size();
+bool sys_read_data_from_native_clipboard(void *data, int max_size);
 
 /*
  *	INIT

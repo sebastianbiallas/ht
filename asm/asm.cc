@@ -29,28 +29,29 @@
 #include <stdarg.h>
 
 #include "alphadis.h"
+#include "javadis.h"
 #include "x86dis.h"
 
 /*
- *	CLASS assembler
+ *	CLASS Assembler
  */
 
-assembler::assembler(bool b)
+Assembler::Assembler(bool b)
 {
 	codes = 0;
 	bigendian = b;
 }
 
-assembler::~assembler()
+Assembler::~Assembler()
 {
 }
 
-asm_insn *assembler::alloc_insn()
+asm_insn *Assembler::alloc_insn()
 {
 	return NULL;
 }
 
-void assembler::deletecode(asm_code *code)
+void Assembler::deletecode(asm_code *code)
 {
 	asm_code **p=&codes, *c=codes;
 	while (c) {
@@ -64,7 +65,7 @@ void assembler::deletecode(asm_code *code)
 	}
 }
 
-asm_code *assembler::encode(asm_insn *asm_insn, int _options, CPU_ADDR cur_address)
+asm_code *Assembler::encode(asm_insn *asm_insn, int _options, CPU_ADDR cur_address)
 {
 	free_asm_codes();
 	error=0;
@@ -72,18 +73,18 @@ asm_code *assembler::encode(asm_insn *asm_insn, int _options, CPU_ADDR cur_addre
 	return 0;
 }
 
-void assembler::clearcode()
+void Assembler::clearcode()
 {
 	code.size=0;
 }
 
-void assembler::emitbyte(byte b)
+void Assembler::emitbyte(byte b)
 {
 	code.data[code.size] = b;
 	code.size++;
 }
 
-void assembler::emitword(word w)
+void Assembler::emitword(word w)
 {
 	if (bigendian) {
 		code.data[code.size+1] = (byte)w;
@@ -95,7 +96,7 @@ void assembler::emitword(word w)
 	code.size += 2;
 }
 
-void assembler::emitdword(dword d)
+void Assembler::emitdword(dword d)
 {
 	if (bigendian) {
 		code.data[code.size+3] = (byte)d;
@@ -111,7 +112,7 @@ void assembler::emitdword(dword d)
 	code.size += 4;
 }
 
-void assembler::free_asm_codes()
+void Assembler::free_asm_codes()
 {
 	while (codes) {
 		asm_code *t=codes->next;
@@ -120,22 +121,22 @@ void assembler::free_asm_codes()
 	}
 }
 
-char *assembler::get_error_msg()
+char *Assembler::get_error_msg()
 {
 	return error_msg;
 }
 
-char *assembler::get_name()
+char *Assembler::get_name()
 {
 	return "generic asm";
 }
 
-void assembler::newcode()
+void Assembler::newcode()
 {
 	code.size=0;
 }
 
-asm_code *assembler::shortest(asm_code *codes)
+asm_code *Assembler::shortest(asm_code *codes)
 {
 	asm_code *best=0;
 	dword bestv=0xffffffff;
@@ -149,7 +150,7 @@ asm_code *assembler::shortest(asm_code *codes)
 	return best;
 }
 
-void assembler::pushcode()
+void Assembler::pushcode()
 {
 	asm_code **t=&codes;
 	while (*t) {
@@ -161,12 +162,12 @@ void assembler::pushcode()
 	(*t)->next=0;
 }
 
-int assembler::prepare_str(asm_insn *asm_insn, char *s)
+int Assembler::prepare_str(asm_insn *asm_insn, char *s)
 {
 	return 0;
 }
 
-void assembler::set_error_msg(char *format, ...)
+void Assembler::set_error_msg(char *format, ...)
 {
 	va_list arg;
 	va_start(arg, format);
@@ -175,7 +176,7 @@ void assembler::set_error_msg(char *format, ...)
 	error=1;
 }
 
-void assembler::set_imm_eval_proc(int (*p)(void *context, char **s, dword *v), void *c)
+void Assembler::set_imm_eval_proc(int (*p)(void *context, char **s, dword *v), void *c)
 {
 	imm_eval_proc=p;
 	imm_eval_context=c;
@@ -185,39 +186,24 @@ void assembler::set_imm_eval_proc(int (*p)(void *context, char **s, dword *v), v
  *	CLASS disassembler
  */
 
-disassembler::disassembler()
+Disassembler::Disassembler()
 {
 	disable_highlighting();
 }
 
-disassembler::~disassembler()
+Disassembler::~Disassembler()
 {
 }
 
 char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context) = NULL;
 void* addr_sym_func_context = NULL;
 
-dis_insn *disassembler::create_invalid_insn()
+dis_insn *Disassembler::createInvalidInsn()
 {
-	return 0;
+	return NULL;
 }
 
-dis_insn *disassembler::decode(byte *code, byte maxlen, CPU_ADDR cur_address)
-{
-	return 0;
-}
-
-int disassembler::getmaxopcodelength()
-{
-	return 0;
-}
-
-byte disassembler::getsize(dis_insn *disasm_insn)
-{
-	return 0;
-}
-
-void disassembler::hexd(char **s, int size, int options, int imm)
+void Disassembler::hexd(char **s, int size, int options, int imm)
 {
 	char ff[16];
 	char *f = (char*)&ff;
@@ -246,63 +232,61 @@ void disassembler::hexd(char **s, int size, int options, int imm)
 	}
 }
 
-char *disassembler::str(dis_insn *disasm_insn, int style)
+bool Disassembler::selectNext(dis_insn *disasm_insn)
+{
+	return false;
+}
+
+char *Disassembler::str(dis_insn *disasm_insn, int style)
 {
 	return strf(disasm_insn, style, DISASM_STRF_DEFAULT_FORMAT);
 }
 
-char *disassembler::strf(dis_insn *disasm_insn, int style, char *format)
-{
-	return 0;
-}
-
-bool disassembler::valid_insn(dis_insn *disasm_insn)
-{
-	return 0;
-}
-
-const char *disassembler::get_cs_default()
+const char *Disassembler::get_cs_default()
 {
 	return (highlight) ? ASM_SYNTAX_DEFAULT : "";
 }
 
-const char *disassembler::get_cs_number()
+const char *Disassembler::get_cs_number()
 {
 	return (highlight) ? ASM_SYNTAX_NUMBER : "";
 }
 
-const char *disassembler::get_cs_symbol()
+const char *Disassembler::get_cs_symbol()
 {
 	return (highlight) ? ASM_SYNTAX_SYMBOL : "";
 }
 
-const char *disassembler::get_cs_string()
+const char *Disassembler::get_cs_string()
 {
 	return (highlight) ? ASM_SYNTAX_STRING : "";
 }
 
-void disassembler::enable_highlighting()
+void Disassembler::enable_highlighting()
 {
 	highlight = true;
 }
 
-void disassembler::disable_highlighting()
+void Disassembler::disable_highlighting()
 {
 	highlight = false;
 }
 
-BUILDER(ATOM_DISASM_ALPHA, alphadis)
 BUILDER(ATOM_DISASM_X86, x86dis)
+BUILDER(ATOM_DISASM_ALPHA, Alphadis)
+BUILDER(ATOM_DISASM_JAVA, javadis)
 
 bool init_asm()
 {
-	REGISTER(ATOM_DISASM_ALPHA, alphadis)
 	REGISTER(ATOM_DISASM_X86, x86dis)
+	REGISTER(ATOM_DISASM_ALPHA, Alphadis)
+	REGISTER(ATOM_DISASM_JAVA, javadis)
 	return true;
 }
 
 void done_asm()
 {
-	UNREGISTER(ATOM_DISASM_ALPHA, alphadis)
+	UNREGISTER(ATOM_DISASM_JAVA, javadis)
+	UNREGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	UNREGISTER(ATOM_DISASM_X86, x86dis)
 }

@@ -1,8 +1,8 @@
 /*
+ *	HT Editor
  *	out_html.cc
- */
-
-/*	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -64,13 +64,14 @@ int write_str(ht_stream *stream, char *s)
 	return stream->write(s, strlen(s));
 }
 
-analyser *theanaly2;
+Analyser *theanaly2;
 char html_buffer[1024];
 
+#if 0
 char *html_addr_sym_func(CPU_ADDR Addr, int *symstrlen)
 {
 	/* should only be called/used/assigned if theanaly2 is set */
-	taddr *a = theanaly2->find_addr(Addr.addr32.offset);
+	Location *a = theanaly2->getLocationByAddress(Addr.addr32.offset);
 	if ((a) && (a->label)){
 		int i = sprintf(html_buffer, "<a href=\"#A%08X\">%s</a>", Addr.addr32.offset, a->label->name);
 		if (symstrlen) *symstrlen=i;
@@ -84,8 +85,9 @@ char *html_addr_sym_func(CPU_ADDR Addr, int *symstrlen)
 	}
 	return NULL;
 }
+#endif
 
-int generate_html_output(analyser *analy, ht_stream *stream, ADDR from, ADDR to)
+int generate_html_output(Analyser *analy, ht_stream *stream, Address *from, Address *to)
 {
 #if 0
 	if ((!analy) || (!stream)) return HTML_OUTPUT_ERR_GENERIC;

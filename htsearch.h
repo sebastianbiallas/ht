@@ -53,6 +53,9 @@ extern "C" {
 
 #define ST_EXPR		3         // search stops when expression evals to non-zero
 
+typedef ht_view* (*create_form_func)(bounds *b, HT_ATOM histid);
+typedef void (*create_desc_func)(char *buf, int buflen, ht_view *form);
+
 /*
  *	CLASS ht_fxbin_search_request
  */
@@ -65,7 +68,7 @@ public:
 			ht_fxbin_search_request(UINT search_class, UINT flags, UINT data_size, byte *data);
 	virtual	~ht_fxbin_search_request();
 /* overwritten */
-	virtual	object *duplicate();
+	virtual	Object *duplicate();
 };
 
 /*
@@ -91,7 +94,7 @@ public:
 			ht_regex_search_request(UINT search_class, UINT flags, char *regex);
 	virtual	~ht_regex_search_request();
 /* overwritten */
-	virtual	object *duplicate();
+	virtual	Object *duplicate();
 };
 
 /*
@@ -105,7 +108,7 @@ public:
 			ht_expr_search_request(UINT search_class, UINT flags, char *Expr);
 	virtual	~ht_expr_search_request();
 /* overwritten */
-	virtual	object *duplicate();
+	virtual	Object *duplicate();
 };
 
 /* binary search function */
@@ -286,7 +289,7 @@ public:
 #define SEARCHMODE_VREGEX	4
 #define SEARCHMODE_EXPR		8
 
-ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes);
+ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, viewer_pos *start, viewer_pos *end);
 void replace_dialog(ht_format_viewer *format, UINT searchmodes);
 
 class ht_search_bin_context: public ht_data {
@@ -318,6 +321,15 @@ public:
 
 ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *pat, UINT patlen, UINT flags, UINT *return_ofs, bool *return_success);
 bool search_bin_process(ht_data *context, ht_text *progress_indicator);
+
+ht_view* create_form_hexascii(bounds *b, HT_ATOM histid);
+void create_desc_hexascii(char *buf, int buflen, ht_view *f);
+
+ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize);
+
+/*
+ *
+ */
 
 class ht_replace_bin_context: public ht_data {
 public:

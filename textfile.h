@@ -139,7 +139,7 @@ public:
 	virtual	FILEOFS tell();
 	virtual	int	truncate(UINT newsize);
 	virtual	int	vcntl(UINT cmd, va_list vargs);
-	virtual	UINT	write(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 /* overwritten (textfile) */
 	virtual	bool convert_ofs2line(FILEOFS o, UINT *line, UINT *pofs);
 	virtual	bool convert_line2ofs(UINT line, UINT pofs, FILEOFS *o);

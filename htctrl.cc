@@ -18,11 +18,17 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htobj.h"
+#include "htctrl.h"
+
+static char sglobalerror[GLOBAL_ERROR_SIZE];
+char *globalerror = sglobalerror;
 
 ht_view *app;
 ht_view *baseview;
 screendrawbuf *screen;
-char *this_app;
+char *appname;
+ht_list *virtual_fs_list;
+void *project;
 int some_analyser_active = 0;
 int num_ops_parsed = 0;
+

@@ -33,32 +33,34 @@ struct alphadis_insn {
 	byte				regA;
 	byte				regB;
 	byte				regC;
-	opcode_tab_entry	*table;
+	alpha_opcode_tab_entry	*table;
 };
 
 /*
  *	CLASS alphadis
  */
 
-class alphadis: public disassembler {
+class Alphadis: public Disassembler {
 protected:
 	char insnstr[256];
 	alphadis_insn	insn;
 public:
-			alphadis();
-	virtual	~alphadis();
+			Alphadis();
+	virtual	~Alphadis();
 
-	virtual	dis_insn	*create_invalid_insn();
+	virtual	dis_insn	*createInvalidInsn();
 			int 		load(ht_object_stream *f);
 	virtual	dis_insn	*decode(byte *code, byte maxlen, CPU_ADDR addr);
-	virtual	int		getmaxopcodelength();
-	virtual	byte		getsize(dis_insn *disasm_insn);
-	virtual	char		*get_name();
+	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
+	virtual	int		getMaxOpcodeLength();
+	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
+	virtual	byte		getSize(dis_insn *disasm_insn);
+	virtual	char		*getName();
 	virtual	void		store(ht_object_stream *f);
 	virtual	char		*str(dis_insn *disasm_insn, int style);
 	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
 	virtual	OBJECT_ID object_id();
-	virtual	bool		valid_insn(dis_insn *disasm_insn);
+	virtual	bool		validInsn(dis_insn *disasm_insn);
 };
 
 #endif

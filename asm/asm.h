@@ -34,7 +34,7 @@ struct CPU_ADDR {
 			dword offset;
 		} addr32;
 		struct {
-			dword lo, hi;
+			qword addr;
 		} flat64;
 	};
 };
@@ -53,7 +53,7 @@ typedef void asm_insn;
  *	CLASS assembler
  */
 
-class assembler: public object {
+class Assembler: public Object {
 protected:
 	int (*imm_eval_proc)(void *context, char **s, dword *v);
 	void *imm_eval_context;
@@ -74,8 +74,8 @@ protected:
 			void newcode();
 			void pushcode();
 public:
-			assembler(bool bigendian);
-			~assembler();
+			Assembler(bool bigendian);
+			~Assembler();
 /* new */
 	virtual	asm_insn *alloc_insn();
 	virtual	asm_code *encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address);
@@ -104,7 +104,7 @@ public:
 extern char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context);
 extern void* addr_sym_func_context;
 
-class disassembler: public object {
+class Disassembler: public Object {
 protected:
 	int options;
 	bool highlight;
@@ -117,17 +117,20 @@ protected:
 			void enable_highlighting();
 			void disable_highlighting();
 public:
-			disassembler();
-			~disassembler();
+			Disassembler();
+			~Disassembler();
 /* new */
-	virtual	dis_insn *create_invalid_insn();
-	virtual	dis_insn *decode(byte *code, byte maxlen, CPU_ADDR cur_address);
-	virtual	int  getmaxopcodelength();
-	virtual	byte getsize(dis_insn *disasm_insn);
-	virtual	char *get_name()=0;
+	virtual	dis_insn *createInvalidInsn();
+	virtual	dis_insn *decode(byte *code, byte maxlen, CPU_ADDR cur_address)=0;
+     virtual	dis_insn *duplicateInsn(dis_insn *disasm_insn)=0;
+	virtual	void	getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)=0;
+	virtual	int  getMaxOpcodeLength()=0;
+	virtual	byte getSize(dis_insn *disasm_insn)=0;
+	virtual	char *getName()=0;
+	virtual	bool selectNext(dis_insn *disasm_insn);
 	virtual	char *str(dis_insn *disasm_insn, int style);
-	virtual	char *strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	bool valid_insn(dis_insn *disasm_insn);
+	virtual	char *strf(dis_insn *disasm_insn, int style, char *format)=0;
+	virtual	bool validInsn(dis_insn *disasm_insn)=0;
 };
 
 /*****************************************************************************
@@ -162,6 +165,7 @@ public:
 
 #define ATOM_DISASM_X86 MAGICD("DIS\x01")
 #define ATOM_DISASM_ALPHA MAGICD("DIS\x02")
+#define ATOM_DISASM_JAVA MAGICD("DIS\x03")
 
 #define ASM_SYNTAX_DEFAULT "\\@d"
 #define ASM_SYNTAX_NUMBER "\\@n"

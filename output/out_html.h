@@ -1,8 +1,8 @@
 /*
+ *	HT Editor
  *	out_html.h
- */
-
-/*	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *
+ *	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -31,6 +31,6 @@
 #define HTML_OUTPUT_ERR_STREAM 2
 #define HTML_OUTPUT_ERR_ANALY_NOT_FINISHED 3
 
-int generate_html_output(analyser *analy, ht_stream *stream, ADDR from, ADDR to);
+int generate_html_output(Analyser *analy, ht_stream *stream, Address *from, Address *to);
 
 #endif

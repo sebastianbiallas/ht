@@ -24,6 +24,7 @@
 #include "htneent.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 #include <stdlib.h>
 
@@ -37,23 +38,13 @@ ht_view *htneimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 
-	char line[1024];	/* possible buffer overflow */
-	sprintf(line, "* NE imported names and module reference table at offset %08x / %08x", h+ne_shared->hdr.imptab, h+ne_shared->hdr.modtab);
+	char line[256];	/* secure */
+	ht_snprintf(line, sizeof line, "* NE imported names and module reference table at offset %08x / %08x", h+ne_shared->hdr.imptab, h+ne_shared->hdr.modtab);
 	m->add_mask(line);
 
-	FILEOFS o = h + ne_shared->hdr.modtab;
-	FILEOFS no = h + ne_shared->hdr.imptab;
-	char *s;
-	for (int i=0; i<ne_shared->hdr.cmod; i++) {
-		char buf[2];
-		file->seek(o+i*2);
-		if (file->read(buf, 2) != 2) break;
-		int w = create_host_int(buf, 2, little_endian);
-		file->seek(no+w);
-		s = getstrp(file);
-		sprintf(line, "%0d: %s", i+1, s);
+	for (UINT i=0; i<ne_shared->modnames_count; i++) {
+		ht_snprintf(line, sizeof line, "%0d: %s", i+1, ne_shared->modnames[i]);
 		m->add_mask(line);
-		free(s);
 	}
 	v->insertsub(m);
 

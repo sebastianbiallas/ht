@@ -22,18 +22,19 @@
 #include "htdebug.h"
 #include "htidle.h"
 #include "htkeyb.h"
+#include "htsys.h"
 
 ht_clist *idle_objs;
 
 int cur_idle=0;
 bool any_idles=0;
 
-void register_idle_object(object *o)
+void register_idle_object(Object *o)
 {
 	idle_objs->insert(o);
 }
 
-void unregister_idle_object(object *o)
+void unregister_idle_object(Object *o)
 {
 	int c=idle_objs->count();
 	for (int i=0; i<c; i++) if (idle_objs->get(i)==o) {
@@ -50,7 +51,7 @@ void do_idle()
 			if (!any_idles) sys_suspend();
 			any_idles=0;
 		}
-		object *i=idle_objs->get(cur_idle);
+		Object *i=idle_objs->get(cur_idle);
 		assert(i);
 		any_idles|=i->idle();
 		cur_idle++;

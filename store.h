@@ -2,7 +2,7 @@
  *	HT Editor
  *	store.h
  *
- *	Copyright (C) 1999, 2000, 2001 Sebastian Biallas (sb@web-productions.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -25,7 +25,7 @@
 #include "global.h"
 #include "htdata.h"
 
-typedef object *(*object_builder)();
+typedef Object *(*object_builder)();
 
 class ht_stream;
 
@@ -33,29 +33,29 @@ class ht_stream;
 
 class ht_object_stream_inter: public ht_object_stream {
 public:
-	virtual object	*get_object(char *name);
-	virtual void	get_object(object *&o, char *name);
-	virtual void	put_object(object *obj, char *name);
+	virtual Object	*getObject(char *name);
+	virtual void	getObject(Object *&o, char *name);
+	virtual void	putObject(Object *obj, char *name);
 };
 
 class ht_object_stream_bin: public ht_object_stream_inter {
 public:
 		   void	init(ht_stream *s);
 /* overwritten */
-	virtual void	*get_binary(int size, char *desc);
-	virtual void	get_binary(void *p, int size, char *desc);
-	virtual bool	get_bool(char *desc);
-	virtual int	get_int_dec(int size, char *desc);
-	virtual int	get_int_hex(int size, char *desc);
-	virtual void	get_separator();
-	virtual char	*get_string(char *desc);
-	virtual void	put_binary(void *mem, int size, char *desc);
-	virtual void	put_bool(bool b, char *desc);
-	virtual void	put_info(char *info);
-	virtual void	put_int_dec(int a, int size, char *desc);
-	virtual void	put_int_hex(int a, int size, char *desc);
-	virtual void	put_separator();
-	virtual void	put_string(char *string, char *desc);
+	virtual void	*getBinary(int size, char *desc);
+	virtual void	getBinary(void *p, int size, char *desc);
+	virtual bool	getBool(char *desc);
+	virtual int	getIntDec(int size, char *desc);
+	virtual int	getIntHex(int size, char *desc);
+	virtual void	getSeparator();
+	virtual char	*getString(char *desc);
+	virtual void	putBinary(void *mem, int size, char *desc);
+	virtual void	putBool(bool b, char *desc);
+	virtual void	putInfo(char *info);
+	virtual void	putIntDec(int a, int size, char *desc);
+	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putSeparator();
+	virtual void	putString(char *string, char *desc);
 };
 
 class ht_object_stream_txt: public ht_object_stream_inter {
@@ -68,36 +68,37 @@ public:
 	   
 		void	init(ht_stream *s);
 /* overwritten */
-	virtual void	*get_binary(int size, char *desc);
-	virtual void	get_binary(void *p, int size, char *desc);
-	virtual bool	get_bool(char *desc);
-	virtual int	get_int_dec(int size, char *desc);
-	virtual int	get_int_hex(int size, char *desc);
-	virtual void	get_object(object *&o, char *name);
-	virtual void	get_separator();
-	virtual char	*get_string(char *desc);
-	virtual void	put_binary(void *mem, int size, char *desc);
-	virtual void	put_bool(bool b, char *desc);
-	virtual void	put_info(char *info);
-	virtual void	put_int_dec(int a, int size, char *desc);
-	virtual void	put_int_hex(int a, int size, char *desc);
-	virtual void	put_object(object *obj, char *name);
-	virtual void	put_separator();
-	virtual void	put_string(char *string, char *desc);
+	virtual void	*getBinary(int size, char *desc);
+	virtual void	getBinary(void *p, int size, char *desc);
+	virtual bool	getBool(char *desc);
+	virtual int	getIntDec(int size, char *desc);
+	virtual int	getIntHex(int size, char *desc);
+	virtual void	getObject(Object *&o, char *name);
+	virtual void	getSeparator();
+	virtual char	*getString(char *desc);
+	virtual void	putBinary(void *mem, int size, char *desc);
+	virtual void	putBool(bool b, char *desc);
+	virtual void	putInfo(char *info);
+	virtual void	putIntDec(int a, int size, char *desc);
+	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putObject(Object *obj, char *name);
+	virtual void	putSeparator();
+	virtual void	putString(char *string, char *desc);
 
-		   void	set_syntax_error();
-		   int	get_error_line();
+		   void	setSyntaxError();
+		   int	getErrorLine();
+private:
 /* io */
 		   void	expect(char c);
-		   void	skip_white();
-		   char	read_char();
-		   void	read_desc(char *desc);
+		   void	skipWhite();
+		   char	readChar();
+		   void	readDesc(char *desc);
 
 		   
-		   void	put_desc(char *desc);
-		   void	put_indent();
-		   void	put_char(char c);
-		   void	put_s(char *s);
+		   void	putDesc(char *desc);
+		   void	putIndent();
+		   void	putChar(char c);
+		   void	putS(char *s);
 };
 
 /*
@@ -114,17 +115,17 @@ protected:
 public:
 		   void	init(ht_stream *s, bool duplicate);
 	virtual void	done();
-	virtual void	*get_binary(int size, char *desc);
-	virtual void	get_binary(void *p, int size, char *desc);
-	virtual int	get_int_dec(int size, char *desc);
-	virtual int	get_int_hex(int size, char *desc);
-	virtual char	*get_string(char *desc);
-	virtual UINT	record_start(UINT size);
-	virtual void	record_end(UINT);
-	virtual void	put_binary(void *mem, int size, char *desc);
-	virtual void	put_int_dec(int a, int size, char *desc);
-	virtual void	put_int_hex(int a, int size, char *desc);
-	virtual void	put_string(char *string, char *desc);
+	virtual void	*getBinary(int size, char *desc);
+	virtual void	getBinary(void *p, int size, char *desc);
+	virtual int	getIntDec(int size, char *desc);
+	virtual int	getIntHex(int size, char *desc);
+	virtual char	*getString(char *desc);
+	virtual UINT	recordStart(UINT size);
+	virtual void	recordEnd(UINT);
+	virtual void	putBinary(void *mem, int size, char *desc);
+	virtual void	putIntDec(int a, int size, char *desc);
+	virtual void	putIntHex(int a, int size, char *desc);
+	virtual void	putString(char *string, char *desc);
 };
 
 #endif

@@ -25,37 +25,31 @@
 #include "htdialog.h"
 #include "htobj.h"
 
-/* menu palette */
-
-/*#define palclasskey_menu	     			"menu"
-
-#define palkey_menu_default				"default"
-
-#define palkey_menu_black				"black"
-#define palkey_menu_gray					"gray"
-
-#define palcolors_menu					6
-
-#define palidx_menu_normal				0
-#define palidx_menu_normal_shortcut		1
-#define palidx_menu_selected				2
-#define palidx_menu_selected_shortcut		3
-#define palidx_menu_disabled				4
-#define palidx_menu_disabled_selected		5*/
-
 /*
  *	CLASS ht_context_menu_entry
  */
 
+class ht_context_menu;
+
+#define CME_ENTRY		0
+#define CME_SEPARATOR	1
+#define CME_SUBMENU		2
+
 class ht_context_menu_entry: public ht_data {
 public:
-	char *name;
-	char *shortcut;
-	char *comment;
-	int command;
-	int key;
-	int active;
-	
+	int type;
+	union {
+		struct {
+			char *name;
+			char *shortcut;
+			char *comment;
+			int command;
+			int key;
+			bool active;
+		} entry;
+		ht_context_menu *submenu;
+	};
+
 	virtual ~ht_context_menu_entry();
 };
 
@@ -64,10 +58,11 @@ public:
  */
 
 class ht_context_menu: public ht_data {
-public:
-	int xpos, width; /* used externally */
+private:
 	char *name;
 	char *shortcut;
+public:
+	int xpos, width; /* used externally */
 
 			void init(char *name);
 	virtual	void done();
@@ -76,6 +71,8 @@ public:
 	virtual   ht_context_menu_entry *enum_entry_first();
 	virtual   ht_context_menu_entry *enum_entry_next();
 	virtual	ht_context_menu_entry *get_entry(int n);
+	virtual	char *get_name();
+	virtual	char *get_shortcut();
 };
 
 /*
@@ -92,8 +89,9 @@ public:
 			void init(char *name);
 	virtual	void done();
 /* new */
-			int insert_entry(char *name, char *comment, int command, int key, int active);
-			int insert_separator();
+			void insert_entry(char *name, char *comment, int command, int key, bool active);
+			void insert_separator();
+			void insert_submenu(ht_context_menu *submenu);
 /* overwritten */
 	virtual	int count();
 	virtual   ht_context_menu_entry *enum_entry_first();
@@ -116,6 +114,7 @@ protected:
 
 			void execute_menu(int i);
 			ht_context_menu *get_context_menu(int i);
+			bool handle_key_context_menu(ht_context_menu *a, int k);
 /* overwritten */
 	virtual	char *defaultpalette();
 	virtual	char *defaultpaletteclass();
@@ -131,27 +130,6 @@ public:
 			void insert_local_menu();
 			bool set_local_menu(ht_context_menu *m);
 			void delete_local_menu();
-};
-
-/*
- *	CLASS ht_context_menu_window
- */
-
-class ht_context_menu_window_body;
-
-struct ht_context_menu_window_data {
-	int selected;
-};
-
-class ht_context_menu_window: public ht_dialog {
-protected:
-	ht_context_menu_window_body *body;
-public:
-			void init(bounds *b, ht_context_menu *menu);
-	virtual	void done();
-/* overwritten */
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
 };
 
 /*
@@ -185,14 +163,20 @@ public:
 
 class ht_menu_window_body;
 
+struct ht_menu_window_data {
+	int selected;
+};
+
 class ht_menu_window: public ht_dialog {
 protected:
 	ht_menu_window_body *body;
+	ht_context_menu *menu;
 public:
 			void init(bounds *b, ht_context_menu *menu);
 	virtual	void done();
 /* overwritten */
 	virtual	void getdata(ht_object_stream *s);
+	virtual	void handlemsg(htmsg *msg);
 	virtual	void setdata(ht_object_stream *s);
 };
 

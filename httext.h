@@ -33,9 +33,9 @@ extern format_viewer_if httext_if;
  */
 
 class ht_text_viewer2: public ht_uformat_viewer {
-protected:
-	virtual	bool address_to_offset(fmt_vaddress addr, FILEOFS *ofs);
-	virtual	bool offset_to_address(FILEOFS ofs, fmt_vaddress *addr);
+public:
+/* overwritten */
+	virtual	void handlemsg(htmsg *msg);
 };
 
 /*
@@ -53,17 +53,13 @@ public:
 			void init(ht_streamfile *file, FILEOFS offset, int size);
 	virtual	void done();
 /* overwritten */
-//	virtual	bool convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2);
-//	virtual	bool convert_ofs_to_id(FILEOFS offset, ID *id1, ID *id2);
-//	virtual	bool convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr);
-//	virtual	bool convert_id_to_ofs(ID id1, ID id2, FILEOFS *offset);
-	virtual	void first_line_id(ID *id1, ID *id2);
-	virtual	bool getline(char *line, ID id1, ID id2);
-	virtual	void last_line_id(ID *id1, ID *id2);
-	virtual	int next_line_id(ID *id1, ID *id2, int n);
-	virtual	int prev_line_id(ID *id1, ID *id2, int n);
-//	virtual	bool ref(ID id1, ID id2);
-//	virtual	ht_search_result *search(ht_search_request *search, FILEOFS start, FILEOFS end);
+	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
+	virtual	bool convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset);
+	virtual	void first_line_id(LINE_ID *line_id);
+	virtual	bool getline(char *line, const LINE_ID line_id);
+	virtual	void last_line_id(LINE_ID *line_id);
+	virtual	int next_line_id(LINE_ID *line_id, int n);
+	virtual	int prev_line_id(LINE_ID *line_id, int n);
 };
 
 #endif /* !__HTTEXT_H__ */

@@ -20,6 +20,7 @@
 
 #include "htsys.h"
 
+#include <ctype.h>
 #include <dir.h>
 #include <dpmi.h>
 #include <errno.h>
@@ -29,9 +30,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-int sys_canonicalize(char *filename, char *fullfilename)
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+int sys_canonicalize(char *result, const char *filename)
 {
-	_fixpath(filename, fullfilename);
+	_fixpath(filename, result);
 	return 0;
 }
 
@@ -84,7 +88,7 @@ void ff2pstat(struct ffblk *f, pstat_t *s)
 	}
 }
 
-int sys_findfirst(char *dirname, pfind_t *pfind)
+int sys_findfirst(const char *dirname, pfind_t *pfind)
 {
 	int dnl=strlen(dirname);
 	strcpy(sys_find_name, dirname);
@@ -121,7 +125,7 @@ int sys_findnext(pfind_t *pfind)
 	return 0;
 }
 
-int sys_pstat(pstat_t *s, char *filename)
+int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
 	int e=stat(filename, &st);
@@ -147,19 +151,124 @@ int sys_get_free_mem()
 	return info.available_memory;
 }
 
-int sys_truncate(char *filename, FILEOFS ofs)
+int sys_truncate(const char *filename, FILEOFS ofs)
 {
 	return truncate(filename, ofs);
 }
 
-int sys_deletefile(char *filename)
+int sys_deletefile(const char *filename)
 {
 	return unlink(filename);
 }
 
-bool sys_is_path_delim(char c)
+bool sys_is_path_delim(const char c)
 {
 	return (c == '/') || (c == '\\');
+}
+
+int sys_filename_cmp(const char *a, const char *b)
+{
+	while (*a && *b) {
+          if (sys_is_path_delim(*a) && sys_is_path_delim(*b)) {
+		} else if (tolower(*a) != tolower(*b)) {
+          	break;
+          } else if (*a != *b) {
+          	break;
+          }
+     	a++;
+          b++;
+     }
+	return *a - *b;
+}
+
+/*
+ *	Clipboard functions
+ */
+ 
+static bool open_clipboard()
+{
+	__dpmi_regs r;
+	r.x.ax = 0x1700;   // version
+	__dpmi_int(0x2f, &r);
+     if (r.x.ax == 0x1700) return false;
+	r.x.ax = 0x1701;  // open
+	__dpmi_int(0x2f, &r);     
+     return (r.x.ax != 0);
+}
+
+static void close_clipboard()
+{
+	__dpmi_regs r;
+	r.x.ax = 0x1708;
+	__dpmi_int(0x2f, &r);
+}
+
+bool sys_write_data_to_native_clipboard(const void *data, int size)
+{
+	if (size > 0xffff) return false;
+     if (!open_clipboard()) return false;
+     int sel;
+     word seg = __dpmi_allocate_dos_memory((size+15)>>4, &sel);
+     if (seg == 0xffff) {
+     	close_clipboard();
+     	return false;
+     }
+     dosmemput(data, size, seg*16);
+     
+	__dpmi_regs r;
+	r.x.ax = 0x1703;
+     
+     r.x.dx = 0x01; // text
+     r.x.es = seg;
+     r.x.bx = 0;
+	r.x.si = size >> 16;
+	r.x.cx = size & 0xffff;
+     
+	__dpmi_int(0x2f, &r);
+     __dpmi_free_dos_memory(sel);
+     close_clipboard();
+     return (r.x.ax != 0);
+}
+
+int sys_get_native_clipboard_data_size()
+{
+	return 10000;
+     if (!open_clipboard()) return 0;
+	__dpmi_regs r;
+	r.x.ax = 0x1704;
+     r.x.dx = 0x07; // text
+	__dpmi_int(0x2f, &r);
+     close_clipboard();
+     return ((dword)r.x.dx)<<16+r.x.ax;
+}
+
+bool sys_read_data_from_native_clipboard(void *data, int max_size)
+{
+     int dz = sys_get_native_clipboard_data_size();
+     if (!open_clipboard()) return false;
+     if (!dz) {
+     	close_clipboard();
+     	return false;
+     }
+     int sel;
+     word seg = __dpmi_allocate_dos_memory((dz+15)>>4, &sel);
+     if (seg == 0xffff) {
+     	close_clipboard();
+     	return false;
+     }
+     
+	__dpmi_regs r;
+	r.x.ax = 0x1705;
+	r.x.dx = 0x1;
+     r.x.es = seg;
+     r.x.bx = 0;
+	__dpmi_int(0x2f, &r);
+     if (r.x.ax) {
+          dosmemget(seg*16, MIN(max_size, dz), data);
+     }
+     __dpmi_free_dos_memory(sel);
+     close_clipboard();
+     return (r.x.ax != 0);
 }
 
 /*

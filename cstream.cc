@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-void	ht_compressed_stream::init(ht_stream *stream, bool own_stream, UINT granularity=COMPRESSED_STREAM_DEFAULT_GRANULARITY)
+void	ht_compressed_stream::init(ht_stream *stream, bool own_stream, UINT granularity)
 {
 	ht_layer_stream::init(stream, own_stream);
 	if ((get_access_mode() & (FAM_READ | FAM_WRITE)) == (FAM_READ | FAM_WRITE)) {
@@ -134,7 +134,7 @@ UINT	ht_compressed_stream::read(void *buf, UINT size)
 	return ssize;
 }
 
-UINT	ht_compressed_stream::write(void *buf, UINT size)
+UINT	ht_compressed_stream::write(const void *buf, UINT size)
 {
 	UINT ssize = size;
 	while (bufferpos+size >= buffersize) {

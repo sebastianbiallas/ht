@@ -21,8 +21,26 @@
 #ifndef __HTNEIMG_H__
 #define __HTNEIMG_H__
 
+#include "htanaly.h"
+#include "htne.h"
 #include "formats.h"
 
 extern format_viewer_if htneimage_if;
 
+/*
+ *	CLASS ht_ne_aviewer
+ */
+
+class ht_ne_aviewer: public ht_aviewer {
+public:
+	ht_ne_shared_data *ne_shared;
+	ht_streamfile *file;
+     
+	        void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_ne_shared_data *ne_shared);
+/* overwritten */
+	virtual char *func(UINT i, bool execute);
+	virtual void setAnalyser(Analyser *a);
+};
+
 #endif /* !__HTNEIMG_H__ */
+

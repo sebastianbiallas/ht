@@ -23,7 +23,6 @@
 
 #include "formats.h"
 #include "coff_s.h"
-#include "htanaly.h"
 #include "htcoffhd.h"
 
 #define DESC_COFF			"coff - unix common obj file"
@@ -63,18 +62,6 @@ struct ht_coff_shared_data {
 };
 
 /*
- *	CLASS ht_coff_aviewer
- */
-
-class ht_coff_aviewer: public ht_aviewer {
-public:
-	ht_coff_shared_data *coff_shared;
-	ht_streamfile *file;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, analyser *Analyser, ht_coff_shared_data *coff_shared);
-	virtual void set_analyser(analyser *a);
-};
-
-/*
  *	CLASS ht_coff
  */
 
@@ -86,13 +73,13 @@ public:
 	virtual	void done();
 };
 
-int coff_rva_to_section(coff_section_headers *section_headers, ADDR rva, int *section);
-int coff_rva_to_ofs(coff_section_headers *section_headers, ADDR rva, dword *ofs);
-int coff_rva_is_valid(coff_section_headers *section_headers, ADDR rva);
-int coff_rva_is_physical(coff_section_headers *section_headers, ADDR rva);
+int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section);
+int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs);
+int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva);
+int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva);
 
-int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, ADDR *rva);
-int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, ADDR *section);
-int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, ADDR *rva, ADDR *section);
+int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva);
+int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section);
+int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section);
 
 #endif /* !__HTPE_H__ */

@@ -18,10 +18,11 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
 #include "htclipboard.h"
+#include "htctrl.h"
 #include "htsearch.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "tools.h"
 
 #include <stdlib.h>
@@ -47,7 +48,7 @@ public:
 
 void ht_clipboard::init()
 {
-	ht_mem_file::init(0, 16);
+	ht_mem_file::init(0, 16, FAM_READ | FAM_WRITE);
 	copy_history=new ht_clist();
 	((ht_clist*)copy_history)->init();
 	select_start=0;
@@ -75,7 +76,7 @@ void ht_clipboard::clear()
 	app->sendmsg(&m);
 }
 
-UINT	ht_clipboard::write(void *buf, UINT size)
+UINT	ht_clipboard::write(const void *buf, UINT size)
 {
 	htmsg m;
 	m.msg=msg_file_changed;
@@ -143,13 +144,13 @@ void ht_clipboard_viewer::update_content()
 	clear_subs();
 	ht_clipboard *clipboard=(ht_clipboard*)file;
 	int c=clipboard->copy_history->count();
-	char title[512]; /* possible buffer overflow ! */
+	char title[512];	/* secure */
 
 	for (int i=0; i<c; i++) {
 		ht_clipboard_copy_history *j=(ht_clipboard_copy_history*)clipboard->copy_history->get(i);
 
 		tm *t=localtime(&j->time);
-		sprintf(title, "*** %02d:%02d:%02d, size %d(%xh), from %s", t->tm_hour, t->tm_min, t->tm_sec, j->size, j->size, j->source);
+		ht_snprintf(title, sizeof title, "*** %02d:%02d:%02d, size %d(%xh), from %s", t->tm_hour, t->tm_min, t->tm_sec, j->size, j->size, j->source);
 
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(clipboard, i);

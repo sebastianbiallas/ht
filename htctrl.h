@@ -21,12 +21,18 @@
 #ifndef __HTCTRL_H__
 #define __HTCTRL_H__
 
+#include "htdata.h"
 #include "htobj.h"
+
+#define GLOBAL_ERROR_SIZE 1024
+extern char *globalerror;
 
 extern ht_view *app;
 extern ht_view *baseview;
 extern screendrawbuf *screen;
-extern char *this_app;
+extern ht_list *virtual_fs_list;
+extern void *project;
+extern char *appname;
 extern int some_analyser_active;
 extern int num_ops_parsed;
 

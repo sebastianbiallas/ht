@@ -302,6 +302,8 @@ public:
 	virtual	void	store(ht_object_stream *f);
 	virtual	void update();
 			void update_cursor();
+	virtual	ht_data *vstate_create();
+			void vstate_save();
 };
 
 /*
@@ -316,7 +318,7 @@ struct ht_text_listbox_item {
 
 struct ht_text_listbox_sort_order {
 	int		col;
-	int		(*compare_func)(char *key_a, char *key_b);
+	int		(*compare_func)(const char *key_a, const char *key_b);
 };
 
 class ht_text_listbox: public ht_listbox {

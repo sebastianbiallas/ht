@@ -21,8 +21,23 @@
 #ifndef __HTELFIMG_H__
 #define __HTELFIMG_H__
 
+#include "htanaly.h"
+#include "htelf.h"
 #include "formats.h"
 
 extern format_viewer_if htelfimage_if;
 
+/*
+ *	CLASS ht_elf_aviewer
+ */
+
+class ht_elf_aviewer: public ht_aviewer {
+public:
+	ht_elf_shared_data *elf_shared;
+	ht_streamfile *file;
+		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_elf_shared_data *elf_shared);
+	virtual void setAnalyser(Analyser *a);
+};
+
 #endif /* !__HTELFIMG_H__ */
+

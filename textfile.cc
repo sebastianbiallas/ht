@@ -301,31 +301,34 @@ UINT ht_ltextfile::find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, in
 	UINT readlen=(maxbuflen>TEXTFILE_READSIZE) ? TEXTFILE_READSIZE : maxbuflen;
 	byte *bufp;
 	UINT s;
-	UINT len=0;
+	UINT len = 0;
 	
-	if (le_len) *le_len=0;
+	if (le_len) *le_len = 0;
 	do {
 		streamfile->seek(ofs);
-		s=streamfile->read(buf, readlen);
+		s = streamfile->read(buf, readlen);
 		int l;
-		bufp=match_lineend_forwd(buf, s, &l);
+		bufp = match_lineend_forwd(buf, s, &l);
 		if (bufp) {
-			len+=bufp-buf+l;
-			if (len>TEXTFILE_MAX_LINELEN) {
-				len=TEXTFILE_MAX_LINELEN;
-				break;
-			}
-			if (le_len) *le_len=l;
-			break;
-		} else len+=s;
-		if (len>TEXTFILE_MAX_LINELEN) {
-			len=TEXTFILE_MAX_LINELEN;
+			len += bufp-buf+l;
+			if (le_len) *le_len = l;
 			break;
 		}
-		   /* make sure current and next read overlap
+          if (s != readlen) {
+          	len += s;
+          	break;
+          }
+		/* make sure current and next read overlap
 		   to guarantee proper lineend-matching */
-		ofs+=s-(TEXTFILE_MAX_LINEENDLEN-1);
-	} while (s==readlen);
+          if (s > (TEXTFILE_MAX_LINEENDLEN-1)) {
+			len += s-(TEXTFILE_MAX_LINEENDLEN-1);
+          }
+		ofs += s-(TEXTFILE_MAX_LINEENDLEN-1);
+	} while (s == readlen);
+	if (len > TEXTFILE_MAX_LINELEN) {
+		len = TEXTFILE_MAX_LINELEN;
+          if (le_len) *le_len = 0;
+	}
 	return len;
 }
 
@@ -841,30 +844,30 @@ int ht_ltextfile::vcntl(UINT cmd, va_list vargs)
 	return ht_textfile::vcntl(cmd, vargs);
 }
 
-UINT	ht_ltextfile::write(void *buf, UINT size)
+UINT	ht_ltextfile::write(const void *buf, UINT size)
 {
-	FILEOFS o=tell();
+	FILEOFS o = tell();
 	UINT line;
 	UINT pofs;
-	byte *b=(byte*)buf;
+	byte *b = (byte*)buf;
 	if (convert_ofs2line(o, &line, &pofs)) {
 		while (size) {
 			int lelen;
 			UINT s;
-			byte *c=match_lineend_forwd(b, size, &lelen);
+			byte *c = match_lineend_forwd(b, size, &lelen);
 			if (c) {
-				s=c-b;
+				s = c-b;
 				split_line(line, pofs, c, lelen);
 			} else {
-				s=size;
-				lelen=0;
+				s = size;
+				lelen = 0;
 			}
 			insert_chars(line, pofs, b, s);
-			s+=lelen;
-			b+=s;
-			size-=s;
+			s += lelen;
+			b += s;
+			size -= s;
 			line++;
-			pofs=0;
+			pofs = 0;
 		}
 	}
 	return 0;

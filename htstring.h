@@ -70,7 +70,7 @@ class ht_data_string: public ht_data {
 public:
 	char *value;
 
-			ht_data_string(char *s=0);
+			ht_data_string(const char *s = 0);
 	virtual 	~ht_data_string();
 /* overwritten */
 	virtual	int  load(ht_object_stream *f);

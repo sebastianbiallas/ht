@@ -98,7 +98,7 @@ typedef struct	PE_OPTIONAL_HEADER32_NT {
 #define PE_DIRECTORY_ENTRY_BOUND_IMPORT		11	  // Bound Import Directory in headers
 #define PE_DIRECTORY_ENTRY_IAT			12	  // Import Address Table
 #define PE_DIRECTORY_ENTRY_DELAY_IMPORT		13	  // Delay Import Directory
-#define PE_DIRECTORY_ENTRY_COM			14	  // COM+
+#define PE_DIRECTORY_ENTRY_IL			14	  // IL (e.g. MS .NET)
 
 /*
  *	Export
@@ -201,6 +201,21 @@ struct PE_RESOURCE_DATA_ENTRY {
     dword	  reserved HTPACKED;
 };
 
+/*
+ *   IL
+ */
+
+#define PE_IL_DIRECTORY_ATTRIBUTES_HAD_NATIVE 0x1
+#define PE_IL_DIRECTORY_ATTRIBUTES_INT64      0x2
+
+struct PE_IL_DIRECTORY {
+	dword size HTPACKED;
+	word major_version HTPACKED;
+	word minor_version HTPACKED;
+	dword metadata_section_rva HTPACKED;
+	dword metadata_section_size HTPACKED;
+	dword attributes HTPACKED;
+};
 
 extern byte PE_DATA_DIRECTORY_struct[];
 extern byte PE_OPTIONAL_HEADER32_NT_struct[];
@@ -211,5 +226,6 @@ extern byte PE_DELAY_IMPORT_DESCRIPTOR_struct[];
 extern byte PE_RESOURCE_DIRECTORY_struct[];
 extern byte PE_RESOURCE_DIRECTORY_ENTRY_struct[];
 extern byte PE_RESOURCE_DATA_ENTRY_struct[];
+extern byte PE_IL_DIRECTORY_struct[];
 
 #endif

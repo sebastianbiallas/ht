@@ -18,59 +18,93 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 
-object::object()
+#include "common.h"
+#include "snprintf.h"
+
+Object::Object()
 {
-	initialized=0;
-	destroyed=0;
+#ifdef HTDEBUG
+	initialized = false;
+	destroyed = false;
+#endif
 }
 
-object::~object()
+Object::~Object()
 {
+#ifdef HTDEBUG
 	if (initialized && !destroyed) {
 		printf("shit !!! object not destroyed\n");
 		exit(66);
 //		int exit=1;
 	}
+#endif
 }
 
-void	object::init()
+void	Object::init()
 {
-	initialized=1;
+#ifdef HTDEBUG
+	initialized = true;
+#endif
 }
 
-void object::done()
+void Object::done()
 {
-	destroyed=1;
+#ifdef HTDEBUG
+	destroyed = true;
+#endif
 }
 
-object *object::duplicate()
+int Object::compareTo(Object *o)
 {
-	object *o=new object();
+	return 0;
+}
+
+Object *Object::duplicate()
+{
+	Object *o=new Object();
 	o->init();
 	return o;
 }
 
-bool object::idle()
+bool Object::idle()
+{
+	return false;
+}
+
+bool Object::instanceOf(OBJECT_ID id)
+{
+	return id == object_id();
+}
+
+bool Object::instanceOf(Object *o)
+{
+	return instanceOf(o->object_id());
+}
+
+int Object::load(ht_object_stream *s)
 {
 	return 0;
 }
 
-int  object::load(ht_object_stream *s)
+OBJECT_ID Object::object_id()
 {
-	return 0;
+	return ATOM_OBJECT;
 }
 
-void object::store(ht_object_stream *s)
+void Object::store(ht_object_stream *s)
 {
 }
 
-OBJECT_ID object::object_id()
+int Object::toString(char *s, int maxlen)
 {
-	return 0;
+	OBJECT_ID oid = object_id();
+	unsigned char c1 = (oid >> 24);
+	unsigned char c2 = (oid >> 16) & 0xff;
+	unsigned char c3 = (oid >>  8) & 0xff;
+	unsigned char c4 = oid & 0xff;
+	return ht_snprintf(s, maxlen, "[OBJECT (%c%c%c%c)]", c1?c1:'0', c2?c2:'0', c3?c3:'0', c4?c4:'0');
 }
 

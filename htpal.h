@@ -22,6 +22,7 @@
 #define __HTPAL_H__
 
 #include "htdata.h"
+#include "htobj.h"
 #include "htreg.h"
 
 #define rnt_palette_name		"palette"

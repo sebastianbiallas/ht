@@ -40,7 +40,7 @@
 #ifdef NAME_MAX
 #define HT_NAME_MAX NAME_MAX		/* POSIX and friends... */
 #else
-#define HT_NAME_MAX 255			/* unknown... */
+#define HT_NAME_MAX 260			/* unknown... */
 #endif
 #endif
 #endif
@@ -124,10 +124,11 @@ typedef bool (*is_path_delim)(char c);
 
 int sys_ht_mode(int mode);
 
-int sys_basename(const char *filename, char *basename);
-int sys_dirname(const char *filename, char *dirname);
-int sys_relname(const char *filename, const char *pathname, char *relname);
-int sys_common_canonicalize(char *in_name, char *out_name, char *cwd, is_path_delim delim);
+int sys_basename(char *result, const char *filename);
+int sys_dirname(char *result, const char *filename);
+int sys_relname(char *result, const char *filename, const char *cwd);
+int sys_common_canonicalize(char *result, const char *in_name, const char *cwd, is_path_delim delim);
+char *sys_filename_suffix(const char *fn);
 
 /*
  *	COMMON CURSES
@@ -361,6 +362,9 @@ K_Control_Home,
 K_Control_End,
 K_Control_Insert,
 K_Control_Delete,
+
+K_Control_Shift_Left,
+K_Control_Shift_Right,
 
 K_Shift_Left,
 K_Shift_Right,

@@ -33,11 +33,12 @@ extern format_viewer_if hthex_if;
 
 class ht_hex_viewer: public ht_uformat_viewer {
 protected:
-	virtual	bool address_to_offset(fmt_vaddress addr, FILEOFS *ofs);
+	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
+	virtual	bool string_to_pos(char *string, viewer_pos *addr);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	bool offset_to_address(FILEOFS ofs, fmt_vaddress *addr);
+	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
 };
 
 /*

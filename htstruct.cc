@@ -18,7 +18,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
 #include "htkeyb.h"
 #include "htstruct.h"
 
@@ -287,10 +286,10 @@ void ht_structure_viewer::draw()
 	cols[3]=VC_WHITE;
 
 	UINT colidx=0;
-	   int nc=-1;
+	int nc=-1;
 	   
-	   ht_list *clocs=find_locs(loclocs->sublocs, offset);
-	   char name[128];		/* FIXME: possible buffer overflow ! */
+	ht_list *clocs=find_locs(loclocs->sublocs, offset);
+	char name[128];		/* FIXME: possible buffer overflow ! */
 	build_loc_string(name, clocs);
 
 	while (y<(UINT)size.h) {

@@ -46,13 +46,13 @@
 #	undef dword
 #endif
 
+typedef unsigned int UINT;
+
 #define byte unsigned char
 #define word unsigned short
 #define dword unsigned int
-struct qword {
-	dword hi HTPACKED;
-	dword lo HTPACKED;
-};
+
+#include "qword.h"
 
 #define DDECL_UINT(name)	dword name HTPACKED
 #define DDECL_PTR(type, name)	type *name HTPACKED
@@ -64,10 +64,6 @@ typedef unsigned int OBJECT_ID;
 #ifndef NULL
 #	define NULL 0
 #endif
-
-typedef dword ADDR;
-typedef dword FILEADDR;
-typedef unsigned int UINT;
 
 #ifndef HAVE_FILEOFS
 #define HAVE_FILEOFS

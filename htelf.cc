@@ -18,9 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "analy.h"
 #include "elfstruc.h"
-#include "elf_analy.h"
+#include "log.h"
 #include "htelf.h"
 #include "htelfhd.h"
 #include "htelfshs.h"
@@ -30,6 +29,7 @@
 #include "htelfimg.h"
 #include "htendian.h"
 #include "stream.h"
+#include "tools.h"
 
 #include "elfstruc.h"
 
@@ -62,24 +62,6 @@ format_viewer_if htelf_if = {
 };
 
 /*
- *	CLASS ht_elf_aviewer
- */
-void ht_elf_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, analyser *Analyser, ht_elf_shared_data *ELF_shared)
-{
-	ht_aviewer::init(b, desc, caps, File, format_group, Analyser);
-	elf_shared = ELF_shared;
-	file = File;
-}
-
-void ht_elf_aviewer::set_analyser(analyser *a)
-{
-	((elf_analyser *)a)->elf_shared = elf_shared;
-	((elf_analyser *)a)->file = file;
-	analy = a;
-	analy_sub->set_analyser(a);
-}
-
-/*
  *	CLASS ht_elf
  */
 void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
@@ -87,6 +69,8 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE, DESC_ELF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_elf");
 
+	LOG("%s: ELF: found header at %08x", file->get_filename(), header_ofs);
+     
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
 	
 	shared_data=elf_shared;
@@ -97,8 +81,8 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	elf_shared->v_image=NULL;
 	elf_shared->htrelocs=NULL;
 	elf_shared->fake_undefined_section=0;
-	
-/* read header */
+
+	/* read header */
 	file->seek(header_ofs);
 	file->read(&elf_shared->ident, sizeof elf_shared->ident);
 	switch (elf_shared->ident.e_ident[ELF_EI_DATA]) {
@@ -114,7 +98,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 		case ELFCLASS32: {
 			file->read(&elf_shared->header32, sizeof elf_shared->header32);
 			create_host_struct(&elf_shared->header32, ELF_HEADER32_struct, elf_shared->byte_order);
-		/* read section headers */
+			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header32.e_shnum;
 			elf_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			file->seek(header_ofs+elf_shared->header32.e_shoff);
@@ -124,7 +108,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 				create_host_struct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
 			}
 	
-		/* read program headers */
+			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header32.e_phnum;
 			elf_shared->pheaders.pheaders32=(ELF_PROGRAM_HEADER32*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
 			file->seek(header_ofs+elf_shared->header32.e_phoff);
@@ -132,17 +116,17 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			for (UINT i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
-		/* create a fake section for undefined symbols */
+			/* create a fake section for undefined symbols */
 //			fake_undefined_symbols();
 
-		/* create streamfile layer for relocations */
+			/* create streamfile layer for relocations */
 			auto_relocate();
 			break;
 		}
 		case ELFCLASS64: {
 			file->read(&elf_shared->header64, sizeof elf_shared->header64);
 			create_host_struct(&elf_shared->header64, ELF_HEADER64_struct, elf_shared->byte_order);
-		/* read section headers */
+			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header64.e_shnum;
 			elf_shared->sheaders.sheaders64=(ELF_SECTION_HEADER64*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
 /* FIXME: 64-bit */
@@ -153,7 +137,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 				create_host_struct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
 			}
 
-		/* read program headers */
+			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header64.e_phnum;
 			elf_shared->pheaders.pheaders64=(ELF_PROGRAM_HEADER64*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
 /* FIXME: 64-bit */
@@ -162,15 +146,15 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			for (UINT i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders64+i, ELF_PROGRAM_HEADER64_struct, elf_shared->byte_order);
 			}
-		/* create a fake section for undefined symbols */
+			/* create a fake section for undefined symbols */
 //			fake_undefined_symbols();
 
-		/* create streamfile layer for relocations */
+			/* create streamfile layer for relocations */
 //			auto_relocate();
 			break;
 		}
 	}
-/* init ifs */
+	/* init ifs */
 	ht_format_group::init_ifs(ifs);
 	while (init_if(&htelfsymboltable_if)) elf_shared->symtables++;
 	while (init_if(&htelfreloctable_if)) elf_shared->reloctables++;
@@ -341,12 +325,10 @@ bool elf_phys_and_mem_section(elf_section_header *sh, UINT elfclass)
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = (ELF_SECTION_HEADER32*)sh;
 			return ((s->sh_type==ELF_SHT_PROGBITS) && (s->sh_addr!=0));
-			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
 			return ((s->sh_type==ELF_SHT_PROGBITS) && (s->sh_addr.lo!=0) && (s->sh_addr.hi!=0));
-			break;
 		}
 	}
 	return false;
@@ -358,68 +340,102 @@ bool elf_valid_section(elf_section_header *sh, UINT elfclass)
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = (ELF_SECTION_HEADER32*)sh;
 			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr!=0));
-			break;
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
 			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr.lo!=0) && (s->sh_addr.hi!=0));
-			break;
 		}
 	}
 	return false;
 }
 
-bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ADDR addr, dword *ofs)
+bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs)
+{
+	switch (elfclass) {
+		case ELFCLASS32: {
+			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
+			for (UINT i=0; i < section_headers->count; i++) {
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr+s->sh_size)) {
+					*ofs = addr.a32 - s->sh_addr + s->sh_offset;
+					return true;
+				}
+				s++;
+			}
+               break;
+		}
+		case ELFCLASS64: {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
+			for (UINT i=0; i < section_headers->count; i++) {
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
+                         *ofs = qofs.lo;
+					return true;
+				}
+				s++;
+			}
+               break;
+          }
+	}
+	return false;
+}
+
+bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section)
+{
+	switch (elfclass) {
+		case ELFCLASS32: {
+			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
+			for (UINT i = 0; i < section_headers->count; i++) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
+					*section = i;
+					return true;
+				}
+				s++;
+			}
+               break;
+		}
+		case ELFCLASS64: {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
+			for (UINT i = 0; i < section_headers->count; i++) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+					*section = i;
+					return true;
+				}
+				s++;
+			}
+               break;
+          }
+	}
+	return false;
+}
+
+bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
 			for (UINT i=0; i<section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (addr >= s->sh_addr) && (addr < s->sh_addr+s->sh_size)) {
-					*ofs=addr-s->sh_addr+s->sh_offset;
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
 				s++;
 			}
+               break;
 		}
-	}
-	return false;
-}
-
-bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ADDR addr, int *section)
-{
-	switch (elfclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
+		case ELFCLASS64: {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (UINT i=0; i<section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr>=s->sh_addr) && (addr<s->sh_addr+s->sh_size)) {
-					*section=i;
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
 				s++;
 			}
+               break;
 		}
 	}
 	return false;
 }
 
-bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ADDR addr)
-{
-	switch (elfclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (UINT i=0; i<section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (addr>=s->sh_addr) && (addr<s->sh_addr+s->sh_size)) {
-					return true;
-				}
-				s++;
-			}
-		}
-	}
-	return false;
-}
-
-bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ADDR addr)
+bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr)
 {
 	return false;
 }
@@ -429,41 +445,68 @@ bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, A
  *	offset conversion routines
  */
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *addr)
+bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s=section_headers->sheaders32;
-			for (UINT i=0; i<section_headers->count; i++) {
+			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
+			for (UINT i = 0; i < section_headers->count; i++) {
 				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (ofs>=s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
-					*addr=ofs-s->sh_offset+s->sh_addr;
+					addr->a32 = ofs - s->sh_offset + s->sh_addr;
 					return true;
 				}
 				s++;
 			}
+               break;
+		}
+		case ELFCLASS64: {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
+               qword qofs = to_qword(ofs);
+			for (UINT i = 0; i < section_headers->count; i++) {
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+					addr->a64 = qofs - s->sh_offset + s->sh_addr;
+					return true;
+				}
+				s++;
+			}
+               break;
 		}
 	}
 	return false;
 }
 
-bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *section)
+bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, int *section)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
 			ELF_SECTION_HEADER32 *s=section_headers->sheaders32;
 			for (UINT i=0; i<section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (ofs>=s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
-					*section=i;
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (ofs >= s->sh_offset) && (ofs<s->sh_offset+s->sh_size)) {
+					*section = i;
 					return true;
 				}
 				s++;
 			}
+               break;
+		}
+		case ELFCLASS64: {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
+               qword qofs;
+               qofs.hi = 0; qofs.lo = ofs;
+			for (UINT i=0; i < section_headers->count; i++) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+					*section = i;
+					return true;
+				}
+				s++;
+			}
+               break;
 		}
 	}
 	return false;
 }
 
-bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ADDR *addr, ADDR *section)
+bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }
@@ -521,8 +564,9 @@ void	ht_elf32_reloc_file::reloc_apply(ht_data *reloc, byte *buf)
 	}
 }
 
-void	ht_elf32_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
+bool	ht_elf32_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
 {
+	return false;
 //	ht_elf32_reloc_entry *e=(ht_elf32_reloc_entry*)reloc;
 }
 

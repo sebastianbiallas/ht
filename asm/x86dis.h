@@ -1,5 +1,5 @@
 /* 
- *	The HT Editor
+ *	HT Editor
  *	x86dis.h
  *
  *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
@@ -52,14 +52,15 @@ struct x86dis_insn {
  *	CLASS x86dis
  */
 
-class x86dis: public disassembler {
+class x86dis: public Disassembler {
 protected:
 	x86dis_insn insn;
 	int opsize, addrsize;
 	char insnstr[256];
 /* initme! */
 	unsigned char *codep, *ocodep;
-	int addr;
+	int seg;
+	int addr; // FIXME: int??
 	byte c;
 	int modrm;
 	int sib;
@@ -90,15 +91,17 @@ public:
 
 /* overwritten */
 	virtual dis_insn *decode(byte *code, byte maxlen, CPU_ADDR addr);
-	virtual int getmaxopcodelength();
-	virtual char *get_name();
-	virtual byte getsize(dis_insn *disasm_insn);
+     virtual dis_insn *duplicateInsn(dis_insn *disasm_insn);
+	virtual int getMaxOpcodeLength();
+	virtual void getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
+	virtual char *getName();
+	virtual byte getSize(dis_insn *disasm_insn);
 		   int load(ht_object_stream *f);
 	virtual OBJECT_ID object_id();
 	virtual char *str(dis_insn *disasm_insn, int options);
 	virtual char *strf(dis_insn *disasm_insn, int options, char *format);
 	virtual void store(ht_object_stream *f);
-	virtual bool valid_insn(dis_insn *disasm_insn);
+	virtual bool validInsn(dis_insn *disasm_insn);
 };
 
 #endif /* __X86DIS_H__ */

@@ -31,7 +31,7 @@
 
 #define NE_FLAGS_NOTAPROCESS	0x8000	  /* Not a process */
 #define NE_FLAGS_ERRORS		0x2000	  /* Errors in image */
-#define NE_FLAGS_BOUND		0x0800	  /* Bound as family app */
+#define NE_FLAGS_SELFLOAD	0x0800
 
 #define NE_FLAGS_NOTWINCOMPAT	0x0100	  /* Not compatible with P.M. Windowing */
 #define NE_FLAGS_WINCOMPAT	0x0200	  /* Compatible with P.M. Windowing */
@@ -178,8 +178,11 @@ struct NE_RELOC_INTERNAL {
 };
 
 struct NE_RELOC_IMPORT {
-	word modidx;
-	word proc;
+	word module;
+	union {
+		word ord;
+		word name_ofs;
+	};
 };
 
 struct NE_RELOC_FIXUP {

@@ -18,32 +18,31 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "log.h"
 #include "htelfimg.h"
 #include "htpal.h"
 #include "htstring.h"
 #include "formats.h"
+#include "snprintf.h"
+#include "tools.h"
 
 #include "elfstruc.h"
-
-#include "htanaly.h"
 #include "elf_analy.h"
 
 ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
-	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) return 0;
+//	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) return 0;
 
 	LOG("%s: ELF: loading image (starting analyser)...", file->get_filename());
-	elf_analyser *p = new elf_analyser();
+	ElfAnalyser *p = new ElfAnalyser();
 	p->init(elf_shared, file);
-	p->begin_analysis();
 
 	bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_ELF_IMAGE"-g");
-	analy_infoline *head;
+	AnalyInfoline *head;
 
 	c.y+=2;
 	c.h-=2;
@@ -52,34 +51,78 @@ ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	c.y-=2;
 	c.h=2;
-	head=new analy_infoline();
+	head=new AnalyInfoline();
 	head->init(&c, v, ANALY_STATUS_DEFAULT);
 
-	v->attach_infoline(head);
+	v->attachInfoline(head);
 
-/* lowest/highest finden */
-	ADDR l=(ADDR)-1, h=0;
-	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
-	for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-		if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
-			if (s->sh_addr<l) l=s->sh_addr;
-			if (s->sh_addr+s->sh_size>h) h=s->sh_addr+s->sh_size;
-		}
-		s++;
-	}
-/**/
+/* find lowest/highest address */
+	Address *low;
+	Address *high;
+	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
+	     case ELFCLASS32: {
+			ELFAddress l, h;
+               l.a32 = (dword)-1;
+               h.a32 = 0;
+			ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
+			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
+				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
+					if (s->sh_addr < l.a32) l.a32=s->sh_addr;
+					if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
+                    }
+				s++;
+			}
+               low = p->createAddress32(l.a32);
+               high = p->createAddress32(h.a32);
+               break;
+          }
+	     case ELFCLASS64: {
+			ELFAddress l, h;
+               l.a64 = to_qword(-1);
+               h.a64 = to_qword(0);
+			ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
+			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
+				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
+					if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
+					if ((s->sh_addr + s->sh_size > h.a64)
+                         && s->sh_size != to_qword(0)) {
+                         	h.a64 = s->sh_addr + s->sh_size - to_qword(1);
+                         }
+                    }
+				s++;
+			}
+               low = p->createAddress64(l.a64);
+               high = p->createAddress64(h.a64);
+               break;
+          }
+     }
 
 	ht_analy_sub *analy=new ht_analy_sub();
-	analy->init(file, p, l, h);
+     char buff[1000];
+     ht_snprintf(buff, sizeof buff, "low: %y high: %y", low, high);
+	analy->init(file, v, p, low, high);
 	v->analy_sub = analy;
 	v->insertsub(analy);
 
+     delete high;
+     delete low;
+
 	v->sendmsg(msg_complete_init, 0);
-	
-	fmt_vaddress vaddr;
-	if (v->string_to_address("entrypoint", &vaddr)) {
-		v->goto_address(vaddr);
-	}
+
+     Address *tmpaddr;
+	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
+	     case ELFCLASS32: {
+			tmpaddr = p->createAddress32(elf_shared->header32.e_entry);
+               break;
+          }
+	     case ELFCLASS64: {
+			tmpaddr = p->createAddress64(elf_shared->header64.e_entry);
+               break;
+          }
+     }
+     
+	v->gotoAddress(tmpaddr, NULL);
+	delete tmpaddr;
 
 	g->insert(head);
 	g->insert(v);
@@ -94,4 +137,22 @@ format_viewer_if htelfimage_if = {
 	htelfimage_init,
 	0
 };
+
+/*
+ *	CLASS ht_elf_aviewer
+ */
+void ht_elf_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_elf_shared_data *ELF_shared)
+{
+	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
+	elf_shared = ELF_shared;
+	file = File;
+}
+
+void ht_elf_aviewer::setAnalyser(Analyser *a)
+{
+	((ElfAnalyser *)a)->elf_shared = elf_shared;
+	((ElfAnalyser *)a)->file = file;
+	analy = a;
+	analy_sub->setAnalyser(a);
+}
 

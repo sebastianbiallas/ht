@@ -23,9 +23,9 @@
 #include "config.h"
 #include CURSES_HDR
 
-//#define HAVE_TEXTMODE_X11_SUPPORT
+//#define HAVE_TEXTMODE_X11
 
-#ifdef HAVE_TEXTMODE_X11_SUPPORT
+#ifdef HAVE_TEXTMODE_X11
 #define HT_META_KEY(c)    ((c) |   0x80000000)
 #define HT_UNMETA_KEY(c)  ((c) & (~0x80000000))
 #define HT_SHIFT_KEY(c)   ((c) |   0x40000000)
@@ -41,34 +41,59 @@
 #define HT_UNCTRL_KEY(c)  ((c) & (~0x80000000))
 #endif
 
-#ifdef HAVE_TEXTMODE_X11_SUPPORT
+#ifdef HAVE_TEXTMODE_X11
 #include <X11/Xlib.h>
 
 static Display *x11_display;
 static Window x11_window;
-#endif /* HAVE_TEXTMODE_X11_SUPPORT */
+#endif /* HAVE_TEXTMODE_X11 */
 
-ht_key ht_escseq2key(UINT r)
+int get_modifier(int key)
+{
+#ifdef HAVE_TEXTMODE_X11
+	if (x11_display) {
+		Window root, child;
+		int root_x, root_y;
+		int win_x, win_y;
+		unsigned int mask;
+		Bool b;
+		int result = key;
+
+		b = XQueryPointer(x11_display, x11_window, &root, &child,
+				    &root_x, &root_y,
+				    &win_x, &win_y,
+				    &mask);
+
+		if (mask & ShiftMask) result = HT_SHIFT_KEY(result);
+		if (mask & ControlMask) result = HT_CTRL_KEY(result);
+		return result;
+	}
+#endif
+	return key;
+}
+
+UINT ht_escseq2rawkey(UINT r)
 {
 	switch (r) {
-		case 'H': return K_Home;
-		case 'F': return K_End;
+		case 'H': return KEY_HOME;
+		case 'F': return KEY_END;
 	}
 	return K_INVALID;
 }
 
 ht_key ht_getkey()
 {
-	UINT r=ht_raw_getkey();
-	ht_key k=K_INVALID;
-	if (r==HT_META_KEY('[')) {		/* ^[ escape sequence */
+	UINT r = ht_raw_getkey();
+	ht_key k = K_INVALID;
+	if (r == HT_META_KEY('[')) {		/* ^[ escape sequence */
 		if (ht_keypressed()) {
-			r=ht_raw_getkey();
-			k=ht_escseq2key(r);
+			r = ht_raw_getkey();
+			r = ht_escseq2rawkey(r);
 		}		    
 	}
-	if (k==K_INVALID) k=ht_rawkey2key(r);
-	if ((k==K_INVALID) && (r<=255)) return (ht_key)r;
+	r = get_modifier(r);
+	k = ht_rawkey2key(r);
+	if ((k == K_INVALID) && (r <= 255)) return (ht_key)r;
 	return k;
 }
 
@@ -89,7 +114,7 @@ ht_key_keycode ht_curses_key_defs[] = {
 #define K_Space		 	0x20*/
 	{K_Return,		'\n'},
 	{K_Delete,		KEY_DC},
-	{K_Insert,		KEY_IL},
+	{K_Insert,		KEY_IC},
 	{K_BackSpace,		KEY_BACKSPACE},
 
 	{K_F1,			KEY_F(1)},
@@ -126,10 +151,14 @@ ht_key_keycode ht_curses_key_defs[] = {
 	{K_Shift_Right,		HT_SHIFT_KEY(KEY_RIGHT)},
 	{K_Shift_PageUp,	HT_SHIFT_KEY(KEY_PPAGE)},
 	{K_Shift_PageDown,	HT_SHIFT_KEY(KEY_NPAGE)},
-	{K_Shift_End,		KEY_SEND},
-	{K_Shift_Delete,	KEY_SDC},
-	{K_Shift_Insert,	KEY_SIC},
-	{K_Shift_Home,		KEY_SHOME},
+/*	{K_Shift_Delete,	KEY_SDC},
+	{K_Shift_Insert,	KEY_SIC},*/
+	{K_Shift_Delete,	HT_SHIFT_KEY(KEY_DC)},
+	{K_Shift_Insert,	HT_SHIFT_KEY(KEY_IC)},
+	{K_Shift_End,		HT_SHIFT_KEY(KEY_END)},
+	{K_Shift_Home,		HT_SHIFT_KEY(KEY_HOME)},
+/*	{K_Shift_End,		KEY_SEND},
+	{K_Shift_Home,		KEY_SHOME},*/
 //	{K_Control_F5,		HT_CTRL_KEY('V')},
 /*	{K_Alt_F1,		-10},
 	{K_Alt_F3,		-11},
@@ -229,30 +258,6 @@ ht_key_keycode ht_curses_key_defs[] = {
 	{K_Control_F12,		HT_CTRL_KEY(KEY_F(12))}
 };
 
-int get_modifier()
-{
-#ifdef HAVE_TEXTMODE_X11_SUPPORT
-	if (x11_display) {
-		Window root, child;
-		int root_x, root_y;
-		int win_x, win_y;
-		unsigned int mask;
-		Bool b;
-		int result = 0;
-
-		b = XQueryPointer(x11_display, x11_window, &root, &child,
-				    &root_x, &root_y,
-				    &win_x, &win_y,
-				    &mask);
-
-		if (mask & ShiftMask) result = HT_SHIFT_KEY(result);
-		if (mask & ControlMask) result = HT_CTRL_KEY(result);
-		return result;
-	}
-#endif
-	return 0;
-}
-
 bool ht_keypressed()
 {
 	int i=getch();
@@ -262,7 +267,7 @@ bool ht_keypressed()
 
 int ht_raw_getkey()
 {
-	int c=getch();
+	int c = getch();
 	if (c=='\e') {
 		c=getch();
 		if ((c==-1) || (c=='\e')) c='\e'; else c=HT_META_KEY(c);
@@ -278,10 +283,10 @@ bool init_keyb()
 {
 	UINT i;
 	
-#ifdef HAVE_TEXTMODE_X11_SUPPORT
+#ifdef HAVE_TEXTMODE_X11
 	x11_display = XOpenDisplay(0);
 	if (x11_display) x11_window = DefaultRootWindow(x11_display);
-#endif /* HAVE_TEXTMODE_X11_SUPPORT */
+#endif /* HAVE_TEXTMODE_X11 */
 
 	for (i=0; i<K_COUNT; i++) {
 		ht_set_key((ht_key)i, -1);
@@ -300,7 +305,7 @@ bool init_keyb()
  
 void done_keyb()
 {
-#ifdef HAVE_TEXTMODE_X11_SUPPORT
+#ifdef HAVE_TEXTMODE_X11
 	if (x11_display) XCloseDisplay(x11_display);
-#endif /* HAVE_TEXTMODE_X11_SUPPORT */
+#endif /* HAVE_TEXTMODE_X11 */
 }

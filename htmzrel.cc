@@ -36,7 +36,7 @@ ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_MZ_REL, VC_EDIT | VC_SEARCH, file, group);
-	ADDR r=0;
+	dword r=0;
 	dword rc=0;
 	file->seek(6);
 	file->read(&rc, 2);

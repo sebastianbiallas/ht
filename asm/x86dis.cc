@@ -71,6 +71,7 @@ dis_insn *x86dis::decode(byte *code, byte Maxlen, CPU_ADDR Addr)
 /* initialize */
 	codep=ocodep;
 	maxlen=Maxlen;
+	seg=Addr.addr32.seg;
 	addr=Addr.addr32.offset;
 	modrm=-1;
 	sib=-1;
@@ -487,6 +488,13 @@ void x86dis::decode_sib(x86_insn_op *op, int mod)
 	}
 }
 
+dis_insn *x86dis::duplicateInsn(dis_insn *disasm_insn)
+{
+     x86dis_insn *insn = (x86dis_insn *)malloc(sizeof (x86dis_insn));
+     *insn = *(x86dis_insn *)disasm_insn;
+     return insn;
+}
+
 int x86dis::esizeaddr(char c)
 {
 	switch (c) {
@@ -580,10 +588,19 @@ dword x86dis::getdword()
 	}
 }
 
-int x86dis::getmaxopcodelength()
+int x86dis::getMaxOpcodeLength()
 {
 	/* x86 opcodes are <= 15 bytes */
 	return 15;
+}
+
+void x86dis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
+{
+	min_length = 1;
+	max_length = 15;
+	min_look_ahead = 120;    // 1/2/3/4/5/6/8/10/12/15
+	avg_look_ahead = 24;     // 1/2/3/4/6/8/12/24
+	addr_align = 1;
 }
 
 int x86dis::getmodrm()
@@ -592,9 +609,9 @@ int x86dis::getmodrm()
 	return modrm;
 }
 
-char *x86dis::get_name()
+char *x86dis::getName()
 {
-	return "x86/disassembler";
+	return "x86/Disassembler";
 }
 
 int x86dis::getsib()
@@ -603,7 +620,7 @@ int x86dis::getsib()
 	return sib;
 }
 
-byte x86dis::getsize(dis_insn *disasm_insn)
+byte x86dis::getSize(dis_insn *disasm_insn)
 {
 	return ((x86dis_insn*)disasm_insn)->size;
 }
@@ -703,7 +720,9 @@ int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 				break;
 		}
 	}
-	return (memc && (!regc));
+	return (memc && (!regc))
+		|| (strcmp(disasm_insn->name, "movzx") == 0)
+		|| (strcmp(disasm_insn->name, "movsx") == 0);
 }
 
 void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params)
@@ -716,9 +735,15 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 	switch (op->type) {
 		case X86_OPTYPE_IMM: {
 			CPU_ADDR a;
-			a.addr32.offset=op->imm;
+			// FIXME: hack
+			if ((insn->name[0]=='j') || strcmp(insn->name, "call")==0) {
+				a.addr32.seg = seg;
+			} else {
+				a.addr32.seg = 0;
+			}
+			a.addr32.offset = op->imm;
 			int slen;
-			char *s=(addr_sym_func) ? addr_sym_func(a, &slen, addr_sym_func_context) : 0;
+			char *s=(addr_sym_func) ? addr_sym_func(a, &slen, addr_sym_func_context) : NULL;
 			if (s) {
 				memmove(opstr, s, slen);
 				opstr[slen]=0;
@@ -841,6 +866,7 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 			}
 			if ((!optimize_addr && op->mem.hasdisp) || (optimize_addr && op->mem.disp) || first) {
 				CPU_ADDR a;
+				a.addr32.seg = 0; // FIXME: not ok
 				a.addr32.offset=op->mem.disp;
 				int slen;
 				char *s=(addr_sym_func) ? addr_sym_func(a, &slen, addr_sym_func_context) : 0;
@@ -896,10 +922,10 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 		case X86_OPTYPE_FARPTR: {
 			CPU_ADDR a;
 /*			a.addr32.seg = op->farptr.seg;
-			a.addr32.offset = op->farptr.offset;*/
-		// FIXME: HACK !!!
-			a.addr32.seg = 0;
-			a.addr32.offset = op->farptr.seg * 0x10000 + op->farptr.offset;
+			a.addr32.offset = op->farptr.offset;
+*/
+			a.addr32.seg = op->farptr.seg;
+			a.addr32.offset = op->farptr.offset;
 			int slen;
 			char *s=(addr_sym_func) ? addr_sym_func(a, &slen, addr_sym_func_context) : 0;
 			if (s) {
@@ -1078,7 +1104,7 @@ void x86dis::store(ht_object_stream *f)
 	PUT_INT_HEX(f, addrsize);
 }
 
-bool x86dis::valid_insn(dis_insn *disasm_insn)
+bool x86dis::validInsn(dis_insn *disasm_insn)
 {
 	return !((x86dis_insn *)disasm_insn)->invalid;
 }

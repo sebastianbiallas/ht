@@ -18,9 +18,9 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
 #include "htatom.h"
 #include "cmds.h"
+#include "htapp.h"
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htkeyb.h"
@@ -29,6 +29,7 @@
 #include "htpal.h"
 #include "htreg.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "store.h"
 #include "tools.h"
 
@@ -61,10 +62,10 @@ void bounds_and(bounds *a, bounds *b)
 
 void put_bounds(ht_object_stream *s, bounds *b)
 {
-	s->put_int_dec(b->x, 4, NULL);
-	s->put_int_dec(b->y, 4, NULL);
-	s->put_int_dec(b->w, 4, NULL);
-	s->put_int_dec(b->h, 4, NULL);
+	s->putIntDec(b->x, 4, NULL);
+	s->putIntDec(b->y, 4, NULL);
+	s->putIntDec(b->w, 4, NULL);
+	s->putIntDec(b->h, 4, NULL);
 }
 
 void clearmsg(htmsg *msg)
@@ -87,7 +88,7 @@ void ht_text::settext(char *text)
 
 void ht_view::init(bounds *b, int _options, char *_desc)
 {
-	object::init();
+	Object::init();
 	VIEW_DEBUG_NAME("ht_view");
 	desc=ht_strdup(_desc);
 	group=0;
@@ -133,7 +134,7 @@ void ht_view::done()
 	if (desc) free(desc);
 	if (pal.data) free(pal.data);
 	if (options & VO_OWNBUFFER) delete buf;
-	object::done();
+	Object::done();
 }
 
 int ht_view::alone()
@@ -202,10 +203,10 @@ void ht_view::buf_printchar(int x, int y, int c, int ch)
 
 int ht_view::buf_printf(int x, int y, int c, char *format, ...)
 {
-	char buf[1024];	/* FIXME: possible buffer overflow ! */
+	char buf[256];	/* secure */
 	va_list arg;
 	va_start(arg, format);
-	vsprintf(buf, format, arg);
+	ht_vsnprintf(buf, sizeof buf, format, arg);
 	va_end(arg);
 	return buf_print(x, y, c, buf);
 }
@@ -672,7 +673,7 @@ void ht_view::sendmsg(int msg, void *data1, void *data2)
 	sendmsg(&m);
 }
 
-void ht_view::sendmsg(int msg, int data1=0, int data2=0)
+void ht_view::sendmsg(int msg, int data1, int data2)
 {
 	htmsg m;
 	switch (msg) {
@@ -739,14 +740,14 @@ void ht_view::setnumber(UINT number)
 {
 }
 
-void ht_view::setoptions(int _options)
+void ht_view::setoptions(int Options)
 {
-	options=_options;
+	options = Options;
 }
 
-void ht_view::setpalette(char *_pal_name)
+void ht_view::setpalette(char *Pal_name)
 {
-	pal_name=_pal_name;
+	pal_name = Pal_name;
 	reloadpalette();
 }
 
@@ -758,16 +759,16 @@ void ht_view::setpalettefull(char *_pal_name, char *_pal_class)
 
 void	ht_view::store(ht_object_stream *s)
 {
-	s->put_bool(enabled, NULL);
-	s->put_bool(focused, NULL);
-	s->put_int_dec(options, 4, NULL);
-	s->put_int_dec(browse_idx, 4, NULL);
-	s->put_string(desc, NULL);
+	s->putBool(enabled, NULL);
+	s->putBool(focused, NULL);
+	s->putIntDec(options, 4, NULL);
+	s->putIntDec(browse_idx, 4, NULL);
+	s->putString(desc, NULL);
 	put_bounds(s, &size);
 	put_bounds(s, &vsize);
-	s->put_string(pal_class, NULL);
-	s->put_string(pal_name, NULL);
-	s->put_int_dec(growmode, 4, NULL);
+	s->putString(pal_class, NULL);
+	s->putString(pal_name, NULL);
+	s->putIntDec(growmode, 4, NULL);
 }
 
 void ht_view::unrelocate_to(ht_view *view)
@@ -890,7 +891,7 @@ int ht_group::focusnext()
 		if (i>view_count-1) i=0;
 		if (i==current->browse_idx) break;
 		ht_view *v=get_by_browse_idx(i);
-		if (v->options & VO_SELECTABLE) {
+		if (v && (v->options & VO_SELECTABLE)) {
 			x=v;
 			break;
 		}
@@ -918,7 +919,7 @@ int ht_group::focusprev()
 		if (i<0) i=view_count-1;
 		if (i==current->browse_idx) break;
 		ht_view *v=get_by_browse_idx(i);
-		if (v->options & VO_SELECTABLE) {
+		if (v && (v->options & VO_SELECTABLE)) {
 			v->selectlast();
 			focus(v);
 			return 1;
@@ -1230,10 +1231,10 @@ void ht_group::setpalette(char *pal_name)
 void ht_group::store(ht_object_stream *s)
 {
 	ht_view::store(s);
-	s->put_int_dec(childcount(), 4, NULL);
+	s->putIntDec(childcount(), 4, NULL);
 	ht_view *v=first;
 	while (v) {
-		s->put_object(v, NULL);
+		s->putObject(v, NULL);
 		v=v->next;
 	}
 }
@@ -1263,7 +1264,7 @@ int ht_xgroup::countselectables()
 
 void ht_xgroup::handlemsg(htmsg *msg)
 {
-	if (msg->type==mt_broadcast) {
+	if ((msg->msg!=msg_draw) && (msg->type==mt_broadcast)) {
 		ht_group::handlemsg(msg);
 	} else {
 		if (msg->msg==msg_complete_init) return;
@@ -1419,7 +1420,7 @@ void	ht_scrollbar::store(ht_object_stream *s)
  *	CLASS ht_frame
  */
 
-void ht_frame::init(bounds *b, char *desc, UINT _style, UINT _number=0)
+void ht_frame::init(bounds *b, char *desc, UINT _style, UINT _number)
 {
 	ht_view::init(b, VO_RESIZE, desc);
 	VIEW_DEBUG_NAME("ht_frame");

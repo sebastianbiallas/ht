@@ -41,26 +41,26 @@
  *	CLASS analyser_ht_output
  */
 
-class analyser_ht_output: public analyser_output {
+class AnalyserHtOutput: public AnalyserOutput {
 		palette	analy_pal;
 		char		tmpbuffer[1024];
-          byte 	*work_buffer_edit_bytes_insert;
+		byte 	*work_buffer_edit_bytes_insert;
 
 		vcp 		getcolor_analy(UINT pal_index);
+		int last;
 public:
 
-				void	init(analyser *Analy);
+				void	init(Analyser *analy);
 		virtual	void done();
-		virtual	void	begin_addr();
-		virtual	void	begin_line();
-          virtual	void	emit_edit_bytes(ADDR Addr, int count);
-		virtual	int	element_len(char *s);
-		virtual	void	end_addr();
-		virtual	void	end_line();
-		virtual	void put_element(int element_type, char *element);
-		virtual	char *link(char *s, ADDR Addr);
-		virtual	char *external_link(char *s, int type1, int type2, void *special);
-				void reloadpalette();
+		virtual	void	beginAddr();
+		virtual	void	beginLine();
+		virtual	int	elementLength(char *s);
+		virtual	void	endAddr();
+		virtual	void	endLine();
+		virtual	void putElement(int element_type, char *element);
+		virtual	char *link(char *s, Address *Addr);
+		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+				void reloadPalette();
 };
 
 #endif

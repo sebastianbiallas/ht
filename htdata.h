@@ -21,8 +21,8 @@
 #ifndef __HTDATA_H__
 #define __HTDATA_H__
 
-class object;
-typedef object ht_data;
+class Object;
+typedef Object ht_data;
 
 #include "common.h"
 
@@ -33,8 +33,9 @@ typedef object ht_data;
 #define ATOM_HT_STREE			MAGICD("DAT\x10")
 #define ATOM_HT_CLIST			MAGICD("DAT\x11")
 
-#define ATOM_COMPARE_KEYS_INT		MAGICD("DAT\x20")
-#define ATOM_COMPARE_KEYS_UINT	MAGICD("DAT\x21")
+#define ATOM_COMPARE_KEYS_HT_DATA	MAGICD("DAT\x20")
+#define ATOM_COMPARE_KEYS_INT		MAGICD("DAT\x21")
+#define ATOM_COMPARE_KEYS_UINT	MAGICD("DAT\x22")
 
 /*
  *	CLASS ht_data
@@ -258,7 +259,7 @@ public:
 	virtual	UINT count();
 	virtual	ht_list *cut(UINT i, UINT count);
 	virtual	bool del(UINT i);
-	virtual	object *duplicate();
+	virtual	Object *duplicate();
 	virtual void empty();
 	virtual	UINT find(ht_data *data);
 	virtual	ht_data *get(UINT i);
@@ -321,6 +322,7 @@ public:
 			void	push(ht_data *data);
 };
 
+int compare_keys_ht_data(ht_data *key_a, ht_data *key_b);
 int compare_keys_int(ht_data *key_a, ht_data *key_b);
 int compare_keys_uint(ht_data *key_a, ht_data *key_b);
 

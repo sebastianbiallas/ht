@@ -163,6 +163,22 @@ lexer_token ht_lang_syntax_lexer::gettoken(void *b, UINT buflen, text_pos p, boo
 					}
 					break;
 				}
+				case LRST_DQSTRING: {
+					if (*buf == '"') {
+						char *b = buf+1;
+						while (*b && (*b != '"')) b++;
+						if (*b == '"') l = b+1-buf;
+					}
+					break;
+				}
+				case LRST_QSTRING: {
+					if (*buf == '\'') {
+						char *b = buf+1;
+						while (*b && (*b != '\'')) b++;
+						if (*b == '\'') l = b+1-buf;
+					}
+					break;
+				}
 				case LRST_EMPTY:
 					break;
 			}
@@ -441,9 +457,9 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 	{ LSTSET(LEX_HTMLST_NORMAL),
 	  false, LRST_STRING, "<!", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_NORMAL),
-	  false, LRST_REGEX, "</[A-Za-z-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	  false, LRST_REGEX, "</[_A-Za-z0-9-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_NORMAL),
-	  false, LRST_REGEX, "<[A-Za-z-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
+	  false, LRST_REGEX, "<[_A-Za-z0-9-]+", LEX_HTMLST_TAG, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_TAG),
 	  false, LRST_STRING, ">", LEX_HTMLST_NORMAL, LEX_HTMLTOK_TAG},
 	{ LSTSET(LEX_HTMLST_TAG),
@@ -451,13 +467,13 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 	{ LSTSET(LEX_HTMLST_TAG),
 	  false, LRST_WHITESPACE, NULL, 0, LEX_HTMLTOK_TAG },
 	{ LSTSET(LEX_HTMLST_TAG),
-	  false, LRST_REGEX, "[-A-Za-z0-9]+", 0, LEX_HTMLTOK_ATTRIBUTE },
+	  false, LRST_REGEX, "[-_A-Za-z0-9]+", 0, LEX_HTMLTOK_ATTRIBUTE },
 	{ LSTSET(LEX_HTMLST_TAG),
 	  false, LRST_CHARSET, "=", 0, LEX_HTMLTOK_SYMBOL },
 	{ LSTSET(LEX_HTMLST_TAG),
-	  false, LRST_REGEX, "\"[^\"]*?\"", 0, LEX_HTMLTOK_CDATA },
+	  false, LRST_DQSTRING, NULL, 0, LEX_HTMLTOK_CDATA },
 	{ LSTSET(LEX_HTMLST_TAG),
-	  false, LRST_REGEX, "'[^']*?'", 0, LEX_HTMLTOK_CDATA },
+	  false, LRST_QSTRING, NULL, 0, LEX_HTMLTOK_CDATA },
 	{ LSTSET(LEX_HTMLST_NORMAL),
 	  false, LRST_REGEX, "&[#A-Za-z0-9]+?;", 0, LEX_HTMLTOK_ENTITY },
 	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_NORMAL), LEX_HTMLTOK_NORMAL),

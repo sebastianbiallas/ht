@@ -26,30 +26,30 @@
 #include "global.h"
 #include "htdata.h"
 
-class out_line: public ht_data {
+class OutLine: public ht_data {
 public:
 	int		textlen;
 	byte		*text;
 	int		bytes;                    // bytes of line in file
-			out_line(byte *Text, int Textlen, int Bytes);
-			~out_line();
+			OutLine(byte *Text, int Textlen, int Bytes);
+			~OutLine();
 };
 
 
-class out_addr: public ht_data {
+class OutAddr: public ht_data {
 public:
-	ADDR		addr;
+	Address	*addr;
 	UINT		time;
 	ht_clist  *lines;
 	int		size;                     // size in memory
 	int		bytes;                    // bytes of address in file
 	
-			out_addr(ADDR Addr, UINT Time);
-			~out_addr();
-	void      append_line(out_line *l);
+			OutAddr(Address *Addr, UINT Time);
+			~OutAddr();
+	void      appendLine(OutLine *l);
 	void		clear();
-	out_line  *get_line(int i);
-	void		update_time(UINT Time);
+	OutLine  *getLine(int i);
+	void		updateTime(UINT Time);
 };
 
 /*
@@ -71,13 +71,13 @@ public:
 /*
  *
  */
-class analyser_output: public object {
+class AnalyserOutput: public Object {
 public:
-		analyser	*analy;
-		ADDR      addr;
+		Analyser	*analy;
+		Address   *addr;
 		int		line;
-		taddr     *cur_addr;
-		out_addr	*cur_out_addr;
+		Location  *cur_addr;
+		OutAddr	*cur_out_addr;
 		int		bytes_line;               // bytes of current line in file
 		int		bytes_addr;               // bytes of current addr in file
 		
@@ -91,31 +91,30 @@ public:
 		UINT		current_time;
 		int		size;
 		
-				void	init(analyser *Analy);
+				void	init(Analyser *analy);
 		virtual	void done();
-		virtual	void	begin_addr();
-		virtual	void	begin_line();
-		virtual	int	element_len(char *s);
-          virtual	void	emit_edit_bytes(ADDR Addr, int count);
-		virtual	void	end_addr();
-		virtual	void	end_line();
-		virtual	char *external_link(char *s, int type1, int type2, void *special);
+		virtual	void	beginAddr();
+		virtual	void	beginLine();
+		virtual	int	elementLength(char *s);
+		virtual	void	endAddr();
+		virtual	void	endLine();
+		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
 		virtual	void footer();
-				void generate_addr(ADDR Addr, out_addr *oa);
-				int	generate_file(ADDR from, ADDR to);
-				void	generate_page(ADDR from, int lines);
-				out_addr *get_addr(ADDR Addr);
-				out_line *get_line(ADDR Addr, int line);
-				bool get_line_str(char *buf, ADDR Addr, int line);
-				bool	get_line_len(int *len, ADDR Addr, int line);
-				int	get_line_count(ADDR Addr);
-				int	get_addr_len(ADDR Addr);
+				void generateAddr(Address *Addr, OutAddr *oa);
+				int	generateFile(Address *from, Address *to);
+				void	generatePage(Address *from, int lines);
+				OutAddr *getAddr(Address *Addr);
+				OutLine *getLine(Address *Addr, int line);
+				bool getLineString(char *buf, int maxlen, Address *Addr, int line);
+				bool	getLineByteLength(int *len, Address *Addr, int line);
+				int	getLineCount(Address *Addr);
+				int	getAddrByteLength(Address *Addr);
 		virtual	void	header();
-				void	invalidate_cache();
-		virtual	char *link(char *s, ADDR Addr);
-				int	next_line(ADDR *Addr, int *line, int n, ADDR max);
-				int	prev_line(ADDR *Addr, int *line, int n, ADDR min);
-		virtual	void put_element(int element_type, char *element);
+				void	invalidateCache();
+		virtual	char *link(char *s, Address *Addr);
+				int	nextLine(Address **Addr, int *line, int n, Address *max);
+				int	prevLine(Address **Addr, int *line, int n, Address *min);
+		virtual	void putElement(int element_type, char *element);
 				void	reset();
 				void	write(char *s);
 				void write(char *s, int n);

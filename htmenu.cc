@@ -18,16 +18,17 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "htapp.h"		// for queuemsg
 #include "htctrl.h"
 #include "htkeyb.h"
 #include "htmenu.h"
 #include "htpal.h"
 #include "htreg.h"
 #include "htstring.h"
+#include "stream.h"
 #include "tools.h"
 
 #include <string.h>
-
 
 #define button_left		100
 #define button_right	101
@@ -44,22 +45,66 @@ char *shortcut_str(char *str)
 	return NULL;
 }
 
+bool execute_submenu(int x, int y, ht_context_menu *m)
+{
+	int curentry=0;
+	bool term=false;
+	bounds scr;
+	app->getbounds(&scr);
+	do {
+		bounds b;
+		b.x=x+m->xpos-1;
+		b.y=y;
+		b.w=m->width+4;
+		b.h=m->count()+2;
+		if (b.y+b.h > scr.h) {
+			if (scr.h > b.h) {
+				b.y = scr.h - b.h;
+				if (b.y >= 2) b.y -= 2;
+			} else {
+				b.y = 0;
+			}
+		}
+		ht_menu_window *d=new ht_menu_window();
+		d->init(&b, m);
+		ht_menu_window_data a;
+		a.selected=curentry;
+		d->databuf_set(&a);
+		b.x=0;
+		b.y=0;
+		ht_frame *frame=new ht_menu_frame();
+		frame->init(&b, 0, FS_MOVE);	// just for fun
+		d->setframe(frame);
+		d->setpalette(palkey_generic_menu_default);
+		int r=d->run(false);
+		d->done();
+		delete d;
+		switch (r) {
+			case button_ok: {
+				return true;
+			}
+			default:
+				term=true;
+		}
+	} while (!term);
+	return false;
+}
+
 /*
  *	CLASS ht_context_menu
  */
 
-void ht_context_menu::init(char *_name)
+void ht_context_menu::init(char *Name)
 {
 	ht_data::init();
-	_name=ht_strdup(_name);
-	shortcut=shortcut_str(_name);
-	name=_name;
-	width=0;
+	name = ht_strdup(Name);
+	shortcut = shortcut_str(name);
+	width = 0;
 }
 
 void ht_context_menu::done()
 {
-	delete name;
+	free(name);
 	ht_data::done();
 }
 
@@ -86,6 +131,16 @@ ht_context_menu_entry *ht_context_menu::get_entry(int n)
 		e=enum_entry_next();
 	}
 	return e;
+}
+
+char *ht_context_menu::get_name()
+{
+	return name;
+}
+
+char *ht_context_menu::get_shortcut()
+{
+	return shortcut;
 }
 
 /*
@@ -125,34 +180,38 @@ ht_context_menu_entry *ht_static_context_menu::enum_entry_next()
 	return e;
 }
 
-int ht_static_context_menu::insert_entry(char *_name, char *_comment, int _command, int _key, int _active)
+void ht_static_context_menu::insert_entry(char *Name, char *Comment, int cmd, int k, bool a)
 {
-	char *name=ht_strdup(_name), *comment, *shortcut=NULL;
-	if (_comment) comment=ht_strdup(_comment); else comment=NULL;
+	char *name=ht_strdup(Name), *comment, *shortcut=NULL;
+	if (Comment) comment = ht_strdup(Comment); else comment = NULL;
 	shortcut = shortcut_str(name);
 	int l=strlen(name), cl=comment ? strlen(comment)+2 : 0;
 	width=MAX(width, l+cl);
-	ht_context_menu_entry *entry=new ht_context_menu_entry();
-	entry->name=name;
-	entry->shortcut=shortcut;
-	entry->comment=comment;
-	entry->command=_command;
-	entry->key=_key;
-	entry->active=_active;
-	context_menu_entry->insert(entry);
-	return 0;
+	ht_context_menu_entry *e = new ht_context_menu_entry();
+	e->type = CME_ENTRY;
+	e->entry.name = name;
+	e->entry.shortcut = shortcut;
+	e->entry.comment = comment;
+	e->entry.command = cmd;
+	e->entry.key = k;
+	e->entry.active = a;
+	context_menu_entry->insert(e);
 }
 
-int ht_static_context_menu::insert_separator()
+void ht_static_context_menu::insert_separator()
 {
 	ht_context_menu_entry *entry=new ht_context_menu_entry();
-	entry->name=NULL;
-	entry->shortcut=NULL;
-	entry->command=0;
-	entry->comment=NULL;
-	entry->active=0;
+	entry->type = CME_SEPARATOR;
 	context_menu_entry->insert(entry);
-	return 0;
+}
+
+void ht_static_context_menu::insert_submenu(ht_context_menu *submenu)
+{
+	ht_context_menu_entry *entry=new ht_context_menu_entry();
+	entry->type = CME_SUBMENU;
+	entry->submenu = submenu;
+	submenu->xpos = 0;
+	context_menu_entry->insert(entry);
 }
 
 /*
@@ -161,8 +220,16 @@ int ht_static_context_menu::insert_separator()
 
 ht_context_menu_entry::~ht_context_menu_entry()
 {
-	if (name) free(name);
-	if (comment) free(comment);
+	switch (type) {
+		case CME_ENTRY:
+			if (entry.name) free(entry.name);
+			if (entry.comment) free(entry.comment);
+			break;
+		case CME_SUBMENU:
+			submenu->done();
+			delete submenu;
+			break;
+	}
 }
 
 /*
@@ -214,14 +281,16 @@ void ht_menu::draw()
 	int c = count();
 	for (int i=0; i<c; i++) {
 		ht_context_menu *c = get_context_menu(i);
+		char *n = c->get_name();
+		char *s = c->get_shortcut();
 		if (i==curmenu) {
 			buf_printchar(c->xpos-1, 0, getcolor(palidx_generic_text_selected), ' ');
-			buf_print(c->xpos, 0, getcolor(palidx_generic_text_selected), c->name);
-			buf_printchar(c->xpos+strlen(c->name), 0, getcolor(palidx_generic_text_selected), ' ');
-			if (c->shortcut) buf_printchar(c->xpos+(c->shortcut-c->name), 0, getcolor(palidx_generic_text_shortcut_selected), *c->shortcut);
+			buf_print(c->xpos, 0, getcolor(palidx_generic_text_selected), n);
+			buf_printchar(c->xpos+strlen(n), 0, getcolor(palidx_generic_text_selected), ' ');
+			if (s) buf_printchar(c->xpos+(s - n), 0, getcolor(palidx_generic_text_shortcut_selected), *s);
 		} else {
-			buf_print(c->xpos, 0, getcolor(palidx_generic_text_focused), c->name);
-			if (c->shortcut) buf_printchar(c->xpos+(c->shortcut-c->name), 0, getcolor(palidx_generic_text_shortcut), *c->shortcut);
+			buf_print(c->xpos, 0, getcolor(palidx_generic_text_focused), n);
+			if (s) buf_printchar(c->xpos+(s - n), 0, getcolor(palidx_generic_text_shortcut), *s);
 		}
 	}
 }
@@ -229,12 +298,11 @@ void ht_menu::draw()
 void ht_menu::execute_menu(int i)
 {
 	curmenu=i;
-	int cur_entry=0;
-	int term=0;
+	int curentry=0;
+	bool term=false;
 	dirtyview();
 	do {
 		ht_context_menu *m = get_context_menu(curmenu);
-		if (!m) return;		/* FIXME: should never happen */
 		bounds b;
 		b.x=m->xpos-1;
 		b.y=1;
@@ -242,8 +310,8 @@ void ht_menu::execute_menu(int i)
 		b.h=m->count()+2;
 		ht_menu_window *d=new ht_menu_window();
 		d->init(&b, m);
-		ht_context_menu_window_data a;
-		a.selected=cur_entry;
+		ht_menu_window_data a;
+		a.selected=curentry;
 		d->databuf_set(&a);
 		b.x=0;
 		b.y=0;
@@ -251,36 +319,25 @@ void ht_menu::execute_menu(int i)
 		frame->init(&b, 0, FS_MOVE);	// just for fun
 		d->setframe(frame);
 		d->setpalette(palkey_generic_menu_default);
-		int r=d->run(0);
-		m = get_context_menu(curmenu);
+		int r=d->run(false);
 		switch (r) {
 			case button_left:
 				curmenu--;
 				if (curmenu<0) curmenu = count()-1;
-				cur_entry=0;
+				curentry=0;
 				dirtyview();
 				break;
 			case button_right:
 				curmenu++;
 				if (curmenu>(int)count()-1) curmenu=0;
-				cur_entry=0;
+				curentry=0;
 				dirtyview();
 				break;
 			case button_ok: {
-				ht_context_menu_window_data a;
-				d->databuf_get(&a);
-				cur_entry = a.selected;
-				ht_context_menu_entry *e = m->get_entry(a.selected);
-				if (e->active) {
-					term=1;
-					curmenu=-1;
-					dirtyview();
-					app->sendmsg(e->command);
-				}
-				break;
+//               	return true;
 			}
 			default:
-				term=1;
+				term=true;
 		}
 		d->done();
 		delete d;
@@ -299,7 +356,7 @@ void ht_menu::handlemsg(htmsg *msg)
 				int c=count();
 				for (int i=0; i<c; i++) {
 					ht_context_menu *m = get_context_menu(i);
-					int s=*m->shortcut;
+					int s = *m->get_shortcut();
 					if ((s>='A') && (s<='Z')) s+='a'-'A';
 					if (s==k) {
 						if (last_context_menu_hack) {
@@ -337,20 +394,34 @@ void ht_menu::handlemsg(htmsg *msg)
 			int c = count();
 			for (int i=0; i<c; i++) {
 				ht_context_menu *a = get_context_menu(i);
-				int t=a->count();
-				ht_context_menu_entry *e=a->enum_entry_first();
-				for (int j=0; j<t; j++) {
-					if ((e->name) && (e->key) && (msg->data1.integer==e->key)) {
-						app->sendmsg(e->command);
-						clearmsg(msg);
-						return;
-					}
-					e=a->enum_entry_next();
+				if (handle_key_context_menu(a, msg->data1.integer)) {
+					clearmsg(msg);
+					return;
 				}
 			}
 		}
 	}
 	ht_view::handlemsg(msg);
+}
+
+bool ht_menu::handle_key_context_menu(ht_context_menu *a, int k)
+{
+	int t=a->count();
+	ht_context_menu_entry *e=a->enum_entry_first();
+	for (int j=0; j<t; j++) {
+		if ((e->type == CME_ENTRY) && (e->entry.name)
+		&& (e->entry.key) && (k == e->entry.key)) {
+			htmsg m;
+			m.msg = e->entry.command;
+			m.type = mt_empty;
+			((ht_app*)app)->queuemsg(app, &m);
+			return true;
+		} else if (e->type == CME_SUBMENU) {
+			if (handle_key_context_menu(e->submenu, k)) return true;
+		}
+		e=a->enum_entry_next();
+	}
+	return false;
 }
 
 int ht_menu::count()
@@ -392,7 +463,7 @@ void ht_menu::insert_local_menu()
 
 void ht_menu::insert_menu(ht_context_menu *m)
 {
-	int namelen = strlen(m->name);
+	int namelen = strlen(m->get_name());
 
 	m->xpos = lastmenux;
 	menu->insert(m);
@@ -411,10 +482,11 @@ bool ht_menu::set_local_menu(ht_context_menu *m)
 		}
 		last_context_menu_hack = m;
 	} else {
-		int namelen = strlen(m->name);
+		int namelen = strlen(m->get_name());
 
 		ht_context_menu *p = (ht_context_menu*)menu->get(localmenu-1);
-		if (p) lastmenux = p->xpos+strlen(p->name)+1; else lastmenux = 1;
+		if (p) lastmenux = p->xpos + strlen(p->get_name())+1; else
+			lastmenux = 1;
 
 		m->xpos = lastmenux;
 
@@ -461,48 +533,15 @@ int ht_menu_frame::getcurcol_killer()
 }
 
 /*
- *	CLASS ht_context_menu_window
- */
-
-void ht_context_menu_window::init(bounds *b, ht_context_menu *menu)
-{
-	ht_dialog::init(b, NULL, 0);
-	VIEW_DEBUG_NAME("ht_context_menu_window");
-	bounds c=*b;
-	c.x=0;
-	c.y=0;
-	c.w-=2;
-	c.h-=2;
-	body=new ht_context_menu_window_body();
-	body->init(&c, menu);
-	insert(body);
-}
-
-void ht_context_menu_window::done()
-{
-	ht_dialog::done();
-}
-
-void ht_context_menu_window::getdata(ht_object_stream *s)
-{
-	body->getdata(s);
-}
-
-void ht_context_menu_window::setdata(ht_object_stream *s)
-{
-	body->setdata(s);
-}
-
-/*
  *	CLASS ht_context_menu_window_body
  */
 
-void ht_context_menu_window_body::init(bounds *b, ht_context_menu *_menu)
+void ht_context_menu_window_body::init(bounds *b, ht_context_menu *Menu)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_SELECTABLE, 0);
 	VIEW_DEBUG_NAME("ht_context_menu_window_body");
-	context_menu=_menu;
-	selected=next_selectable(-1);
+	context_menu = Menu;
+	selected = next_selectable(-1);
 }
 
 void ht_context_menu_window_body::done()
@@ -527,30 +566,51 @@ void ht_context_menu_window_body::draw()
 	if (c>size.h) c=size.h;
 	ht_context_menu_entry *e=context_menu->enum_entry_first();
 	for (int i=0; i<c; i++) {
-		if (e->name) {
-			if (i==selected) {
-				if (e->active) {
-					fill(0, i, size.w, 1, getcolor(palidx_generic_text_selected), ' ');
-					buf_lprint(1, i, getcolor(palidx_generic_text_selected), size.w, e->name);
-					if (e->comment) buf_lprint(size.w-1-strlen(e->comment), i, getcolor(palidx_generic_text_selected), size.w, e->comment);
-					if (e->shortcut) buf_printchar(e->shortcut-e->name+1, i, getcolor(palidx_generic_text_shortcut_selected), *e->shortcut);
+		switch (e->type) {
+			case CME_ENTRY: if (i==selected) {
+				if (e->entry.active) {
+					vcp c = getcolor(palidx_generic_text_selected);
+					fill(0, i, size.w, 1, c, ' ');
+					buf_lprint(1, i, c, size.w, e->entry.name);
+					if (e->entry.comment) buf_lprint(size.w-1-strlen(e->entry.comment), i, c, size.w, e->entry.comment);
+					if (e->entry.shortcut) buf_printchar(e->entry.shortcut-e->entry.name+1, i, getcolor(palidx_generic_text_shortcut_selected), *e->entry.shortcut);
 				} else {
-					fill(0, i, size.w, 1, getcolor(palidx_generic_text_disabled), ' ');
-					buf_lprint(1, i, getcolor(palidx_generic_text_disabled), size.w, e->name);
-					if (e->comment) buf_lprint(size.w-1-strlen(e->comment), i, getcolor(palidx_generic_text_disabled), size.w, e->comment);
+					vcp c = getcolor(palidx_generic_text_disabled);
+					fill(0, i, size.w, 1, c, ' ');
+					buf_lprint(1, i, c, size.w, e->entry.name);
+					if (e->entry.comment) buf_lprint(size.w-1-strlen(e->entry.comment), i, c, size.w, e->entry.comment);
 				}
 			} else {
-				if (e->active) {
-					buf_lprint(1, i, getcolor(palidx_generic_text_focused), size.w, e->name);
-					if (e->comment) buf_lprint(size.w-1-strlen(e->comment), i, getcolor(palidx_generic_text_focused), size.w, e->comment);
-					if (e->shortcut) buf_printchar(e->shortcut-e->name+1, i, getcolor(palidx_generic_text_shortcut), *e->shortcut);
+				if (e->entry.active) {
+					vcp c = getcolor(palidx_generic_text_focused);
+					buf_lprint(1, i, c, size.w, e->entry.name);
+					if (e->entry.comment) buf_lprint(size.w-1-strlen(e->entry.comment), i, c, size.w, e->entry.comment);
+					if (e->entry.shortcut) buf_printchar(e->entry.shortcut-e->entry.name+1, i, getcolor(palidx_generic_text_shortcut), *e->entry.shortcut);
 				} else {
-					buf_lprint(1, i, getcolor(palidx_generic_text_disabled), size.w, e->name);
-					if (e->comment) buf_lprint(size.w-1-strlen(e->comment), i, getcolor(palidx_generic_text_disabled), size.w, e->comment);
+					vcp c = getcolor(palidx_generic_text_disabled);
+					buf_lprint(1, i, c, size.w, e->entry.name);
+					if (e->entry.comment) buf_lprint(size.w-1-strlen(e->entry.comment), i, c, size.w, e->entry.comment);
 				}
 			}
-		} else {
-			fill(0, i, size.w, 1, getcolor(palidx_generic_text_focused), CHAR_LINEH);
+			break;
+			case CME_SEPARATOR:
+				fill(0, i, size.w, 1, getcolor(palidx_generic_text_focused), CHAR_LINEH);
+				break;
+			case CME_SUBMENU: {
+				char *n = e->submenu->get_name();
+				char *s = e->submenu->get_shortcut();
+				vcp c;
+				if (i == selected) {
+					c = getcolor(palidx_generic_text_selected);
+				} else {
+					c = getcolor(palidx_generic_text_focused);
+				}
+				fill(0, i, size.w, 1, c, ' ');
+				buf_lprint(1, i, c, size.w, n);
+				if (s) buf_printchar(n-s+1, i, getcolor(palidx_generic_text_shortcut), *s);
+				buf_printchar(size.w-2, i, c, CHAR_ARROWBIG_RIGHT);
+				break;
+			}
 		}
 		e=context_menu->enum_entry_next();
 	}
@@ -570,11 +630,15 @@ void ht_context_menu_window_body::handlemsg(htmsg *msg)
 				dirtyview();
 				clearmsg(msg);
 				return;
+			case K_Control_PageUp:
+			case K_PageUp:
 			case K_Home:
 				selected=next_selectable(-1);
 				dirtyview();
 				clearmsg(msg);
 				return;
+			case K_Control_PageDown:
+			case K_PageDown:
 			case K_End:
 				selected=prev_selectable(0);
 				dirtyview();
@@ -588,8 +652,14 @@ void ht_context_menu_window_body::handlemsg(htmsg *msg)
 			int c=context_menu->count();
 			ht_context_menu_entry *e=context_menu->enum_entry_first();
 			for (int i=0; i<c; i++) {
-				if (e->shortcut) {
-					int s=*e->shortcut;
+				char *shortcut = NULL;
+				if ((e->type == CME_ENTRY) && (e->entry.shortcut)) {
+					shortcut = e->entry.shortcut;
+				} else if ((e->type == CME_SUBMENU) && (e->submenu->get_shortcut())) {
+					shortcut = e->submenu->get_shortcut();
+				}
+				if (shortcut) {
+					int s = *shortcut;
 					if ((s>='A') && (s<='Z')) s+='a'-'A';
 					if (s==k) {
 						selected=i;
@@ -599,7 +669,7 @@ void ht_context_menu_window_body::handlemsg(htmsg *msg)
 						return;
 					}
 				}					
-				e=context_menu->enum_entry_next();
+				e = context_menu->enum_entry_next();
 			}
 //		}
 	}
@@ -613,7 +683,7 @@ int ht_context_menu_window_body::next_selectable(int to)
 	if (s>c-1) s=0;
 	while (s!=to) {
 		ht_context_menu_entry *e=context_menu->get_entry(s);
-		if (e->name) return s;
+		if ((e->type == CME_ENTRY) || (e->type == CME_SUBMENU)) return s;
 		s++;
 		if (s>c-1) s=0;
 	}
@@ -627,7 +697,7 @@ int ht_context_menu_window_body::prev_selectable(int to)
 	if (s<0) s=c-1;
 	while (s!=to) {
 		ht_context_menu_entry *e=context_menu->get_entry(s);
-		if (e->name) return s;
+		if ((e->type == CME_ENTRY) || (e->type == CME_SUBMENU)) return s;
 		s--;
 		if (s<0) s=c-1;
 	}
@@ -636,19 +706,19 @@ int ht_context_menu_window_body::prev_selectable(int to)
 
 void ht_context_menu_window_body::getdata(ht_object_stream *s)
 {
-	s->put_int_dec(selected, 4, NULL);
+	s->putIntDec(selected, 4, NULL);
 }
 
 void ht_context_menu_window_body::setdata(ht_object_stream *s)
 {
-	selected=s->get_int_dec(4, NULL);
+	selected=s->getIntDec(4, NULL);
 }
 
 /*
  *	CLASS ht_menu_window
  */
 
-void ht_menu_window::init(bounds *b, ht_context_menu *menu)
+void ht_menu_window::init(bounds *b, ht_context_menu *m)
 {
 	ht_dialog::init(b, 0, 0);
 	VIEW_DEBUG_NAME("ht_menu_window");
@@ -658,6 +728,7 @@ void ht_menu_window::init(bounds *b, ht_context_menu *menu)
 	c.y=0;
 	c.w-=2;
 	c.h-=2;
+	menu = m;
 	body=new ht_menu_window_body();
 	body->init(&c, menu);
 	insert(body);
@@ -671,6 +742,35 @@ void ht_menu_window::done()
 void ht_menu_window::getdata(ht_object_stream *s)
 {
 	body->getdata(s);
+}
+
+void ht_menu_window::handlemsg(htmsg *msg)
+{
+	if (msg->msg==msg_button_pressed) {
+		switch (msg->data1.integer) {
+			case button_ok: {
+				ht_menu_window_data a;
+				databuf_get(&a);
+				int curentry = a.selected;
+				ht_context_menu_entry *e = menu->get_entry(a.selected);
+				if ((e->type == CME_ENTRY) && (e->entry.active)) {
+					dirtyview();
+					htmsg m;
+					m.msg = e->entry.command;
+					m.type = mt_empty;
+					((ht_app*)app)->queuemsg(app, &m);
+//					app->sendmsg(e->entry.command);
+				} else if (e->type == CME_SUBMENU) {
+					if (execute_submenu(menu->xpos+2, 3+curentry, e->submenu)) {
+						sendmsg(msg_button_pressed, button_cancel);
+					}
+					clearmsg(msg);
+				}
+				break;
+			}
+		}
+	}
+	ht_dialog::handlemsg(msg);
 }
 
 void ht_menu_window::setdata(ht_object_stream *s)

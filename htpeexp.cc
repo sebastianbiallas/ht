@@ -18,7 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htapp.h"
+#include "formats.h"
+#include "htanaly.h"
 #include "htctrl.h"
 #include "htdata.h"
 #include "htdebug.h"
@@ -30,9 +31,11 @@
 #include "htpeexp.h"
 #include "htstring.h"
 #include "httag.h"
+#include "log.h"
+#include "pe_analy.h"
+#include "snprintf.h"
 #include "stream.h"
 #include "tools.h"
-#include "formats.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -41,44 +44,32 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return 0;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
 	dword sec_rva, sec_size;
 	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_EXPORT].address;
 	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_EXPORT].size;
-	if (!sec_rva || !sec_size) return 0;
+	if (!sec_rva || !sec_size) return NULL;
 
 	int h0=new_timer();
 	start_timer(h0);
 
-	ht_group *g;
 	dword *efunct=NULL, *enamet=NULL;
 	word *eordt=NULL;
-	bounds c;
-	ht_statictext *head;
-	char *filename = file->get_filename();
-
-	c=*b;
-	g=new ht_group();
-	g->init(&c, VO_RESIZE, "pe/exports-g");
-
-	c.y++;
-	c.h--;
-	ht_pe_export_viewer *v=new ht_pe_export_viewer();
-	v->init(&c, DESC_PE_EXPORTS, VC_SEARCH, file, group);
-	ht_pe_export_mask *m=0;
-
-	c.y--;
-	c.h=1;
-	
 	ht_mem_file *efile;
 	ht_streamfile *origfile = file;
+	char *filename = file->get_filename();
 	char *esectionbuf;
 	char eline[256];
 	FILEOFS ename_ofs;
 	char *ename;
 	bool *lord;
 
+	ht_group *g = NULL;
+	bounds c;
+	ht_statictext *head;
+	ht_pe_export_viewer *v = NULL;
+	
 /* get export directory offset */
 	/* 1. get export directory rva */
 	FILEOFS eofs;
@@ -90,13 +81,13 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 /* make a memfile out of this section */
 	efile=new ht_mem_file();
-	efile->init(eofs, esize);
+	efile->init(eofs, esize, FAM_READ | FAM_WRITE);
 	esectionbuf=(char*)malloc(esize);
 	file->seek(eofs);
 	file->read(esectionbuf, esize);
 	efile->write(esectionbuf, esize);
 	file=efile;
-	delete esectionbuf;
+	free(esectionbuf);
 /* read export directory header */
 	PE_EXPORT_DIRECTORY edir;
 	file->seek(eofs);
@@ -146,47 +137,64 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	for (UINT i=0; i<edir.function_count; i++) {
 		if (lord[i]) continue;
 
-		dword f=efunct[i]+pe_shared->pe32.header_nt.image_base;
+		RVA f = efunct[i]+pe_shared->pe32.header_nt.image_base;
 
-		ht_pe_export_function *efd=new ht_pe_export_function(f, i+edir.ordinal_base);
+		ht_pe_export_function *efd = new ht_pe_export_function(f, i+edir.ordinal_base);
 		pe_shared->exports.funcs->insert(efd);
 	}
 	free(lord);
 /* exports by name */
 	for (UINT i=0; i < edir.name_count; i++) {
-		dword o=eordt[i];
-		dword f=efunct[o]+pe_shared->pe32.header_nt.image_base;
+		UINT o = eordt[i];
+		RVA f = efunct[o]+pe_shared->pe32.header_nt.image_base;
 		FILEOFS en;
 		if (!pe_rva_to_ofs(&pe_shared->sections, *(enamet+i), &en)) goto pe_read_error;
 		file->seek(en);
-		char *s=fgetstrz(file);
+		char *s = fgetstrz(file);
 
-		ht_pe_export_function *efd=new ht_pe_export_function(f, o+edir.ordinal_base, s);
+		ht_pe_export_function *efd = new ht_pe_export_function(f, o+edir.ordinal_base, s);
 		pe_shared->exports.funcs->insert(efd);
-		delete s;
+		free(s);
 	}
 
-	sprintf(eline, "Ord  VA       Name      %s exports %d functions", ename, edir.function_count);
-	head=new ht_statictext();
+// sdgfdg
+	c = *b;
+	c.x = 0;
+	c.y = 0;
+	g = new ht_group();
+	g->init(&c, VO_RESIZE, DESC_PE_EXPORTS"-g");
+
+	c.y = 1;
+	c.h--;
+	v = new ht_pe_export_viewer();
+	v->init(&c, group);
+
+	c.y = 0;
+	c.h = 1;
+	ht_snprintf(eline, sizeof eline, "* PE export directory at offset %08x (dllname = %s)", eofs, ename);
+	head = new ht_statictext();
 	head->init(&c, eline, align_left);
-
-	delete ename;
-
-	sprintf(eline, "* PE export directory at offset %08x", eofs);
-
-	m=new ht_pe_export_mask();
-	m->init(file, &pe_shared->exports, eline);
-
-	v->insertsub(m);
 
 	g->insert(head);
 	g->insert(v);
+//
+	for (UINT i=0; i<pe_shared->exports.funcs->count(); i++) {
+		ht_pe_export_function *e = (ht_pe_export_function *)pe_shared->exports.funcs->get(i);
+		char ord[32], addr[32];
+		ht_snprintf(ord, sizeof ord, "%04x", e->ordinal);
+		ht_snprintf(addr, sizeof addr, "%08x", e->address);
+		v->insert_str(i, ord, addr, e->byname ? e->name : "<by ordinal>");
+	}
+//
+	v->update();
 
 	g->setpalette(palkey_generic_window_default);
 
 	stop_timer(h0);
 //	LOG("%s: PE: %d ticks (%d msec) to read exports", filename, get_timer_tick(h0), get_timer_msec(h0));
 	delete_timer(h0);
+
+	if (ename) free(ename);
 
 	efile->done();
 	delete efile;
@@ -202,285 +210,137 @@ pe_read_error:
 	if (efunct) free(efunct);
 	if (enamet) free(enamet);
 	if (eordt) free(eordt);
-	g->done();
-	delete g;
-	if (m) {
-		m->done();
-		delete m;
-	}		
-	v->done();
-	delete v;
-	return 0;
+	if (g) {
+		g->done();
+		delete g;
+	}
+	if (v) {
+		v->done();
+		delete v;
+	}
+	return NULL;
 }
 
 format_viewer_if htpeexports_if = {
 	htpeexports_init,
-	0
+	NULL
 };
 
 /*
  *	CLASS ht_pe_export_viewer
  */
 
-void ht_pe_export_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
+void	ht_pe_export_viewer::init(bounds *b, ht_format_group *fg)
 {
-	ht_uformat_viewer::init(b, desc, caps, file, group);
-	VIEW_DEBUG_NAME("ht_pe_export_viewer");
+	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
+	options |= VO_BROWSABLE;
+	desc = strdup(DESC_PE_EXPORTS);
+	format_group = fg;
 }
 
-void ht_pe_export_viewer::done()
+void	ht_pe_export_viewer::done()
 {
-	ht_uformat_viewer::done();
+	ht_text_listbox::done();
 }
 
 char *ht_pe_export_viewer::func(UINT i, bool execute)
 {
+	ht_text_listbox_sort_order sortord;
 	switch (i) {
 		case 2:
 			if (execute) {
-				((ht_pe_export_mask*)cursor_sub)->sortbyord();
-				dirtyview();
+				sortord.col = 0;
+				sortord.compare_func = strcmp;
+				sort(1, &sortord);
 			}
 			return "sortord";
 		case 3:
 			if (execute) {
-				((ht_pe_export_mask*)cursor_sub)->sortbyva();
-				dirtyview();
+				sortord.col = 1;
+				sortord.compare_func = strcmp;
+				sort(1, &sortord);
 			}
 			return "sortva";
 		case 4:
 			if (execute) {
-				((ht_pe_export_mask*)cursor_sub)->sortbyname();
-				dirtyview();
+				sortord.col = 2;
+				sortord.compare_func = strcmp;
+				sort(1, &sortord);
 			}
 			return "sortname";
-		case 5:
-			if (execute) {
-				((ht_pe_export_mask*)cursor_sub)->unsort();
-				dirtyview();
-			}
-			return "unsort";
 	}
-	return ht_uformat_viewer::func(i, execute);
+	return NULL;
 }
 
-int ht_pe_export_viewer::ref_sel(ID id_low, ID id_high)
+void ht_pe_export_viewer::handlemsg(htmsg *msg)
 {
+	switch (msg->msg) {
+		case msg_funcexec:
+			if (func(msg->data1.integer, 1)) {
+				clearmsg(msg);
+				return;
+			}
+			break;
+		case msg_funcquery: {
+			char *s=func(msg->data1.integer, 0);
+			if (s) {
+				msg->msg=msg_retval;
+				msg->data1.str=s;
+			}
+			break;
+		}
+		case msg_keypressed: {
+			if (msg->data1.integer == K_Return) {
+				select_entry(e_cursor);
+				clearmsg(msg);
+			}
+			break;
+		}
+	}
+	ht_text_listbox::handlemsg(msg);
+}
+
+void ht_pe_export_viewer::select_entry(void *entry)
+{
+	ht_text_listbox_item *i = (ht_text_listbox_item *)entry;
+
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
-	if (pe_shared->v_image->goto_address(id_low, this)) {
-		app->focus(pe_shared->v_image);
-	} else errorbox("can't follow: %s %08x is not valid !", "export address", id_low);
-	return 1;
-}
-
-/*
- *	CLASS ht_pe_export_mask
- */
-
-void ht_pe_export_mask::init(ht_streamfile *file, ht_pe_export *_exp, char *_firstline)
-{
-	ht_sub::init(file);
-	firstline=ht_strdup(_firstline);
-	exp=_exp;
-	sort_path=0;
-	sort_va=0;
-	sort_name=0;
-}
-
-void ht_pe_export_mask::done()
-{
-	delete firstline;
-	if (sort_va) delete sort_va;
-	if (sort_name) delete sort_name;
-	ht_sub::done();
-}
-
-bool ht_pe_export_mask::convert_addr_to_id(fmt_vaddress addr, ID *id1, ID *id2)
-{
-	*id2 = 0;
-	*id1 = addr;
-	return true;
-}
-
-bool ht_pe_export_mask::convert_id_to_addr(ID id1, ID id2, fmt_vaddress *addr)
-{
-	*addr = id1;
-	return true;
-}
-
-void ht_pe_export_mask::first_line_id(ID *id1, ID *id2)
-{
-	*id1=0;
-	*id2=0;
-}
-
-bool ht_pe_export_mask::getline(char *line, ID id1, ID id2)
-{
-	if (id1>=1) {
-		char *l=line;
-		UINT i=id1-1;
-		if (sort_path) i=sort_path[i];
-		ht_pe_export_function *f=(ht_pe_export_function*)exp->funcs->get(i);
-
-		l+=sprintf(l, "%04x %08x ", f->ordinal, f->address);
-		if (f->byname) {
-			l=tag_make_ref(l, f->address, 0, f->name);
-		} else {
-			l=tag_make_ref(l, f->address, 0, "<ordinal only>");
-		}
-		*l=0;
-	} else {
-		strcpy(line, firstline);
-	}
-	return 1;
-}
-
-void ht_pe_export_mask::last_line_id(ID *id1, ID *id2)
-{
-	*id1=exp->funcs->count();
-	*id2=0;
-}
-
-int ht_pe_export_mask::next_line_id(ID *id1, ID *id2, int n)
-{
-	UINT c=exp->funcs->count()+1;
-	if (*id1+n>=c) {
-		int r=c-*id1-1;
-		*id1=c-1;
-		return r;
-	}
-	*id1+=n;
-	return n;
-}
-
-int ht_pe_export_mask::prev_line_id(ID *id1, ID *id2, int n)
-{
-	if ((UINT)n>*id1) {
-		int r=*id1;
-		*id1=0;
-		return r;
-	}
-	*id1-=n;
-	return n;
-}
-
-ht_pe_export *g_export;
-
-int compare_export_ord(UINT *i1, UINT *i2)
-{
-	ht_pe_export_function *f1=(ht_pe_export_function *)g_export->funcs->get(*i1);
-	ht_pe_export_function *f2=(ht_pe_export_function *)g_export->funcs->get(*i2);
-	if (f1->ordinal>f2->ordinal) return 1; else
-	if (f1->ordinal<f2->ordinal) return -1; else
-		return 0;
-}
-
-void ht_pe_export_mask::sortbyord()
-{
-	if (!sort_va) {
-		int c=exp->funcs->count();
-		sort_ord=(UINT*)malloc(sizeof (UINT) * c);
-		for (int i=0; i<c; i++) {
-			sort_ord[i]=i;
-		}
-		g_export=exp;
-		qsort(sort_ord, c, sizeof (UINT), (int (*)(const void *, const void*))compare_export_ord);
-	}
-	sort_path=sort_ord;
-}
-
-int compare_export_va(UINT *i1, UINT *i2)
-{
-	ht_pe_export_function *f1=(ht_pe_export_function *)g_export->funcs->get(*i1);
-	ht_pe_export_function *f2=(ht_pe_export_function *)g_export->funcs->get(*i2);
-	if (f1->address>f2->address) return 1; else
-	if (f1->address<f2->address) return -1; else
-		return 0;
-}
-
-void ht_pe_export_mask::sortbyva()
-{
-	if (!sort_va) {
-		int c=exp->funcs->count();
-		sort_va=(UINT*)malloc(sizeof (UINT) * c);
-		for (int i=0; i<c; i++) {
-			sort_va[i]=i;
-		}
-		g_export=exp;
-		qsort(sort_va, c, sizeof (UINT), (int (*)(const void *, const void*))compare_export_va);
-	}
-	sort_path=sort_va;
-}
-
-int compare_export_name(UINT *i1, UINT *i2)
-{
-	ht_pe_export_function *f1=(ht_pe_export_function *)g_export->funcs->get(*i1);
-	ht_pe_export_function *f2=(ht_pe_export_function *)g_export->funcs->get(*i2);
-	if (f1->byname) {
-		if (f2->byname) {
-			return strcmp(f1->name, f2->name);
-		} else {
-			return 1;
-		}
-	} else {
-		if (f2->byname) {
-			return -1;
-		} else {
-			if (f1->ordinal>f2->ordinal) return 1; else
-			if (f1->ordinal<f2->ordinal) return -1; else
-				return 0;
-		}
-	}
-}
-
-void ht_pe_export_mask::sortbyname()
-{
-	if (!sort_name) {
-		int c=exp->funcs->count();
-		sort_name=(UINT*)malloc(sizeof (UINT) * c);
-		for (int i=0; i<c; i++) {
-			sort_name[i]=i;
-		}
-		g_export=exp;
-		qsort(sort_name, c, sizeof (UINT), (int (*)(const void *, const void*))compare_export_name);
-	}
-	sort_path=sort_name;
-}
-
-void ht_pe_export_mask::unsort()
-{
-	sort_path=0;
+	ht_pe_export_function *e = (ht_pe_export_function*)pe_shared->exports.funcs->get(i->id);
+	if (!e) return;
+	if (pe_shared->v_image) {
+		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
+		PEAnalyser *a = (PEAnalyser*)av->analy;
+		Address *addr = a->createAddress32(e->address);
+		if (av->gotoAddress(addr, NULL)) {
+			app->focus(av);
+			vstate_save();
+		} else errorbox("can't follow: %s %08x is not valid !", "export address", addr);
+		delete addr;
+	} else errorbox("can't follow: no image viewer");
 }
 
 /*
  *	class ht_pe_export_function
  */
 
-ht_pe_export_function::ht_pe_export_function()
+ht_pe_export_function::ht_pe_export_function(RVA addr, UINT ord)
 {
-	name=0;
-	ordinal=0;
-	address=0;
+	ordinal = ord;
+	address = addr;
+	byname = false;
 }
 
-ht_pe_export_function::ht_pe_export_function(int _address, int _ordinal)
+ht_pe_export_function::ht_pe_export_function(RVA addr, UINT ord, char *n)
 {
-	ordinal=_ordinal;
-	address=_address;
-	byname=0;
-}
-
-ht_pe_export_function::ht_pe_export_function(int _address, int _ordinal, char *_name)
-{
-	ordinal=_ordinal;
-	name=ht_strdup(_name);
-	address=_address;
-	byname=1;
+	ordinal = ord;
+	name = ht_strdup(n);
+	address = addr;
+	byname = true;
 }
 
 ht_pe_export_function::~ht_pe_export_function()
 {
-	if ((byname) && (name)) delete name;
+	if ((byname) && (name)) free(name);
 }
 

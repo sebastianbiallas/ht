@@ -24,6 +24,8 @@
 #include "global.h"
 #include "tools.h"
 
+typedef unsigned int RVA;
+
 typedef struct	COFF_HEADER {
 	word machine HTPACKED;
 	word section_count HTPACKED;

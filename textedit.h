@@ -25,6 +25,8 @@
 #include "htobj.h"
 #include "textfile.h"
 
+#include "htformat.h"
+
 #define TEXTEDITOPT_NULL			0
 #define TEXTEDITOPT_INPUTTABS		1
 #define TEXTEDITOPT_UNDO			2
@@ -32,6 +34,10 @@
 struct text_viewer_pos {
 	UINT line;
 	UINT pofs;
+};
+
+union text_search_pos {
+	FILEOFS offset;
 };
 
 class ht_text_editor;
@@ -286,10 +292,14 @@ protected:
 	bool highlight_wrap;
 	UINT	tab_size;
 
+	ht_search_request *last_search_request;
+	FILEOFS last_search_end_ofs;
+
 /* new */
 			int buf_lprint0(int x, int y, int c, int l, char *text);
 			UINT char_vsize(char c, UINT x);
 			void clipboard_copy_cmd();
+			bool continue_search();
 	virtual	vcp  get_bgcolor();
 			void make_pos_physical(text_viewer_pos *p);
 			void normalize_selection();
@@ -298,6 +308,8 @@ protected:
 			void render_meta(UINT x, UINT y, text_viewer_pos *pos, vcp color);
 			void render_str(int x, int y, vcp color, text_viewer_pos *pos, UINT len, char *str, bool multi);
 			void render_str_color(vcp *color, text_viewer_pos *pos);
+			ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search_pos *start, text_search_pos *end);
+			bool show_search_result(ht_search_result *result);
 public:
 			void init(bounds *b, bool own_textfile, ht_textfile *textfile, ht_list *lexers);
 	virtual	void done();
@@ -318,8 +330,11 @@ public:
 	/* scrollbar pos */
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
-	/* cursor mode */
+	/* cursor */
 	virtual	cursor_mode get_cursor_mode();
+	virtual	void get_cursor_pos(text_viewer_pos *cursor);
+	/* conversions */
+	virtual	bool pos_to_offset(text_viewer_pos *pos, FILEOFS *ofs);
 	/**/
 			ht_syntax_lexer *get_lexer();
 			int ppos_str(char *buf, UINT bufsize, text_viewer_pos *ppos);
@@ -335,6 +350,7 @@ public:
 			void cursor_end();
 			void cursor_vput(UINT vx);
 			void cursor_pput(UINT px);
+			void cursor_set(text_viewer_pos *pos);
 			UINT scroll_up(UINT n);
 			UINT scroll_down(UINT n);
 			UINT scroll_left(UINT n);

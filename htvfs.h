@@ -35,13 +35,12 @@
 class ht_regnode_file: public ht_mem_file {
 protected:
 	char *nodename;
-	UINT createtype;
 	
 /* overwritten */
 		   int load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data);
 		   void store_node(ht_object_stream *s, ht_registry_node_type type, ht_registry_data *data);
 public:
-		   void init(char *nodename, UINT mode, UINT createtype);
+		   void init(const char *nodename, UINT mode);
 	virtual void done();
 /* overwritten */
 	virtual bool set_access_mode(UINT access_mode);
@@ -53,25 +52,25 @@ public:
 
 #define VFSCAP_WRITABLE		1
 
-class ht_vfs: public object {
+class ht_vfs: public Object {
 public:
 /* new */
-	virtual	int canonicalize(char *in_name, char *out_name, char *cwd);
-	virtual	int create_file(char *filename, UINT createtype);
-	virtual	int delete_file(char *filename);
+	virtual	int canonicalize(char *result, const char *filename, const char *cwd);
+	virtual	int create_file(const char *filename, UINT createtype);
+	virtual	int delete_file(const char *filename);
 	virtual	void *enum_filetype(UINT *type, char **name, void *handle);
-	virtual	int filename_compare(char *a, char *b);
-	virtual	bool findfirst(char *dirname, pfind_t *f);
+	virtual	int filename_compare(const char *a, const char *b);
+	virtual	bool findfirst(const char *dirname, pfind_t *f);
 	virtual	bool findnext(pfind_t *f);
 	virtual	bool findclose(pfind_t *f);
 	virtual	int get_caps();
 	virtual	char *get_protocol_name();
-	virtual	int makedir(char *dirname);
-	virtual	int open(char *filename, bool edit);
-	virtual	int pstat(pstat_t *s, char *filename);
-	virtual	int rename_file(char *filename, char *newname);
+	virtual	int makedir(const char *dirname);
+	virtual	int open(const char *filename, bool edit);
+	virtual	int pstat(pstat_t *s, const char *filename);
+	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(char *filename, UINT mode, UINT createtype, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
 };
 
 /*
@@ -83,20 +82,20 @@ public:
 			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	int canonicalize(char *in_name, char *out_name, char *cwd);
-	virtual	int delete_file(char *filename);
-	virtual	int filename_compare(char *a, char *b);
-	virtual	bool findfirst(char *dirname, pfind_t *f);
+	virtual	int canonicalize(char *result, const char *filename, const char *cwd);
+	virtual	int delete_file(const char *filename);
+	virtual	int filename_compare(const char *a, const char *b);
+	virtual	bool findfirst(const char *dirname, pfind_t *f);
 	virtual	bool findnext(pfind_t *f);
 	virtual	bool findclose(pfind_t *f);
 	virtual	int get_caps();
 	virtual	char *get_protocol_name();
-	virtual	int makedir(char *dirname);
-	virtual	int open(char *filename, bool edit);
-	virtual	int pstat(pstat_t *s, char *filename);
-	virtual	int rename_file(char *filename, char *newname);
+	virtual	int makedir(const char *dirname);
+	virtual	int open(const char *filename, bool edit);
+	virtual	int pstat(pstat_t *s, const char *filename);
+	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(char *filename, UINT mode, UINT createtype, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
 };
 
 /*
@@ -105,32 +104,31 @@ public:
 
 class ht_reg_vfs: public ht_vfs {
 protected:
-	ht_registry *registry;
 	char *enum_last;
 	char *enum_dir;
 
 /* new */
-			void create_pfind_t(pfind_t *f, char *key, ht_registry_data *data, ht_registry_node_type type);
+			void create_pfind_t(pfind_t *f, const char *key, ht_registry_data *data, ht_registry_node_type type);
 public:
-			void init(ht_registry *registry);
+			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	int canonicalize(char *in_name, char *out_name, char *cwd);
-	virtual	int create_file(char *filename, UINT createtype);
-	virtual	int delete_file(char *filename);
+	virtual	int canonicalize(char *result, const char *filename, const char *cwd);
+	virtual	int create_file(const char *filename, UINT createtype);
+	virtual	int delete_file(const char *filename);
 	virtual	void *enum_filetype(UINT *type, char **name, void *handle);
-	virtual	int filename_compare(char *a, char *b);
-	virtual	bool findfirst(char *dirname, pfind_t *f);
+	virtual	int filename_compare(const char *a, const char *b);
+	virtual	bool findfirst(const char *dirname, pfind_t *f);
 	virtual	bool findnext(pfind_t *f);
 	virtual	bool findclose(pfind_t *f);
 	virtual	int get_caps();
 	virtual	char *get_protocol_name();
-	virtual	int makedir(char *dirname);
-	virtual	int open(char *filename, bool edit);
-	virtual	int pstat(pstat_t *s, char *filename);
-	virtual	int rename_file(char *filename, char *newname);
+	virtual	int makedir(const char *dirname);
+	virtual	int open(const char *filename, bool edit);
+	virtual	int pstat(pstat_t *s, const char *filename);
+	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(char *filename, UINT mode, UINT createtype, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
 };
 
 /*
@@ -215,18 +213,15 @@ public:
 
 class ht_vfs_sub: public ht_sub {
 protected:
-	ht_list *vfss; /* list of vfs's */
-
 	ht_list *dir;
 	int *dirsort;
+	ht_vfs_sub *avfss;
 	
 	bool case_insensitive_names;
 
 	int display_format_length;
 	int display_format[VFSV_FORMAT_MAX_LENGTH];
 	int max_prop_width[VFSV_FORMAT_PROPERTIES];
-	
-	ht_vfs_sub *avfss;
 /* new */
 			bool chdir(char *dir);
 			bool churl(char *url);
@@ -245,17 +240,17 @@ public:
 	
 	ht_vfs *cvfs;
 	
-			void	init(ht_list *vfss, char *starturl);
+			void	init(char *starturl);
 	virtual	void	done();
 /* overwritten */
-	virtual	bool	convert_ofs_to_id(FILEOFS offset, ID *id1, ID *id2);
-	virtual	void	first_line_id(ID *id1, ID *id2);
-	virtual	bool	getline(char *line, ID id1, ID id2);
+	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
+	virtual	void first_line_id(LINE_ID *line_id);
+	virtual	bool getline(char *line, const LINE_ID line_id);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void	last_line_id(ID *id1, ID *id2);
-	virtual	int	next_line_id(ID *id1, ID *id2, int n);
-	virtual	int	prev_line_id(ID *id1, ID *id2, int n);
-	virtual	bool	ref(ID id1, ID id2);
+	virtual	void last_line_id(LINE_ID *line_id);
+	virtual	int next_line_id(LINE_ID *line_id, int n);
+	virtual	int prev_line_id(LINE_ID *line_id, int n);
+	virtual	bool ref(LINE_ID *id);
 /* new */
 			void copy(char *rwd, ht_vfs *rvfs);
 			void move(char *rwd, ht_vfs *rvfs);

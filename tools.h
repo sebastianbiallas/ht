@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *	htanaly.cc
+ *	tools.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -22,11 +22,20 @@
 #define __TOOLS_H__
 
 #include <stdlib.h>
+#include <string.h>
 #include "global.h"
 #include "htdata.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+#ifdef DISABLE_UNALIGNED_MOVES
+#define UNALIGNED_MOVE(a, b) memcpy(&(a), &(b), sizeof(a))
+#define UNALIGNED_MOVE_CONST(a, b, type) {assert(sizeof(a)==sizeof(type));type c = b;memcpy(&(a), &c, sizeof(a));}
+#else
+#define UNALIGNED_MOVE(a, b) (a) = (b)
+#define UNALIGNED_MOVE_CONST(a, b, type) (a) = (b)
+#endif
 
 dword delinearize(dword d);
 
@@ -34,6 +43,7 @@ int compare_keys_int_delinear(ht_data *key_a, ht_data *key_b);
 int compare_keys_uint_delinear(ht_data *key_a, ht_data *key_b);
 
 int *random_permutation(int max);
+
 double calc_entropy(byte *buf, int size);
 int calc_entropy2(byte *buf, int size);
 

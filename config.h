@@ -4,6 +4,9 @@
 /* Where is the curses header file ? */
 #define CURSES_HDR <ncurses.h>
 
+/* Where is the curses header file ? */
+#define HAVE_TEXTMODE_X11 1
+
 /* Define to empty if the keyword does not work.  */
 /* #undef const */
 
