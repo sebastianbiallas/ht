@@ -242,6 +242,11 @@ struct LE_FIXUP_INTERNAL16 {
 	uint16	ofs HTPACKED;
 };
 
+struct LE_FIXUP_INTERNAL32 {
+	uint8	seg HTPACKED;
+	uint32	ofs HTPACKED;
+};
+
 /*
  *	VxD specific
  */
@@ -300,6 +305,7 @@ extern byte LE_FIXUP_INTERNAL_struct[];
 extern byte LE_OBJECT_HEADER_struct[];
 extern byte LE_PAGE_MAP_ENTRY_struct[];
 extern byte LE_FIXUP_INTERNAL16_struct[];
+extern byte LE_FIXUP_INTERNAL32_struct[];
 
 #endif /* __LESTRUCT_H_ */
 

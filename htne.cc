@@ -182,6 +182,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 			own_file = true;
 			LOG("%s: NE: relocations present, relocation simulation layer enabled", file->get_filename());
 		} else {
+			LOG_EX(LOG_WARN, "%s: NE relocations seem to be corrupted.", file->get_filename());
 			errorbox("%s: NE relocations seem to be corrupted.", file->get_filename());
 			rf->done();
 			delete rf;

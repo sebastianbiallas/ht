@@ -56,7 +56,8 @@
 
 #define LEAddress uint32
 
-#define LE_BASE_ADDR	0x8000000
+#define LE_ADDR_INVALID	0
+#define LE_BASE_ADDR	0x400000
 
 struct ht_le_shared_data {
 	endianess byteorder;
@@ -74,7 +75,7 @@ struct ht_le_shared_data {
 	LE_VXD_DESCRIPTOR vxd_desc;
 	ht_streamfile *linear_file;
 	ht_reloc_file *reloc_file;
-     LEAddress *le_addr;
+     LEAddress best_entrypoint;
 };
 
 class ht_le: public ht_format_group {
@@ -106,7 +107,7 @@ protected:
 	dword page_size;
 	FILEOFS ofs;
 /* new */
-		   int map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
+		   bool map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
 public:
 		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
 /* overwritten */
@@ -114,6 +115,7 @@ public:
 	virtual UINT read(void *buf, dword size);
 	virtual int seek(FILEOFS offset);
 	virtual FILEOFS tell();
+	virtual int vcntl(UINT cmd, va_list vargs);
 	virtual UINT write(const void *buf, UINT size);
 };
 

@@ -67,9 +67,6 @@ int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 
 void	ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 {
-	if (o == 12935) {
-      	int sdf = 24 ;
-     }
 	relocs->insert(new ht_data_uint(o), reloc);
 }
 
@@ -138,7 +135,7 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 
 			assert(mm+s <= sizeof b);
 			memmove(b+s, ((byte*)buf)+e, mm);
-			if (!reloc_unapply(r, b)) return 0;
+			if (!reloc_unapply(r, b)) /*return 0*/;
 			// FIXME: violation of function declaration "const void *buf"
 			memmove(((byte*)buf)+e, b+s, mm);
 		}

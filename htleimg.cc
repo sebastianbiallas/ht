@@ -80,12 +80,6 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->sendmsg(msg_complete_init, 0);
 
-/*	if (!(le_shared->hdr.flags & NE_FLAGS_SELFLOAD)) {
-		Address *tmpaddr = p->createAddress1616(NE_ADDR_SEG(ne_shared->hdr.csip), NE_ADDR_OFS(ne_shared->hdr.csip));
-		v->gotoAddress(tmpaddr, NULL);
-		delete tmpaddr;
-	}*/ /* FIXME: else what ? */
-
 	g->insert(head);
 	g->insert(v);
 
