@@ -126,46 +126,46 @@ void SymbolBox::done()
 	ht_listbox::done();
 }
 
-int  SymbolBox::calc_count()
+int  SymbolBox::calcCount()
 {
 	return analy->getSymbolCount();
 }
 
-int  SymbolBox::cursor_adjust()
+int  SymbolBox::cursorAdjust()
 {
-	Symbol *l = ((Symbol *)getfirst());
+	Symbol *l = ((Symbol *)getFirst());
 	if (!l) return 0;
 	return l->location->addr->stringSize()+10;
 }
 
-int  SymbolBox::estimate_entry_pos(void *entry)
+int  SymbolBox::estimateEntryPos(void *entry)
 {
 	return 0;
 }
 
-void *SymbolBox::getfirst()
+void *SymbolBox::getFirst()
 {
 	return analy->enumSymbols(NULL);
 }
 
-void *SymbolBox::getlast()
+void *SymbolBox::getLast()
 {
 	return analy->enumSymbolsReverse(NULL);
 }
 
-void *SymbolBox::getnext(void *entry)
+void *SymbolBox::getNext(void *entry)
 {
 	if (!entry) return NULL;
 	return analy->enumSymbols((Symbol *)entry);
 }
 
-void *SymbolBox::getprev(void *entry)
+void *SymbolBox::getPrev(void *entry)
 {
 	if (!entry) return NULL;
 	return analy->enumSymbolsReverse((Symbol *)entry);
 }
 
-char *SymbolBox::getstr(int col, void *entry)
+char *SymbolBox::getStr(int col, void *entry)
 {
 	if (!entry) return NULL;
 	Symbol *l = ((Symbol *)entry);
@@ -219,7 +219,7 @@ void *SymbolBox::quickfind(char *s)
 }
 
 
-char	*SymbolBox::quickfind_completition(char *s)
+char	*SymbolBox::quickfindCompletition(char *s)
 {
 	if (analy->getSymbolByName(s)) {
 		return ht_strdup(s);
@@ -842,7 +842,7 @@ void ht_aviewer::generateOutputDialog()
 			continue;
 		} else {
 			AnalyserOutput *out;
-			switch (odd.lp.cursor_id) {
+			switch (odd.lp.cursor_pos) {
 				case 0:
 					out = new AnalyserTxtOutput();
 					((AnalyserTxtOutput*)out)->init(analy, s);
@@ -1008,7 +1008,7 @@ void ht_aviewer::exportFileDialog()
 			infobox("couldnt create file '%s'.", filename);
 			continue;
 		} else {
-			switch (odd.lp.cursor_id) {
+			switch (odd.lp.cursor_pos) {
 				case 0:
 					export_to_sym(analy, s);
 					break;
@@ -1761,7 +1761,7 @@ void ht_aviewer::showSymbols(Address *addr)
 	sym->init(&b, analy);
 	sym->attachTitle(text);
 	if (loc && loc->label) {
-		sym->goto_item(sym->quickfind(loc->label->name));
+		sym->gotoItemByEntry(sym->quickfind(loc->label->name));
 	}
 	dialog->insert(sym);
 	register_idle_object(sym);
@@ -1771,7 +1771,7 @@ void ht_aviewer::showSymbols(Address *addr)
 		// goto selected symbol
 		ht_listbox_data d;
 		sym->databuf_get(&d, sizeof d);
-		gotoAddress(((Symbol *)(sym->getbyid(d.cursor_id)))->location->addr, this);
+		gotoAddress(((Symbol *)d.cursor_ptr)->location->addr, this);
 	}
 	dialog->done();
 	delete dialog;
@@ -1856,7 +1856,7 @@ restart:
 				break;
 			case 667:
 				if (xcount) {
-					analy->deleteXRef(Addr, (Address*)data.cursor_id);
+					analy->deleteXRef(Addr, (Address*)data.cursor_ptr);
 					analy->makeDirty();
 					analy_sub->output->invalidateCache();
 				}
@@ -1888,7 +1888,7 @@ restart:
 				break;
 			}
 			case button_ok:
-				if (xcount) gotoAddress((Address*)data.cursor_id, this);
+				if (xcount) gotoAddress((Address*)data.cursor_ptr, this);
 				break;
 		}
 		dialog->getbounds(&b);

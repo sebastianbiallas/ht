@@ -153,7 +153,7 @@ bool file_new_dialog(UINT *mode)
 
 		d->databuf_get(&data, sizeof data);
 
-		*mode = data.type.cursor_id;
+		*mode = (UINT)data.type.cursor_ptr;
 		
 		retval = true;
 	}
@@ -211,7 +211,7 @@ void	FileBrowserVfsListbox::init(bounds *b, ht_list *vfs_list, ht_text *show_pos
 void FileBrowserVfsListbox::state_changed()
 {
 	if (file_browser) file_browser->listbox_changed();
-	VfsListbox::state_changed();
+	VfsListbox::stateChanged();
 }
 
 /**/
@@ -291,7 +291,7 @@ void FileBrowser::listbox_changed()
 {
 	FileBrowserVfsListboxData l;
 	listbox->databuf_get(&l, sizeof l);
-	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(l.cursor_id);
+	ht_text_listbox_item *t = (ht_text_listbox_item*)l.cursor_ptr;
 	if (t) {
 		vfs_extra *x = (vfs_extra*)t->extra_data;
 		ht_strinputfield_data i;
@@ -429,7 +429,7 @@ bool file_open_dialog(char **name, UINT *mode)
 
 			if (hist) insert_history_entry(hist, *name, 0);
 
-			switch (data.mode.cursor_id) {
+			switch (data.mode.cursor_pos) {
 				case 0: *mode=FOM_AUTO; break;
 				case 1: *mode=FOM_BIN; break;
 				case 2: *mode=FOM_TEXT; break;
@@ -712,7 +712,7 @@ void	ht_project_listbox::init(bounds *b, ht_project *p)
 	colwidths[1] = 16;
 }
 
-int  ht_project_listbox::calc_count()
+int  ht_project_listbox::calcCount()
 {
 	return project ? project->count() : 0;
 }
@@ -736,7 +736,7 @@ char *ht_project_listbox::func(UINT i, bool execute)
 	return NULL;
 }
 
-void *ht_project_listbox::getfirst()
+void *ht_project_listbox::getFirst()
 {
 	if (project && project->count()) {
 		return (void*)1;
@@ -745,7 +745,7 @@ void *ht_project_listbox::getfirst()
 	}
 }
 
-void *ht_project_listbox::getlast()
+void *ht_project_listbox::getLast()
 {
 	if (project && project->count()) {
 		return (void*)(project->count());
@@ -754,7 +754,7 @@ void *ht_project_listbox::getlast()
 	}
 }
 
-void *ht_project_listbox::getnext(void *entry)
+void *ht_project_listbox::getNext(void *entry)
 {
 	UINT e=(UINT)entry;
 	if (!e) return NULL;
@@ -765,12 +765,7 @@ void *ht_project_listbox::getnext(void *entry)
 	}
 }
 
-void *ht_project_listbox::getnth(int n)
-{
-	return project ? project->get(n-1) : NULL;
-}
-
-void *ht_project_listbox::getprev(void *entry)
+void *ht_project_listbox::getPrev(void *entry)
 {
 	UINT e=(UINT)entry;
 	if (e > 1) {
@@ -780,7 +775,7 @@ void *ht_project_listbox::getprev(void *entry)
 	}
 }
 
-char *ht_project_listbox::getstr(int col, void *entry)
+char *ht_project_listbox::getStr(int col, void *entry)
 {
 	static char mybuf[32];
 	if (project) switch (col) {
@@ -822,11 +817,11 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		}
 		case cmd_project_remove_item: {
 			int p = pos;
-			if (calc_count() && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
-				cursor_up(1);
+			if (calcCount() && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
+				cursorUp(1);
 				project->del(p);
 				update();
-				if (p) cursor_down(1);
+				if (p) cursorDown(1);
 				dirtyview();
 				rearrangeColumns();
 			}
@@ -836,7 +831,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		case msg_keypressed: {
 			switch (msg->data1.integer) {
 				case K_Return: {
-					if (calc_count() && select_entry(e_cursor)) {
+					if (calcCount() && selectEntry(e_cursor)) {
 						clearmsg(msg);
 						return;
 					}
@@ -855,34 +850,34 @@ int ht_project_listbox::numColumns()
 
 void *ht_project_listbox::quickfind(char *s)
 {
-	void *item = getfirst();
+	void *item = getFirst();
 	int slen = strlen(s);
-	while (item && (ht_strncmp(getstr(0, item), s, slen)!=0)) {
-		item = getnext(item);
+	while (item && (ht_strncmp(getStr(0, item), s, slen)!=0)) {
+		item = getNext(item);
 	}
 	return item;
 }
 
-char	*ht_project_listbox::quickfind_completition(char *s)
+char	*ht_project_listbox::quickfindCompletition(char *s)
 {
-	void *item = getfirst();
+	void *item = getFirst();
 	char *res = NULL;
 	int slen = strlen(s);
 	while (item) {
-		if (ht_strncmp(getstr(0, item), s, slen)==0) {
+		if (ht_strncmp(getStr(0, item), s, slen)==0) {
 			if (!res) {
-				res = ht_strdup(getstr(0, item));
+				res = ht_strdup(getStr(0, item));
 			} else {
-				int a = strccomm(res, getstr(0, item));
+				int a = strccomm(res, getStr(0, item));
 				res[a] = 0;
 			}
 		}
-		item = getnext(item);
+		item = getNext(item);
 	}
 	return res;
 }
 
-bool ht_project_listbox::select_entry(void *entry)
+bool ht_project_listbox::selectEntry(void *entry)
 {
 	int p = pos;
 	ht_project_item *i = (ht_project_item *)project->get(p);
@@ -1790,6 +1785,12 @@ bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *
 		if (lsr == LS_ERROR_CORRUPTED) {
 			LOG_EX(LOG_ERROR, "%s: error in line %d", cfgfilename, einfo);
 			errorbox("%s: error in line %d",cfgfilename,  einfo);
+		} else if (lsr == LS_ERROR_MAGIC || lsr == LS_ERROR_FORMAT) {
+			LOG_EX(LOG_ERROR, "%s: wrong magic/format", cfgfilename);
+			errorbox("%s: wrong magic/format", cfgfilename);
+		} else if (lsr == LS_ERROR_VERSION) {
+			LOG_EX(LOG_ERROR, "%s: wrong version", cfgfilename);
+			errorbox("%s: wrong version", cfgfilename);
 		} else if (lsr == LS_ERROR_NOT_FOUND) {
 			LOG("%s: not found", cfgfilename);
 		} else if (lsr != LS_OK) {
@@ -1963,9 +1964,12 @@ bool ht_app::create_window_help(char *file, char *node)
 
           cwd[0] = 0;
 		getcwd(cwd, sizeof cwd);
-
-		if ((sys_common_canonicalize(ff, file, cwd, sys_is_path_delim) == 0) &&
-          (infoviewer->gotonode(ff, node))) {
+          if (strcmp(file, "hthelp.info")) {
+	          sys_common_canonicalize(ff, file, cwd, sys_is_path_delim);
+          } else {
+          	strcpy(ff, file);
+          }
+		if (infoviewer->gotonode(ff, node)) {
 			insert_window(window, AWT_HELP, 0, false, NULL);
 			
 			window->setpalette(palkey_generic_cyan);
@@ -2415,7 +2419,7 @@ void ht_app::handlemsg(htmsg *msg)
 					break;
 /* FIXME: experimental */
 /* enable this if you want to (re)create a defreg.* */
-/*				case K_Alt_R: {
+				case K_Alt_R: {
 					char *n = "./ht.reg";
 					ht_file *f = new ht_file();
 					f->init(n, FAM_WRITE, FOM_CREATE);
@@ -2435,7 +2439,7 @@ void ht_app::handlemsg(htmsg *msg)
 					
 					clearmsg(msg);
 					return;
-				}*/
+				}
 /* FIXME: experimental */				
 /*				case K_Alt_T:
 					create_window_ofm("reg:/", "local:/");
@@ -2776,7 +2780,7 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 /*	int count=*/popup_view_list_dump(battlefield->current, listbox, structure, 0, &index, battlefield->getselected());
 /* and seek to the currently selected one */
 	listbox->update();
-	listbox->seek(index);
+	listbox->gotoItemByPosition(index);
 
 	ht_text_listbox_sort_order so[1];
 	so[0].col = 0;
@@ -2793,7 +2797,7 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	if (dialog->run(false)) {
 		ht_listbox_data data;
 		listbox->databuf_get(&data, sizeof data);
-		ht_data_ptr *p=(ht_data_ptr*)structure->get(data.cursor_id);
+		ht_data_ptr *p=(ht_data_ptr*)structure->get(listbox->getID(data.cursor_ptr));
 		if (p) result = (ht_view*)p->value;
 	}
 
@@ -2870,7 +2874,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 		listbox->insert_str(e->number, l, e->window->desc);
 	}
 	listbox->update();
-	if (battlefield->current) listbox->seek(battlefield->current->getnumber()-1);
+	if (battlefield->current) listbox->gotoItemByPosition(battlefield->current->getnumber()-1);
 
 	dialog->insert(listbox);
 	dialog->setpalette(palkey_generic_special);
@@ -2879,7 +2883,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	if (dialog->run(false)) {
 		ht_listbox_data data;
 		listbox->databuf_get(&data, sizeof data);
-		result = get_window_by_number(data.cursor_id);
+		result = get_window_by_number(listbox->getID(data.cursor_ptr));
 	}
 	dialog->done();
 	delete dialog;

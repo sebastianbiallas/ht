@@ -49,6 +49,44 @@ char *ht_strdup(const char *str)
 	}
 }
 
+/**
+ *	Like ht_strdup but dups a maximum of |maxlen| characters of |str|.
+ *	@returns new string
+ */
+char *ht_strndup(const char *str, int maxlen)
+{
+	maxlen ++;
+	if (str) {
+		int len = strlen(str)+1;
+          len = MIN(len, maxlen);
+		char *s = (char*)smalloc(len);
+		memmove(s, str, len);
+		return s;
+	} else {
+		return NULL;
+	}
+}
+
+/**
+ *	Like strcpy but copies a maximum of |maxlen| characters
+ *	(including trainling zero).
+ *	The operation is performed in a way that the trailing zero
+ *	is always written if maxlen is > 0.
+ *	@returns number of characters copied (without trailing zero)
+ */
+int ht_strncpy(char *s1, const char *s2, int maxlen)
+{
+	if (maxlen <= 0) return 0;
+	char *os1 = s1;
+	while (maxlen && *s2) {
+          *s1 = *s2;
+     	maxlen--;
+          s1++;
+     }
+     s1[-1] = 0;
+     return s1-os1-1;
+}
+
 
 int ht_strncmp(const char *s1, const char *s2, size_t max)
 {

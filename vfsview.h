@@ -53,19 +53,17 @@ protected:
 /**/
 	ht_text *show_pos;
 	
-/* overwritten */
-	virtual	void			free_extra_data(void *extra_data);
-/* new */
+	virtual	void			freeExtraData(void *extra_data);
 			void			renderEntry(char *buf, int bufsize, int dfmt, const char *filename, pstat_t stat);
-			void			set_display_format(char *fmt);
-	virtual	bool 		select_entry(void *entry);
-			char *		translate_prop(char *fmt, int *type);
 			void			reread();
+			void			setDisplayFormat(char *fmt);
+	virtual	bool 		selectEntry(void *entry);
+			char *		translateProp(char *fmt, int *type);
 public:
 			void			init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
 	virtual	void			done();
 /* overwritten */
-	virtual	void			config_changed();
+	virtual	void			configChanged();
 	virtual	void			handlemsg(htmsg *msg);
 	virtual	void			update();
 /* new */
@@ -83,7 +81,7 @@ public:
 class VfsListbox2: public VfsListbox {
 public:
 /**/
-	virtual	bool select_entry(void *entry);
+	virtual	bool selectEntry(void *entry);
 };
 
 #endif /* __VFSVIEW_H__ */

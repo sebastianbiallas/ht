@@ -200,17 +200,17 @@ int VfsListbox::changeURL(const char *url)
 		sort(1, so);
 	} /*else update();
 */
-	goto_item_by_position(0);
+	gotoItemByPosition(0);
 	/* code to position cursor when doing "cd .." (part II) */
 	if (cdpp) {
-		ht_text_listbox_item *i = (ht_text_listbox_item*)getfirst();
+		ht_text_listbox_item *i = (ht_text_listbox_item*)getFirst();
 		while (i) {
 			vfs_extra *x = (vfs_extra*)i->extra_data;
 			if (newVfs->compareFilenames(x->name, spath2) == 0) {
-				goto_item(i);
+				gotoItemByEntry(i);
 				break;
 			}
-			i = (ht_text_listbox_item*)getnext(i);
+			i = (ht_text_listbox_item*)getNext(i);
 		}
 	}
 	rearrangeColumns();
@@ -218,15 +218,15 @@ int VfsListbox::changeURL(const char *url)
 	return 0;
 }
 
-void VfsListbox::config_changed()
+void VfsListbox::configChanged()
 {
 	ht_text_listbox::config_changed();
 	char *dfmt = get_config_string("misc/vfs display format");
-	set_display_format(dfmt ? dfmt : (char*)"name");
+	setDisplayFormat(dfmt ? dfmt : (char*)"name");
 	if (dfmt) free(dfmt);
 }
 
-void	VfsListbox::free_extra_data(void *extra_data)
+void	VfsListbox::freeExtraData(void *extra_data)
 {
 	if (extra_data) {
 		free_vfs_extra((vfs_extra*)extra_data);
@@ -254,7 +254,7 @@ void VfsListbox::handlemsg(htmsg *msg)
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_Return: {
-					if (count && select_entry(e_cursor)) {
+					if (count && selectEntry(e_cursor)) {
 						clearmsg(msg);
 						return;
 					}
@@ -266,7 +266,7 @@ void VfsListbox::handlemsg(htmsg *msg)
 	return ht_text_listbox::handlemsg(msg);
 }
 
-void VfsListbox::set_display_format(char *fmt)
+void VfsListbox::setDisplayFormat(char *fmt)
 {
 /*	int dfmt_cols;
 	int dfmt_props;
@@ -276,7 +276,7 @@ void VfsListbox::set_display_format(char *fmt)
 	dfmt_cols = 0;
 	dfmt_props = 0;
 	dfmt_quickfind = -1;
-	while ((fmt = translate_prop(fmt, &type))) {
+	while ((fmt = translateProp(fmt, &type))) {
 		if (type == VFSV_FORMAT_SEPARATOR) {
 			if (++dfmt_cols == VFSV_FORMAT_MAX_COLS) break;
 		} else {
@@ -309,7 +309,7 @@ void VfsListbox::set_display_format(char *fmt)
 	rearrangeColumns();
 }
 
-bool VfsListbox::select_entry(void *entry)
+bool VfsListbox::selectEntry(void *entry)
 {
 	ht_text_listbox_item *i = (ht_text_listbox_item*)entry;
 	if (i->extra_data) {
@@ -327,7 +327,7 @@ bool VfsListbox::select_entry(void *entry)
 	return false;
 }
 
-char *VfsListbox::translate_prop(char *fmt, int *type)
+char *VfsListbox::translateProp(char *fmt, int *type)
 {
 	for (int i=0; i<VFSV_FORMAT_PROPERTIES; i++) {
 		int l = strlen(format_property[i]);
@@ -343,7 +343,7 @@ void	VfsListbox::reread()
 {
 #define VFSV_FORMAT_MAX_LENGTH 256
 	if (!cvfs) return;
-	clear_all();
+	clearAll();
 	char *strs[VFSV_FORMAT_MAX_COLS];
 	for (int i=0; i<dfmt_cols; i++) {
 		strs[i] = (char*)malloc(VFSV_FORMAT_MAX_LENGTH);
@@ -576,9 +576,9 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
  *	class VfsListbox2
  */
 
-bool VfsListbox2::select_entry(void *entry)
+bool VfsListbox2::selectEntry(void *entry)
 {
-	if (VfsListbox::select_entry(entry)) return true;
+	if (VfsListbox::selectEntry(entry)) return true;
 	ht_text_listbox_item *i = (ht_text_listbox_item*)entry;
 	if (i->extra_data) {
 		vfs_extra *e = (vfs_extra*)i->extra_data;

@@ -572,12 +572,12 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 			format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
 				int esize=0;
 				int esizes[3]={4, 2, 1};
-				switch (t.mode.cursor_id) {
-/* element type: byte */
+				switch (t.mode.cursor_pos) {
+					/* element type: byte */
 					case 0: esize++;
-/* element type: word */
+					/* element type: word */
 					case 1: esize++;
-/* element type: dword */
+					/* element type: dword */
 					case 2: {
 						char a[256];
 						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
@@ -602,7 +602,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 						if (ctx) delete ctx;
 						break;
 					}
-/* element type: string */
+					/* element type: string */
 					case 3: {
 						char a[256];
 						bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
@@ -627,7 +627,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 						break;
 					}
 					default:
-						errorbox("mode %d not supported", t.mode.cursor_id);
+						errorbox("mode %d not supported", t.mode.cursor_pos);
 				}
 			}
 		}

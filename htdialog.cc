@@ -430,12 +430,12 @@ void ht_history_listbox::init(bounds *b, ht_list *hist)
 	ht_listbox::init(b);
 }
 
-int  ht_history_listbox::calc_count()
+int  ht_history_listbox::calcCount()
 {
 	return history->count();
 }
 
-void *ht_history_listbox::getfirst()
+void *ht_history_listbox::getFirst()
 {
 	if (history->count()) {
 		return (void*)1;
@@ -444,7 +444,7 @@ void *ht_history_listbox::getfirst()
 	}
 }
 
-void *ht_history_listbox::getlast()
+void *ht_history_listbox::getLast()
 {
 	if (history->count()) {
 		return (void*)(history->count());
@@ -453,7 +453,7 @@ void *ht_history_listbox::getlast()
 	}
 }
 
-void *ht_history_listbox::getnext(void *entry)
+void *ht_history_listbox::getNext(void *entry)
 {
 	UINT e=(UINT)entry;
 	if (!e) return NULL;
@@ -464,12 +464,7 @@ void *ht_history_listbox::getnext(void *entry)
 	}
 }
 
-void *ht_history_listbox::getnth(int n)
-{
-	return history->get(n-1);
-}
-
-void *ht_history_listbox::getprev(void *entry)
+void *ht_history_listbox::getPrev(void *entry)
 {
 	UINT e=(UINT)entry;
 	if (e > 1) {
@@ -479,7 +474,7 @@ void *ht_history_listbox::getprev(void *entry)
 	}
 }
 
-char *ht_history_listbox::getstr(int col, void *entry)
+char *ht_history_listbox::getStr(int col, void *entry)
 {
 	return ((ht_history_entry*)history->get((int)entry-1))->desc;
 }
@@ -491,10 +486,10 @@ void ht_history_listbox::handlemsg(htmsg *msg)
 			switch (msg->data1.integer) {
 				case K_Delete: {
 					int p = pos;
-					cursor_up(1);
+					cursorUp(1);
 					history->del(p);
 					update();
-					if (p) cursor_down(1);
+					if (p) cursorDown(1);
 					dirtyview();
 					clearmsg(msg);
 					break;
@@ -507,29 +502,29 @@ void ht_history_listbox::handlemsg(htmsg *msg)
 
 void *ht_history_listbox::quickfind(char *s)
 {
-	void *item = getfirst();
+	void *item = getFirst();
 	int slen = strlen(s);
-	while (item && (ht_strncmp(getstr(0, item), s, slen)!=0)) {
-		item = getnext(item);
+	while (item && (ht_strncmp(getStr(0, item), s, slen)!=0)) {
+		item = getNext(item);
 	}
 	return item;
 }
 
-char	*ht_history_listbox::quickfind_completition(char *s)
+char	*ht_history_listbox::quickfindCompletition(char *s)
 {
-	void *item = getfirst();
+	void *item = getFirst();
 	char *res = NULL;
 	int slen = strlen(s);
 	while (item) {
-		if (ht_strncmp(getstr(0, item), s, slen)==0) {
+		if (ht_strncmp(getStr(0, item), s, slen)==0) {
 			if (!res) {
-				res = ht_strdup(getstr(0, item));
+				res = ht_strdup(getStr(0, item));
 			} else {
-				int a = strccomm(res, getstr(0, item));
+				int a = strccomm(res, getStr(0, item));
 				res[a] = 0;
 			}
 		}
-		item = getnext(item);
+		item = getNext(item);
 	}
 	return res;
 }
@@ -547,6 +542,7 @@ void ht_history_popup_dialog::init(bounds *b, ht_list *hist)
 
 void ht_history_popup_dialog::getdata(ht_object_stream *s)
 {
+	// FIXME: public member needed:
 	s->putIntDec(listbox->pos, 4, NULL);
 	if (history->count()) {
 		s->putString(((ht_history_entry*)history->get(listbox->pos))->desc, NULL);
@@ -1003,7 +999,7 @@ void ht_strinputfield::history_dialog()
 			l->databuf_get(&d, sizeof d);
 
 			if (d.cursor_string) {
-				ht_history_entry *v=(ht_history_entry*)history->get(d.cursor_id);
+				ht_history_entry *v=(ht_history_entry*)history->get(d.cursor_pos);
 				if ((v->data) && (group)) {
 					v->datafile->seek(0);
 					group->setdata(v->data);
@@ -1454,21 +1450,16 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 
 	pos = 0;
 	cursor = 0;
-	e_top = getfirst();
+	e_top = getFirst();
 	e_cursor = e_top;
 	title = NULL;
 	visible_height = 0;
 	x = 0;
 	widths = NULL;
-	clear_quickfind();
+	clearQuickfind();
 	update();
 	listboxcaps = Listboxcaps;
 	cols = 0;
-}
-
-int 	ht_listbox::load(ht_object_stream *f)
-{
-	return 0;
 }
 
 void	ht_listbox::done()
@@ -1479,22 +1470,22 @@ void	ht_listbox::done()
 	ht_view::done();
 }
 
-void ht_listbox::adjust_pos_hack()
+void ht_listbox::adjustPosHack()
 {
 	if (e_cursor!=e_top) return;
 	int i=0;
 	void *tmp = e_cursor;
 	if (!tmp) return;
 	while ((tmp) && (i<=visible_height)) {
-		tmp = getnext(tmp);
+		tmp = getNext(tmp);
 		i++;
 	}
 	if (i<visible_height) {
-		cursor_down(cursor_up(visible_height-pos-i));
+		cursorDown(cursorUp(visible_height-pos-i));
 	}
 }
 
-void ht_listbox::adjust_scrollbar()
+void ht_listbox::adjustScrollbar()
 {
 	int pstart, psize;
 	if (scrollbar_pos(pos-cursor, size.h, cached_count, &pstart, &psize)) {
@@ -1519,25 +1510,25 @@ void ht_listbox::attachTitle(ht_listbox_title *aTitle)
 	title->dirtyview();
 }
 
-void ht_listbox::clear_quickfind()
+void ht_listbox::clearQuickfind()
 {
 	quickfinder[0] = 0;
 	qpos = quickfinder;
-	update_cursor();
+	updateCursor();
 }
 
-int  ht_listbox::cursor_adjust()
+int  ht_listbox::cursorAdjust()
 {
 	return 0;
 }
 
-int  ht_listbox::cursor_up(int n)
+int  ht_listbox::cursorUp(int n)
 {
 	void *tmp;
 	int  i = 0;
 
 	while (n--) {
-		tmp = getprev(e_cursor);
+		tmp = getPrev(e_cursor);
 		if (!tmp) break;
 		if (e_cursor==e_top) {
 			e_top = tmp;
@@ -1552,16 +1543,16 @@ int  ht_listbox::cursor_up(int n)
 	return i;
 }
 
-int  ht_listbox::cursor_down(int n)
+int  ht_listbox::cursorDown(int n)
 {
 	void *tmp;
 	int  i = 0;
 
 	while (n--) {
-		tmp = getnext(e_cursor);
+		tmp = getNext(e_cursor);
 		if (!tmp) break;
-		if (cursor+1>=visible_height) {
-			e_top = getnext(e_top);
+		if (cursor+1 >= visible_height) {
+			e_top = getNext(e_top);
 		} else {
 			cursor++;
 		}
@@ -1604,7 +1595,7 @@ void ht_listbox::draw()
 			}
 			int X = -x;
 			for (int j=0; j<cols; j++) {
-				char *s = getstr(j, entry);
+				char *s = getStr(j, entry);
 				int slen = strlen(s);
 				if (slen > widths[j]) {
 					widths[j] = slen;
@@ -1640,11 +1631,11 @@ void ht_listbox::draw()
 				// more text left
 				buf_printchar(size.w-2, i, c, '>');
 			}
-			entry = getnext(entry);
+			entry = getNext(entry);
 			i++;
 		}
 	}
-	update_cursor();
+	updateCursor();
 /*     char dbg[100];
 	sprintf(dbg, "cursor=%d pos=%d vh=%d qc:%s", cursor, pos, visible_height, quickfinder);
 	lprint(0, 0, 1, size.w, dbg);
@@ -1654,50 +1645,30 @@ void ht_listbox::draw()
 	lprint(0, 2, 1, size.w, dbg);*/
 }
 
-int  ht_listbox::estimate_entry_pos(void *entry)
+int  ht_listbox::estimateEntryPos(void *entry)
 {
 	// this is slow!
-	void *tmp = getfirst();
+	void *tmp = getFirst();
 	int res = 0;
 	while (tmp) {
 		if (tmp==entry) break;
-		tmp = getnext(tmp);
+		tmp = getNext(tmp);
 		res++;
 	}
 	return (tmp==entry) ? res : -1;
 }
 
-void *ht_listbox::getbyid(UINT id)
-{
-	void *p = getfirst();
-	while (p) {
-		if (id == getid(p)) return p;
-		p = getnext(p);
-	}
-	return NULL;
-}
-
 void ht_listbox::getdata(ht_object_stream *s)
 {
-/* FIXME: fixme */
-	s->putIntDec(getid(e_top), 4, NULL);
-	s->putIntDec(getid(e_cursor), 4, NULL);
+     ht_listbox_data d;
+     d.top_ptr = e_top;
+     d.cursor_ptr = e_cursor;
+	s->write(&d, sizeof d);
 }
 
-UINT ht_listbox::getid(void *entry)
+void ht_listbox::gotoItemByEntry(void *entry, bool clear_quickfind)
 {
-	return (UINT)entry;
-}
-
-void *ht_listbox::getnth(int n)
-{
-	void *e=getfirst();
-	while (n--) e=getnext(e);
-	return e;
-}
-
-void ht_listbox::goto_item(void *entry)
-{
+	if (clear_quickfind) clearQuickfind();
 	if (!entry) return;
 	void *tmp = e_top;
 	int i=0;
@@ -1714,17 +1685,24 @@ void ht_listbox::goto_item(void *entry)
 		pos++;
 		cursor++;
 		i++;
-		tmp = getnext(tmp);
+		tmp = getNext(tmp);
 	}
 	e_cursor = entry;
 	if (!ok) {
 		e_top = entry;
 		cursor = 0;
-		pos = estimate_entry_pos(entry);
+		pos = estimateEntryPos(entry);
 		assert(pos != -1);
 	}
-	adjust_pos_hack();
-	state_changed();
+	adjustPosHack();
+	stateChanged();
+}
+
+void ht_listbox::gotoItemByPosition(UINT pos)
+{
+	void *entry = getFirst();
+     while (pos--) entry = getNext(entry);
+     gotoItemByEntry(entry, true);
 }
 
 void ht_listbox::handlemsg(htmsg *msg)
@@ -1735,82 +1713,82 @@ void ht_listbox::handlemsg(htmsg *msg)
 			e_top = vs->e_top;
 			e_cursor = vs->e_cursor;
 			update();
-// FIXME: what about deleting entries !!!
+			// FIXME: what about deleting entries !!!
 			clearmsg(msg);
 			return;
 		}
 		case msg_keypressed: switch (msg->data1.integer) {
 			case K_Control_PageUp:
 			case K_Home:
-				clear_quickfind();
+				clearQuickfind();
 				pos = cursor = 0;
-				e_top = e_cursor = getfirst();
+				e_top = e_cursor = getFirst();
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_Control_PageDown:
 			case K_End: {
-				clear_quickfind();
+				clearQuickfind();
 				cursor = 0;
 				pos = cached_count ? cached_count-1 : 0;
-				e_cursor = e_top = getlast();
-				cursor_up(visible_height-1);
-				cursor_down(visible_height-1);
+				e_cursor = e_top = getLast();
+				cursorUp(visible_height-1);
+				cursorDown(visible_height-1);
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			}
 			case K_PageUp:
-				clear_quickfind();
-				cursor_up(visible_height-1);
+				clearQuickfind();
+				cursorUp(visible_height-1);
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_PageDown: {
-				clear_quickfind();
-				cursor_down(visible_height-1);
+				clearQuickfind();
+				cursorDown(visible_height-1);
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			}
 			case K_Up:
-				clear_quickfind();
-				cursor_up(1);
+				clearQuickfind();
+				cursorUp(1);
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_Down:
-				clear_quickfind();
-				cursor_down(1);
+				clearQuickfind();
+				cursorDown(1);
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_Left:
 			case K_Control_Left:
 				if (x > 0) x--;
-				update_cursor();
+				updateCursor();
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_Right:
 			case K_Control_Right:
 				x++;
-				update_cursor();
+				updateCursor();
 				dirtyview();
 				clearmsg(msg);
-				state_changed();
+				stateChanged();
 				return;
 			case K_Tab:
 				if (listboxcaps & LISTBOX_QUICKFIND) {
 					if (*quickfinder) {
-						char *qc = quickfind_completition(quickfinder);
+						char *qc = quickfindCompletition(quickfinder);
 						if (qc) {
 							strcpy(quickfinder, qc);
 							qpos = strend(quickfinder);
@@ -1827,12 +1805,12 @@ void ht_listbox::handlemsg(htmsg *msg)
 						qf:
 						void *a = quickfind(quickfinder);
 						if (a) {
-							goto_item(a);
-							update_cursor();
+							gotoItemByEntry(a, false);
+							updateCursor();
 							dirtyview();
 						}
 						clearmsg(msg);
-						state_changed();
+						stateChanged();
 					}
 				}
 				return;
@@ -1843,11 +1821,11 @@ void ht_listbox::handlemsg(htmsg *msg)
 					*qpos = 0;
 					void *a = quickfind(quickfinder);
 					if (a) {
-						goto_item(a);
-						update_cursor();
+						gotoItemByEntry(a, false);
+						updateCursor();
 						dirtyview();
 						clearmsg(msg);
-						state_changed();
+						stateChanged();
 					} else {
 						*(--qpos) = 0;
 					}
@@ -1864,7 +1842,7 @@ int	ht_listbox::numColumns()
 	return 1;
 }
 
-char	*ht_listbox::quickfind_completition(char *s)
+char	*ht_listbox::quickfindCompletition(char *s)
 {
 	return ht_strdup(s);
 }
@@ -1891,33 +1869,23 @@ void ht_listbox::resize(int rw, int rh)
 	update();
 }
 
-void ht_listbox::state_changed()
+void ht_listbox::stateChanged()
 {
-	adjust_scrollbar();
+	adjustScrollbar();
 }
 
-bool ht_listbox::seek(int index)
-{
-	clear_quickfind();
-	goto_item(getnth(index));
-	state_changed();
-	return true;
-}
-
-bool ht_listbox::select_entry(void *entry)
+bool ht_listbox::selectEntry(void *entry)
 {
 	return true;
 }
 
 void ht_listbox::setdata(ht_object_stream *s)
 {
-	e_top = getbyid(s->getIntDec(4, NULL));
-	e_cursor = getbyid(s->getIntDec(4, NULL));
+     ht_listbox_data d;
+	s->read(&d, sizeof d);
+     e_top = d.top_ptr;
+     e_cursor = d.cursor_ptr;
 	update();
-}
-
-void	ht_listbox::store(ht_object_stream *f)
-{
 }
 
 ht_data *ht_listbox::vstate_create()
@@ -1943,37 +1911,37 @@ void ht_listbox::vstate_save()
  */
 void ht_listbox::update()
 {
-	void *entry = getfirst();
-	cached_count = calc_count();
+	void *entry = getFirst();
+	cached_count = calcCount();
 	visible_height = MIN(size.h, cached_count);
 	if (cached_count <= size.h) {
-		if (!e_cursor) e_cursor = getfirst();
+		if (!e_cursor) e_cursor = getFirst();
 		cursor = 0;
 		while (entry && (cursor < visible_height)) {
 			if (entry == e_cursor) {
-				e_top = getfirst();
+				e_top = getFirst();
 				goto ok;
 			}
-			entry = getnext(entry);
+			entry = getNext(entry);
 			cursor++;
 		}
 	}
 	if (!e_top) {
-		e_top = getfirst();
+		e_top = getFirst();
 	}     
 	if (!e_cursor) e_cursor = e_top;
 	entry = e_top;
 	cursor = 0;
 	while (entry && (cursor < visible_height)) {
 		if (entry == e_cursor) goto ok;
-		entry = getnext(entry);
+		entry = getNext(entry);
 		cursor++;
 	}
 	cursor = 0;
 	e_top = e_cursor;
 ok:
-	adjust_pos_hack();
-	state_changed();
+	adjustPosHack();
+	stateChanged();
 	if (title) {
 		title->update();
 		title->dirtyview();
@@ -1981,11 +1949,11 @@ ok:
 	dirtyview();
 }
 
-void ht_listbox::update_cursor()
+void ht_listbox::updateCursor()
 {
 	if (focused) {
 		if (*quickfinder) {
-			setcursor((qpos-quickfinder)+cursor_adjust()-x, cursor);
+			setcursor((qpos-quickfinder)+cursorAdjust()-x, cursor);
 		} else {
 			hidecursor();
 		}
@@ -2009,16 +1977,16 @@ void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, UINT aListboxcaps)
 
 void ht_text_listbox::done()
 {
-	clear_all();
+	clearAll();
 	ht_listbox::done();
 }
 
-void ht_text_listbox::clear_all()
+void ht_text_listbox::clearAll()
 {
 	ht_text_listbox_item *temp = first;
 	while (temp) {
 		ht_text_listbox_item *temp2 = temp->next;
-		free_extra_data(temp->extra_data);
+		freeExtraData(temp->extra_data);
 		for (int i=0; i<cols; i++) {
 			free(temp->data[i]);
 		}
@@ -2029,21 +1997,16 @@ void ht_text_listbox::clear_all()
 	
 	pos = 0;
 	cursor = 0;
-	e_top = getfirst();
+	e_top = getFirst();
 	e_cursor = e_top;
 	x = 0;
-	clear_quickfind();
+	clearQuickfind();
 
 	count = 0;
 	Cursor_adjust = 0;
 }
 
-int 	ht_text_listbox::load(ht_object_stream *f)
-{
-	return 0;
-}
-
-int	ht_text_listbox::calc_count()
+int	ht_text_listbox::calcCount()
 {
 	return count;
 }
@@ -2058,21 +2021,21 @@ int	ht_text_listbox::compare_ccomm(char *s1, char *s2)
 	return strccomm(s1, s2);
 }
 
-int  ht_text_listbox::cursor_adjust()
+int  ht_text_listbox::cursorAdjust()
 {
 	return Cursor_adjust;
 }
 
-void ht_text_listbox::free_extra_data(void *extra_data)
+void ht_text_listbox::freeExtraData(void *extra_data)
 {
 }
 
-void *ht_text_listbox::getfirst()
+void *ht_text_listbox::getFirst()
 {
 	return first;
 }
 
-UINT ht_text_listbox::getid(void *entry)
+UINT ht_text_listbox::getID(void *entry)
 {
 	if (entry) {
 		return ((ht_text_listbox_item *)entry)->id;
@@ -2081,46 +2044,30 @@ UINT ht_text_listbox::getid(void *entry)
 	}	    
 }
 
-void *ht_text_listbox::getlast()
+void *ht_text_listbox::getLast()
 {
 	return last;
 }
 
-void *ht_text_listbox::getnext(void *entry)
+void *ht_text_listbox::getNext(void *entry)
 {
 	if (!entry) return NULL;
 	return ((ht_text_listbox_item *)entry)->next;
 }
 
-void *ht_text_listbox::getprev(void *entry)
+void *ht_text_listbox::getPrev(void *entry)
 {
 	if (!entry) return NULL;
 	return ((ht_text_listbox_item *)entry)->prev;
 }
 
-char *ht_text_listbox::getstr(int col, void *entry)
+char *ht_text_listbox::getStr(int col, void *entry)
 {
 	if (entry && (col < cols)) {
 		return ((ht_text_listbox_item *)entry)->data[col];
 	} else {
 		return "";
 	}
-}
-
-void ht_text_listbox::goto_item_by_id(UINT id)
-{
-	void *e = getfirst();
-	while (e && getid(e) != id) {
-		e = getnext(e);
-	}
-	if (e) {
-		goto_item(e);
-	}
-}
-
-void ht_text_listbox::goto_item_by_position(UINT pos)
-{
-	goto_item(getnth(pos));
 }
 
 void	ht_text_listbox::insert_str_extra(int id, void *extra_data, char **strs)
@@ -2227,7 +2174,7 @@ void *ht_text_listbox::quickfind(char *s)
 	return item;
 }
 
-char	*ht_text_listbox::quickfind_completition(char *s)
+char	*ht_text_listbox::quickfindCompletition(char *s)
 {
 	ht_text_listbox_item *item = first;
 	char *res = NULL;
@@ -2262,8 +2209,8 @@ static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_o
 	int R=r;
 	ht_text_listbox_item *c=list[m];
 	do {
-		while (ht_text_listboxcomparatio(list[l], c, count, so)<0) l++;
-		while (ht_text_listboxcomparatio(list[r], c, count, so)>0) r--;
+		while ((l<=r) && (ht_text_listboxcomparatio(list[l], c, count, so)<0)) l++;
+		while ((l<=r) && (ht_text_listboxcomparatio(list[r], c, count, so)>0)) r--;
 		if (l<=r) {
 			ht_text_listbox_item *t=list[l];
 			list[l]=list[r];
@@ -2281,7 +2228,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 	ht_text_listbox_item **list;
 	ht_text_listbox_item *tmp;
 	int i=0;
-	int cnt = calc_count();
+	int cnt = calcCount();
 
 	if (cnt<2) return;
 	
@@ -2289,7 +2236,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 	tmp = first;
 	while (tmp) {
 		list[i++] = tmp;
-		tmp = (ht_text_listbox_item *)getnext(tmp);
+		tmp = (ht_text_listbox_item *)getNext(tmp);
 	}
 
 	int c_id = ((ht_text_listbox_item*)e_cursor)->id;
@@ -2317,11 +2264,7 @@ void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
 	free(list);
 
 	update();
-	state_changed();
-}
-
-void	ht_text_listbox::store(ht_object_stream *f)
-{
+	stateChanged();
 }
 
 void ht_text_listbox::update()
@@ -2551,9 +2494,9 @@ void ht_listpopup_dialog::getdata(ht_object_stream *s)
 	ht_listbox_data d;
 	listbox->databuf_get(&d, sizeof d);
 
-	s->putIntDec(d.cursor_id, 4, NULL);
+	s->putIntDec(((ht_text_listbox*)listbox)->getID(d.cursor_ptr), 4, NULL);
 
-	ht_text_listbox_item *cursor = (ht_text_listbox_item*) listbox->getbyid(d.cursor_id);
+	ht_text_listbox_item *cursor = (ht_text_listbox_item*)d.cursor_ptr;
 	if (cursor) {
 		s->putString(cursor->data[0], NULL);
 	} else {
@@ -2570,18 +2513,18 @@ void ht_listpopup_dialog::init_text_listbox(bounds *b)
 
 void ht_listpopup_dialog::insertstring(char *string)
 {
-	((ht_text_listbox *)listbox)->insert_str(listbox->calc_count(), string);
+	((ht_text_listbox *)listbox)->insert_str(listbox->calcCount(), string);
 	listbox->update();
 }
 
 void ht_listpopup_dialog::select_next()
 {
-	listbox->cursor_down(1);
+	listbox->cursorDown(1);
 }
 
 void ht_listpopup_dialog::select_prev()
 {
-	listbox->cursor_up(1);
+	listbox->cursorUp(1);
 }
 
 void ht_listpopup_dialog::setdata(ht_object_stream *s)
@@ -2589,7 +2532,7 @@ void ht_listpopup_dialog::setdata(ht_object_stream *s)
 	int cursor_id=s->getIntDec(4, NULL);
 	s->getString(NULL);	/* ignored */
 	
-	listbox->seek(cursor_id);
+	listbox->gotoItemByPosition(cursor_id);
 }
 
 /*

@@ -134,11 +134,11 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			so.compare_func = opcode_compare;
 			list->update();
 			if (best) {
-				list->goto_item_by_position(best-1);
+				list->gotoItemByPosition(best-1);
 			}
 			list->sort(1, &so);
 			if (!best) {
-				list->goto_item_by_position(0);
+				list->gotoItemByPosition(0);
 			}
 			dialog->insert(list);
 			int r = dialog->run(0);
@@ -146,7 +146,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			if (r == button_ok) {
 				ht_listbox_data d;
 				list->databuf_get(&d, sizeof d);
-				ht_text_listbox_item *i=(ht_text_listbox_item *)list->getbyid(d.cursor_id);
+				ht_text_listbox_item *i=(ht_text_listbox_item *)d.cursor_ptr;
 				asm_code *ac3 = ac;
 				int ac3i=0;
 				while (ac3) {

@@ -48,7 +48,6 @@ public:
 			Alphadis();
 	virtual	~Alphadis();
 
-	virtual	dis_insn	*createInvalidInsn();
 			int 		load(ht_object_stream *f);
 	virtual	dis_insn	*decode(byte *code, byte maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);

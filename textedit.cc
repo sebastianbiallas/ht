@@ -1772,8 +1772,7 @@ void ht_text_viewer::popup_change_highlight()
 		}
 	}
 	mode_input->update();
-	mode_input->goto_item_by_id(selected);
-
+     if (selected >= 0) mode_input->gotoItemByPosition(selected);
 	d->insert(mode_input);
 	
 /* mode (text) */
@@ -1795,7 +1794,8 @@ void ht_text_viewer::popup_change_highlight()
 
 		d->databuf_get(&data, sizeof data);
 
-		ht_syntax_lexer *l = (ht_syntax_lexer*)lexers->get(data.type.cursor_id);
+		ht_syntax_lexer *l = (ht_syntax_lexer*)lexers->get(
+			mode_input->getID(data.type.cursor_ptr));
 		set_lexer(l, false);
 	}
 	
@@ -2587,12 +2587,12 @@ void ht_text_editor::show_protocol()
 		list->insert_str(i+1, od, buf);
 	}
 	list->update();
-	list->goto_item(list->getbyid(cp));
+	list->gotoItemByPosition(cp);
 	dialog->insert(list);
 	if (dialog->run(false) == button_ok) {
 		ht_listbox_data d;
 		list->databuf_get(&d, sizeof d);
-		int a = d.cursor_id;
+		int a = list->getID(d.cursor_ptr);
 		int b = cp;
 		
 		if (a-b < 0) {

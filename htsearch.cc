@@ -1331,8 +1331,8 @@ void ht_search_dialog::handlemsg(htmsg *msg)
 		ht_dialog::handlemsg(msg);
 		ht_listpopup_data data;
 		search_mode_popup->databuf_get(&data, sizeof data);
-		if ((int)data.cursor_id != smodeidx) {
-			smodeidx = data.cursor_id;
+		if ((int)data.cursor_pos != smodeidx) {
+			smodeidx = data.cursor_pos;
 			select_search_mode_bymodeidx();
 		}
 	} else ht_dialog::handlemsg(msg);
@@ -1372,7 +1372,7 @@ void ht_search_dialog::select_search_mode(int id)
 void ht_search_dialog::select_search_mode_bymodeidx()
 {
 	ht_listpopup_data d;
-	d.cursor_id = smodeidx;
+	d.cursor_pos = smodeidx;
 	search_mode_popup->databuf_set(&d, sizeof d);
 	focus(smodes[smodeidx].view);
 	sendmsg(msg_dirtyview, 0);
@@ -1444,8 +1444,8 @@ void ht_replace_dialog::handlemsg(htmsg *msg)
 		ht_search_dialog::handlemsg(msg);
 		ht_listpopup_data data;
 		replace_mode_popup->databuf_get(&data, sizeof data);
-		if ((int)data.cursor_id != rmodeidx) {
-			rmodeidx=data.cursor_id;
+		if ((int)data.cursor_pos != rmodeidx) {
+			rmodeidx=data.cursor_pos;
 			select_replace_mode_bymodeidx();
 		}
 	} else ht_search_dialog::handlemsg(msg);
@@ -1485,7 +1485,7 @@ void ht_replace_dialog::select_replace_mode(int id)
 void ht_replace_dialog::select_replace_mode_bymodeidx()
 {
 	ht_listpopup_data d;
-	d.cursor_id = rmodeidx;
+	d.cursor_pos = rmodeidx;
 	replace_mode_popup->databuf_set(&d, sizeof d);
 //	focus(rmodes[rmodeidx].view);
 	sendmsg(msg_dirtyview, 0);

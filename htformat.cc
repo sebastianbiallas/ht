@@ -3525,7 +3525,7 @@ int ht_uformat_viewer::ref_desc(ID id, FILEOFS offset, UINT size, bool bigendian
 		}
 
 		l->update();
-		l->seek(curpos);
+		l->gotoItemByPosition(curpos);
 
 		g->insert(l);
 		g->setpalette(palkey_generic_window_default);
@@ -3533,7 +3533,7 @@ int ht_uformat_viewer::ref_desc(ID id, FILEOFS offset, UINT size, bool bigendian
 		if (g->run(false)==button_ok) {
 			ht_listbox_data da;
 			l->databuf_get(&da, sizeof da);
-			int i=da.cursor_id;
+			int i = l->getID(da.cursor_ptr);
 			if (desc[i].value != d) {
 				baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 				if (edit()) {

@@ -305,6 +305,7 @@ UINT LEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FILEOFS ofs = addressToFileofs(Addr);
 /*     if (ofs == INVALID_FILE_OFS) {
+	     ht_printf("%y", Addr);
 		int as=1;
 	}*/
 	assert(ofs != INVALID_FILE_OFS);
@@ -494,8 +495,11 @@ bool LEAnalyser::validAddress(Address *Addr, tsectype action)
 			return (s->flags & LE_OBJECT_FLAG_WRITEABLE);
 		case screadwrite:
 			return (s->flags & LE_OBJECT_FLAG_READABLE) && (s->flags & LE_OBJECT_FLAG_WRITEABLE);
-		case sccode:
+		case sccode: {
+               FILEOFS ofs;
+               if (!LE_addr_to_ofs(le_shared, na, &ofs)) return false;
 			return (s->flags & LE_OBJECT_FLAG_EXECUTABLE);
+          }
 		case scinitialized:
 			return true;
 	}

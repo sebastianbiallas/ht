@@ -77,6 +77,7 @@ public:
 	}
 };
 
+// FIXME: this function is considered harmful
 char *strndup(const char *s, int n)
 {
 	char *q=(char*)malloc(n+1);

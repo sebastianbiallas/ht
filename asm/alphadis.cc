@@ -68,12 +68,6 @@ Alphadis::~Alphadis()
 {
 }
 
-dis_insn *Alphadis::createInvalidInsn()
-{
-	insn.valid = false;
-	return &insn;
-}
-
 int Alphadis::load(ht_object_stream *f)
 {
 	return Disassembler::load(f);
