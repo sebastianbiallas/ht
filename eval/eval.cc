@@ -1352,7 +1352,7 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 				case PROTOMATCH_PARAM_FAIL: {
 					char b[256];
 					proto_dump(b, sizeof b, protos, 0);
-					set_eval_error("invalid params to function %s", b);
+					set_eval_error("invalid params to function %s, declaration is: %s", protos->name, b);
 					return 0;
 				}
 				default: {}
