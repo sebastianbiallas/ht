@@ -32,18 +32,6 @@
 #include <sys/stat.h>	/* for mode definitions */
 #include <unistd.h>
 
-/* namespace trick */
-
-inline ssize_t read_wrap(int fd, void *buffer, size_t length)
-{
-	return read(fd, buffer, length);
-}
-
-inline int write_wrap(int file, const void *buffer, size_t count)
-{
-	return write(file, buffer, count);
-}
-
 /*
  *	CLASS ht_stream
  */
@@ -107,7 +95,7 @@ void	ht_stream::set_error(int e)
 
 void	ht_stream::set_error_func(stream_error_func_ptr s)
 {
-	   stream_error_func=s;
+	stream_error_func=s;
 }
 
 UINT	ht_stream::read(void *buf, UINT size)
@@ -469,7 +457,7 @@ UINT	ht_sys_file::get_size()
 UINT	ht_sys_file::read(void *buf, UINT size)
 {
 	if (!(access_mode & FAM_READ)) return 0;
-	UINT r = read_wrap(fd, buf, size);
+	UINT r = ::read(fd, buf, size);
 	offset += r;
 	return r;
 }
@@ -490,7 +478,7 @@ FILEOFS ht_sys_file::tell()
 UINT	ht_sys_file::write(const void *buf, UINT size)
 {
 	if (!(access_mode & FAM_WRITE)) return 0;
-	UINT r = write_wrap(fd, buf, size);
+	UINT r = ::write(fd, buf, size);
 	offset += r;
 	return r;
 }
