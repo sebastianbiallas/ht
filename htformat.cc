@@ -619,7 +619,14 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 		case cmd_view_mode_i:
 			if (file /*&& (file==msg->data1.ptr)*/) {
 				UINT size = file->get_size();
-				file->cntl(FCNTL_MODS_INVD);
+                    bool isdirty = false;
+                    file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &isdirty);
+                    if (isdirty && (confirmbox("file %s has been modified, apply changes ?",
+                    file->get_filename()) == button_yes)) {
+					file->cntl(FCNTL_MODS_FLUSH);
+                    } else {
+					file->cntl(FCNTL_MODS_INVD);
+				}
 				if (file->set_access_mode(FAM_READ)) {
 					htmsg m;
 					m.msg = cmd_view_mode;
