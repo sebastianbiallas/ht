@@ -658,7 +658,7 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
 #define ADDRBUF(a)
 //#define ADDRBUF(a) (a)->stringify(tbuf, 1024, 0);
-	char tbuf[1024];
+//	char tbuf[1024];
 	ADDRBUF(*Addr)
 	DPRINTF2("prev_line(%s, %d, %d", tbuf, *line, n);
 	ADDRBUF(min)
