@@ -104,4 +104,16 @@ public:
 	virtual bool validInsn(dis_insn *disasm_insn);
 };
 
+class x86dis_vxd: public x86dis {
+protected:
+	virtual void str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
+public:
+	x86dis_vxd();
+	x86dis_vxd(int opsize, int addrsize);
+	virtual ~x86dis_vxd();
+
+	virtual dis_insn *decode(byte *code, byte maxlen, CPU_ADDR addr);
+	virtual OBJECT_ID object_id() const;
+};
+
 #endif /* __X86DIS_H__ */
