@@ -1915,7 +1915,6 @@ struct IA64Operand {
 
 struct IA64OpcodeEntry {
 	char						*name;
-	word 					extensions[8];
 	IA64EnumOpcodeFormat		format;
 	IA64EnumOpcodeTemplateRole   	role;
 	IA64Operand				op1; // FIXME make array
@@ -1924,10 +1923,6 @@ struct IA64OpcodeEntry {
 	IA64Operand				op4;
 	IA64Operand				op5;
 	IA64Operand				op6;
-	dword					flags;
-	dword					mem_size;
-	int						dec_flags;
-	dword					impls;
 };
 																						  
 extern IA64Template IA64Templates[];
