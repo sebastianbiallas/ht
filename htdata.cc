@@ -611,6 +611,18 @@ void ht_dtree::populate_ltable(ht_tree_node ***ltable, ht_tree_node *node)
 	if (node->right) populate_ltable(ltable, node->right);
 }
 
+void ht_dtree::populate_ltable_free_dead_nodes(ht_tree_node ***ltable, ht_tree_node *node)
+{
+	if (node->left) populate_ltable(ltable, node->left);
+	if (node->value) {
+		**ltable=node;
+		(*ltable)++;
+	} else {
+		delete node;
+	}
+	if (node->right) populate_ltable(ltable, node->right);
+}
+
 void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 {
 	ub_delete=0;
@@ -621,11 +633,10 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 		ht_tree_node **ltable = (ht_tree_node**)malloc(sizeof (ht_tree_node*) * new_node_count);
 		assert(ltable);
 		ht_tree_node **l = ltable;
-		populate_ltable(&l, root);
+		populate_ltable_free_dead_nodes(&l, root);
 
 		/* save old tree, empty tree */
 		UINT old_node_count = node_count;
-		ht_tree_node *old_root = root;
 		node_count = 0;
 		root = NULL;
 		if (compare_keys != new_compare_keys) {
@@ -639,7 +650,6 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 		insert_ltable(&root, ltable, ltable+new_node_count-1);
 		/* destroy old_tree */
 		node_count = old_node_count;
-//		free_skeleton(old_root);
 		/* destroy ltable */
 		free(ltable);
 		/**/

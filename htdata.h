@@ -190,6 +190,7 @@ protected:
 
 		void hardcount(UINT *nc, UINT *dnc);
 	virtual	void populate_ltable(ht_tree_node ***ltable, ht_tree_node *node);
+	virtual	void populate_ltable_free_dead_nodes(ht_tree_node ***ltable, ht_tree_node *node);
 public:
 			void init(compare_keys_func_ptr compare_keys, UINT _max_ub_delete=DEFAULT_MAX_UB_DELETE, UINT _max_ub_insert=DEFAULT_MAX_UB_INSERT);
 	virtual	void done();
