@@ -97,7 +97,7 @@ void ht_hex_viewer::get_pindicator_str(char *buf)
 	}
 }
 	
-bool ht_hex_viewer::get_hscrollbar_pos(int *pstart, int *psize)
+bool ht_hex_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 {
 	int s=file->get_size();
 	if (s) {
@@ -190,9 +190,9 @@ bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 
 bool ht_hex_viewer::string_to_pos(char *string, viewer_pos *pos)
 {
-	scalar_t r;
+	eval_scalar r;
 	if (eval(&r, string, NULL, NULL, NULL)) {
-		int_t i;
+		eval_int i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
 		offset_to_pos(QWORD_GET_INT(i.value), pos);

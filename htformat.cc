@@ -2470,9 +2470,9 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			char buf[32];
 			sprintf(buf, "%d", o);
 			if (inputbox("resize", "new file size", buf, sizeof buf, 0)==button_ok) {
-				scalar_t r;
+				eval_scalar r;
 				if (eval(&r, buf, NULL, NULL, NULL)) {
-					int_t i;
+					eval_int i;
 					scalar_context_int(&r, &i);
 					scalar_destroy(&r);
 					o=QWORD_GET_INT(i.value);
@@ -3579,12 +3579,12 @@ void ht_uformat_viewer::scroll_down(int n)
 
 bool ht_uformat_viewer::string_to_offset(char *string, FILEOFS *ofs)
 {
-	scalar_t r;
+	eval_scalar r;
 	if (eval(&r, string, NULL, NULL, NULL)) {
-		int_t i;
+		eval_int i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
-		*ofs=QWORD_GET_INT(i.value);
+		*ofs = QWORD_GET_INT(i.value);
 		return true;
 	}
 	char *s;
@@ -3798,7 +3798,7 @@ void ht_linear_sub::handlemsg(htmsg *msg)
 	}
 }
 
-int ht_linear_func_readbyte(scalar_t *result, int_t *offset)
+int ht_linear_func_readbyte(eval_scalar *result, eval_int *offset)
 {
 	struct context_t {
 		ht_linear_sub *sub;
@@ -3815,7 +3815,7 @@ int ht_linear_func_readbyte(scalar_t *result, int_t *offset)
 	return 1;
 }
 
-int ht_linear_func_readstring(scalar_t *result, int_t *offset, int_t *len)
+int ht_linear_func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
 	struct context_t {
 		ht_linear_sub *sub;
@@ -3828,7 +3828,7 @@ int ht_linear_func_readstring(scalar_t *result, int_t *offset, int_t *len)
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
-		str_t s;
+		eval_str s;
 		UINT c=f->pread(QWORD_GET_INT(offset->value), buf, l);
 		if (c!=l) {
 			free(buf);
@@ -3845,13 +3845,13 @@ int ht_linear_func_readstring(scalar_t *result, int_t *offset, int_t *len)
 	return 0;
 }
 
-int ht_linear_func_entropy(scalar_t *result, str_t *buf)
+int ht_linear_func_entropy(eval_scalar *result, eval_str *buf)
 {
 	scalar_create_int_c(result, calc_entropy2((byte *)buf->value, buf->len));
 	return 1;
 }
 
-int ht_linear_func_entropy2(scalar_t *result, str_t *buf)
+int ht_linear_func_entropy2(eval_scalar *result, eval_str *buf)
 {
 	scalar_create_float_c(result, calc_entropy((byte *)buf->value, buf->len));
 	return 1;
@@ -3863,9 +3863,9 @@ struct search_expr_eval_context_t {
 	int i, o;
 };
 
-int ht_linear_sub_func_handler(scalar_t *result, char *name, scalarlist_t *params)
+int ht_linear_sub_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
-	evalfunc_t myfuncs[] = {
+	eval_func myfuncs[] = {
 		{"entropy", (void*)&ht_linear_func_entropy, {SCALAR_STR}},
 		{"entropy2", (void*)&ht_linear_func_entropy2, {SCALAR_STR}},
 		{"readbyte", (void*)&ht_linear_func_readbyte, {SCALAR_INT}},
@@ -3875,7 +3875,7 @@ int ht_linear_sub_func_handler(scalar_t *result, char *name, scalarlist_t *param
 	return std_eval_func_handler(result, name, params, myfuncs);
 }
 
-int ht_linear_sub_symbol_handler(scalar_t *result, char *name)
+int ht_linear_sub_symbol_handler(eval_scalar *result, char *name)
 {
 	search_expr_eval_context_t *context =
 		(search_expr_eval_context_t*)eval_get_context();
@@ -3913,11 +3913,11 @@ bool process_search_expr(ht_data *ctx, ht_text *progress_indicator)
 	context.fv = c->fv;
 	int w=PROCESS_EXPR_SEARCH_BYTES_PER_CALL;
 	while (c->o < c->end) {
-		scalar_t r;
+		eval_scalar r;
 		context.i = c->i;
 		context.o = c->o;
 		if (eval(&r, s->expr, ht_linear_sub_func_handler, ht_linear_sub_symbol_handler, &context)) {
-			int_t i;
+			eval_int i;
 			scalar_context_int(&r, &i);
 			if (i.value != to_qword(0)) {
 				ht_physical_search_result *r=new ht_physical_search_result();

@@ -29,12 +29,14 @@ typedef struct {
 	dword lo;
 } qword;
 
+// FIXME: dont work for >32 bit systems
 #define QWORD_SET_HI(q, v) (((q).hi) = (v))
 #define QWORD_SET_LO(q, v) (((q).lo) = (v))
 #define QWORD_GET_HI(q) ((q).hi)
 #define QWORD_GET_LO(q) ((q).lo)
 
 #define QWORD_GET_INT(q) ((q).lo)
+#define QWORD_GET_FLOAT(q) ((((float)QWORD_GET_HI(q))*4294967296.0) + ((float)QWORD_GET_LO(q)))
 
 #ifdef __cplusplus
 extern "C" {

@@ -189,7 +189,7 @@ static dword blockop_i;
 static dword blockop_o;
 static bool blockop_expr_is_const;
 
-int blockop_symbol_eval(scalar_t *r, char *symbol)
+int blockop_symbol_eval(eval_scalar *r, char *symbol)
 {
 	if (strcmp(symbol, "i")==0) {
 		r->type=SCALAR_INT;
@@ -207,7 +207,7 @@ int blockop_symbol_eval(scalar_t *r, char *symbol)
 	return 0;
 }
 
-int func_readbyte(scalar_t *result, int_t *offset)
+int func_readbyte(eval_scalar *result, eval_int *offset)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 	byte b;
@@ -219,7 +219,7 @@ int func_readbyte(scalar_t *result, int_t *offset)
 	return 1;
 }
 
-int func_readstring(scalar_t *result, int_t *offset, int_t *len)
+int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
 	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 
@@ -227,7 +227,7 @@ int func_readstring(scalar_t *result, int_t *offset, int_t *len)
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
-		str_t s;
+		eval_str s;
 		UINT c = 0;
 		if ((f->seek(QWORD_GET_INT(offset->value))!=0) || ( (c=f->read(buf, l)) !=l)) {
 			free(buf);
@@ -244,11 +244,11 @@ int func_readstring(scalar_t *result, int_t *offset, int_t *len)
 	return 0;
 }
 
-int blockop_func_eval(scalar_t *result, char *name, scalarlist_t *params)
+int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 /* FIXME: non-constant funcs (e.g. rand()) should
    set blockop_expr_is_const to false */
-	evalfunc_t myfuncs[] = {
+	eval_func myfuncs[] = {
 		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}},
 		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}},
 		{NULL}
@@ -279,7 +279,7 @@ public:
 	FILEOFS o;
 
 	bool expr_const;
-	str_t v;
+	eval_str v;
 
 	~ht_blockop_str_context()
 	{
@@ -303,7 +303,7 @@ ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 
 	blockop_expr_is_const = true;
 
-	scalar_t r;
+	eval_scalar r;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
 		char *s;
 		int p;
@@ -344,8 +344,8 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 	} else {
 		ht_snprintf(status, sizeof status, "operating (variable string)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
-		scalar_t r;
-		str_t sr;
+		eval_scalar r;
+		eval_str sr;
 		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_i = ctx->i;
@@ -419,8 +419,8 @@ ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 
 	blockop_expr_is_const = true;
 	
-	scalar_t r;
-	int_t ir;
+	eval_scalar r;
+	eval_int ir;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
 		char *s;
 		int p;
@@ -463,8 +463,8 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 	} else {
 		ht_snprintf(status, sizeof status, "operating (variable integer)... %d%% complete", (ctx->o-ctx->ofs) * 100 / ctx->len);
 		progress_indicator->settext(status);
-		scalar_t r;
-		int_t ir;
+		eval_scalar r;
+		eval_int ir;
 		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_o = ctx->o;

@@ -31,7 +31,7 @@ extern "C" {
 #include "evalx.h"
 }
 
-int sprint_base2(char *x, dword value, bool leading_zeros)
+static int sprint_base2(char *x, dword value, bool leading_zeros)
 {
 	char *ix=x;
 	bool draw = leading_zeros;
@@ -43,7 +43,7 @@ int sprint_base2(char *x, dword value, bool leading_zeros)
 	return x-ix;
 }
 
-int sprint_base2_0(char *x, dword value, int zeros)
+static int sprint_base2_0(char *x, dword value, int zeros)
 {
 	char *ix=x;
 	char vi=0;
@@ -65,7 +65,7 @@ int sprint_base2_0(char *x, dword value, int zeros)
 	return x-ix;
 }
 
-int sprint_basen(char *buffer, int base, qword q)
+static int sprint_basen(char *buffer, int base, qword q)
 {
 	static char *chars="0123456789abcdef";
 	if ((base<2) || (base>16)) return 0;
@@ -82,10 +82,11 @@ int sprint_basen(char *buffer, int base, qword q)
 		b[i] = b[n-i-1];
 		b[n-i-1] = t;
 	}
+     b[n] = 0;
 	return n;
 }
 
-int sprintf_basen(char *buffer, const char *format, int base, qword q)
+static int sprintf_basen(char *buffer, const char *format, int base, qword q)
 {
 	int n = 0;
 	while (*format) {
@@ -99,6 +100,7 @@ int sprintf_basen(char *buffer, const char *format, int base, qword q)
 		}
 		format++;
 	}
+     buffer[n] = 0;
 	return n;
 }
 
@@ -132,7 +134,7 @@ void eval_dialog()
 
 	while (d->run(false) != button_cancel) {
 		ht_strinputfield_data str;
-		scalar_t r;
+		eval_scalar r;
 		char b[1024];
 		s->databuf_get(&str);
 		if (str.textlen) {

@@ -1632,9 +1632,9 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 			char line[1024];
 			line[0]=0;
 			if (inputbox("goto", "line", line, 1024)) {
-				scalar_t r;
+				eval_scalar r;
 				if (eval(&r, line, NULL, NULL, NULL)) {
-					int_t i;
+					eval_int i;
 					scalar_context_int(&r, &i);
 					if (!i.value || !goto_line(QWORD_GET_INT(i.value)-1)) {
 						errorbox("no such line: %d!", i.value);

@@ -190,8 +190,8 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 		char strbuf[EVALSTR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
 
-		scalar_t r;
-		str_t s;
+		eval_scalar r;
+		eval_str s;
 		if (eval(&r, strbuf, NULL, NULL, NULL)) {
 			scalar_context_str(&r, &s);
 			scalar_destroy(&r);

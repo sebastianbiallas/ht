@@ -36,7 +36,7 @@ protected:
 	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
 	virtual	bool string_to_pos(char *string, viewer_pos *addr);
 	virtual	void get_pindicator_str(char *buf);
-	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
+	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
 };

@@ -595,7 +595,7 @@ char *ht_aviewer::func(UINT i, bool execute)
 	return 0;
 }
 
-static int aviewer_func_addr(scalar_t *result, str_t *str)
+static int aviewer_func_addr(eval_scalar *result, eval_str *str)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	
@@ -615,7 +615,7 @@ static int aviewer_func_addr(scalar_t *result, str_t *str)
 	}
 }
 
-static int aviewer_func_address_of(scalar_t *result, str_t *str)
+static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	char buffer[1024];
@@ -643,7 +643,7 @@ bool pe_rva_to_ofs(pe_section_headers *section_headers, ADDR rva, FILEOFS *ofs)
 }
 */
 
-static int aviewer_func_fileofs(scalar_t *result, int_t *i)
+static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 {
 	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
@@ -663,9 +663,9 @@ static int aviewer_func_fileofs(scalar_t *result, int_t *i)
 	return 0;
 }
 
-static int aviewer_func_handler(scalar_t *result, char *name, scalarlist_t *params)
+static int aviewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
-	evalfunc_t myfuncs[] = {
+	eval_func myfuncs[] = {
 		{"addressOf", (void*)&aviewer_func_address_of, {SCALAR_STR}},
 		{"fileofs", (void*)&aviewer_func_fileofs, {SCALAR_INT}},
 		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}},
@@ -675,7 +675,7 @@ static int aviewer_func_handler(scalar_t *result, char *name, scalarlist_t *para
 	return std_eval_func_handler(result, name, params, myfuncs);
 }
 
-static int aviewer_symbol_handler(scalar_t *result, char *name)
+static int aviewer_symbol_handler(eval_scalar *result, char *name)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	unsigned int v;
@@ -1933,9 +1933,9 @@ restart:
 bool ht_aviewer::string_to_pos(char *string, viewer_pos *vaddr)
 {
 	if (!analy) return false;
-	scalar_t r;
+	eval_scalar r;
 	if (eval(&r, string, aviewer_func_handler, aviewer_symbol_handler, this)) {
-		int_t i;
+		eval_int i;
 		scalar_context_int(&r, &i);
 		Address *a=analy->createAddress();
 		// FIXME: this is just plain wrong!!
