@@ -258,14 +258,18 @@ struct ht_listbox_data {
 
 class ht_listbox: public ht_view {
 public:
-	int cursor, pos, count;
-	int visible_height;
-	void *e_top, *e_cursor;
-	ht_scrollbar *scrollbar;
-	int x;
+	int		cursor, pos, count;
+	int		visible_height;
+	void		*e_top, *e_cursor;
+	int		x;
 	char		quickfinder[100];
 	char		*qpos;
 	UINT		listboxcaps;
+
+     int		cols;
+     int		*widths;
+     
+	ht_scrollbar *scrollbar;
 
 			void	init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void	done();
@@ -292,7 +296,7 @@ public:
 	virtual   char *getstr(int col, void *entry) = 0;
 			void goto_item(void *entry);
 	virtual	void handlemsg(htmsg *msg);
-	virtual   int	num_cols();							// stub
+	virtual   int	numColumns();							// stub
 	virtual	void	*quickfind(char *s) = 0;
 	virtual	char	*quickfind_completition(char *s);            // stub
 	virtual	void redraw();
@@ -306,6 +310,8 @@ public:
 			void vstate_save();
 /* overwritten */
 	virtual	void resize(int rw, int rh);
+protected:
+			void rearrageColumns();
 };
 
 /*
@@ -346,7 +352,7 @@ public:
 			void goto_item_by_id(UINT id);
 			void goto_item_by_position(UINT pos);
 			void	insert_str(int id, char *str, ...);
-	virtual   int	num_cols();
+	virtual   int	numColumns();
 	virtual	void	*quickfind(char *s);
 	virtual	char	*quickfind_completition(char *s);
 	virtual	void	store(ht_object_stream *f);
@@ -366,10 +372,12 @@ public:
  *	CLASS ht_statictext
  */
 
-#define align_left		0
-#define align_center	1
-#define align_right		2
-#define align_custom	3
+enum statictext_align {
+	align_left,
+	align_center,
+	align_right,
+	align_custom
+};
 
 #define ALIGN_CHAR_ESCAPE	'\e'
 #define ALIGN_CHAR_LEFT		'l'
@@ -385,14 +393,14 @@ struct ht_statictext_linedesc {
 class ht_statictext: public ht_text {
 protected:
 	char *text;
-	int align;
+	statictext_align align;
 	bool breaklines;
 	bool transparent;
 
 /* overwritten */
 	virtual	char *defaultpalette();
 public:
-			void	init(bounds *b, char *text, int align, bool breaklines=true, bool transparent=false);
+			void	init(bounds *b, char *text, statictext_align align, bool breaklines=true, bool transparent=false);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();

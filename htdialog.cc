@@ -1410,6 +1410,8 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 	clear_quickfind();
 	update();
 	listboxcaps = Listboxcaps;
+     cols = 0;
+     widths = NULL;
 }
 
 int 	ht_listbox::load(ht_object_stream *f)
@@ -1421,7 +1423,7 @@ void	ht_listbox::done()
 {
 	scrollbar->done();
 	delete scrollbar;
-
+     if (widths) free(widths);
 	ht_view::done();
 }
 
@@ -1524,39 +1526,52 @@ void ht_listbox::draw()
 	int fc = focused ? getcolor(palidx_generic_list_focused_unselected) :
 		getcolor(palidx_generic_list_unfocused_unselected);
 
-	clear(fc);
+	int Cols = numColumns();
+     if (Cols > cols) rearrageColumns();
 
-	void *entry = e_top;
-
-	int i=0;
-	int cols = num_cols();
-	while ((entry) && (i < visible_height)) {
-		int c=(i==cursor) ? (focused ? getcolor(palidx_generic_list_focused_selected) :
-			getcolor(palidx_generic_list_unfocused_selected)) : fc;
-		if (i==cursor) {
-			fill(0, i, size.w, 1, c, ' ');
-		}
-		int X = -x;
-		for (int j=0; j<cols; j++) {
-			char *s = getstr(j, entry);
-			int slen = strlen(s);
-			if (s) {
-				if (X > 0) {
-					buf_lprint(X, i, c, size.w, s);
-				} else {
-					if (slen > -X) buf_lprint(0, i, c, size.w, &s[-X]);
+    	bool resizing_cols = true;
+     while (resizing_cols) {
+          resizing_cols = false;
+		clear(fc);
+		void *entry = e_top;
+		int i=0;
+		while ((entry) && (i < visible_height)) {
+			int c=(i==cursor) ? (focused ? getcolor(palidx_generic_list_focused_selected) :
+				getcolor(palidx_generic_list_unfocused_selected)) : fc;
+			if (i==cursor) {
+				fill(0, i, size.w, 1, c, ' ');
+			}
+			int X = -x;
+			for (int j=0; j<cols; j++) {
+				char *s = getstr(j, entry);
+				int slen = strlen(s);
+	               if (slen > widths[j]) {
+	               	widths[j] = slen;
+	                    /*
+	                     *	a column has been resized,
+	                     *	therefore we have to redraw a second time.
+	                     */
+                         resizing_cols = true;
+	               }
+				if (s) {
+					if (X > 0) {
+						buf_lprint(X, i, c, size.w, s);
+					} else {
+						if (slen > -X) buf_lprint(0, i, c, size.w, &s[-X]);
+					}
+				}
+//				X += slen;
+				X += widths[j];
+				if (j+1<cols) {
+					buf_printchar(X++, i, c, ' ');
+					buf_printchar(X++, i, c, CHAR_LINEV);
+					buf_printchar(X++, i, c, ' ');
 				}
 			}
-			X += slen;
-			if (j+1<cols) {
-				buf_printchar(X++, i, c, ' ');
-				buf_printchar(X++, i, c, CHAR_LINEV);
-				buf_printchar(X++, i, c, ' ');
-			}
+			entry = getnext(entry);
+			i++;
 		}
-		entry = getnext(entry);
-		i++;
-	}
+     }
 	update_cursor();
 /*     char dbg[100];
 	sprintf(dbg, "cursor=%d pos=%d vh=%d qc:%s", cursor, pos, visible_height, quickfinder);
@@ -1772,7 +1787,7 @@ void ht_listbox::handlemsg(htmsg *msg)
 	ht_view::handlemsg(msg);
 }
 
-int	ht_listbox::num_cols()
+int	ht_listbox::numColumns()
 {
 	return 1;
 }
@@ -1780,6 +1795,13 @@ int	ht_listbox::num_cols()
 char	*ht_listbox::quickfind_completition(char *s)
 {
 	return ht_strdup(s);
+}
+
+void ht_listbox::rearrageColumns()
+{
+	if (widths) free(widths);
+     cols = numColumns();
+     widths = (int*)calloc(cols*sizeof(int), 1);
 }
 
 void ht_listbox::redraw()
@@ -1991,13 +2013,12 @@ void *ht_text_listbox::getprev(void *entry)
 
 char *ht_text_listbox::getstr(int col, void *entry)
 {
-	memset(return_str, ' ', widths[col]);
-	return_str[widths[col]] = 0;
 	if (entry && (col < cols)) {
 		char *str = ((ht_text_listbox_item *)entry)->data[col];
-		int sl = strlen(str);
-		memmove(return_str, str, MIN(1024, sl));
-	}
+          strcpy(return_str, str);
+	} else {
+     	return_str[0] = 0;
+     }
 	return return_str;
 }
 
@@ -2045,7 +2066,7 @@ void ht_text_listbox::insert_str(int id, char *str, ...)
 	count++;
 }
 
-int	ht_text_listbox::num_cols()
+int	ht_text_listbox::numColumns()
 {
 	return cols;
 }
@@ -2079,7 +2100,7 @@ char	*ht_text_listbox::quickfind_completition(char *s)
 	return res;
 }
 
-int ht_text_listboxcomparatio(ht_text_listbox_item *a, ht_text_listbox_item *b, int count, ht_text_listbox_sort_order *so)
+static int ht_text_listboxcomparatio(ht_text_listbox_item *a, ht_text_listbox_item *b, int count, ht_text_listbox_sort_order *so)
 {
 	for (int i=0;i<count;i++) {
 		int r = so[i].compare_func(a->data[so[i].col], b->data[so[i].col]);
@@ -2195,7 +2216,7 @@ int	ht_itext_listbox::compare_ccomm(char *s1, char *s2)
 
 #define STATICTEXT_MIN_LINE_FILL 70	/* percent */
 
-void ht_statictext_align(ht_statictext_linedesc *d, int align, int w)
+void ht_statictext_align(ht_statictext_linedesc *d, statictext_align align, int w)
 {
 	switch (align) {
 		case align_center:
@@ -2210,7 +2231,7 @@ void ht_statictext_align(ht_statictext_linedesc *d, int align, int w)
 	}
 }
 
-void ht_statictext::init(bounds *b, char *t, int al, bool breakl, bool trans)
+void ht_statictext::init(bounds *b, char *t, statictext_align al, bool breakl, bool trans)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_RESIZE, "some statictext");
 	VIEW_DEBUG_NAME("ht_statictext");
@@ -2255,7 +2276,7 @@ void ht_statictext::draw()
 /* format string... */	
 		ht_statictext_linedesc *orig_d=(ht_statictext_linedesc *)malloc(sizeof (ht_statictext_linedesc)*size.h);
 		ht_statictext_linedesc *d=orig_d;
-		int lalign=align;
+		statictext_align lalign=align;
 		int c=0;
 		while ((*t) && (c<size.h)) {
 /* custom alignment */
