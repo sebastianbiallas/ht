@@ -46,14 +46,38 @@ static format_viewer_if *htelf_ifs[] = {
 
 static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
-	elf_unsigned_char ident[EI_NIDENT];
-	file->seek(0);
-	file->read(&ident, sizeof ident);
-	if ((ident[ELF_EI_MAG0]!=ELFMAG0) || (ident[ELF_EI_MAG1]!=ELFMAG1) ||
-		(ident[ELF_EI_MAG2]!=ELFMAG2) || (ident[ELF_EI_MAG3]!=ELFMAG3) ) return 0;
-		
+	FILEOFS header_ofs = 0;
+	ELF_HEADER header;
+	// read header
+	if (file->seek(header_ofs) != 0) return NULL;
+	if (file->read(&header, sizeof header) != sizeof header) return NULL;
+	// check for magic
+	if ((header.e_ident[ELF_EI_MAG0]!=ELFMAG0) || (header.e_ident[ELF_EI_MAG1]!=ELFMAG1)
+	||  (header.e_ident[ELF_EI_MAG2]!=ELFMAG2) || (header.e_ident[ELF_EI_MAG3]!=ELFMAG3))
+		return NULL;
+	switch (header.e_ident[ELF_EI_DATA]) {
+		case ELFDATA2LSB:
+		case ELFDATA2MSB:
+			break;
+		default:
+			LOG_EX(LOG_WARN, "File seems to be ELF. But byte-order"
+				" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%x)",
+				header.e_ident[ELF_EI_DATA], header_ofs+4);
+			return NULL;
+	}
+	switch (header.e_ident[ELF_EI_CLASS]) {
+		case ELFCLASS32:
+		case ELFCLASS64:
+			break;
+		default:
+			LOG_EX(LOG_WARN, "File seems to be ELF. But class-value"
+				" (ELF_EI_CLASS) 0x%02x is unsupported. (byte at offset=0x%x)",
+				header.e_ident[ELF_EI_CLASS], header_ofs+4);
+			return NULL;
+	}
+
 	ht_elf *g = new ht_elf();
-	g->init(b, file, htelf_ifs, format_group, 0);
+	g->init(b, file, htelf_ifs, format_group, header_ofs);
 	return g;
 }
 

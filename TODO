@@ -37,8 +37,9 @@
 - document commandline options in help
 
 +steves
-- cbw (opsize 16) and cwde (opsize 32) are distinct
-  same with cwd and cdq
+- option to open a file without attempting to parse
+  'special information' - i.e. to edit it as pure hex.
+- cbw (opsize 16) and cwde (opsize 32) are distinct, same with cwd and cdq
 - mov eax, [eax+ebp] vs. mov eax, [ebp+eax]
 - blockop should support multiple endianesses (currently only big-endian)
 - eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
@@ -64,16 +65,16 @@
 - "class Process" in process.cc: replacing/improving *_process
   see messy code htsearch: replace_bin_process (c->'s)
 
-- (HT_0_8) features configurable
-- (HT_0_8) directory structure
+- (HT_0_9) features configurable
+- (HT_0_9) directory structure
 	- move source files (especially object system) into separate directories,
 	  solve name problems
-- (HT_0_8) data2/string2/stream2/store2/debug2
+- (HT_0_9) data2/string2/stream2/store2/debug2
 	- homogenous/heterogenous lists
 	- save on readonly/locked file
 	- stream::set_layered suspicious
 	- use exceptions
-- (HT_0_8) the next big changes (htvision rewrites)
+- (HT_0_9) the next big changes (htvision rewrites)
 	- rewrite menus, disable menu-entries (and multiple context menus ?)
 	- handlemsg should not have to handle keypressed. new concepts needed
 	- texteditor as dialog-widget should have attachable scrollbar
@@ -154,6 +155,3 @@
 - searchmode bin/regex: rewrite regex ?
 - "Ctrl-X" vs. "Ctrl+X"
 - only frames have desc, rest view_debug_name
-- program modularization (dynamically linkable and built-in modules) ???
-- scripting engine for simple formats (or even more ?)
-
