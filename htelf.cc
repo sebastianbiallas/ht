@@ -29,6 +29,7 @@
 #include "htelfimg.h"
 #include "htendian.h"
 #include "htexcept.h"
+#include "htiobox.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -62,7 +63,7 @@ static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *form
 		default:
 			LOG_EX(LOG_WARN, "File seems to be ELF. But byte-order"
 				" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%x)",
-				header.e_ident[ELF_EI_DATA], header_ofs+4);
+				header.e_ident[ELF_EI_DATA], header_ofs+5);
 			return NULL;
 	}
 	switch (header.e_ident[ELF_EI_CLASS]) {
@@ -76,9 +77,15 @@ static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *form
 			return NULL;
 	}
 
-	ht_elf *g = new ht_elf();
-	g->init(b, file, htelf_ifs, format_group, header_ofs);
-	return g;
+	try {
+		ht_elf *g = new ht_elf();
+		g->init(b, file, htelf_ifs, format_group, header_ofs);
+		return g;
+	} catch (ht_exception *x) {
+		errorbox("error while reading ELF: %s", x->what());
+		delete x;
+		return NULL;
+	}
 }
 
 format_viewer_if htelf_if = {
@@ -104,9 +111,9 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	VIEW_DEBUG_NAME("ht_elf");
 
 	LOG("%s: ELF: found header at %08x", file->get_filename(), header_ofs);
-	
+
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
-	
+
 	shared_data = elf_shared;
 	elf_shared->header_ofs = header_ofs;
 	elf_shared->shnames = NULL;
@@ -118,8 +125,9 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	elf_shared->undefined2fakeaddr = NULL;
 
 	/* read header */
-	file->seek(header_ofs);
-	file->read(&elf_shared->ident, sizeof elf_shared->ident);
+	if (file->seek(header_ofs)) throw new ht_msg_exception("seek error");
+	if (file->read(&elf_shared->ident, sizeof elf_shared->ident) != sizeof elf_shared->ident)
+		throw new ht_msg_exception("read error");
 	switch (elf_shared->ident.e_ident[ELF_EI_DATA]) {
 		case ELFDATA2LSB:
 			elf_shared->byte_order = little_endian;
@@ -131,13 +139,17 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32: {
-			file->read(&elf_shared->header32, sizeof elf_shared->header32);
+			if (file->read(&elf_shared->header32, sizeof elf_shared->header32)
+			!= sizeof elf_shared->header32)
+				throw new ht_msg_exception("read error");
 			create_host_struct(&elf_shared->header32, ELF_HEADER32_struct, elf_shared->byte_order);
 			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header32.e_shnum;
 			elf_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
-			file->seek(header_ofs+elf_shared->header32.e_shoff);
-			file->read(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
+			if (file->seek(header_ofs+elf_shared->header32.e_shoff)) throw new ht_msg_exception("seek error");
+			if (file->read(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32)
+			!= elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32)
+				throw new ht_msg_exception("read error");
 			for (uint i=0; i<elf_shared->sheaders.count; i++) {
 				ELF_SECTION_HEADER32 a = elf_shared->sheaders.sheaders32[i];
 				create_host_struct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
@@ -146,30 +158,46 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header32.e_phnum;
 			elf_shared->pheaders.pheaders32=(ELF_PROGRAM_HEADER32*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
-			file->seek(header_ofs+elf_shared->header32.e_phoff);
-			file->read(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
+			if (file->seek(header_ofs+elf_shared->header32.e_phoff)) throw new ht_msg_exception("seek error");
+			if (file->read(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32)
+			!= elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32)
+				throw new ht_msg_exception("read error");
 			for (uint i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
 			// if file is relocatable, relocate it
 			if (elf_shared->header32.e_type == ELF_ET_REL) {
 				/* create a fake section for undefined symbols */
-				fake_undefined_symbols32();
+				try {
+					fake_undefined_symbols32();
+				} catch (ht_exception *x) {
+					errorbox("error while faking undefined ELF symbols: %s", x->what());
+					delete x;
+				}
 
 				/* create streamfile layer for relocations */
-				auto_relocate32();
+				try {
+					auto_relocate32();
+				} catch (ht_exception *x) {
+					errorbox("error while auto-relocating ELF symbols: %s", x->what());
+					delete x;
+				}
 			}
 			break;
 		}
 		case ELFCLASS64: {
-			file->read(&elf_shared->header64, sizeof elf_shared->header64);
+			if (file->read(&elf_shared->header64, sizeof elf_shared->header64)
+			!= sizeof elf_shared->header64)
+				throw new ht_msg_exception("read error");
 			create_host_struct(&elf_shared->header64, ELF_HEADER64_struct, elf_shared->byte_order);
 			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header64.e_shnum;
 			elf_shared->sheaders.sheaders64=(ELF_SECTION_HEADER64*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
 			/* FIXME: 64-bit */
-			file->seek(header_ofs+elf_shared->header64.e_shoff.lo);
-			file->read(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
+			if (file->seek(header_ofs+elf_shared->header64.e_shoff.lo)) throw new ht_msg_exception("seek error");
+			if (file->read(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64)
+			!= elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64)
+				throw new ht_msg_exception("read error");
 			for (uint i=0; i<elf_shared->sheaders.count; i++) {
 				ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
 				create_host_struct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
@@ -179,8 +207,10 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			elf_shared->pheaders.count=elf_shared->header64.e_phnum;
 			elf_shared->pheaders.pheaders64=(ELF_PROGRAM_HEADER64*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
 			/* FIXME: 64-bit */
-			file->seek(header_ofs+elf_shared->header64.e_phoff.lo);
-			file->read(elf_shared->pheaders.pheaders64, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
+			if (file->seek(header_ofs+elf_shared->header64.e_phoff.lo)) throw new ht_msg_exception("seek error");
+			if (file->read(elf_shared->pheaders.pheaders64, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64)
+			!= elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64)
+				throw new ht_msg_exception("read error");
 			for (uint i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders64+i, ELF_PROGRAM_HEADER64_struct, elf_shared->byte_order);
 			}
@@ -279,18 +309,17 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 		for (uint i=0; i<relnum; i++) {
 			// read ELF_REL32
 			ELF_REL32 r;
-			file->seek(relh+i*sizeof r);
-			if (file->read(&r, sizeof r) != sizeof r) {
-				LOG("I/O error reading relocations for section %d", si);
-				break;
-			}
+			if (file->seek(relh+i*sizeof r)) throw new ht_msg_exception("seek error");
+			if (file->read(&r, sizeof r) != sizeof r)
+				throw new ht_msg_exception("read error reading relocations for section %d [REL32]", si);
 			create_host_struct(&r, ELF_REL32_struct, elf_shared->byte_order);
 
 			// read ELF_SYMBOL32
 			uint symbolidx = ELF32_R_SYM(r.r_info);
 			ELF_SYMBOL32 sym;
-			file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32));
-			file->read(&sym, sizeof sym);
+			if (file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32))) throw new ht_msg_exception("seek error");
+			if (file->read(&sym, sizeof sym) != sizeof sym)
+				throw new ht_msg_exception("read error reading relocations for section %d [SYM-LOOKUP]", si);
 			create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
 
 			// calc reloc vals
@@ -353,8 +382,9 @@ void ht_elf::fake_undefined_symbols32()
 			uint symnum = elf_shared->sheaders.sheaders32[secidx].sh_size / sizeof (ELF_SYMBOL32);
 			for (uint symidx = 1; symidx < symnum; symidx++) {
 				ELF_SYMBOL32 sym;
-				file->seek(symh+symidx*sizeof (ELF_SYMBOL32));
-				file->read(&sym, sizeof sym);
+				if (file->seek(symh+symidx*sizeof (ELF_SYMBOL32))) throw new ht_msg_exception("seek error");
+				if (file->read(&sym, sizeof sym))
+					throw new ht_msg_exception("read error [looking up symbol]");
 				create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
 				if (sym.st_shndx == ELF_SHN_UNDEF) {
 					elf_shared->undefined2fakeaddr->insert(
@@ -403,8 +433,13 @@ void ht_elf::auto_relocate32()
 	/* apply relocations to section descriptors */
 	for (uint i=0; i<elf_shared->sheaders.count; i++) {
 		if (elf_shared->shrelocs[i].relocAddr) {
-			LOG("section %d to %08x", i, elf_shared->shrelocs[i].relocAddr);
-			relocate_section(rf, i, elf_shared->shrelocs[i].relocShIdx, elf_shared->shrelocs[i].relocAddr);
+			//LOG("section %d to %08x", i, elf_shared->shrelocs[i].relocAddr);
+			try {
+				relocate_section(rf, i, elf_shared->shrelocs[i].relocShIdx, elf_shared->shrelocs[i].relocAddr);
+			} catch (ht_exception *x) {
+				LOG("error while relocating section %d: %s", i, x->what());
+				delete x;
+			}
 		}
 	}
 
