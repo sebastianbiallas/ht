@@ -34,7 +34,11 @@
 
 +steves
 - (HT_0_7)
+	- LE addr->ofs mapping does not work
+	- LE binary search does not work
 	- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
+	- dtree leaks now dead nodes
+
 
 - httext line wrapping
 - new instead of malloc

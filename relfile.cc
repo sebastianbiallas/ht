@@ -74,16 +74,16 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 {
 	FILEOFS o = tell();
 	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
-	/* FIXME: relocs will not work before offset 1 */
 	if (enabled) {
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
 		if ((MAX_RELOC_TOKEN_LEN+1) < o)
 			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
-		else
-			k->value = 0;
-		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
+		else          
+			k = NULL;
+               
+		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
 			if (k->value >= o+c) break;
 
 			UINT s = (k->value < o) ? o - k->value : 0;
@@ -109,7 +109,6 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 UINT	ht_reloc_file::write(const void *buf, UINT size)
 {
 	FILEOFS o;
-	/* FIXME: relocs will not work before offset 1 */
 	if (enabled) {
 		o = tell();
 		UINT c = size;
@@ -119,8 +118,9 @@ UINT	ht_reloc_file::write(const void *buf, UINT size)
 		if ((MAX_RELOC_TOKEN_LEN+1) < o)
 			k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		else
-			k->value = 0;
-		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
+			k = NULL;
+               
+		while ((k = (ht_data_uint*)relocs->enum_next(&r, k))) {
 			if (k->value >= o+c) break;
 
 			UINT s = (k->value < o) ? o - k->value : 0;

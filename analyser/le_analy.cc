@@ -317,6 +317,24 @@ OBJECT_ID	LEAnalyser::object_id() const
 /*
  *
  */
+FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
+{
+	if (validAddress(Addr, scinitialized)) {
+		FILEOFS ofs;
+		LEAddress na;
+		if (!convertAddressToLEAddress(Addr, &na)) return INVALID_FILE_OFS;
+		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
+			return INVALID_FILE_OFS;
+		}
+		return ofs;
+	} else {
+		return INVALID_FILE_OFS;
+	}
+}
+
+/*
+ *
+ */
 UINT LEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FILEOFS ofs = addressToFileofs(Addr);
@@ -364,24 +382,6 @@ Assembler *LEAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
-{
-	if (validAddress(Addr, scinitialized)) {
-		FILEOFS ofs;
-		LEAddress na;
-		if (!convertAddressToLEAddress(Addr, &na)) return INVALID_FILE_OFS;
-		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
-			return INVALID_FILE_OFS;
-		}
-		return ofs;
-	} else {
-		return INVALID_FILE_OFS;
-	}
-}
-
-/*
- *
- */
 char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char segmentname[16];
@@ -410,7 +410,7 @@ const char *LEAnalyser::getName()
  */
 const char *LEAnalyser::getType()
 {
-	return "NE/Analyser";
+	return "LE/Analyser";
 }
 
 /*

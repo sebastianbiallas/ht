@@ -154,8 +154,8 @@ public:
 			bool get_node_and_parent(ht_data *key, ht_tree_node **node, ht_tree_node **parent_node, int *direction);
 			ht_tree_node *get_node_i(ht_data *key);
 			ht_tree_node *get_rightmost_node(ht_tree_node *node);
-			void insert_ltable(ht_tree_node **start, ht_tree_node **end);
-			void populate_ltable(ht_tree_node ***ltable, ht_tree_node *node);
+			void insert_ltable(ht_tree_node **node, ht_tree_node **start, ht_tree_node **end);
+	virtual	void populate_ltable(ht_tree_node ***ltable, ht_tree_node *node);
 public:
 			void init(compare_keys_func_ptr compare_keys);
 	virtual	void done();
@@ -189,6 +189,7 @@ protected:
 	UINT ub_insert, max_ub_insert;
 
 		void hardcount(UINT *nc, UINT *dnc);
+	virtual	void populate_ltable(ht_tree_node ***ltable, ht_tree_node *node);
 public:
 			void init(compare_keys_func_ptr compare_keys, UINT _max_ub_delete=DEFAULT_MAX_UB_DELETE, UINT _max_ub_insert=DEFAULT_MAX_UB_INSERT);
 	virtual	void done();

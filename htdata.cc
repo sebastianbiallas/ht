@@ -33,9 +33,16 @@ int (*qsort_compare_compare_keys)(ht_data *key_a, ht_data *key_b);
 
 int qsort_compare(const void *e1, const void *e2)
 {
-	ht_data **d1=(ht_data **)e1;
-	ht_data **d2=(ht_data **)e2;
-	return qsort_compare_compare_keys(*d1, *d2);
+	ht_data *d1=*(ht_data **)e1;
+	ht_data *d2=*(ht_data **)e2;
+	return qsort_compare_compare_keys(d1, d2);
+}
+
+int qsort_compare_keys_tree_node(const void *e1, const void *e2)
+{
+	ht_tree_node *d1=*(ht_tree_node **)e1;
+	ht_tree_node *d2=*(ht_tree_node **)e2;
+	return qsort_compare_compare_keys(d1->key, d2->key);
 }
 
 /*
@@ -221,32 +228,22 @@ void ht_stree::destroy()
 
 void ht_stree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 {
-	if (node_count) {
+	if (node_count > 2) {
 		ht_tree_node **ltable=(ht_tree_node**)malloc(sizeof (ht_tree_node*) * node_count);
 		ht_tree_node **l=ltable;
 		/* create ltable from tree */
 		populate_ltable(&l, root);
-		/* save old tree, empty tree */
-		UINT old_node_count = node_count;
-		ht_tree_node *old_root = root;
-		node_count = 0;
-		root = NULL;
 		if (compare_keys != new_compare_keys) {
 			/* set new keying method */
 			compare_keys = new_compare_keys;
 			/* re-sort ltable */
-			qsort_compare_compare_keys = compare_keys;
-			qsort(ltable, old_node_count, sizeof *ltable, qsort_compare);
+               qsort_compare_compare_keys = compare_keys;
+			qsort(ltable, node_count, sizeof *ltable, qsort_compare_keys_tree_node);
 		}
 		/* rebuild tree from ltable and old_tree */
-		insert_ltable(ltable, ltable+old_node_count-1);
-		/* destroy old_tree */
-		node_count = old_node_count;
-		free_skeleton(old_root);
+		insert_ltable(&root, ltable, ltable+node_count-1);
 		/* destroy ltable */
 		free(ltable);
-		/**/
-		node_count = old_node_count;
 	}
 }
 
@@ -497,13 +494,15 @@ bool ht_stree::insert(ht_data *key, ht_data *value)
 	return true;
 }
 
-void ht_stree::insert_ltable(ht_tree_node **start, ht_tree_node **end)
+void ht_stree::insert_ltable(ht_tree_node **node, ht_tree_node **start, ht_tree_node **end)
 {
-	if (start<=end) {
-		ht_tree_node **m=start+(end-start)/2;
-		ht_stree::insert((*m)->key, (*m)->value);
-		insert_ltable(start, m-1);
-		insert_ltable(m+1, end);
+	if (start <= end) {
+		ht_tree_node **m = start+(end-start)/2;
+		*node = *m;
+		insert_ltable(&(*node)->left, start, m-1);
+		insert_ltable(&(*node)->right, m+1, end);
+	} else {
+		*node = NULL;
 	}
 }
 
@@ -578,10 +577,8 @@ OBJECT_ID ht_stree::object_id() const
 void ht_stree::populate_ltable(ht_tree_node ***ltable, ht_tree_node *node)
 {
 	if (node->left) populate_ltable(ltable, node->left);
-	if (node->value) {
-		**ltable=node;
-		(*ltable)++;
-	}
+	**ltable=node;
+	(*ltable)++;
 	if (node->right) populate_ltable(ltable, node->right);
 }
 
@@ -604,6 +601,16 @@ void ht_dtree::done()
 	ht_stree::done();
 }
 
+void ht_dtree::populate_ltable(ht_tree_node ***ltable, ht_tree_node *node)
+{
+	if (node->left) populate_ltable(ltable, node->left);
+	if (node->value) {
+		**ltable=node;
+		(*ltable)++;
+	}
+	if (node->right) populate_ltable(ltable, node->right);
+}
+
 void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 {
 	ub_delete=0;
@@ -618,21 +625,21 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 
 		/* save old tree, empty tree */
 		UINT old_node_count = node_count;
-		ht_tree_node *old_root  =root;
+		ht_tree_node *old_root = root;
 		node_count = 0;
 		root = NULL;
 		if (compare_keys != new_compare_keys) {
 			/* set new keying method */
 			compare_keys = new_compare_keys;
 			/* re-sort ltable */
-			qsort_compare_compare_keys = compare_keys;
-			qsort(ltable, new_node_count, sizeof *ltable, qsort_compare);
+               qsort_compare_compare_keys = compare_keys;
+			qsort(ltable, new_node_count, sizeof *ltable, qsort_compare_keys_tree_node);
 		}
 		/* rebuild tree from ltable and old_tree */
-		insert_ltable(ltable, ltable+new_node_count-1);
+		insert_ltable(&root, ltable, ltable+new_node_count-1);
 		/* destroy old_tree */
 		node_count = old_node_count;
-		free_skeleton(old_root);
+//		free_skeleton(old_root);
 		/* destroy ltable */
 		free(ltable);
 		/**/
