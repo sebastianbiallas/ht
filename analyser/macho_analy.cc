@@ -158,7 +158,9 @@ void MachoAnalyser::beginAnalysis()
 //					fprintf(stderr, "symbol '%s' addr %08x\n", label, nlist.value);
 					Address *address = createAddress32(nlist.value);
 					if (validAddress(address, scvalid)) {
-						char *demangled = NULL/*cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI)*/;
+						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+						if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+						if (!demangled && label[0]) demangled = cplus_demangle_v3(label+1, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
 						make_valid_name(label, label);
 						ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label);
 						if (demangled) free(demangled);

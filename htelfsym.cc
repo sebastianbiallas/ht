@@ -145,9 +145,13 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 				char *s;
 				if (!isValidELFSectionIdx(elf_shared, sym.st_shndx)
 				|| file->seek(so+elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name)
-				|| !((s = fgetstrz(file)))) s = "?";
-				tt += ht_snprintf(tt, sizeof t - (tt-t), "%-11s ", s);
-				free(s);
+				|| !((s = fgetstrz(file)))) {
+					s = "?";
+					tt += ht_snprintf(tt, sizeof t - (tt-t), "%-11s ", s);
+				} else {
+					tt += ht_snprintf(tt, sizeof t - (tt-t), "%-11s ", s);
+					free(s);
+				}
 				break;
 			}
 		}
