@@ -293,27 +293,27 @@ void scalar_dump(eval_scalar *s)
 
 #endif
 
-void scalar_create_int(eval_scalar *s, eval_int *t)
+void scalar_create_int(eval_scalar *s, const eval_int *t)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer=*t;
 }
 
-void scalar_create_int_c(eval_scalar *s, int i)
+void scalar_create_int_c(eval_scalar *s, const int i)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer.value=to_qword(i);
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
-void scalar_create_int_q(eval_scalar *s, qword q)
+void scalar_create_int_q(eval_scalar *s, const qword q)
 {
 	s->type=SCALAR_INT;
 	s->scalar.integer.value=q;
 	s->scalar.integer.type=TYPE_UNKNOWN;
 }
 
-void scalar_create_str(eval_scalar *s, eval_str *t)
+void scalar_create_str(eval_scalar *s, const eval_str *t)
 {
 	s->type=SCALAR_STR;
 	s->scalar.str.value=(char*)malloc(t->len ? t->len : 1);
@@ -321,27 +321,27 @@ void scalar_create_str(eval_scalar *s, eval_str *t)
 	s->scalar.str.len=t->len;
 }
 
-void scalar_create_str_c(eval_scalar *s, char *cstr)
+void scalar_create_str_c(eval_scalar *s, const char *cstr)
 {
 	eval_str t;
-	t.value=cstr;
-	t.len=strlen(cstr);
+	t.value = (char*)cstr;
+	t.len = strlen(cstr);
 	scalar_create_str(s, &t);
 }
 
-void scalar_create_float(eval_scalar *s, eval_float *t)
+void scalar_create_float(eval_scalar *s, const eval_float *t)
 {
 	s->type=SCALAR_FLOAT;
 	s->scalar.floatnum=*t;
 }
 
-void scalar_create_float_c(eval_scalar *s, double f)
+void scalar_create_float_c(eval_scalar *s, const double f)
 {
 	s->type=SCALAR_FLOAT;
 	s->scalar.floatnum.value=f;
 }
 
-void scalar_context_str(eval_scalar *s, eval_str *t)
+void scalar_context_str(const eval_scalar *s, eval_str *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
@@ -369,7 +369,7 @@ void scalar_context_str(eval_scalar *s, eval_str *t)
 	}					
 }
 
-void scalar_context_int(eval_scalar *s, eval_int *t)
+void scalar_context_int(const eval_scalar *s, eval_int *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
@@ -394,7 +394,7 @@ void scalar_context_int(eval_scalar *s, eval_int *t)
 	}					
 }
 
-void scalar_context_float(eval_scalar *s, eval_float *t)
+void scalar_context_float(const eval_scalar *s, eval_float *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
@@ -429,7 +429,29 @@ void string_concat(eval_str *s, eval_str *a, eval_str *b)
 	b->len=0;
 }
 
-void scalar_concat(eval_scalar *s, eval_scalar *a, eval_scalar *b)
+void scalar_clone(eval_scalar *result, const eval_scalar *s)
+{
+	switch (s->type) {
+		case SCALAR_INT: {
+			*result = *s;
+			break;
+		}
+		case SCALAR_STR:  {
+			*result = *s;
+			result->scalar.str.value = (char*)malloc(result->scalar.str.len);
+			memmove(result->scalar.str.value, s->scalar.str.value, result->scalar.str.len);
+			break;
+		}			
+		case SCALAR_FLOAT: {
+			*result = *s;
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void scalar_concat(eval_scalar *s, const eval_scalar *a, const eval_scalar *b)
 {
 	eval_str as, bs, rs;
 	scalar_context_str(a, &as);
@@ -450,7 +472,7 @@ void scalar_destroy(eval_scalar *s)
 	}
 }
 
-int string_compare(eval_str *a, eval_str *b)
+int string_compare(const eval_str *a, const eval_str *b)
 {
 	if (a->len==b->len) {
 		return memcmp(a->value, b->value, a->len);
@@ -458,7 +480,7 @@ int string_compare(eval_str *a, eval_str *b)
 	return a->len-b->len;
 }
 
-int scalar_strop(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
+int scalar_strop(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op)
 {
 	eval_str as, bs;
 	int r;
@@ -483,7 +505,7 @@ int scalar_strop(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 	return 1;
 }
 
-int scalar_float_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
+int scalar_float_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op)
 {
 	eval_float ai, bi;
 	float a, b, r;
@@ -523,7 +545,7 @@ int scalar_float_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
 	return 1;
 }
 
-int scalar_int_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op)
+int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op)
 {
 	eval_int ai, bi;
 	qword a, b, r;
@@ -627,6 +649,56 @@ void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scala
 /*
  *	BUILTIN FUNCTIONS
  */
+
+int func_typeof(eval_scalar *r, eval_scalar *s)
+{
+	switch (s->type) {
+		case SCALAR_INT:
+			scalar_create_str_c(r, "int");
+			break;
+		case SCALAR_STR:
+			scalar_create_str_c(r, "string");
+			break;
+		case SCALAR_FLOAT:
+			scalar_create_str_c(r, "float");
+			break;
+		default:
+// FIXME: should never happen
+			scalar_create_str_c(r, "unknown");
+			break;
+	}
+	return 1;
+}
+
+int func_is_int(eval_scalar *r, eval_scalar *s)
+{
+	if (s->type == SCALAR_INT) {
+		scalar_create_int_c(r, 1);
+	} else {
+		scalar_create_int_c(r, 0);
+	}
+	return 1;
+}
+
+int func_is_string(eval_scalar *r, eval_scalar *s)
+{
+	if (s->type == SCALAR_STR) {
+		scalar_create_int_c(r, 1);
+	} else {
+		scalar_create_int_c(r, 0);
+	}
+	return 1;
+}
+
+int func_is_float(eval_scalar *r, eval_scalar *s)
+{
+	if (s->type == SCALAR_FLOAT) {
+		scalar_create_int_c(r, 1);
+	} else {
+		scalar_create_int_c(r, 0);
+	}
+	return 1;
+}
 
 int func_char(eval_scalar *r, eval_int *i)
 {
@@ -737,7 +809,7 @@ int func_random(eval_scalar *r, eval_int *p1)
 
 int func_rnd(eval_scalar *r)
 {
-	scalar_create_int_c(r, rand() % 10);
+	scalar_create_int_c(r, rand() % 2);
 	return 1;
 }
 
@@ -994,7 +1066,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 	return 0;
 }
 
-int func_sprintf(eval_scalar *r, eval_str *format, eval_scalarlist *scalars)
+int func_sprintf(eval_scalar *r, const eval_str *format, const eval_scalarlist *scalars)
 {
 	char buf[512];		/* FIXME: possible buffer overflow */
 	char *b=buf;
@@ -1112,15 +1184,16 @@ eval_func builtin_evalfuncs[]=	{
 	{ "byte", (void*)&func_byte, {SCALAR_INT}, "converts to byte (1 bytes)" },
 	{ "word", (void*)&func_word, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
 	{ "dword", (void*)&func_dword, {SCALAR_INT}, "converts to dword (4 bytes unsigned)" },
+	{ "word", (void*)&func_dword, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
+	{ "byte", (void*)&func_dword, {SCALAR_INT}, "converts to byte (1 bytes)" },
 	{ "sbyte", (void*)&func_short, {SCALAR_INT}, "converts to signed byte (1 bytes signed)" },
 	{ "short", (void*)&func_short, {SCALAR_INT}, "converts to short (2 bytes signed)" },
 	{ "long", (void*)&func_long, {SCALAR_INT}, "converts to long (4 bytes signed)" },
+	{ "typeof", (void*)&func_typeof, {SCALAR_VARARG}, "returns \"int\", \"string\" or \"float\"" },
+	{ "is_int", (void*)&func_is_int, {SCALAR_VARARG}, "returns non-zero if param is an integer" },
+	{ "is_string", (void*)&func_is_string, {SCALAR_VARARG}, "returns non-zero if param is a string" },
+	{ "is_float", (void*)&func_is_float, {SCALAR_VARARG}, "returns non-zero if param is a float" },
 
-/*
-	{ "is_int", (void*)&func_is_int, {SCALAR_INT}, "returns non-zero if param is an integer" },
-	{ "is_string", (void*)&func_is_string, {SCALAR_STR}, "returns non-zero if param is a string" },
-	{ "is_float", (void*)&func_is_float, {SCALAR_FLOAT}, "returns non-zero if param is a float" },
-*/
 /* general */
 	{ "error", (void*)&func_error, {SCALAR_STR}, "abort with error" },
 /* string functions */
@@ -1145,7 +1218,7 @@ eval_func builtin_evalfuncs[]=	{
 	{ "max", (void*)&func_max, {SCALAR_INT, SCALAR_INT}, 0 },
 	
 	{ "random", (void*)&func_random, {SCALAR_INT}, "returns a random integer between 0 and param1-1" },
-	{ "rnd", (void*)&func_rnd, {}, "returns a random number between 0 and 1" },
+	{ "rnd", (void*)&func_rnd, {}, "returns a random bit as integer (0 or 1)" },
 
 	{ "exp", (void*)&func_exp, {SCALAR_FLOAT}, 0 },
 	{ "log", (void*)&func_log, {SCALAR_FLOAT}, 0 },
@@ -1249,6 +1322,15 @@ int exec_evalfunc(eval_scalar *r, eval_scalarlist *params, eval_func *proto)
 
 				DEBUG_DUMP_SCALAR(&sc[j], "param %d: float=", j);
 				break;
+			case SCALAR_VARARG: {
+				protoparams++;
+				if (params->count<protoparams) return 0;
+				scalar_clone(&sc[j], &params->scalars[j]);
+				pptrs[j] = &sc[j];
+
+				DEBUG_DUMP_SCALAR(&sc[j], "param %d: vararg=", j);
+				break;
+			}
 			case SCALAR_VARARGS: {
 				sclist=(eval_scalarlist*)malloc(sizeof (eval_scalarlist));
 				sclist->count=params->count-j;
@@ -1341,6 +1423,9 @@ void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
 				break;
 			case SCALAR_FLOAT:
 				strcat(buf, "FLOAT");
+				break;
+			case SCALAR_VARARG:
+				strcat(buf, "ANY");
 				break;
 			case SCALAR_VARARGS:
 				strcat(buf, "...");
