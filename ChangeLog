@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 0.7.1:
+	- many bugs fixed
+
 version 0.7.0:
 	- whole new Address class for the analyser. Much more flexible.
 	  Enables segmented and 64-bit addresses.
