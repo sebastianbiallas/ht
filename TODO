@@ -33,6 +33,8 @@
 - (HT_0_7)
 	- SPARC_SHIT configure
 	- implement POSIX - sys_truncate
+	- resize problem in XX/image regressed
+       (open file from project window, goto image and resize to fullscreen)
 
 - new instead of malloc
 - ht_strncpy()
