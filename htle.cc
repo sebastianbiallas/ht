@@ -377,8 +377,14 @@ void ht_le::read_objects()
 			else
 				le_shared->pagemap.vsize[j+le_shared->objmap.header[i].page_map_index-1]=le_shared->hdr.pagesize;
 		}
+// FIXME: alternative which one is right ???
+#if 1
 		le_shared->objmap.psize[i] = MIN(psize, le_shared->objmap.header[i].vsize);
+		le_shared->objmap.vsize[i] = MIN(psize, le_shared->objmap.header[i].vsize);
+#else
+		le_shared->objmap.psize[i] = le_shared->objmap.header[i].vsize;
 		le_shared->objmap.vsize[i] = le_shared->objmap.header[i].vsize;
+#endif
 	}
 
 /* create temporary address space for LEAddress's */

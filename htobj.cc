@@ -45,7 +45,7 @@
 #define ATOM_HT_SCROLLBAR	MAGICD("OBJ\5")
 
 #define DEFAULT_VIEW_MIN_WIDTH 	25
-#define DEFAULT_VIEW_MIN_HEIGHT	7
+#define DEFAULT_VIEW_MIN_HEIGHT	6
 
 void bounds_and(bounds *a, bounds *b)
 {

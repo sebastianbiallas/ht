@@ -3030,6 +3030,21 @@ void ht_file_window::add_vstate_history(ht_vstate_history_entry *e)
 void ht_file_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
+     	case cmd_vstate_restore: {
+			if (vstate_history_pos) {
+				vstate_history_pos--;
+				ht_vstate_history_entry *e = (ht_vstate_history_entry*)
+					vstate_history->get(vstate_history_pos);
+				htmsg m;
+				m.msg = msg_vstate_restore;
+				m.type = mt_empty;
+				m.data1.ptr = e->data;
+				e->view->sendmsg(&m);
+				focus(e->view);
+			}
+			clearmsg(msg);
+			return;
+		}
 		case msg_vstate_save: {
 			Object *data = (Object*)msg->data1.ptr;
 			ht_view *view = (ht_view*)msg->data2.ptr;
@@ -3090,20 +3105,10 @@ void ht_file_window::handlemsg(htmsg *msg)
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_BackSpace: {
-					if (vstate_history_pos) {
-						vstate_history_pos--;
-						ht_vstate_history_entry *e = (ht_vstate_history_entry*)
-							vstate_history->get(vstate_history_pos);
-						htmsg m;
-						m.msg = msg_vstate_restore;
-						m.type = mt_empty;
-						m.data1.ptr = e->data;
-						e->view->sendmsg(&m);
-						focus(e->view);
-					}
-					clearmsg(msg);
-					return;
-				}
+                         sendmsg(cmd_vstate_restore);
+                         clearmsg(msg);
+                         return;
+                    }
 			}
 			break;
 	}

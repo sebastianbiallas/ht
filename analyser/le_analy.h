@@ -53,6 +53,8 @@ public:
 	virtual	char			*getSegmentNameByAddress(Address *Addr);
 	virtual	FILEOFS		addressToFileofs(Address *Addr);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
+	virtual	Address *		realFileofsToAddress(FILEOFS fileofs);
+	virtual	FILEOFS		addressToRealFileofs(Address *Addr);
 };
 
 #endif /* le_analy_h */

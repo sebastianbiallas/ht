@@ -179,7 +179,7 @@ void LEAnalyser::beginAnalysis()
 
 		validarea->add(secaddr, secend_addr);
 		Address *seciniaddr = (Address *)secaddr->duplicate();
-		seciniaddr->add(vsize);
+		seciniaddr->add(vsize-1);
 		if (validAddress(secaddr, scinitialized) && validAddress(seciniaddr, scinitialized)) {
 			initialized->add(secaddr, seciniaddr);
 		}
@@ -339,6 +339,26 @@ FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
 	}
 }
 
+FILEOFS LEAnalyser::addressToRealFileofs(Address *Addr)
+{
+	if (validAddress(Addr, scinitialized)) {
+		FILEOFS ofs;
+		LEAddress na;
+		if (!convertAddressToLEAddress(Addr, &na)) return INVALID_FILE_OFS;
+		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
+			return INVALID_FILE_OFS;
+		}
+          UINT m;
+		FILEOFS oo;
+		if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
+			return INVALID_FILE_OFS;
+		}
+		return oo;
+	} else {
+		return INVALID_FILE_OFS;
+	}
+}
+
 /*
  *
  */
@@ -395,11 +415,8 @@ char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
 	int i;
 	LEAddress na;
 	if (!convertAddressToLEAddress(Addr, &na)) return NULL;
-	if ((na>=0x400000) && (na<0x400080)) {
-		int h = 34;
-	}
 	if (!LE_addr_to_segment(le_shared, na, &i)) return NULL;
-	LEAddress temp;
+//	LEAddress temp;
 /*	bool init = LE_addr_to_ofs(le_shared, na, &temp);
 	if (!init)
 		return NULL;*/
@@ -497,9 +514,24 @@ int	LEAnalyser::queryConfig(int mode)
 Address *LEAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
 	LEAddress a;
+	if (LE_ofs_to_addr(le_shared, fileofs, &a)) {
+		return createAddressFlat32(a);
+	} else {
+		return new InvalidAddress();
+	}
+}
+
+/*
+ *
+ */
+
+/* FIXME: fileofs chaos */
+Address *LEAnalyser::realFileofsToAddress(FILEOFS fileofs)
+{
+	LEAddress a;
 	UINT lofs;
-	if (/*le_shared->linear_file->unmap_ofs(fileofs, &lofs) &&*/
-	LE_ofs_to_addr(le_shared, /*lofs*/fileofs, &a)) {
+	if (le_shared->linear_file->unmap_ofs(fileofs, &lofs) &&
+	LE_ofs_to_addr(le_shared, lofs, &a)) {
 		return createAddressFlat32(a);
 	} else {
 		return new InvalidAddress();
