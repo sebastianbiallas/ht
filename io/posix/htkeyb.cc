@@ -2,7 +2,7 @@
  *	HT Editor
  *	htkeyb.cc (POSIX implementation)
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2003 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -142,8 +142,11 @@ static ht_key_keycode ht_curses_key_defs[] = {
 	{K_Delete,		KEY_DC},
 	{K_Insert,		KEY_IC},
 	{K_BackSpace,		KEY_BACKSPACE},
+	{K_BackSpace,		8},
 	{K_BackSpace,		127},
 	{K_Alt_Backspace,	HT_META_KEY(KEY_BACKSPACE)},
+	{K_Alt_Backspace,	HT_META_KEY(8)},
+	{K_Alt_Backspace,	HT_META_KEY(127)},
 
 	{K_F1,			KEY_F(1)},
 	{K_F2,			KEY_F(2)},
@@ -465,7 +468,14 @@ bool init_keyb()
 	}
 
 	for (i=0; i<sizeof ht_curses_key_defs/ sizeof ht_curses_key_defs[0]; i++) {
-		ht_set_key(ht_curses_key_defs[i].key, ht_curses_key_defs[i].keycode);
+		int kc = ht_curses_key_defs[i].keycode;
+#ifdef HAVE_TEXTMODE_X11
+		if (!Xdisplay) {
+			if (kc & 0x40000000) kc = kc & (~0x40000000) | 0x80000000;
+			if (kc & 0x20000000) kc = kc & (~0x20000000) | 0x80000000;
+		}
+#endif /* HAVE_TEXTMODE_X11 */
+		ht_set_key(ht_curses_key_defs[i].key, kc);
 	}
 
 	return true;
