@@ -351,8 +351,10 @@ ht_ltextfile_line *ht_ltextfile::fetch_line_into_memory(UINT line)
 
 UINT	ht_ltextfile::get_size()
 {
-	/* FIXME: nyi */
-	return 0;
+	int line = linecount()-1;
+     FILEOFS o = 0;
+	convert_line2ofs(line, getlinelength(line), &o);
+     return o;
 }
 
 bool ht_ltextfile::get_char(UINT line, char *ch, UINT pos)
