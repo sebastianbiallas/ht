@@ -2,7 +2,7 @@
  *	HT Editor
  *	eval.cc
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -638,7 +638,42 @@ int func_char(eval_scalar *r, eval_int *i)
 	return 1;
 }
 
+int func_byte(eval_scalar *r, eval_int *i)
+{
+	UINT c = QWORD_GET_LO(i->value);
+	scalar_create_int_c(r, c&0xff);
+	return 1;
+}
+
+int func_word(eval_scalar *r, eval_int *i)
+{
+	UINT c = QWORD_GET_LO(i->value);
+	scalar_create_int_c(r, c&0xffff);
+	return 1;
+}
+
 int func_dword(eval_scalar *r, eval_int *i)
+{
+	UINT c = QWORD_GET_LO(i->value);
+	scalar_create_int_q(r, to_qword(c));
+	return 1;
+}
+
+int func_sbyte(eval_scalar *r, eval_int *i)
+{
+	UINT c = QWORD_GET_LO(i->value);
+	scalar_create_int_c(r, (signed char)c);
+	return 1;
+}
+
+int func_short(eval_scalar *r, eval_int *i)
+{
+	UINT c = QWORD_GET_LO(i->value);
+	scalar_create_int_c(r, (short)c);
+	return 1;
+}
+
+int func_long(eval_scalar *r, eval_int *i)
 {
 	int c = QWORD_GET_LO(i->value);
 	scalar_create_int_c(r, c);
@@ -1074,11 +1109,12 @@ eval_func builtin_evalfuncs[]=	{
 	{ "int", (void*)&func_int, {SCALAR_INT}, "converts to integer" },
 	{ "string", (void*)&func_string, {SCALAR_STR}, "converts to string" },
 	{ "float", (void*)&func_float, {SCALAR_FLOAT}, "converts to float" },
+	{ "byte", (void*)&func_byte, {SCALAR_INT}, "converts to byte (1 bytes)" },
+	{ "word", (void*)&func_word, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
 	{ "dword", (void*)&func_dword, {SCALAR_INT}, "converts to dword (4 bytes unsigned)" },
-	{ "word", (void*)&func_dword, {SCALAR_INT}, "converts to word (2 bytes unsigned)" },
-	{ "byte", (void*)&func_dword, {SCALAR_INT}, "converts to byte (1 bytes)" },
-	{ "long", (void*)&func_dword, {SCALAR_INT}, "converts to long (4 bytes signed)" },
-	{ "short", (void*)&func_dword, {SCALAR_INT}, "converts to short (2 bytes signed)" },
+	{ "sbyte", (void*)&func_short, {SCALAR_INT}, "converts to signed byte (1 bytes signed)" },
+	{ "short", (void*)&func_short, {SCALAR_INT}, "converts to short (2 bytes signed)" },
+	{ "long", (void*)&func_long, {SCALAR_INT}, "converts to long (4 bytes signed)" },
 
 /*
 	{ "is_int", (void*)&func_is_int, {SCALAR_INT}, "returns non-zero if param is an integer" },
