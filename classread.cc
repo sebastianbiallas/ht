@@ -26,6 +26,8 @@
 #include "stream.h"
 #include "class.h"
 
+#include "snprintf.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,10 +50,11 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
 
-ClassMethod::ClassMethod(char *n, ClassAddress s, FILEOFS f, UINT l)
+ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, FILEOFS f, UINT l)
 {
      name = ht_strdup(n);
      start = s;
+     type = d;
 	filestart = f;
 	length = l;
 }
@@ -81,46 +84,53 @@ static char *get_class_name(ht_stream *htio, classfile *clazz, int index)
 	return get_string(htio, clazz, clazz->cpool[index]->value.llval[0]);
 }
 
+/* extract name from a utf8 constant pool class entry */
+static void get_name_and_type(ht_stream *htio, classfile *clazz, int index, char *name, char *type)
+{
+	strcpy(name, get_string(htio, clazz, clazz->cpool[index]->value.llval[0]));
+	strcpy(type, get_string(htio, clazz, clazz->cpool[index]->value.llval[1]));
+}
+
 /* read and return constant pool entry */
 static cp_info *read_cpool_entry (ht_stream *htio, classfile *clazz)
 {
-  cp_info *cp;
-  u2 idx;
-  
-  cp         = (cp_info *)malloc (sizeof (*cp));
-  cp->offset = offset;
-  cp->tag    = READ1();
-  switch (cp->tag) {
-    case CONSTANT_Utf8:
-	 idx = READ2();
-	 cp->value.string = (char *)malloc (idx+1);
-	 cls_read (cp->value.string, idx, 1, htio);
-	 cp->value.string[idx] = 0;
-	 break;
-    case CONSTANT_Integer:
-    case CONSTANT_Float:
-	 cp->value.fval = READ4();
-	 break;
-    case CONSTANT_Long:
-    case CONSTANT_Double:
-	 cp->value.llval[0] = READ4();
-	 cp->value.llval[1] = READ4();
-	 break;
-    case CONSTANT_Class:
-    case CONSTANT_String:
-	 cp->value.llval[0] = READ2();
-	 break;
-    case CONSTANT_Fieldref:
-    case CONSTANT_Methodref:
-    case CONSTANT_InterfaceMethodref:
-    case CONSTANT_NameAndType:
-	 cp->value.llval[0] = READ2();
-	 cp->value.llval[1] = READ2();
-	 break;
-    default:
-	 return NULL;
-  }
-  return (cp);
+	cp_info *cp;
+	u2 idx;
+
+	cp         = (cp_info *)malloc (sizeof (*cp));
+	cp->offset = offset;
+	cp->tag    = READ1();
+	switch (cp->tag) {
+		case CONSTANT_Utf8:
+			idx = READ2();
+			cp->value.string = (char *)malloc (idx+1);
+			cls_read (cp->value.string, idx, 1, htio);
+			cp->value.string[idx] = 0;
+			break;
+		case CONSTANT_Integer:
+		case CONSTANT_Float:
+			cp->value.fval = READ4();
+			break;
+		case CONSTANT_Long:
+		case CONSTANT_Double:
+			cp->value.llval[0] = READ4();
+			cp->value.llval[1] = READ4();
+			break;
+		case CONSTANT_Class:
+		case CONSTANT_String:
+			cp->value.llval[0] = READ2();
+			break;
+		case CONSTANT_Fieldref:
+		case CONSTANT_Methodref:
+		case CONSTANT_InterfaceMethodref:
+		case CONSTANT_NameAndType:
+			cp->value.llval[0] = READ2();
+			cp->value.llval[1] = READ2();
+			break;
+		default:
+			return NULL;
+	}
+	return (cp);
 }
 
 /* read and return an attribute read */
@@ -231,7 +241,7 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	}
 	cpcount = clazz->cpool_count;
 	for (int i=1; i<(int)count; i++) {
-		clazz->cpool[i] = read_cpool_entry (htio, clazz);
+		clazz->cpool[i] = read_cpool_entry(htio, clazz);
 		if ((clazz->cpool[i]->tag == CONSTANT_Long) ||
 			(clazz->cpool[i]->tag == CONSTANT_Double)) {
 			i++;
@@ -289,7 +299,7 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
                for (int j=0; j < acount; j++) {
                     attrib_info *ai = clazz->methods[i]->attribs[j];
                     if (ai->tag == ATTRIB_Code) {
-                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, addr, ai->code.start, ai->code.len);
+                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, addr, ai->code.start, ai->code.len);
                          shared->methods->insert(cm, NULL);
                          addr += ai->code.len;
                          htio->seek(ai->code.start);
@@ -372,3 +382,129 @@ void class_unread (ht_class_shared_data *shared)
   }
   free(shared);
 }
+
+int java_demangle_type(char *result, char **type)
+{
+	switch (*((*type)++)) {
+     	case '[': {
+          	char temp[200];
+               java_demangle_type(temp, type);
+               return sprintf(result, "%s[]", temp);
+          }
+          case 'B':
+          	return sprintf(result, "byte");
+          case 'C':
+          	return sprintf(result, "char");
+          case 'D':
+          	return sprintf(result, "double");
+          case 'F':
+          	return sprintf(result, "float");
+          case 'I':
+          	return sprintf(result, "int");
+          case 'J':
+          	return sprintf(result, "long");
+     	case 'L': {
+               int i=0;
+               while (**type != ';') {
+               	*result = **type;
+                    result++;
+                    (*type)++;
+                    i++;
+               }
+               (*type)++;
+               *result = 0;
+               return i;
+          }
+          case 'S':
+          	return sprintf(result, "short");
+          case 'V':
+          	return sprintf(result, "void");
+          case 'Z':
+          	return sprintf(result, "boolean");
+          default:
+          	return sprintf(result, "%c", *(*type-1));
+     }
+}
+
+void java_demangle(char *result, char *classname, char *name, char *type)
+{
+	strcpy(result, name);
+     if (*type != '(') return;
+     char *ret = strchr(type, ')');
+     if (!ret) return;
+     ret++;
+     result += java_demangle_type(result, &ret);
+     if (strcmp(name, "<init>")==0) {
+     	name = classname;
+     }
+     result += sprintf(result, " %s::%s(", classname, name);
+     type++;
+     while (*type != ')') {
+	     result += java_demangle_type(result, &type);
+          if (*type != ')') {
+          	result += sprintf(result, ", ");
+          }
+     }
+     result += sprintf(result, ")");
+}
+
+int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared)
+{
+     classfile *clazz = shared->file;
+     char tag[100];
+     char data[1024];
+     char classname[100];
+     char name[100];
+     char type[100];
+     strcpy(tag, "?");
+     strcpy(data, "?");
+     strcpy(classname, "?");
+     strcpy(name, "?");
+     strcpy(type, "?");
+     switch (clazz->cpool[token]->tag) {
+		case CONSTANT_Class:
+          	strcpy(tag, "Class");
+               strcpy(data, get_class_name(NULL, clazz, token));
+			break;
+		case CONSTANT_Double:
+          	strcpy(tag, "Double");
+			break;
+		case CONSTANT_Float:
+          	strcpy(tag, "Float");
+			break;
+		case CONSTANT_Integer:
+          	strcpy(tag, "Int");
+               sprintf(data, "0x%lx", clazz->cpool[token]->value.llval[0]);
+			break;
+		case CONSTANT_Long:
+          	strcpy(tag, "Long");
+			break;
+		case CONSTANT_String:
+          	strcpy(tag, "String");
+               ht_snprintf(data, 1024, "\"%s\"", get_string(NULL, clazz, clazz->cpool[token]->value.llval[0]));
+			break;
+		case CONSTANT_Fieldref: {
+          	strcpy(tag, "Field");
+               get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
+               char dtype[100];
+               char *ttype=type;
+               java_demangle_type(dtype, &ttype);
+               ht_snprintf(data, 1024, "%s %s", dtype, name);
+			break;
+          }
+		case CONSTANT_Methodref:
+          	strcpy(tag, "Method");
+               strcpy(classname, get_class_name(NULL, clazz, clazz->cpool[token]->value.llval[0]));
+               get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
+               java_demangle(data, classname, name, type);
+			break;
+		case CONSTANT_InterfaceMethodref:
+          	strcpy(tag, "InterfaceMethod");
+               strcpy(classname, get_class_name(NULL, clazz, clazz->cpool[token]->value.llval[0]));
+               get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
+               java_demangle(data, classname, name, type);
+			break;
+     }
+     return ht_snprintf(buf, maxlen, "<%s %s>", tag, data);
+}
+

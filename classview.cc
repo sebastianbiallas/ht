@@ -1,4 +1,4 @@
-/* 
+/*
  * java .class file viewing
  */
 
@@ -22,12 +22,14 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
-#include "httag.h"
-#include "stream.h"
 #include <stdlib.h>
+
 #include "class.h"
 #include "classimg.h"
+#include "htatom.h"
+#include "httag.h"
+#include "snprintf.h"
+#include "stream.h"
 
 #define ATOM_CLS_ACCESS     0xcafebab0
 #define ATOM_CLS_ACCESS_STR  "cafebab0"
@@ -294,7 +296,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 s2->init(f, (*idx)++);
 		 s2->add_staticmask_ptable(aexpt_info, j+i*8, true);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "exception table entry [%08x]:", i); 
+		 ht_snprintf(info, sizeof info, "exception table entry [%08x]:", i);
 		 cs->init(f, s2, 1, info, 1);
 		 g2->insertsub (cs);
 	    }
@@ -328,7 +330,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 j += atr->len + 6;
 		 attrib_view(g3, f, idx, c, atr);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "attribute entry [%08x]: %s", i, 
+		 ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
 			    c->cpool[atr->name]->value.string); 
 		 free (atr);
 		 cs->init(f, g3, 1, info, 1);
@@ -360,7 +362,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 s2->init(f, (*idx)++);
 		 s2->add_staticmask_ptable(aline_info, j+i*4, true);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "line number table entry [%08x]:", i); 
+		 ht_snprintf(info, sizeof info, "line number table entry [%08x]:", i);
 		 cs->init(f, s2, 1, info, 1);
 		 g2->insertsub (cs);
 	    }
@@ -387,7 +389,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 s2->init(f, (*idx)++);
 		 s2->add_staticmask_ptable(ainn_info, j+i*8, true);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "classes entry [%08x]:", i); 
+		 ht_snprintf(info, sizeof info, "classes entry [%08x]:", i);
 		 cs->init(f, s2, 1, info, 1);
 		 g2->insertsub (cs);
 	    }
@@ -414,7 +416,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 s2->init(f, (*idx)++);
 		 s2->add_staticmask_ptable(ainn_info, j+i*2, true);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "exception index table entry [%08x]:", i); 
+		 ht_snprintf(info, sizeof info, "exception index table entry [%08x]:", i);
 		 cs->init(f, s2, 1, info, 1);
 		 g2->insertsub (cs);
 	    }
@@ -441,7 +443,7 @@ attrib_view(ht_group_sub *g, ht_streamfile *f,
 		 s2->init(f, (*idx)++);
 		 s2->add_staticmask_ptable(aloc_info, j+i*10, true);
 		 cs = new ht_collapsable_sub();
-		 sprintf(info, "local variable table entry [%08x]:", i); 
+		 ht_snprintf(info, sizeof info, "local variable table entry [%08x]:", i);
 		 cs->init(f, s2, 1, info, 1);
 		 g2->insertsub (cs);
 	    }
@@ -485,7 +487,7 @@ mf_view(ht_group_sub *g, ht_streamfile *f,
     attrib_view(g3, f, idx, c, mf->attribs[i]);
     cs = new ht_collapsable_sub();
     j = mf->attribs[i]->name;
-    sprintf(info, "attribute entry [%08x]: %s", i, 
+    ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
 		  c->cpool[j]->value.string);
     cs->init(f, g3, 1, info, 1);
     g2->insertsub (cs);
@@ -495,8 +497,7 @@ mf_view(ht_group_sub *g, ht_streamfile *f,
   g->insertsub (cs2);
 }
 
-static ht_view *
-class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
   ht_mask_sub *s;
   ht_collapsable_sub *cs, *cs2;
@@ -554,12 +555,16 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 	   break;
 	 }
 	 cs = new ht_collapsable_sub();
-	 sprintf(info, "constant pool entry [%08x]: %s", i, 
+	 ht_snprintf(info, sizeof info, "constant pool entry [%08x]: %s", i,
 		    (clazz->cpool[i]->tag == CONSTANT_Utf8) 
 		    ? clazz->cpool[i]->value.string : "");
 	 cs->init(file, s, 1, info, 1);
 	 g2->insertsub (cs);
-    }
+		if ((clazz->cpool[i]->tag == CONSTANT_Long) ||
+		(clazz->cpool[i]->tag == CONSTANT_Double)) {
+				i++;
+          }
+	}
     cs2 = new ht_collapsable_sub();
     cs2->init(file, g2, 1, "constant pool", 1);
     g->insertsub (cs2);
@@ -583,7 +588,7 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 	 s->add_staticmask_ptable(iface_hdr, clazz->coffset+8+i*2, true);
 	 cs = new ht_collapsable_sub();
 	 j = clazz->cpool[clazz->interfaces[i]]->value.llval[0];
-	 sprintf(info, "interface entry [%08x]: %s", i, 
+	 ht_snprintf(info, sizeof info, "interface entry [%08x]: %s", i,
 		    clazz->cpool[j]->value.string);
 	 cs->init(file, s, 1, info, 1);
 	 g2->insertsub (cs);
@@ -609,7 +614,7 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 	 g3->init(file);
 	 mf_view(g3, file, &idx, clazz, clazz->fields[i]);
 	 cs = new ht_collapsable_sub();
-	 sprintf(info, "field entry [%08x]: %s", i, clazz->fields[i]->name);
+	 ht_snprintf(info, sizeof info, "field entry [%08x]: %s", i, clazz->fields[i]->name);
 	 cs->init(file, g3, 1, info, 1);
 	 g2->insertsub (cs);
     }
@@ -634,7 +639,7 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 	 g3->init(file);
 	 mf_view(g3, file, &idx, clazz, clazz->methods[i]);
 	 cs = new ht_collapsable_sub();
-	 sprintf(info, "method entry [%08x]: %s", i, clazz->methods[i]->name);
+	 ht_snprintf(info, sizeof info, "method entry [%08x]: %s", i, clazz->methods[i]->name);
 	 cs->init(file, g3, 1, info, 1);
 	 g2->insertsub (cs);
     }
@@ -660,7 +665,7 @@ class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 	 attrib_view(g3, file, &idx, clazz, clazz->attribs[i]);
 	 cs = new ht_collapsable_sub();
 	 j = clazz->attribs[i]->name;
-	 sprintf(info, "attribute entry [%08x]: %s", i, 
+	 ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
 		    clazz->cpool[j]->value.string);
 	 cs->init(file, g3, 1, info, 1);
 	 g2->insertsub (cs);

@@ -140,8 +140,11 @@ struct ht_class_shared_data {
 };
 
 extern ht_class_shared_data *class_read(ht_streamfile *);
-extern void class_unread (ht_class_shared_data *);
-extern attrib_info *attribute_read (ht_stream *, classfile *);
+extern void class_unread(ht_class_shared_data *);
+extern attrib_info *attribute_read(ht_stream *, classfile *);
+
+int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
+void java_demangle(char *result, char *classname, char *name, char *type);
 
 class cview : public ht_format_group {
 public:
@@ -155,15 +158,15 @@ public:
 class ClassMethod: public ht_data {
 public:
 	char *name;
+	char *type;
      ClassAddress start;
      FILEOFS filestart;
      UINT length;
-				ClassMethod(char *name, ClassAddress start, FILEOFS filestart, UINT length);
+				ClassMethod(char *name, char *type, ClassAddress start, FILEOFS filestart, UINT length);
 	virtual		~ClassMethod();
 	virtual int	compareTo(Object *o);
 };
 
-int compare_keys_ClassMethodPosition(ht_data *key_a, ht_data *key_b);
 
 #define DESC_JAVA			"java - class file"
 #define DESC_JAVA_HEADERS	"java/headers"
