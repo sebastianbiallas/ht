@@ -6,7 +6,7 @@ version 0.7.0:
 	  Enables segmented and 64-bit addresses.
 	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
 	- projects (groups of files)
-	- LE: image/analyser,VxD support,internal relocations (beta, no imports)
+	- LE: image/analyser,VxD support, internal relocations (beta, no imports)
 	- Java: disassembler, image/analyser
 	- NE: relocations improved
 	- IA-64 disassembler + PE64 support
