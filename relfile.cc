@@ -81,12 +81,23 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
 		ht_data_uint *k = &q;
 		k->value = o - (MAX_RELOC_TOKEN_LEN+1);
 		while ((k = (ht_data_uint*)relocs->enum_next((ht_data**)&r, k))) {
+			if (k->value >= o+c) break;
+			if (k->value < o - (MAX_RELOC_TOKEN_LEN+1)) {
+               	/* FIXME: why does this happen, it shouldnt !!! */
+               	break;
+			}
 			UINT s = (k->value < o) ? o - k->value : 0;
 			UINT e = (k->value > o) ? k->value - o : 0;
-			if (e >= c) break;
+
+			UINT l = (k->value+MAX_RELOC_TOKEN_LEN > o+c) ?
+				k->value + MAX_RELOC_TOKEN_LEN - o - c : 0;
+
 			byte b[MAX_RELOC_TOKEN_LEN];
 			memset(b, 0, sizeof b);
-			UINT mm = MIN(c - e, sizeof b - s);
+			UINT mm = MIN(sizeof b - l, sizeof b - s);
+
+			assert(mm+s <= sizeof b);
+
 			memmove(b+s, ((byte*)buf)+e, mm);
 			reloc_apply(r, b);
 			memmove(((byte*)buf)+e, b+s, mm);
