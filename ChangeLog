@@ -6,11 +6,11 @@ version 0.7.0:
 	  Enables segmented and 64-bit addresses.
 	- ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
 	- projects (groups of files)
-	- LE: image/analyser, relocations, VxD
+	- LE: image/analyser, VxD support,internal relocations (beta, no imports)
 	- Java: disassembler, image/analyser
 	- NE: relocations improved
 	- IA-64 disassembler + PE64 support
-	- .Net IL disassembler + PE IL support (alpha)
+	- .Net IL disassembler + PE .Net support (alpha)
 	- submenus
 	- view current/cursor offset in a different view
 	- tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
@@ -31,9 +31,11 @@ version 0.7.0:
 	- virtual file system (VFS) rewritten, VFS viewer rewritten
 	- many bugs fixed
 
-	* tree::balance() works now if compare_keys changes and is much faster
+	* le_analy/image dup db ? works
+	* more LE relocation address types (experimental)
 	* FIXED: x86_insn_op::user is int[4] but misused as void*[4] in vxd disasm,
 	this wont work on alpha and other 64bit architectures
+	* tree::balance() works now if compare_keys changes and is much faster
 
 	* docu LE updates
 	* argh: file/new and file/save fixes
