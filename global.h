@@ -54,6 +54,14 @@ typedef unsigned int UINT;
 #define word unsigned short
 #define dword unsigned int
 
+#define uint8 unsigned char
+#define uint16 unsigned short
+#define utin32 unsigned int
+
+#define sint8 signed char
+#define sint16 signed short
+#define sint32 signed int
+
 #include "qword.h"
 
 #ifndef NULL
