@@ -43,9 +43,9 @@
 
 int global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 
-int Address::compareDelinear(Address *to)
+int Address::compareDelinear(Address *obj)
 {
-	return compareTo(to);
+	return compareTo(obj);
 }
 
 bool Address::isValid()
@@ -72,7 +72,7 @@ int InvalidAddress::byteSize()
 	return 0;
 }
 
-int InvalidAddress::compareTo(const Object *to) const
+int InvalidAddress::compareTo(const Object *obj) const
 {
 	return 0;
 }
@@ -157,11 +157,11 @@ int AddressFlat32::byteSize()
 	return 4;
 }
 
-int AddressFlat32::compareTo(const Object *to) const
+int AddressFlat32::compareTo(const Object *obj) const
 {
-	assert(object_id() == to->object_id());
-	if (addr > ((AddressFlat32 *)to)->addr) return 1;
-	if (addr < ((AddressFlat32 *)to)->addr) return -1;
+	assert(object_id() == obj->object_id());
+	if (addr > ((AddressFlat32 *)obj)->addr) return 1;
+	if (addr < ((AddressFlat32 *)obj)->addr) return -1;
 	return 0;
 }
 
@@ -287,10 +287,10 @@ int AddressFlat64::byteSize()
 	return 8;
 }
 
-int AddressFlat64::compareTo(const Object *to) const
+int AddressFlat64::compareTo(const Object *obj) const
 {
-	assert(object_id() == to->object_id());
-	return qword_cmp(addr, ((AddressFlat64 *)to)->addr);
+	assert(object_id() == obj->object_id());
+	return qword_cmp(addr, ((AddressFlat64 *)obj)->addr);
 }
 
 int AddressFlat64::compareDelinear(Address *to)

@@ -46,7 +46,7 @@ class Address: public ht_data {
 public:
 	virtual	bool		add(int offset) = 0;
 	virtual	int		byteSize() = 0;
-	virtual	int		compareTo(const Object *to) const = 0;
+	virtual	int		compareTo(const Object *obj) const = 0;
 	virtual	int		compareDelinear(Address *to);
 	virtual	bool 	difference(int &result, Address *to) = 0;
 	virtual	void 	getFromArray(const byte *array) = 0;
@@ -65,7 +65,7 @@ public:
 					InvalidAddress();
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
-	virtual	int		compareTo(const Object *to) const;
+	virtual	int		compareTo(const Object *obj) const;
 	virtual	bool		difference(int &result, Address *to);
 	virtual	Object *	duplicate();
 	virtual	void 	getFromArray(const byte *array);
@@ -89,7 +89,7 @@ public:
 					AddressFlat32(dword a);
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
-	virtual	int		compareTo(const Object *to) const;
+	virtual	int		compareTo(const Object *obj) const;
 	virtual	int		compareDelinear(Address *to);
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
@@ -112,7 +112,7 @@ public:
 					AddressFlat64(qword a);
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
-	virtual	int		compareTo(const Object *to) const;
+	virtual	int		compareTo(const Object *obj) const;
 	virtual	int		compareDelinear(Address *to);
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);

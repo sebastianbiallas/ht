@@ -177,7 +177,7 @@ protected:
 public:
 			void	init(bounds *b, ht_list *vfs_list, ht_text *show_pos, FileBrowser *file_browser);
 /* overwritten */
-	virtual	void state_changed();
+	virtual	void stateChanged();
 };
 
 /*
@@ -208,7 +208,7 @@ void	FileBrowserVfsListbox::init(bounds *b, ht_list *vfs_list, ht_text *show_pos
 	file_browser = fb;
 }
 
-void FileBrowserVfsListbox::state_changed()
+void FileBrowserVfsListbox::stateChanged()
 {
 	if (file_browser) file_browser->listbox_changed();
 	VfsListbox::stateChanged();
@@ -332,7 +332,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 	
 	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
 	
-/* go! */
+	/* go! */
 	if (d->run(false)) {
 		char b[VFS_URL_MAX];
 		d->extract_url(b);

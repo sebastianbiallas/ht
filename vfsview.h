@@ -63,7 +63,7 @@ public:
 			void			init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
 	virtual	void			done();
 /* overwritten */
-	virtual	void			configChanged();
+	virtual	void			config_changed();
 	virtual	void			handlemsg(htmsg *msg);
 	virtual	void			update();
 /* new */

@@ -37,7 +37,6 @@
        (open file from project window, goto image and resize to fullscreen)
 
 - new instead of malloc
-- ht_strncpy()
 
 - FIXED ?: HT crash when only htcfg-header in ht.cfg
 

@@ -62,10 +62,11 @@ ClassMethod::~ClassMethod()
 	free(name);
 }
 
-int ClassMethod::compareTo(const Object *o) const
+int ClassMethod::compareTo(const Object *obj) const
 {
-	if ((start+length-1) < ((ClassMethod*)o)->start) return -1;
-	if (start > (((ClassMethod*)o)->start+((ClassMethod*)o)->length-1)) return 1;
+     ClassMethod *cm = (ClassMethod*)obj;
+	if ((start + length - 1) < cm->start) return -1;
+	if (start > (cm->start + cm->length - 1)) return 1;
 	return 0;
 }
 

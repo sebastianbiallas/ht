@@ -30,7 +30,7 @@ public:
 	AddressX86Flat32(dword addr);
 	virtual bool add(int offset);
 	virtual int byteSize();
-	virtual int compareTo(const Object *to) const;
+	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
 	virtual Object *duplicate();
@@ -55,7 +55,7 @@ public:
 	AddressX86_1616(word seg, word addr);
 	virtual bool add(int offset);
 	virtual int byteSize();
-	virtual int compareTo(const Object *to) const;
+	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
 	virtual Object *duplicate();
@@ -80,8 +80,8 @@ public:
 	AddressX86_1632(word seg, dword addr);
 	virtual bool add(int offset);
 	virtual int byteSize();
-	virtual int compareTo(const Object *to) const;
-	virtual int compareDelinear(Address *to);
+	virtual int compareTo(const Object *obj) const;
+	virtual int compareDelinear(Address *obj);
 	virtual bool difference(int &result, Address *to);
 	virtual Object *duplicate();
 	virtual void getFromArray(const byte *array);

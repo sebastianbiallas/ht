@@ -52,14 +52,14 @@ int AddressX86Flat32::byteSize()
 	return 4;
 }
 
-int AddressX86Flat32::compareTo(const Object *to) const
+int AddressX86Flat32::compareTo(const Object *obj) const
 {
 /*	if (object_id() != to->object_id()) {
 		int as=1;
 	}*/
-	assert(object_id() == to->object_id());
-	if (addr > ((AddressX86Flat32 *)to)->addr) return 1;
-	if (addr < ((AddressX86Flat32 *)to)->addr) return -1;
+	assert(object_id() == obj->object_id());
+	if (addr > ((AddressX86Flat32 *)obj)->addr) return 1;
+	if (addr < ((AddressX86Flat32 *)obj)->addr) return -1;
 	return 0;
 }
 
@@ -177,13 +177,13 @@ int AddressX86_1632::byteSize()
 	return 6;
 }
 
-int AddressX86_1632::compareTo(const Object *to) const
+int AddressX86_1632::compareTo(const Object *obj) const
 {
-	assert(object_id() == to->object_id());
-	if (seg > ((AddressX86_1632 *)to)->seg) return 1;
-	if (seg < ((AddressX86_1632 *)to)->seg) return -1;
-	if (addr > ((AddressX86_1632 *)to)->addr) return 1;
-	if (addr < ((AddressX86_1632 *)to)->addr) return -1;
+	assert(object_id() == obj->object_id());
+	if (seg > ((AddressX86_1632 *)obj)->seg) return 1;
+	if (seg < ((AddressX86_1632 *)obj)->seg) return -1;
+	if (addr > ((AddressX86_1632 *)obj)->addr) return 1;
+	if (addr < ((AddressX86_1632 *)obj)->addr) return -1;
 	return 0;
 }
 
@@ -315,13 +315,13 @@ int AddressX86_1616::byteSize()
 	return 4;
 }
 
-int AddressX86_1616::compareTo(const Object *to) const
+int AddressX86_1616::compareTo(const Object *obj) const
 {
-	assert(object_id() == to->object_id());
-	if (seg > ((AddressX86_1616 *)to)->seg) return 1;
-	if (seg < ((AddressX86_1616 *)to)->seg) return -1;
-	if (addr > ((AddressX86_1616 *)to)->addr) return 1;
-	if (addr < ((AddressX86_1616 *)to)->addr) return -1;
+	assert(object_id() == obj->object_id());
+	if (seg > ((AddressX86_1616 *)obj)->seg) return 1;
+	if (seg < ((AddressX86_1616 *)obj)->seg) return -1;
+	if (addr > ((AddressX86_1616 *)obj)->addr) return 1;
+	if (addr < ((AddressX86_1616 *)obj)->addr) return -1;
 	return 0;
 }
 

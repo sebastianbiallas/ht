@@ -169,7 +169,7 @@ public:
 	int flags;
 				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
 	virtual		~ClassMethod();
-	virtual int	compareTo(const Object *o) const;
+	virtual int	compareTo(const Object *obj) const;
 };
 
 

@@ -112,7 +112,7 @@ public:
 		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
 /* overwritten */
 	virtual bool isdirty(FILEOFS offset, UINT range);
-	virtual UINT read(void *buf, dword size);
+	virtual UINT read(void *buf, UINT size);
 	virtual int seek(FILEOFS offset);
 	virtual FILEOFS tell();
 	virtual int vcntl(UINT cmd, va_list vargs);

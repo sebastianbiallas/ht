@@ -63,7 +63,7 @@ int LocalFs::canonicalize(char *result, const char *filename, const char *cwd)
 
 int LocalFs::compareFilenames(const char *a, const char *b)
 {
-/* FIXME: backslash & slash */
+	/* FIXME: backslash & slash */
 	if (strcmp(a, "..")==0) return -1;
 	if (strcmp(b, "..")==0) return 1;
 	return ht_stricmp(a, b);
@@ -71,13 +71,13 @@ int LocalFs::compareFilenames(const char *a, const char *b)
 
 int LocalFs::createFile(const char *filename, UINT createtype)
 {
-// FIXME
+	// FIXME
 	return ENOSYS;
 }
 
 int LocalFs::deleteFile(const char *filename)
 {
-/* filename must be absolute */
+	/* filename must be absolute */
 	if ((filename[0] != '/') && (filename[0] != '\\') &&
 	((filename[1]!=':') && (filename[2]!='/') && (filename[2]!='\\')))
 		return ENOENT;

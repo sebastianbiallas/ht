@@ -62,7 +62,7 @@ public:
 
 			void		init();
 	virtual	void		done();
-	virtual	int		compareTo(const Object *o) const;
+	virtual	int		compareTo(const Object *obj) const;
 	virtual	Object *	duplicate();
 	virtual	bool		idle();
 	virtual	bool		instanceOf(OBJECT_ID id);
@@ -89,7 +89,7 @@ public:
 			void		assign(const SInt64 &s);
 			void		assign(UINT u);
 			void		assign(uint64 u);
-	virtual	int		compareTo(const Object *o) const;
+	virtual	int		compareTo(const Object *obj) const;
 	virtual	Object *	duplicate();
 	virtual	bool		instanceOf(OBJECT_ID id);
 	virtual	int		load(ht_object_stream *s);

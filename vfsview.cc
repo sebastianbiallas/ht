@@ -147,7 +147,7 @@ int VfsListbox::changeURL(const char *url)
 		if (!newVfs) return EINVAL;
 		pathptr = pend+1;
 	} else {
-	/* no proto mentioned, default to first in list */
+		/* no proto mentioned, default to first in list */
 		if (!c) return EINVAL;
 		newVfs = (Vfs*)vfs_list->get(0);
 	}
@@ -191,15 +191,15 @@ int VfsListbox::changeURL(const char *url)
 
 	reread();
 	/**/
-		update();
+	update();
 	if (dfmt_quickfind != -1) {
 		ht_text_listbox_sort_order so[1];
 		vfslistbox_vfs = cvfs;
 		so[0].col = dfmt_quickfind;
 		so[0].compare_func = vfslistbox_fncmp;
 		sort(1, so);
-	} /*else update();
-*/
+	} /*else update();*/
+     
 	gotoItemByPosition(0);
 	/* code to position cursor when doing "cd .." (part II) */
 	if (cdpp) {
@@ -218,7 +218,7 @@ int VfsListbox::changeURL(const char *url)
 	return 0;
 }
 
-void VfsListbox::configChanged()
+void VfsListbox::config_changed()
 {
 	ht_text_listbox::config_changed();
 	char *dfmt = get_config_string("misc/vfs display format");

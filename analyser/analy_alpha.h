@@ -31,7 +31,7 @@ public:
 	AddressAlphaFlat32(dword addr);
 	virtual bool add(int offset);
 	virtual int byteSize();
-	virtual int compareTo(const Object *to) const;
+	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
 	virtual Object *duplicate();

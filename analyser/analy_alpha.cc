@@ -52,10 +52,10 @@ int AddressAlphaFlat32::byteSize()
 	return 4;
 }
 
-int AddressAlphaFlat32::compareTo(const Object *to) const
+int AddressAlphaFlat32::compareTo(const Object *obj) const
 {
-	assert(object_id() == to->object_id());
-	return addr-((AddressAlphaFlat32 *)to)->addr;
+	assert(object_id() == obj->object_id());
+	return addr-((AddressAlphaFlat32 *)obj)->addr;
 }
 
 int AddressAlphaFlat32::compareDelinear(Address *to)
