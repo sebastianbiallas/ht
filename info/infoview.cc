@@ -524,13 +524,13 @@ bool ht_info_viewer::igotonode(char *f, char *n, bool add2hist)
 	} else {
 		char ff[HT_NAME_MAX], cff[HT_NAME_MAX];
 		cff[0] = 0;
-		if (file && sys_common_canonicalize(file, cff, cwd, sys_is_path_delim) != 0) return false;
-		if (sys_common_canonicalize(f, ff, cwd, sys_is_path_delim) != 0) return false;
+		if (file && sys_common_canonicalize(cff, file, cwd, sys_is_path_delim) != 0) return false;
+		if (sys_common_canonicalize(ff, f, cwd, sys_is_path_delim) != 0) return false;
 		if ((strcmp(ff, cff) != 0) || newnode) {
 			if (!readfile(ff, &infotext)) return false;
 			char c[HT_NAME_MAX];
-			if (sys_dirname(ff, c) == 0) strcpy(ncwd, c);
-			if (sys_basename(ff, c) == 0) strcpy(nfile, c);
+			if (sys_dirname(c, ff) == 0) strcpy(ncwd, c);
+			if (sys_basename(c, ff) == 0) strcpy(nfile, c);
 		}
 	}
 	if (infotext) {
