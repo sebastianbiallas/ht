@@ -152,6 +152,27 @@ static ht_mask_ptable macho_ppc_thread_state[]=
 	{0, 0}
 };
 
+static ht_mask_ptable macho_i386_thread_state[]=
+{
+	{"eax",			STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"ebx",			STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"ecx",			STATICTAG_EDIT_DWORD_VE("00000008")},
+	{"edx",			STATICTAG_EDIT_DWORD_VE("0000000c")},
+	{"edi",			STATICTAG_EDIT_DWORD_VE("00000010")},
+	{"esi",			STATICTAG_EDIT_DWORD_VE("00000014")},
+	{"ebp",			STATICTAG_EDIT_DWORD_VE("00000018")},
+	{"esp",			STATICTAG_EDIT_DWORD_VE("0000001c")},
+	{"ss",			STATICTAG_EDIT_DWORD_VE("00000020")},
+	{"eflags",		STATICTAG_EDIT_DWORD_VE("00000024")},
+	{"eip",			STATICTAG_EDIT_DWORD_VE("00000028")},
+	{"cs",			STATICTAG_EDIT_DWORD_VE("0000002c")},
+	{"ds",			STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"es",			STATICTAG_EDIT_DWORD_VE("00000034")},
+	{"fs",			STATICTAG_EDIT_DWORD_VE("00000038")},
+	{"gs",			STATICTAG_EDIT_DWORD_VE("0000003c")},
+	{0, 0}
+};
+
 /*
 ht_mask_ptable elfheader[]=
 {
@@ -374,10 +395,21 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				sprintf(info, "** %s", (macho_shared->cmds.cmds[i]->cmd.cmd == LC_UNIXTHREAD) ? "UNIXTHREAD" : "THREAD");
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_thread_header, ofs, isbigendian);
-				switch (c->flavor) {
-					case FLAVOR_PPC_THREAD_STATE:
-						m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
-						break;
+				switch (macho_shared->header.cputype) {
+				case MACHO_CPU_TYPE_I386:
+					switch (c->flavor) {
+						case -1:
+							m->add_staticmask_ptable(macho_i386_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
+							break;
+					}
+					break;
+				case MACHO_CPU_TYPE_POWERPC:
+					switch (c->flavor) {
+						case FLAVOR_PPC_THREAD_STATE:
+							m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
+							break;
+					}
+					break;
 				}
 				break;
 			}

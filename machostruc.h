@@ -212,23 +212,22 @@ struct MACHO_PPC_THREAD_STATE {
 #define FLAVOR_THREAD_STATE_NONE	7
 
 struct MACHO_I386_THREAD_STATE {
-	uint32	gs;
-	uint32	fs;
-	uint32	es;
-	uint32	ds;
+	uint32	eax;
+        uint32	ebx;
+	uint32	ecx;
+        uint32	edx;
 	uint32	edi;
 	uint32	esi;
-	uint32	ebp;
+        uint32	ebp;
 	uint32	esp;
-	uint32	ebx;
-	uint32	edx;
-	uint32	ecx;
-	uint32	eax;
-	uint32	eip;
+        uint32	ss;
+	uint32	eflags;
+        uint32	eip;
 	uint32	cs;
-	uint32	efl;
-	uint32	uesp;
-	uint32	ss;
+        uint32	ds;
+	uint32	es;
+        uint32	fs;
+	uint32	gs;
 };
 
 #define i386_NEW_THREAD_STATE	1	/* used to be i386_THREAD_STATE */

@@ -242,12 +242,14 @@ bool MachoAnalyser::convertAddressToMACHOAddress(Address *addr, MACHOAddress *r)
 		r->a64.lo = ((AddressFlat64*)addr)->addr.lo;
 		r->a64.hi = ((AddressFlat64*)addr)->addr.hi;
 		return true;*/
-	if (addr->object_id()==ATOM_ADDRESS_FLAT_32) {
+	if (addr->object_id() == ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr;
 		return true;
-	} else {
-		return false;
+	} else if (addr->object_id() == ATOM_ADDRESS_X86_FLAT_32) {
+		*r = ((AddressX86Flat32*)addr)->addr;
+		return true;
 	}
+	return false;
 }
 
 Address *MachoAnalyser::createAddress()

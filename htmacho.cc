@@ -121,7 +121,6 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 				case MACHO_CPU_TYPE_I386:
 					switch (c->flavor) {
 					case -1:
-					case i386_NEW_THREAD_STATE:
 						create_host_struct(&c->state, MACHO_I386_THREAD_STATE_struct, image_endianess);
 						break;
 					}
