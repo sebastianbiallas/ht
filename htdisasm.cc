@@ -37,16 +37,19 @@ extern "C" {
 
 ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
+     int t1632;
 #if 1
 	x86asm *assembler=new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 	x86dis *disassembler=new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
+     t1632 = 0;
 #else
 	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
 	x86dis *disassembler=new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
+     t1632 = 1;
 #endif
 
 	ht_disasm_viewer *v=new ht_disasm_viewer();
-	v->init(b, DESC_DISASM, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler);
+	v->init(b, DESC_DISASM, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler, t1632);
 
 	ht_disasm_sub *d=new ht_disasm_sub();
 	d->init(file, 0, file->get_size(),
@@ -169,11 +172,12 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
  *	CLASS ht_disasm_viewer
  */
 
-void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d)
+void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, format_group);
 	assem = a;
 	disasm = d;
+     op1632 = t;
 }
 
 void ht_disasm_viewer::done()
@@ -210,6 +214,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Local-Disasm");
 			m->insert_entry("~Assemble", "Ctrl+A", cmd_disasm_call_assembler, K_Control_A, 1);
+			m->insert_entry("~Toggle 16/32", NULL, cmd_disasm_toggle1632, 0, 1);
 
 			msg->msg = msg_retval;
 			msg->data1.ptr = m;
@@ -266,6 +271,23 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			// FIXME: implement want_length
 			dialog_assemble(this, current_pos, cpuaddr, assem, disasm, "", 0);
 			
+			clearmsg(msg);
+			return;
+		}
+		case cmd_disasm_toggle1632: {
+     		op1632 ^= 1;
+               if (op1632) {
+                    ((x86asm *)assem)->opsize = X86_OPSIZE16;
+                    ((x86asm *)assem)->addrsize = X86_OPSIZE16;
+                    ((x86dis *)disasm)->opsize = X86_OPSIZE16;
+                    ((x86dis *)disasm)->addrsize = X86_OPSIZE16;
+               } else {
+                    ((x86asm *)assem)->opsize = X86_OPSIZE32;
+                    ((x86asm *)assem)->addrsize = X86_OPSIZE32;
+                    ((x86dis *)disasm)->opsize = X86_OPSIZE32;
+                    ((x86dis *)disasm)->addrsize = X86_OPSIZE32;
+               }
+			dirtyview();
 			clearmsg(msg);
 			return;
 		}
@@ -341,27 +363,50 @@ bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 	return true;
 }
 
+static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
+{
+	ht_disasm_sub *sub = (ht_disasm_sub *) context;
+     static char buf[120];
+     LINE_ID line_id;
+     sub->first_line_id(&line_id);
+     if (Addr.addr32.offset >= line_id.id1) {
+	     sub->last_line_id(&line_id);
+	     if (Addr.addr32.offset <= line_id.id1) {
+          	char buf2[60];
+               sprintf(buf2, "0x%x", Addr.addr32.offset);
+		     char *b = tag_make_ref(buf, Addr.addr32.offset, 0, 0, 0, buf2);
+               *b=0;
+               if (symstrlen) *symstrlen = b-buf;
+               return buf;
+          }
+     }
+	return NULL;
+}
+
 bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (line_id.id2) return false;
-	dword ofs=line_id.id1;
-	unsigned char buf[15];
-	int c=MIN(15, (int)(fofs+fsize-ofs));
-	if (c<=0) return false;
+	dword ofs = line_id.id1;
+	byte buf[15];
+	int c = MIN(16, (int)(fofs+fsize-ofs));
+	if (c <= 0) return false;
 	file->seek(ofs);
-	c=file->read(buf, c);
+	c = file->read(buf, c);
 	CPU_ADDR caddr;
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = ofs;
 	char *s;
-	char *l=line;
+	char *l = line;
 	if (c) {
-		dis_insn *insn=disasm->decode(buf, c, caddr);
-		s=disasm->str(insn, display_style);
-		c=disasm->getSize(insn);
+		dis_insn *insn = disasm->decode(buf, c, caddr);
+		addr_sym_func_context = this;
+		addr_sym_func = &diasm_addr_sym_func;
+ 		s = disasm->str(insn, display_style);
+		addr_sym_func = NULL;
+		c = disasm->getSize(insn);
 	} else {
-		s="db ?";
-		c=0;
+		s = "db ?";
+		c = 0;
 	}
 	l=mkhexd(l, ofs);
 	*l++=' ';
@@ -374,21 +419,20 @@ bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 		}
 	}
 	*l++=' ';
-	strcpy(l, s);
+	tag_strcpy(l, s);
 	return true;
 }
 
 void ht_disasm_sub::first_line_id(LINE_ID *line_id)
 {
-	line_id->id1=fofs;
-	line_id->id2=0;
+	clear_line_id(line_id);
+	line_id->id1 = fofs;
 }
 
 void ht_disasm_sub::last_line_id(LINE_ID *line_id)
 {
-	line_id->id1 = fofs+fsize;
-	line_id->id2 = 0;
-	prev_line_id(line_id, 1);
+	clear_line_id(line_id);
+	line_id->id1 = fofs+fsize-1;
 }
 
 int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)

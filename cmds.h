@@ -99,6 +99,7 @@
  */
  
 #define cmd_disasm_call_assembler		HT_COMMAND(2000)
+#define cmd_disasm_toggle1632			HT_COMMAND(2001)
 
 /*typedef bool (*cmd_handler)(htmsg_param *data1, htmsg_param *data2);
 

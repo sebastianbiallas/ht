@@ -37,7 +37,7 @@ ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	dword o=mz_shared->header.header_size*16;
 	ht_disasm_viewer *v=new ht_disasm_viewer();
-	v->init(b, DESC_MZ_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler);
+	v->init(b, DESC_MZ_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler, 1);
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
