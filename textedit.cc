@@ -19,6 +19,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "htapp.h"       /* FIXME: for experimental code below */
+
 #include "evalx.h"
 #include "cmds.h"
 #include "htctrl.h"
@@ -2185,6 +2187,13 @@ char *ht_text_editor::func(UINT i, bool execute)
 				}
 			}
 			return "save";
+		/* FIXME: experimental */
+		case 9:
+          	if (execute) {
+				((ht_app*)app)->create_window_term("make");
+               }
+			return "make";
+
 	}
 	return ht_text_viewer::func(i, execute);
 }
