@@ -1,0 +1,40 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Where is the curses header file ? */
+#define CURSES_HDR @CURSES_HDR@
+
+/* Define to empty if the keyword does not work.  */
+#undef const
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if lex declares yytext as a char * by default, not a char[].  */
+#undef YYTEXT_POINTER
+
+/* The number of bytes in a char.  */
+#undef SIZEOF_CHAR
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long int.  */
+#undef SIZEOF_LONG_INT
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_SHORT
+
+/* Define if you have the acosh function.  */
+#undef HAVE_ACOSH
+
+/* Define if you have the asinh function.  */
+#undef HAVE_ASINH
+
+/* Define if you have the atanh function.  */
+#undef HAVE_ATANH
+
+/* Define if you have the <curses.h> header file.  */
+#undef HAVE_CURSES_H
+
+/* Define if you have the <ncurses.h> header file.  */
+#undef HAVE_NCURSES_H

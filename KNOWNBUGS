@@ -1,0 +1,15 @@
+  KnownBugs
+=============
+
+- Blockop should support multiple endianesses (currently only big-endian)
+- Cursor misplacement in image (F4)
+- Help / features / configuration PgDn
+
+- Cancel search should not say "not found"
+- window resize + cursor positioning problems
+- going to lines with ofs % 16 !=0 (+clipboard)
+
+- some problems when run on non-x86 systems... (Sparc bus error e.g.)
+- doesn't compile on Solaris (curses problems) and MacOS X (curses problems)
+
+see TODO

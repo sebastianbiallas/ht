@@ -1,0 +1,174 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(common.h)
+
+PACKAGE=ht
+VERSION=0.6.0
+
+dnl Check the system.
+AC_CANONICAL_SYSTEM
+
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+AC_ARG_ENABLE(x11-textmode, 
+	[  --enable-x11-textmode   build with x11 textmode support [default=yes]],,enable_x11_textmode="yes")
+AC_ARG_ENABLE(release,
+	[  --enable-release        make a release build [default=no]],,enable_release="no")
+AC_ARG_ENABLE(profiling,
+	[  --enable-profiling      make a profile build [default=no]],,enable_profiling="no")
+
+if test "x$enable_release" = "xyes"; then
+    FLAGS_ALL="-O2 -fomit-frame-pointer -Wall -fsigned-char"
+else
+    FLAGS_ALL="-g -O0 -Wall -fsigned-char"
+fi
+
+if test "x$enable_profiling" = "xyes"; then
+    FLAGS_ALL="$FLAGS_ALL -pg -g"
+fi
+
+AM_INIT_AUTOMAKE($PACKAGE,$VERSION,no-define)
+AM_CONFIG_HEADER(config.h)
+
+dnl Check OS specifica
+
+NEED_CURSES=0
+HAVE_PIPE=0
+
+case "$target_os" in
+msdos*) 
+	IO_DIR=djgpp
+	echo "*** DJGPP, building native DOS/Windows DPMI version" 1>&2
+;;
+linux*) 
+	IO_DIR=posix
+	echo "*** LINUX, building POSIX version. we need (n)curses." 1>&2
+	NEED_CURSES=1
+	HAVE_PIPE=1
+;;
+*freebsd*) 
+	IO_DIR=posix
+	echo "*** FREEBSD, building native FreeBSD version. we need (n)curses." 1>&2
+	NEED_CURSES=1
+	HAVE_PIPE=1
+;;
+cygwin*)
+	IO_DIR=win32
+	echo "*** CYGWIN, building native Win32 version (no cygwin.dll)" 1>&2
+	FLAGS_ALL="$FLAGS_ALL -mno-cygwin"
+	NEED_CURSES=0
+	HAVE_PIPE=1
+;;
+*) 
+	echo "configure: warning: $target_os: unknown target OS, assuming POSIX-compatible..." 1>&2
+	IO_DIR=posix
+	echo "*** POSIX-generic, we need (n)curses, '-pipe' disabled for safety" 1>&2
+	NEED_CURSES=1
+	HAVE_PIPE=0
+;;	
+esac
+
+if test "x$HAVE_PIPE" = "x1"; then
+	FLAGS_PIPE="-pipe";
+fi
+
+CXXFLAGS="$FLAGS_PIPE $FLAGS_ALL"
+CFLAGS="$FLAGS_PIPE $FLAGS_ALL"
+
+AM_CONDITIONAL(USE_POSIX_DIR, test x$IO_DIR = xposix)
+AM_CONDITIONAL(USE_DJGPP_DIR, test x$IO_DIR = xdjgpp)
+AM_CONDITIONAL(USE_WIN32_DIR, test x$IO_DIR = xwin32)
+
+dnl Checks for programs.
+AC_PROG_RANLIB
+AC_PATH_PROGS(MAKE, gmake make, :)
+AC_PROG_MAKE_SET
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_YACC
+AM_PROG_LEX
+AC_PATH_PROG(AR, ar)
+AC_PATH_PROG(AR, gar)
+
+if test "x$AR" = "x"; then
+        AC_MSG_ERROR([*** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***])
+fi
+
+dnl Checks for libraries.
+
+HAVE_X11=0
+
+if test "x$enable_x11_textmode" = "xyes"; then
+	TEMP_LDFLAGS=$LDFLAGS
+	LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib"
+	AC_CHECK_LIB(X11, XOpenDisplay, HAVE_X11=1)
+	LDFLAGS=$TEMP_LDFLAGS
+	if test "x$HAVE_X11" = "x1"; then
+		HT_LIBS="$HT_LIBS -lX11"
+		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib"
+	fi
+fi
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl AC_CONFIG_HEADER(config.h)
+CURSES_LIB=
+if test "x$NEED_CURSES" = "x1"; then
+	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>) CURSES_LIB=ncurses)
+	if test "x$CURSES_LIB" = "x"; then
+		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>) CURSES_LIB=curses)
+		if test "x$CURSES_LIB" = "x"; then
+		        AC_MSG_ERROR([*** (n)curses.h needed ***])
+		fi
+	fi
+	HT_LIBS="$HT_LIBS -l$CURSES_LIB"
+fi    
+
+dnl Makefile vars.
+HT_LDFLAGS="$HT_LIBS $HT_LDFLAGS"
+AC_SUBST(IO_DIR)
+AC_SUBST(HT_LDFLAGS)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+AC_CHECK_SIZEOF(char, 1)
+AC_CHECK_SIZEOF(short, 2)
+AC_CHECK_SIZEOF(int, 4)
+AC_CHECK_SIZEOF(long int, 4)
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(asinh acosh atanh)
+
+AC_OUTPUT([
+Makefile
+analyser/Makefile
+asm/Makefile
+doc/Makefile
+eval/Makefile
+info/Makefile
+io/Makefile
+io/posix/Makefile
+io/djgpp/Makefile
+io/win32/Makefile
+minilzo/Makefile
+output/Makefile
+srt/Makefile
+tools/Makefile
+])
+
+echo 1>&2
+echo "$0 successful." 1>&2
+echo 1>&2
+echo "=====================" 1>&2
+echo "Configuration summary" 1>&2
+echo "=====================" 1>&2
+echo 1>&2
+if test "x$HAVE_X11" = "x1"; then
+	echo "X11 textmode support available:   yes" 1>&2
+else
+	echo "X11 textmode support available:   no" 1>&2
+fi
+echo "enable profiling:                 $enable_profiling" 1>&2
+echo "make a release build:             $enable_release" 1>&2

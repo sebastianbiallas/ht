@@ -1,0 +1,924 @@
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = .
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AR = @AR@
+CC = @CC@
+CXX = @CXX@
+HT_LDFLAGS = @HT_LDFLAGS@
+LEX = @LEX@
+MAKE = @MAKE@
+MAKEINFO = @MAKEINFO@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+YACC = @YACC@
+
+AUTOMAKE_OPTIONS = foreign
+
+bin_PROGRAMS = ht
+
+ANALYSER_DIR = analyser
+ASM_DIR = asm
+INFO_DIR = info
+COMIO_DIR = io
+IO_DIR = io/@IO_DIR@
+OUTPUT_DIR = output
+EVAL_DIR = eval
+MINILZO_DIR = minilzo
+SRT_DIR = srt
+
+EXTRA_DIST = TODO ChangeLog README KNOWNBUGS INSTALL COPYING AUTHORS move-if-change
+SUBDIRS = tools analyser asm doc info io output eval minilzo srt
+
+INCLUDES = -I$(ANALYSER_DIR) -I$(ASM_DIR) -I$(INFO_DIR) -I$(IO_DIR) -I$(COMIO_DIR) -I$(OUTPUT_DIR) -I$(EVAL_DIR) -I$(MINILZO_DIR) -I$(SRT_DIR) -I.
+
+ht_LDADD = $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a $(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a $(MINILZO_DIR)/liblzo.a $(SRT_DIR)/libsrt.a
+ht_LDFLAGS = @HT_LDFLAGS@
+ht_LIBS = @HT_LIBS@
+
+ht_SOURCES = htdoc.c htdoc.h blockop.cc blockop.h coff_s.h common.cc common.h config.h cstream.cc cstream.h demangle.h elfstruc.h htendian.cc htendian.h formats.cc formats.h global.h htanaly.cc htanaly.h htapp.cc htapp.h htatom.cc htatom.h htcfg.cc htcfg.h htclipboard.cc htclipboard.h htcoff.cc htcoff.h htcoffhd.cc htcoffhd.h htctrl.cc htctrl.h htdata.cc htdata.h htdebug.cc htdebug.h htdialog.cc htdialog.h htelf.cc htelf.h htelfhd.cc htelfhd.h htelfimg.cc htelfimg.h htelfphs.cc htelfphs.h htelfshs.cc htelfshs.h htelfsym.cc htelfsym.h htelfrel.cc htelfrel.h htfinfo.cc htfinfo.h htformat.cc htformat.h hthex.cc hthex.h hthist.cc hthist.h htidle.cc htidle.h htinfo.cc htinfo.h htiobox.cc htiobox.h htle.cc htle.h htleent.cc htleent.h htlehead.cc htlehead.h htleimg.cc htleimg.h htleobj.cc htleobj.h htlepage.cc htlepage.h htmenu.cc htmenu.h htmz.cc htmz.h htmzhead.cc htmzhead.h htmzimg.cc htmzimg.h htmzrel.cc htmzrel.h htne.cc htne.h htneent.cc htneent.h htnehead.cc htnehead.h htnenms.cc htnenms.h htneobj.cc htneobj.h htnewexe.cc htnewexe.h htobj.cc htobj.h htpal.cc htpal.h htpe.cc htpe.h htpedimp.cc htpedimp.h htpeexp.cc htpeexp.h htpehead.cc htpehead.h htpeimg.cc htpeimg.h htpeimp.cc htpeimp.h htperes.cc htperes.h htreg.cc htreg.h htsearch.cc htsearch.h htstring.cc htstring.h htstruct.cc htstruct.h httag.cc httag.h httree.cc httree.h htvfs.cc htvfs.h lestruct.h main.cc mzstruct.h nestruct.h pestruct.h regex.h store.cc store.h stream.cc stream.h tools.cc tools.h vxd.cc vxd.h vxdserv.cc vxdserv.h cplus-dem.c demangle.h regex.c regex.h syntax.cc syntax.h textfile.cc textfile.h textedit.cc textedit.h classread.cc classview.cc class.h htexcept.cc htexcept.h httext.cc httext.h hteval.cc hteval.h relfile.cc relfile.h process.cc process.h mfile.cc mfile.h elfstruc.cc pestruct.cc coff_s.cc mzstruct.cc defreg.h defreg.c htdisasm.cc htdisasm.h htcoffimg.cc htcoffimg.h nestruct.cc htneimg.cc htneimg.h htneimp.cc htneimp.h cmds.cc cmds.h
+
+ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = config.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I.
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+ht_OBJECTS =  htdoc.o blockop.o common.o cstream.o htendian.o formats.o \
+htanaly.o htapp.o htatom.o htcfg.o htclipboard.o htcoff.o htcoffhd.o \
+htctrl.o htdata.o htdebug.o htdialog.o htelf.o htelfhd.o htelfimg.o \
+htelfphs.o htelfshs.o htelfsym.o htelfrel.o htfinfo.o htformat.o \
+hthex.o hthist.o htidle.o htinfo.o htiobox.o htle.o htleent.o \
+htlehead.o htleimg.o htleobj.o htlepage.o htmenu.o htmz.o htmzhead.o \
+htmzimg.o htmzrel.o htne.o htneent.o htnehead.o htnenms.o htneobj.o \
+htnewexe.o htobj.o htpal.o htpe.o htpedimp.o htpeexp.o htpehead.o \
+htpeimg.o htpeimp.o htperes.o htreg.o htsearch.o htstring.o htstruct.o \
+httag.o httree.o htvfs.o main.o store.o stream.o tools.o vxd.o \
+vxdserv.o cplus-dem.o regex.o syntax.o textfile.o textedit.o \
+classread.o classview.o htexcept.o httext.o hteval.o relfile.o \
+process.o mfile.o elfstruc.o pestruct.o coff_s.o mzstruct.o defreg.o \
+htdisasm.o htcoffimg.o nestruct.o htneimg.o htneimp.o cmds.o
+ht_DEPENDENCIES =  $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a \
+$(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a \
+$(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a $(MINILZO_DIR)/liblzo.a \
+$(SRT_DIR)/libsrt.a
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
+Makefile.am Makefile.in NEWS TODO acconfig.h aclocal.m4 config.guess \
+config.h.in config.sub configure configure.in install-sh missing \
+mkinstalldirs
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(ht_SOURCES)
+OBJECTS = $(ht_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .cc .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+$(ACLOCAL_M4):  configure.in 
+	cd $(srcdir) && $(ACLOCAL)
+
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+	$(SHELL) ./config.status --recheck
+$(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+	cd $(srcdir) && $(AUTOCONF)
+
+config.h: stamp-h
+	@if test ! -f $@; then \
+		rm -f stamp-h; \
+		$(MAKE) stamp-h; \
+	else :; fi
+stamp-h: $(srcdir)/config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > stamp-h 2> /dev/null
+$(srcdir)/config.h.in: $(srcdir)/stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/stamp-h.in; \
+		$(MAKE) $(srcdir)/stamp-h.in; \
+	else :; fi
+$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f config.h
+
+maintainer-clean-hdr:
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+ht: $(ht_OBJECTS) $(ht_DEPENDENCIES)
+	@rm -f ht
+	$(CXXLINK) $(ht_LDFLAGS) $(ht_OBJECTS) $(ht_LDADD) $(LIBS)
+.cc.o:
+	$(CXXCOMPILE) -c $<
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" = "." && dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+
+# This target untars the dist file and tries a VPATH configuration.  Then
+# it guarantees that the distribution is self-contained by making another
+# tarfile.
+distcheck: dist
+	-rm -rf $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) zxf $(distdir).tar.gz
+	mkdir $(distdir)/=build
+	mkdir $(distdir)/=inst
+	dc_install_base=`cd $(distdir)/=inst && pwd`; \
+	cd $(distdir)/=build \
+	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	  && $(MAKE) $(AM_MAKEFLAGS) \
+	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	  && $(MAKE) $(AM_MAKEFLAGS) check \
+	  && $(MAKE) $(AM_MAKEFLAGS) install \
+	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
+	  && $(MAKE) $(AM_MAKEFLAGS) dist
+	-rm -rf $(distdir)
+	@banner="$(distdir).tar.gz is ready for distribution"; \
+	dashes=`echo "$$banner" | sed s/./=/g`; \
+	echo "$$dashes"; \
+	echo "$$banner"; \
+	echo "$$dashes"
+dist: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+dist-all: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+distdir: $(DISTFILES)
+	-rm -rf $(distdir)
+	mkdir $(distdir)
+	-chmod 777 $(distdir)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
+blockop.o: blockop.cc blockop.h htdialog.h htdebug.h global.h htobj.h \
+	common.h stream.h io/posix/htsys.h io/htio.h \
+	io/posix/htcurses.h config.h htstring.h htdata.h htformat.h \
+	formats.h cmds.h htatom.h htctrl.h htendian.h htexcept.h \
+	hthist.h store.h tools.h htiobox.h io/posix/htkeyb.h process.h \
+	eval/evalx.h eval/evaltype.h
+classread.o: classread.cc stream.h common.h global.h io/posix/htsys.h \
+	io/htio.h class.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h formats.h
+classview.o: classview.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htatom.h httag.h class.h
+cmds.o: cmds.cc cmds.h global.h
+coff_s.o: coff_s.cc coff_s.h global.h tools.h htdata.h common.h stream.h \
+	io/posix/htsys.h io/htio.h htendian.h
+common.o: common.cc common.h global.h stream.h io/posix/htsys.h \
+	io/htio.h
+cplus-dem.o: cplus-dem.c config.h demangle.h
+cstream.o: cstream.cc cstream.h global.h stream.h common.h \
+	io/posix/htsys.h io/htio.h htdebug.h htendian.h \
+	minilzo/minilzo.h minilzo/lzoconf.h tools.h htdata.h
+defreg.o: defreg.c
+elfstruc.o: elfstruc.cc elfstruc.h global.h htendian.h
+formats.o: formats.cc formats.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h htdebug.h class.h \
+	hthex.h httext.h htdisasm.h asm/asm.h htfinfo.h htdialog.h \
+	htelf.h elfstruc.h htanaly.h analyser/analy.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htcoff.h coff_s.h tools.h htcoffhd.h httag.h htle.h \
+	lestruct.h htmz.h mzstruct.h htne.h nestruct.h htpe.h \
+	pestruct.h htpeexp.h htpeimp.h htpedimp.h htstruct.h
+htanaly.o: htanaly.cc analyser/analy.h asm/asm.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h analyser/codeanaly.h \
+	analyser/dataanaly.h htdata.h analyser/stddata.h \
+	analyser/analy_names.h htanaly.h cmds.h htdialog.h htdebug.h \
+	htobj.h io/posix/htcurses.h config.h htstring.h htformat.h \
+	formats.h httree.h output/out_ht.h output/out.h htapp.h \
+	htctrl.h htdisasm.h hthist.h store.h tools.h htidle.h htiobox.h \
+	io/posix/htkeyb.h htmenu.h htsearch.h htatom.h htexcept.h \
+	regex.h httag.h analyser/language.h textedit.h textfile.h \
+	syntax.h eval/evalx.h eval/evaltype.h srt/srt.h srt/symmath.h \
+	output/out_html.h
+htapp.o: htapp.cc analyser/analy.h asm/asm.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h analyser/codeanaly.h \
+	analyser/dataanaly.h htdata.h analyser/stddata.h cmds.h mfile.h \
+	htapp.h htctrl.h htobj.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htformat.h formats.h htatom.h \
+	htcfg.h htclipboard.h hteval.h hthist.h store.h tools.h \
+	htidle.h htinfo.h htiobox.h io/posix/htkeyb.h htmenu.h htpal.h \
+	htreg.h htsearch.h htexcept.h regex.h httree.h htvfs.h \
+	info/infoview.h textedit.h textfile.h syntax.h
+htatom.o: htatom.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h
+htcfg.o: htcfg.cc cstream.h global.h stream.h common.h io/posix/htsys.h \
+	io/htio.h htapp.h htctrl.h htobj.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htdata.h htformat.h formats.h \
+	htcfg.h htendian.h htreg.h store.h tools.h
+htclipboard.o: htclipboard.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htclipboard.h htsearch.h htatom.h htexcept.h regex.h \
+	tools.h
+htcoff.o: htcoff.cc analyser/coff_analy.h analyser/analy.h asm/asm.h \
+	common.h global.h stream.h io/posix/htsys.h io/htio.h \
+	analyser/codeanaly.h analyser/dataanaly.h htdata.h \
+	analyser/stddata.h htcoff.h formats.h htformat.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h coff_s.h tools.h \
+	htanaly.h cmds.h htdialog.h htdebug.h httree.h output/out_ht.h \
+	output/out.h htcoffhd.h httag.h htapp.h htctrl.h htcoffimg.h \
+	htendian.h mzstruct.h
+htcoffhd.o: htcoffhd.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htcoff.h formats.h htformat.h \
+	htobj.h io/posix/htcurses.h config.h htstring.h coff_s.h \
+	tools.h htanaly.h analyser/analy.h asm/asm.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h htdialog.h htdebug.h httree.h output/out_ht.h \
+	output/out.h htcoffhd.h httag.h
+htcoffimg.o: htcoffimg.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htnewexe.h htpal.h htreg.h htcoffimg.h coff_s.h \
+	tools.h htanaly.h analyser/analy.h asm/asm.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h httree.h output/out_ht.h output/out.h \
+	analyser/coff_analy.h htcoff.h htcoffhd.h httag.h
+htctrl.o: htctrl.cc htobj.h common.h global.h stream.h io/posix/htsys.h \
+	io/htio.h io/posix/htcurses.h config.h
+htdata.o: htdata.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htdebug.h tools.h
+htdebug.o: htdebug.cc global.h htdebug.h
+htdialog.o: htdialog.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htclipboard.h hthist.h store.h tools.h htidle.h \
+	io/posix/htkeyb.h htpal.h htreg.h
+htdisasm.o: htdisasm.cc cmds.h global.h htapp.h htctrl.h htobj.h \
+	common.h stream.h io/posix/htsys.h io/htio.h \
+	io/posix/htcurses.h config.h htdialog.h htdebug.h htstring.h \
+	htdata.h htformat.h formats.h htdisasm.h asm/asm.h hthist.h \
+	store.h tools.h htiobox.h htmenu.h httag.h asm/x86asm.h \
+	asm/x86opc.h asm/x86dis.h
+htdoc.o: htdoc.c
+htelf.o: htelf.cc analyser/analy.h asm/asm.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h analyser/codeanaly.h \
+	analyser/dataanaly.h htdata.h analyser/stddata.h elfstruc.h \
+	analyser/elf_analy.h htelf.h formats.h htformat.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h htanaly.h cmds.h \
+	htdialog.h htdebug.h httree.h output/out_ht.h output/out.h \
+	htendian.h relfile.h htelfhd.h htelfshs.h htelfphs.h htelfsym.h \
+	htelfrel.h htelfimg.h
+htelfhd.o: htelfhd.cc elfstruc.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htelf.h formats.h \
+	htformat.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htelfhd.h httag.h
+htelfimg.o: htelfimg.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htelfimg.h htpal.h htreg.h elfstruc.h htanaly.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h httree.h \
+	output/out_ht.h output/out.h analyser/elf_analy.h htelf.h \
+	htendian.h relfile.h
+htelfphs.o: htelfphs.cc elfstruc.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htelf.h formats.h \
+	htformat.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htelfphs.h httag.h
+htelfrel.o: htelfrel.cc elfstruc.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htelf.h formats.h \
+	htformat.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htelfrel.h httag.h
+htelfshs.o: htelfshs.cc elfstruc.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htelf.h formats.h \
+	htformat.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htelfshs.h httag.h
+htelfsym.o: htelfsym.cc elfstruc.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htelf.h formats.h \
+	htformat.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h httree.h output/out_ht.h output/out.h htendian.h \
+	relfile.h htelfsym.h httag.h
+htendian.o: htendian.cc htdebug.h global.h htendian.h
+hteval.o: hteval.cc htapp.h htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htdata.h htformat.h formats.h \
+	htatom.h hthist.h store.h tools.h htiobox.h eval/evalx.h \
+	eval/evaltype.h
+htexcept.o: htexcept.cc htexcept.h
+htfinfo.o: htfinfo.cc htfinfo.h formats.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h htdialog.h htdebug.h
+htformat.o: htformat.cc htformat.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htobj.h io/posix/htcurses.h config.h \
+	htstring.h formats.h htsearch.h htatom.h htdialog.h htdebug.h \
+	htexcept.h regex.h blockop.h cmds.h htapp.h htctrl.h \
+	htclipboard.h hthist.h store.h tools.h htiobox.h \
+	io/posix/htkeyb.h htpal.h htreg.h httag.h process.h \
+	eval/evalx.h eval/evaltype.h
+hthex.o: hthex.cc cmds.h global.h htapp.h htctrl.h htobj.h common.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htiobox.h hthex.h htmenu.h htsearch.h htatom.h \
+	htexcept.h regex.h tools.h
+hthist.o: hthist.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h hthist.h htobj.h io/posix/htcurses.h \
+	config.h store.h tools.h htstring.h
+htidle.o: htidle.cc htdata.h common.h global.h stream.h io/posix/htsys.h \
+	io/htio.h htdebug.h htidle.h io/posix/htkeyb.h
+htinfo.o: htinfo.cc htinfo.h
+htiobox.o: htiobox.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htctrl.h htobj.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h hthist.h store.h \
+	tools.h htiobox.h
+htle.o: htle.cc htapp.h htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htdata.h htformat.h formats.h \
+	htle.h lestruct.h htlehead.h htleimg.h htleobj.h htleent.h \
+	htlepage.h htnewexe.h
+htleent.o: htleent.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htnewexe.h htle.h htobj.h \
+	io/posix/htcurses.h config.h formats.h htformat.h htstring.h \
+	lestruct.h htlehead.h httag.h
+htlehead.o: htlehead.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htnewexe.h htle.h htobj.h \
+	io/posix/htcurses.h config.h formats.h htformat.h htstring.h \
+	lestruct.h htlehead.h httag.h
+htleimg.o: htleimg.cc htdebug.h global.h htdisasm.h asm/asm.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htobj.h io/posix/htcurses.h \
+	config.h htformat.h htdata.h htstring.h formats.h htnewexe.h \
+	htle.h lestruct.h htleimg.h vxd.h asm/x86dis.h asm/x86opc.h
+htleobj.o: htleobj.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htnewexe.h htle.h htobj.h \
+	io/posix/htcurses.h config.h formats.h htformat.h htstring.h \
+	lestruct.h htleobj.h httag.h
+htlepage.o: htlepage.cc htnewexe.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h htle.h htobj.h io/posix/htcurses.h \
+	config.h formats.h htformat.h htdata.h htstring.h lestruct.h \
+	htlepage.h httag.h
+htmenu.o: htmenu.cc htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	io/posix/htkeyb.h htmenu.h htdata.h htdialog.h htdebug.h \
+	htstring.h htpal.h htreg.h tools.h
+htmz.o: htmz.cc htendian.h global.h htmz.h formats.h stream.h common.h \
+	io/posix/htsys.h io/htio.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h mzstruct.h tools.h \
+	htmzhead.h htmzrel.h htmzimg.h
+htmzhead.o: htmzhead.cc htmz.h formats.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h mzstruct.h tools.h \
+	htmzhead.h httag.h
+htmzimg.o: htmzimg.cc htdisasm.h asm/asm.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htobj.h io/posix/htcurses.h config.h \
+	htformat.h htdata.h htstring.h formats.h htmz.h mzstruct.h \
+	tools.h htmzimg.h htpal.h htreg.h asm/x86asm.h asm/x86opc.h \
+	asm/x86dis.h
+htmzrel.o: htmzrel.cc htmz.h formats.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h htformat.h htdata.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h mzstruct.h tools.h \
+	htmzrel.h htpal.h htreg.h httag.h
+htne.o: htne.cc htapp.h htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htdata.h htformat.h formats.h \
+	htendian.h htiobox.h htne.h htanaly.h analyser/analy.h \
+	asm/asm.h analyser/codeanaly.h analyser/dataanaly.h \
+	analyser/stddata.h cmds.h httree.h output/out_ht.h output/out.h \
+	relfile.h nestruct.h htneent.h htnehead.h htneimp.h htnenms.h \
+	htneobj.h htneimg.h htnewexe.h analyser/ne_analy.h tools.h
+htneent.o: htneent.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htctrl.h htobj.h io/posix/htcurses.h \
+	config.h htendian.h htiobox.h htdialog.h htdebug.h htstring.h \
+	htne.h htanaly.h analyser/analy.h asm/asm.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h htformat.h formats.h httree.h output/out_ht.h \
+	output/out.h relfile.h nestruct.h htneent.h httag.h
+htnehead.o: htnehead.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htne.h htanaly.h analyser/analy.h \
+	asm/asm.h analyser/codeanaly.h analyser/dataanaly.h \
+	analyser/stddata.h cmds.h htdialog.h htdebug.h htobj.h \
+	io/posix/htcurses.h config.h htstring.h htformat.h formats.h \
+	httree.h output/out_ht.h output/out.h relfile.h nestruct.h \
+	httag.h
+htneimg.o: htneimg.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htnewexe.h htpal.h htreg.h htneimg.h tools.h \
+	nestruct.h htanaly.h analyser/analy.h asm/asm.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h httree.h output/out_ht.h output/out.h \
+	analyser/ne_analy.h htne.h relfile.h
+htneimp.o: htneimp.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htendian.h htne.h htanaly.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htformat.h formats.h httree.h output/out_ht.h output/out.h \
+	relfile.h nestruct.h htneent.h httag.h
+htnenms.o: htnenms.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htendian.h htne.h htanaly.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htformat.h formats.h httree.h output/out_ht.h output/out.h \
+	relfile.h nestruct.h htnenms.h httag.h
+htneobj.o: htneobj.cc htatom.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htendian.h htnewexe.h htne.h \
+	htanaly.h analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h htdialog.h \
+	htdebug.h htobj.h io/posix/htcurses.h config.h htstring.h \
+	htformat.h formats.h httree.h output/out_ht.h output/out.h \
+	relfile.h nestruct.h htneobj.h httag.h
+htnewexe.o: htnewexe.cc htnewexe.h stream.h common.h global.h \
+	io/posix/htsys.h io/htio.h mzstruct.h tools.h htdata.h \
+	htendian.h
+htobj.o: htobj.cc htapp.h htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htdialog.h htdebug.h htstring.h htdata.h htformat.h formats.h \
+	htatom.h cmds.h io/posix/htkeyb.h htmenu.h htpal.h htreg.h \
+	store.h tools.h
+htpal.o: htpal.cc global.h htatom.h htdata.h common.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htctrl.h htobj.h htdialog.h htdebug.h htstring.h htpal.h \
+	htreg.h tools.h httag.h syntax.h output/out_ht.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h output/out.h
+htpe.o: htpe.cc analyser/analy.h asm/asm.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h analyser/codeanaly.h \
+	analyser/dataanaly.h htdata.h analyser/stddata.h htapp.h \
+	htctrl.h htobj.h io/posix/htcurses.h config.h htdialog.h \
+	htdebug.h htstring.h htformat.h formats.h htendian.h htnewexe.h \
+	htpe.h pestruct.h tools.h coff_s.h htanaly.h cmds.h httree.h \
+	output/out_ht.h output/out.h htpeexp.h htpeimp.h htpedimp.h \
+	htpehead.h htpeimg.h htperes.h analyser/pe_analy.h
+htpedimp.o: htpedimp.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htendian.h htiobox.h htnewexe.h htpal.h htreg.h \
+	htpe.h pestruct.h tools.h coff_s.h htanaly.h analyser/analy.h \
+	asm/asm.h analyser/codeanaly.h analyser/dataanaly.h \
+	analyser/stddata.h cmds.h httree.h output/out_ht.h output/out.h \
+	htpeexp.h htpeimp.h htpedimp.h httag.h
+htpeexp.o: htpeexp.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htendian.h htiobox.h htnewexe.h htpal.h htreg.h \
+	htpe.h pestruct.h tools.h coff_s.h htanaly.h analyser/analy.h \
+	asm/asm.h analyser/codeanaly.h analyser/dataanaly.h \
+	analyser/stddata.h cmds.h httree.h output/out_ht.h output/out.h \
+	htpeexp.h htpeimp.h htpedimp.h httag.h
+htpehead.o: htpehead.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htatom.h htcoff.h coff_s.h tools.h htanaly.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h httree.h \
+	output/out_ht.h output/out.h htcoffhd.h httag.h htendian.h \
+	hthex.h htiobox.h htnewexe.h htpe.h pestruct.h htpeexp.h \
+	htpeimp.h htpedimp.h htpehead.h
+htpeimg.o: htpeimg.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htnewexe.h htpal.h htreg.h htpeimg.h pestruct.h \
+	tools.h coff_s.h htanaly.h analyser/analy.h asm/asm.h \
+	analyser/codeanaly.h analyser/dataanaly.h analyser/stddata.h \
+	cmds.h httree.h output/out_ht.h output/out.h \
+	analyser/pe_analy.h htpe.h htpeexp.h htpeimp.h htpedimp.h
+htpeimp.o: htpeimp.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htendian.h htiobox.h htnewexe.h htpal.h htreg.h \
+	htpe.h pestruct.h tools.h coff_s.h htanaly.h analyser/analy.h \
+	asm/asm.h analyser/codeanaly.h analyser/dataanaly.h \
+	analyser/stddata.h cmds.h httree.h output/out_ht.h output/out.h \
+	htpeexp.h htpeimp.h htpedimp.h httag.h
+htperes.o: htperes.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htendian.h hthex.h htiobox.h io/posix/htkeyb.h \
+	htnewexe.h htpe.h pestruct.h tools.h coff_s.h htanaly.h \
+	analyser/analy.h asm/asm.h analyser/codeanaly.h \
+	analyser/dataanaly.h analyser/stddata.h cmds.h httree.h \
+	output/out_ht.h output/out.h htpeexp.h htpeimp.h htpedimp.h \
+	htperes.h
+htreg.o: htreg.cc defreg.h htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htatom.h htiobox.h htreg.h store.h tools.h
+htsearch.o: htsearch.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h htatom.h hthist.h store.h tools.h htiobox.h \
+	io/posix/htkeyb.h htsearch.h htexcept.h regex.h process.h \
+	eval/evalx.h eval/evaltype.h
+htstring.o: htstring.cc global.h htatom.h htdata.h common.h stream.h \
+	io/posix/htsys.h io/htio.h htdebug.h htstring.h config.h \
+	tools.h
+htstruct.o: htstruct.cc htapp.h htctrl.h htobj.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htdialog.h htdebug.h htstring.h htdata.h htformat.h \
+	formats.h io/posix/htkeyb.h htstruct.h
+httag.o: httag.cc global.h htdebug.h htstring.h config.h htdata.h \
+	common.h stream.h io/posix/htsys.h io/htio.h httag.h
+httext.o: httext.cc htsearch.h htatom.h htdata.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h htdialog.h htdebug.h \
+	htobj.h io/posix/htcurses.h config.h htstring.h htexcept.h \
+	htformat.h formats.h regex.h httext.h
+httree.o: httree.cc htdialog.h htdebug.h global.h htobj.h common.h \
+	stream.h io/posix/htsys.h io/htio.h io/posix/htcurses.h \
+	config.h htstring.h htdata.h htpal.h htreg.h io/posix/htkeyb.h \
+	httree.h
+htvfs.o: htvfs.cc htctrl.h htobj.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h io/posix/htcurses.h config.h \
+	htiobox.h htdialog.h htdebug.h htstring.h htdata.h \
+	io/posix/htkeyb.h htreg.h htvfs.h htformat.h formats.h httag.h \
+	store.h tools.h
+main.o: main.cc analyser/analy_register.h tools.h global.h htdata.h \
+	common.h stream.h io/posix/htsys.h io/htio.h asm/asm.h htapp.h \
+	htctrl.h htobj.h io/posix/htcurses.h config.h htdialog.h \
+	htdebug.h htstring.h htformat.h formats.h htatom.h htcfg.h \
+	htclipboard.h htexcept.h hthist.h store.h htiobox.h \
+	io/posix/htkeyb.h htidle.h htmenu.h htpal.h htreg.h htinfo.h \
+	analyser/stddata.h
+mfile.o: mfile.cc mfile.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h tools.h
+mzstruct.o: mzstruct.cc global.h htendian.h mzstruct.h tools.h htdata.h \
+	common.h stream.h io/posix/htsys.h io/htio.h coff_s.h
+nestruct.o: nestruct.cc global.h htendian.h nestruct.h
+pestruct.o: pestruct.cc global.h htendian.h pestruct.h tools.h htdata.h \
+	common.h stream.h io/posix/htsys.h io/htio.h coff_s.h
+process.o: process.cc process.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h htdata.h htobj.h io/posix/htcurses.h \
+	config.h htctrl.h htdialog.h htdebug.h htstring.h htiobox.h \
+	io/posix/htkeyb.h
+regex.o: regex.c config.h regex.h
+relfile.o: relfile.cc relfile.h htdata.h common.h global.h stream.h \
+	io/posix/htsys.h io/htio.h tools.h
+store.o: store.cc htendian.h global.h htatom.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h htdebug.h htstring.h \
+	config.h analyser/language.h store.h tools.h
+stream.o: stream.cc htdebug.h global.h htexcept.h stream.h common.h \
+	io/posix/htsys.h io/htio.h tools.h htdata.h
+syntax.o: syntax.cc htexcept.h regex.h syntax.h common.h global.h \
+	stream.h io/posix/htsys.h io/htio.h htobj.h io/posix/htcurses.h \
+	config.h htpal.h htdata.h htreg.h htstring.h
+textedit.o: textedit.cc eval/evalx.h eval/evaltype.h cmds.h global.h \
+	htapp.h htctrl.h htobj.h common.h stream.h io/posix/htsys.h \
+	io/htio.h io/posix/htcurses.h config.h htdialog.h htdebug.h \
+	htstring.h htdata.h htformat.h formats.h htmenu.h htpal.h \
+	htreg.h htclipboard.h htiobox.h textedit.h textfile.h syntax.h \
+	tools.h
+textfile.o: textfile.cc htdebug.h global.h textfile.h htdata.h common.h \
+	stream.h io/posix/htsys.h io/htio.h syntax.h htobj.h \
+	io/posix/htcurses.h config.h tools.h
+tools.o: tools.cc tools.h global.h htdata.h common.h stream.h \
+	io/posix/htsys.h io/htio.h htdebug.h
+vxd.o: vxd.cc vxd.h vxdserv.h
+vxdserv.o: vxdserv.cc vxd.h
+
+info-am:
+info: info-recursive
+dvi-am:
+dvi: dvi-recursive
+check-am: all-am
+check: check-recursive
+installcheck-am:
+installcheck: installcheck-recursive
+all-recursive-am: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
+
+install-exec-am: install-binPROGRAMS
+install-exec: install-exec-recursive
+
+install-data-am:
+install-data: install-data-recursive
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-recursive
+uninstall-am: uninstall-binPROGRAMS
+uninstall: uninstall-recursive
+all-am: Makefile $(PROGRAMS) config.h
+all-redirect: all-recursive-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs: installdirs-recursive
+installdirs-am:
+	$(mkinstalldirs)  $(DESTDIR)$(bindir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-hdr mostlyclean-binPROGRAMS \
+		mostlyclean-compile mostlyclean-tags \
+		mostlyclean-generic
+
+mostlyclean: mostlyclean-recursive
+
+clean-am:  clean-hdr clean-binPROGRAMS clean-compile clean-tags \
+		clean-generic mostlyclean-am
+
+clean: clean-recursive
+
+distclean-am:  distclean-hdr distclean-binPROGRAMS distclean-compile \
+		distclean-tags distclean-generic clean-am
+
+distclean: distclean-recursive
+	-rm -f config.status
+
+maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-binPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-recursive
+	-rm -f config.status
+
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
+maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck all-recursive-am \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs-am \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+dist2: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) choIf $(distdir).tar.bz2 $(distdir)
+	-rm -rf $(distdir)
+
+dist-all2: dist2
+
+htdoc.c htdoc.h: doc/hthelp.info tools/bin2c
+	tools/bin2c -Nhtinfo doc/hthelp.info htdoc.c htdoc.h
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

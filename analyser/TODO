@@ -1,0 +1,20 @@
+This is file TODO from the HT-Analyser version 0.6.0
+
+*********************
+** Analyser TODOs: **
+*********************
+
+_____________________________________________________________________________
+
+simple todos:
+
+ --- more interactive functions!
+
+ --- mz_analyser, le_analyser
+_____________________________________________________________________________
+
+advanced todos:
+
+ --- jmp/call tables (will be done in near future)
+ --- the code_analyser (only stub)
+ --- the data_analyser (almost only stub)

@@ -1,0 +1,9 @@
+
+todo for dis/assemblers:
+
+ alpha:
+    -  disassembler needs a lot of work!
+    -  write assembler
+
+integrate further disassemblers:
+    for example mips, sparc & motorola...

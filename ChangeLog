@@ -1,0 +1,284 @@
+ HT ChangeLog
+==============
+
+version 0.6.0:
+     - ELF: new OS ABI values supported (eg. FreeBSD)
+     - built-in registry - data not code
+     - palette system redesigned
+     - bin2c text-open-bug for djgpp fixed
+     - physical search modes in image/analyser views implemented
+     - huge memory leak in binary search eliminated
+     - text viewer/editor: many bugs fixed, improved visualization,
+       full undo support, speed ups, save works now
+     - analyser output core rewritten
+     - context menus
+     - syntax highlighting in image/analyser views
+     - text editor: choose syntax highlighting
+     - x86-assembler: lock, repz, repnz support added
+     - "save as" asks before overwriting :-)
+     - search in PE/export, imports and ELF/symbols
+     - history bug with visual search fixed
+     - COFF/image and analyser implemented (experimental)
+     - NE/image and analyser implemented (experimental)
+     - NE/imports added, NE relocations started
+     - info-viewer rewritten to cope with external files/references
+       and to support big files
+     - x86dis: fixed 16/32 bug with "jmp far x:y", fixed bug with lss,lfs,lgs
+     - ht-posix: X11 textmode support (for better key handling)
+     - analyser speed ups
+     - many bugs fixed
+
+version 0.5.0:
+     - htdata interface changes (list- and tree-enum)
+     - improved ht-posix keyboard handling (home, end)
+     - analyser can save and load its entire state ! .htcfg files are
+       written for all analysed files
+     - cstream rewritten and renamed to mfile
+     - file truncate/extend now undoable
+     - scrollbar in textedit
+     - replace implemented, htsearch partially rewritten
+     - resize/move behaviour changed (different modes for move/resize,
+       works better on unices)
+     - display if in edit or view mode (hex)
+     - x86asm: "jmp far x:y" works now
+     - select,copy,insert,delete through alt+s,alt+c,alt+v,alt+d
+     - ht_compressed_stream implemented (uses miniLZO). it's used to compress
+       all config files (down to about 30% of their original size)
+     - time tag edit (!)
+     - file/new implemented
+     - textfile save implemented
+     - "save as" implemented
+     - vfs create file implemented
+     - improved handling for broken files
+     - textedit cut/delete
+     - text editor undo + protocol
+     - new info file viewer
+     - byte-order/endianess problems fixed (PE, ELF, etc...)
+     - ELF64 support started
+     - x86dis: fixed signed imm bug (e.g. add word ptr [...], s_imm)
+     - make-system updated and fixed
+     - documentation updated
+     - fixed bug with emptied histories
+     - many bugs fixed
+
+version 0.4.5:
+     - file truncate/extend
+     - file has been modified, save ?
+     - text viewer
+     - analyser string detection
+     - improved write caching (consumes less memory)
+     - ht_textfile (allows intermixed line/offset-based read and write access)
+     - text editor with syntax highlighting (C/C++)
+     - handlemsg for ht_subs
+     - ht_group_sub implemented
+     - very powerful yacc/lex-based expression evaluator (supports functions
+       and symbols), replaces old integer and old c/asm string evaluators.
+       works inside: goto, search (eval once), blockop, search (halt if != 0).
+     - evaluate dialog
+     - str- and hex-inputfields fixed
+     - statictext fixed (again...)
+     - ht_view resizing rewritten
+     - non-modal clipboard window
+     - atoms based on tree
+     - delete_timer didn't work ?!
+     - textfile autodetect
+     - file manager: copy files
+     - edit comments
+     - delete history entries
+     - LE: object-flags update
+     - improved scrollbar
+     - scrollbar in hex/analyser
+     - position indicators
+     - new search mode: halt if eval(expr) != 0
+     - entropy/entropy2 functions search (halt if != 0)
+     - LE: USE16 segments
+     - improved non-x86 support
+     - many bugs fixed
+
+version 0.4.4d:
+     - prefixed genericdrawbuf methods with "b_" to avoid macro problems
+       on some systems (printf on hppa)
+     - compiles with gcc 3.0
+
+version 0.4.4c:
+     - linux/htsys.cc to include string.h (needed by FreeBSD, thanks Fyodor)
+     - word/dword tags work again
+     - 386-specific debug code removed
+     - tools.h includes stdlib.h instead of malloc.h
+
+version 0.4.4b:
+     - PE/exports ordinal bug fixed
+     - escape in registry bug fixed
+     - window-list on empty desktop bug fixed
+     - build system errors fixed (hthelp.inc missing)
+
+version 0.4.4:
+     - exposed() implemented (redraw view only if exposed())
+     - vfs-viewer (NC/MC-style abstract file manager) implemented
+     - vfs's implemented: file, registry
+     - registry edit dialogs (symlink, color)
+     - block operations (fill file blocks with bytes, words,
+       dwords or fixed strings)
+     - dtree bugs fixed :-(
+     - read caching fixed (ate up too much mem...) and disabled (now that it
+       works its too slow...)
+     - write caching speed-up. especially for linear writes (e.g. block ops)
+     - configuration store/load (re)implemented, new config file format,
+       architecture independant (32+ bits).
+     - object-streams implemented (bin, text, memmap)
+     - statictext (finally ?) fixed
+     - i/o-system abstracted further
+     - win32- and dj-suspend functions implemented
+     - per-file not per-viewer edit-mode
+     - registry store/load
+     - history store/load
+     - ELF support improved: relocations
+     - search for xrefs
+     - show recursive function references
+     - many bugs fixed
+
+version 0.4.3:
+     - statictext rewritten (finally ?)
+     - pe and coff share some more data
+     - quickfind completition (tab) for ht_listbox
+     - htdata.cc rewritten (whole new data architecture)
+     - rewrote resize mechanism
+     - auto-select pasted data
+     - registry implemented (replaces old palette system, more flexible)
+     - color editor scrapped
+     - viewer interfaces cleaned up (new name: format)
+     - assembler fully integrated (write)
+     - ht_listpopup is now based on ht_listbox
+     - dialog histories (search, goto & files)
+     - improved linux support (select-mode through alt+v,
+       better menus, no longer wastes CPU time when idle)
+     - empty uformats-bug fixed
+     - message queuing implemented (dirty but works...)
+     - listbox scrollbar works correctly now
+     - enhanced win32 support
+     - heavily improved ELF support: section headers, program headers,
+       symbol tables and code/data analyser
+     - collapsable hts_subs + collapsable headers
+     - listbox sorting by row(s)
+     - follow dword ptr at cursor (press 'f')
+     - name demangling via libiberty's cplus-dem
+     - more efficient growing algorithm for memstreams
+     - general file information viewer
+     - cancel searches in progress
+     - customizable status (time, date, analyser activity)
+     - LE support improved: entrypoints
+     - visual (regex) searching implemented
+     - packed statictag-tables
+     - various asm/disasm(x86), search and clipboard bugs fixed
+     - many bugs fixed
+
+version 0.4.2:
+     - empty files/streams and empty ht_uviewers supported correctly
+     - clipboard implemented (copy, paste, show, clear, copy from, paste to)
+     - NE support started (header, segments, entrypoints, names)
+     - close windows, always start
+     - statictext finally works
+     - Space in char-tag and in bit-tag work now
+     - 'jmp/call Ep'-bug fixed
+     - automatically select search results in hex
+     - battlefield implemented
+     - select, delete, copy and paste in inputlines
+     - descs have a selection dialog
+     - per bit dirty
+     - only PE head when unknown optmagic
+     - much x86-assembler work
+     - pe resource refs
+     - always-on-top child-windows implemented
+     - some scrollbars bugs fixed
+     - COFF support started, PE code rewired
+     - LE virtual section memory supported (crashed on bigmem.drv)
+     - fixed a crash in pe/image when analysis changed page layout heavily
+     - bad ht_cached_stream bug fixed (lets hope...)
+     - select hex visualisation problems fixed
+     - inputline's Shift+Del works
+     - search speed improved (caching disabled)
+     - ht_cached_stream large reads improved
+     - dynamic menus
+     - listboxes merged
+     - many bugs fixed
+
+version 0.4.1:
+     - PE delay-imports work now
+     - 'db 0'-bug fixed
+     - 'push ff/ffff'-bug fixed
+     - pressing 'c' in image edit mode now works correctly
+     - editing dos read-only files handled
+     - I/O error handling started
+     - continue searches
+     - per-viewer history
+     - x86dis now emits explicit "<size> ptr" on ambigous insns
+     - rewrote ht_uviewer
+     - everybody uses the mktag_* functions now
+     - tag-system rewritten (binary tags, 64-bit ids)
+     - partially rewrote htstream.cc (ht_cached_stream, ht_layer_stream)
+     - ht_tree delete bug fixed
+     - Ctrl-PageDown-bug in log fixed
+     - selections implemented
+     - bit-tag implemented
+     - ELF support started (header)
+     - color-transparency
+     - MZ image (re)implemented
+     - LE image (re)implemented (LE non-linear image mapping supported!)
+     - new search feature: range
+     - active and move windows different colors + help
+     - menus implemented
+     - color- and flags-tag implemented
+     - sort delay-imports
+     - full C-like expression support in all address dialogs (+,-,*,/,%,&,|,^,
+       (subexpr)), token evaluation interceptable through hook-procs
+     - window management (resize, move)
+     - many bugs fixed
+
+version 0.4.0:
+     - htstream bug fixed (seems to be a DJGPP/libc/doc? bug)
+     - helpviewer scrollbar added
+     - helpviewer scrollbar-bugs fixed
+     - LE support started (header, objects, pagemap for now)
+     - dialog-idle, analysis continues in background
+     - radio/checkboxes implemented
+     - statictext automatic line breaking
+     - sort imports/exports by ord/addr/name or unsorted/like in file
+     - search system (search for hex/ascii and C/asm strings)
+     - new search feature: case insensitive search
+     - search progress indicator
+     - letter highlight and ALT-shortcut
+     - palette system changed
+     - tree-viewer implemented
+     - PE-resource support started
+     - better linux visualization support
+     - edit in image viewer
+     - win32 console support started
+     - many other changes
+
+version 0.3.992:
+     - analyser speed up
+     - analyser xrefs work correctly on imports/exports
+     - various analyser improvements
+     - "undo follow" function introduced
+     - finshed help system
+     - wrote help
+     - palette system restructered
+     - htstream bug on small files fixed.
+     - VxD support started
+     - config file support started
+
+version 0.3.991:
+     - linux-io
+     - makefile
+     - messageboxes
+     - code speedup
+     - introduced the new disassembler
+     - dynamic palettes
+     - analyser tags work
+     - help system started
+     - search system started
+     - source code cleaner tool (solves tab/space, CR/CRLF problems)
+
+version 20000114 (snapshot):
+     - The initial HT (0.3.0-0.3.9) has been completly (!) rewritten.
+       First release of the new version.

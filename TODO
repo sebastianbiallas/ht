@@ -1,0 +1,95 @@
+ HT TODO
+=========
++sepps
+- eval-function(s) in PE/image (e.g. "section('.text')",
+  "offset(0x401000)")
+- remove xrefs
+- strz escape problems e.g. ffffffff -> "    "
+- callchain: goto
+- next unexplored
+
++steves
+- SPARC: httag et al: only machine aligned accesses
+- project(/desktop?) file_s_
+- features configurable
+- file manager copy, etc. ?!
+- htne.cc: interactively turn relocations on/off
+- elf/pe/etc.-section ref tree optimizationdfgjl
+- stream::set_layered suspicious
+- logwindow autoscroll
+- KEY_RESIZE
+- file browser
+- use GNU malloc (DJGPP)
+- eval (auto-doc, interface)
+- textedit/file
+     - +get_size,extend,truncate +overwrite -use_getline
+     - bug with getline's pofs ?!
+     - bug: crash with long lines ???
+     - unindent()
+     - match pair highlight
+     - undo::gettext() should (be able to) use text_editor::snprint_ppos(...)
+- backward search     
+- vfs ..._viewer to get config_changed
+- reg/pal
+     - text/bin autodetect... (configurable, registry and/or
+       how exe is called <$0>)
+- more history entries: replace e.g.
+- implement sys_truncate
+- vfs -empty, mkdir, cd, dont work - no cursor
+- vfs: window resizing...
+- new regex.c
+- F4/view mode - ask before forgetting changes	
+- improve edit_time/dialog ?!
+- cleanup msg interface
+- homogenous/heterogenous lists
+- abstract (e.g. transparent) chars (io/*)
+- auto-documentation (esp. keys & eval-funcs)
+- portability
+     - compile on sun solaris (curses problems (only?) on cf.sf.net)
+     - compile on MacOS X (curses.h, but no ACS_*)
+     - endianess, intsize
+- free le_page_file...
+- detect format length (ne,le,elf)
+- pe/elf/le relocations
+- make ht_group_sub work correctly
+- color -> invert & underlined attribute and transparent chars
+- x86 (dis)assembler
+     - options (ambigous & + floats) + beautify (enums)
+     - movzx/movsx ambigous (word, dword), "short"/"large" branches
+- pe/(delay-)imports+exports based on ht_listbox ??
+     - quickfinder in imports/exports
+- object notification (e.g. insertion into groups (c overview),
+  dialog-elements content modified )
+- file structure overview
+- uformat+k_shift_*: use select_mode_*
+- *::duplicate();
+- use better c/c++ (s/most dwords/UINT/, s/int/bool/where needed,
+  more enums, templates, exceptions)
+- better coff-detection
+- multiple bit tag (extend bit tag ?)
+- execute_dialog_modal + window move/resize
+- taginfo-window
+- clipboard: limit size somehow
+- smart window positioning (don't hide cursor)
+- split up htobj.cc and htdialog.cc into smaller files
+- move source files (especially object system) into separate directories,
+  solve name problems (ht* only when necessary for ht obj system)
+- extended search (continue as idle w/result window)
+- CHAR-TAGs must also be editable as hex
+- full support of: pe, le, lx, mz, ne, elf, a archives, pure/dj coff,
+  m$ object files, etc..
+- exe-packer support (at least notification)
+- remove FIXMEs
+- remove memory leaks
+
++discussion
+- "Ctrl-X" vs. "Ctrl+X"
+- only frames have desc, rest view_debug_name
+- assert through exceptionz ?
+- throw bla() XOR throw new bla() ?
+- assemble: push eax (eax: symbol)
+- get/setdata instead of view_state_* ?
+- rewrite constructor/destructor for every object ?
+- program modularization (dynamically linkable and built-in modules) ???
+- scripting engine for simple formats (or even more ?)
+

@@ -1,0 +1,537 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename ht.info
+@settitle HT Editor Documentation
+@iftex
+@afourpaper
+@end iftex
+@c %**end of header
+
+@ifinfo
+@format
+START-INFO-DIR-ENTRY
+* ht: (ht.info).             HT Editor.
+END-INFO-DIR-ENTRY
+@end format
+@end ifinfo
+
+@iftex
+@c @finalout
+@end iftex
+
+@ifinfo
+This file documents the HT Editor.
+
+@c 
+Copyright @copyright{} 1999, 2000, 2001, 2002 The HT authors. @*
+@xref{Authors, The HT Authors, The HT Authors},
+for a list of the copyright holders.
+
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX
+and print the results, provided the printed document
+carries a copying permission notice identical to this
+one except for the removal of this paragraph (this
+paragraph not being relevant to the printed manual).
+
+@end ignore
+
+@sp 4
+Trademarks are the property of their respective owners, which may
+be registered in certain jurisdictions.
+@end ifinfo
+
+@c begin chapters on right pages
+@setchapternewpage odd
+
+@titlepage
+
+@title{HT Manual}
+@subtitle{Edition 0.60, April 2002}
+
+@author{Stefan Weyergraf, Sebastian Biallas}
+@c The following two commands start the copyright page.
+@page
+@vskip 0pt plus 1filll
+
+Copyright @copyright{} 1999-2002 The HT authors. @*
+@xref{Authors, The HT Authors, The HT Authors},
+for a list of the copyright holders.
+
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+
+@sp 4
+Trademarks are the property of their respective owners, which may
+be registered in certain jurisdictions.
+@end titlepage
+
+@c
+@c SETTINGS, DEFINES, MACROS
+@c
+
+@macro htversion
+0.6.0
+@end macro
+
+@macro hturl
+@uref{http://hte.sourceforge.net}
+@end macro
+
+@macro htsfurl
+@uref{http://sourceforge.net/projects/hte}
+@end macro
+
+@macro none
+@end macro
+
+@c
+@c TOP NODE
+@c
+@node Top, , (dir), (dir)
+@section HT Editor
+
+This is HT @htversion{};
+please note that this is a beta version of the program.
+Therefore HT is incomplete and sometimes buggy. Enjoy anyway@dots{}
+
+@menu
+* About::
+* Keys::
+* Features::
+* Authors::
+* Homepage::
+@end menu
+
+@node About, , Top, Top
+@section About
+
+@noindent
+This program is a file viewer, editor and analyzer
+for text, binary, and (especially) executable files.
+
+@quotation
+This program comes with ABSOLUTELY NO WARRANTY @*
+This is free software, and you are welcome to @*
+redistribute it under certain conditions @*
+For more information please read the GNU General @*
+Public License, contained in the file "copying" @*
+If you do not have received a copy of this file along @*
+with this program, please write to the Free Software @*
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+@end quotation
+
+@node Keys, , Top, Top
+@section Keys
+
+@macro key_table_columns
+.25 .75
+@end macro
+
+@itemize @bullet
+
+@item
+General key bindings
+
+@multitable @columnfractions .25 .75
+@item Return
+@tab follow link (if applicable)
+@item Backspace
+@tab undo ``follow link''
+@item Space/F6
+@tab choose view mode
+@item Alt+[1-9]
+@tab select window
+@item Alt+0
+@tab select window list
+@item Ctrl+Left/Right
+@tab scroll left/right
+@item Cursor keys
+@tab move around
+@item Page Up/Down
+@tab next/prev page
+@item Alt+S
+@tab toggle select
+@item Ctrl+Ins/Alt+C
+@tab copy
+@item Shift+Ins/Alt+V
+@tab insert
+@item Ctrl+Del/Alt+D
+@tab delete
+@item Shift+Del/Alt+X
+@tab cut
+@end multitable
+
+@item
+Window key bindings
+
+@multitable @columnfractions .25 .75
+@item Alt+F3
+@tab close window
+@item Ctrl+F5
+@tab resize/move mode
+@item
+@end multitable
+
+@item
+Analyser key bindings
+
+@multitable @columnfractions .25 .75
+@item c                    
+@tab continue code analysis at cursor
+@item f                    
+@tab follow dword ptr at address
+@item n                    
+@tab (re)name current address 
+(empty string to delete)
+@item x                    
+@tab show xrefs (search for xrefs)
+@item #                    
+@tab edit comments
+@item Ctrl+A               
+@tab call assembler
+@item Ctrl+F               
+@tab goto start of current function@*
+(indicated in the 2nd line)
+@item Ctrl+L               
+@tab goto previous label
+@item Ctrl+T               
+@tab show recursive function references
+
+@end multitable
+
+@end itemize
+
+@sp 1
+@noindent
+Note: HT-posix keyboard support is somewhat experimental. Be warned.
+
+@node Authors, , Top, Top
+@section Authors
+
+Stefan Weyergraf @email{stefan@@weyergraf.de}
+
+Sebastian Biallas @email{sb@@biallas.net}
+
+@node Features, , Top, Top
+@section Features
+
+Although HT is beta software and should not always be regarded as stable, it
+contains some very advanced and useful features:
+
+@menu
+* Supported file formats::
+* Target systems::
+* Code and data analyser::
+* Configuration files::
+* Clipboard::
+* Global history::
+* Expression evaluation::
+* Block operations::
+* Searching::
+* x86 Assembler::
+@end menu
+
+@node Supported file formats, , Features, Features
+@section Supported file formats
+
+@itemize @bullet
+@item 
+Win32 portable executables (PE)
+@itemize @w
+@item
+- header @*
+- import section @*
+- delay-import section @*
+- export section @*
+- resources @*
+- image with code/data analyser (x86 & alpha)
+@end itemize
+@item 
+UN*X executable and linkable format (ELF)
+@itemize @w
+@item
+- header @*
+- section headers @*
+- program headers @*
+- symbol tables @*
+- image with code/data analyser (x86)
+@end itemize
+@item 
+Win16, OS/2 new executables (NE)
+@itemize @w
+@item
+- header @*
+- segments @*
+- names @*
+- entrypoints @*
+- imported names @*
+- image with code/data analyser (x86)
+@end itemize
+@item 
+UN*X common object file format (COFF)
+@itemize @w
+@item 
+- header @*
+- image with code/data analyser (x86)
+@end itemize
+@item 
+Win, OS/2 linear executables (LE)
+@itemize @w
+@item
+- header @*
+- object table @*
+- page table @*
+- image (disassembly only)
+@end itemize
+@item 
+DOS executables (MZ)
+@itemize @w
+@item
+- header @*
+- relocations @*
+- image (disassembly only)
+@end itemize
+@item 
+Java class files (experimental)
+@itemize @w
+@item
+- header @*
+@end itemize
+@end itemize
+
+@node Code and data analyser, , Features, Features
+@section Code and data analyser
+
+@itemize @w
+- finds branch sources and destinations recursively @*
+- finds procedure entries @*
+- creates labels based on this information @*
+- creates xref information @*
+- interactively analyse unexplored code (press 'c') @*
+- create/rename/delete labels (press 'n') @*
+- create/edit comments (press '#') @*
+@end itemize
+
+@node Target systems, , Features, Features
+@section Target systems
+
+HT is tested and known to work on at least the following systems:
+@itemize @w
+- DJGPP @*
+- GNU/Linux @*
+- FreeBSD @*
+- Win32
+@end itemize
+
+HT should be portable to any POSIX-compilant OS supporting (n)curses with
+almost no effort.
+
+Much work is done to enable HT for non-x86 systems.
+Alpha, PPC, 68k and Sparc have been successfully build and started.
+These versions are however mostly untested (broader testing anyone ?).
+
+@node Configuration files, , Features, Features
+@section Configuration files
+
+@subsection System-wide configuration
+HT automatically creates a file to store its configuration.
+It is called @file{~/.htcfg} on Unices and @file{ht.cfg} (where 
+ht.exe resides) on Windows. More specifically it contains HT's registry 
+and the @xref{Global history}.
+
+@subsection Per file configuration
+The analyser (for analysable files) will store its data in an extra file called 
+@file{FILENAME.htcfg}, where FILENAME is the name of the analysed file. This
+file contains all information to restore the complete state of the analyser.
+
+@node Clipboard, , Features, Features
+@section Clipboard
+
+All open files and dialogs use the common clipboard, where all
+copied and cut text or binary data is stored. Clipboard operations are 
+normally binary safe, that means you can copy some binary data out of a
+file and paste it into an input line. Exceptions are only the \0 character
+(binary null), it will be converted to a space in places where it wouldn't
+make sense (e.g. file open).
+
+Although the clipboard is not preserved across different HT sessions
+(ie. you will loose it when exiting HT), you can either save and load it
+or part of it manually (via Edit->paste into/copy from file) or rely on
+the input lines' @xref{Global history, history}, which is stored and
+retrieved from the config file automatically.
+
+@node Global history, , Features, Features
+@section Global history
+
+HTs history system is global, which means that you can use it for all open
+files. Histories are also grouped by their context. I.e. file-related and 
+regex-search-related dialogs have their own history.
+
+History entries are stored within the @xref{Configuration files}, so they
+can be reused when you relaunch.
+
+You can delete a history entry by pressing DEL inside the history popup.
+
+@node Expression evaluation, , Features, Features
+@section Expression evaluation
+
+HT contains a very powerful expression evaluator which is used in all dialogs
+where expressions are expected. These are mainly blockoperation, goto,
+search and of course evaluate itself (Edit->Evaluate).
+
+You can use all standard math operators (+ - / * % **), logical operators
+(! && || ^^), relational operators (== != < > <= >=),
+bit operators (~ & | ^), string operators (. for concatenation),
+parenthesis, the ternary operator (a?b:c), functions and symbols 
+(both depending on context).
+
+The evaluator uses integer, string and float types depending on context. You
+can always convert a result via the @code{int()}, @code{string()} and @code{float()} functions
+to appropriate type. Try Edit->Evaluate to see how it works@dots{}
+
+@subsection Functions and symbols
+You can always use the standard buildin math (@code{round}, @code{sin}, @code{random}, etc.) and
+string (@code{strcmp}, @code{strchr}, @code{sprintf}, etc.) functions, they work more or less like the corresponding
+C functions (actually they ARE more or less wrappers for them); see @file{eval/eval.y} for 
+details (sorry but a detailed help would get outdated rather soon).
+When using @xref{Block operations}, or searching you have some 
+context depending functions and symbols; see these sections for explanation.
+
+@node Block operations, , Features, Features
+@section Block operations
+
+Block operation (Blockop) is a very powerful tool to perform modifications
+on binary files. It is available in hex (i.e. raw/uncooked) mode only.
+
+Blockop takes four parameters: @var{start}, @var{end}, @var{mode} and
+@var{expression}. Blockop works as follows:
+
+@itemize @bullet
+@item
+START: Start at the offset specified by @var{start}
+@item
+REPEAT: Evaluate @var{expression} and store n bytes (byte - 1,  word - 2,
+dword - 4, string - variable) or less (to match @var{end}) at the current
+offset. Stop if @var{end} has been reached. Increment current offset by n.
+Repeat.
+@end itemize
+
+@noindent
+Special variables/functions that can be used in @var{expression}:
+
+@table @code
+@item readbyte(ofs)
+read a byte from offset @var{ofs}, returns a number
+@item readstring(ofs, size)
+read @var{size} bytes from offset @var{ofs}, returns a string
+@item i
+contains the iteration count/index starting with 0
+@item o
+contains the current offset
+@end table
+
+@node Searching, , Features, Features
+@section Searching
+
+The search function is one of the most advanced functions of HT.
+It is invoked through F7, Shift-F7 continues a search from cursor.
+Depending on context (ie. file type and mode) the following modes are enabled:
+
+@subsection bin: ASCII / Hex
+Enter an exact search string either via ascii characters or via hexadecimal
+interpretation. This is the fastest search mode. @*
+OPTIONS: case-insensitive.
+
+@subsection bin: eval str
+Enter an expression, it will be evaluated ONCE (difference to the 4th mode),
+and HT will then search for the result-string. This is pretty useful when
+searching for intermixed text and control-chars/binary, e.g. @code{"hello world\n\0"} @*
+OPTIONS: case-insensitive.
+
+@subsection display: regex
+As the prefix indicates, this search doesn't search in the binary file but
+in the display on screen. HT searches for a regular expression so this can
+be very powerful, e.g. in PE/Image you can search for @code{(add|sub).+?,[78]}.
+This will find all add or sub instructions with second parameter 7 or 8. @*
+OPTIONS: case-insensitive.
+
+@subsection expr nonzero
+This is the slowest but also most advanced search mode. The search is
+successful if the entered expression evaluates to non-zero (it will be
+evaluated once for every byte). In this mode there are two predefined
+symbols and some functions: @var{i} is always the number of current iteration
+and @var{o} stands for the current offset in file. With the functions
+@code{readbyte(ofs)} and @code{readstring(ofs, size)} you may access the
+file's content.
+
+It's easier to understand this with examples:
+
+@enumerate 1
+@item
+Searching for patterns: 
+
+@enumerate a
+@item
+Enter @code{readbyte(o) == readbyte(o+1)}@*
+This will search for two equal bytes ("AA", "55", "!!", etc.).
+@item
+Enter @code{(readbyte(o) == readbyte(o+1)+1) && (readbyte(o)==readbyte(o+2)+2}@*
+This will search for three ascending bytes ("ABC", "123", etc).
+@end enumerate
+
+@item
+Search with special functions:
+
+With HT you can easily detect the RSA key in the @file{ADVAPI32.DLL}:
+Search for @code{entropy(readstring(o, 64)) > 82} in expr!=0 mode, and you will
+find it very quickly. How does it work? @code{readstring(o, 64)} reads a 64 byte string
+from current offset and entropy calculates the entropy ("randomness") of a string (result is 0..100).
+So the search stops if a entropy greater than 82% (guessed value)
+is encountered, which normally indicates packed or encryted data.
+
+Note: the @code{entropy()} function is not the best of its kind, if you have a better
+one please let us know!
+
+@end enumerate
+
+@node x86 Assembler, , Features, Features
+@section x86 Assembler
+
+HT features an assembler for the x86 architecture.
+It is capable of assembling any command string, that HTs disassembler
+produces. I.e. it can at least produce 386,486,Pentium + MMX + 3dnow
+instructions.
+Assembling and disassembling is done separately using a single compiled-in
+opcode table.
+
+If supported the assembler can be invoked in any disassembler view by hitting
+CTRL+A. 
+If the typed assembler command is ambigous in itself (e.g. no memory type
+given) or if there are multiple opcodes possible, alternatives are presented.
+If alternatives are presented HT tries to select an alternative opcode with
+the same size as the opcode that you had selected when pressing CTRL+A.
+
+@node Homepage, , Top, Top
+@section Homepage
+
+@noindent
+The HT homepage is at 
+@hturl{}
+@noindent
+Downloads are available from the 'download' section.
+For further information and bug reporting look at
+@htsfurl{}
+@noindent
+Feel free to @xref{Authors, mail us}..
+Suggestions, criticism and patches welcome.
+
+@ifinfo
+@contents
+@end ifinfo
+@bye
