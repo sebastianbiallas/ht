@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	htsys.cc (POSIX implementation)
  *
@@ -22,13 +22,16 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <unistd.h>
 		 
 int sys_canonicalize(char *result, const char *filename)
@@ -145,12 +148,87 @@ int sys_filename_cmp(const char *a, const char *b)
 }
 
 /*
+ * 	POSIX IPC
+ */
+ 
+static int child_pid = -1;
+
+void SIGCHLD_sigaction(int i, siginfo_t *info, void *v)
+{
+	int j;
+	waitpid(child_pid, &j, WNOHANG);
+	child_pid = -1;
+}
+
+int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
+{
+	if (child_pid != -1) return EBUSY;
+	int in_fds[2];
+	int out_fds[2];
+	int err_fds[2];
+	int pid;
+	if (pipe(in_fds)) return errno;
+	if (pipe(out_fds)) return errno;
+	if (pipe(err_fds)) return errno;
+	pid = fork();
+	if (pid > 0) {
+		/* parent process */
+		close(in_fds[0]);
+		close(out_fds[1]);
+		close(err_fds[1]);
+		*in = in_fds[1];
+		*out = out_fds[0];
+		*err = err_fds[0];
+		*handle = pid;
+		if (fcntl(*out, F_SETFL, O_NONBLOCK) ||
+		fcntl(*err, F_SETFL, O_NONBLOCK)) return errno;
+		child_pid = pid;
+		return 0;
+	} else if (pid == 0) {
+		/* child process */
+		close(in_fds[1]);
+		close(out_fds[0]);
+		close(err_fds[0]);
+		dup2(in_fds[0], STDIN_FILENO);
+		dup2(out_fds[1], STDOUT_FILENO);
+		dup2(err_fds[1], STDERR_FILENO);
+		close(in_fds[0]);
+		close(out_fds[1]);
+		close(err_fds[1]);
+		execl(cmd, cmd, NULL);
+		exit(1);
+	} else return errno;
+}
+
+bool sys_ipc_is_valid(int handle)
+{
+	return child_pid == handle;
+}
+
+int sys_ipc_terminate(int handle)
+{
+	if (child_pid == handle) {
+		kill(handle, SIGTERM);
+		child_pid = -1;
+		return 0;
+	}		
+	return EINVAL;
+}
+
+/*
  *	INIT
  */
-
+ 
 bool init_system()
 {
 	setuid( getuid() );
+	struct sigaction sa;
+	
+	sa.sa_sigaction = SIGCHLD_sigaction;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	
+	sigaction(SIGCHLD, &sa, NULL);
 	return true;
 }
 
