@@ -42,9 +42,10 @@ ht_view *hthex_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->search_caps|=SEARCHMODE_BIN | SEARCHMODE_EVALSTR | SEARCHMODE_EXPR;
 
-	ht_hex_file_sub *h=new ht_hex_file_sub();
-	h->init(file, 0x0, file->get_size(), 0);
-	v->insertsub(h);
+	v->h=new ht_hex_file_sub();
+	v->h->init(file, 0x0, file->get_size(), 16, 0);
+
+	v->insertsub(v->h);
 	return v;
 }
 
@@ -80,7 +81,8 @@ bool ht_hex_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 {
 	int s=file->get_size();
 	if (s) {
-		int z=MIN(size.h*16, s-(int)top.line_id.id1);
+		int ll = h->get_line_length();
+		int z=MIN(size.h*ll, s-(int)top.line_id.id1);
 		return scrollbar_pos(top.line_id.id1, z, s, pstart, psize);
 	}
 	return false;
@@ -139,12 +141,28 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		}
+		case cmd_hex_display_bytes: {
+			char result[256];
+			sprintf(result, "%d", h->get_line_length());
+			if (inputbox("Change display width", "~Line length (Bytes)", result, 256)) {
+				char *p;
+				int ll = strtoul(result, &p, 10);
+				if (ll>0 && ll<=32) {
+					h->set_line_length(ll);
+                    } else {
+					errorbox("Line length must be > 0 and <= 32!");
+				}
+			}
+			clearmsg(msg);
+			return;
+		}
 		case msg_contextmenuquery: {
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Local-Hex");
 			m->insert_entry("~Block operations", "Ctrl+B", cmd_file_blockop, K_Control_B, 1);
 			m->insert_entry("~Replace", "Ctrl+R", cmd_file_replace, K_Control_R, 1);
 			m->insert_entry("~Entropy", "Ctrl+T", cmd_hex_entropy, K_Control_T, 1);
+			m->insert_entry("~Change display width...", "Ctrl+W", cmd_hex_display_bytes, K_Control_W, 1);
 
 			msg->msg = msg_retval;
 			msg->data1.ptr = m;
@@ -162,21 +180,23 @@ bool ht_hex_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 
 bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
+	int ll = h->get_line_length();
 	clear_viewer_pos(p);
 	p->u.sub = first_sub;
-	p->u.line_id.id1 = ofs  & (~0xf);
+	p->u.line_id.id1 = ofs - (ofs % ll);
 	p->u.line_id.id2 = 0;
-	p->u.tag_idx = ofs  & 0xf;
+	p->u.tag_idx = ofs % ll;
 	return true;
 }
 
 bool ht_hex_viewer::qword_to_pos(qword q, viewer_pos *p)
 {
+	int ll = h->get_line_length();
 	ht_linear_sub *s = (ht_linear_sub*)cursor.sub;
 	FILEOFS ofs = QWORD_GET_INT(q);
 	clear_viewer_pos(p);
 	p->u.sub = s;
-	p->u.tag_idx = ofs & 0xf;
+	p->u.tag_idx = ofs % ll;
 	return s->convert_ofs_to_id(ofs, &p->u.line_id);
 }
 

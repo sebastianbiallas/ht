@@ -96,6 +96,7 @@
  */
  
 #define cmd_hex_entropy				HT_COMMAND(1500)
+#define cmd_hex_display_bytes			HT_COMMAND(1501)
 
 /*
  *	disasm 2000 - 2499

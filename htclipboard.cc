@@ -158,7 +158,7 @@ void ht_clipboard_viewer::update_content()
 		insertsub(m);
 
 		ht_hex_sub *h=new ht_hex_sub();
-		h->init(clipboard, j->start, j->size, 0);
+		h->init(clipboard, j->start, j->size, 16, 0);
 		insertsub(h);
 	}
 	pselect_set(clipboard->select_start, clipboard->select_start+clipboard->select_len);

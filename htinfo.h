@@ -28,11 +28,11 @@
 
 #define ht_author1 "Stefan Weyergraf"
 #define ht_mail1 "stefan@weyergraf.de"
-#define ht_copyright1 "(c) 1999-2002 "ht_author1", "ht_mail1
+#define ht_copyright1 "(c) 1999-2003 "ht_author1", "ht_mail1
 
 #define ht_author2 "Sebastian Biallas"
 #define ht_mail2 "sb@biallas.net"
-#define ht_copyright2 "(c) 1999-2002 "ht_author2", "ht_mail2
+#define ht_copyright2 "(c) 1999-2003 "ht_author2", "ht_mail2
 
 #endif /* !__HTINFO_H__ */
 

@@ -31,6 +31,7 @@
 #include "htpehead.h"
 #include "httag.h"
 #include "htstring.h"
+#include "snprintf.h"
 
 #include "pestruct.h"
 
@@ -170,20 +171,20 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	s->add_mask(info);
 	v->insertsub(s);
 
-/* FIXME: */
+	/* FIXME: */
 	bool pe_bigendian = false;
 	
 	s=new ht_mask_sub();
 	s->init(file, 1);
 	s->add_staticmask_ptable(pemagic, h, pe_bigendian);
 	
-/* COFF header */
+	/* COFF header */
 	s->add_staticmask_ptable(coffheader, h+4, pe_bigendian);
 	cs=new ht_collapsable_sub();
 	cs->init(file, s, 1, "COFF header", 1);
 	v->insertsub(cs);
 	
-/* optional header */
+	/* optional header */
 	s=new ht_mask_sub();
 	s->init(file, 2);
 	word opt;
@@ -225,7 +226,7 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		}
 	}
 	
-/* section headers */
+	/* section headers */
 	
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		s=new ht_mask_sub();
@@ -237,8 +238,8 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		memmove(nm, pe_shared->sections.sections[i].name, 8);
 		nm[8]=0;
 
-		char t[32];
-		sprintf(t, "section header %d: %-8s rva %08x vsize %08x", i, nm, pe_shared->sections.sections[i].data_address, pe_shared->sections.sections[i].data_vsize);
+		char t[256];
+		ht_snprintf(t, sizeof t, "section header %d: %-8s rva %08x vsize %08x", i, nm, pe_shared->sections.sections[i].data_address, pe_shared->sections.sections[i].data_vsize);
 
 		cs=new ht_collapsable_sub();
 		cs->init(file, s, 1, t, 1);

@@ -31,7 +31,10 @@ extern format_viewer_if hthex_if;
  *	CLASS ht_hex_viewer
  */
 
+class ht_hex_file_sub;
 class ht_hex_viewer: public ht_uformat_viewer {
+public:
+	ht_hex_file_sub *h;
 protected:
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);

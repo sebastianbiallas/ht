@@ -2679,8 +2679,10 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				if (addrstr[0]) {
 					viewer_pos pos;
 					globalerror[0] = 0;
-					if (string_to_pos(addrstr, &pos) && goto_pos(pos, this))
+					if (string_to_pos(addrstr, &pos) && goto_pos(pos, this)) {
+						focus_cursor();
 						break;
+					}
 					if (globalerror[0]) {
 						infobox("error: %s\nin '%s'", globalerror, addrstr);
 					} else {
@@ -4290,11 +4292,12 @@ ht_search_result *ht_linear_sub::search(ht_search_request *search, FILEOFS start
  *	CLASS ht_hex_sub
  */
 
-void ht_hex_sub::init(ht_streamfile *f, FILEOFS ofs, dword size, UINT u, dword vinc)
+void ht_hex_sub::init(ht_streamfile *f, FILEOFS ofs, dword size, UINT Line_length, UINT u, dword vinc)
 {
+	line_length = Line_length;
 	ht_linear_sub::init(f, ofs, size);
 	vaddrinc=vinc;
-	balign=ofs & 0xf;
+	balign=ofs % line_length;
 	uid=u;
 }
 
@@ -4303,11 +4306,26 @@ void ht_hex_sub::done()
 	ht_linear_sub::done();
 }
 
+int	ht_hex_sub::get_line_length()
+{
+	return line_length;
+}
+
+void	ht_hex_sub::set_line_length(int Line_length)
+{
+	if (Line_length>0) {
+		line_length = Line_length;
+//		dirty_view();
+//		redraw();
+	}
+}
+
+
 bool ht_hex_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	if ((offset>=fofs) && (offset<fofs+fsize)) {
 		clear_line_id(line_id);
-		line_id->id1 = (offset & ~15) + balign;
+		line_id->id1 = (offset - (offset%line_length)) + balign;
 		line_id->id2 = uid;
 		return true;
 	}
@@ -4324,14 +4342,14 @@ bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (line_id.id2 != uid) return false;
 	ID ofs = line_id.id1;
-	dword c=MIN(16, (int)(fofs+fsize-ofs));
+	dword c=MIN(line_length, (int)(fofs+fsize-ofs));
 	if (c<=0) return false;
-	c = MIN(16, c+ofs%16);
+	c = MIN(line_length, c+ofs%line_length);
 	char *l=line;
 	l=mkhexd(l, ofs+vaddrinc);
 	*l++=' ';
-	if (ofs % 16) ofs -= ofs % 16;
-	for (dword i=0; i<16; i++) {
+	if (ofs % line_length) ofs -= ofs % line_length;
+	for (dword i=0; i<line_length; i++) {
 		if (i<c && ofs+i>=fofs) {
 			l=tag_make_edit_byte(l, ofs+i);
 		} else {
@@ -4348,7 +4366,7 @@ bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
 	}
 	l=tag_make_group(l);
 	*l++='|';
-	for (dword i=0; i<16; i++) {
+	for (dword i=0; i<line_length; i++) {
 		if (i<c && ofs+i>=fofs) {
 			l=tag_make_edit_char(l, ofs+i);
 		} else {
@@ -4376,8 +4394,8 @@ void ht_hex_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
 	if (fsize) {
-		int k = fsize + (fofs & 0xf);
-		line_id->id1 = (k & ~0xf) + (fofs & ~0xf);
+		int k = fsize + (fofs % line_length);
+		line_id->id1 = (k - k%line_length) + (fofs - fofs%line_length);
 	} else {
 		line_id->id1 = fofs;
 	}
@@ -4390,13 +4408,13 @@ int ht_hex_sub::prev_line_id(LINE_ID *line_id, int n)
 	int c=0;
 	while (n--) {
 		if (!line_id->id1 || line_id->id1 == fofs) break;
-		if (line_id->id1-16>line_id->id1) {
+		if (line_id->id1-line_length>line_id->id1) {
 			line_id->id1 = 0;
 		} else {
-			if (line_id->id1-16<fofs) {
+			if (line_id->id1-line_length<fofs) {
 				line_id->id1 = fofs;
 			} else {
-				line_id->id1 -= 16;
+				line_id->id1 -= line_length;
 			}
 		}
 		c++;
@@ -4409,12 +4427,12 @@ int ht_hex_sub::next_line_id(LINE_ID *line_id, int n)
 	if (line_id->id2 != uid) return 0;
 	int c=0;
 	while (n--) {
-		if (line_id->id1 % 16) {
-			if (line_id->id1+(16 - line_id->id1 % 16) >= fofs+fsize) break;
-			line_id->id1 += 16- line_id->id1 % 16;
+		if (line_id->id1 % line_length) {
+			if (line_id->id1+(line_length - line_id->id1 % line_length) >= fofs+fsize) break;
+			line_id->id1 += line_length- line_id->id1 % line_length;
 		} else {
-			if (line_id->id1+16>=fofs+fsize) break;
-			line_id->id1 += 16;
+			if (line_id->id1+line_length>=fofs+fsize) break;
+			line_id->id1 += line_length;
 		}
 		c++;
 	}
