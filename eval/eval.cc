@@ -44,6 +44,7 @@ static eval_symbol_handler g_eval_symbol_handler;
 static void *eval_context;
 static int helpmode = 0;
 static eval_scalar helpstring;
+static char helpname[MAX_FUNCNAME_LEN+1];
 
 qword f2i(double f)
 {
@@ -58,9 +59,15 @@ int get_helpmode()
 	return helpmode;
 }
 
-void set_helpmode(int flag)
+void set_helpmode(int flag, char *name)
 {
 	helpmode = flag;
+     int l = strlen(name);
+     if (l>MAX_FUNCNAME_LEN) {
+     	*helpname = 0;
+     	return;
+     }
+     strcpy(helpname, name);
 }
 
 eval_scalar *get_helpstring()
@@ -1021,9 +1028,35 @@ int func_error(eval_scalar *r, eval_str *s)
 	return 0;
 }
 
+int func_whatis(eval_scalar *r, eval_str *s)
+{
+	if (s->len > MAX_FUNCNAME_LEN) return 0;
+     char b[MAX_FUNCNAME_LEN+1];
+     bin2str(b, s->value, s->len);
+	set_helpmode(1, b);
+     eval_scalar str;
+     scalar_create_str_c(&str, "NaF()");
+     int t = func_eval(r, &str.scalar.str);
+     scalar_destroy(&str);
+	set_helpmode(0, NULL);
+	return t;
+}
+
+int func_help(eval_scalar *r)
+{
+     eval_scalar str;
+     scalar_create_str_c(&str, "");
+     int t = func_whatis(r, &str.scalar.str);
+     scalar_destroy(&str);
+     return t;
+}
+
 eval_func builtin_evalfuncs[]=	{
 /* eval */
 	{ "eval", (void*)&func_eval, {SCALAR_STR}, "evaluate string" },
+/* help */
+	{ "help", (void*)&func_help, {}, "get help on all functions"},
+	{ "whatis", (void*)&func_whatis, {SCALAR_STR}, "get help on specific function"},
 /* type juggling */
 	{ "int", (void*)&func_int, {SCALAR_INT}, "converts to integer" },
 	{ "string", (void*)&func_string, {SCALAR_STR}, "converts to string" },
@@ -1235,39 +1268,81 @@ int evalsymbol(eval_scalar *r, char *sname)
 	return s;
 }
 
+void proto_dump(char *buf, int bufsize, eval_func *proto, int full)
+{
+// FIXME: buffer safety/possible buffer overflow
+	strcpy(buf, proto->name);
+     int term = 0;
+    	strcat(buf, "(");
+	for (int j=0; j<MAX_EVALFUNC_PARAMS; j++) {
+		if (proto->ptype[j]==SCALAR_NULL) break;
+          if (j) strcat(buf, ", ");
+		switch (proto->ptype[j]) {
+			case SCALAR_INT:
+               	strcat(buf, "INT");
+               	break;
+			case SCALAR_STR:
+               	strcat(buf, "STRING");
+               	break;
+			case SCALAR_FLOAT:
+               	strcat(buf, "FLOAT");
+               	break;
+          	case SCALAR_VARARGS:
+               	strcat(buf, "...");
+                    term = 1;
+               	break;
+			default:
+               	break;
+		}
+		if (term) break;
+	}
+    	strcat(buf, ")");
+     if (full && proto->desc) {
+     	strcat(buf, " - ");
+          strcat(buf, proto->desc);
+     }
+}
+
 int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *params, eval_func *protos)
 {
-	char fname_short[MAX_FUNCNAME_LEN+1];
+     if (strlen(fname) > MAX_FUNCNAME_LEN) {
+		set_eval_error("invalid function, function name too long");
+     	return 0;
+	}
 	
-	fname_short[MAX_FUNCNAME_LEN]=0;
-	strncpy(fname_short, fname, MAX_FUNCNAME_LEN);
-
      if (helpmode) {
 		while (protos->name) {
               	// FIXME: possible buffer overflow
-               char buf[1024];
-               if (protos->desc) {
-	               sprintf(buf, "%s: %s\n", protos->name, protos->desc);
-			} else {
-	               sprintf(buf, "%s\n", protos->name);
-               }
-               eval_scalar s;
-			scalar_create_str_c(&s, buf);
-               eval_scalar r;
-               scalar_concat(&r, &helpstring, &s);
-               scalar_destroy(&helpstring);
-               helpstring = r;
+               char buf[256];
+               if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
+/*	               if (protos->desc) {
+		               sprintf(buf, "%s: %s\n", protos->name, protos->desc);
+				} else {
+	          	     sprintf(buf, "%s\n", protos->name);
+	               }*/
+                    proto_dump(buf, sizeof buf, protos, 1);
+                    strcat(buf, "\n");
+     	          eval_scalar s;
+				scalar_create_str_c(&s, buf);
+               	eval_scalar r;
+	               scalar_concat(&r, &helpstring, &s);
+     	          scalar_destroy(&helpstring);
+          	     helpstring = r;
+			}
 
           	protos++;
           }
      } else {
 		while (protos->name) {
-			switch (match_evalfunc_proto(fname_short, params, protos)) {
+			switch (match_evalfunc_proto(fname, params, protos)) {
 				case PROTOMATCH_OK:
 					return exec_evalfunc(result, params, protos);
-				case PROTOMATCH_PARAM_FAIL:
-					set_eval_error("invalid params to function %s", fname_short);
+				case PROTOMATCH_PARAM_FAIL: {
+                    	char b[256];
+                    	proto_dump(b, sizeof b, protos, 0);
+					set_eval_error("invalid params to function %s", b);
 					return 0;
+				}
 				default: {}
 			}
 			protos++;

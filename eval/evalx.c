@@ -12,7 +12,7 @@ int eval(eval_scalar *r, const char *str, eval_func_handler func_handler, eval_s
      if (get_helpmode()) {
 		eval_scalar *hs = get_helpstring();
           scalar_create_str_c(hs, "");
-          strbuffer = lex_scan_string_buffer("help()");
+          strbuffer = lex_scan_string_buffer("NaF()");
      } else {
           strbuffer = lex_scan_string_buffer(str);
      }

@@ -154,7 +154,7 @@ void eval_set_func_handler(eval_func_handler func_handler);
 void eval_set_symbol_handler(eval_symbol_handler symbol_handler);
 
 int get_helpmode();
-void set_helpmode(int flag);
+void set_helpmode(int flag, char *name);
 eval_scalar *get_helpstring();
 
 #ifdef __cplusplus

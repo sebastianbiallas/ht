@@ -145,7 +145,7 @@ void eval_dialog()
                // FIXME: debug
 //               set_helpmode(1);
 			if (eval(&r, b, NULL, NULL, NULL)) {
-	               set_helpmode(0);
+//	               set_helpmode(0, NULL);
 				switch (r.type) {
 					case SCALAR_INT: {
 						char *x = b;
