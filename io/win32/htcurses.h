@@ -59,8 +59,7 @@
 
 class screendrawbuf: public genericdrawbuf {
 protected:
-	word *buf_attr;
-	char *buf_char;
+	void *buf;	// actually CHAR_INFO *
 	int cursorx, cursory;
 	bool cursor_visible;
 	bool cursor_redraw;
@@ -77,12 +76,13 @@ public:
 	virtual void b_setbounds(bounds *b);
 /* new */
 	void drawbuffer(drawbuf *buf, int x, int y, bounds *clipping);
-	void	show();
+	void show();
 	void getcursor(int *x, int *y);
 	void hidecursor();
 	void showcursor();
 	void setcursor(int x, int y);
 	void setcursormode(bool override);
+	void put_vc(int dest, char ch, int vc);
 };
 
 #endif /* !__HTCURSES_H__ */

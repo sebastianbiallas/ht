@@ -37,29 +37,6 @@ extern "C" {
 
 HANDLE output;
 
-/* virtual color pairs (fg/bg) */
-
-void put_vc(char *dest1, word *dest2, char ch, int vc)
-{
-	int fg, bg;
-	if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc))==VC_TRANSPARENT) {
-		bg=(byte)(((byte)*dest2)>>4);
-	} else if (VC_GET_LIGHT(VCP_BACKGROUND(vc))) {
-		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc))+8;
-	} else {
-		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc));
-	}
-	if (VC_GET_BASECOLOR(VCP_FOREGROUND(vc))==VC_TRANSPARENT) {
-		fg=(byte)(((byte)*dest2)&0xf);
-	} else if (VC_GET_LIGHT(VCP_FOREGROUND(vc))) {
-		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc))+8;
-	} else {
-		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc));
-	}
-	*dest1=(unsigned char)ch;
-	*dest2=(unsigned char)((bg<<4)|fg);
-}
-
 /*
  *	CLASS screendrawbuf
  */
@@ -68,10 +45,9 @@ screendrawbuf::screendrawbuf(char *title)
 	bounds b;
 	CONSOLE_SCREEN_BUFFER_INFO screen_info;
 
-	buf_attr=NULL;
-	buf_char=NULL;
-	cursorx=0;
-	cursory=0;
+	buf = NULL;
+	cursorx = 0;
+	cursory = 0;
 
 	init_console();
 
@@ -100,8 +76,7 @@ screendrawbuf::~screendrawbuf()
 
 	setcursor(0, size.h-1);
 	show();
-	if (buf_attr) free(buf_attr);
-	if (buf_char) free(buf_char);
+	if (buf) free(buf);
 }
 
 bool screendrawbuf::init_console()
@@ -127,16 +102,14 @@ void screendrawbuf::drawbuffer(drawbuf *b, int x, int y, bounds *clipping)
 {
 	drawbufch *ch=b->buf;
 	for (int iy=0; iy<b->size.h; iy++) {
-		word *k_attr = buf_attr+x+(iy+y)*size.w;
-		char *k_char = buf_char+x+(iy+y)*size.w;
+		int dest = x+(iy+y)*size.w;
 		if (y+iy>=clipping->y+clipping->h) break;
 		if (y+iy>=clipping->y)
 		for (int ix=0; ix<b->size.w; ix++) {
 			if ((x+ix<clipping->x+clipping->w) && (x+ix>=clipping->x)) {
-				put_vc(k_char, k_attr, ch->ch, ch->c);
+				put_vc(dest, ch->ch, ch->c);
 			}
-			k_attr++;
-			k_char++;
+			dest++;
 			ch++;
 		}
 	}
@@ -145,35 +118,30 @@ void screendrawbuf::drawbuffer(drawbuf *b, int x, int y, bounds *clipping)
 void screendrawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
 {
 	for (int i=0; i<h; i++) {
-		word *k_attr = buf_attr+x+(i+y)*size.w;
-		char *k_char = buf_char+x+(i+y)*size.w;
+		int dest = x+(i+y)*size.w;
 		if (y+i>=size.h) break;
 		if (y+i>=0)
 		for (int j=0; j<w; j++) {
-			if (x+j>=0) put_vc(k_char, k_attr, ch, c);
+			if (x+j>=0) put_vc(dest, ch, c);
 			if (x+j>=size.w-1) break;
-			k_attr++;
-			k_char++;
+			dest++;
 		}
 	}
 }
 
 void screendrawbuf::b_printchar(int x, int y, int c, int ch)
 {
-	word *k_attr = buf_attr+x+y*size.w;
-	char *k_char = buf_char+x+y*size.w;
-	put_vc(k_char, k_attr, ch, c);
+	int dest = x+y*size.w;
+	put_vc(dest, ch, c);
 }
 
 int screendrawbuf::b_lprint(int x, int y, int c, int l, char *text)
 {
 	int n=0;
-	word *k_attr = buf_attr+x+y*size.w;
-	char *k_char = buf_char+x+y*size.w;
+	int dest = x+y*size.w;
 	while ((*text) && (n<l)) {
-		put_vc(k_char, k_attr, (unsigned char)*text, c);
-		k_attr++;
-		k_char++;
+		put_vc(dest, (unsigned char)*text, c);
+		dest++;
 		text++;
 		n++;
 	}
@@ -183,12 +151,10 @@ int screendrawbuf::b_lprint(int x, int y, int c, int l, char *text)
 int screendrawbuf::b_lprintw(int x, int y, int c, int l, int *text)
 {
 	int n=0;
-	word *k_attr = buf_attr+x+y*size.w;
-	char *k_char = buf_char+x+y*size.w;
+	int dest = x+y*size.w;
 	while ((*text) && (n<l)) {
-		put_vc(k_char, k_attr, (unsigned char)*text, c);
-		k_attr++;
-		k_char++;
+		put_vc(dest, (unsigned char)*text, c);
+		dest++;
 		text++;
 		n++;
 	}
@@ -208,29 +174,30 @@ void screendrawbuf::b_rmove(int rx, int ry)
 void screendrawbuf::b_setbounds(bounds *b)
 {
 	genericdrawbuf::b_setbounds(b);
-	if (buf_attr) free(buf_attr);
-	if (buf_char) free(buf_char);
-	buf_attr = (word *)malloc(size.w * size.h * sizeof(word));
-	buf_char = (char *)malloc(size.w * size.h * sizeof(byte));
+	if (buf) free(buf);
+	buf = (CHAR_INFO *)malloc(size.w * size.h * sizeof(CHAR_INFO));
 	b_fill(size.x, size.y, size.w, size.h, VCP(VC_WHITE, VC_BLACK), ' ');
 }
 
 void screendrawbuf::show()
 {
-	COORD xy;
-	DWORD wrr;
-
+	COORD xy, xy2;
 	if (cursor_redraw) {
 		xy.X=cursorx;
 		xy.Y=cursory;
 		SetConsoleCursorPosition(output, xy);
 		cursor_redraw = false;
 	}
-	xy.X=0;
-	for (xy.Y=0; xy.Y<size.h; xy.Y++) {
-		WriteConsoleOutputAttribute(output, buf_attr+(xy.Y*size.w), size.w, xy, &wrr);
-		WriteConsoleOutputCharacter(output, buf_char+(xy.Y*size.w), size.w, xy, &wrr);
-	}
+	xy.X = 0;
+	xy.Y  = 0;
+	xy2.X = size.w;
+	xy2.Y = size.h;
+	SMALL_RECT sr;
+	sr.Left = 0;
+	sr.Top = 0;
+	sr.Right = size.w-1;
+	sr.Bottom = size.h-1;
+	WriteConsoleOutput(output, (CHAR_INFO *)buf, xy2, xy, &sr);
 }
 
 void screendrawbuf::getcursor(int *x, int *y)
@@ -278,3 +245,25 @@ void screendrawbuf::showcursor()
 	}
 }
 
+/* virtual color pairs (fg/bg) */
+
+void screendrawbuf::put_vc(int dest, char ch, int vc)
+{
+	int fg, bg;
+	if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc))==VC_TRANSPARENT) {
+		bg=((byte)((CHAR_INFO *)buf)[dest].Attributes)>>4;
+	} else if (VC_GET_LIGHT(VCP_BACKGROUND(vc))) {
+		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc))+8;
+	} else {
+		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc));
+	}
+	if (VC_GET_BASECOLOR(VCP_FOREGROUND(vc))==VC_TRANSPARENT) {
+		fg=(byte)(((CHAR_INFO *)buf)[dest].Attributes&0xf);
+	} else if (VC_GET_LIGHT(VCP_FOREGROUND(vc))) {
+		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc))+8;
+	} else {
+		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc));
+	}
+	if (ch) ((CHAR_INFO *)buf)[dest].Char.AsciiChar = ch;
+        ((CHAR_INFO *)buf)[dest].Attributes = (unsigned char)((bg<<4)|fg);
+}
