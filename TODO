@@ -37,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- eval: no signed division (there should be an operator s/ with "-7 s/ 7 == -1")
 - x86asm: "test eax, [2342343]" should yield "test [2342343], eax" 
           ("test" ist symmetric)
 	  same with "xchg"

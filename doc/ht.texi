@@ -330,6 +330,7 @@ Mach exe/link format (MachO)
 - header @*
 - image with code/data analyser (x86, PowerPC) @*
 @end itemize
+@item 
 X-Box executable (XBE)
 @itemize @w
 @item
@@ -337,12 +338,14 @@ X-Box executable (XBE)
 - imports @*
 - image with code/data analyser (x86) @*
 @end itemize
+@item 
 Flat (FLT)
 @itemize @w
 @item
 - header @*
 - image with data analyser (no disassembler yet) @*
 @end itemize
+@item 
 PowerPC executable format (PEF)
 @itemize @w
 @item
