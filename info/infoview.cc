@@ -78,13 +78,13 @@ public:
 };
 
 // FIXME: this function is considered harmful
-char *strndup(const char *s, int n)
+/*static char *ht_strndup(const char *s, int n)
 {
-	char *q=(char*)malloc(n+1);
-	memmove(q, s, n);
-	q[n]=0;
+	char *q = (char*)malloc(n+1);
+	memcpy(q, s, n);
+	q[n] = 0;
 	return q;
-}
+}*/
 
 /*
  *
@@ -104,7 +104,7 @@ bool parse_xref_body(ht_streamfile *f, ht_tree *t, char **n, UINT *o, UINT *line
 	l++;
 	whitespaces(&l);
 	if (*(end+1) == ':') {
-		name = strndup(*n, e-*n);
+		name = ht_strndup(*n, e-*n);
 		end+=2;
 	} else if ((note && (l-1 > end)) || (!note && (*(end+1) == ' '))){
 		if (*(end+1) == '\n') extrabreak = true;
@@ -119,8 +119,8 @@ bool parse_xref_body(ht_streamfile *f, ht_tree *t, char **n, UINT *o, UINT *line
 		char *p = q;
 
 		while ((q>l) && ((unsigned char)*(q-1)<=32)) q--;
-		name = strndup(*n, e-*n);
-		target = strndup(l, q-l);
+		name = ht_strndup(*n, e-*n);
+		target = ht_strndup(l, q-l);
 		end = p+1;
 	} else return false;
 	f->write(name, strlen(name));
@@ -629,7 +629,7 @@ void ht_info_viewer::handlemsg(htmsg *msg)
 						if (*a == '(') {
 							char *b = strchr(a, ')');
 							if (b) {
-								p = strndup(a+1, b-a-1);
+								p = ht_strndup(a+1, b-a-1);
 								q = ht_strdup(b+1);
 							}
 						}
