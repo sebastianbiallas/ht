@@ -6,7 +6,7 @@ END-INFO-DIR-ENTRY
 
    This file documents the HT Editor.
 
-   Copyright (C) 1999, 2000, 2001, 2002 The HT authors.
+   Copyright (C) 1999-2003 The HT authors.
 *Note The HT Authors: Authors, for a list of the copyright holders.
 
    Permission is granted to make and distribute verbatim copies of this
@@ -154,7 +154,7 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia64, alpha)
+               - image with code/data analyser (x86, ia64, alpha, ppc)
 
         * linear executables (LE)
                - header
@@ -417,18 +417,18 @@ a look at `http://sourceforge.net/projects/hte'
 
 
 Tag Table:
-Node: Top594
-Node: About900
-Node: Key bindings1729
-Node: Authors3248
-Node: Features3402
-Node: General features3779
-Node: Configuration files5957
-Node: Clipboard6604
-Node: Global history7413
-Node: Expression evaluation7962
-Node: Block operations9338
-Node: Search and its different modes10230
-Node: Where to download ?12900
+Node: Top581
+Node: About887
+Node: Key bindings1716
+Node: Authors3235
+Node: Features3389
+Node: General features3766
+Node: Configuration files5949
+Node: Clipboard6596
+Node: Global history7405
+Node: Expression evaluation7954
+Node: Block operations9330
+Node: Search and its different modes10222
+Node: Where to download ?12892
 
 End Tag Table

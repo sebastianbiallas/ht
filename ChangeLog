@@ -6,10 +6,8 @@ version 0.8.0:
 	- new disassembler: PowerPC
 	- many bugs fixed
 
-version 0.7.3:
-	- open devices (e.g. /dev/hda1) (read-only)
-
 version 0.7.2:
+	- open devices (e.g. /dev/hda1) (read-only, experimental)
 	- Hexview: Number of bytes per line can be changed now
 	- PE/header: can now follow bound import directory link (it's offset not RVA !)
 	- FIXED: x86dis: 0f0f0000 should be invalid? 0f^n 00 00 1<n<=13 should be invalid?

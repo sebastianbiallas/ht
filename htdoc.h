@@ -5,6 +5,6 @@ extern
 #ifdef __cplusplus
 "C"
 #endif
-char htinfo[13657];
+char htinfo[13649];
 
 #endif /* __HTDOC_H */

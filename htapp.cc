@@ -495,10 +495,10 @@ int file_window_load_fcfg_func(ht_object_stream *f, void *context)
 		struct tm *t;
 
 		t=gmtime((time_t*)&newtime);
-		strftime(s_newtime, sizeof s_newtime, "%X %d %h %Y", t);
+		strftime(s_newtime, sizeof s_newtime, "%X %d %b %Y", t);
 
 		t=gmtime((time_t*)&oldtime);
-		strftime(s_oldtime, sizeof s_oldtime, "%X %d %h %Y", t);
+		strftime(s_oldtime, sizeof s_oldtime, "%X %d %b %Y", t);
 
 		if (confirmbox_c("\ecconfig file applies to different version of file '%s'.\n\n\elcurrent: %10d %s\n\elold:     %10d %s\n\n\ecload config file ?", w->file->get_desc(), newsize, s_newtime, oldsize, s_oldtime) != button_yes) {
 			return f->get_error();
@@ -1381,12 +1381,14 @@ static bool doFileChecks(ht_file *file)
 		switch (s.mode & HT_S_IFMT) {
 			case HT_S_IFREG: return true;
 			default:
-				LOG_EX(LOG_WARN, "file is not regular (but device, directory or something...) !!! Write-access disabled for safety.");
+				LOG_EX(LOG_WARN, "file is not regular (but device, fifo or something...).");
+				LOG_EX(LOG_WARN, "Write-access disabled for safety !");
 				return true;
 		}
 	} else {
-		LOG_EX(LOG_WARN, "can't determine file type (regular, device, directory...) !!! assuming non-regular...");
-		LOG_EX(LOG_WARN, "file is not regular (but device, directory or something...) !!! Write-access disabled for safety.");
+		LOG_EX(LOG_WARN, "can't determine file type (regular, device, directory...) ! assuming non-regular...");
+		LOG_EX(LOG_WARN, "file is not regular (but device, fifo or something...).");
+		LOG_EX(LOG_WARN, "Write-access disabled for safety !");
 		return true;
 	}
 	return false;
