@@ -47,7 +47,7 @@ char sys_find_dirname[HT_NAME_MAX];
 
 int sys_findclose(pfind_t *pfind)
 {
-	int r=closedir(((posixfindstate*)pfind->findstate)->fhandle);
+	int r = closedir(((posixfindstate*)pfind->findstate)->fhandle);
 	free(pfind->findstate);
 	return r;
 }
@@ -55,31 +55,31 @@ int sys_findclose(pfind_t *pfind)
 int sys_findfirst(const char *dirname, pfind_t *pfind)
 {
 	int r;
-	pfind->findstate=malloc(sizeof (posixfindstate));
-	posixfindstate *pfs=(posixfindstate*)pfind->findstate;
-	if ((pfs->fhandle=opendir(dirname))) {
+	pfind->findstate = malloc(sizeof (posixfindstate));
+	posixfindstate *pfs = (posixfindstate*)pfind->findstate;
+	if ((pfs->fhandle = opendir(dirname))) {
 		strcpy(sys_find_dirname, dirname);
-		char *s=sys_find_dirname+strlen(sys_find_dirname);
-		if ((s>sys_find_dirname) && (*(s-1)!='/')) {
-		    *(s++)='/';
-		    *s=0;
+		char *s = sys_find_dirname+strlen(sys_find_dirname);
+		if ((s > sys_find_dirname) && (*(s-1) != '/')) {
+		    *(s++) = '/';
+		    *s = 0;
 		}
-		r=sys_findnext(pfind);
-	} else r=errno ? errno : ENOENT;
+		r = sys_findnext(pfind);
+	} else r = errno ? errno : ENOENT;
 	if (r) free(pfind->findstate);
 	return r;
 }
 
 int sys_findnext(pfind_t *pfind)
 {
-	posixfindstate *pfs=(posixfindstate*)pfind->findstate;
+	posixfindstate *pfs = (posixfindstate*)pfind->findstate;
 	struct dirent *d;
-	if ((d=readdir(pfs->fhandle))) {
-		pfind->name=d->d_name;
-		char *s=sys_find_dirname+strlen(sys_find_dirname);
+	if ((d = readdir(pfs->fhandle))) {
+		pfind->name = d->d_name;
+		char *s = sys_find_dirname+strlen(sys_find_dirname);
 		strcpy(s, d->d_name);
 		sys_pstat(&pfind->stat, sys_find_dirname);
-		*s=0;
+		*s = 0;
 		return 0;
 	}
 	return ENOENT;
@@ -88,18 +88,18 @@ int sys_findnext(pfind_t *pfind)
 int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
-	int e=stat(filename, &st);
+	int e = stat(filename, &st);
 	if (e) return e;
-	s->caps=pstat_ctime|pstat_mtime|pstat_atime|pstat_uid|pstat_gid|pstat_mode_all|pstat_size|pstat_inode;
-	s->ctime=st.st_ctime;
-	s->mtime=st.st_mtime;
-	s->atime=st.st_atime;
-	s->gid=st.st_uid;
-	s->uid=st.st_gid;
-	s->mode=sys_ht_mode(st.st_mode);
-	s->size=st.st_size;
-	s->size_high=0;
-	s->fsid=st.st_ino;
+	s->caps = pstat_ctime|pstat_mtime|pstat_atime|pstat_uid|pstat_gid|pstat_mode_all|pstat_size|pstat_inode;
+	s->ctime  =st.st_ctime;
+	s->mtime = st.st_mtime;
+	s->atime = st.st_atime;
+	s->gid = st.st_uid;
+	s->uid = st.st_gid;
+	s->mode = sys_ht_mode(st.st_mode);
+	s->size = st.st_size;
+	s->size_high = 0;
+	s->fsid = st.st_ino;
 	return 0;
 }
 
@@ -109,8 +109,8 @@ void sys_suspend()
 	fd_set zerofds;
 	FD_ZERO(&zerofds);
 	
-	tm.tv_sec=0;
-	tm.tv_usec=100;
+	tm.tv_sec = 0;
+	tm.tv_usec = 100;
 	select(0, &zerofds, &zerofds, &zerofds, &tm);
 }
 
@@ -121,7 +121,10 @@ int sys_get_free_mem()
 
 int sys_truncate(const char *filename, FILEOFS ofs)
 {
-	return ENOSYS;
+	int fd = open(filename, O_RDWR, 0);
+	if (fd < 0) return errno;
+	if (ftruncate(fd, ofs) != 0) return errno;
+	return close(fd);
 }
 
 int sys_deletefile(const char *filename)
