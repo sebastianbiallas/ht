@@ -534,37 +534,46 @@ int scalar_float_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *x
 	float a, b, r;
 	scalar_context_float(xa, &ai);
 	scalar_context_float(xb, &bi);
-	
-	a=ai.value;
-	b=bi.value;
+
+	a = ai.value;
+	b = bi.value;
 	switch (op) {
-		case '*': r=a*b; break;
+		case '*': r = a*b; break;
 		case '/': {
 		    if (!b) {
 			    set_eval_error("division by zero");
 			    return 0;
 		    }
-		    r=a/b;
+		    r = a/b;
 		    break;
 		}			    
-		case '+': r=a+b; break;
-		case '-': r=a-b; break;
-		case EVAL_POW: r=pow(a,b); break;
-		case EVAL_EQ: r=(a==b); break;
-		case EVAL_NE: r=(a!=b); break;
-		case EVAL_GT: r=(a>b); break;
-		case EVAL_GE: r=(a>=b); break;
-		case EVAL_LT: r=(a<b); break;
-		case EVAL_LE: r=(a<=b); break;
-		case EVAL_LAND: r=(a) && (b); break;
-		case EVAL_LXOR: r=(a && !b) || (!a && b); break;
-		case EVAL_LOR: r=(a||b); break;
-		default: 
-			set_eval_error("invalid operator");
-			return 0;
+		case '+': r = a+b; break;
+		case '-': r = a-b; break;
+		case EVAL_POW: r = pow(a,b); break;
+		default: {
+			uint64 ri;
+			switch (op) {
+				case EVAL_EQ: ri=to_qword(a==b); break;
+				case EVAL_NE: ri=to_qword(a!=b); break;
+				case EVAL_GT: ri=to_qword(a>b); break;
+				case EVAL_GE: ri=to_qword(a>=b); break;
+				case EVAL_LT: ri=to_qword(a<b); break;
+				case EVAL_LE: ri=to_qword(a<=b); break;
+				case EVAL_LAND: ri=to_qword(a && b); break;
+				case EVAL_LXOR: ri=to_qword((a && !b) || (!a && b)); break;
+				case EVAL_LOR: ri=to_qword(a||b); break;
+				default:
+					set_eval_error("invalid operator");
+					return 0;
+			}
+			xr->type = SCALAR_INT;
+			xr->scalar.integer.value = ri;
+			xr->scalar.integer.type = TYPE_UNKNOWN;
+			return 1;
+		}
 	}
-	xr->type=SCALAR_FLOAT;
-	xr->scalar.floatnum.value=r;
+	xr->type = SCALAR_FLOAT;
+	xr->scalar.floatnum.value = r;
 	return 1;
 }
 
@@ -574,17 +583,17 @@ int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb,
 	qword a, b, r;
 	scalar_context_int(xa, &ai);
 	scalar_context_int(xb, &bi);
-	
-	a=ai.value;
-	b=bi.value;
+
+	a = ai.value;
+	b = bi.value;
 	switch (op) {
-		case '*': r=a*b; break;
+		case '*': r = a*b; break;
 		case '/': {
 		    if (!b) {
 			    set_eval_error("division by zero");
 			    return 0;
 		    }
-		    r=a/b;
+		    r = a/b;
 		    break;
 		}			    
 		case '%': {
@@ -592,7 +601,7 @@ int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb,
 			    set_eval_error("division by zero");
 			    return 0;
 		    }
-		    r=a%b;
+		    r = a%b;
 		    break;
 		}			    
 		case '+': r=a+b; break;
@@ -611,17 +620,16 @@ int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb,
 		case EVAL_GE: r=to_qword(a>=b); break;
 		case EVAL_LT: r=to_qword(a<b); break;
 		case EVAL_LE: r=to_qword(a<=b); break;
-		// FIXME
-//		case EVAL_LAND: r=to_qword((a) && (b)); break;
-//		case EVAL_LXOR: r=to_qword((a && !b) || (!a && b)); break;
-//		case EVAL_LOR: r=to_qword(a||b); break;
+		case EVAL_LAND: r=to_qword(qword_cmp(a, to_qword(0)) && qword_cmp(b, to_qword(0))); break;
+		case EVAL_LXOR: r=to_qword((qword_cmp(a,to_qword(0)) && !qword_cmp(b,to_qword(0))) || (!qword_cmp(a,to_qword(0)) && qword_cmp(b,to_qword(0)))); break;
+		case EVAL_LOR: r=to_qword(qword_cmp(a,to_qword(0)) || qword_cmp(b,to_qword(0))); break;
 		default: 
 			set_eval_error("invalid operator");
 			return 0;
 	}
-	xr->type=SCALAR_INT;
-	xr->scalar.integer.value=r;
-	xr->scalar.integer.type=TYPE_UNKNOWN;
+	xr->type = SCALAR_INT;
+	xr->scalar.integer.value = r;
+	xr->scalar.integer.type = TYPE_UNKNOWN;
 	return 1;
 }
 

@@ -226,7 +226,8 @@ char *PPCDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 				sprintf(insnstr, "dd        %s0x%08x", cs_number, ppc_insn->data);
 				break;
 			default: { /* braces for empty assert */
-				assert(0);
+				strcpy(insnstr, "?");
+//				assert(0);
 			}
 		}
 	} else {

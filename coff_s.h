@@ -128,7 +128,7 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 
 struct COFF_SECTION_HEADER {
 	byte name[COFF_SIZEOF_SHORT_NAME] HTPACKED;
-	dword data_vsize HTPACKED;
+	dword data_vsize HTPACKED;	// or data_phys_address !
 	dword data_address HTPACKED;
 	dword data_size HTPACKED;
 	dword data_offset HTPACKED;

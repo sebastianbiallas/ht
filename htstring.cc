@@ -395,24 +395,32 @@ bool bnstr(char **str, qword *q, int defaultbase)
 	} else {
 		switch (*(p-1)) {
 			case 'b':
-				base=2;
-				p--;
-				t++;
+				if (base <= 'b'-'a'+10) {
+					base = 2;
+					p--;
+					t++;
+				}
 				break;
 			case 'o':
-				base=8;
-				p--;
-				t++;
+				if (base <= 'o'-'a'+10) {
+					base = 8;
+					p--;
+					t++;
+				}
 				break;
 			case 'd':
-				base=10;
-				p--;
-				t++;
+				if (base <= 'd'-'a'+10) {
+					base = 10;
+					p--;
+					t++;
+				}
 				break;
 			case 'h':
-				base=16;
-				p--;
-				t++;
+				if (base <= 'h'-'a'+10) {
+					base = 16;
+					p--;
+					t++;
+				}
 				break;
 			default:
 				if (**str=='0') base=8;

@@ -1,7 +1,7 @@
 HT Editor
 =========
 
-This is HT 0.8.0cvs; please note that this is a beta version of the
+This is HT 0.8.0pre; please note that this is a beta version of the
 program.  Therefore HT is incomplete and sometimes buggy. Enjoy
 anyway...
 
@@ -45,7 +45,7 @@ Key bindings
 
    * Window key bindings
 
-     Alt+F3            close window
+     Alt+F3/Ctrl+W     close window
      Ctrl+F5           resize/move mode
                        (in resize/move mode only:)
      Space             toggle resize/move mode
@@ -96,7 +96,7 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia-64, Alpha,
+               - image with code/data analyser (x86, IA-64, Alpha,
                PowerPC)
 
         * linear executables (LE)
@@ -126,7 +126,7 @@ General features
                - delay-import section
                - export section
                - resources
-               - image with code/data analyser (x86, ia64, alpha)
+               - image with code/data analyser (x86, IA-64, Alpha)
                - preliminary support for .net executables
 
         * java class files (CLASS)

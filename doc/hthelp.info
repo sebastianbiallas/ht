@@ -28,7 +28,7 @@ File: hthelp.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-This is HT 0.8.0cvs; please note that this is a beta version of
+This is HT 0.8.0pre; please note that this is a beta version of
 the program.  Therefore HT is incomplete and sometimes buggy.
 Enjoy anyway...
 
@@ -89,7 +89,7 @@ Key bindings
 
    * Window key bindings
 
-     Alt+F3          close window
+     Alt+F3/Ctrl+W   close window
      Ctrl+F5         resize/move mode
                      (in resize/move mode only:)
      Space           toggle resize/move mode
@@ -161,7 +161,7 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia-64,
+               - image with code/data analyser (x86, IA-64,
                Alpha, PowerPC)
 
         * linear executables (LE)
@@ -192,8 +192,8 @@ General features
                - delay-import section
                - export section
                - resources
-               - image with code/data analyser (x86, ia64,
-               alpha)
+               - image with code/data analyser (x86, IA-64,
+               Alpha)
                - preliminary support for .net executables
 
         * java class files (CLASS)
@@ -449,12 +449,12 @@ Node: Key bindings1742
 Node: Authors3230
 Node: Features3388
 Node: General features3769
-Node: Configuration files6142
-Node: Clipboard6792
-Node: Global history7605
-Node: Expression evaluation8158
-Node: Block operations9539
-Node: Search and its different modes10440
-Node: Where to download ?13130
+Node: Configuration files6143
+Node: Clipboard6793
+Node: Global history7606
+Node: Expression evaluation8159
+Node: Block operations9540
+Node: Search and its different modes10441
+Node: Where to download ?13131
 
 End Tag Table

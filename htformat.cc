@@ -1668,10 +1668,10 @@ restart:
 //	buf_printf(0, 2, 7, "%x, %x, %x, %x, %x, c_tagidx", cursor.line_id.id1, cursor.line_id.id2, cursor.line_id.id3, cursor.line_id.id4, cursor.line_id.id5, cursor.tag_idx);
 //	buf_printf(0, 3, 7, "(%c)", "vid"[cursor_state]);
 //	buf_printf(0, 6, 7, "cursor.tag_idx=%d", cursor.tag_idx);
-/*     if (cursor_tag_class==tag_class_edit) {
-		printf(30, 7, 7, "class=edit, addr=%08x", cursor_tag_offset);
+/*	if (cursor_tag_class==tag_class_edit) {
+		buf_printf(30, 7, 7, "class=edit, addr=%08x", cursor_tag_offset);
 	} else {
-		printf(30, 7, 7, "class=sel, id_low=%08x, id_high=%08x", cursor_tag_id.low, cursor_tag_id.high);
+		buf_printf(30, 7, 7, "class=sel, id_low=%08x, id_high=%08x", 0,0);
 	}*/
 }
 

@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.8cvs, Nov 2003}
+@subtitle{Edition 0.8.0pre, Nov 2003}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.8.0cvs
+0.8.0pre
 @end macro
 
 @macro hturl
@@ -178,7 +178,7 @@ General key bindings
 Window key bindings
 
 @multitable @columnfractions .25 .75
-@item Alt+F3
+@item Alt+F3/Ctrl+W
 @tab close window
 @item Ctrl+F5
 @tab resize/move mode
@@ -272,7 +272,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, ia-64, Alpha, PowerPC)
+- image with code/data analyser (x86, IA-64, Alpha, PowerPC)
 @end itemize
 @item 
 linear executables (LE)
@@ -313,7 +313,7 @@ portable executables (PE32, PE64)
 - delay-import section @*
 - export section @*
 - resources @*
-- image with code/data analyser (x86, ia64, alpha) @*
+- image with code/data analyser (x86, IA-64, Alpha) @*
 - preliminary support for .net executables
 @end itemize
 @item 

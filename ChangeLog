@@ -20,6 +20,7 @@ version 0.7-trunk (to be 0.8):
 	- fixed: 0xcafebabe in mach_kernel... made classread more strict
 	- Mach-O little-endian support (x86)
 	- fixed object streaming bug in GET_OBJECT (only when compiled with GCC 3.3+)
+	- fixed possible bug in bnstr()
 
 version 0.7.3:
 	- some keys were assigned to multiple commands in hex-viewer
