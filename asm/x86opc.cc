@@ -934,14 +934,14 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 },
 /* 14 - GROUP_EXT_01 */
 {
-{"sgdt", {{M}}},
-{"sidt", {{M}}},
-{"lgdt", {{M}}},
-{"lidt", {{M}}},
+{"sgdt", {{Ms}}},
+{"sidt", {{Ms}}},
+{"lgdt", {{Ms}}},
+{"lidt", {{Ms}}},
 {"smsw", {{Ew}}},
 {0},
 {"lmsw", {{Ew}}},
-{"invlpg", {{M}}}}
+{"invlpg", {{M}}}
 },
 /* 15 - GROUP_EXT_71 */
 {
@@ -1007,9 +1007,9 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 {"ldmxcsr", {{Md}}},
 {"stmxcsr", {{Md}}},
 {0},
-{0},
-{0},
-{"sfence"}
+{"lfence", {{M}}},
+{"mfence", {{M}}},
+{"sfence", {{M}}}
 }*/
 
 };
