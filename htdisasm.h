@@ -29,7 +29,7 @@
 
 extern format_viewer_if htdisasm_if;
 
-void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, char *default_str, UINT want_length);
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, UINT want_length);
 
 /*
  *	CLASS ht_disasm_viewer

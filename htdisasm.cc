@@ -75,10 +75,10 @@ static int opcode_compare(const char *a, const char *b)
 	if (al > bl) return 1; else if (al < bl) return -1; else return strcmp(a, b);
 }
 
-void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, char *default_str, UINT want_length)
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, UINT want_length)
 {
 	char instr[257] = "";
-	strcpy(instr, default_str);
+	if (default_str) strcpy(instr, default_str);
 	asm_insn *insn = a->alloc_insn();
 	asm_code *ac = NULL;
 	while (inputbox(a->get_name(), "~instruction:", instr, 255, HISTATOM_ASSEMBLER)) {
@@ -270,9 +270,14 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 
 			assem->set_imm_eval_proc(NULL, NULL);
 
-			// FIXME: implement want_length
-			dialog_assemble(this, current_pos, cpuaddr, assem, disasm, "", 0);
-			
+               byte data[32];
+               int datalen = vread(current_pos, data, sizeof data);
+			dis_insn *o = disasm->decode(data, datalen, cpuaddr);
+			char *curinsn = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+			int want_length = disasm->getSize(o);
+
+			dialog_assemble(this, current_pos, cpuaddr, assem, disasm, curinsn, want_length);
+
 			clearmsg(msg);
 			return;
 		}
