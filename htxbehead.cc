@@ -260,7 +260,7 @@ ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	
 	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		char *name;
-		UINT ofs;
+//		UINT ofs;
 	
 		s=new ht_mask_sub();
 		s->init(file, 100+i);
@@ -269,12 +269,7 @@ ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 		if (xbe_shared->sections.sections[i].section_name_address) {
 		
-			ofs=xbe_shared->sections.sections[i].section_name_address-xbe_shared->header.base_address;
-			if (ofs>xbe_shared->header.size_of_headers) {
-			    name = "<invalid>";
-			} else {
-			    name = xbe_shared->headerspace+ofs;
-			}
+		    name = (char *)xbe_shared->sections.sections[i].section_name_address;
 
 		} else {
 		    name = "<empty>";
@@ -325,4 +320,3 @@ int ht_xbe_header_viewer::ref_sel(LINE_ID *id)
 {
 	return 1;
 }
-

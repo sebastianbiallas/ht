@@ -23,12 +23,13 @@
 
 #include "formats.h"
 #include "xbestruct.h"
+#include "htxbeimp.h"
 
 #define DESC_XBE "xbe - XBOX executable"
 #define DESC_XBE_HEADER "xbe/header"
-/*
-#define DESC_XBE_IMPORTS "pe/imports"
-*/
+#define DESC_XBE_IMAGE "xbe/image"
+#define DESC_XBE_IMPORTS "xbe/imports"
+
 
 #define ATOM_XBE_INIT_FLAGS 			0x58420000
 #define ATOM_XBE_INIT_FLAGS_STR			 "58420000"
@@ -61,6 +62,9 @@ struct ht_xbe_shared_data {
 
 	char *headerspace;
 	xbe_section_headers sections;
+
+	ht_xbe_import imports;
+
 
 	ht_format_viewer *v_header;
 	ht_view *v_exports;

@@ -194,7 +194,7 @@ vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
 htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
 htmachoimg.cc htmachoimg.h fltstruc.h fltstruc.cc htflt.cc htflt.h htflthd.cc \
 htflthd.h htfltimg.cc htfltimg.h xbestruct.cc xbestruct.h htxbehead.cc \
-htxbehead.h htxbe.cc htxbe.h
+htxbehead.h htxbe.cc htxbe.h htxbeimg.cc htxbeimg.h htxbeimp.cc htxbeimp.h
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -241,7 +241,8 @@ am_ht_OBJECTS = htdoc.$(OBJEXT) blockop.$(OBJEXT) common.$(OBJEXT) \
 	htmacho.$(OBJEXT) htmachohd.$(OBJEXT) machostruc.$(OBJEXT) \
 	htmachoimg.$(OBJEXT) fltstruc.$(OBJEXT) htflt.$(OBJEXT) \
 	htflthd.$(OBJEXT) htfltimg.$(OBJEXT) xbestruct.$(OBJEXT) \
-	htxbehead.$(OBJEXT) htxbe.$(OBJEXT)
+	htxbehead.$(OBJEXT) htxbe.$(OBJEXT) htxbeimg.$(OBJEXT) \
+	htxbeimp.$(OBJEXT)
 ht_OBJECTS = $(am_ht_OBJECTS)
 ht_DEPENDENCIES = $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a \
 	$(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a \
@@ -296,6 +297,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/htstruct.Po ./$(DEPDIR)/httag.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/httext.Po ./$(DEPDIR)/httree.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/htxbe.Po ./$(DEPDIR)/htxbehead.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/htxbeimg.Po ./$(DEPDIR)/htxbeimp.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ilstruct.Po ./$(DEPDIR)/lestruct.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/log.Po ./$(DEPDIR)/machostruc.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/mfile.Po \
@@ -492,6 +494,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htxbe.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htxbehead.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htxbeimg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/htxbeimp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ilstruct.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lestruct.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@

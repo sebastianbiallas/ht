@@ -1,6 +1,6 @@
 /*
- *	HT_Editor
- *	htpe.cc
+ *	HT Editor
+ *	htxbe.cc
  *
  *	Copyright (C) 2003 Stefan Esser
  *
@@ -22,6 +22,7 @@
 #include "htendian.h"
 #include "htxbe.h"
 #include "htxbehead.h"
+#include "htxbeimg.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -30,12 +31,8 @@
 
 format_viewer_if *htxbe_ifs[] = {
 	&htxbeheader_if,
-//	&htpeexports_if,
-//	&htpeimports_if,
-//	&htpedelayimports_if,
-//	&htperesources_if,
-//	&htpeil_if,
-//	&htpeimage_if,
+	&htxbeimports_if,
+	&htxbeimage_if,
 	0
 };
 
@@ -69,41 +66,30 @@ void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_for
 	ht_xbe_shared_data *xbe_shared = (ht_xbe_shared_data*)malloc(sizeof (ht_xbe_shared_data));
 	shared_data = xbe_shared;
 
-/*
-	xbe_shared->exports.funcs = new ht_clist();
-	xbe_shared->exports.funcs->init();
-
-	xbe_shared->dimports.funcs = new ht_clist();
-	xbe_shared->dimports.funcs->init();
-
-	xbe_shared->dimports.libs = new ht_clist();
-	xbe_shared->dimports.libs->init();
-
 	xbe_shared->imports.funcs = new ht_clist();
 	xbe_shared->imports.funcs->init();
 
-	xbe_shared->imports.libs = new ht_clist();
-	xbe_shared->imports.libs->init();
-
-	xbe_shared->il = NULL;
 	xbe_shared->v_image = NULL;
-	xbe_shared->v_dimports = NULL;
 	xbe_shared->v_imports = NULL;
-	xbe_shared->v_exports = NULL;
-	xbe_shared->v_resources = NULL;
 	xbe_shared->v_header = NULL;
-*/
 
 /* read header */
 	file->seek(0);
 	file->read(&xbe_shared->header, sizeof xbe_shared->header);
 	create_host_struct(&xbe_shared->header.base_address, XBE_IMAGE_HEADER_struct, little_endian);
+	
+	/* decode entrypoint - XXX: only RETAILs*/
+	xbe_shared->header.entry_point ^= 0xA8FC57AB;
+	xbe_shared->header.kernel_image_thunk_address ^= 0x5B6D40B6;
 
 /* read headerspace XXX: UGLY*/
 	file->seek(0);
-	xbe_shared->headerspace=(char *)malloc(xbe_shared->header.size_of_headers+1);
+	xbe_shared->headerspace=(char *)malloc(xbe_shared->header.size_of_headers+4);
 	file->read(xbe_shared->headerspace, xbe_shared->header.size_of_headers);
 	xbe_shared->headerspace[xbe_shared->header.size_of_headers]=0;
+	xbe_shared->headerspace[xbe_shared->header.size_of_headers+1]=0;
+	xbe_shared->headerspace[xbe_shared->header.size_of_headers+2]=0;
+	xbe_shared->headerspace[xbe_shared->header.size_of_headers+3]=0;
 
 /* read certificate */	
 	file->seek(xbe_shared->header.certificate_address-xbe_shared->header.base_address);
@@ -131,9 +117,15 @@ void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_for
 
 	for (UINT i=0; i<xbe_shared->header.number_of_sections; i++) {
 		create_host_struct(&xbe_shared->sections.sections[i], XBE_SECTION_HEADER_struct, little_endian);
+		
+		// XXX: this is crashable!!!
+		xbe_shared->sections.sections[i].section_name_address += (UINT) xbe_shared->headerspace - xbe_shared->header.base_address;
+		xbe_shared->sections.sections[i].virtual_address -= xbe_shared->header.base_address;
 	}
 
 	shared_data = xbe_shared;
+	
+	xbe_shared->header.tls_address -= xbe_shared->header.base_address;
 
 	ht_format_group::init_ifs(ifs);
 }
@@ -195,6 +187,7 @@ bool ht_xbe::loc_enum_next(ht_format_loc *loc)
 bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
+	
 	for (UINT i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+s->raw_size)) {
@@ -209,6 +202,7 @@ bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
 bool xbe_rva_to_section(xbe_section_headers *section_headers, RVA rva, int *section)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
+
 	for (UINT i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+MAX(s->virtual_size, s->raw_size))) {
@@ -236,6 +230,7 @@ bool xbe_rva_is_valid(xbe_section_headers *section_headers, RVA rva)
 bool xbe_rva_is_physical(xbe_section_headers *section_headers, RVA rva)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
+
 	for (UINT i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+s->raw_size)) {
@@ -303,7 +298,7 @@ bool xbe_section_name_to_section(xbe_section_headers *section_headers, const cha
 	int slen = strlen(name);
 
 	for (UINT i=0; i < section_headers->number_of_sections; i++) {
-		if (strncmp(name, (char*)&s->section_name_address-section_headers->base_address, slen) == 0) {
+		if (strncmp(name, (char *)s->section_name_address, slen) == 0) {
 			*section = i;
 			return true;
 		}
