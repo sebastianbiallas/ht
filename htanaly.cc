@@ -1561,15 +1561,15 @@ void ht_aviewer::searchForXRefs(Address *Addr)
 	int oldmode = analy->getDisplayMode();
 	analy->setDisplayMode(0, -1);
 	analy_sub->output->invalidateCache();
-	ht_visual_search_result *r=(ht_visual_search_result *)vsearch(q, vp_start, vp_end);
+	ht_visual_search_result *r = (ht_visual_search_result *)vsearch(q, vp_start, vp_end);
 	while (r) {
 		Address *to;
 		convertViewerPosToAddress(r->pos, &to);
 		analy->addXRef(Addr, to, xrefoffset);
-		delete to;
-		delete r;
 		viewer_pos na;
 		next_logical_pos(r->pos, &na);
+		delete to;
+		delete r;
 		r = (ht_visual_search_result *)vsearch(q, na, vp_end);
 	}
 	analy->setDisplayMode(oldmode, -1);
@@ -1663,6 +1663,10 @@ void ht_aviewer::showComments(Address *Addr)
 	text_editor->init(&b, false, text_file, NULL, TEXTEDITOPT_UNDO);
 	dialog->insert(text_editor);
 
+     /* FIXME: scrollbar
+	BOUNDS_ASSIGN(b, 56, 1, 1, 10);
+     */
+     
 	ht_button *b1;
 	BOUNDS_ASSIGN(b, 18, 12, 9, 2);
 	NEW_OBJECT(b1, ht_button, &b, "O~k", button_ok);
@@ -1777,6 +1781,7 @@ void ht_aviewer::showXRefs(Address *Addr)
 {
 	ht_tree *x_tree = analy->getXRefs(Addr);
 	if (x_tree) {
+restart2:
 		bounds c, b;
 		app->getbounds(&c);
 		b.w = c.w*5/6;
@@ -1894,7 +1899,7 @@ restart:
 		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr)==button_yes) {
 			searchForXRefs(Addr);
 			x_tree = analy->getXRefs(Addr);
-			if (x_tree) goto restart;
+			if (x_tree) goto restart2;
 		}
 	}
 }
