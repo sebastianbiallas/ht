@@ -42,27 +42,6 @@ ht_view *hthex_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->search_caps|=SEARCHMODE_BIN | SEARCHMODE_EVALSTR | SEARCHMODE_EXPR;
 
-/*	ht_group_sub *g=new ht_group_sub();
-	g->init(file);
-
-	ht_hex_sub *h=new ht_hex_sub();
-	h->init(file, 0, 2, 0);
-	ht_collapsable_sub *ch=new ht_collapsable_sub();
-	ch->init(file, h, true, "eins", true);
-
-	ht_hex_sub *i=new ht_hex_sub();
-	i->init(file, 0, 2, 1);
-	ht_collapsable_sub *ci=new ht_collapsable_sub();
-	ci->init(file, i, true, "zwei", true);
-	
-	g->insert(ch);
-	g->insert(ci);
-
-	ht_collapsable_sub *cs=new ht_collapsable_sub();
-	cs->init(file, g, true, "jo", true);
-
-	v->insertsub(cs);*/
-	
 	ht_hex_file_sub *h=new ht_hex_file_sub();
 	h->init(file, 0x0, file->get_size(), 0);
 	v->insertsub(h);
@@ -188,21 +167,25 @@ bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_hex_viewer::string_to_pos(char *string, viewer_pos *pos)
+bool ht_hex_viewer::qword_to_pos(qword q, viewer_pos *p)
 {
-	eval_scalar r;
-	if (eval(&r, string, NULL, NULL, NULL)) {
-		eval_int i;
-		scalar_context_int(&r, &i);
-		scalar_destroy(&r);
-		offset_to_pos(QWORD_GET_INT(i.value), pos);
-		return true;
+	ht_linear_sub *s = (ht_linear_sub*)cursor.sub;
+	FILEOFS ofs = QWORD_GET_INT(q);
+	clear_viewer_pos(p);
+	p->u.sub = s;
+	p->u.tag_idx = ofs & 0xf;
+     return s->convert_ofs_to_id(ofs, &p->u.line_id);
+}
+
+int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
+{
+	if (strcmp(name, "$") == 0) {
+     	FILEOFS ofs;
+		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
+		scalar_create_int_c(result, ofs);
+		return 1;
 	}
-	char *s;
-	int p;
-	get_eval_error(&s, &p);
-	sprintf(globalerror, "%s at pos %d", s, p);
-	return false;
+	return ht_uformat_viewer::symbol_handler(result, name);
 }
 
 /*

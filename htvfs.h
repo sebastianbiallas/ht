@@ -35,12 +35,14 @@
 class ht_regnode_file: public ht_mem_file {
 protected:
 	char *nodename;
+     UINT access_mode0;
+     UINT open_mode;
 	
 /* overwritten */
 		   int load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data);
 		   void store_node(ht_object_stream *s, ht_registry_node_type type, ht_registry_data *data);
 public:
-		   void init(const char *nodename, UINT mode);
+		   void init(const char *nodename, UINT am, UINT om);
 	virtual void done();
 /* overwritten */
 	virtual bool set_access_mode(UINT access_mode);
@@ -70,7 +72,7 @@ public:
 	virtual	int pstat(pstat_t *s, const char *filename);
 	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f);
 };
 
 /*
@@ -95,7 +97,7 @@ public:
 	virtual	int pstat(pstat_t *s, const char *filename);
 	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f);
 };
 
 /*
@@ -128,26 +130,21 @@ public:
 	virtual	int pstat(pstat_t *s, const char *filename);
 	virtual	int rename_file(const char *filename, const char *newname);
 	virtual	int streamfile_close(ht_streamfile *f);
-	virtual	int streamfile_open(const char *filename, UINT mode, ht_streamfile **f);
+	virtual	int streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f);
 };
 
 /*
  *	CLASS ht_vfs_viewer_status
  */
 
-struct ht_vfs_viewer_status_data {
-	DDECL_PTR(char, cproto);
-	DDECL_PTR(char, cwd);
-};
- 
 class ht_vfs_viewer_status: public ht_group {
 protected:
 	ht_label *l;
 	ht_statictext *url;
 public:
 			void	init(bounds *b);
-/* overwritten */
-	virtual	void	setdata(ht_object_stream *buf);
+/* new */
+	virtual	void	setstatus(char *cwd, char *cproto);
 };
 
 /*

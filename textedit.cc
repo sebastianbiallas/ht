@@ -2488,9 +2488,10 @@ bool ht_text_editor::save()
 
 	ht_file *temp = NULL;
 	tempfile[0] = 0;
+// FIXME: !!
 	if (tmpnam(tempfile)) {
 		temp = new ht_file();
-		temp->init(tempfile, FAM_CREATE | FAM_WRITE);
+		temp->init(tempfile, FAM_WRITE, FOM_CREATE);
 	}
 
 	if ((!temp) || (temp->get_error())) {
@@ -2524,7 +2525,8 @@ bool ht_text_editor::save()
 
 	textfile->set_layered_assume(temp, false);
 
-	old->set_access_mode(FAM_CREATE | FAM_WRITE);
+	old->set_access_mode(FAM_WRITE);
+     old->truncate(0);
 
 	textfile->seek(0);
 	textfile->copy_to(old);

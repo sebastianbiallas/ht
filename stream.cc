@@ -396,14 +396,16 @@ UINT	ht_layer_streamfile::write(const void *buf, UINT size)
  *	CLASS ht_file
  */
 
-void	ht_file::init(const char *fn, UINT am)
+void	ht_file::init(const char *fn, UINT am, UINT om)
 {
 	ht_streamfile::init();
 	filename = strdup(fn);
 	offset = 0;
 	file = NULL;
 	access_mode = 0;
+     open_mode = om;
 	set_access_mode(am);
+     open_mode = FOM_EXISTS;
 }
 
 void	ht_file::done()
@@ -417,10 +419,10 @@ void	ht_file::done()
 int ht_file::extend(UINT newsize)
 {
 	int r=0;
-	
+
 	UINT oldmode=get_access_mode();
-	set_access_mode(FAM_APPEND);
-	
+	set_access_mode(FAM_WRITE);
+
 	UINT s=get_size();
 	char buf[EXTEND_BUFSIZE];
 	memset(buf, 0, sizeof buf);
@@ -452,9 +454,9 @@ char	*ht_file::get_filename()
 
 UINT	ht_file::get_size()
 {
-	int t=tell();
-	fseek(file, 0, SEEK_END);	/* zero is allowed ;-) */
-	int r=ftell(file);
+	int t = tell();
+	fseek(file, 0, SEEK_END);	/* zero is allowed */
+	int r = ftell(file);
 	fseek(file, t, SEEK_SET);
 	return r;
 }
@@ -496,12 +498,12 @@ RETRY:
 		fclose(file);
 		file = NULL;
 	}
-	access_mode = FAM_UNDEFINED;
+	access_mode = FAM_NULL;
 	char *mode = NULL;
 
-	if (am & FAM_APPEND) {
+	if (open_mode & FOM_APPEND) {
 		mode = "ab+";
-	} else if (am & FAM_CREATE) {
+	} else if (open_mode & FOM_CREATE) {
 		if (am & FAM_WRITE) mode = "wb";
 		if (am & FAM_READ) mode = "wb+";
 	} else {
@@ -541,7 +543,7 @@ int	ht_file::truncate(UINT newsize)
 {
 	int e;
 	int old_access_mode = access_mode;
-	if (set_access_mode(FAM_UNDEFINED)) {
+	if (set_access_mode(FAM_NULL)) {
 		e = sys_truncate(filename, newsize);
 	} else {
 		e = EACCES;
@@ -555,8 +557,8 @@ int	ht_file::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_FLUSH_STAT: {
-			UINT m = get_access_mode() & (~FAM_CREATE);
-			set_access_mode(FAM_UNDEFINED);
+			UINT m = get_access_mode();
+			set_access_mode(FAM_NULL);
 			set_access_mode(m);
 			return 0;
 		}
@@ -632,7 +634,7 @@ UINT ht_memmap_file::write(const void *b, UINT size)
 
 void ht_mem_file::init()
 {
-	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE, FAM_READ | FAM_WRITE | FAM_CREATE);
+	ht_mem_file::init(0, HTMEMFILE_INITIAL_SIZE, FAM_READ | FAM_WRITE);
 }
 
 void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
@@ -646,7 +648,6 @@ void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 	pos=0;
 	dsize=0;
 	access_mode=0;
-	created = false;
 	if (!set_access_mode(am)) throw new ht_io_exception("unable to open memfile");
 }
 
@@ -733,17 +734,8 @@ int ht_mem_file::seek(FILEOFS o)
 
 bool	ht_mem_file::set_access_mode(UINT access_mode)
 {
-	if (!created && !(access_mode & FAM_CREATE)) return false;
 	if (ht_stream::set_access_mode(access_mode)) {
-		if (access_mode & FAM_CREATE) {
-			created = true;
-			truncate(0);
-		}
-		if (access_mode & FAM_APPEND) {
-			if (seek(get_size()) != 0) return false;
-		} else {
-			if (seek(ofs) != 0) return false;
-		}
+		if (seek(ofs) != 0) return false;
 		return true;
 	}
 	return false;

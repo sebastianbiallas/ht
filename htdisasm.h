@@ -35,22 +35,28 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
  *	CLASS ht_disasm_viewer
  */
 
+class ht_disasm_sub;
+
 class ht_disasm_viewer: public ht_uformat_viewer {
 protected:
 	Assembler *assem;
 	Disassembler *disasm;
 	int op1632;
+
+/* new */
+	virtual	ht_disasm_sub *get_disasm_sub();
 public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t);
 	virtual 	void done();
 /* overwritten */
-	virtual	bool pos_to_offset(viewer_pos addr, FILEOFS *ofs);
-	virtual	bool string_to_pos(char *string, viewer_pos *addr);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *addr);
+	virtual	bool pos_to_offset(viewer_pos addr, FILEOFS *ofs);
+	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
 	virtual	int ref_sel(LINE_ID *id);
+	virtual	int symbol_handler(eval_scalar *result, char *name);
 };
 
 /*
@@ -76,3 +82,4 @@ public:
 };
 
 #endif /* !__HTDISASM_H__ */
+

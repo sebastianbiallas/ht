@@ -118,7 +118,7 @@ int ht_vfs::streamfile_close(ht_streamfile *f)
 	return ENOSYS;
 }
 
-int ht_vfs::streamfile_open(const char *filename, UINT mode, ht_streamfile **f)
+int ht_vfs::streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
 {
 	return ENOSYS;
 }
@@ -214,10 +214,10 @@ int ht_file_vfs::streamfile_close(ht_streamfile *f)
 	return e;
 }
 
-int ht_file_vfs::streamfile_open(const char *filename, UINT mode, ht_streamfile **f)
+int ht_file_vfs::streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
 {
 	ht_file *file=new ht_file();
-	file->init(filename, mode);
+	file->init(filename, access_mode, open_mode);
 	int e=file->get_error();
 	if (e) {
 		file->done();
@@ -234,26 +234,27 @@ int ht_file_vfs::streamfile_open(const char *filename, UINT mode, ht_streamfile 
 
 #define REGNODE_FILE_MAGIC	"HTRG"
 
-void ht_regnode_file::init(const char *nn, UINT mode)
+void ht_regnode_file::init(const char *nn, UINT am, UINT om)
 {
-	ht_mem_file::init();
-	access_mode = mode;
+     access_mode0 = am;
+	ht_mem_file::init(0, 1024, am);
+     open_mode = om;
 	nodename = ht_strdup(nn);
-	if ((mode & FAM_READ) && (mode & FAM_WRITE)) {
+	if ((access_mode & FAM_READ) && (access_mode & FAM_WRITE)) {
 		set_error(EINVAL);
 		return;
 	}
 	
 	ht_registry_node_type type;
 	ht_registry_data *data;
-	if (!(mode & FAM_CREATE)) {
+	if (!(open_mode & FOM_CREATE)) {
 		if (!registry->find_data_entry(nodename, &data, &type, false)) {
 			set_error(ENOENT);
 			return;
 		}
 	}
-	if (mode & FAM_READ) {
-		if (mode & FAM_CREATE) {
+	if (access_mode & FAM_READ) {
+		if (open_mode & FOM_CREATE) {
 			set_error(EINVAL);
 			return;
 		}
@@ -283,7 +284,7 @@ void ht_regnode_file::done()
 		int e=load_node(o, &type, &data);
 		
 		if (e==0) {
-			if (access_mode & FAM_CREATE) {
+			if (open_mode & FOM_CREATE) {
 				if ((e = registry->create_node(nodename, type))) {
 					set_error(e);
 				}
@@ -340,7 +341,8 @@ void	ht_regnode_file::store_node(ht_object_stream *s, ht_registry_node_type type
 
 bool	ht_regnode_file::set_access_mode(UINT am)
 {
-	return (am==access_mode);
+	access_mode = access_mode0;
+	return (am == access_mode0);
 }
 
 /*
@@ -529,10 +531,10 @@ int ht_reg_vfs::streamfile_close(ht_streamfile *f)
 	return e;
 }
 
-int ht_reg_vfs::streamfile_open(const char *filename, UINT mode, ht_streamfile **f)
+int ht_reg_vfs::streamfile_open(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
 {
 	ht_regnode_file *file=new ht_regnode_file();
-	file->init(filename, mode);
+	file->init(filename, access_mode, open_mode);
 	int e=file->get_error();
 	if (e) {
 		file->done();
@@ -636,10 +638,9 @@ void ht_vfs_viewer::update_status()
 /* FIXME: cwd and cproto shouldn't be public, we should use
    messaging when available for ht_sub */
 	if (cursor.sub) {
-		ht_vfs_viewer_status_data d;
-		d.cproto=((ht_vfs_sub*)cursor.sub)->cproto;
-		d.cwd=((ht_vfs_sub*)cursor.sub)->cwd;
-		if (status && d.cwd) status->databuf_set(&d);
+		char *cproto=((ht_vfs_sub*)cursor.sub)->cproto;
+		char *cwd=((ht_vfs_sub*)cursor.sub)->cwd;
+		if (status && cwd) status->setstatus(cwd, cproto);
 	}
 }
 
@@ -664,15 +665,12 @@ void ht_vfs_viewer_status::init(bounds *b)
 	insert(url);
 }
 
-void ht_vfs_viewer_status::setdata(ht_object_stream *buf)
+void	ht_vfs_viewer_status::setstatus(char *cwd, char *cproto)
 {
-	ht_vfs_viewer_status_data d;
-	d.cwd = (char*)buf->getInt(sizeof(char *), NULL);
-	d.cproto = (char*)buf->getInt(sizeof(char *), NULL);
-	int lcwd=strlen(d.cwd);
-	int lcproto=strlen(d.cproto);
-	char *u=(char*)malloc(lcwd+3+lcproto+1);
-	sprintf(u, "%s://%s", d.cproto, d.cwd);
+	int lcwd = strlen(cwd);
+	int lcproto = strlen(cproto);
+	char *u = (char*)malloc(lcwd+3+lcproto+1);
+	sprintf(u, "%s://%s", cproto, cwd);
 	url->settext(u);
 	url->dirtyview();
 	free(u);
@@ -923,10 +921,10 @@ int vfs_copy(ht_vfs *svfs, char *sfilename, ht_vfs *dvfs, char *dfilename)
 {
 	int e, f;
 	ht_streamfile *src, *dest;
-	e = svfs->streamfile_open(sfilename, FAM_READ, &src);
+	e = svfs->streamfile_open(sfilename, FAM_READ, FOM_EXISTS, &src);
 	if (e) return e;
 
-	e = dvfs->streamfile_open(dfilename, FAM_CREATE | FAM_WRITE, &dest);
+	e = dvfs->streamfile_open(dfilename, FAM_WRITE, FOM_CREATE, &dest);
 	if (!e) {
 		src->copy_to(dest);
 		e = svfs->streamfile_close(dest);

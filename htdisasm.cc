@@ -168,6 +168,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 	}
 	free(insn);
 }
+
 /*
  *	CLASS ht_disasm_viewer
  */
@@ -295,18 +296,23 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+ht_disasm_sub *ht_disasm_viewer::get_disasm_sub()
 {
-	*ofs = p.u.line_id.id1;
-	return true;
+	return (ht_disasm_sub*)cursor.sub;
 }
 
 bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
-	p->u.sub = first_sub;
+	p->u.sub = get_disasm_sub();
 	p->u.line_id.id1 = ofs;
 	p->u.line_id.id2 = 0;
 	p->u.tag_idx = 0;
+	return true;
+}
+
+bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+{
+	*ofs = p.u.line_id.id1;
 	return true;
 }
 
@@ -315,21 +321,25 @@ int ht_disasm_viewer::ref_sel(LINE_ID *id)
 	return goto_offset(id->id1, true);
 }
 
-bool ht_disasm_viewer::string_to_pos(char *string, viewer_pos *addr)
+bool ht_disasm_viewer::qword_to_pos(qword q, viewer_pos *p)
 {
-	eval_scalar r;
-	if (eval(&r, string, NULL, NULL, NULL)) {
-		eval_int i;
-		scalar_context_int(&r, &i);
-		scalar_destroy(&r);
-		offset_to_pos(QWORD_GET_INT(i.value), addr);
-		return true;
+	ht_linear_sub *s = get_disasm_sub();
+	FILEOFS ofs = QWORD_GET_INT(q);
+	clear_viewer_pos(p);
+	p->u.sub = s;
+	p->u.tag_idx = 0;
+     return s->convert_ofs_to_id(ofs, &p->u.line_id);
+}
+
+int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
+{
+	if (strcmp(name, "$") == 0) {
+     	FILEOFS ofs;
+		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
+		scalar_create_int_c(result, ofs);
+		return 1;
 	}
-	char *s;
-	int p;
-	get_eval_error(&s, &p);
-	sprintf(globalerror, "%s at pos %d", s, p);
-	return false;
+	return ht_uformat_viewer::symbol_handler(result, name);
 }
 
 /*
@@ -511,5 +521,4 @@ int ht_disasm_sub::next_line_id(LINE_ID *line_id, int n)
 	}
 	return c;
 }
-
 

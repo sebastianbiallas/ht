@@ -89,7 +89,7 @@ char *systemconfig_file;
 loadstore_result save_systemconfig()
 {
 	ht_file *f = new ht_file();
-	f->init(systemconfig_file, FAM_WRITE | FAM_CREATE);
+	f->init(systemconfig_file, FAM_WRITE, FOM_CREATE);
 	if (f->get_error()) {
 		f->done();
 		delete f;
@@ -139,7 +139,7 @@ loadstore_result save_systemconfig()
 bool load_systemconfig(loadstore_result *result, int *error_info)
 {
 	ht_file *f = new ht_file();
-	f->init(systemconfig_file, FAM_READ);
+	f->init(systemconfig_file, FAM_READ, FOM_EXISTS);
 	switch (f->get_error()) {
 		case 0:break;
 		case STERR_SYSTEM | ENOENT:
@@ -218,7 +218,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT version, store_fcfg_func store_func, void *context)
 {
 	ht_file *f=new ht_file();
-	f->init(fileconfig_file, FAM_WRITE | FAM_CREATE);
+	f->init(fileconfig_file, FAM_WRITE, FOM_CREATE);
 	if (f->get_error()) {
 		f->done();
 		delete f;
@@ -267,7 +267,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT version, load_fcfg_func load_func, void *context, int *error_info)
 {
 	ht_file *f=new ht_file();
-	f->init(fileconfig_file, FAM_READ);
+	f->init(fileconfig_file, FAM_READ, FOM_EXISTS);
 	switch (f->get_error()) {
 		case 0:break;
 		case STERR_SYSTEM | ENOENT:

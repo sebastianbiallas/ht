@@ -1459,7 +1459,7 @@ bool ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
 	}
 
 	ht_file *emfile=new ht_file();
-	emfile->init(fullfilename, FAM_READ);
+	emfile->init(fullfilename, FAM_READ, FOM_EXISTS);
 	
 	ht_streamfile_modifier *mfile=new ht_streamfile_modifier();
 	mfile->init(emfile, true, 8*1024);
@@ -1565,7 +1565,7 @@ bool ht_app::create_window_file_text(char *filename, bool allow_duplicates)
 	}
 
 	ht_file *emfile=new ht_file();
-	emfile->init(fullfilename, FAM_READ);
+	emfile->init(fullfilename, FAM_READ, FOM_EXISTS);
 	
 	ht_ltextfile *tfile=new ht_ltextfile();
 	tfile->init(emfile, true, NULL);
@@ -2024,7 +2024,7 @@ void ht_app::handlemsg(htmsg *msg)
 
 					if (work) {
 						ht_file *f = new ht_file();
-						f->init(fn, FAM_CREATE | FAM_WRITE);
+						f->init(fn, FAM_WRITE, FOM_CREATE);
 
 						if ((err = f->get_error())) {
 							f->done();
@@ -2039,7 +2039,7 @@ void ht_app::handlemsg(htmsg *msg)
 
 						ht_streamfile *old = e->layer->get_layered();
 
-						if (f->set_access_mode(old->get_access_mode() & (~FAM_CREATE))) {
+						if (f->set_access_mode(old->get_access_mode())) {
 							e->layer->set_layered(f);
 							e->isfile = true;
 
@@ -2130,7 +2130,7 @@ void ht_app::handlemsg(htmsg *msg)
 				case K_Alt_R: {
 					char *n = "./ht.reg";
 					ht_file *f = new ht_file();
-					f->init(n, FAM_CREATE | FAM_WRITE);
+					f->init(n, FAM_WRITE, FOM_CREATE);
 
 					ht_object_stream_bin *b = new ht_object_stream_bin();
 					b->init(f);
@@ -2294,7 +2294,7 @@ void ht_app::handlemsg(htmsg *msg)
 			filename[0]=0;
 			if (inputbox("clipboard - paste into file", "filename", filename, 128, HISTATOM_FILE)==button_ok) {
 				ht_file *f=new ht_file();
-				f->init(filename, FAM_WRITE | FAM_CREATE);
+				f->init(filename, FAM_WRITE, FOM_CREATE);
 				if (!f->get_error()) {
 					clipboard_paste(f, 0);
 				} else errorbox("can't open file '%s'", filename);
@@ -2310,7 +2310,7 @@ void ht_app::handlemsg(htmsg *msg)
 			if (inputbox("clipboard - copy from file", "filename", filename, 128, HISTATOM_FILE)==button_ok) {
 				char desc[256];	/* secure */
 				ht_file *f=new ht_file();
-				f->init(filename, FAM_READ);
+				f->init(filename, FAM_READ, FOM_EXISTS);
 				if (!f->get_error()) {
 					ht_snprintf(desc, sizeof desc, "file %s", f->get_filename());
 					clipboard_copy(desc, f, 0, f->get_size());

@@ -153,7 +153,6 @@ protected:
 	};
 
 /* new */
-	virtual	void clear_viewer_pos(viewer_pos *p);
 	virtual	bool compeq_viewer_pos(viewer_pos *a, viewer_pos *b);
 
 	virtual	void vstate_restore(ht_data *view_state);
@@ -212,6 +211,7 @@ public:
 			bool continue_search();
 	virtual	bool show_search_result(ht_search_result *result);
 	/* misc */
+			void clear_viewer_pos(viewer_pos *p);
 			ht_streamfile *get_file();
 			bool string_to_qword(char *string, qword *q);
 			bool vstate_save();
@@ -319,9 +319,6 @@ protected:
 	bool isdirty_cursor_line;
 
 /* overwritten */
-	virtual	void clear_viewer_pos(viewer_pos *p);
-	virtual	bool compeq_viewer_pos(viewer_pos *a, viewer_pos *b);
-
 	virtual	char *func(UINT i, bool execute);
 	virtual	bool next_logical_pos(viewer_pos pos, viewer_pos *npos);
 	virtual	bool next_logical_offset(FILEOFS ofs, FILEOFS *nofs);
@@ -390,6 +387,7 @@ public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
+	virtual	void clear_viewer_pos(viewer_pos *p);
 	virtual	void draw();
 	virtual	bool get_current_offset(FILEOFS *offset);
 	virtual	bool get_current_pos(viewer_pos *pos);
@@ -404,6 +402,7 @@ public:
 	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
 	virtual	ht_search_result *vsearch(ht_search_request *search, viewer_pos start, viewer_pos end);
 /* new */
+	virtual	bool compeq_viewer_pos(viewer_pos *a, viewer_pos *b);
 			void complete_init();
 	virtual	void insertsub(ht_sub *sub);
 			void sendsubmsg(int msg);

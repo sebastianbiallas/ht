@@ -171,11 +171,14 @@ public:
 #define IS_DIRTY_SINGLEBIT			0x80000000
 
 /* ht_file.access_mode */
-#define FAM_UNDEFINED	0
+#define FAM_NULL		0
 #define FAM_READ		1
 #define FAM_WRITE		2
-#define FAM_CREATE		4
-#define FAM_APPEND		8
+
+/* ht_file open mode */
+#define FOM_EXISTS		0
+#define FOM_CREATE		1
+#define FOM_APPEND		2
 
 class ht_streamfile: public ht_stream {
 public:
@@ -235,13 +238,14 @@ class ht_file: public ht_streamfile {
 protected:
 	FILE *file;
 	char *filename;
+     UINT open_mode;
 
 	FILEOFS offset;
 
 	bool	set_access_mode_internal(UINT access_mode);
 public:
 
-		   void	init(const char *filename, UINT access_mode);
+		   void	init(const char *filename, UINT access_mode, UINT open_mode);
 	virtual void	done();
 /* overwritten */
 	virtual int	extend(UINT newsize);
@@ -291,7 +295,6 @@ protected:
 	FILEOFS pos;
 	UINT bufsize, dsize, ibufsize;
 	byte *buf;
-	bool created;
 
 	virtual UINT	extendbufsize(UINT bufsize);
 	virtual UINT	shrinkbufsize(UINT bufsize);
@@ -338,3 +341,4 @@ void putstrw(ht_stream *stream, const char *str);
 char *ht_strerror(int error);
 
 #endif /* __STREAM_H__ */
+

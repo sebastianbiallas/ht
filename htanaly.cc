@@ -836,7 +836,7 @@ void ht_aviewer::generateOutputDialog()
 		}
 		
 		ht_file *s = new ht_file();
-		s->init(filename, FAM_CREATE+FAM_WRITE);
+		s->init(filename, FAM_WRITE, FOM_CREATE);
 		if (s->get_error()) {
 			infobox("couldnt create file '%s'.", filename);
 			continue;
@@ -1004,7 +1004,7 @@ void ht_aviewer::exportFileDialog()
 		}
 		
 		ht_file *s = new ht_file();
-		s->init(filename, FAM_CREATE+FAM_WRITE);
+		s->init(filename, FAM_WRITE, FOM_CREATE);
 		if (s->get_error()) {
 			infobox("couldnt create file '%s'.", filename);
 			continue;

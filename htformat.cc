@@ -2448,8 +2448,11 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				viewer_pos pos;
 				globalerror[0]=0;
 				if (!string_to_pos(addrstr, &pos) || !goto_pos(pos, this)) {
-					if (globalerror[0]) infobox("error: %s\nin '%s'", globalerror, addrstr);
-					    else infobox("address '%s' (=0x%x) not found !", addrstr, pos);
+					if (globalerror[0]) {
+						infobox("error: %s\nin '%s'", globalerror, addrstr);
+					} else {
+						infobox("invalid address: '%s'", addrstr);
+					}
 				}
 			}
 			clearmsg(msg);
@@ -3582,6 +3585,7 @@ bool ht_uformat_viewer::set_cursor(uformat_viewer_pos p)
 	cursorline_dirty();
 	uformat_viewer_pos t = top;
 	int ty = 0;
+//     bool hasnext = true;
 /* test if cursor is already on screen */
 //	if (cursor_state == cursor_state_visible) {
 		do {
@@ -3600,9 +3604,10 @@ bool ht_uformat_viewer::set_cursor(uformat_viewer_pos p)
 				dirtyview();
 				return true;
 			}
-		} while ((next_line(&t, 1)) && (ty++ < size.h-1));
+		} while ((/*hasnext = */next_line(&t, 1)) && (ty++ < size.h-1));
 //	}
 /**/
+
 	char line[1024];	/* FIXME: possible buffer overflow ! */
 	char *e;
 	p.sub->getline(line, p.line_id);
