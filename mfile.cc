@@ -75,7 +75,7 @@ void	ht_streamfile_modifier::init(ht_streamfile *s, int own_s, UINT pgran)
 	page_mask = ~(page_granularity-1);
 
 	offset = 0;
-	active = false;
+	active = get_access_mode() & FAM_WRITE;
 
 	modified = false;
 	mod_pages_create();
@@ -224,7 +224,8 @@ void ht_streamfile_modifier::mod_page_flush(FILEOFS offset)
 
 int ht_streamfile_modifier::extend(UINT newsize)
 {
-	if (!active) return ht_layer_streamfile::extend(newsize);
+	// must be opened writable to extend
+	if (!active) return EIO;
 	UINT osize = size;
 
 	if (size != newsize) modified = true;
@@ -334,7 +335,8 @@ FILEOFS ht_streamfile_modifier::tell()
 
 int ht_streamfile_modifier::truncate(UINT newsize)
 {
-	if (!active) return ht_layer_streamfile::truncate(newsize);
+	// must be opened writable to truncate
+	if (!active) return EIO;
 	for (FILEOFS o = (newsize+page_granularity-1) & page_mask; o < size;
 	o += page_granularity) {
 		mod_page_destroy(o);
@@ -343,7 +345,6 @@ int ht_streamfile_modifier::truncate(UINT newsize)
 	size = newsize;
 /**/
 	return 0;
-//	return ht_layer_streamfile::truncate(newsize);
 }
 
 int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)

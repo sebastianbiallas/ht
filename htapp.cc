@@ -2516,7 +2516,11 @@ void ht_app::handlemsg(htmsg *msg)
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
 			UINT s = (UINT)msg->data2.integer;
 			if (confirmbox("really extend %s to offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
-				f->extend(s);
+				int oam = f->get_access_mode();
+				if (!(oam & FAM_WRITE)) f->set_access_mode(oam | FAM_WRITE);
+				int e = f->extend(s);
+				if (!(oam & FAM_WRITE)) f->set_access_mode(oam);
+				if (e) errorbox("couldn't extend file to offset %08x/%d: %s", s, s, strerror(e));
 			}
 			clearmsg(msg);
 			return;
