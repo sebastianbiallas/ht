@@ -67,6 +67,9 @@ extern "C" {
 #define ATOM_HT_PROJECT_ITEM			MAGICD("APP\x02")
 #define ATOM_COMPARE_KEYS_PROJECT_ITEM	MAGICD("APP\x10")
 
+#define HT_PROJECT_CONFIG_SUFFIX     	".htprj"
+#define HT_FILE_CONFIG_SUFFIX 		".htcfg"
+
 ht_log *loglines;
 
 /*
@@ -1559,7 +1562,7 @@ bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *
 	if (isfile) {
 		char cfgfilename[FILENAME_MAX];
 		strcpy(cfgfilename, title);
-		strcat(cfgfilename, ".htcfg");
+		strcat(cfgfilename, HT_FILE_CONFIG_SUFFIX);
 
 		int einfo;
 		LOG("%s: loading config file...", cfgfilename);
@@ -2641,6 +2644,12 @@ void ht_app::project_opencreate(char *filename)
 		LOG("%s: invalid filename", filename);
 		return;
 	}
+	char *suf = sys_filename_suffix(fn);
+	/* append HT project file suffix if not already there */
+     if (!(suf && (strcmp(suf, HT_PROJECT_CONFIG_SUFFIX+1)==0))) {
+		strcat(fn, HT_PROJECT_CONFIG_SUFFIX);
+     }
+
 	void *old_project = project;
 	project = NULL;
 	int einfo;
@@ -2798,7 +2807,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 		case cmd_analyser_save: {
 			char filename[1024];	/* FIXME: possible buffer overflow */
 			strcpy(filename, file->get_filename());
-			strcat(filename, ".htcfg");
+			strcat(filename, HT_FILE_CONFIG_SUFFIX);
 			LOG("%s: saving config", filename);
 			save_fileconfig(filename, ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_store_fcfg_func, this);
 			LOG("%s: done", filename);
