@@ -104,7 +104,7 @@ static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
 {
-	return (idx >= 0) && (idx<(int)elf_shared->sheaders.count);
+	return (idx > 0) && (idx<(int)elf_shared->sheaders.count);
 }
 
 /*
