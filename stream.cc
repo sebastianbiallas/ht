@@ -1009,7 +1009,7 @@ UINT ht_mem_file::write(const void *b, UINT size)
 char *fgetstrz(ht_streamfile *file)
 {
 	FILEOFS o=file->tell();
-/* get string size */
+	/* get string size */
 	char buf[64];
 	int s, z=0;
 	int found=0;
@@ -1023,7 +1023,7 @@ char *fgetstrz(ht_streamfile *file)
 			}
 		}
 	}
-/* read string */
+	/* read string */
 	char *str=(char *)malloc(z);
 	file->seek(o);
 	file->read(str, z);
@@ -1035,7 +1035,7 @@ char *fgetstrz(ht_streamfile *file)
  
 char *getstrz(ht_stream *stream)
 {
-/* get string size */
+	/* get string size */
 	char buf[REASONABLE_STRING_LIMIT];
 	int s, z=0;
 	while (1) {
@@ -1082,7 +1082,7 @@ char *getstrw(ht_stream *stream)
 	byte lbuf[2];
 	stream->read(lbuf, 2);
 	int l = lbuf[0] | lbuf[1] << 8;
-	char	*a=(char*)malloc(l+1);
+	char *a=(char*)malloc(l+1);
 	for (int i=0; i<l; i++) {
 		stream->read(&t, 2);
 		*(a+i)=(char)t;

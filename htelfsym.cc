@@ -47,6 +47,11 @@ static int_hash elf_st_type[] =
 	{0, 0}
 };
 
+static bool isValidSectionIdx(ht_elf_shared_data *elf_shared, int idx)
+{
+	return (idx >= 0) && (idx<elf_shared->sheaders.count);
+}
+
 static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
@@ -63,15 +68,19 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 			}
 		}
 	}
-	if (symtab_shidx == ELF_SHN_UNDEF) return 0;
+	if (symtab_shidx == ELF_SHN_UNDEF) return NULL;
 
 	FILEOFS h = elf_shared->sheaders.sheaders32[symtab_shidx].sh_offset;
 
 	/* associated string table offset (from sh_link) */
 	FILEOFS sto = elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[symtab_shidx].sh_link].sh_offset;
 
-	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[symtab_shidx].sh_name);
-	char *symtab_name = fgetstrz(file);
+	char *symtab_name;
+	if (!isValidSectionIdx(elf_shared, elf_shared->header32.e_shstrndx) ||
+	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[symtab_shidx].sh_name)
+	|| !((symtab_name=fgetstrz(file))))
+		symtab_name = "?";
+
 	char desc[128];
 	ht_snprintf(desc, sizeof desc, DESC_ELF_SYMTAB, symtab_name, symtab_shidx);
 	free(symtab_name);

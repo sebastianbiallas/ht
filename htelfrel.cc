@@ -44,13 +44,18 @@ static int_hash elf_r_386_type[] =
 	{0, 0}
 };
 
+static bool isValidSectionIdx(ht_elf_shared_data *elf_shared, int idx)
+{
+	return (idx >= 0) && (idx<elf_shared->sheaders.count);
+}
+
 static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
 	if ((elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) ||
 	(elf_shared->ident.e_ident[ELF_EI_DATA]!=ELFDATA2LSB) ||
-	(elf_shared->header32.e_machine!=ELF_EM_386)) return 0;
+	(elf_shared->header32.e_machine!=ELF_EM_386)) return NULL;
 	
 	UINT skip = elf_shared->reloctables;
 	UINT reloctab_shidx = ELF_SHN_UNDEF;
@@ -64,18 +69,22 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 			}
 		}
 	}
-	if (reloctab_shidx==ELF_SHN_UNDEF) return 0;
+	if (reloctab_shidx==ELF_SHN_UNDEF) return NULL;
 
 	FILEOFS h=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
 	
-/* section index of associated symbol table */
+	/* section index of associated symbol table */
 	int si_symbol=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_link;
 	
-/* section index of section to be relocated */
+	/* section index of section to be relocated */
 	int si_dest=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_info;
 
-	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name);
-	char *reloctab_name=fgetstrz(file);
+	char *reloctab_name;
+	if (!isValidSectionIdx(elf_shared, elf_shared->header32.e_shstrndx) ||
+	file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.
+	e_shstrndx].sh_offset+elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name)
+	|| !((reloctab_name=fgetstrz(file))))
+		reloctab_name = "?";
 	char desc[128];
 	ht_snprintf(desc, sizeof desc, DESC_ELF_RELOCTAB, reloctab_name, reloctab_shidx);
 	free(reloctab_name);

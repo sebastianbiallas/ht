@@ -118,30 +118,31 @@ static ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_form
 		elf_shared->shnames = (char**)malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
 		FILEOFS so=elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
 		for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-			ht_mask_sub *n=new ht_mask_sub();
-			n->init(file, i);
-
-			file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name);
-			char *s = fgetstrz(file);
+			char *s;
+			if (file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name)
+			|| !((s = fgetstrz(file)))) s = "?";
 			char t[1024];
 			ht_snprintf(t, sizeof t, "section %d: %s", i, s);
 			elf_shared->shnames[i] = s;
 
+			ht_mask_sub *n = new ht_mask_sub();
+			n->init(file, i);
+
 			n->add_staticmask_ptable(elfsectionheader32, h+i*elf_shared->header32.e_shentsize, elf_bigendian);
 
-			ht_collapsable_sub *cn=new ht_collapsable_sub();
+			ht_collapsable_sub *cn = new ht_collapsable_sub();
 			cn->init(file, n, 1, t, 1);
 
 			v->insertsub(cn);
 		}
 	} else if (elf_shared->ident.e_ident[ELF_EI_CLASS]==ELFCLASS64) {
-		v=new ht_uformat_viewer();
+		v = new ht_uformat_viewer();
 		v->init(b, DESC_ELF_SECTION_HEADERS, VC_EDIT, file, group);
 
 		register_atom(ATOM_ELF_SH_TYPE, elf_sh_type);
 		register_atom(ATOM_ELF_SH_FLAGS, elf_sh_flags);
 
-/* FIXME: 64-bit */
+		/* FIXME: 64-bit */
 		FILEOFS h = elf_shared->header64.e_shoff.lo;
 
 		ht_mask_sub *m=new ht_mask_sub();
@@ -155,17 +156,18 @@ static ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_form
 		v->insertsub(m);
 
 		elf_shared->shnames=(char**)malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
-/* FIXME: 64-bit */
+		/* FIXME: 64-bit */
 		FILEOFS so=elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset.lo;
 		for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-			ht_mask_sub *n=new ht_mask_sub();
-			n->init(file, i);
-
-			file->seek(so+elf_shared->sheaders.sheaders64[i].sh_name);
-			char *s=fgetstrz(file);
+			char *s;
+			if (file->seek(so+elf_shared->sheaders.sheaders64[i].sh_name)
+			|| !((s=fgetstrz(file)))) s = "?";
 			char t[1024];
 			ht_snprintf(t, sizeof t, "section %d: %s", i, s);
 			elf_shared->shnames[i]=s;
+
+			ht_mask_sub *n=new ht_mask_sub();
+			n->init(file, i);
 
 			n->add_staticmask_ptable(elfsectionheader64, h+i*elf_shared->header64.e_shentsize, elf_bigendian);
 
