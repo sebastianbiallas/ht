@@ -110,4 +110,6 @@ bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva);
 bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section);
 bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section);
 
+bool pe_section_name_to_section(pe_section_headers *section_headers, const char *name, int *section);
+
 #endif /* !__HTPE_H__ */

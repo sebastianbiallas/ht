@@ -233,11 +233,11 @@ bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+s->data_size)) {
 			*ofs=rva-s->data_address+s->data_offset;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *section)
@@ -247,11 +247,11 @@ bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *sectio
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
 			*section=i;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva)
@@ -260,11 +260,11 @@ bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva)
 	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva)
@@ -273,11 +273,11 @@ bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva)
 	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+s->data_size)) {
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 /*
@@ -291,11 +291,11 @@ bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva)
 		if ((ofs>=s->data_offset) &&
 		(ofs<s->data_offset+s->data_size)) {
 			*rva=ofs-s->data_offset+s->data_address;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section)
@@ -305,18 +305,18 @@ bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *se
 		if ((ofs>=s->data_offset) &&
 		(ofs<s->data_offset+s->data_size)) {
 			*section=i;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section)
 {
-	int r=pe_ofs_to_rva(section_headers, ofs, rva);
+	bool r = pe_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
-		r=pe_ofs_to_section(section_headers, ofs, section);
+		r = pe_ofs_to_section(section_headers, ofs, section);
 	}
 	return r;
 }
@@ -327,3 +327,21 @@ bool pe_ofs_is_valid(pe_section_headers *section_headers, FILEOFS ofs)
 	return pe_ofs_to_rva(section_headers, ofs, &rva);
 }
 
+/*
+ *
+ */
+ 
+bool pe_section_name_to_section(pe_section_headers *section_headers, const char *name, int *section)
+{
+	COFF_SECTION_HEADER *s = section_headers->sections;
+     int slen = strlen(name);
+     slen = MIN(slen, COFF_SIZEOF_SHORT_NAME);
+	for (UINT i=0; i < section_headers->section_count; i++) {
+		if (strncmp(name, (char*)&section_headers->sections->name, slen) == 0) {
+			*section = i;
+			return true;
+		}
+		s++;
+	}
+	return false;
+}
