@@ -1,6 +1,8 @@
  HT ChangeLog
 ==============
 
+version 0.8-trunk:
+
 version 0.8.0pre1:
 	- disassembler:
 		- IBM/Motorola PowerPC (PPC) (new)
