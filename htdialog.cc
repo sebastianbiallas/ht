@@ -1373,7 +1373,95 @@ void ht_button::push()
 }
 
 /*
- *	ht_listbox
+ *	CLASS ht_listbox_title
+ */
+void	ht_listbox_title::init(bounds *b)
+{
+	ht_view::init(b, VO_RESIZE, "ht_listbox_title");
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
+	texts = NULL;
+     listbox = NULL;
+     cols = NULL;
+}
+
+void	ht_listbox_title::done()
+{
+	if (texts) {
+		for (int i=0; i<cols; i++) {
+	     	free(texts[i]);
+	     }
+	     free(texts);
+     }
+     ht_view::done();
+}
+
+char *ht_listbox_title::defaultpalette()
+{
+	return palkey_generic_dialog_default;
+}
+
+void ht_listbox_title::draw()
+{
+	vcp color = getTextColor();
+	clear(color);
+     if (!texts || !listbox) return;
+     int x = listbox->x;
+     x = 0;
+     for (int i=0; i<cols; i++) {     
+		buf_lprint(x, 0, color, size.w, texts[i]);
+          x += listbox->widths[i];
+		if (i+1<cols) {
+			buf_printchar(x++, 0, color, ' ');
+			buf_printchar(x++, 0, color, CHAR_LINEV);
+			buf_printchar(x++, 0, color, ' ');
+		}
+     }
+}
+
+vcp ht_listbox_title::getTextColor()
+{
+	return getcolor(palidx_generic_body);
+}
+
+void ht_listbox_title::setText(int cols, ...)
+{
+	va_list vargs;
+	va_start(vargs, cols);
+	setTextv(cols, vargs);
+	va_end(vargs);
+}
+
+void ht_listbox_title::setTextv(int c, va_list vargs)
+{
+	if (texts) {
+		for (int i=0; i<cols; i++) {
+	     	free(texts[i]);
+	     }
+	     free(texts);
+     }
+     texts = NULL;
+     cols = c;
+     if (!c) return;
+     texts = (char**)malloc(c * sizeof(char*));
+     for (int i=0; i<cols; i++) {
+     	texts[i] = ht_strdup(va_arg(vargs, char* ));
+     }
+     update();
+}
+
+void ht_listbox_title::update()
+{
+	if (texts && listbox && listbox->widths) {
+	     for (int i=0; i<cols; i++) {
+	         	int s = strlen(texts[i]);
+               if (s > listbox->widths[i]) listbox->widths[i] = s;
+          }
+     }
+}
+
+
+/*
+ *	CLASS ht_listbox
  */
 
 class ht_listbox_vstate: public ht_data {
@@ -1405,13 +1493,14 @@ void ht_listbox::init(bounds *b, UINT Listboxcaps)
 	cursor = 0;
 	e_top = getfirst();
 	e_cursor = e_top;
+     title = NULL;
 	visible_height = 0;
 	x = 0;
+	widths = NULL;
 	clear_quickfind();
 	update();
 	listboxcaps = Listboxcaps;
 	cols = 0;
-	widths = NULL;
 }
 
 int 	ht_listbox::load(ht_object_stream *f)
@@ -1456,6 +1545,15 @@ void ht_listbox::adjust_scrollbar()
 	} else {
 		scrollbar->disable();
 	}
+}
+
+void ht_listbox::attachTitle(ht_listbox_title *aTitle)
+{
+	if (numColumns() > cols) rearrangeColumns();
+	title = aTitle;
+     title->listbox = this;
+     title->update();
+     title->dirtyview();
 }
 
 void ht_listbox::clear_quickfind()
@@ -1527,7 +1625,7 @@ void ht_listbox::draw()
 		getcolor(palidx_generic_list_unfocused_unselected);
 
 	int Cols = numColumns();
-	if (Cols > cols) rearrageColumns();
+	if (Cols > cols) rearrangeColumns();
 
 	bool resizing_cols = true;
 	while (resizing_cols) {
@@ -1554,20 +1652,31 @@ void ht_listbox::draw()
 					resizing_cols = true;
 				}
 				if (s) {
-					if (X > 0) {
+					if (X >= 0) {
 						buf_lprint(X, i, c, size.w, s);
 					} else {
 						if (slen > -X) buf_lprint(0, i, c, size.w, &s[-X]);
 					}
 				}
-//				X += slen;
-				X += widths[j];
+                    if (j==cols-1) {
+					X += slen;
+                    } else {
+					X += widths[j];
+                    }
 				if (j+1<cols) {
 					buf_printchar(X++, i, c, ' ');
 					buf_printchar(X++, i, c, CHAR_LINEV);
 					buf_printchar(X++, i, c, ' ');
 				}
 			}
+               if (x > 0) {
+               	// more text right
+				buf_printchar(0, i, c, '<');
+               }
+               if (X >= size.w) {
+               	// more text left
+				buf_printchar(size.w-2, i, c, '>');
+               }
 			entry = getnext(entry);
 			i++;
 		}
@@ -1797,7 +1906,7 @@ char	*ht_listbox::quickfind_completition(char *s)
 	return ht_strdup(s);
 }
 
-void ht_listbox::rearrageColumns()
+void ht_listbox::rearrangeColumns()
 {
 	if (widths) free(widths);
 	cols = numColumns();
@@ -1909,6 +2018,10 @@ void ht_listbox::update()
 ok:
 	adjust_pos_hack();
 	adjust_scrollbar();
+     if (title) {
+     	title->update();
+     	title->dirtyview();
+     }
 	dirtyview();
 }
 
@@ -1927,16 +2040,15 @@ void ht_listbox::update_cursor()
  *	ht_text_listbox
  */
 
-void	ht_text_listbox::init(bounds *b, int Cols, int Keycol, UINT Listboxcaps)
+void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, UINT aListboxcaps)
 {
-	cols = Cols;
-	keycol = Keycol;
-	widths = (int *) calloc(sizeof(int)*cols, 1);
 	first = last = NULL;
+	ht_listbox::init(b, aListboxcaps);
+	cols = aCols;
+	keycol = aKeycol;
 	count = 0;
-	return_str = (char *) malloc(1024);
 	Cursor_adjust = 0;
-	ht_listbox::init(b, Listboxcaps);
+     rearrangeColumns();
 }
 
 void ht_text_listbox::done()
@@ -1950,8 +2062,6 @@ void ht_text_listbox::done()
 		free(temp);
 		temp = temp2;
 	}
-	free(widths);
-	free(return_str);
 	ht_listbox::done();
 }
 
@@ -2014,12 +2124,10 @@ void *ht_text_listbox::getprev(void *entry)
 char *ht_text_listbox::getstr(int col, void *entry)
 {
 	if (entry && (col < cols)) {
-		char *str = ((ht_text_listbox_item *)entry)->data[col];
-		strcpy(return_str, str);
+          return ((ht_text_listbox_item *)entry)->data[col];
 	} else {
-		return_str[0] = 0;
+          return "";
 	}
-	return return_str;
 }
 
 void ht_text_listbox::goto_item_by_id(UINT id)
@@ -2181,9 +2289,11 @@ void ht_text_listbox::update()
 {
 	ht_listbox::update();
 	Cursor_adjust = 0;
-	for (int i=0; i<keycol; i++) {
-		Cursor_adjust+=widths[i]+3;
-	}
+     if (widths) {
+		for (int i=0; i<keycol; i++) {
+			Cursor_adjust+=widths[i]+3;
+		}
+     }
 }
 
 /*

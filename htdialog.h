@@ -244,6 +244,34 @@ public:
 	virtual	void push();
 };
 
+
+/*
+ *	CLASS ht_listbox_title
+ */
+
+class ht_listbox;
+
+class ht_listbox_title: public ht_view {
+public:
+     ht_listbox *listbox;
+protected:
+	char **texts;
+     int cols;
+
+/* overwritten */
+	virtual	char *defaultpalette();
+public:
+			void	init(bounds *b);               
+	virtual	void	done();
+/* overwritten */
+	virtual 	void draw();
+/* new */
+	virtual	vcp getTextColor();
+			void setText(int cols, ...);
+			void setTextv(int cols, va_list arguments);
+               void update();
+};
+
 /*
  *	CLASS ht_listbox
  */
@@ -270,10 +298,12 @@ public:
 	int		*widths;
 	
 	ht_scrollbar *scrollbar;
-
+     ht_listbox_title *title;
+     
 			void	init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void	done();
 	virtual	int 	load(ht_object_stream *f);
+               void attachTitle(ht_listbox_title *title);
 			void adjust_pos_hack();
 			void adjust_scrollbar();
 	virtual   int  calc_count() = 0;
@@ -311,7 +341,7 @@ public:
 /* overwritten */
 	virtual	void resize(int rw, int rh);
 protected:
-			void rearrageColumns();
+			void rearrangeColumns();
 };
 
 /*
@@ -333,8 +363,6 @@ class ht_text_listbox: public ht_listbox {
 public:
 	int					cols, keycol, count;
 	ht_text_listbox_item	*first, *last;
-	int					*widths;
-	char					*return_str;
 	int					Cursor_adjust;
 			void	init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void	done();

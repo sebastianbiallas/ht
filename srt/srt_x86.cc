@@ -681,13 +681,15 @@ void srt_x86(Analyser *analy, Address *addr)
 	d.y = 0;
 	d.w = b.w-2;
 	d.h = 1;
-	ht_statictext *text = new ht_statictext();
-	text->init(&d, "insn   |  register | new value", align_left);
+	ht_listbox_title *text = new ht_listbox_title();
+	text->init(&d);
+     text->setText(3, "insn", "register", "new value");
 	dialog->insert(text);
 	d.y = 1;
 	d.h = b.h-3;
 	ht_text_listbox *list;
 	NEW_OBJECT(list, ht_text_listbox, &d, 3, 2);
+     list->attachTitle(text);
 //	char str2[1024];
 /**/
 #define MAX_INSNS	20
