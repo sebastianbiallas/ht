@@ -458,6 +458,16 @@ char	*ht_static_treeview::get_text(void *node)
 	return ((static_node *)node)->text;
 }
 
+void	*ht_static_treeview::get_cursor_node()
+{
+// FIXME: said to be the wrong thing, works however
+	return selected;
+}
+
+void	ht_static_treeview::goto_node(void *node)
+{
+}
+
 bool	ht_static_treeview::has_children(void *node)
 {
 	return (((static_node *)node)->child);

@@ -93,6 +93,9 @@ public:
 		virtual bool	has_children(void *node);
 		virtual bool	is_expanded(void *node);
 		virtual void	select_node(void *node);
+/* new */
+		        void	*get_cursor_node();
+		        void	goto_node(void *node);
 };
 
 #endif
