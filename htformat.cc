@@ -2670,14 +2670,16 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			char addrstr[1024];
 			addrstr[0] = 0;
 			while (address_input("goto", addrstr, sizeof addrstr, HISTATOM_GOTO) != button_cancel) {
-				viewer_pos pos;
-				globalerror[0] = 0;
-				if (string_to_pos(addrstr, &pos) && goto_pos(pos, this))
-					break;
-				if (globalerror[0]) {
-					infobox("error: %s\nin '%s'", globalerror, addrstr);
-				} else {
-					infobox("invalid address: '%s'", addrstr);
+               	if (addrstr[0]) {
+					viewer_pos pos;
+					globalerror[0] = 0;
+					if (string_to_pos(addrstr, &pos) && goto_pos(pos, this))
+						break;
+					if (globalerror[0]) {
+						infobox("error: %s\nin '%s'", globalerror, addrstr);
+					} else {
+						infobox("invalid address: '%s'", addrstr);
+					}
 				}
 			}
 			clearmsg(msg);
@@ -2769,7 +2771,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					scalar_destroy(&r);
 					o=QWORD_GET_INT(i.value);
 					if (o<s) {
-					/* truncate */
+						/* truncate */
 						htmsg m;
 			
 						m.msg=cmd_file_truncate;
@@ -2783,7 +2785,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 						sendsubmsg(&m);
 						sendmsg(&m);
 					} else if (o>s) {
-					/* extend */
+						/* extend */
 						htmsg m;
 			
 						m.msg=cmd_file_extend;
