@@ -457,28 +457,12 @@ void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, dword relocation,
 	*tag_str=0;
 }
 
-TAGSTRING *tag_findnext(TAGSTRING *tagstring)
+TAGSTRING *tag_findnext(const TAGSTRING *tagstring)
 {
-/* do not enable. works for x86 only ! */
-#if 0
-	int *s=(int*)tagstring;
-	int e;
-	while (*s) {
-		e=*(s++);
-		for (int i=0; i<4; i++) {
-			if ((e&0xff)=='\e') return (TAGSTRING*)tagstring;
-			if ((e&0xff)==0) return 0;
-			e=e>>8;
-			tagstring++;
-		}
-	}
-	return 0;
-#else
 	return strchr(tagstring, '\e');
-#endif
 }
 
-int tag_get_len(TAGSTRING *tagstring)
+int tag_get_len(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -542,7 +526,7 @@ int tag_get_len(TAGSTRING *tagstring)
 	return -1;
 }
 
-int tag_get_vlen(TAGSTRING *tagstring)
+int tag_get_vlen(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -583,7 +567,7 @@ int tag_get_vlen(TAGSTRING *tagstring)
 
 int time_mp[14]={0,1,3,4,6,7,9,10,12,13,15,16,17,18};
 
-int tag_get_micropos(TAGSTRING *tagstring, int i)
+int tag_get_micropos(const TAGSTRING *tagstring, int i)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -606,7 +590,7 @@ int tag_get_micropos(TAGSTRING *tagstring, int i)
 	return -1;
 }
 
-int tag_get_microsize(TAGSTRING *tagstring)
+int tag_get_microsize(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -640,7 +624,7 @@ int tag_get_microsize(TAGSTRING *tagstring)
 	}
 }
 
-int tag_get_size(TAGSTRING *tagstring)
+int tag_get_size(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -674,7 +658,7 @@ int tag_get_size(TAGSTRING *tagstring)
 	}
 }
 
-dword tag_get_offset(TAGSTRING *tagstring)
+dword tag_get_offset(const TAGSTRING *tagstring)
 {
 	FILEOFS f;
 	switch (tagstring[1]) {
@@ -747,7 +731,7 @@ dword tag_get_offset(TAGSTRING *tagstring)
 	return 0;
 }
 
-void tag_get_id(TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4)
+void tag_get_id(const TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4)
 {
 	if (tagstring[1]==HT_TAG_SEL) {
 		UNALIGNED_MOVE(*id128_1, ((ht_tag_sel*)tagstring)->id128_1);
@@ -757,12 +741,12 @@ void tag_get_id(TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id1
 	}
 }
 
-char* tag_get_seltext(TAGSTRING *tagstring)
+TAGSTRING *tag_get_seltext(const TAGSTRING *tagstring)
 {
-	return tagstring+sizeof(ht_tag_sel);
+	return (TAGSTRING *)(tagstring+sizeof(ht_tag_sel));
 }
 
-int tag_get_seltextlen(TAGSTRING *tagstring)
+int tag_get_seltextlen(const TAGSTRING *tagstring)
 {
 	if (tagstring[1]==HT_TAG_SEL) {
 		return ((ht_tag_sel*)tagstring)->strlen;
@@ -770,14 +754,14 @@ int tag_get_seltextlen(TAGSTRING *tagstring)
 	return -1;
 }
 
-vcp tag_get_color(TAGSTRING *tagstring)
+vcp tag_get_color(const TAGSTRING *tagstring)
 {
 	vcp c;
 	UNALIGNED_MOVE(c, ((ht_tag_color*)tagstring)->color);
 	return c;
 }
 
-bool tag_get_desc_id(TAGSTRING *tagstring, dword *id)
+bool tag_get_desc_id(const TAGSTRING *tagstring, dword *id)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_DESC_BYTE:
@@ -802,7 +786,7 @@ bool tag_get_desc_id(TAGSTRING *tagstring, dword *id)
 	return false;
 }
 
-void tag_set_offset(TAGSTRING *tagstring, dword offset)
+void tag_set_offset(const TAGSTRING *tagstring, dword offset)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -835,7 +819,7 @@ void tag_set_offset(TAGSTRING *tagstring, dword offset)
 	}
 }
 
-int tag_is_editable(TAGSTRING *tagstring)
+int tag_is_editable(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -859,20 +843,20 @@ int tag_is_editable(TAGSTRING *tagstring)
 	return -1;
 }
 
-void tag_strcat(TAGSTRING *dest, TAGSTRING *src)
+void tag_strcat(TAGSTRING *dest, const TAGSTRING *src)
 {
 	int l=tag_strlen(dest);
 	tag_strcpy(dest+l, src);
 }
 
-void tag_strcpy(TAGSTRING *dest, TAGSTRING *src)
+void tag_strcpy(TAGSTRING *dest, const TAGSTRING *src)
 {
 	int l=tag_strlen(src);
 	memmove(dest, src, l);
 	dest[l]=0;
 }
 
-TAGSTRING *tag_strdup(TAGSTRING *tagstring)
+TAGSTRING *tag_strdup(const TAGSTRING *tagstring)
 {
 	int l=tag_strlen(tagstring);
 	TAGSTRING *s=(TAGSTRING*)malloc((sizeof(TAGSTRING)+1)*l);
@@ -881,7 +865,7 @@ TAGSTRING *tag_strdup(TAGSTRING *tagstring)
 	return s;
 }
 
-int tag_strlen(TAGSTRING *tagstring)
+int tag_strlen(const TAGSTRING *tagstring)
 {
 	int c=0, r;
 	while (*tagstring) {
@@ -896,7 +880,7 @@ int tag_strlen(TAGSTRING *tagstring)
 	return c;
 }
 
-int tag_strvlen(TAGSTRING *tagstring)
+int tag_strvlen(const TAGSTRING *tagstring)
 {
 	int c=0, r, v;
 	while (*tagstring) {
@@ -913,7 +897,7 @@ int tag_strvlen(TAGSTRING *tagstring)
 	return c;
 }
 
-int tag_count_selectable_tags_in_group(TAGSTRING *tagstring, int group)
+int tag_count_selectable_tags_in_group(const TAGSTRING *tagstring, int group)
 {
 	int c=0;
 	tagstring=tag_get_group(tagstring, group);
@@ -1029,7 +1013,7 @@ int tag_count_selectable_tags_in_group(TAGSTRING *tagstring, int group)
 	return c;
 }
 
-int tag_count_selectable_tags(TAGSTRING *tagstring)
+int tag_count_selectable_tags(const TAGSTRING *tagstring)
 {
 	int c=0;
 	while ((tagstring=tag_findnext(tagstring))) {
@@ -1142,7 +1126,7 @@ int tag_count_selectable_tags(TAGSTRING *tagstring)
 	return c;
 }
 
-int tag_count_groups(TAGSTRING *tagstring)
+int tag_count_groups(const TAGSTRING *tagstring)
 {
 	int c=1;
 	while ((tagstring=tag_findnext(tagstring))) {
@@ -1156,9 +1140,9 @@ int tag_count_groups(TAGSTRING *tagstring)
 	return c;
 }
 
-TAGSTRING *tag_get_selectable_tag(TAGSTRING *tagstring, int n, int group)
+TAGSTRING *tag_get_selectable_tag(const TAGSTRING *tagstring, int n, int group)
 {
-	TAGSTRING *r=0;
+	const TAGSTRING *r=NULL;
 	if (group>0) tagstring=tag_get_group(tagstring, group);
 	n++;
 	while ((n) && (tagstring=tag_findnext(tagstring))) {
@@ -1300,9 +1284,9 @@ TAGSTRING *tag_get_selectable_tag(TAGSTRING *tagstring, int n, int group)
 	return (n == 0) ? (char*)r : NULL;
 }
 
-TAGSTRING *tag_get_group(TAGSTRING *tagstring, int group)
+TAGSTRING *tag_get_group(const TAGSTRING *tagstring, int group)
 {
-	TAGSTRING *r=tagstring;
+	const TAGSTRING *r=tagstring;
 	while ((group) && (tagstring=tag_findnext(tagstring))) {
 		switch (tagstring[1]) {
 			case HT_TAG_GROUP:
@@ -1315,10 +1299,10 @@ TAGSTRING *tag_get_group(TAGSTRING *tagstring, int group)
 				break;
 		}
 	}
-	return (char*)r;
+	return (TAGSTRING *)r;
 }
 
-int tag_get_class(TAGSTRING *tagstring)
+int tag_get_class(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
@@ -1353,7 +1337,7 @@ int tag_get_class(TAGSTRING *tagstring)
 	}
 }
 
-char *tag_striptags(char *dest, TAGSTRING *src)
+char *tag_striptags(char *dest, const TAGSTRING *src)
 {
 	if (!dest) return NULL;
 	if (!src) {

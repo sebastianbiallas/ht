@@ -78,55 +78,55 @@ public:
  */
 class AnalyserOutput: public Object {
 public:
-		Analyser	*analy;
-		Address   *addr;
-		int		line;
-		Location  *cur_addr;
-		OutAddr	*cur_out_addr;
-		int		bytes_line;               // bytes of current line in file
-		int		bytes_addr;               // bytes of current addr in file
+	Analyser	*analy;
+	Address   *addr;
+	int		line;
+	Location  *cur_addr;
+	OutAddr	*cur_out_addr;
+	int		bytes_line;               // bytes of current line in file
+	int		bytes_addr;               // bytes of current addr in file
 		
-		ht_dtree	*out_addrs;
+	ht_dtree	*out_addrs;
 
-		byte		*work_buffer_start;
-		byte		*work_buffer;
+	byte		*work_buffer_start;
+	byte		*work_buffer;
 
-		byte		*temp_buffer;
+	byte		*temp_buffer;
 		
-		UINT		current_time;
-		int		size;
+	UINT		current_time;
+	int		size;
 		
-		int		dis_style;
+	int		dis_style;
 		
-				void	init(Analyser *analy);
-		virtual	void done();
-		virtual	void	beginAddr();
-		virtual	void	beginLine();
-		virtual	void changeConfig();
-		virtual	int	elementLength(char *s);
-		virtual	void	endAddr();
-		virtual	void	endLine();
-		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
-		virtual	void footer();
-				void generateAddr(Address *Addr, OutAddr *oa);
-				int	generateFile(Address *from, Address *to);
-		virtual	ht_stream *getGenerateStream();
-				void	generatePage(Address *from, int lines);
-				OutAddr *getAddr(Address *Addr);
-				OutLine *getLine(Address *Addr, int line);
-				bool getLineString(char *buf, int maxlen, Address *Addr, int line);
-				bool	getLineByteLength(int *len, Address *Addr, int line);
-				int	getLineCount(Address *Addr);
-				int	getAddrByteLength(Address *Addr);
-		virtual	void	header();
-				void	invalidateCache();
-		virtual	char *link(char *s, Address *Addr);
-				int	nextLine(Address **Addr, int *line, int n, Address *max);
-				int	prevLine(Address **Addr, int *line, int n, Address *min);
-		virtual	void putElement(int element_type, char *element);
-				void	reset();
-				void	write(char *s);
-				void write(char *s, int n);
+			void			init(Analyser *analy);
+	virtual	void			done();
+	virtual	void			beginAddr();
+	virtual	void			beginLine();
+	virtual	void			changeConfig();
+	virtual	int			elementLength(const char *s);
+	virtual	void			endAddr();
+	virtual	void			endLine();
+	virtual	char *		externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+	virtual	void			footer();
+			void			generateAddr(Address *Addr, OutAddr *oa);
+			int			generateFile(Address *from, Address *to);
+	virtual	ht_stream *	getGenerateStream();
+			void			generatePage(Address *from, int lines);
+			OutAddr *		getAddr(Address *Addr);
+			OutLine *		getLine(Address *Addr, int line);
+			bool			getLineString(char *buf, int maxlen, Address *Addr, int line);
+			bool			getLineByteLength(int *len, Address *Addr, int line);
+			int			getLineCount(Address *Addr);
+			int			getAddrByteLength(Address *Addr);
+	virtual	void			header();
+			void			invalidateCache();
+	virtual	char *		link(char *s, Address *Addr);
+			int			nextLine(Address **Addr, int *line, int n, Address *max);
+			int			prevLine(Address **Addr, int *line, int n, Address *min);
+	virtual	void			putElement(int element_type, const char *element);
+			void			reset();
+			void			write(const char *s);
+			void			write(const char *s, int n);
 };
 
 #endif

@@ -428,37 +428,37 @@ typedef char TAGSTRING;
 
 void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, dword relocation, bool std_bigendian);
 
-TAGSTRING *tag_findnext(TAGSTRING *tagstring);
+TAGSTRING *tag_findnext(const TAGSTRING *tagstring);
 
-vcp tag_get_color(TAGSTRING *tagstring);
-void tag_get_id(TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4);
-int tag_get_len(TAGSTRING *tagstring);
-dword tag_get_offset(TAGSTRING *tagstring);
-int tag_get_size(TAGSTRING *tagstring);
-int tag_get_vlen(TAGSTRING *tagstring);
-int tag_get_seltextlen(TAGSTRING *tagstring);
-char* tag_get_seltext(TAGSTRING *tagstring);
-int tag_get_micropos(TAGSTRING *tagstring, int i);
-int tag_get_microsize(TAGSTRING *tagstring);
-bool tag_get_desc_id(TAGSTRING *tagstring, dword *id);
+vcp tag_get_color(const TAGSTRING *tagstring);
+void tag_get_id(const TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4);
+int tag_get_len(const TAGSTRING *tagstring);
+dword tag_get_offset(const TAGSTRING *tagstring);
+int tag_get_size(const TAGSTRING *tagstring);
+int tag_get_vlen(const TAGSTRING *tagstring);
+int tag_get_seltextlen(const TAGSTRING *tagstring);
+TAGSTRING *tag_get_seltext(const TAGSTRING *tagstring);
+int tag_get_micropos(const TAGSTRING *tagstring, int i);
+int tag_get_microsize(const TAGSTRING *tagstring);
+bool tag_get_desc_id(const TAGSTRING *tagstring, dword *id);
 
 void tag_set_offset(TAGSTRING *tagstring, dword offset);
 void tag_set_value(TAGSTRING *tagstring, dword value);
 
-int tag_is_editable(TAGSTRING *tagstring);
+int tag_is_editable(const TAGSTRING *tagstring);
 
-void tag_strcat(TAGSTRING *dest, TAGSTRING *src);
-void tag_strcpy(TAGSTRING *dest, TAGSTRING *src);
-TAGSTRING *tag_strdup(TAGSTRING *tagstring);
-int tag_strlen(TAGSTRING *tagstring);
-int tag_strvlen(TAGSTRING *tagstring);
+void tag_strcat(TAGSTRING *dest, const TAGSTRING *src);
+void tag_strcpy(TAGSTRING *dest, const TAGSTRING *src);
+TAGSTRING *tag_strdup(const TAGSTRING *tagstring);
+int tag_strlen(const TAGSTRING *tagstring);
+int tag_strvlen(const TAGSTRING *tagstring);
 
-int tag_count_selectable_tags_in_group(TAGSTRING *tagstring, int group);
-int tag_count_selectable_tags(TAGSTRING *tagstring);
-int tag_count_groups(TAGSTRING *tagstring);
-TAGSTRING *tag_get_selectable_tag(TAGSTRING *tagstring, int n, int group);
-TAGSTRING *tag_get_group(TAGSTRING *tagstring, int group);
-int tag_get_class(TAGSTRING *tagstring);
+int tag_count_selectable_tags_in_group(const TAGSTRING *tagstring, int group);
+int tag_count_selectable_tags(const TAGSTRING *tagstring);
+int tag_count_groups(const TAGSTRING *tagstring);
+TAGSTRING *tag_get_selectable_tag(const TAGSTRING *tagstring, int n, int group);
+TAGSTRING *tag_get_group(const TAGSTRING *tagstring, int group);
+int tag_get_class(const TAGSTRING *tagstring);
 
 TAGSTRING *tag_make_sel(TAGSTRING *buf, char *string);
 TAGSTRING *tag_make_ref(TAGSTRING *buf, dword id128_1, dword id128_2, dword id128_3, dword id128_4, char *string);
@@ -479,6 +479,6 @@ TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FILEOFS ofs32, dword id32);
 TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e);
 TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e);
 TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e);
-char *tag_striptags(char *dest, TAGSTRING *src);
+char *tag_striptags(char *dest, const TAGSTRING *src);
 
 #endif /* !__HTTAG_H__ */

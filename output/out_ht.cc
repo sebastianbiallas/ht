@@ -108,7 +108,7 @@ void	AnalyserHTOutput::changeConfig()
 	reloadPalette();
 }
 
-int	AnalyserHTOutput::elementLength(char *s)
+int	AnalyserHTOutput::elementLength(const char *s)
 {
 	return tag_strlen(s);
 }
@@ -169,7 +169,7 @@ char *AnalyserHTOutput::link(char *s, Address *Addr)
 	return tmpbuffer;
 }
 
-void AnalyserHTOutput::putElement(int element_type, char *element)
+void AnalyserHTOutput::putElement(int element_type, const char *element)
 {
 	// bufferbla's
 	switch (element_type) {

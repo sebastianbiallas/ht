@@ -152,7 +152,7 @@ void	AnalyserOutput::changeConfig()
 {
 }
 
-int	AnalyserOutput::elementLength(char *s)
+int	AnalyserOutput::elementLength(const char *s)
 {
 	return strlen(s);
 }
@@ -795,7 +795,7 @@ int	AnalyserOutput::prevLine(Address **Addr, int *line, int n, Address *min)
 	return res;
 }
 
-void AnalyserOutput::putElement(int element_type, char *element)
+void AnalyserOutput::putElement(int element_type, const char *element)
 {
 	write(element);
 }
@@ -808,7 +808,7 @@ void	AnalyserOutput::reset()
 	out_addrs->empty();
 }
 
-void	AnalyserOutput::write(char *s)
+void	AnalyserOutput::write(const char *s)
 {
 	int len = elementLength(s);
 	len = MIN(len, WORKBUF_LEN-(work_buffer-work_buffer_start));
@@ -816,7 +816,7 @@ void	AnalyserOutput::write(char *s)
 	work_buffer += len;
 }
 
-void AnalyserOutput::write(char *s, int n)
+void AnalyserOutput::write(const char *s, int n)
 {
 	n = MIN(n, WORKBUF_LEN-(work_buffer-work_buffer_start));
 	memcpy(work_buffer, s, n);
