@@ -92,9 +92,9 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	/* read commands */
 	UINT nsections = 0;
 	ofs = header_ofs+sizeof macho_shared->header;
-	macho_shared->cmds.count = macho_shared->header.ncmds;
 	macho_shared->cmds.cmds = (MACHO_COMMAND_U**)malloc(sizeof (MACHO_COMMAND_U*) * macho_shared->header.ncmds);
-	for (UINT i=0; i<macho_shared->cmds.count; i++) {
+	macho_shared->cmds.count = 0;
+	for (UINT i=0; i<macho_shared->header.ncmds; i++) {
 		MACHO_COMMAND cmd;
 		file->seek(ofs);
 		file->read(&cmd, sizeof cmd);
@@ -103,6 +103,8 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 		macho_shared->cmds.cmds[i] = (MACHO_COMMAND_U*)malloc(cmd.cmdsize);
 		file->seek(ofs);
 		if (file->read(macho_shared->cmds.cmds[i], cmd.cmdsize) != cmd.cmdsize) {
+			LOG_EX(LOG_ERROR, "%s: Mach-O: error processing command idx %d "
+			"(read error %d bytes from %08x)", i, cmd.cmdsize, ofs);
 			free(macho_shared->cmds.cmds[i]);
 			break;
 		}
@@ -141,6 +143,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, image_endianess);
 		}
 		ofs += cmd.cmdsize;
+		macho_shared->cmds.count ++;
 	}
 
 	/* read sections */

@@ -795,10 +795,10 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 			search_line = 0;
 			continue;
 		}
-		assert(i<1024);
 		addrbuf[i & 1023] = DUP_ADDR(search_addr);
 		linebuf[i & 1023] = search_line-1;
 		i++;
+		if (i >= 1023) break;
 	}
 
 	delete next_addr;

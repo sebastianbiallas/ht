@@ -15,6 +15,8 @@
 - analy.cc: pushAddress(x,y) leaks x if !isValidCodeAddr(x)
 - analy.cc: analyser file storage: thresholds are stored after data structures
   which they are used for.
+> 80c20   dd   0x4c000024  ;;          00080c20   rfid
+> 823e4   dd   0x7d708120  ;;          000823e4   mtcrf   0x08,r11
 
 +dunno
 - update help
