@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	htsys.cc (DJGPP implementation)
+ *   sysfile.cc - file system functions for DJGPP
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htsys.h"
+#include "sys.h"
 
 #include <ctype.h>
 #include <dir.h>
@@ -68,17 +68,17 @@ time_t dostime2time_t(unsigned short time, unsigned short date)
 
 void ff2pstat(struct ffblk *f, pstat_t *s)
 {
-	s->caps=pstat_size | pstat_mtime | pstat_mode_type | pstat_mode_usr;
-	s->size=f->ff_fsize;
-	s->mtime=dostime2time_t(f->ff_ftime, f->ff_fdate);
-	s->mode=HT_S_IRUSR;
+	s->caps = pstat_size | pstat_mtime | pstat_mode_type | pstat_mode_usr;
+	s->size = mkuint64(f->ff_fsize);
+	s->mtime = dostime2time_t(f->ff_ftime, f->ff_fdate);
+	s->mode = HT_S_IRUSR;
 	if (f->ff_attrib & FA_DIREC) {
-		s->mode|=HT_S_IFDIR;
+		s->mode |= HT_S_IFDIR;
 	} else {
-		s->mode|=HT_S_IFREG;
+		s->mode |= HT_S_IFREG;
 	}
 	if (!(f->ff_attrib & FA_RDONLY)) {
-		s->mode|=HT_S_IWUSR;
+		s->mode |= HT_S_IWUSR;
 	}
 	if ((f->lfn_magic[0]=='L') && (f->lfn_magic[1]=='F') && (f->lfn_magic[2]=='N') && 
 	(f->lfn_magic[3]=='3') && (f->lfn_magic[4]=='2') && (f->lfn_magic[5]==0)) {
@@ -133,25 +133,12 @@ int sys_pstat(pstat_t *s, const char *filename)
 	s->caps=pstat_mtime|pstat_mode_usr|pstat_mode_w|pstat_size/*|pstat_cluster*/|pstat_mode_type;
 	s->mtime=st.st_mtime;
 	s->mode=sys_ht_mode(st.st_mode);
-	s->size=st.st_size;
-	s->size_high=0;
+	s->size=mkuint64(st.st_size);
 	s->fsid=st.st_ino;
 	return 0;
 }
 
-void sys_suspend()
-{
-	__dpmi_yield();
-}
-
-int sys_get_free_mem()
-{
-	_go32_dpmi_meminfo info;
-	_go32_dpmi_get_free_memory_information(&info);
-	return info.available_memory;
-}
-
-int sys_truncate(const char *filename, FILEOFS ofs)
+int sys_truncate(const char *filename, fileofs ofs)
 {
 	return truncate(filename, ofs);
 }
@@ -181,159 +168,9 @@ int sys_filename_cmp(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
-int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd, int options)
+// FIXME: not a file system function, place somewhere else (but where ?)
+void sys_suspend()
 {
-	if (options & HT_IPC_NONBLOCKING) return ENOSYS;
-	int save_stdin = dup(STDIN_FILENO);
-	int save_stdout = dup(STDOUT_FILENO);
-	int save_stderr = dup(STDERR_FILENO);
-	int fdout = sys_tmpfile();
-	int fderr = sys_tmpfile();
-	close(STDIN_FILENO);
-	dup2(fdout, STDOUT_FILENO);
-	dup2(fderr, STDERR_FILENO);
-	/*int r = */system(cmd);
-	dup2(save_stdin, STDIN_FILENO);
-	dup2(save_stdout, STDOUT_FILENO);
-	dup2(save_stderr, STDERR_FILENO);
-	close(save_stdout);
-	close(save_stderr);
-	lseek(fdout, 0, SEEK_SET);
-	lseek(fderr, 0, SEEK_SET);
-	ht_null_file *nf = new ht_null_file();
-	nf->init();
-	*in = nf;
-	ht_sys_file *sf;
-	sf = new ht_sys_file();
-	sf->init(fdout, true, FAM_READ);
-	*out = sf;
-	sf = new ht_sys_file();
-	sf->init(fderr, true, FAM_READ);
-	*err = sf;
-	return 0;
-}
-
-bool sys_ipc_is_valid(int handle)
-{
-// no multitasking, never valid
-	return false;
-}
-
-int sys_ipc_terminate(int handle)
-{
-// already terminated, do nothing
-	return 0;
-}
-
-int sys_get_caps()
-{
-	return 0;
-}
-
-/*
- *	Clipboard functions
- */
- 
-static bool open_clipboard()
-{
-	__dpmi_regs r;
-	r.x.ax = 0x1700;   // version
-	__dpmi_int(0x2f, &r);
-	if (r.x.ax == 0x1700) return false;
-	r.x.ax = 0x1701;  // open
-	__dpmi_int(0x2f, &r);     
-	return (r.x.ax != 0);
-}
-
-static void close_clipboard()
-{
-	__dpmi_regs r;
-	r.x.ax = 0x1708;
-	__dpmi_int(0x2f, &r);
-}
-
-bool sys_write_data_to_native_clipboard(const void *data, int size)
-{
-	if (size > 0xffff) return false;
-	if (!open_clipboard()) return false;
-	int sel;
-	word seg = __dpmi_allocate_dos_memory((size+15)>>4, &sel);
-	if (seg == 0xffff) {
-		close_clipboard();
-		return false;
-	}
-	dosmemput(data, size, seg*16);
-	
-	__dpmi_regs r;
-	r.x.ax = 0x1703;
-	
-	r.x.dx = 0x01; // text
-	r.x.es = seg;
-	r.x.bx = 0;
-	r.x.si = size >> 16;
-	r.x.cx = size & 0xffff;
-	
-	__dpmi_int(0x2f, &r);
-	__dpmi_free_dos_memory(sel);
-	close_clipboard();
-	return (r.x.ax != 0);
-}
-
-int sys_get_native_clipboard_data_size()
-{
-	return 10000;
-	if (!open_clipboard()) return 0;
-	__dpmi_regs r;
-	r.x.ax = 0x1704;
-	r.x.dx = 0x07; // text
-	__dpmi_int(0x2f, &r);
-	close_clipboard();
-	return ((dword)r.x.dx)<<16+r.x.ax;
-}
-
-bool sys_read_data_from_native_clipboard(void *data, int max_size)
-{
-	int dz = sys_get_native_clipboard_data_size();
-	if (!open_clipboard()) return false;
-	if (!dz) {
-		close_clipboard();
-		return false;
-	}
-	int sel;
-	word seg = __dpmi_allocate_dos_memory((dz+15)>>4, &sel);
-	if (seg == 0xffff) {
-		close_clipboard();
-		return false;
-	}
-	
-	__dpmi_regs r;
-	r.x.ax = 0x1705;
-	r.x.dx = 0x1;
-	r.x.es = seg;
-	r.x.bx = 0;
-	__dpmi_int(0x2f, &r);
-	if (r.x.ax) {
-		dosmemget(seg*16, MIN(max_size, dz), data);
-	}
-	__dpmi_free_dos_memory(sel);
-	close_clipboard();
-	return (r.x.ax != 0);
-}
-
-/*
- *	INIT
- */
-
-bool init_system()
-{
-	return true;
-}
-
-/*
- *	DONE
- */
-
-void done_system()
-{
+	__dpmi_yield();
 }
 
