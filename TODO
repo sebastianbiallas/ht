@@ -34,6 +34,13 @@
 	- SPARC_SHIT configure
 	- implement POSIX - sys_truncate
      - HT crash when only htcfg-header in ht.cfg
+- (HT_0_7) eval: strcmp() [no params], bad error msg (too short)
+- eval: int("123") cant eval qword (only dword)
+- (HT_0_7) eval: string(-1), crash
+- (HT_0_7) eval: float(-1), wrong value (float("-1") correct)
+- (HT_0_7) texteditor: syntax-highlight broken (main.cc, press enter somewhere)
+- (HT_0_7) help broken (press f1)
+- (HT_0_7) "non interactive (!) program" is misleading (I can start and use rhide)
 
 - (HT_0_8) directory structure
 	- move source files (especially object system) into separate directories,
@@ -52,17 +59,8 @@
 	- cleanup msg interface
 	- auto-documentation (e.g. keys)
 
-- (HT_0_7) eval: strcmp() [no params], bad error msg (too short)
-- eval: int("123") cant eval qword (only dword)
-- (HT_0_7) eval: string(-1), crash
-- (HT_0_7) eval: float(-1), wrong value (float("-1") correct)
-- (HT_0_7) texteditor: syntax-highlight broken (main.cc, press enter somewhere)
-- (HT_0_7) help broken (press f1)
-- (HT_0_7) "non interactive (!) program" is misleading (I can start and use rhide)
 - syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
   better use bsearch() (ANSI, POSIX)
-- goto('') should be ignored
-- (HT_0_7) relfile::read/write: enum_next mysteria
 - goto eval help
 
 - texteditor as dialog-widget should have attachable scrollbar
@@ -99,10 +97,7 @@
 	- input separators configurable (right now only creates UNIX-style files)
 - search backwards
 - more history entries: replace e.g.
-- vfsview
 - improve edit_time/dialog ?!
-- homogenous/heterogenous lists
-- cleanup msg interface
 - auto-documentation (e.g. keys)
 - portability
 	- compile on sun solaris (curses problems (only?) on cf.sf.net)
