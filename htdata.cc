@@ -27,6 +27,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define NEW_TREE_ENUM
+
 int (*qsort_compare_compare_keys)(ht_data *key_a, ht_data *key_b);
 
 int qsort_compare(const void *e1, const void *e2)
@@ -324,6 +326,31 @@ void ht_stree::enum_prev_i(ht_tree_node *node, ht_data *nextkey, ht_tree_node **
 
 ht_data *ht_stree::enum_next(ht_data **value, ht_data *prevkey)
 {
+#ifdef NEW_TREE_ENUM
+	ht_tree_node *n = NULL, *next = NULL;
+    	if (root) {
+		if (prevkey) {
+			n = root;
+			while (n) {
+				int c = compare_keys(prevkey, n->key);
+				if (c>0) {
+          	     	n = n->right;
+				} else if (c<0) {
+               	     next = n;
+	               	n = n->left;
+				} else {
+					if (n->right) next = get_leftmost_node(n->right);
+					break;
+				}
+			}
+          } else next = get_leftmost_node(root);
+	}
+	if (next) {
+		*value = next->value;
+		return next->key;
+	}
+	return NULL;
+#else
 	ht_tree_node *n = NULL;
 	if (root) enum_next_i(root, prevkey, &n);
 	if (n) {
@@ -331,17 +358,44 @@ ht_data *ht_stree::enum_next(ht_data **value, ht_data *prevkey)
 		return n->key;
 	}
 	return NULL;
+#endif
 }
 
 ht_data *ht_stree::enum_prev(ht_data **value, ht_data *nextkey)
 {
+#ifdef NEW_TREE_ENUM
+	ht_tree_node *n = NULL, *prev = NULL;
+    	if (root) {
+		if (nextkey) {
+			n = root;
+			while (n) {
+				int c = compare_keys(nextkey, n->key);
+				if (c>0) {
+               	     prev = n;
+          	     	n = n->right;
+				} else if (c<0) {
+	               	n = n->left;
+				} else {
+					if (n->left) prev = get_rightmost_node(n->left);
+					break;
+				}
+			}
+          } else prev = get_rightmost_node(root);
+	}
+	if (prev) {
+		*value = prev->value;
+		return prev->key;
+	}
+	return NULL;
+#else
 	ht_tree_node *n = NULL;
 	if (root) enum_prev_i(root, nextkey, &n);
 	if (n) {
 		*value = n->value;
 		return n->key;
 	}
-	return NULL;
+ 	return NULL;
+#endif
 }
 
 void ht_stree::free_all(ht_tree_node *node)
@@ -610,6 +664,36 @@ bool ht_dtree::del(ht_data *key)
 
 ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
 {
+#ifdef NEW_TREE_ENUM
+	ht_tree_node *n, *next;
+     do {
+     	n = NULL;
+          next = NULL;
+    	if (root) {
+		if (prevkey) {
+			n = root;
+			while (n) {
+				int c = compare_keys(prevkey, n->key);
+				if (c>0) {
+          	     	n = n->right;
+				} else if (c<0) {
+               	     next = n;
+	               	n = n->left;
+				} else {
+					if (n->right) next = get_leftmost_node(n->right);
+					break;
+				}
+			}
+          } else next = get_leftmost_node(root);
+	}
+     	prevkey = next->key;
+     } while (next && !next->value);
+	if (next) {
+		*value = next->value;
+		return next->key;
+	}
+	return NULL;
+#else
 	ht_tree_node *n;
 	ht_data *k = prevkey;
 	while (1) {
@@ -623,10 +707,41 @@ ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
 		k = n->key;
 	}
 	return NULL;
+#endif
 }
 
 ht_data *ht_dtree::enum_prev(ht_data **value, ht_data *nextkey)
 {
+#ifdef NEW_TREE_ENUM
+	ht_tree_node *n, *prev;
+     while (1) {
+     n = NULL;
+     prev = NULL;
+    	if (root) {
+		if (nextkey) {
+			n = root;
+			while (n) {
+				int c = compare_keys(nextkey, n->key);
+				if (c>0) {
+               	     prev = n;
+          	     	n = n->right;
+				} else if (c<0) {
+	               	n = n->left;
+				} else {
+					if (n->left) prev = get_rightmost_node(n->left);
+					break;
+				}
+			}
+          } else prev = get_rightmost_node(root);
+	}
+     	nextkey = prev->key;
+     } while (prev && !prev->value);
+	if (prev) {
+		*value = prev->value;
+		return prev->key;
+	}
+	return NULL;
+#else
 	ht_tree_node *n;
 	ht_data *k = nextkey;
 	while (1) {
@@ -640,6 +755,7 @@ ht_data *ht_dtree::enum_prev(ht_data **value, ht_data *nextkey)
 		k = n->key;
 	}
 	return NULL;
+#endif
 }
 
 bool ht_dtree::insert(ht_data *key, ht_data *value)
