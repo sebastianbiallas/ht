@@ -301,6 +301,7 @@ public:
 	int		*widths;
 	
 	ht_scrollbar *scrollbar;
+     bool		mScrollbarEnabled;
 	ht_listbox_title *title;
 
 public:

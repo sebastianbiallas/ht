@@ -229,6 +229,11 @@ void VfsListbox::config_changed()
 	if (dfmt) free(dfmt);
 }
 
+int VfsListbox::cursorAdjust()
+{
+	return 1;
+}
+
 void	VfsListbox::freeExtraData(void *extra_data)
 {
 	if (extra_data) {
@@ -372,6 +377,57 @@ void	VfsListbox::reread()
 	for (int i=0; i<dfmt_cols; i++) {
 		free(strs[i]);
 	}
+}
+
+void *VfsListbox::quickfind(char *s)
+{
+	ht_text_listbox_item *item = (ht_text_listbox_item *)e_cursor;
+     for (int j=0; j<2; j++) {
+		int slen = strlen(s);
+	     char *i = NULL;
+	     if (item) {
+		     i = item->data[keycol];
+		     i = (i && *i) ? i+1 : i;
+	     }
+		while (item && (compare_strn(i, s, slen)!=0)) {
+			item = item->next;
+	          if (item) {
+			     i = item->data[keycol];
+			     i = (i && *i) ? i+1 : i;
+	          }
+		}
+	     if (item) return item;
+          item = first;
+     }
+	return NULL;
+}
+
+char	*VfsListbox::quickfindCompletition(char *s)
+{
+	ht_text_listbox_item *item = first;
+	char *res = NULL;
+	int slen = strlen(s);
+     char *i = NULL;
+     if (item) {
+	     i = item->data[keycol];
+	     i = (i && *i) ? i+1 : i;
+     }
+	while (item) {
+		if (compare_strn(i, s, slen)==0) {
+			if (!res) {
+				res = ht_strdup(item->data[keycol]+1);
+			} else {
+				int a = compare_ccomm(item->data[keycol]+1, res);
+				res[a] = 0;
+			}
+		}
+		item = item->next;
+          if (item) {
+		     i = item->data[keycol];
+		     i = (i && *i) ? i+1 : i;
+          }
+	}
+	return res;
 }
 
 void VfsListbox::update()

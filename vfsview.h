@@ -64,7 +64,10 @@ public:
 	virtual	void			done();
 /* overwritten */
 	virtual	void			config_changed();
+	virtual	int			cursorAdjust();
 	virtual	void			handlemsg(htmsg *msg);
+	virtual	void *		quickfind(char *s);
+	virtual	char *		quickfindCompletition(char *s);
 	virtual	void			update();
 /* new */
 			int			changeURL(const char *url);

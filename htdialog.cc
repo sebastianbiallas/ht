@@ -1489,6 +1489,7 @@ void ht_listbox::adjustScrollbar()
 {
 	int pstart, psize;
 	if (scrollbar_pos(pos-cursor, size.h, cached_count, &pstart, &psize)) {
+     	mScrollbarEnabled = true;
 		scrollbar->enable();
 		bounds c = size;
 		c.x = c.w-1;
@@ -1497,6 +1498,7 @@ void ht_listbox::adjustScrollbar()
 		scrollbar->setbounds(&c);
 		scrollbar->setpos(pstart, psize);
 	} else {
+     	mScrollbarEnabled = false;
 		scrollbar->disable();
 	}
 }
@@ -1626,12 +1628,14 @@ void ht_listbox::draw()
 				}
 			}
 			if (x > 0) {
-				// more text right
+				// more text left
 				buf_printchar(0, i, c, '<');
 			}
-			if (X >= size.w) {
-				// more text left
-				buf_printchar(size.w-2, i, c, '>');
+			// position of '>' char is scrollbar dependent
+			int a = mScrollbarEnabled ? 0 : 1;
+			if (X >= size.w+a) {
+				// more text right
+				buf_printchar(size.w-2+a, i, c, '>');
 			}
 			entry = getNext(entry);
 			i++;
@@ -2193,7 +2197,7 @@ char	*ht_text_listbox::quickfindCompletition(char *s)
 			if (!res) {
 				res = ht_strdup(item->data[keycol]);
 			} else {
-				int a = compare_ccomm(res, item->data[keycol]);
+				int a = compare_ccomm(item->data[keycol], res);
 				res[a] = 0;
 			}
 		}
