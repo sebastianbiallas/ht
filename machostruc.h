@@ -71,8 +71,7 @@ struct MACHO_COMMAND {
 #define	LC_ID_DYLIB	0xd	/* dynamicly linked shared lib identification */
 #define LC_LOAD_DYLINKER 0xe	/* load a dynamic linker */
 #define LC_ID_DYLINKER	0xf	/* dynamic linker identification */
-#define	LC_PREBOUND_DYLIB 0x10	/* modules prebound for a dynamicly */
-				/*  linked shared library */
+#define	LC_PREBOUND_DYLIB 0x10	/* modules prebound for a dynamicly linked shared library */
 
 struct MACHO_SEGMENT_COMMAND {
 	uint32	cmd;		/* LC_SEGMENT */
@@ -93,8 +92,79 @@ struct MACHO_SEGMENT_COMMAND {
 #define	SG_FVMLIB	0x2	/* this segment is the VM that is allocated by a fixed VM library, for overlap checking in the link editor */
 #define	SG_NORELOC	0x4	/* this segment has nothing that was relocated in it and nothing relocated to it, that is it maybe safely replaced without relocation */
 
+struct MACHO_PPC_THREAD_STATE {
+	uint32 srr0;	/* Instruction address register (PC) */
+	uint32 srr1;	/* Machine state register (supervisor) */
+	uint32 r0;
+	uint32 r1;
+	uint32 r2;
+	uint32 r3;
+	uint32 r4;
+	uint32 r5;
+	uint32 r6;
+	uint32 r7;
+	uint32 r8;
+	uint32 r9;
+	uint32 r10;
+	uint32 r11;
+	uint32 r12;
+	uint32 r13;
+	uint32 r14;
+	uint32 r15;
+	uint32 r16;
+	uint32 r17;
+	uint32 r18;
+	uint32 r19;
+	uint32 r20;
+	uint32 r21;
+	uint32 r22;
+	uint32 r23;
+	uint32 r24;
+	uint32 r25;
+	uint32 r26;
+	uint32 r27;
+	uint32 r28;
+	uint32 r29;
+	uint32 r30;
+	uint32 r31;
+
+	uint32 cr;      /* Condition register */
+	uint32 xer;	/* User's integer exception register */
+	uint32 lr;	/* Link register */
+	uint32 ctr;	/* Count register */
+	uint32 mq;	/* MQ register (601 only) */
+
+	uint32 vrsave;	/* Vector Save Register */
+};
+
+union MACHO_THREAD_STATE {
+	MACHO_PPC_THREAD_STATE ppc;
+};
+
+#define FLAVOR_PPC_THREAD_STATE		1
+#define FLAVOR_PPC_FLOAT_STATE		2
+#define FLAVOR_PPC_EXCEPTION_STATE	3
+#define FLAVOR_PPC_VECTOR_STATE		4
+#define FLAVOR_THREAD_STATE_NONE	7
+
+struct MACHO_THREAD_COMMAND {
+	uint32	cmd;		/* LC_THREAD or  LC_UNIXTHREAD */
+	uint32	cmdsize;	/* total size of this command */
+	uint32	flavor;		/* flavor of thread state */
+	uint32	count;		/* count of longs in thread state */
+	MACHO_THREAD_STATE state;
+};
+
+union MACHO_COMMAND_U {
+	MACHO_COMMAND cmd;
+	MACHO_SEGMENT_COMMAND segment;
+	MACHO_THREAD_COMMAND thread;
+};
+
 extern byte MACHO_HEADER_struct[];
 extern byte MACHO_COMMAND_struct[];
 extern byte MACHO_SEGMENT_COMMAND_struct[];
+extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
+extern byte MACHO_PPC_THREAD_STATE_struct[];
 
 #endif /* __MACHOSTRUC_H__ */

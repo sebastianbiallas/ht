@@ -26,13 +26,13 @@
 #include "htendian.h"
 #include "htformat.h"
 
-#define DESC_MACHO "Mach-o - Mach exe/link format"
-#define DESC_MACHO_HEADER "Mach-o/header"
+#define DESC_MACHO "Mach-O - Mach exe/link format"
+#define DESC_MACHO_HEADER "Mach-O/header"
 /*#define DESC_MACHO_SECTION_HEADERS "elf/section headers"
 #define DESC_MACHO_PROGRAM_HEADERS "elf/program headers"
 #define DESC_MACHO_SYMTAB "elf/symbol table %s (%d)"
 #define DESC_MACHO_RELOCTAB "elf/relocation table %s (%d)"*/
-#define DESC_MACHO_IMAGE "Mach-o/image"
+#define DESC_MACHO_IMAGE "Mach-O/image"
 
 extern format_viewer_if htmacho_if;
 
@@ -73,15 +73,7 @@ extern format_viewer_if htmacho_if;
 #define ATOM_ELF_R_386_TYPE 			0x454c460b
 #define ATOM_ELF_R_386_TYPE_STR		 "454c460b"
 
-struct elf_section_headers {
-	UINT count;
-	union {
-		ELF_SECTION_HEADER32 *sheaders32;
-		ELF_SECTION_HEADER64 *sheaders64;
-	};
-};
-
-union elf_section_header {
+union macho_segment_header {
 	ELF_SECTION_HEADER32 sheaders32;
 	ELF_SECTION_HEADER64 sheaders64;
 };
@@ -99,10 +91,15 @@ struct ht_elf_reloc_section {
 	UINT reloc_shidx;
 };
 */
+struct macho_commands {
+	UINT count;
+	MACHO_COMMAND_U **cmds;
+};
+
 struct ht_macho_shared_data {
 	FILEOFS header_ofs;
 	MACHO_HEADER header;
-	MACHO_COMMAND **cmds;
+	macho_commands cmds;
 /*	ELF_HEADER ident;
 	endianess byte_order;
 	union {
@@ -124,62 +121,21 @@ struct ht_macho_shared_data {
  */
 
 class ht_macho: public ht_format_group {
-protected:
-//	bool loc_enum;
-/* new */
-/*			void auto_relocate();
-			void fake_undefined_symbols();
-			UINT find_reloc_section_for(UINT si);
-			void relocate_section(ht_reloc_file *f, UINT si, UINT rsi, elf32_addr a);
-*/
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
-/* overwritten */
-//	virtual	void loc_enum_start();
-//	virtual	bool loc_enum_next(ht_format_loc *loc);
-};
-#if 0
-/*
- *	CLASS ht_elf32_reloc_entry
- */
-
-class ht_elf32_reloc_entry: public ht_data {
-public:
-	UINT	type;
-	union {
-		dword r_32;
-		dword r_pc32;
-	} relocs;
-	
-	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT type, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
 };
 
-/*
- *	CLASS ht_elf32_reloc_file
- */
+typedef uint32 MACHOAddress;
 
-class ht_elf32_reloc_file: public ht_reloc_file {
-protected:
-	ht_elf_shared_data *data;
-/* overwritten */
-	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
-public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
-};
+bool macho_phys_and_mem_section(MACHO_SEGMENT_COMMAND *s, UINT machoclass);
+bool macho_valid_section(MACHO_SEGMENT_COMMAND *s, UINT machoclass);
 
-bool elf_phys_and_mem_section(elf_section_header *s, UINT elfclass);
-bool elf_valid_section(elf_section_header *s, UINT elfclass);
+bool macho_addr_to_section(macho_commands *section_headers, UINT machoclass, MACHOAddress addr, int *section);
+bool macho_addr_to_ofs(macho_commands *section_headers, UINT machoclass, MACHOAddress addr, dword *ofs);
+bool macho_addr_is_valid(macho_commands *section_headers, UINT machoclass, MACHOAddress addr);
 
-bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section);
-bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs);
-bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr);
-//bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ADDR addr);
-
-bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr);
-bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, dword *section);
-//bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr, int *section);
-#endif
+bool macho_ofs_to_addr(macho_commands *section_headers, UINT machoclass, dword ofs, MACHOAddress *addr);
+bool macho_ofs_to_section(macho_commands *section_headers, UINT machoclass, dword ofs, dword *section);
 
 #endif /* !__HTMACHO_H__ */

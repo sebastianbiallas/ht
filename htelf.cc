@@ -328,7 +328,7 @@ bool elf_phys_and_mem_section(elf_section_header *sh, UINT elfclass)
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
-			return ((s->sh_type==ELF_SHT_PROGBITS) && (s->sh_addr.lo!=0) && (s->sh_addr.hi!=0));
+			return ((s->sh_type==ELF_SHT_PROGBITS) && ((s->sh_addr.lo!=0) || (s->sh_addr.hi!=0)));
 		}
 	}
 	return false;
@@ -343,7 +343,7 @@ bool elf_valid_section(elf_section_header *sh, UINT elfclass)
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = (ELF_SECTION_HEADER64*)sh;
-			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && (s->sh_addr.lo!=0) && (s->sh_addr.hi!=0));
+			return (((s->sh_type==ELF_SHT_PROGBITS) || (s->sh_type==ELF_SHT_NOBITS)) && ((s->sh_addr.lo!=0) || (s->sh_addr.hi!=0)));
 		}
 	}
 	return false;

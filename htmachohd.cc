@@ -62,6 +62,62 @@ STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
 	{"flags",		STATICTAG_EDIT_DWORD_BE("00000034")},
 	{0, 0}
 };
+
+static ht_mask_ptable macho_thread_header[]=
+{
+	{"cmd",			STATICTAG_EDIT_DWORD_BE("00000000")},
+	{"cmdsize",		STATICTAG_EDIT_DWORD_BE("00000004")},
+	{"flavor",		STATICTAG_EDIT_DWORD_BE("00000008")},
+	{"count (of 32bit words)",	STATICTAG_EDIT_DWORD_BE("0000000c")},
+	{0, 0}
+};
+
+static ht_mask_ptable macho_ppc_thread_state[]=
+{
+	{"srr0",		STATICTAG_EDIT_DWORD_BE("00000000")},
+	{"srr1",		STATICTAG_EDIT_DWORD_BE("00000004")},
+	{"flavor",		STATICTAG_EDIT_DWORD_BE("00000008")},
+	{"r0",			STATICTAG_EDIT_DWORD_BE("0000000c")},
+	{"r1",			STATICTAG_EDIT_DWORD_BE("00000010")},
+	{"r2",			STATICTAG_EDIT_DWORD_BE("00000014")},
+	{"r3",			STATICTAG_EDIT_DWORD_BE("00000018")},
+	{"r4",			STATICTAG_EDIT_DWORD_BE("0000001c")},
+	{"r5",			STATICTAG_EDIT_DWORD_BE("00000020")},
+	{"r6",			STATICTAG_EDIT_DWORD_BE("00000024")},
+	{"r7",			STATICTAG_EDIT_DWORD_BE("00000028")},
+	{"r8",			STATICTAG_EDIT_DWORD_BE("0000002c")},
+	{"r9",			STATICTAG_EDIT_DWORD_BE("00000030")},
+	{"r10",			STATICTAG_EDIT_DWORD_BE("00000034")},
+	{"r11",			STATICTAG_EDIT_DWORD_BE("00000038")},
+	{"r12",			STATICTAG_EDIT_DWORD_BE("0000003c")},
+	{"r13",			STATICTAG_EDIT_DWORD_BE("00000040")},
+	{"r14",			STATICTAG_EDIT_DWORD_BE("00000044")},
+	{"r15",			STATICTAG_EDIT_DWORD_BE("00000048")},
+	{"r16",			STATICTAG_EDIT_DWORD_BE("0000004c")},
+	{"r17",			STATICTAG_EDIT_DWORD_BE("00000050")},
+	{"r18",			STATICTAG_EDIT_DWORD_BE("00000054")},
+	{"r19",			STATICTAG_EDIT_DWORD_BE("00000058")},
+	{"r20",			STATICTAG_EDIT_DWORD_BE("0000005c")},
+	{"r21",			STATICTAG_EDIT_DWORD_BE("00000060")},
+	{"r22",			STATICTAG_EDIT_DWORD_BE("00000064")},
+	{"r23",			STATICTAG_EDIT_DWORD_BE("00000068")},
+	{"r24",			STATICTAG_EDIT_DWORD_BE("0000006c")},
+	{"r25",			STATICTAG_EDIT_DWORD_BE("00000070")},
+	{"r26",			STATICTAG_EDIT_DWORD_BE("00000074")},
+	{"r27",			STATICTAG_EDIT_DWORD_BE("00000078")},
+	{"r28",			STATICTAG_EDIT_DWORD_BE("0000007c")},
+	{"r29",			STATICTAG_EDIT_DWORD_BE("00000080")},
+	{"r30",			STATICTAG_EDIT_DWORD_BE("00000084")},
+	{"r31",			STATICTAG_EDIT_DWORD_BE("00000088")},
+	{"cr",			STATICTAG_EDIT_DWORD_BE("0000008c")},
+	{"xer",			STATICTAG_EDIT_DWORD_BE("00000090")},
+	{"lr",			STATICTAG_EDIT_DWORD_BE("00000094")},
+	{"ctr",			STATICTAG_EDIT_DWORD_BE("00000098")},
+	{"mq",			STATICTAG_EDIT_DWORD_BE("0000009c")},
+	{"vrsave",		STATICTAG_EDIT_DWORD_BE("000000a0")},
+	{0, 0}
+};
+
 /*
 ht_mask_ptable elfheader[]=
 {
@@ -241,10 +297,10 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, true);
 
 	FILEOFS ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
-	for (uint i=0; i<macho_shared->header.ncmds; i++) {
-		switch (macho_shared->cmds[i]->cmd) {
+	for (uint i=0; i<macho_shared->cmds.count; i++) {
+		switch (macho_shared->cmds.cmds[i]->cmd.cmd) {
 			case LC_SEGMENT: {
-				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds[i];
+				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds.cmds[i];
 				char segname[17];
 				ht_snprintf(segname, sizeof segname, "%s", c->segname);
 			    	char info[128];
@@ -255,17 +311,31 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 			}
 			case LC_SYMTAB: {
 			    	char info[128];
-				sprintf(info, "** SYMTAB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** SYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_SYMSEG: {
 			    	char info[128];
-				sprintf(info, "** SYMSEG cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** SYMSEG cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
+			case LC_UNIXTHREAD:
 			case LC_THREAD: {
+				MACHO_THREAD_COMMAND *c = &macho_shared->cmds.cmds[i]->thread;
+			    	char info[128];
+				sprintf(info, "** %s", (macho_shared->cmds.cmds[i]->cmd.cmd == LC_UNIXTHREAD) ? "UNIXTHREAD" : "THREAD");
+				m->add_mask(info);
+				m->add_staticmask_ptable(macho_thread_header, ofs, true);
+				switch (c->flavor) {
+					case FLAVOR_PPC_THREAD_STATE:
+						m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, true);
+						break;
+				}
+				break;
+			}
+/*			case LC_THREAD: {
 			    	char info[128];
 				sprintf(info, "** THREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
 				m->add_mask(info);
@@ -276,80 +346,80 @@ ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				sprintf(info, "** UNIXTHREAD cmdsize %08x", macho_shared->cmds[i]->cmdsize);
 				m->add_mask(info);
 				break;
-			}
+			}*/
 			case LC_LOADFVMLIB: {
 			    	char info[128];
-				sprintf(info, "** LOADFVMLIB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** LOADFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_IDFVMLIB: {
 			    	char info[128];
-				sprintf(info, "** IDFVMLIB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** IDFVMLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_IDENT: {
 			    	char info[128];
-				sprintf(info, "** IDENT (obsolete) cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** IDENT (obsolete) cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_FVMFILE: {
 			    	char info[128];
-				sprintf(info, "** FVMFILE cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** FVMFILE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_PREPAGE: {
 			    	char info[128];
-				sprintf(info, "** PREPAGE cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** PREPAGE cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_DYSYMTAB: {
 			    	char info[128];
-				sprintf(info, "** DYSYMTAB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** DYSYMTAB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_LOAD_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** LOAD_DYLIB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** LOAD_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_ID_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** ID_DYLIB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** ID_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_LOAD_DYLINKER: {
 			    	char info[128];
-				sprintf(info, "** LOAD_DYLINKER cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** LOAD_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_ID_DYLINKER: {
 			    	char info[128];
-				sprintf(info, "** ID_DYLINKER cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** ID_DYLINKER cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			case LC_PREBOUND_DYLIB: {
 			    	char info[128];
-				sprintf(info, "** PREBOUND_DYLIB cmdsize %08x", macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** PREBOUND_DYLIB cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 				break;
 			}
 			default: {
 			    	char info[128];
-				sprintf(info, "** unsupported load command %08x, size %08x", macho_shared->cmds[i]->cmd, macho_shared->cmds[i]->cmdsize);
+				sprintf(info, "** unsupported load command %08x, size %08x", macho_shared->cmds.cmds[i]->cmd.cmd, macho_shared->cmds.cmds[i]->cmd.cmdsize);
 				m->add_mask(info);
 			}
 		}
-		ofs += macho_shared->cmds[i]->cmdsize;
+		ofs += macho_shared->cmds.cmds[i]->cmd.cmdsize;
 	}
 	v->insertsub(m);
 	return v;
