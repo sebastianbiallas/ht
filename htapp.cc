@@ -2737,6 +2737,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 			if (modified) {
 				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, "file %s has been modified, save ?", file->get_filename())) {
 					case button_yes: {
+                         	app->focus(this);
 						htmsg msg;
 						msg.msg = cmd_file_save;
 						msg.type = mt_empty;
