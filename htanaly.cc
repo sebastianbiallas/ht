@@ -1137,7 +1137,8 @@ void ht_aviewer::handlemsg(htmsg *msg)
 					return;
 				}
 				case 'c':
-					if (!edit()) {
+//					if (!edit()) {
+					if (cursor_tag_class == tag_class_sel) {
 						sendmsg(cmd_analyser_continue);
 						clearmsg(msg);
 						return;
@@ -1148,14 +1149,16 @@ void ht_aviewer::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 				case 'F':
-					if (!edit()) {
+//					if (!edit()) {
+					if (cursor_tag_class == tag_class_sel) {
 						sendmsg(cmd_analyser_follow_ex);
 						clearmsg(msg);
 						return;
 					}
 					break;
 				case 'f':
-					if (!edit()) {
+//					if (!edit()) {
+					if (cursor_tag_class == tag_class_sel) {
 						sendmsg(cmd_analyser_follow);
 						clearmsg(msg);
 						return;
