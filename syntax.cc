@@ -143,10 +143,17 @@ lexer_token ht_lang_syntax_lexer::gettoken(void *b, UINT buflen, text_pos p, boo
 					break;
 				}
 				case LRST_REGEX: {
+#if 0
 					if /*(*/(strcmp(lr->string, "$")==0)/* && (buflen>0))*/ {
 						matched=true;
 					} else if (regmatch(buf, (regex_t*)lexer_rules_precompiled[i], &l)) {
 					}
+#else
+					if (strcmp(lr->string, "$") == 0) {
+						matched = (buflen == 0);
+					} else if (regmatch(buf, (regex_t*)lexer_rules_precompiled[i], &l)) {
+					}
+#endif
 					break;
 				}
 				case LRST_CHARSET: {
@@ -259,8 +266,8 @@ syntax_lexer_rule c_syntax_lexer_rules[]={
 /* preprocessor directives */
 	{ LSTSET(LEX_CST_NORMAL),
 	  true, LRST_REGEX, " *#", LEX_CST_PREPROCESS, LEX_CTOK_PREPROCESS },
-	SL_RULE_ANYCHAR(LSTSET(LEX_CST_PREPROCESS), LEX_CTOK_PREPROCESS),
 	SL_RULE_LINEEND(LSTSET(LEX_CST_PREPROCESS), LEX_CST_NORMAL),
+	SL_RULE_ANYCHAR(LSTSET(LEX_CST_PREPROCESS), LEX_CTOK_PREPROCESS),
 /* whitespaces */
 	{ LSTSET(LEX_CST_NORMAL),
 	  false, LRST_WHITESPACE, NULL, 0, LEX_CTOK_WHITESPACE },
@@ -281,8 +288,8 @@ syntax_lexer_rule c_syntax_lexer_rules[]={
 /* '//' one line comments */
 	{ LSTSET(LEX_CST_NORMAL) | LSTSET(LEX_CST_PREPROCESS),
 	  false, LRST_STRING, "//", LEX_CST_COMMENT_EOL, LEX_CTOK_COMMENT },
-	SL_RULE_ANYCHAR(LSTSET(LEX_CST_COMMENT_EOL), LEX_CTOK_COMMENT),
 	SL_RULE_LINEEND(LSTSET(LEX_CST_COMMENT_EOL), LEX_CST_NORMAL),
+	SL_RULE_ANYCHAR(LSTSET(LEX_CST_COMMENT_EOL), LEX_CTOK_COMMENT),
 /* symbols */
 	{ LSTSET(LEX_CST_NORMAL),
 	  false, LRST_CHARSET, "(){};,.[]!~%+-/*=<>|&^?:", 0, LEX_CTOK_SYMBOL },
