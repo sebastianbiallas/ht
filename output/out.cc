@@ -18,18 +18,19 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <string.h>
-
 #include "analy.h"
 #include "analy_names.h"
 #include "global.h"
 #include "htdebug.h"
 #include "htstring.h"
+#include "snprintf.h"
 #include "tools.h"
 #include "out.h"
 
 // FIXME: grrrrrrrrrrr
 #include "x86dis.h"
+
+#include <string.h>
 
 #undef DPRINTF
 //#define DPRINTF(msg...) printf(##msg)
@@ -370,7 +371,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 						bytes_line += cur_addr->type.length;
 						assert(cur_addr->type.length);
 						if (analy->validAddress(addr, scinitialized)) {
-							char buf[20];
+							char buf[50];
 							switch (cur_addr->type.int_subtype) {
 								case dst_iword: {
 									word c;
@@ -383,6 +384,13 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 									dword c;
 									analy->bufPtr(addr, (byte *)&c, 4);
 									sprintf(buf, "dd      \\@n%08xh", c);
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
+									break;
+								}
+								case dst_iqword: {
+									qword c;
+									analy->bufPtr(addr, (byte *)&c, 8);
+									ht_snprintf(buf, sizeof buf, "dq      \\@n%016qxh", &c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
