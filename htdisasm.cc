@@ -256,6 +256,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			m.type=mt_broadcast;
 			sendsubmsg(&m);
 			
+// FIXME: hack
 			uf_initialized=false;
 			complete_init();
 			
