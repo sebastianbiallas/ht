@@ -508,10 +508,10 @@ FILEOFS ElfAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char elf_sectionname[33];
 
 char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
 {
+	static char elf_sectionname[33];
 	elf_section_headers *sections=&elf_shared->sheaders;
 	int i;
 	ELFAddress ea;

@@ -434,10 +434,9 @@ FILEOFS PEFAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char pef_sectionname[33];
-
 char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 {
+	static char pef_sectionname[33];
 	pef_section_headers *sections=&pef_shared->sheaders;
 	int i;
 	PEFAddress ea;
@@ -447,9 +446,9 @@ char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 		ht_snprintf(pef_sectionname, sizeof pef_sectionname, "unnamed%d", i);
 	} else {
 //		strncpy(pef_sectionname, pef_shared->shnames[i], 32);
+//		pef_sectionname[32]=0;
 		strcpy(pef_sectionname, "nyi");
 	}
-	pef_sectionname[32]=0;
 	return pef_sectionname;
 }
 

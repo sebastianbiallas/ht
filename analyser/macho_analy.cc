@@ -313,10 +313,9 @@ FILEOFS MachoAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-static char macho_sectionname[33];
-
 char *MachoAnalyser::getSegmentNameByAddress(Address *Addr)
 {
+	static char macho_sectionname[33];
 	macho_sections *sections = &macho_shared->sections;
 	int i;
 	MACHOAddress ea;
