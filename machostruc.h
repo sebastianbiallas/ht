@@ -205,15 +205,45 @@ struct MACHO_PPC_THREAD_STATE {
 	uint32 vrsave;	/* Vector Save Register */
 };
 
-union MACHO_THREAD_STATE {
-	MACHO_PPC_THREAD_STATE ppc;
-};
-
 #define FLAVOR_PPC_THREAD_STATE		1
 #define FLAVOR_PPC_FLOAT_STATE		2
 #define FLAVOR_PPC_EXCEPTION_STATE	3
 #define FLAVOR_PPC_VECTOR_STATE		4
 #define FLAVOR_THREAD_STATE_NONE	7
+
+struct MACHO_I386_THREAD_STATE {
+	uint32	gs;
+	uint32	fs;
+	uint32	es;
+	uint32	ds;
+	uint32	edi;
+	uint32	esi;
+	uint32	ebp;
+	uint32	esp;
+	uint32	ebx;
+	uint32	edx;
+	uint32	ecx;
+	uint32	eax;
+	uint32	eip;
+	uint32	cs;
+	uint32	efl;
+	uint32	uesp;
+	uint32	ss;
+};
+
+#define i386_NEW_THREAD_STATE	1	/* used to be i386_THREAD_STATE */
+#define i386_FLOAT_STATE	2
+#define i386_ISA_PORT_MAP_STATE	3
+#define i386_V86_ASSIST_STATE	4
+#define i386_REGS_SEGS_STATE	5
+#define THREAD_SYSCALL_STATE	6
+#define THREAD_STATE_NONE	7
+#define i386_SAVED_STATE	8
+
+union MACHO_THREAD_STATE {
+	MACHO_PPC_THREAD_STATE state_ppc;
+	MACHO_I386_THREAD_STATE state_i386;
+};
 
 struct MACHO_THREAD_COMMAND {
 	uint32	cmd;		/* LC_THREAD or  LC_UNIXTHREAD */
@@ -258,12 +288,184 @@ struct MACHO_SYMTAB_NLIST {
 #define MACHO_SYMBOL_TYPE_N_PBUD	0x0c
 #define MACHO_SYMBOL_TYPE_N_SECT	0x0e
 
+/*
+ *	Machine types known by all.
+ */
+ 
+#define MACHO_CPU_TYPE_ANY		-1
+
+#define MACHO_CPU_TYPE_VAX		1
+/* skip					2	*/
+/* skip					3	*/
+/* skip					4	*/
+/* skip					5	*/
+#define	MACHO_CPU_TYPE_MC680x0		6
+#define MACHO_CPU_TYPE_I386		7
+/* skip MACHO_CPU_TYPE_MIPS		8	*/
+/* skip 				9	*/
+#define MACHO_CPU_TYPE_MC98000		10
+#define MACHO_CPU_TYPE_HPPA		11
+/* skip MACHO_CPU_TYPE_ARM		12	*/
+#define MACHO_CPU_TYPE_MC88000		13
+#define MACHO_CPU_TYPE_SPARC		14
+#define MACHO_CPU_TYPE_I860		15
+/* skip	MACHO_CPU_TYPE_ALPHA		16	*/
+/* skip					17	*/
+#define MACHO_CPU_TYPE_POWERPC		18
+
+
+/*
+ *	Machine subtypes (these are defined here, instead of in a machine
+ *	dependent directory, so that any program can get all definitions
+ *	regardless of where is it compiled.
+ */
+
+/*
+ *	Object files that are hand-crafted to run on any
+ *	implementation of an architecture are tagged with
+ *	MACHO_CPU_SUBTYPE_MULTIPLE.  This functions essentially the same as
+ *	the "ALL" subtype of an architecture except that it allows us
+ *	to easily find object files that may need to be modified
+ *	whenever a new implementation of an architecture comes out.
+ *
+ *	It is the responsibility of the implementor to make sure the
+ *	software handles unsupported implementations elegantly.
+ */
+#define	MACHO_CPU_SUBTYPE_MULTIPLE		-1
+#define MACHO_CPU_SUBTYPE_LITTLE_ENDIAN		0
+#define MACHO_CPU_SUBTYPE_BIG_ENDIAN		1
+
+/*
+ *	VAX subtypes (these do *not* necessary conform to the actual cpu
+ *	ID assigned by DEC available via the SID register.
+ */
+
+#define	MACHO_CPU_SUBTYPE_VAX_ALL	0 
+#define MACHO_CPU_SUBTYPE_VAX780	1
+#define MACHO_CPU_SUBTYPE_VAX785	2
+#define MACHO_CPU_SUBTYPE_VAX750	3
+#define MACHO_CPU_SUBTYPE_VAX730	4
+#define MACHO_CPU_SUBTYPE_UVAXI		5
+#define MACHO_CPU_SUBTYPE_UVAXII	6
+#define MACHO_CPU_SUBTYPE_VAX8200	7
+#define MACHO_CPU_SUBTYPE_VAX8500	8
+#define MACHO_CPU_SUBTYPE_VAX8600	9
+#define MACHO_CPU_SUBTYPE_VAX8650	10
+#define MACHO_CPU_SUBTYPE_VAX8800	11
+#define MACHO_CPU_SUBTYPE_UVAXIII	12
+
+/*
+ * 	680x0 subtypes
+ *
+ * The subtype definitions here are unusual for historical reasons.
+ * NeXT used to consider 68030 code as generic 68000 code.  For
+ * backwards compatability:
+ * 
+ *	MACHO_CPU_SUBTYPE_MC68030 symbol has been preserved for source code
+ *	compatability.
+ *
+ *	MACHO_CPU_SUBTYPE_MC680x0_ALL has been defined to be the same
+ *	subtype as MACHO_CPU_SUBTYPE_MC68030 for binary comatability.
+ *
+ *	MACHO_CPU_SUBTYPE_MC68030_ONLY has been added to allow new object
+ *	files to be tagged as containing 68030-specific instructions.
+ */
+
+#define	MACHO_CPU_SUBTYPE_MC680x0_ALL		1
+#define MACHO_CPU_SUBTYPE_MC68030		1 /* compat */
+#define MACHO_CPU_SUBTYPE_MC68040		2 
+#define	MACHO_CPU_SUBTYPE_MC68030_ONLY		3
+
+/*
+ *	I386 subtypes.
+ */
+
+#define	MACHO_CPU_SUBTYPE_I386_ALL	3
+#define MACHO_CPU_SUBTYPE_386		3
+#define MACHO_CPU_SUBTYPE_486		4
+#define MACHO_CPU_SUBTYPE_486SX		4 + 128
+#define MACHO_CPU_SUBTYPE_586		5
+#define MACHO_CPU_SUBTYPE_INTEL(f, m)	(f + ((m) << 4)
+#define MACHO_CPU_SUBTYPE_PENT		MACHO_CPU_SUBTYPE_INTEL(5, 0)
+#define MACHO_CPU_SUBTYPE_PENTPRO	MACHO_CPU_SUBTYPE_INTEL(6, 1)
+#define MACHO_CPU_SUBTYPE_PENTII_M3	MACHO_CPU_SUBTYPE_INTEL(6, 3)
+#define MACHO_CPU_SUBTYPE_PENTII_M5	MACHO_CPU_SUBTYPE_INTEL(6, 5)
+
+#define MACHO_CPU_SUBTYPE_INTEL_FAMILY(x)	((x) & 15)
+#define MACHO_CPU_SUBTYPE_INTEL_FAMILY_MAX	15
+
+#define MACHO_CPU_SUBTYPE_INTEL_MODEL(x)	((x) >> 4)
+#define MACHO_CPU_SUBTYPE_INTEL_MODEL_ALL	0
+
+/*
+ *	Mips subtypes.
+ */
+
+#define	MACHO_CPU_SUBTYPE_MIPS_ALL		0
+#define MACHO_CPU_SUBTYPE_MIPS_R2300		1
+#define MACHO_CPU_SUBTYPE_MIPS_R2600		2
+#define MACHO_CPU_SUBTYPE_MIPS_R2800		3
+#define MACHO_CPU_SUBTYPE_MIPS_R2000a		4	/* pmax */
+#define MACHO_CPU_SUBTYPE_MIPS_R2000		5
+#define MACHO_CPU_SUBTYPE_MIPS_R3000a		6	/* 3max */
+#define MACHO_CPU_SUBTYPE_MIPS_R3000		7
+
+/*
+ *	MC98000 (PowerPC subtypes
+ */
+#define	MACHO_CPU_SUBTYPE_MC98000_ALL		0
+#define MACHO_CPU_SUBTYPE_MC98601		1
+
+/*
+ *	HPPA subtypes for Hewlett-Packard HP-PA family of
+ *	risc processors. Port by NeXT to 700 series. 
+ */
+
+#define	MACHO_CPU_SUBTYPE_HPPA_ALL		0
+#define MACHO_CPU_SUBTYPE_HPPA_7100		0 /* compat */
+#define MACHO_CPU_SUBTYPE_HPPA_7100LC		1
+
+/*
+ *	MC88000 subtypes.
+ */
+#define	MACHO_CPU_SUBTYPE_MC88000_ALL		0
+#define MACHO_CPU_SUBTYPE_MC88100		1
+#define MACHO_CPU_SUBTYPE_MC88110		2
+
+/*
+ *	SPARC subtypes
+ */
+#define	MACHO_CPU_SUBTYPE_SPARC_ALL		0
+
+/*
+ *	I860 subtypes
+ */
+#define MACHO_CPU_SUBTYPE_I860_ALL		0
+#define MACHO_CPU_SUBTYPE_I860_860		1
+
+/*
+ *	PowerPC subtypes
+ */
+#define MACHO_CPU_SUBTYPE_POWERPC_ALL		0
+#define MACHO_CPU_SUBTYPE_POWERPC_601		1
+#define MACHO_CPU_SUBTYPE_POWERPC_602		2
+#define MACHO_CPU_SUBTYPE_POWERPC_603		3
+#define MACHO_CPU_SUBTYPE_POWERPC_603e		4
+#define MACHO_CPU_SUBTYPE_POWERPC_603ev		5
+#define MACHO_CPU_SUBTYPE_POWERPC_604		6
+#define MACHO_CPU_SUBTYPE_POWERPC_604e		7
+#define MACHO_CPU_SUBTYPE_POWERPC_620		8
+#define MACHO_CPU_SUBTYPE_POWERPC_750		9
+#define MACHO_CPU_SUBTYPE_POWERPC_7400		10
+#define MACHO_CPU_SUBTYPE_POWERPC_7450		11
+
 extern byte MACHO_HEADER_struct[];
 extern byte MACHO_COMMAND_struct[];
 extern byte MACHO_SEGMENT_COMMAND_struct[];
 extern byte MACHO_SECTION_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
+extern byte MACHO_I386_THREAD_STATE_struct[];
 extern byte MACHO_SYMTAB_COMMAND_struct[];
 extern byte MACHO_SYMTAB_NLIST_struct[];
 

@@ -19,12 +19,10 @@
  */
 
 #include "analy.h"
-//#include "analy_alpha.h"
 #include "analy_names.h"
-//#include "analy_ia64.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
-//#include "analy_x86.h"
+#include "analy_x86.h"
 #include "global.h"
 #include "macho_analy.h"
 
@@ -74,7 +72,16 @@ void MachoAnalyser::beginAnalysis()
 	for (UINT i=0; i < macho_shared->cmds.count; i++) {
 		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
-			Address *entry = createAddress32(s->state.ppc.srr0);
+			Address *entry;
+			switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_POWERPC:
+				entry = createAddress32(s->state.state_ppc.srr0);
+				break;
+			case MACHO_CPU_TYPE_I386:
+				entry = createAddress32(s->state.state_i386.eip);
+				break;
+			default: assert(0);
+			}
 			char desc[128];
 			sprintf(desc, "entrypoint%d", entrypoint_count++);
 			pushAddress(entry, entry);
@@ -245,34 +252,30 @@ bool MachoAnalyser::convertAddressToMACHOAddress(Address *addr, MACHOAddress *r)
 
 Address *MachoAnalyser::createAddress()
 {
-#if 0
-	switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {
-			case MACHOCLASS32: {
-				switch (macho_shared->header32.e_machine) {
-					case MACHO_EM_386:
-						return new AddressX86Flat32();
-				}
+	switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_I386: {
+				return new AddressX86Flat32();
+			}
+			case MACHO_CPU_TYPE_POWERPC: {
 				return new AddressFlat32();
 			}
-			case MACHOCLASS64: {
-/*				switch (macho_shared->header32.e_machine) {
-					case MACHO_EM_386:
-						return new AddressX86Flat32(0);
-				}*/
-				return new AddressFlat64();
-			}
 	}
-#endif
-	return new AddressFlat32();
+	assert(0);
+	return NULL;
 }
 
 Address *MachoAnalyser::createAddress32(dword addr)
 {
-/*	switch (macho_shared->header32.e_machine) {
-		case MACHO_EM_386:
-			return new AddressX86Flat32(addr);
-	}*/
-	return new AddressFlat32(addr);
+	switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_I386: {
+				return new AddressX86Flat32(addr);
+			}
+			case MACHO_CPU_TYPE_POWERPC: {
+				return new AddressFlat32(addr);
+			}
+	}
+	assert(0);
+	return NULL;
 }
 
 /*
@@ -352,51 +355,23 @@ void MachoAnalyser::initCodeAnalyser()
 void MachoAnalyser::initUnasm()
 {
 	DPRINTF("macho_analy: ");
-	int machine = 0;
+	uint machine = macho_shared->header.cputype;
 	bool macho64 = false;
-/*	switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {
-		case MACHOCLASS32: machine = macho_shared->header32.e_machine; break;
-		case MACHOCLASS64: machine = macho_shared->header64.e_machine; macho64 = true; break;
-	}*/
-/*	switch (machine) {
-		case MACHO_EM_386: // Intel
+	switch (machine) {
+		case MACHO_CPU_TYPE_I386: // Intel x86
 			DPRINTF("initing analy_x86_disassembler\n");
 			analy_disasm = new AnalyX86Disassembler();
 			((AnalyX86Disassembler*)analy_disasm)->init(this, macho64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
 			break;
-		case MACHO_EM_IA_64: // Intel ia64
-			if (macho_shared->ident.e_ident[MACHO_EI_CLASS] != MACHOCLASS64) {
-				errorbox("Intel IA64 cant be used in a 32-Bit MACHO.");
-			} else {
-				analy_disasm = new AnalyIA64Disassembler();
-				((AnalyIA64Disassembler*)analy_disasm)->init(this);
-			}
-			break;
-		case MACHO_EM_PPC: // PowerPC
-			if (macho_shared->ident.e_ident[MACHO_EI_CLASS] != MACHOCLASS32) {
-				errorbox("Intel PowerPC cant be used in a 64-Bit MACHO.");
-			} else {
-				DPRINTF("initing analy_ppc_disassembler\n");
-				analy_disasm = new AnalyPPCDisassembler();
-				((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			}
-			break;
-		case MACHO_EM_PPC64: // PowerPC64
-			if (macho_shared->ident.e_ident[MACHO_EI_CLASS] != MACHOCLASS64) {
-				errorbox("Intel PowerPC64 cant be used in a 32-Bit MACHO.");
-			} else {
-				DPRINTF("initing analy_ppc_disassembler\n");
-				analy_disasm = new AnalyPPCDisassembler();
-				((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			}
+		case MACHO_CPU_TYPE_POWERPC:	// PowerPC
+			DPRINTF("initing analy_ppc_disassembler\n");
+			analy_disasm = new AnalyPPCDisassembler();
+			((AnalyPPCDisassembler*)analy_disasm)->init(this);
 			break;
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", machine);
 			warnbox("No disassembler for unknown machine type %04x!", machine);
-	}*/
-	DPRINTF("initing analy_ppc_disassembler\n");
-	analy_disasm = new AnalyPPCDisassembler();
-	((AnalyPPCDisassembler*)analy_disasm)->init(this);
+	}
 }
 
 /*

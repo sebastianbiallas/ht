@@ -117,12 +117,23 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 			case LC_UNIXTHREAD: {
 				MACHO_THREAD_COMMAND *c = (MACHO_THREAD_COMMAND*)macho_shared->cmds.cmds[i];
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_THREAD_COMMAND_struct, image_endianess);
-				switch (c->flavor) {
+				switch (macho_shared->header.cputype) {
+				case MACHO_CPU_TYPE_I386:
+					switch (c->flavor) {
+					case -1:
+					case i386_NEW_THREAD_STATE:
+						create_host_struct(&c->state, MACHO_I386_THREAD_STATE_struct, image_endianess);
+						break;
+					}
+					break;
+				case MACHO_CPU_TYPE_POWERPC:
+					switch (c->flavor) {
 					case FLAVOR_PPC_THREAD_STATE:
 						create_host_struct(&c->state, MACHO_PPC_THREAD_STATE_struct, image_endianess);
 						break;
+					}
+					break;
 				}
-				break;
 			}
 			default:
 				create_host_struct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, image_endianess);

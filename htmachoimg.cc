@@ -117,7 +117,16 @@ ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	for (UINT i=0; i < macho_shared->cmds.count; i++) {
 		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
-			Address *entry = p->createAddress32(s->state.ppc.srr0);
+			Address *entry;
+			switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_POWERPC:
+				entry = p->createAddress32(s->state.state_ppc.srr0);
+				break;
+			case MACHO_CPU_TYPE_I386:
+				entry = p->createAddress32(s->state.state_i386.eip);
+				break;
+			default: assert(0);
+			}
 			v->gotoAddress(entry, NULL);
 			delete entry;
 			break;
