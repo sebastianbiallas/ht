@@ -2054,15 +2054,7 @@ void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, UINT aListboxcaps)
 
 void ht_text_listbox::done()
 {
-	ht_text_listbox_item *temp = first;
-	while (temp) {
-		ht_text_listbox_item *temp2 = temp->next;
-		for (int i=0; i<cols; i++) {
-			free(temp->data[i]);
-		}
-		free(temp);
-		temp = temp2;
-	}
+	clear_all();
 	ht_listbox::done();
 }
 
@@ -2074,6 +2066,20 @@ int 	ht_text_listbox::load(ht_object_stream *f)
 int	ht_text_listbox::calc_count()
 {
 	return count;
+}
+
+void	ht_text_listbox::clear_all()
+{
+	ht_text_listbox_item *temp = first;
+	while (temp) {
+		ht_text_listbox_item *temp2 = temp->next;
+		for (int i=0; i<cols; i++) {
+			free(temp->data[i]);
+		}
+		free(temp);
+		temp = temp2;
+	}
+     first = last = NULL;
 }
 
 int	ht_text_listbox::compare_strn(char *s1, char *s2, int l)

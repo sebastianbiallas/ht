@@ -370,6 +370,7 @@ public:
 	virtual	void	done();
 	virtual	int 	load(ht_object_stream *f);
 	virtual   int  calc_count();
+     virtual	void	clear_all();
 	virtual	int	compare_strn(char *s1, char *s2, int l);
 	virtual	int	compare_ccomm(char *s1, char *s2);
 	virtual   int	cursor_adjust();
