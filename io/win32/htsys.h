@@ -2,7 +2,7 @@
  *	HT Editor
  *	htsys.h (Win32 implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -24,18 +24,19 @@
 #include "htio.h"
 #include "global.h"
 
-#define HT_SYS_NAME			"win32"
+#define HT_SYS_NAME			"Win32"
 
-int sys_canonicalize(char *filename, char *fullfilename);
+int sys_canonicalize(char *filename, const char *fullfilename);
 int sys_findclose(pfind_t *pfind);
-int sys_findfirst(char *dirname, pfind_t *pfind);
+int sys_findfirst(const char *dirname, pfind_t *pfind);
 int sys_findnext(pfind_t *pfind);
-int sys_pstat(pstat_t *s, char *filename);
+int sys_pstat(pstat_t *s, const char *filename);
 void sys_suspend();
 int sys_get_free_mem();
-int sys_truncate(char *filename, FILEOFS ofs);
-int sys_deletefile(char *filename);
+int sys_truncate(const char *filename, FILEOFS ofs);
+int sys_deletefile(const char *filename);
 bool sys_is_path_delim(char c);
+int sys_filename_cmp(const char *a, const char *b);
 
 /*
  *	INIT

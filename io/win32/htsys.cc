@@ -2,7 +2,7 @@
  *	HT Editor
  *	htsys.cc (WIN32 implementation)
  *
- *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -35,7 +36,7 @@ struct winfindstate {
 	WIN32_FIND_DATA find_data;
 };
 
-int sys_canonicalize(char *filename, char *fullfilename)
+int sys_canonicalize(char *filename, const char *fullfilename)
 {
 	char *dunno;
 	return (GetFullPathName(filename, HT_NAME_MAX, fullfilename, &dunno) > 0) ? 0 : ENOENT;
@@ -64,7 +65,7 @@ void sys_findfill(pfind_t *pfind)
 	pfind->stat.atime = 0;
 }
 
-int sys_findfirst(char *dirname, pfind_t *pfind)
+int sys_findfirst(const char *dirname, pfind_t *pfind)
 {
 	char *Dirname = (char *)malloc(strlen(dirname)+5);
 	strcpy(Dirname, dirname);
@@ -108,7 +109,7 @@ int sys_findclose(pfind_t *pfind)
 	return r ? ENOENT : 0;
 }
 
-int sys_pstat(pstat_t *s, char *filename)
+int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
 	int e=stat(filename, &st);
@@ -136,7 +137,7 @@ int sys_get_free_mem()
 	return 0;
 }
 
-int sys_truncate(char *filename, FILEOFS ofs)
+int sys_truncate(const char *filename, FILEOFS ofs)
 {
 	HANDLE hfile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
@@ -154,7 +155,7 @@ int sys_truncate(char *filename, FILEOFS ofs)
 	return 0;
 }
 
-int sys_deletefile(char *filename)
+int sys_deletefile(const char *filename)
 {
 	if (DeleteFile(filename)) {
 		return 0;
@@ -164,7 +165,22 @@ int sys_deletefile(char *filename)
 
 bool sys_is_path_delim(char c)
 {
-	return (c == '/') || (c == '\\');
+	return (c == '\\');
+}
+
+int sys_filename_cmp(const char *a, const char *b)
+{
+	while (*a && *b) {
+		if (sys_is_path_delim(*a) && sys_is_path_delim(*b)) {
+		} else if (tolower(*a) != tolower(*b)) {
+			break;
+		} else if (*a != *b) {
+			break;
+		}
+		a++;
+		b++;
+	}
+	return tolower(*a) - tolower(*b);
 }
 
 /*
