@@ -19,11 +19,11 @@
 - FILEOFS 64+ bits
 (HT_1_0) - freeze/stabilize config file formats / APIs
 - int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
-- int ht_pe_header_viewer::ref_sel(LINE_ID *id)
-- int ht_pe_il_viewer::ref_sel(LINE_ID *id)
+- [FIXED ?]int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 
 +steves
 - !! (HT_0_6c / HT_0_7) commit ./depcomp(.sh)? to cvs (branch+trunk) !!
+- "~case insensitive" in search isnt accessable via alt-c (->copy)
 - (HT_0_7) (texteditor) fix at least
   * save on readonly/locked file
   * "open multiple / change all / f10 / save all -->but not all saved" bug
