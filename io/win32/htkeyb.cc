@@ -67,7 +67,7 @@ ht_key_keycode ht_win32_key_defs[] = {
 	{K_Control_L,			(0x00c+HT_VK_CTRL)},
 	{K_Return,			0x00d},
 	{K_Control_M,			(0x00d+HT_VK_CTRL)},
-	{K_Control_N,			(0x00e+ HT_VK_CTRL)},	// cpp-bug :-)
+	{K_Control_N,			(0x00e + HT_VK_CTRL)},	// cpp-bug :-)
 	{K_Control_O,			(0x00f+HT_VK_CTRL)},
 	{K_Control_P,			(0x010+HT_VK_CTRL)},
 	{K_Control_Q,			(0x011+HT_VK_CTRL)},
