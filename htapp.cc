@@ -1418,21 +1418,26 @@ bool ht_app::create_window_term()
 
 		termwindow->setvscrollbar(hs);
 
-		FILE *in, *out, *err;
-		sys_ipc_exec(&in, &out, &err, "gcc");
+		int in, out, err;
+		int handle;
+		int e = 0;
+		if ((e = sys_ipc_exec(&in, &out, &err, &handle, "gcc")) == 0) {
+			Terminal *terminal = new Terminal();
+			terminal->init(in, out, err, handle);
 
-		Terminal *terminal = new Terminal();
-		terminal->init(in, out, err);
-
-		b.x=0;
-		b.y=0;
-		b.w-=2;
-		b.h-=2;
-		TerminalViewer *termviewer=new TerminalViewer();
-		termviewer->init(&b, terminal, true);
-		termwindow->insert(termviewer);
+			b.x=0;
+			b.y=0;
+			b.w-=2;
+			b.h-=2;
+			TerminalViewer *termviewer=new TerminalViewer();
+			termviewer->init(&b, terminal, true);
+			termwindow->insert(termviewer);
 		
-		insert_window(termwindow, AWT_LOG, 0, false, NULL);
+			insert_window(termwindow, AWT_LOG, 0, false, NULL);
+		} else {
+			errorbox("couldn't create child-process (%d)", e);
+		    	return false;
+		}
 	}
 	return true;
 }
