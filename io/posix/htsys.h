@@ -38,7 +38,8 @@ int sys_deletefile(const char *filename);
 bool sys_is_path_delim(char c);
 int sys_filename_cmp(const char *a, const char *b);
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd);
+#include "stream.h"	// FIXME: ARGH
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd);
 bool sys_ipc_is_valid(int handle);
 int sys_ipc_terminate(int handle);
 
