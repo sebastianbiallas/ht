@@ -34,9 +34,7 @@
 #include "process.h"
 #include "snprintf.h"
 
-extern "C" {
 #include "evalx.h"
-}
 
 /*
  *	CLASS ht_blockop_dialog
