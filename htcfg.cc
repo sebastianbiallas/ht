@@ -96,7 +96,7 @@ loadstore_result save_systemconfig()
 		return LS_ERROR_WRITE;
 	}
 	
-/* write project config header */
+	/* write project config header */
 	config_header h;
 
 	memmove(h.magic, ht_systemconfig_magic, sizeof h.magic);
@@ -113,7 +113,7 @@ loadstore_result save_systemconfig()
 
 	f->write(&h, sizeof h);
 	
-/* write object stream type */
+	/* write object stream type */
 	ht_object_stream *d = create_object_stream(f, system_ostream_type);
 	   
 	switch (system_ostream_type) {
@@ -123,7 +123,7 @@ loadstore_result save_systemconfig()
 			f->write((void*)"\n#\n#\tThis is a generated file!\n#\n", 33);
 			break;
 	}
-/* write config */
+	/* write config */
 	app->store(d);
 	if (d->get_error()) return LS_ERROR_WRITE;
 		
@@ -153,7 +153,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 			*result = LS_ERROR_READ;
 			return false;
 	}
-/* read project config header */
+	/* read project config header */
 	config_header h;
 
 	if (f->read(&h, sizeof h)!=sizeof h) {
@@ -170,7 +170,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 
-// FIXME: bad code, no conversion errors reported
+	// FIXME: bad code, no conversion errors reported
 	if (hexw((char*)h.version) != ht_systemconfig_fileversion) {
 		*result = LS_ERROR_VERSION;
 		*error_info = hexw((char*)h.version);
@@ -181,7 +181,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 
 	dword object_stream_type = hexb((char*)h.stream_type);
 
-/* object stream type */
+	/* object stream type */
 	ht_object_stream *d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		*result = LS_ERROR_FORMAT;
@@ -190,7 +190,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 	
-/* read config */
+	/* read config */
 	if (app->load(d)!=0) {
 		*result = LS_ERROR_CORRUPTED;
 		*error_info = 0;
@@ -225,7 +225,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 		return LS_ERROR_WRITE;
 	}
 	
-/* write file config header */
+	/* write file config header */
 	config_header h;
 
 	memmove(h.magic, magic, sizeof h.magic);
@@ -242,7 +242,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 
 	f->write(&h, sizeof h);
 
-/* object stream type */
+	/* object stream type */
 	ht_object_stream *d = create_object_stream(f, file_ostream_type);
 	   
 	switch (file_ostream_type) {
@@ -252,7 +252,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 			f->write((void*)"\n#\n#\tThis is a generated file!\n#\n", 33);
 			break;
 	}
-/* write config */
+	/* write config */
 	store_func(d, context);
 
 	d->done();
@@ -279,7 +279,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 			delete f;
 			return LS_ERROR_READ;
 	}
-/* read file config header */
+	/* read file config header */
 	config_header h;
 
 	if (f->read(&h, sizeof h)!=sizeof h) {
@@ -290,7 +290,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	
 	if (memcmp(h.magic, magic, sizeof h.magic)!=0) return LS_ERROR_MAGIC;
 
-// FIXME: bad code, no conversion errors reported
+	// FIXME: bad code, no conversion errors reported
 	if (hexw((char*)h.version) != version) {
 		f->done();
 		delete f;
@@ -300,7 +300,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	
 	dword object_stream_type=hexb((char*)h.stream_type);
 
-/* object stream type */
+	/* object stream type */
 	ht_object_stream *d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		f->done();
@@ -308,7 +308,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 		return LS_ERROR_FORMAT;
 	}		
 	   
-/* read config */
+	/* read config */
 	if (load_func(d, context)) {
 		*error_info = 0;
 		if (d->get_error()) {

@@ -215,7 +215,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			ht_static_context_menu *m=new ht_static_context_menu();
 			m->init("~Local-Disasm");
 			m->insert_entry("~Assemble", "Ctrl+A", cmd_disasm_call_assembler, K_Control_A, 1);
-// FIXME: wrong implementation
+			// FIXME: wrong implementation
 			m->insert_entry("~Toggle 16/32", NULL, cmd_disasm_toggle1632, 0, 1);
 
 			msg->msg = msg_retval;
