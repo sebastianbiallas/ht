@@ -15,17 +15,18 @@ version 0.8.0:
 	- fixed bug in bnstr() with defaultbase > 10
 	- fixed buffer overflow in htelfsym.cc (thanks Luis Barrancos)
 	- fixed bug in ht_sys_file/ht_stdio_file::extend()
-	- eval dialog: +function help
+	- eval dialog: added function help
 	- eval: not ('~') and logical-not ('!') operators implemented
 	- disassembler interface (int maxlen, not byte maxlen)
 	- experimental PEF support
 	- fixed bug, causing invalid history entries when specifying files
 	  on the command-line
 	- ELF/relocatable file support
-	- Win32: access to native windows clipboard
+	- Win32: fixed access to native windows clipboard
 	- coff: support for coff files without optional header
 	- fixed bug in x86-assembler (correct opcode for [ebp+esp])
-	- fixed buggy ELF reading code partially (thanks rpm28). further reviewing required.
+	- fixed buggy ELF reading code partially (thanks rpm28).
+	  further reviewing required.
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

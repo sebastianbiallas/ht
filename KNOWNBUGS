@@ -1,6 +1,8 @@
   KnownBugs
 =============
 
+- ea19000090 in use16 disassembles incorrectly
+
 - big-endian ELF: section header flag details dont work...
 - analyser: 'follow' is always 32-bit, little-endian.
 
