@@ -5,59 +5,77 @@
   "offset(0x401000)")
 - remove xrefs
 - strz escape problems e.g. ffffffff -> "    "
-- callchain: goto
 - next unexplored
+- out_addr *analyser_output::get_addr(ADDR Addr) no cur_out_addr==NULL test
+- listbox scrollbar + scrolling problems
+- listbox column titles ? (+ sort order indicators ?)
+- htanaly.cc: menu ifs not used properly (for keys...)
+
++dunno
+- update help
+- listbox-search
+- qword *, /, %: better impl...
+- FILEOFS 64+ bits
+(HT_1_0) - freeze/stabilize config file formats / APIs
+- int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
+- int ht_pe_header_viewer::ref_sel(LINE_ID *id)
+- int ht_pe_il_viewer::ref_sel(LINE_ID *id)
+- ht_(v)fprintf ?
 
 +steves
-- SPARC: httag et al: only machine aligned accesses
-- project(/desktop?) file_s_
-- features configurable
-- file manager copy, etc. ?!
-- htne.cc: interactively turn relocations on/off
+- save textfile ... sdfdcgbdfb locking
+- mk(s)temp is posix ??
+- scrap "project" menu (kaputtgemergt)
+- ht_format_viewer::vstate_save(ht_view *focused) remove param ?! (testing...)
+  and: goto_offset(ht_view *to_hist or so....
+- search with invalid start/end offset
+(LINUX) - registry
+(LINUX) 	- more types (bool), script convert
+(LINUX) - eval (auto-doc, interface)
+(LINUX) 	- std_eval_func_handler, add builtin_eval_func_handler, evalfunc() not always call builtins
+(LINUX) - features configurable
+(LINUX) 	- SPARC_SHIT configure
+(LINUX) - implement POSIX - sys_truncate
+- SPARC: only machine word aligned accesses
+- file manager
+	- file browser
+	- vfs based on ht_listbox
+     - copy, etc. ?!
+	- vfs ..._viewer to get config_changed
 - elf/pe/etc.-section ref tree optimizationdfgjl
 - stream::set_layered suspicious
-- logwindow autoscroll
 - KEY_RESIZE
-- file browser
-- use GNU malloc (DJGPP)
-- eval (auto-doc, interface)
 - textedit/file
      - +get_size,extend,truncate +overwrite -use_getline
+     - highlighter speed !!
      - bug with getline's pofs ?!
-     - bug: crash with long lines ???
+     - long lines
      - unindent()
      - match pair highlight
      - undo::gettext() should (be able to) use text_editor::snprint_ppos(...)
-- backward search     
-- vfs ..._viewer to get config_changed
-- reg/pal
-     - text/bin autodetect... (configurable, registry and/or
-       how exe is called <$0>)
+     - input separators configurable (right now only creates UNIX-style files)
+- search backwards
 - more history entries: replace e.g.
-- implement sys_truncate
+- F4/view mode - ask before forgetting changes	
 - vfs -empty, mkdir, cd, dont work - no cursor
 - vfs: window resizing...
-- new regex.c
-- F4/view mode - ask before forgetting changes	
 - improve edit_time/dialog ?!
-- cleanup msg interface
 - homogenous/heterogenous lists
-- abstract (e.g. transparent) chars (io/*)
+- cleanup msg interface
 - auto-documentation (esp. keys & eval-funcs)
 - portability
      - compile on sun solaris (curses problems (only?) on cf.sf.net)
      - compile on MacOS X (curses.h, but no ACS_*)
-     - endianess, intsize
 - free le_page_file...
 - detect format length (ne,le,elf)
-- pe/elf/le relocations
+- pe/elf/le relocations ?
 - make ht_group_sub work correctly
-- color -> invert & underlined attribute and transparent chars
+- color invert & underlined attribute and transparent chars, codepages ? &&
+ 	abstract (e.g. transparent) chars (io/*)
 - x86 (dis)assembler
      - options (ambigous & + floats) + beautify (enums)
-     - movzx/movsx ambigous (word, dword), "short"/"large" branches
-- pe/(delay-)imports+exports based on ht_listbox ??
-     - quickfinder in imports/exports
+     - "short"/"large" branches
+- OBJECT_ID vs HT_ATOM ?
 - object notification (e.g. insertion into groups (c overview),
   dialog-elements content modified )
 - file structure overview
@@ -83,13 +101,12 @@
 - remove memory leaks
 
 +discussion
+- queuemsg in ht_view ?!
+- searchmode bin/regex: rewrite regex ?
 - "Ctrl-X" vs. "Ctrl+X"
 - only frames have desc, rest view_debug_name
 - assert through exceptionz ?
-- throw bla() XOR throw new bla() ?
-- assemble: push eax (eax: symbol)
 - get/setdata instead of view_state_* ?
-- rewrite constructor/destructor for every object ?
 - program modularization (dynamically linkable and built-in modules) ???
 - scripting engine for simple formats (or even more ?)
 

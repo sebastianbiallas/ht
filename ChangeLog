@@ -1,6 +1,54 @@
  HT ChangeLog
 ==============
 
+version 0.6.1:
+     - sys/djgpp: ff2pstat(...) fixed
+     - got rid of fmt_vaddress
+     - whole new Address class for the analyser. Much more flexible.
+       Enables truly segmented and 64-bit addrs.
+     - submenus
+     - tools/int2info.pl: converts Ralf Brown's Interrupt List to TexInfo
+     - htpehead.cc: directory goto works now, OFSs really are RVAs !
+     - ht_snprintf/ht_vsnprintf + many possible buffer overflows fixed
+     - PE/imports,exports,delay-imports based on listbox + quickfinder
+     - projects
+     - view current offset in a different view
+     - x86dis: movzx/movsx param size ambiguity fixed
+     - many bugs fixed
+
+     * search fixes: e.g. continue search in text-viewer
+     * relfile/stream: reloc_enable/disable + bugfix
+	* htne.cc: interactively turn relocations on/off
+
+	* h/vscrollbar naming fixed
+     * logwindow autoscroll
+
+     * analyser export symbols to .sym (alpha)
+
+	* general tempfiles
+	* sys_filename_cmp implemented
+     * use sys_truncate
+
+     * stream/reg/vfs/pal/sys and deps: "const"-keyword
+     * qword.cc/h added, merged with tools.cc and htdebug.cc implementations
+     * htapp: no project window on startup (only if param -p bla)
+     * htformat.cc: cursormicro_fwd fixed (was: pe/head dir edit dwords broken)
+
+     * convertAddressToViewerPos() no longer returns invalid addrs
+     * vstates in window, now work with non-ht_format too, prepared for redo
+
+     * textfile/httext: match_line_fwd bug fixed
+
+     * hex/format/search: search start..end works (again)
+     * search: no more empty strings in history (again)
+
+     * textedit.cc: goto(linecount+1) worked
+     * stream.cc/h, htapp.cc: new/text, save as works
+     * htdialog.cc: strinputfield shift/home-end
+
+     * tools.h: removed htanaly.cc in header
+     * syntax/html improved: qstring, dqstring
+
 version 0.6.0b:
      - textedit: save-bug fixed
      - sys/posix: pstat() fixed
@@ -286,3 +334,4 @@ version 0.3.991:
 version 20000114 (snapshot):
      - The initial HT (0.3.0-0.3.9) has been completly (!) rewritten.
        First release of the new version.
+
