@@ -16,6 +16,7 @@ version 0.6.1:
      - x86dis: movzx/movsx param size ambiguity fixed
      - many bugs fixed
 
+     * no ia64 in pe32/elf32, no x86 in pe64/elf64
      * htformat: string eval interface changed heaviliy funcs should
        now be easily extendable through inheritance and more
      * htpeimg: evalfunc rva() implemented (proof of concept)
