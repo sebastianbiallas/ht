@@ -50,6 +50,7 @@ public:
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *addr);
+	virtual	int ref_sel(LINE_ID *id);
 };
 
 /*

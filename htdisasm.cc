@@ -310,6 +310,11 @@ bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return true;
 }
 
+int ht_disasm_viewer::ref_sel(LINE_ID *id)
+{
+	return goto_offset(id->id1, true);
+}
+
 bool ht_disasm_viewer::string_to_pos(char *string, viewer_pos *addr)
 {
 	eval_scalar r;
