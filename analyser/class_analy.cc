@@ -45,12 +45,11 @@ void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File
 {
 	class_shared = Class_shared;
      file = File;
-     
-	validarea = new Area();
-	validarea->init();
 
 	Analyser::init();
 
+     validarea = class_shared->valid;
+     initialized = class_shared->initialized;
 	/////////////
 
 	setLocationTreeOptimizeThreshold(100);
@@ -63,7 +62,6 @@ void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File
  */
 int	ClassAnalyser::load(ht_object_stream *f)
 {
-	GET_OBJECT(f, validarea);
 	return Analyser::load(f);
 }
 
@@ -72,8 +70,6 @@ int	ClassAnalyser::load(ht_object_stream *f)
  */
 void	ClassAnalyser::done()
 {
-	validarea->done();
-	delete validarea;
 	Analyser::done();
 }
 
@@ -83,7 +79,7 @@ void	ClassAnalyser::done()
 void ClassAnalyser::beginAnalysis()
 {
 	char buffer[1024];
-
+     
      char *b = &buffer[ht_snprintf(buffer, 1024, "; public class %s", class_shared->classinfo.thisclass)];
      if (class_shared->classinfo.superclass) {
           b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
@@ -97,7 +93,7 @@ void ClassAnalyser::beginAnalysis()
      }
      b += ht_snprintf(b, 1024, " {");
 
-	Address *a = createAddress32(0x10000000);
+	Address *a = createAddress32(0);
      addComment(a, 0, "");
 	addComment(a, 0, ";********************************************************");
 	addComment(a, 0, buffer);
@@ -115,7 +111,8 @@ void ClassAnalyser::beginAnalysis()
 			addComment(a, 0, ";----------------------------------------------");
                addComment(a, 0, buffer);
 			addComment(a, 0, ";----------------------------------------------");
-               delete a;
+			addAddressSymbol(a, cm->name, label_func);
+			delete a;
           }
      }
 	setLocationTreeOptimizeThreshold(1000);
@@ -139,8 +136,8 @@ UINT ClassAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FILEOFS ofs = addressToFileofs(Addr);
 	assert(ofs != INVALID_FILE_OFS);
-	class_shared->image->seek(ofs);
-	return class_shared->image->read(buf, size);
+	file->seek(ofs);
+	return file->read(buf, size);
 }
 
 /*
@@ -173,7 +170,7 @@ Assembler *ClassAnalyser::createAssembler()
 FILEOFS ClassAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		return ((AddressFlat32*)Addr)->addr-0x10000000;
+		return ((AddressFlat32*)Addr)->addr;
 	} else {
 		return INVALID_FILE_OFS;
 	}
@@ -247,10 +244,7 @@ void ClassAnalyser::log(const char *msg)
  */
 Address *ClassAnalyser::nextValid(Address *Addr)
 {
-	return new InvalidAddress(); //validarea->findnext(Addr);
-	// FIXME (hack while validarea isnt active):
-//   taddr *a = enum_addrs(Addr);
-//   return (a)?a->addr:INVALID_ADDR;
+	return (Address *)validarea->findNext(Addr);
 }
 
 /*
@@ -287,14 +281,13 @@ int	ClassAnalyser::queryConfig(int mode)
  */
 Address *ClassAnalyser::fileofsToAddress(FILEOFS fileaddr)
 {
-//	ADDR a;
-/*	if (pe_ofs_to_rva(&pe_shared->sections, fileaddr, &a)) {
-		return (a+pe_shared->pe32.header_nt.image_base);
-	} else {
-		return INVALID_ADDR;
-	}*/
-//     return fileaddr;
-	return NULL;
+	Address *a = createAddress32(fileaddr);
+     if (validAddress(a, scvalid)) {
+          return a;
+     } else {
+     	delete a;
+          return NULL;
+     }
 }
 
 /*
@@ -325,7 +318,12 @@ bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}*/
 	if (!Addr->isValid()) return false;
-	return ((((AddressFlat32*)Addr)->addr >= 0x10000000 && ((AddressFlat32*)Addr)->addr < 0x10001000));
+	switch (action) {
+		case scinitialized:
+			return class_shared->initialized->contains(Addr);
+		default:
+			return class_shared->valid->contains(Addr);
+     }
 }
 
 

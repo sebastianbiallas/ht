@@ -21,20 +21,19 @@
 #include "class.h"
 #include "class_analy.h"
 #include "classimg.h"
-#include "log.h"
-#include "htpal.h"
 #include "formats.h"
-
 #include "htanaly.h"
+#include "htpal.h"
+#include "log.h"
+#include "snprintf.h"
 
 ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_class_shared_data *class_shared=(ht_class_shared_data *)group->get_shared_data();
-	if (!class_shared->image) return NULL;
 
 	LOG("%s: JAVA: loading image (starting analyser)...", file->get_filename());
 	ClassAnalyser *a = new ClassAnalyser();
-	a->init(class_shared, class_shared->image);
+	a->init(class_shared, file);
 
 	bounds c = *b;
 	ht_group *g = new ht_group();
@@ -44,7 +43,7 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	c.y+=2;
 	c.h-=2;
 	ht_class_aviewer *v = new ht_class_aviewer();
-	v->init(&c, DESC_JAVA_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, class_shared->image, group, a, class_shared);
+	v->init(&c, DESC_JAVA_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, a, class_shared);
 
 	c.y-=2;
 	c.h=2;
@@ -53,21 +52,17 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 
 	v->attachInfoline(head);
 
-/* search for lowest/highest */
-/*	ADDR l=(ADDR)-1, h=0;
-	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
-		if (s->data_address < l) l=s->data_address;
-		if (s->data_address+s->data_size > h) h=s->data_address+s->data_size;
-		s++;
-	}
-	l+=pe_shared->pe32.header_nt.image_base;
-	h+=pe_shared->pe32.header_nt.image_base;
-*/
 	ht_analy_sub *analy=new ht_analy_sub();
-	Address *low = a->createAddress32(0x10000000);
-	Address *high = a->createAddress32(0x10001000);
-	analy->init(class_shared->image, v, a, low, high);
+	Address *low = a->createAddress32(0);
+
+ 	Address *high = (Address*)class_shared->valid->findPrev(NULL);
+     if (!high) {
+     	high = a->createAddress32(0);
+     } else {
+     	high = (Address *)high->duplicate();
+          high->add(-1);
+     }
+	analy->init(file, v, a, low, high);
 	delete low;
 	delete high;
 	v->analy_sub = analy;

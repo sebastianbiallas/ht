@@ -22,6 +22,7 @@
 #define _CLASS_H
 
 #include "htformat.h"
+#include "stddata.h"
 
 typedef unsigned char  u1;
 typedef unsigned int   u2;
@@ -130,8 +131,9 @@ typedef struct _classfile {
 
 struct ht_class_shared_data {
 	ht_stree	*methods;
-     ht_mem_file *image;
 	classfile	*file;
+     Area *valid;
+     Area *initialized;
      struct {
      	char *thisclass;
           char *superclass;

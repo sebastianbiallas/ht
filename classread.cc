@@ -23,13 +23,14 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "stream.h"
-#include "class.h"
-
-#include "snprintf.h"
-
 #include <stdlib.h>
 #include <string.h>
+
+#include "analy.h"
+#include "class.h"
+#include "snprintf.h"
+#include "stream.h"
+
 
 static u1 inp[4];
 static u4 offset;
@@ -225,8 +226,10 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	shared->file = clazz;
 	shared->methods = new ht_stree();
 	shared->methods->init(compare_keys_ht_data);
-     shared->image = new ht_mem_file();
-     shared->image->init(0, 1024, FAM_READ | FAM_WRITE | FAM_CREATE);
+     shared->valid = new Area();
+     shared->valid->init();
+     shared->initialized = new Area();
+     shared->initialized->init();
 	clazz->offset = offset = 0;
 	clazz->magic  = READ4();
 	if (clazz->magic != 0xCAFEBABE) {
@@ -287,7 +290,6 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	}
 	clazz->moffset = offset;
 	count = clazz->methods_count = READ2();
-     ClassAddress addr = 0x10000000;
 	if (count) {
 		clazz->methods = (mf_info **)malloc (count * sizeof (*(clazz->methods)));
 		if (!clazz->methods) {
@@ -299,15 +301,10 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
                for (int j=0; j < acount; j++) {
                     attrib_info *ai = clazz->methods[i]->attribs[j];
                     if (ai->tag == ATTRIB_Code) {
-                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, addr, ai->code.start, ai->code.len);
+                    	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, ai->code.start, ai->code.start, ai->code.len);
                          shared->methods->insert(cm, NULL);
-                         addr += ai->code.len;
-                         htio->seek(ai->code.start);
-                         byte *buf = (byte*)malloc(ai->code.len);
-                         htio->read(buf, ai->code.len);
-                         shared->image->write(buf, ai->code.len);
-                         htio->seek(offset);
-                         free(buf);
+                         shared->initialized->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
+                         shared->valid->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
                     }
                }
 		}
@@ -330,7 +327,6 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	} else {
 		clazz->attribs = 0;
 	}
-     shared->image->set_access_mode(FAM_READ);
 	return shared;
 }
 
