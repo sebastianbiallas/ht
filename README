@@ -96,7 +96,7 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia64, alpha)
+               - image with code/data analyser (x86, ia64, alpha, ppc)
 
         * linear executables (LE)
                - header

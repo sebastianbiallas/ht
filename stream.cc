@@ -644,14 +644,20 @@ RETRY:
 	if (am != FAM_NULL) {
 		pstat_t s;
 		int e = 0;
-		file = fopen(filename, mode);
-		if (!file) e = errno;
+		e = sys_pstat(&s, filename);
 		if (!e) {
-			e = sys_pstat(&s, filename);
-			if (!e) {
-				if (HT_S_ISDIR(s.mode)) e = EISDIR; else
-					if (!HT_S_ISREG(s.mode)) e = EINVAL;
+			if ((!(s.caps & pstat_mode_type) || !HT_S_ISREG(s.mode)) && (am & FAM_WRITE)) {
+				// disable write-access to non-regular files
+				e = EACCES;
+			} else if (HT_S_ISDIR(s.mode)) {
+				e = EISDIR;
+			} else if (!HT_S_ISREG(s.mode) && !HT_S_ISBLK(s.mode)) {
+				e = EINVAL;
 			}
+		}
+		if (!e) {
+			file = fopen(filename, mode);
+			if (!file) e = errno;
 		}
 		if (e) {
 			set_error(e | STERR_SYSTEM);
