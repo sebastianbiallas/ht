@@ -202,11 +202,19 @@ void ht_pe_dimport_viewer::select_entry(void *entry)
 	if (pe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
 		PEAnalyser *a = (PEAnalyser*)av->analy;
-		Address *addr = a->createAddress32(e->address);
+          Address *addr;
+          if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+			addr = a->createAddress32(e->address/*+pe_shared->pe32.header_nt.image_base*/);
+          } else {
+			addr = a->createAddress64(to_qword(e->address)/*+pe_shared->pe64.header_nt.image_base*/);
+          }
 		if (av->gotoAddress(addr, NULL)) {
 			app->focus(av);
 			vstate_save();
-		} else errorbox("can't follow: %s %08x is not valid !", "delay-import address", addr);
+		} else {
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
+          	errorbox("can't follow: %s %y is not valid !", "delay-import address", addr);
+          }
 		delete addr;
 	} else errorbox("can't follow: no image viewer");
 }

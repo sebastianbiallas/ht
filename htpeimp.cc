@@ -461,7 +461,10 @@ void ht_pe_import_viewer::select_entry(void *entry)
 		if (av->gotoAddress(addr, NULL)) {
 			app->focus(av);
 			vstate_save();
-		} else errorbox("can't follow: %s %08x is not valid !", "import address", addr);
+		} else {
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
+          	errorbox("can't follow: %s %y is not valid !", "import address", addr);
+          }
 		delete addr;
 	} else errorbox("can't follow: no image viewer");
 }
