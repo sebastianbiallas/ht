@@ -389,7 +389,7 @@ void NEAnalyser::initUnasm()
 	DPRINTF("ne_analy: ");
 	DPRINTF("initing analy_x86_disassembler\n");
 	analy_disasm = new AnalyX86Disassembler();
-	((AnalyX86Disassembler*)analy_disasm)->init(this, true, true);
+	((AnalyX86Disassembler*)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_16BIT | ANALYX86DISASSEMBLER_FLAGS_SEGMENTED);
 }
 
 /*

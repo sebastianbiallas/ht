@@ -96,12 +96,15 @@ public:
 	virtual int stringSize();
 };
 
+#define ANALYX86DISASSEMBLER_FLAGS_16BIT 1
+#define ANALYX86DISASSEMBLER_FLAGS_SEGMENTED 2
+#define ANALYX86DISASSEMBLER_FLAGS_FLAT64 4
+
 class AnalyX86Disassembler: public AnalyDisassembler {
 public:
-	bool _16bit;
-	bool segmented;
+     int flags;
 
-			void			init(Analyser *A, bool _16bit, bool segmented);
+			void			init(Analyser *A, int flags);
 			int 			load(ht_object_stream *f);
 	virtual   void    	 	done();
 	virtual	OBJECT_ID		object_id();

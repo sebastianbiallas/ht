@@ -336,7 +336,11 @@ Address *PEAnalyser::createAddress()
 		case COFF_MACHINE_I386:
 		case COFF_MACHINE_I486:
 		case COFF_MACHINE_I586:
-			return new AddressX86Flat32();
+		     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+				return new AddressFlat64();
+               } else {
+				return new AddressX86Flat32();
+               }
 		case COFF_MACHINE_ALPHA:
 			return new AddressAlphaFlat32();
 	}
@@ -479,6 +483,10 @@ static char *token_func(dword token, void *context)
  */
 void PEAnalyser::initUnasm()
 {
+	bool pe64 = false;
+     if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
+     	pe64 = true;
+     }
 	DPRINTF("pe_analy: ");
 	if (pe_shared->il) {
 		analy_disasm = new AnalyILDisassembler();
@@ -488,9 +496,13 @@ void PEAnalyser::initUnasm()
 		case COFF_MACHINE_I386:	// Intel 386
 		case COFF_MACHINE_I486:	// Intel 486
 		case COFF_MACHINE_I586:	// Intel 586
-			DPRINTF("initing analy_x86_disassembler\n");
-			analy_disasm = new AnalyX86Disassembler();
-			((AnalyX86Disassembler *)analy_disasm)->init(this, false, false);
+          	if (pe64) {
+				errorbox("x86 cant be used in PE64 format.");
+               } else {
+				DPRINTF("initing analy_x86_disassembler\n");
+				analy_disasm = new AnalyX86Disassembler();
+				((AnalyX86Disassembler *)analy_disasm)->init(this, 0);
+               }
 			break;
 		case COFF_MACHINE_R3000:	// MIPS little-endian, 0x160 big-endian
 			DPRINTF("no apropriate disassembler for MIPS\n");
@@ -514,8 +526,12 @@ void PEAnalyser::initUnasm()
 			warnbox("No disassembler for POWER PC!");
 			break;
           case COFF_MACHINE_IA64:
-			analy_disasm = new AnalyIA64Disassembler();
-			((AnalyIA64Disassembler*)analy_disasm)->init(this);
+          	if (!pe64) {
+				errorbox("Intel IA64 cant be used in PE32 format.");
+               } else {
+				analy_disasm = new AnalyIA64Disassembler();
+				((AnalyIA64Disassembler*)analy_disasm)->init(this);
+               }
 			break;          
 		case COFF_MACHINE_UNKNOWN:
 		default:

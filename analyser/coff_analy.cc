@@ -361,7 +361,7 @@ void CoffAnalyser::initUnasm()
 		case COFF_MACHINE_I586:	// Intel 586
 			DPRINTF("initing analy_x86_disassembler\n");
 			analy_disasm = new AnalyX86Disassembler();
-			((AnalyX86Disassembler*)analy_disasm)->init(this, false, false);
+			((AnalyX86Disassembler*)analy_disasm)->init(this, 0);
 			break;
 		case COFF_MACHINE_R3000:	// MIPS little-endian, 0x160 big-endian
 			DPRINTF("no apropriate disassembler for MIPS\n");

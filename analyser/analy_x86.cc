@@ -429,11 +429,10 @@ int AddressX86_1616::stringSize()
 /*
  *
  */
-void AnalyX86Disassembler::init(Analyser *A, bool __16bit, bool Segmented)
+void AnalyX86Disassembler::init(Analyser *A, int f)
 {
-	_16bit = __16bit;
-	segmented = Segmented;
-	if (_16bit) {
+	flags = f;
+	if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
 		disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
 	} else {
 		disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
@@ -446,7 +445,7 @@ void AnalyX86Disassembler::init(Analyser *A, bool __16bit, bool Segmented)
  */
 int  AnalyX86Disassembler::load(ht_object_stream *f)
 {
-	GET_BOOL(f, segmented);
+     GET_INT_HEX(f, flags);
 	return AnalyDisassembler::load(f);
 }
 
@@ -468,7 +467,9 @@ OBJECT_ID	AnalyX86Disassembler::object_id()
 
 Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 {
-	if (segmented) {
+	if (flags & ANALYX86DISASSEMBLER_FLAGS_FLAT64) {
+		return new AddressFlat64(to_qword(offset));
+     } else if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 		if (offset <= 0xffff) {
 			return new AddressX86_1616(segment, offset);
 		} else {
@@ -508,14 +509,14 @@ Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 			}*/
 			
 			word seg = 0;
-			if (segmented) {
+			if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 				seg = getSegment(analy->addr);
 			}
 			addr = createAddress(seg, o->op[0].imm);
 			return addr;
 		}
 		case X86_OPTYPE_FARPTR:
-			if (segmented) {
+			if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 				addr = createAddress(o->op[0].farptr.seg, o->op[0].farptr.offset);
 			} else {
 				break;
@@ -576,7 +577,7 @@ void	AnalyX86Disassembler::examineOpcode(OPCODE *opcode)
 				addr = createAddress(0, op->imm);
 				break;
 			case X86_OPTYPE_FARPTR:
-				if (segmented) {
+				if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 					addr = createAddress(op->farptr.seg, op->farptr.offset);
 				}
 				access.type = acoffset;
@@ -630,7 +631,7 @@ branch_enum_t AnalyX86Disassembler::isBranch(OPCODE *opcode)
  */
 void AnalyX86Disassembler::store(ht_object_stream *f)
 {
-	PUT_BOOL(f, segmented);
+	PUT_INT_HEX(f, flags);
 	AnalyDisassembler::store(f);
 }
 
