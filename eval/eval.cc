@@ -21,6 +21,7 @@
 #include "evaltype.h"
 #include "evalparse.h"
 #include "eval.h"
+#include "snprintf.h"
 
 #ifdef EVAL_DEBUG
 
@@ -150,7 +151,7 @@ void set_eval_error(char *format,...)
 	va_list vargs;
 	
 	va_start(vargs, format);
-	vsprintf(eval_errstr, format, vargs);
+	ht_vsnprintf(eval_errstr, sizeof eval_errstr, format, vargs);
 	va_end(vargs);
 	eval_error_pos=lex_current_buffer_pos();
 	eval_error=1;
@@ -161,7 +162,7 @@ void set_eval_error_ex(int pos, char *format, ...)
 	va_list vargs;
 	
 	va_start(vargs, format);
-	vsprintf(eval_errstr, format, vargs);
+	ht_vsnprintf(eval_errstr, sizeof eval_errstr, format, vargs);
 	va_end(vargs);
 	eval_error_pos=pos;
 	eval_error=1;
