@@ -642,17 +642,19 @@ RETRY:
 	
 	bool retval = true;
 	if (am != FAM_NULL) {
-		pstat_t s;
 		int e = 0;
-		e = sys_pstat(&s, filename);
-		if (!e) {
-			if ((!(s.caps & pstat_mode_type) || !HT_S_ISREG(s.mode)) && (am & FAM_WRITE)) {
-				// disable write-access to non-regular files
-				e = EACCES;
-			} else if (HT_S_ISDIR(s.mode)) {
-				e = EISDIR;
-			} else if (!HT_S_ISREG(s.mode) && !HT_S_ISBLK(s.mode)) {
-				e = EINVAL;
+		if (open_mode != FOM_CREATE) {
+			pstat_t s;
+			e = sys_pstat(&s, filename);
+			if (!e) {
+				if ((!(s.caps & pstat_mode_type) || !HT_S_ISREG(s.mode)) && (am & FAM_WRITE)) {
+					// disable write-access to non-regular files
+					e = EACCES;
+				} else if (HT_S_ISDIR(s.mode)) {
+					e = EISDIR;
+				} else if (!HT_S_ISREG(s.mode) && !HT_S_ISBLK(s.mode)) {
+					e = EINVAL;
+				}
 			}
 		}
 		if (!e) {

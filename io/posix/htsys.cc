@@ -89,9 +89,9 @@ int sys_pstat(pstat_t *s, const char *filename)
 {
 	struct stat st;
 	int e = stat(filename, &st);
-	if (e) return e;
+	if (e) return errno;
 	s->caps = pstat_ctime|pstat_mtime|pstat_atime|pstat_uid|pstat_gid|pstat_mode_all|pstat_size|pstat_inode;
-	s->ctime  =st.st_ctime;
+	s->ctime = st.st_ctime;
 	s->mtime = st.st_mtime;
 	s->atime = st.st_atime;
 	s->gid = st.st_uid;
