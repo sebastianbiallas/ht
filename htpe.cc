@@ -337,7 +337,7 @@ bool pe_section_name_to_section(pe_section_headers *section_headers, const char 
      int slen = strlen(name);
      slen = MIN(slen, COFF_SIZEOF_SHORT_NAME);
 	for (UINT i=0; i < section_headers->section_count; i++) {
-		if (strncmp(name, (char*)&section_headers->sections->name, slen) == 0) {
+		if (strncmp(name, (char*)&s->name, slen) == 0) {
 			*section = i;
 			return true;
 		}

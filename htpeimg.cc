@@ -189,8 +189,8 @@ int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist
 {
 	eval_func myfuncs[] = {
 		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT}, "returns address of rva"},
-		{"section", (void*)&pe_viewer_func_section_int, {SCALAR_INT}, "returns address of section (by name)"},
-		{"section", (void*)&pe_viewer_func_section_str, {SCALAR_STR}, "returns address of section (by number)"},
+		{"section", (void*)&pe_viewer_func_section_str, {SCALAR_STR}, "returns address of section (by name)"},
+		{"section_int", (void*)&pe_viewer_func_section_int, {SCALAR_INT}, "returns address of section (by number)"},
 		{NULL}
 	};
 	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
