@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	infoview.cc
  *
@@ -448,7 +448,7 @@ int ht_info_viewer::find_node(char *infotext, char *node)
 	char *firstnode = NULL;
 	while ((s=strchr(s, 0x1f))) {
 		s++;
-		if (*s) s++;
+          while ((*s>0) && (*s<32)) s++;
 		char *cr = strchr(s, '\n');
 		if (cr) {
 			while (*s && (s<cr)) {
