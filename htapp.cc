@@ -1238,7 +1238,7 @@ void ht_app::init(bounds *pq)
 	file->insert_entry("~Save", 0, cmd_file_save, 0, 1);
 	file->insert_entry("Save ~As...", 0, cmd_file_saveas, 0, 1);
 	file->insert_separator();
-	file->insert_entry("Open ~project", NULL, cmd_project_open, 0, 1);
+	file->insert_entry("Open ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
 	file->insert_separator();
 	file->insert_entry("~Quit", "F10", cmd_quit, 0, 1);
