@@ -441,14 +441,14 @@ void ht_pe_import_viewer::handlemsg(htmsg *msg)
 	ht_text_listbox::handlemsg(msg);
 }
 
-void ht_pe_import_viewer::select_entry(void *entry)
+bool ht_pe_import_viewer::select_entry(void *entry)
 {
 	ht_text_listbox_item *i = (ht_text_listbox_item *)entry;
 
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
 	ht_pe_import_function *e = (ht_pe_import_function*)pe_shared->imports.funcs->get(i->id);
-	if (!e) return;
+	if (!e) return true;
 	if (pe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
 		PEAnalyser *a = (PEAnalyser*)av->analy;
@@ -467,6 +467,7 @@ void ht_pe_import_viewer::select_entry(void *entry)
 		}
 		delete addr;
 	} else errorbox("can't follow: no image viewer");
+	return true;
 }
 
 

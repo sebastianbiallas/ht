@@ -33,7 +33,7 @@ extern format_viewer_if htpedelayimports_if;
 class ht_pe_dimport_viewer: public ht_pe_import_viewer {
 public:
 /* overwritten */
-	virtual	void select_entry(void *entry);
+	virtual	bool select_entry(void *entry);
 };
 
 #endif /* !__HTPEDIMP_H__ */

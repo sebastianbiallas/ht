@@ -136,13 +136,13 @@ static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-     UINT i = QWORD_GET_INT(q->value);
+	UINT i = QWORD_GET_INT(q->value);
 	if (!QWORD_GET_HI(q->value) && (i+1 < aviewer->pe_shared->sections.section_count)) {
 		viewer_pos p;
 		FILEOFS ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
-                             aviewer->pe_shared->sections.sections[i].data_address,
-		                  &ofs)
+					    aviewer->pe_shared->sections.sections[i].data_address,
+					   &ofs)
 		 && aviewer->offset_to_pos(ofs, &p)) {
 			Address *a;
 			int b;
@@ -154,24 +154,24 @@ static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 		} else {
 //			set_eval_error("invalid file offset or no corresponding RVA for '0%xh'", rva);
 		}     
-     } else {
+	} else {
 		set_eval_error("no section number %qd", &q->value);
-     }
+	}
 	return 0;
 }
 
 static int pe_viewer_func_section_str(eval_scalar *result, eval_str *str)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-     int section;
-     char str2[COFF_SIZEOF_SHORT_NAME+1];
-     memset(str2, 0, COFF_SIZEOF_SHORT_NAME+1);
-     memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
+	int section;
+	char str2[COFF_SIZEOF_SHORT_NAME+1];
+	memset(str2, 0, COFF_SIZEOF_SHORT_NAME+1);
+	memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
 	if (pe_section_name_to_section(&aviewer->pe_shared->sections, str2, &section)) {
-          eval_scalar i;
+		eval_scalar i;
 		scalar_create_int_c(&i, section);
-     	return pe_viewer_func_section_int(result, &i.scalar.integer);
-     }
+		return pe_viewer_func_section_int(result, &i.scalar.integer);
+	}
 	return 0;
 }
 

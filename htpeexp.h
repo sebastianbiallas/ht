@@ -39,7 +39,7 @@ public:
 	virtual	void	done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void select_entry(void *entry);
+	virtual	bool select_entry(void *entry);
 /* new */
 			char *func(UINT i, bool execute);
 };
