@@ -173,7 +173,7 @@ void AnalyserOutput::footer()
 	// STUB
 }
 
-char *analyser_output_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
+static char *analyser_output_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 {
 	AnalyserOutput *output = (AnalyserOutput *) context;
 	char *buf;
