@@ -2828,6 +2828,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 
 						m.msg=msg_filesize_changed;
 						m.type=mt_broadcast;
+						sendsubmsg(&m);
 						sendmsg(&m);
 					}
 				} else {
