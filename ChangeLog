@@ -16,15 +16,15 @@ version 0.6.1:
 	- x86dis: movzx/movsx param size ambiguity fixed
 	- many bugs fixed
 
-     * htpeimg.cc: "section(ANY)"
-     * infoview copes with CRLF
-     * ht_memmap_file and databuf_* secured
-     * eval()-function help in goto
-     * texteditor/viewer speed ups (!)
+	* htpeimg.cc: "section(ANY)"
+	* infoview copes with CRLF
+	* ht_memmap_file and databuf_* secured
+	* eval()-function help in goto
+	* texteditor/viewer speed ups (!)
 
-     * LE: header flags
-     * eval: varparam, single type-variable param
-     * eval: typeof(), is_int(), is_string(), is_float() implemented
+	* LE: header flags
+	* eval: varparam, single type-variable param
+	* eval: typeof(), is_int(), is_string(), is_float() implemented
 
 	* FIXED: textedit.cc:2498 unneccesarry compare (temp)
 
