@@ -688,11 +688,11 @@ void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
 
 void cview::done()
 {
+  ht_format_group::done();
   ht_class_shared_data *clazz = (ht_class_shared_data *)shared_data;
   if (clazz) {
     class_unread(clazz);
   }
-  ht_format_group::done();
 }
 
 static format_viewer_if htcls_cview = {
