@@ -72,7 +72,6 @@
 #define Ew	TYPE_E, 0, SIZE_W, SIZE_W
 #define Ed	TYPE_E, 0, SIZE_D, SIZE_D
 #define Eq	TYPE_E, 0, SIZE_Q, SIZE_Q
-#define Ep	TYPE_E, 0, SIZE_P, SIZE_P
 #define Ev	TYPE_E, 0, SIZE_V, SIZE_V
 #define Es	TYPE_E, 0, SIZE_S, SIZE_S
 #define El	TYPE_E, 0, SIZE_L, SIZE_L
@@ -916,9 +915,9 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 {"inc", {{Ev}}},
 {"dec", {{Ev}}},
 {"call", {{Ev}}},
-{"call", {{Ep}}},
+{"call", {{Mp}}},
 {"jmp", {{Ev}}},
-{"jmp", {{Ep}}},
+{"jmp", {{Mp}}},
 {"push", {{Ev}}},
 {0}
 },
