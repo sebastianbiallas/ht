@@ -455,7 +455,7 @@ static char *string_func(dword ofs, void *context)
 static char *token_func(dword token, void *context)
 {
 	static char tokenstr[1024];
-	ht_pe_shared_data *pe = (ht_pe_shared_data*)context;
+//	ht_pe_shared_data *pe = (ht_pe_shared_data*)context;
 	switch (token & IL_META_TOKEN_MASK) {
 		case IL_META_TOKEN_TYPE_REF:
 		case IL_META_TOKEN_TYPE_DEF: {
