@@ -83,6 +83,7 @@ struct ht_pe_shared_data {
 	ht_view *v_imports;
 	ht_view *v_dimports;
 	ht_view *v_resources;
+	ht_view *v_il;
 	ht_format_viewer *v_image;	
 };
 

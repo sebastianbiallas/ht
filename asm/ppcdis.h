@@ -29,8 +29,9 @@ struct ppcdis_operand {
 	int flags;
 	const powerpc_operand *op;
 	union {
-		int reg; // general register
-		int freg; // float register
+		int reg;    // general register
+		int freg;   // float register
+		int creg;   // condition register
 		uint32 imm;
 		struct {
 			uint32 disp;

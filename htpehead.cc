@@ -143,7 +143,7 @@ ht_mask_ptable pe32header_nt_dirs[] = {
 	{"bound import directory       (ofs/size)", STATICTAG_EDIT_DWORD_LE("00000058")" "STATICTAG_EDIT_DWORD_LE("0000005c")" "STATICTAG_REF("000000040000000b", "03", "raw")},
 	{"import address table (IAT)   (rva/size)", STATICTAG_EDIT_DWORD_LE("00000060")" "STATICTAG_EDIT_DWORD_LE("00000064")" "STATICTAG_REF("000000000000000c", "03", "raw")},
 	{"delay import descriptor      (rva/size)", STATICTAG_EDIT_DWORD_LE("00000068")" "STATICTAG_EDIT_DWORD_LE("0000006c")" "STATICTAG_REF("000000000000000d", "03", "raw")},
-	{"COM+ runtime header          (rva/size)", STATICTAG_EDIT_DWORD_LE("00000070")" "STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_REF("000000000000000e", "03", "raw")},
+	{"COM+ runtime header          (rva/size)", STATICTAG_EDIT_DWORD_LE("00000070")" "STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_REF("000000000000000e", "03", "raw")" "STATICTAG_REF("0000000f00000000", "04", "cook")},
 	{"reserved (15)                (rva/size)", STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_REF("000000000000000f", "03", "raw")},
 	{0, 0}
 };
@@ -301,7 +301,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					hexv->goto_offset(ofs, false);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
-				} else errorbox("can't follow: %s %08x is not valid !", "directory RVA", rva);
+				} else errorbox("Can't follow: directory RVA %08x is not valid !", rva);
 			}
 			break;
 		}			
@@ -335,12 +335,19 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					ofs = pe_shared->pe64.header_nt.directory[id->id2].address;
 					size = pe_shared->pe64.header_nt.directory[id->id2].size;
 				}
-//				if (pe_rva_to_ofs(&pe_shared->sections, ofs, &ofs)) {
+				if (size) {
 					vstate_save();
 					hexv->goto_offset(ofs, false);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
-//				} else errorbox("can't follow: %s %08x is not valid !", "directory offset", ofs);
+				} else errorbox("can't follow: No bound import directory!", ofs);
+			}
+			break;
+		}
+		case 15: {
+			if (pe_shared->v_il) {
+				vstate_save();
+				app->focus(pe_shared->v_il);
 			}
 			break;
 		}

@@ -89,6 +89,7 @@ ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v=new ht_pe_il_viewer();
 	v->init(b, DESC_PE_IL, VC_EDIT | VC_SEARCH, file, group);
+	pe_shared->v_il = v;
 	ht_mask_sub *s;
 //	ht_collapsable_sub *cs;
 	

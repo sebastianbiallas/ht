@@ -134,6 +134,7 @@ dis_insn *PPCDisassembler::decode(byte *code, byte maxlen, CPU_ADDR addr)
 			} else if ((operand->flags & PPC_OPERAND_CR) == 0 || (dialect & PPC_OPCODE_PPC) == 0) {
 				insn.op[opidx++].imm = value;
 			} else {
+				insn.op[opidx++].creg = value;
 				if (operand->bits == 3) {
 //					fprintf(out, "cr%d", value);
 				} else {
@@ -183,7 +184,7 @@ dis_insn *PPCDisassembler::duplicateInsn(dis_insn *disasm_insn)
 
 void PPCDisassembler::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align)
 {
-	min_length = max_length = avg_look_ahead = addr_align = 4;
+	min_length = max_length = min_look_ahead = avg_look_ahead = addr_align = 4;
 }
 
 byte PPCDisassembler::getSize(dis_insn *disasm_insn)
@@ -264,8 +265,19 @@ char *PPCDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 				is += sprintf(is, "%s0x%x", cs_number, ppc_insn->op[opidx].abs.mem);
 			} else if ((flags & PPC_OPERAND_CR) == 0 || (dialect & PPC_OPCODE_PPC) == 0) {
 				is += sprintf(is, "%s%d", cs_number, ppc_insn->op[opidx].imm);
+			} else if (ppc_insn->op[opidx].op->bits == 3) {
+				is += sprintf(is, "%scr%d", cs_default, ppc_insn->op[opidx].creg);
 			} else {
-				is += sprintf(is, "ploed");
+               	static const char *cbnames[4] = { "lt", "gt", "eq", "so" };
+				int cr;
+				int cc;
+				cr = ppc_insn->op[opidx].creg >> 2;
+				if (cr != 0) is += sprintf(is, "%s4%s*%scr%d", cs_number, cs_symbol, cs_default, cr);
+				cc = ppc_insn->op[opidx].creg & 3;
+				if (cc != 0) {
+					if (cr != 0) is += sprintf(is, "%s+", cs_symbol);
+					is += sprintf(is, "%s%s", cs_default, cbnames[cc]);
+				}
 			}
 		
 			if (need_paren) {

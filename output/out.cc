@@ -652,13 +652,10 @@ int	AnalyserOutput::nextLine(Address *&Addr, int &line, int n, Address *max)
 int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 {
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
-#define ADDRBUF(a)
-//#define ADDRBUF(a) (a)->stringify(tbuf, 1024, 0);
+//#undef DPRINTF2
+//#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, ##msg); printf(tbuf);}
 //	char tbuf[1024];
-	ADDRBUF(*Addr)
-	DPRINTF2("prev_line(%s, %d, %d", tbuf, *line, n);
-	ADDRBUF(min)
-	DPRINTF2(", %s)\n", tbuf);
+	DPRINTF2("prev_line(%y, %d, %d, %y)\n", Addr, line, n, min);
 
 	int res = 0;
 	int cmp = Addr->compareTo(min);
@@ -716,7 +713,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 
 	/*
 	 *	|prev| contains the previous "logical" location.
-	 *	that is some address, we know to be "atomic".
+	 *	That is some address known to be "atomic".
 	 */
 	Location *prev = analy->enumLocationsReverse(Addr);
 	if (prev) {
@@ -726,7 +723,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 		 */
 		Address *prevnext = DUP_ADDR(prev->addr);
 		if (prevnext->add(getAddrByteLength(prev->addr))) {
-				DPRINTF2("mid-test\n");
+			DPRINTF2("mid-test\n");
 			if (prevnext->compareTo(Addr) > 0) {
 				/*
 				 *   We were in the middle of a location.
@@ -752,10 +749,13 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 				DPRINTF2("mid2\n");
 				return prevLine(Addr, line, n-1, min)+res;
 			}
+			DPRINTF2("prev: %y prevnext: %y search_addr: %y\n", prev->addr, prevnext, search_addr);
 			Address *oldprevnext = DUP_ADDR(prevnext);
 			if (prevnext->add(l) && prevnext->compareTo(Addr) >= 0) {
 				delete search_addr;
 				search_addr = oldprevnext;
+				DPRINTF2("prevnext: %y Addr: %y\n", prevnext, Addr);
+				DPRINTF2("search_addr: %y\n", search_addr);
 				DPRINTF2("mid3\n");
 			} else {
 				delete oldprevnext;
@@ -781,10 +781,8 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	
 	Address *next_addr = DUP_ADDR(search_addr);
 	while (1) {
-		ADDRBUF(search_addr);
-		DPRINTF2("search_addr: (%s, %d) ", tbuf, search_line);
-		ADDRBUF(next_addr);
-		DPRINTF2("next_addr: %s \n", tbuf);
+		DPRINTF2("search_addr: (%y, %d) ", search_addr, search_line);
+		DPRINTF2("next_addr: %y \n", next_addr);
 		if (search_addr->compareTo(Addr) >= 0) {
 			if (search_line >= line || (search_addr->compareTo(Addr) > 0)) break;
 		}
