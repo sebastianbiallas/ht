@@ -57,7 +57,7 @@ void yyerror (char *s)
 %left '-' '+'
 %left '*' '/' '%'
 
-%left NEG
+%left NEG '~' '!'
 %left EVAL_POW
 
 %%
@@ -95,6 +95,8 @@ scalar:	  EVAL_INT			{ $$ = $1; }
 	| scalar EVAL_STR_LT scalar	{ scalar_strop(&$$, &$1, &$3, EVAL_STR_LT); }
 	| scalar EVAL_STR_LE scalar	{ scalar_strop(&$$, &$1, &$3, EVAL_STR_LE); }
 	| '-' scalar %prec NEG		{ scalar_negset(&$$, &$2); }
+	| '~' scalar 			{ scalar_notset(&$$, &$2); }
+	| '!' scalar 			{ scalar_lnotset(&$$, &$2); }
 	| '(' scalar ')'			{ $$ = $2; }
 	| scalar '?' scalar ':' scalar	{ scalar_miniif(&$$, &$1, &$3, &$5); }
 	| scalar '.' scalar

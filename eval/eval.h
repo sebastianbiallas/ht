@@ -135,6 +135,8 @@ int scalar_float_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *x
 int scalar_int_op(eval_scalar *xr, const eval_scalar *xa, const eval_scalar *xb, int op);
 int scalar_op(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, int op);
 void scalar_negset(eval_scalar *xr, eval_scalar *xa);
+void scalar_notset(eval_scalar *xr, eval_scalar *xa);
+void scalar_lnotset(eval_scalar *xr, eval_scalar *xa);
 void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc);
 void sprintf_puts(char **b, char *blimit, char *buf);
 int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *s);

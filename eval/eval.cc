@@ -665,6 +665,30 @@ void scalar_negset(eval_scalar *xr, eval_scalar *xa)
 	scalar_destroy(xa);
 }
 
+void scalar_notset(eval_scalar *xr, eval_scalar *xa)
+{
+	eval_int a;
+	scalar_context_int(xa, &a);
+
+	xr->type=SCALAR_INT;
+	xr->scalar.integer.value=~a.value;
+	xr->scalar.integer.type=TYPE_UNKNOWN;
+
+	scalar_destroy(xa);
+}
+
+void scalar_lnotset(eval_scalar *xr, eval_scalar *xa)
+{
+	eval_int a;
+	scalar_context_int(xa, &a);
+
+	xr->type=SCALAR_INT;
+	xr->scalar.integer.value=to_qword(!a.value);
+	xr->scalar.integer.type=TYPE_UNKNOWN;
+
+	scalar_destroy(xa);
+}
+
 void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc)
 {
 	eval_int a;
