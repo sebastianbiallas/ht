@@ -2,6 +2,7 @@
 ==============
 
 version 0.8-trunk:
+	- compiles with gcc 3.4
 	- disassembler:
 		- IBM/Motorola PowerPC (PPC) (new)
 	- file formats:

@@ -60,13 +60,13 @@ void srt_x86_setreg(CPU *cpu, UINT idx, Object *o)
 		k = &cpu->flags[(idx-8) % X86_FLAGS];
 		(*k)->done();
 		delete *k;
-		((Object*)*k) = o;
+		*k = (sym_bool *)o;
 	} else {
 		sym_int **k;
 		k = &cpu->regs[idx & 7];
 		(*k)->done();
 		delete *k;
-		((Object*)*k) = o;
+		*k = (sym_int *)o;
 	}
 }
 
