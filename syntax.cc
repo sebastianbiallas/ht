@@ -425,7 +425,7 @@ void ht_c_syntax_lexer::reloadpalette()
  *	CLASS ht_html_syntax_lexer
  */
 
-#if 1
+#if 0
 /* HTML lexer states */
 #define LEX_HTMLST_NORMAL			1
 #define LEX_HTMLST_TAG				2
@@ -536,8 +536,10 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 	{ LSTSET(LEX_HTMLST_TAG),
 	  false, LRST_QSTRING, NULL, 0, LEX_HTMLTOK_CDATA },
 	{ LSTSET(LEX_HTMLST_NORMAL),
+	  false, LRST_REGEX, "[^&<]", 0, LEX_HTMLTOK_NORMAL },
+	{ LSTSET(LEX_HTMLST_NORMAL),
 	  false, LRST_REGEX, "&[#A-Za-z0-9]+?;", 0, LEX_HTMLTOK_ENTITY },
-	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_NORMAL), LEX_HTMLTOK_NORMAL),
+//	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_NORMAL), LEX_HTMLTOK_NORMAL),
 /**/
 	{ 0, 0, LRST_EMPTY, false, false, 0 }
 };
