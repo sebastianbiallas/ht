@@ -32,7 +32,7 @@
 
 extern byte mapchar[];
 
-class analy_string: public object {
+class analy_string: public Object {
 protected:
 	byte *string;
 	int len;

@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	analy_alpha.h
+ *	analy_il.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,13 +18,13 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef ANALY_ALPHA_H
-#define ANALY_ALPHA_H
+#ifndef ANALY_IL_H
+#define ANALY_IL_H
 
 #include "analy.h"
-#include "alphadis.h"
+#include "ildis.h"
 
-class AddressAlphaFlat32: public Address {
+/*class AddressAlphaFlat32: public Address {
 public:
 	dword addr;
 	AddressAlphaFlat32();
@@ -45,12 +45,11 @@ public:
 	virtual void store(ht_object_stream *s);
 	virtual int stringify(char *s, int max_length, int format);
 	virtual int stringSize();
-};
+};*/
 
-class AnalyAlphaDisassembler: public AnalyDisassembler {
+class AnalyILDisassembler: public AnalyDisassembler {
 public:
-			void			init(Analyser *A);
-			int 			load(ht_object_stream *f);
+			void			init(Analyser *A, char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
 	virtual   void	     	done();
 	virtual	OBJECT_ID		object_id();
 
@@ -58,7 +57,6 @@ public:
 			Address		*createAddress(dword offset);
 	virtual	void			examineOpcode(OPCODE *opcode);
 	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
-	virtual	void			store(ht_object_stream *f);
 };
 
 #endif

@@ -23,7 +23,6 @@
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_x86.h"
-#include "codeanaly.h"
 #include "coff_analy.h"
 #include "global.h"
 
@@ -42,27 +41,27 @@
 /*
  *
  */
-void	coff_analyser::init(ht_coff_shared_data *Coff_shared, ht_streamfile *File)
+void	CoffAnalyser::init(ht_coff_shared_data *Coff_shared, ht_streamfile *File)
 {
 	coff_shared = Coff_shared;
 	file = File;
 
-	validarea = new area();
+	validarea = new Area();
 	validarea->init();
 
-	analyser::init();
+	Analyser::init();
 
 	/////////////
 
-	set_addr_tree_optimize_threshold(100);
-	set_label_tree_optimize_threshold(100);
+	setLocationTreeOptimizeThreshold(100);
+	setSymbolTreeOptimizeThreshold(100);
 }
 
 
 /*
  *
  */
-int	coff_analyser::load(ht_object_stream *f)
+int	CoffAnalyser::load(ht_object_stream *f)
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -70,32 +69,31 @@ int	coff_analyser::load(ht_object_stream *f)
 	area				*validarea;
 	*/
 	GET_OBJECT(f, validarea);
-	return analyser::load(f);
+	return Analyser::load(f);
 }
 
 /*
  *
  */
-void	coff_analyser::done()
+void	CoffAnalyser::done()
 {
 	validarea->done();
 	delete validarea;
-	analyser::done();
+	Analyser::done();
 }
 
 /*
  *
  */
-void coff_analyser::begin_analysis()
+void CoffAnalyser::beginAnalysis()
 {
 //	char	buffer[1024];
 
 	/*
 	 *	entrypoint
 	 */
-	ADDR entry=coff_shared->coff32header.entrypoint_address;
-
-	push_addr(entry, entry);
+	Address *entry=createAddress32(coff_shared->coff32header.entrypoint_address);
+	pushAddress(entry, entry);
 	
 	/*
 	 * give all sections a descriptive comment:
@@ -116,31 +114,37 @@ void coff_analyser::begin_analysis()
 	COFF_SECTION_HEADER *s=coff_shared->sections.sections;
 	char blub[100];
 	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
-		ADDR secaddr = s->data_address;
-		sprintf(blub, ";  section %d <%s>", i+1, get_addr_section_name(secaddr));
-		add_comment(secaddr, 0, "");
-		add_comment(secaddr, 0, ";******************************************************************");
-		add_comment(secaddr, 0, blub);
+		Address *secaddr = createAddress32(s->data_address);
+		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+		addComment(secaddr, 0, "");
+		addComment(secaddr, 0, ";******************************************************************");
+		addComment(secaddr, 0, blub);
 		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", s->data_address, s->data_vsize);
-		add_comment(secaddr, 0, blub);
+		addComment(secaddr, 0, blub);
 		sprintf(blub, ";  file offset      %08x  file size      %08x", s->data_offset+coff_shared->sections.base_ofs, s->data_size);
-		add_comment(secaddr, 0, blub);
-		add_comment(secaddr, 0, ";******************************************************************");
+		addComment(secaddr, 0, blub);
+		addComment(secaddr, 0, ";******************************************************************");
 
 		// mark end of sections
-		sprintf(blub, ";  end of section <%s>", get_addr_section_name(secaddr));
-		ADDR secend_addr = secaddr + MAX(s->data_size, s->data_vsize);
-		new_addr(secend_addr)->flags |= AF_FUNCTION_END;
-		add_comment(secend_addr, 0, "");
-		add_comment(secend_addr, 0, ";******************************************************************");
-		add_comment(secend_addr, 0, blub);
-		add_comment(secend_addr, 0, ";******************************************************************");
+		sprintf(blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
+		Address *secend_addr = (Address*)secaddr->duplicate();
+		secend_addr->add(MAX(s->data_size, s->data_vsize));
+		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
+		addComment(secend_addr, 0, "");
+		addComment(secend_addr, 0, ";******************************************************************");
+		addComment(secend_addr, 0, blub);
+		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		if (valid_addr(secaddr, scinitialized) && valid_addr(secaddr + MIN(s->data_size, s->data_vsize), scinitialized)) {
-			initialized->add(secaddr, secaddr + MIN(s->data_size, s->data_vsize));
+		Address *secini_addr = (Address *)secaddr->duplicate();
+		secini_addr->add(MIN(s->data_size, s->data_vsize));
+		if (validAddress(secaddr, scinitialized) && validAddress(secini_addr, scinitialized)) {
+			initialized->add(secaddr, secini_addr);
 		}
 		s++;
+		delete secaddr;
+		delete secend_addr;
+		delete secini_addr;
 	}
 
 	// exports
@@ -197,26 +201,27 @@ void coff_analyser::begin_analysis()
 	}
 	if (entropy) free(entropy);*/
 
-	add_comment(entry, 0, "");
-	add_comment(entry, 0, ";****************************");
+	addComment(entry, 0, "");
+	addComment(entry, 0, ";****************************");
 	if (coff_shared->coffheader.characteristics & COFF_DLL) {
-		add_comment(entry, 0, ";  library entry point");
+		addComment(entry, 0, ";  library entry point");
 	} else {
-		add_comment(entry, 0, ";  program entry point");
+		addComment(entry, 0, ";  program entry point");
 	}
-	add_comment(entry, 0, ";****************************");
-	assign_label(entry, "entrypoint", label_func);
+	addComment(entry, 0, ";****************************");
+	assignSymbol(entry, "entrypoint", label_func);
 
-	set_addr_tree_optimize_threshold(1000);
-	set_label_tree_optimize_threshold(1000);
+	setLocationTreeOptimizeThreshold(1000);
+	setSymbolTreeOptimizeThreshold(1000);
+	delete entry;
 
-	analyser::begin_analysis();
+	Analyser::beginAnalysis();
 }
 
 /*
  *
  */
-OBJECT_ID	coff_analyser::object_id()
+OBJECT_ID	CoffAnalyser::object_id()
 {
 	return ATOM_COFF_ANALYSER;
 }
@@ -224,24 +229,60 @@ OBJECT_ID	coff_analyser::object_id()
 /*
  *
  */
-UINT coff_analyser::bufptr(ADDR Addr, byte *buf, int size)
+UINT CoffAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEADDR ofs = file_addr(Addr);
+	FILEOFS ofs = addressToFileofs(Addr);
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
 	return file->read(buf, size);
 }
 
-/*
- *
- */
-assembler *coff_analyser::create_assembler()
+bool CoffAnalyser::convertAddressToRVA(Address *addr, RVA *r)
+{
+	if (addr->object_id()==ATOM_ADDRESS_X86_FLAT_32) {
+		*r = ((AddressX86Flat32*)addr)->addr;
+	} else if (addr->object_id()==ATOM_ADDRESS_FLAT_32) {
+		*r = ((AddressFlat32*)addr)->addr;
+	} else {
+		return false;
+	}
+	return true;
+}
+
+Address *CoffAnalyser::createAddress()
 {
 	switch (coff_shared->coffheader.machine) {
 		case COFF_MACHINE_I386:
 		case COFF_MACHINE_I486:
 		case COFF_MACHINE_I586:
-			assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
+			return new AddressX86Flat32(0);
+		default:
+			return new AddressFlat32(0);
+	}
+}
+
+Address *CoffAnalyser::createAddress32(dword addr)
+{
+	switch (coff_shared->coffheader.machine) {
+		case COFF_MACHINE_I386:
+		case COFF_MACHINE_I486:
+		case COFF_MACHINE_I586:
+			return new AddressX86Flat32(addr);
+		default:
+			return new AddressFlat32(addr);
+	}
+}
+
+/*
+ *
+ */
+Assembler *CoffAnalyser::createAssembler()
+{
+	switch (coff_shared->coffheader.machine) {
+		case COFF_MACHINE_I386:
+		case COFF_MACHINE_I486:
+		case COFF_MACHINE_I586:
+			Assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 			a->init();
 			return a;
 	}
@@ -252,12 +293,14 @@ assembler *coff_analyser::create_assembler()
 /*
  *
  */
-FILEADDR coff_analyser::file_addr(ADDR Addr)
+FILEOFS CoffAnalyser::addressToFileofs(Address *Addr)
 {
-	if (valid_addr(Addr, scinitialized)) {
+	if (validAddress(Addr, scinitialized)) {
 		FILEOFS ofs;
 //		Addr-=pe_shared->pe32.header_nt.image_base;
-		if (!coff_rva_to_ofs(&coff_shared->sections, Addr, &ofs)) return INVALID_FILE_OFS;
+		RVA rva;
+		if (!convertAddressToRVA(Addr, &rva)) return INVALID_FILE_OFS;
+		if (!coff_rva_to_ofs(&coff_shared->sections, rva, &ofs)) return INVALID_FILE_OFS;
 		return ofs;
 	} else {
 		return INVALID_FILE_OFS;
@@ -267,15 +310,16 @@ FILEADDR coff_analyser::file_addr(ADDR Addr)
 /*
  *
  */
-char *coff_analyser::get_addr_section_name(ADDR Addr)
+char *CoffAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char sectionname[9];
 	coff_section_headers *sections=&coff_shared->sections;
 	int i;
-//	Addr-=pe_shared->pe32.header_nt.image_base;
-	coff_rva_to_section(sections, Addr, &i);
+	RVA rva;
+	if (!convertAddressToRVA(Addr, &rva)) return NULL;
+	coff_rva_to_section(sections, rva, &i);
 	COFF_SECTION_HEADER *s=sections->sections+i;
-	if (!coff_rva_is_valid(sections, Addr)) return NULL;
+	if (!coff_rva_is_valid(sections, rva)) return NULL;
 	memmove(sectionname, s->name, 8);
 	sectionname[8]=0;
 	return sectionname;
@@ -284,7 +328,7 @@ char *coff_analyser::get_addr_section_name(ADDR Addr)
 /*
  *
  */
-char	*coff_analyser::get_name()
+char	*CoffAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -292,7 +336,7 @@ char	*coff_analyser::get_name()
 /*
  *
  */
-char *coff_analyser::get_type()
+char *CoffAnalyser::getType()
 {
 	return "COFF/Analyser";
 }
@@ -300,16 +344,15 @@ char *coff_analyser::get_type()
 /*
  *
  */
-void coff_analyser::init_code_analyser()
+void CoffAnalyser::initCodeAnalyser()
 {
-	analyser::init_code_analyser();
-	code->loaddefs("analyser/sign.def");
+	Analyser::initCodeAnalyser();
 }
 
 /*
  *
  */
-void coff_analyser::init_unasm()
+void CoffAnalyser::initUnasm()
 {
 	DPRINTF("coff_analy: ");
 	switch (coff_shared->coffheader.machine) {
@@ -317,8 +360,8 @@ void coff_analyser::init_unasm()
 		case COFF_MACHINE_I486:	// Intel 486
 		case COFF_MACHINE_I586:	// Intel 586
 			DPRINTF("initing analy_x86_disassembler\n");
-			analy_disasm = new analy_x86_disassembler();
-			((analy_x86_disassembler*)analy_disasm)->init(this);
+			analy_disasm = new AnalyX86Disassembler();
+			((AnalyX86Disassembler*)analy_disasm)->init(this, false, false);
 			break;
 		case COFF_MACHINE_R3000:	// MIPS little-endian, 0x160 big-endian
 			DPRINTF("no apropriate disassembler for MIPS\n");
@@ -334,8 +377,8 @@ void coff_analyser::init_unasm()
 			break;
 		case COFF_MACHINE_ALPHA:	// Alpha_AXP
 			DPRINTF("initing alpha_axp_disassembler\n");
-			analy_disasm = new analy_alpha_disassembler();
-			analy_disasm->init(this);
+			analy_disasm = new AnalyAlphaDisassembler();
+			((AnalyAlphaDisassembler *)analy_disasm)->init(this);
 			break;
 		case COFF_MACHINE_POWERPC:	// IBM PowerPC Little-Endian
 			DPRINTF("no apropriate disassembler for POWER PC\n");
@@ -351,7 +394,7 @@ void coff_analyser::init_unasm()
 /*
  *
  */
-void coff_analyser::log(char *msg)
+void CoffAnalyser::log(char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log
@@ -364,18 +407,15 @@ void coff_analyser::log(char *msg)
 /*
  *
  */
-ADDR coff_analyser::next_valid(ADDR Addr)
+Address *CoffAnalyser::nextValid(Address *Addr)
 {
-	return INVALID_ADDR; //validarea->findnext(Addr);
-	// FIXME (hack while validarea isnt active):
-//   taddr *a = enum_addrs(Addr);
-//   return (a)?a->addr:INVALID_ADDR;
+	return (Address *)validarea->findNext(Addr);
 }
 
 /*
  *
  */
-void coff_analyser::store(ht_object_stream *st)
+void CoffAnalyser::store(ht_object_stream *st)
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -383,13 +423,13 @@ void coff_analyser::store(ht_object_stream *st)
 	area				*validarea;
 	*/
 	PUT_OBJECT(st, validarea);
-	analyser::store(st);
+	Analyser::store(st);
 }
 
 /*
  *
  */
-int	coff_analyser::query_config(int mode)
+int	CoffAnalyser::queryConfig(int mode)
 {
 	switch (mode) {
 		case Q_DO_ANALYSIS:
@@ -404,25 +444,26 @@ int	coff_analyser::query_config(int mode)
 /*
  *
  */
-ADDR coff_analyser::vaddr(FILEADDR fileaddr)
+Address *CoffAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
-	ADDR a;
-	if (coff_ofs_to_rva(&coff_shared->sections, fileaddr, &a)) {
-		return a;
+	RVA a;
+	if (coff_ofs_to_rva(&coff_shared->sections, fileofs, &a)) {
+		return createAddress32(a);
 	} else {
-		return INVALID_ADDR;
+		return new InvalidAddress();
 	}
 }
 
 /*
  *
  */
-bool coff_analyser::valid_addr(ADDR Addr, tsectype action)
+bool CoffAnalyser::validAddress(Address *Addr, tsectype action)
 {
 	coff_section_headers *sections=&coff_shared->sections;
 	int sec;
-//	Addr-=pe_shared->pe32.header_nt.image_base;
-	if (!coff_rva_to_section(sections, Addr, &sec)) return false;
+	RVA rva;
+	if (!convertAddressToRVA(Addr, &rva)) return false;
+	if (!coff_rva_to_section(sections, rva, &sec)) return false;
 	COFF_SECTION_HEADER *s=sections->sections+sec;
 	switch (action) {
 		case scvalid:
@@ -435,10 +476,10 @@ bool coff_analyser::valid_addr(ADDR Addr, tsectype action)
 			return s->characteristics & COFF_SCN_MEM_WRITE;
 		case sccode:
 			// FIXME: EXECUTE vs. CNT_CODE ?
-			if (!coff_rva_is_physical(sections, Addr)) return false;
+			if (!coff_rva_is_physical(sections, rva)) return false;
 			return (s->characteristics & (COFF_SCN_MEM_EXECUTE | COFF_SCN_CNT_CODE));
 		case scinitialized:
-			if (!coff_rva_is_physical(sections, Addr)) return false;
+			if (!coff_rva_is_physical(sections, rva)) return false;
 			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}
 	return false;

@@ -25,8 +25,8 @@
 #include "analy.h"
 #include "analy_names.h"
 #include "analy_register.h"
-#include "codeanaly.h"
-#include "dataanaly.h"
+#include "code_analy.h"
+#include "data_analy.h"
 #include "global.h"
 #include "htatom.h"
 #include "htctrl.h"
@@ -34,120 +34,449 @@
 #include "htstring.h"
 #include "httag.h"
 #include "language.h"
+#include "snprintf.h"
 #include "tools.h"
 
 //#undef DPRINTF
-//#define DPRINTF(msg...) printf(##msg)
+//#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); printf(buf);}
+
+int global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
+
+int Address::compareDelinear(Address *to)
+{
+	return compareTo(to);
+}
+
+bool Address::isValid()
+{
+	return true;
+}
+
+int Address::toString(char *s, int maxlen)
+{
+	return stringify(s, maxlen, global_analyser_address_string_format);
+}
+
+InvalidAddress::InvalidAddress()
+{
+}
+
+bool InvalidAddress::add(int offset)
+{
+	return false;
+}
+
+int InvalidAddress::byteSize()
+{
+	return 0;
+}
+
+int InvalidAddress::compareTo(Object *to)
+{
+	return 0;
+}
+
+void InvalidAddress::putIntoCPUAddress(CPU_ADDR *ca)
+{
+}
+
+bool InvalidAddress::difference(int &result, Address *to)
+{
+	return false;
+}
+
+Object *InvalidAddress::duplicate()
+{
+	return new InvalidAddress();
+}
+
+void InvalidAddress::getFromArray(const byte *array)
+{
+}
+
+void InvalidAddress::getFromCPUAddress(CPU_ADDR *ca)
+{
+}
+
+bool InvalidAddress::isValid()
+{
+	return false;
+}
+
+int InvalidAddress::parseString(const char *s, int length, Analyser *a)
+{
+	return 0;
+}
+
+OBJECT_ID InvalidAddress::object_id()
+{
+	return ATOM_ADDRESS_INVALID;
+}
+
+void InvalidAddress::putIntoArray(byte *array)
+{
+}
+
+int InvalidAddress::stringify(char *s, int max_length, int format)
+{
+	return ht_snprintf(s, max_length, "*INVALID");
+}
+
+int InvalidAddress::stringSize()
+{
+	return 8;
+}
+
+/*
+ *
+ */
+AddressFlat32::AddressFlat32()
+{
+}
+
+AddressFlat32::AddressFlat32(dword a)
+{
+	addr = a;
+}
+
+bool AddressFlat32::add(int offset)
+{
+	// check for overflow
+	if ((int)offset < 0) {
+		if (addr+offset > addr) return false;
+	} else {
+		if (addr+offset < addr) return false;
+	}
+	addr+=offset;
+	return true;
+}
+
+int AddressFlat32::byteSize()
+{
+	return 4;
+}
+
+int AddressFlat32::compareTo(Object *to)
+{
+	assert(object_id() == to->object_id());
+	if (addr > ((AddressFlat32 *)to)->addr) return 1;
+	if (addr < ((AddressFlat32 *)to)->addr) return -1;
+	return 0;
+}
+
+int AddressFlat32::compareDelinear(Address *to)
+{
+	assert(object_id() == to->object_id());
+	dword da = delinearize(addr);
+	dword db = delinearize(((AddressFlat32 *)to)->addr);
+	if (da > db) return 1;
+	if (da < db) return -1;
+	return 0;
+}
+
+bool AddressFlat32::difference(int &result, Address *to)
+{
+	if (object_id() == to->object_id()) {
+		result = addr - ((AddressFlat32 *)to)->addr;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Object *AddressFlat32::duplicate()
+{
+	return new AddressFlat32(addr);
+}
+
+void AddressFlat32::getFromArray(const byte *array)
+{
+	UNALIGNED_MOVE(addr, *(dword*)array);
+}
+
+void AddressFlat32::getFromCPUAddress(CPU_ADDR *ca)
+{
+	addr = ca->addr32.offset;
+}
+
+int AddressFlat32::load(ht_object_stream *st)
+{
+	addr = st->getIntHex(4, NULL);
+	return st->get_error();
+}
+
+OBJECT_ID AddressFlat32::object_id()
+{
+	return ATOM_ADDRESS_FLAT_32;
+}
+
+int AddressFlat32::parseString(const char *s, int length, Analyser *a)
+{
+	return false;
+}
+
+void AddressFlat32::putIntoArray(byte *array)
+{
+	UNALIGNED_MOVE(*(dword*)array, addr);
+}
+
+void AddressFlat32::putIntoCPUAddress(CPU_ADDR *ca)
+{
+	ca->addr32.offset = addr;
+}
+
+void AddressFlat32::store(ht_object_stream *st)
+{
+	st->putIntHex(addr, 4, NULL);
+}
+
+int AddressFlat32::stringify(char *s, int max_length, int format)
+{
+	char *formats[] = {
+		"%s%x%s",
+		"%s%8x%s",
+		"%s%08x%s",
+		"",
+		"%s%X%s",
+		"%s%8X%s",
+		"%s%08X%s",
+		"",
+	};
+	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+}
+
+int AddressFlat32::stringSize()
+{
+	return 8;
+}
+
+/*
+ *
+ */
+AddressFlat64::AddressFlat64()
+{
+}
+
+AddressFlat64::AddressFlat64(qword a)
+{
+	addr = a;
+}
+
+bool AddressFlat64::add(int offset)
+{
+	// check for overflow
+	// FIXME: reviewme
+	if ((int)offset < 0) {
+		if (addr.lo+offset > addr.lo) {
+			if (!addr.hi) return false;
+			addr.hi--;
+		}
+	} else {
+		if (addr.lo+offset < addr.lo) {
+			if (addr.hi+1==0) return false;
+			addr.hi++;
+		}
+	}
+	addr.lo+=offset;
+	return true;
+}
+
+int AddressFlat64::byteSize()
+{
+	return 8;
+}
+
+int AddressFlat64::compareTo(Object *to)
+{
+	assert(object_id() == to->object_id());
+	return qword_cmp(addr, ((AddressFlat64 *)to)->addr);
+}
+
+int AddressFlat64::compareDelinear(Address *to)
+{
+	assert(object_id() == to->object_id());
+	qword da1, da2;
+	da1.hi = delinearize(addr.lo);
+	da1.lo = delinearize(addr.hi);
+	da2.hi = delinearize(((AddressFlat64 *)to)->addr.lo);
+	da2.lo = delinearize(((AddressFlat64 *)to)->addr.hi);
+	return qword_cmp(da1, da2);
+}
+
+bool AddressFlat64::difference(int &result, Address *to)
+{
+	if (object_id() == to->object_id()) {
+		qword res = addr - ((AddressFlat64 *)to)->addr;
+		if (!res.hi || (res.hi==(dword)-1)) {
+			result = res.lo;
+			return true;
+		}
+	}
+	return false;
+}
+
+Object *AddressFlat64::duplicate()
+{
+	return new AddressFlat64(addr);
+}
+
+void AddressFlat64::getFromArray(const byte *array)
+{
+	UNALIGNED_MOVE(addr.lo, *(dword*)array);
+	UNALIGNED_MOVE(addr.hi, *(dword*)(array+sizeof addr.lo));
+}
+
+void AddressFlat64::getFromCPUAddress(CPU_ADDR *ca)
+{
+	addr = ca->flat64.addr;
+}
+
+int AddressFlat64::load(ht_object_stream *st)
+{
+	addr.lo = st->getIntHex(4, NULL);
+	addr.hi = st->getIntHex(4, NULL);
+	return st->get_error();
+}
+
+OBJECT_ID AddressFlat64::object_id()
+{
+	return ATOM_ADDRESS_FLAT_64;
+}
+
+int AddressFlat64::parseString(const char *s, int length, Analyser *a)
+{
+	return false;
+}
+
+void AddressFlat64::putIntoArray(byte *array)
+{
+	UNALIGNED_MOVE(*(dword*)array, addr.lo);
+	UNALIGNED_MOVE(*(dword*)(array+sizeof addr.lo), addr.hi);
+}
+
+void AddressFlat64::putIntoCPUAddress(CPU_ADDR *ca)
+{
+	ca->flat64.addr = addr;
+}
+
+void AddressFlat64::store(ht_object_stream *st)
+{
+	st->putIntHex(addr.lo, 4, NULL);
+	st->putIntHex(addr.hi, 4, NULL);
+}
+
+int AddressFlat64::stringify(char *s, int max_length, int format)
+{
+	char *formats[] = {
+		"%s%Q%s",
+		"%s%16Q%s",
+		"%s%016Q%s",
+		"",
+		"%s%Q%s",
+		"%s%16Q%s",
+		"%s%016Q%s",
+		"",
+	};
+	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", &addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+}
+
+int AddressFlat64::stringSize()
+{
+	return 16;
+}
 
 
 /*
  *
  */
  
-addr_xref::addr_xref() {}
+AddrXRef::AddrXRef() {}
 
-addr_xref::addr_xref(xref_type_t Type)
+AddrXRef::AddrXRef(xref_enum_t Type)
 {
 	type = Type;
 }
 
-int addr_xref::load(ht_object_stream *f)
+int AddrXRef::load(ht_object_stream *f)
 {
-	type = (xref_type_t) f->get_int_hex(1, "type");
+	type = (xref_enum_t) f->getIntHex(1, "type");
 	return f->get_error();
 }
 
-OBJECT_ID addr_xref::object_id()
+OBJECT_ID AddrXRef::object_id()
 {
 	return ATOM_ADDR_XREF;
 }
 
-void addr_xref::store(ht_object_stream *f)
+void AddrXRef::store(ht_object_stream *f)
 {
-	f->put_int_hex((UINT)type, 1, "type");
-}
-
-ht_addr::ht_addr() {}
-
-ht_addr::ht_addr(ADDR Addr)
-{
-	addr = Addr;
-}
-
-int ht_addr::load(ht_object_stream *f)
-{
-     GET_INT_HEX(f, addr);
-	return f->get_error();
-}
-
-OBJECT_ID ht_addr::object_id()
-{
-	return ATOM_HT_ADDR;
-}
-
-void ht_addr::store(ht_object_stream *f)
-{
-     PUT_INT_HEX(f, addr);
+	f->putIntHex((UINT)type, 1, "type");
 }
 
 /*
  *
  */
-addrqueueitem::addrqueueitem() {}
+AddressQueueItem::AddressQueueItem() {}
 
-addrqueueitem::addrqueueitem(ADDR Addr, ADDR Func)
+AddressQueueItem::AddressQueueItem(Address *Addr, Address *Func)
 {
-	addr = Addr;
-	func = Func;
+	addr = (Address*)Addr->duplicate();
+	func = (Address*)Func->duplicate();
 }
 
-OBJECT_ID	addrqueueitem::object_id()
+AddressQueueItem::~AddressQueueItem()
 {
-	return ATOM_ADDRQUEUEMEMBER;
+	delete addr;
+	delete func;
 }
 
-int	addrqueueitem::load(ht_object_stream *f)
+OBJECT_ID	AddressQueueItem::object_id()
 {
-	GET_INT_HEX(f, addr);
-	GET_INT_HEX(f, func);
+	return ATOM_ADDR_QUEUE_ITEM;
+}
+
+int AddressQueueItem::load(ht_object_stream *f)
+{
+	GET_OBJECT(f, addr);
+	GET_OBJECT(f, func);
 	return f->get_error();
 }
 
-void	addrqueueitem::store(ht_object_stream *f)
+void	AddressQueueItem::store(ht_object_stream *f)
 {
-	PUT_INT_HEX(f, addr);
-	PUT_INT_HEX(f, func);
+	PUT_OBJECT(f, addr);
+	PUT_OBJECT(f, func);
 }
 
 /*
  *
  */
-void comment_list::init()
+void CommentList::init()
 {
 	ht_clist::init();
 }
 
-void comment_list::append_pre_comment(char *s)
+void CommentList::appendPreComment(const char *s)
 {
 	append(new ht_data_string(s));
 }
 
-void comment_list::append_post_comment(char *s)
+void CommentList::appendPostComment(const char *s)
 {
 	append(new ht_data_string(s));
 }
 
-void comment_list::append_pre_comment(int special)
+void CommentList::appendPreComment(int special)
 {
 	append(new ht_data_uint(special));
 }
 
-void comment_list::append_post_comment(int special)
+void CommentList::appendPostComment(int special)
 {
 	append(new ht_data_uint(special+0x10000000));
 }
 
-char *comment_list::get_name(UINT i)
+char *CommentList::getName(UINT i)
 {
 	ht_data *d = get(i);
 	return d ? ((d->object_id()==ATOM_HT_DATA_UINT) ? comment_lookup(((ht_data_uint*)d)->value): ((ht_data_string*)d)->value) : NULL;
@@ -156,190 +485,174 @@ char *comment_list::get_name(UINT i)
 /*
  *
  */
-void	analyser::init()
+void	Analyser::init()
 {
 	active = false;
 	dirty = false;
+     next_address_is_invalid = false;
+	addr = new InvalidAddress();
+	invalid_addr = new InvalidAddress();
 	addr_queue = new ht_queue();
 	addr_queue->init();
-	addrs = NULL;
-	labels = NULL;
-	label_count = addr_count = 0;
-	set_addr_tree_optimize_threshold(1000);
-	set_label_tree_optimize_threshold(1000);
+	locations = NULL;
+	symbols = NULL;
+	symbol_count = location_count = 0;
+	setLocationTreeOptimizeThreshold(1000);
+	setSymbolTreeOptimizeThreshold(1000);
 	cur_addr_ops = cur_label_ops = 1;
 	cur_func = NULL;
 	ops_parsed = 0;
-	next_explored = first_explored = last_explored = INVALID_ADDR;
-	explored = new area();
+	next_explored = new InvalidAddress();
+	first_explored = new InvalidAddress();
+	last_explored = new InvalidAddress();
+	explored = new Area();
 	explored->init();
-	initialized = new area();
+	initialized = new Area();
 	initialized->init();
-	init_code_analyser();
-	init_data_analyser();
+	initCodeAnalyser();
+	initDataAnalyser();
 	disasm = NULL;
 	analy_disasm = NULL;
-	maxopcodelength = 1;
-	init_unasm();
+	max_opcode_length = 1;
+	initUnasm();
 	mode = ANALY_TRANSLATE_SYMBOLS;
 }
 
-static void loadaddrs(ht_object_stream *st, taddr *&addr, int level, int &left)
+static void loadlocations(ht_object_stream *st, Location *&loc, int level, int &left)
 {
 	if (left<=0) {
-		addr = NULL;
+		loc = NULL;
 		return;
 	}
 	if (st->get_error()) {
-		addr = NULL;
+		loc = NULL;
 		return;
 	}
 
-	addr = (taddr *) smalloc0(sizeof(taddr));
+	loc = (Location *) smalloc0(sizeof(Location));
 
 	bool sdf=!((level<= 1) || (left == 1));
-	if (sdf) loadaddrs(st, addr->left, level / 2, left);
+	if (sdf) loadlocations(st, loc->left, level / 2, left);
 	if (st->get_error()) {
-		free(addr);
-		addr = NULL;
+		free(loc);
+		loc = NULL;
 		return;
 	}
-/*	printf("%d, %d\n", level, left);
-	if (left==18286) {
-		int asdf=234;
-	}*/
-	
-	addr->addr = st->get_int_hex(sizeof(ADDR), "addr");
+
+	loc->addr = (Address *)st->getObject("addr");
+
 	// xrefs
-     
-     st->get_object((object *)addr->xrefs, "xrefs");
-/*XFIX:
-	txref **xref = &addr->xreflist;
-	int count = st->get_int_dec(4, "count_of_xrefs");
-	if (st->get_error()) {
-		free(addr);
-		addr = NULL;
-		return;
-	}
-	while (count--) {
-		if (st->get_error()) {
-			*xref = NULL;
-			addr = NULL;
-			return;
-		}
-		*xref = (txref *)smalloc(sizeof(txref));
-		(*xref)->addr = st->get_int_hex(sizeof(ADDR), "xref_addr");
-		(*xref)->type = (txreftype)st->get_int_hex(sizeof(txreftype), "xref_type");
-		xref = &(*xref)->next;
-	}
-	*xref = NULL;
-*/
+	loc->xrefs = (ht_tree *)st->getObject("xrefs");
+	
 	// comments
-	st->get_object((object *)addr->comments, "comments");
+	loc->comments = (CommentList*)st->getObject("comments");
+	
 	if (st->get_error()) {
-		free(addr);
-		addr = NULL;
+		free(loc);
+		loc = NULL;
 		return;
 	}
 
-	analyser_get_addrtype(st, &addr->type);
+	analyser_get_addrtype(st, &loc->type);
 
 
-	// must be resolved later
-	addr->thisfunc = (taddr *)st->get_int_hex(4, "func");
+	// must be resolved later (thisfunc is of type Location not Address)
+	loc->thisfunc = (Location *)st->getObject("func");
 
-	addr->flags = st->get_int_hex(4, "flags");
+	loc->flags = st->getIntHex(4, "flags");
 	
 	left--;
 
 	if (st->get_error()) {
-		free(addr);
-		addr = NULL;
+		free(loc);
+		loc = NULL;
 		return;
 	}
-	if (sdf) loadaddrs(st, addr->right, level / 2 -1, left);
+	if (sdf) loadlocations(st, loc->right, level / 2 -1, left);
 }
 
-static void loadlabels(analyser *analy, ht_object_stream *st, tlabel *&label, int level, int &left)
+static void loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, int level, int &left)
 {
 	if (left<=0) {
-		label = NULL;
+		symbol = NULL;
 		return;
 	}
 	if (st->get_error()) {
-		free(label);
-		label = NULL;
+		symbol = NULL;
 		return;
 	}
 
-	label = (tlabel *) smalloc0(sizeof(tlabel));
+	symbol = (Symbol *) smalloc0(sizeof(Symbol));
 
 	bool sdf=!((level<= 1) || (left == 1));
-	if (sdf) loadlabels(analy, st, label->left, level / 2, left);
+	if (sdf) loadsymbols(analy, st, symbol->left, level / 2, left);
 
-	ADDR a = st->get_int_hex(sizeof a, "addr");
-	(label->addr = analy->new_addr(a))->label = label;
-//     label->addr->label = label;
+	Address *a;
+	a = (Address *)st->getObject("addr");
+	(symbol->location = analy->newLocation(a))->label = symbol;
+	delete a;
+	
+	symbol->name = st->getString("name");
 
-//	fstrget(st, label->name);
-//	          st->put_string(label->name, "name");
-	label->name = st->get_string("name");
-
-	label->type = (labeltype)st->get_int_hex(1, "type");
+	symbol->type = (labeltype)st->getIntHex(1, "type");
 
 	left--;
 
 	if (st->get_error()) {
-		free(label);
-		label = NULL;
+		free(symbol);
+		symbol = NULL;
 		return;
 	}
-	if (sdf) loadlabels(analy, st, label->right, level / 2 -1, left);
+	if (sdf) loadsymbols(analy, st, symbol->right, level / 2 -1, left);
 }
 
-static void resolveaddrs(analyser *a, taddr *addr)
+static void resolveaddrs(Analyser *a, Location *loc)
 {
-	if (addr) {
-		resolveaddrs(a, addr->left);
-		if ((ADDR)addr->thisfunc != INVALID_ADDR) {
-			addr->thisfunc = a->find_addr((ADDR)addr->thisfunc);
+	if (loc) {
+		resolveaddrs(a, loc->left);
+		Address *tmp = (Address*)loc->thisfunc;
+		if (tmp->isValid()) {
+			loc->thisfunc = a->getLocationByAddress(tmp);
 		} else {
-			addr->thisfunc = NULL;
+			loc->thisfunc = NULL;
 		}
-		resolveaddrs(a, addr->right);
+		delete tmp;
+		resolveaddrs(a, loc->right);
 	}
 }
 
 /*
  *
  */
-int analyser::load(ht_object_stream *st)
+int Analyser::load(ht_object_stream *st)
 {
+	GET_OBJECT(st, addr);
+	invalid_addr = new InvalidAddress();
 	GET_OBJECT(st, addr_queue);
 	GET_INT_DEC(st, ops_parsed);
 	GET_BOOL(st, active);
 	if (active) {
 		some_analyser_active++;
 	}
-
-	GET_INT_HEX(st, next_explored);
-	GET_INT_HEX(st, first_explored);
-	GET_INT_HEX(st, last_explored);
+     next_address_is_invalid = false;
+	GET_OBJECT(st, next_explored);
+	GET_OBJECT(st, first_explored);
+	GET_OBJECT(st, last_explored);
 
 	GET_INT_HEX(st, mode);
 
 	GET_OBJECT(st, explored);
 	GET_OBJECT(st, initialized);
 
-	GET_INT_DEC(st, addr_count);
-	loadaddrs(st, addrs, addr_count, addr_count);
+	GET_INT_DEC(st, location_count);
+	loadlocations(st, locations, location_count, location_count);
 
 	if (st->get_error()) return st->get_error();
 
-	resolveaddrs(this, addrs);
+	resolveaddrs(this, locations);
 	
-	GET_INT_DEC(st, label_count);
-	loadlabels(this, st, labels, label_count, label_count);
+	GET_INT_DEC(st, symbol_count);
+	loadsymbols(this, st, symbols, symbol_count, symbol_count);
 
 	if (st->get_error()) return st->get_error();
 
@@ -354,20 +667,21 @@ int analyser::load(ht_object_stream *st)
 	if (data) {
 		data->analy = this;
 	}
-	GET_INT_DEC(st, addrthreshold);
-	GET_INT_DEC(st, labelthreshold);
+	GET_INT_DEC(st, location_threshold);
+	GET_INT_DEC(st, symbol_threshold);
 
-	GET_INT_DEC(st, maxopcodelength);
+	GET_INT_DEC(st, max_opcode_length);
 
 	if (st->get_error()) return st->get_error();
 
-	ADDR curfuncaddr = st->get_int_hex(sizeof curfuncaddr, "cur_func");
-	if (curfuncaddr==INVALID_ADDR) {
-		cur_func = NULL;
+	Address *curfuncaddr = (Address *)st->getObject("cur_func");
+	if (curfuncaddr) {
+		cur_func = newLocation(curfuncaddr);
 	} else {
-		cur_func = new_addr(curfuncaddr);
+		cur_func = NULL;
 	}
-
+	delete curfuncaddr;
+	
 	cur_addr_ops = 0;
 	cur_label_ops = 0;
 	dirty = false;
@@ -377,11 +691,11 @@ int analyser::load(ht_object_stream *st)
 /*
  *
  */
-void	analyser::done()
+void	Analyser::done()
 {
-	set_active(false);
-	free_addrs(addrs);
-	free_labels(labels);
+	setActive(false);
+	freeLocations(locations);
+	freeSymbols(symbols);
 	if (addr_queue) {
 		addr_queue->destroy();
 		delete addr_queue;
@@ -410,23 +724,28 @@ void	analyser::done()
 		analy_disasm->done();
 		delete analy_disasm;
 	}
+	delete addr;
+	delete invalid_addr;
+	delete next_explored;
+	delete first_explored;
+	delete last_explored;
 }
 
 /*
  *	addaddrlabel will never overwrite an existing label (like addlabel)
  */
-bool analyser::add_addr_label(ADDR Addr, char *Prefix, labeltype type, taddr *infunc=NULL)
+bool Analyser::addAddressSymbol(Address *address, const char *Prefix, labeltype type, Location *infunc)
 {
-	if (!valid_addr(Addr, scvalid)) return false;
+	if (!validAddress(address, scvalid)) return false;
 
 
 	char *prefix = label_prefix(Prefix);
 
-	char	label[1024];
+	char	symbol[1024];
+	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
+	ht_snprintf(symbol, sizeof symbol, "%s%y", prefix, address);
 
-	sprintf(label, "%s"HEX8FORMAT, prefix, Addr);
-
-	if (add_label(Addr, label, type, infunc)) {
+	if (addSymbol(address, symbol, type, infunc)) {
 		return true;
 	} else {
 		return false;
@@ -436,24 +755,24 @@ bool analyser::add_addr_label(ADDR Addr, char *Prefix, labeltype type, taddr *in
 /*
  *
  */
-void	analyser::add_comment(ADDR Addr, int line, char *c)
+void	Analyser::addComment(Address *Addr, int line, const char *c)
 {
 	// line 0 meens append (at the moment assume append every time ;-))
 
 //	if (!validaddr(Addr, scvalid)) return;
 
-	taddr *a = new_addr(Addr);
+	Location *a = newLocation(Addr);
 
-	comment_list *com = a->comments;
+	CommentList *com = a->comments;
 
 	if (!com) {
-		com = new comment_list();
+		com = new CommentList();
 		com->init();
 		a->comments = com;
 	}
-	com->append_pre_comment(c);
+	com->appendPreComment(c);
 
-	DPRINTF("#(%08lx) comment `%s'\n", Addr, c);
+	DPRINTF("#(%y) comment `%s'\n", Addr, c);
 }
 
 /*
@@ -461,37 +780,37 @@ void	analyser::add_comment(ADDR Addr, int line, char *c)
  *           fail if label exist on another address
  *
  */
-bool analyser::add_label(ADDR Addr, char *label, labeltype type, taddr *infunc=NULL)
+bool Analyser::addSymbol(Address *Addr, const char *label, labeltype type, Location *infunc)
 {
-	if (!valid_addr(Addr, scvalid)) return false;
+	if (!validAddress(Addr, scvalid)) return false;
 
-	taddr *a = new_addr(Addr);
+	Location *a = newLocation(Addr);
 
 	if (!a->label) {
 
-		tlabel *l = new_label(label, a, type, infunc);
+		Symbol *l = newSymbol(label, a, type, infunc);
 
-		if (l->addr->addr != Addr) {
+		if (l->location->addr->compareTo(Addr) != 0) {
 			// this label already exists at a different address
 			return false;
 		}
 
 		a->label = l;
 		if (a->type.type == dt_unknown || a->type.type == dt_unknown_data) {
-	     	if (type == label_func && !valid_code_addr(Addr)) {
-	          	type = label_unknown;
-	          }
+			if (type == label_func && !validCodeAddress(Addr)) {
+				type = label_unknown;
+			}
 			switch (type) {
 				case label_unknown:
 					break;
 				case label_func:
-					data->set_code_addr_type(a, dst_function);
+					data->setCodeAddressType(a, dst_function);
 					break;
 				case label_loc:
-					data->set_code_addr_type(a, dst_location);
+					data->setCodeAddressType(a, dst_location);
 					break;
 				case label_data:
-					data->set_addr_type(a, dt_unknown_data, 0, 0);
+					data->setAddressType(a, dt_unknown_data, 0, 0);
 					break;
 			}
 		}
@@ -507,71 +826,69 @@ bool analyser::add_label(ADDR Addr, char *label, labeltype type, taddr *infunc=N
 /*
  *
  */
-void	analyser::add_xref(ADDR from, ADDR to, xref_type_t action)
+bool Analyser::addXRef(Address *from, Address *to, xref_enum_t action)
 {
-	if ((!valid_addr(from, scvalid)) || (!valid_addr(to, scvalid))) return;
+	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return false;
 
-	taddr	*a =	new_addr(from);
+	Location *a = newLocation(from);
 	ht_tree	*x = a->xrefs;
 
 	if (x) {
-          addr_xref *xref;
-          ht_addr tmp_to(to);
-		if ((xref = (addr_xref*)x->get(&tmp_to))) {
-			// update xref
-			xref->type = action;
-			DPRINTF("xref %08lx->%08lx updated\n", from, to);
-			return;
+		AddrXRef *xref;
+		if ((xref = (AddrXRef*)x->get(to))) {
+			// there's already a xref
+			return false;
 		}
 	} else {
-     	x = new ht_dtree();
-          ((ht_dtree *)x)->init(compare_keys_uint);
+		x = new ht_dtree();
+		((ht_dtree *)x)->init(compare_keys_ht_data);
 	}
-     x->insert(new ht_addr(to), new addr_xref(action));
-     a->xrefs = x;
-     
-	DPRINTF("xref %08lx->%08lx\n", from, to);
+	x->insert((Address*)to->duplicate(), new AddrXRef(action));
+	a->xrefs = x;
+	
+	DPRINTF("xref %y->%y\n", from, to);
+	return true;
 }
 
 /*
  *
  */
-void	analyser::assign_comment(ADDR Addr, int line, char *c)
+void	Analyser::assignComment(Address *Addr, int line, const char *c)
 {
 	/* not really implemented */
-	add_comment(Addr, line, c);
+	addComment(Addr, line, c);
 }
 
 /*
  *
  */
-bool analyser::assign_label(ADDR Addr, char *label, labeltype type, taddr *infunc=NULL)
+bool Analyser::assignSymbol(Address *Addr, const char *label, labeltype type, Location *infunc)
 {
-	if (!valid_addr(Addr, scvalid)) return false;
+	if (!validAddress(Addr, scvalid)) return false;
 
-	taddr *a = new_addr(Addr);
+	Location *a = newLocation(Addr);
 
-	tlabel *l = new_label(label, a, type, infunc);
-	if (l->addr->addr != Addr) {
+	Symbol *l = newSymbol(label, a, type, infunc);
+	if (l->location->addr->compareTo(Addr) != 0) {
 		// label already exists at a different address
 		return false;
 	}
 
-	if (l->addr->type.type == dt_unknown) {
-     	if (type == label_func && !valid_code_addr(Addr)) {
-          	type = label_unknown;
-          }
+	if (l->location->type.type == dt_unknown) {
+		if (type == label_func && !validCodeAddress(Addr)) {
+			type = label_unknown;
+		}
 		switch (type) {
 			case label_unknown:
 				break;
 			case label_func:
-				data->set_code_addr_type(a, dst_function);
+				data->setCodeAddressType(a, dst_function);
 				break;
 			case label_loc:
-				data->set_code_addr_type(a, dst_location);
+				data->setCodeAddressType(a, dst_location);
 				break;
 			case label_data:
-				data->set_addr_type(a, dt_unknown_data, 0, 0);
+				data->setAddressType(a, dt_unknown_data, 0, 0);
 				break;
 		}
 	}
@@ -580,7 +897,7 @@ bool analyser::assign_label(ADDR Addr, char *label, labeltype type, taddr *infun
 		// overwrite
 		if (a->label != l) {
 			// label has to be renamed
-			disable_label(a->label);
+			disableSymbol(a->label);
 			a->label = l;
 		}
 	} else {
@@ -592,13 +909,43 @@ bool analyser::assign_label(ADDR Addr, char *label, labeltype type, taddr *infun
 /*
  *
  */
-void	analyser::begin_analysis()
+void Analyser::assignXRef(Address *from, Address *to, xref_enum_t action)
 {
-	if (query_config(Q_DO_ANALYSIS)) {
-		DPRINTF("################################\nAnalysis started at %08lx:\n", Addr);
+	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return;
+
+	Location	*a =	newLocation(from);
+	ht_tree	*x = a->xrefs;
+
+	if (x) {
+		AddrXRef *xref;
+		Address *tmp_to = (Address*)to->duplicate();
+		if ((xref = (AddrXRef*)x->get(tmp_to))) {
+			// update xref
+			xref->type = action;
+			DPRINTF("xref %y->%y updated\n", from, to);
+			return;
+		}
+		delete tmp_to;
+	} else {
+		x = new ht_dtree();
+		((ht_dtree *)x)->init(compare_keys_ht_data);
+	}
+	x->insert((Address*)to->duplicate(), new AddrXRef(action));
+	a->xrefs = x;
+	
+	DPRINTF("xref %y->%y\n", from, to);
+}
+
+/*
+ *
+ */
+void	Analyser::beginAnalysis()
+{
+	if (queryConfig(Q_DO_ANALYSIS)) {
+		DPRINTF("################################\nAnalysis started.\n");
 		if (analy_disasm && disasm) {
 			ops_parsed = 0;
-			if (goto_addr(INVALID_ADDR, INVALID_ADDR)) set_active(true);
+			if (gotoAddress(invalid_addr, invalid_addr)) setActive(true);
 		} else {
 			DPRINTF("Analysis can't be started. No disassembler available.");
 		}
@@ -608,62 +955,89 @@ void	analyser::begin_analysis()
 /*
  *
  */
-bool	analyser::continue_analysis()
+bool	Analyser::continueAnalysis()
 {
-	byte			buf[16];
+	byte			buf[32];
 	OPCODE		*instr;
 	int			len;
-	tbranchtype	branch;
+	branch_enum_t	branch;
+
+     assert((UINT)max_opcode_length <= sizeof buf);
 
 	if (!active) return	false;
 	do {
-		if (!savety_change_addr(addr)) {
-			finish();
-			return false;
+	
+		int diff;
+//		char tbuf[100];
+//	          char tbuf2[100];
+//		addr->stringify(tbuf, 100, 0);
+/*          if (strcmp(tbuf, "200970ec") == 0) {
+			int as=0;
+		}*/
+//          printf("*** %s ***\n", tbuf);
+		if ((addr->difference(diff, next_explored) && (diff >= 0)) || !validCodeAddress(addr)) {
+			if (!gotoAddress(addr, invalid_addr)) {
+				finish();
+				return false;
+			}               
 		}
 
-		int bz = bufptr(addr, buf, sizeof(buf));
+		int bz = bufPtr(addr, buf, max_opcode_length);
 
-		instr = disasm->decode(buf, MIN(bz, maxopcodelength), map_addr(addr));
-		DPRINTF("opcode @%08lx [func: %08lx]: %s\n", addr, (cur_func) ? cur_func->addr : INVALID_ADDR, disasm->str(instr, 0));
-
+		instr = disasm->decode(buf, bz, mapAddr(addr));
+          instr = disasm->duplicateInsn(instr);
+          
 		ops_parsed++;
 		num_ops_parsed++;
 
-		len = disasm->getsize(instr);
-		last_explored += len;
+		len = disasm->getSize(instr);
+		last_explored->add(len);
 
-		if (disasm->valid_insn(instr)) {
-			branch = analy_disasm->is_branch(instr);
-			if (branch != brnobranch) do_branch(branch, instr, len); else {
-				analy_disasm->examine_opcode(instr);
-				addr	+= len;
+		do {
+			DPRINTF("opcode @%y [func: %y]: %s\n", addr, (cur_func) ? cur_func->addr : invalid_addr, disasm->str(instr, 0));
+			if (disasm->validInsn(instr)) {
+				branch = analy_disasm->isBranch(instr);
+				if (branch != br_nobranch) {
+					doBranch(branch, instr, len);
+				} else {
+					analy_disasm->examineOpcode(instr);
+				}
+			} else {
+				DPRINTF("invalid opcode @%y\n", addr);
+//	             log("invalid opcode at address %y\n", addr);
+				if (!addr->add(len)) {
+					delete addr;
+					addr = new InvalidAddress();
+				} else {
+					newLocation(addr)->flags |= AF_FUNCTION_END;
+                         next_address_is_invalid = true;
+				}
 			}
-		} else {
-			DPRINTF("invalid opcode @%08lx\n", addr);
-//             log("invalid opcode at address %08lx\n", addr);
-			new_addr(addr+len)->flags |= AF_FUNCTION_END;
-			goto_addr(INVALID_ADDR, INVALID_ADDR);
-		}
+		} while (disasm->selectNext(instr));
+          if (next_address_is_invalid || !addr->add(len)) {
+			gotoAddress(invalid_addr, invalid_addr);
+               next_address_is_invalid = false;
+          }
+		free(instr);
 	} while ((ops_parsed % MAX_OPS_PER_CONTINUE) !=0);
-	notify_progress(addr);
 	return true;
 }
 
 /*
  *
  */
-void analyser::continue_analysis_at(ADDR Addr)
+void Analyser::continueAnalysisAt(Address *Addr)
 {
-	if (!valid_code_addr(Addr)) return;
-	if (query_config(Q_DO_ANALYSIS)) {
-		DPRINTF("continueing analysis at %08lx\n", Addr);
-		if (active) {
-			push_addr(Addr, Addr);
-		} else {
+	if (!validAddress(Addr, sccode)) return;
+	if (queryConfig(Q_DO_ANALYSIS)) {
+		DPRINTF("continueing analysis at %y\n", Addr);
+		if (active || disasm) {
+			data->setCodeAddressType(Addr, dst_function);
+			pushAddress(Addr, Addr);               
+		}
+		if (!active) {
 			if (disasm) {
-				push_addr(Addr, Addr);
-				analyser::begin_analysis();
+				Analyser::beginAnalysis();
 			} else {
 				DPRINTF("couldn't start analysis: no disasm available\n");
 			}
@@ -674,33 +1048,34 @@ void analyser::continue_analysis_at(ADDR Addr)
 /*
  *
  */
-void	analyser::data_access(ADDR Addr, taccess access)
+void	Analyser::dataAccess(Address *Addr, taccess access)
 {
-	if (!valid_addr(Addr, scvalid)) {
+	if (!validAddress(Addr, scvalid)) {
 		char	msg[100];
-		sprintf(msg, "access of invalid addr %08x at addr %08x", Addr, addr);
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+		ht_snprintf(msg, sizeof msg, "access of invalid addr %y at addr %y", Addr, addr);
 		log(msg);
 		return;
 	}
 
-	DPRINTF("dataaccess of %08x\n", Addr);
+	DPRINTF("dataaccess of %y\n", Addr);
 
 	// string test
 	byte buffer[1024];
 
-	if (valid_addr(Addr, scinitialized)) {
-		UINT bz = bufptr(Addr, buffer, sizeof(buffer));
+	if (validAddress(Addr, scinitialized)) {
+		UINT bz = bufPtr(Addr, buffer, sizeof(buffer));
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
 				char string1[256], string2[31];
-				str->render_string(string2, 30);
-				sprintf(string1, "%s_%s_", str->name(), string2);
+				str->render_string(string2, sizeof string2);
+				ht_snprintf(string1, sizeof string1, "%s_%s_", str->name(), string2);
 				make_valid_name(string2, string1);
-				if (add_addr_label(Addr, string2, label_data)) {
-					add_comment(Addr, 0, "");
+				if (addAddressSymbol(Addr, string2, label_data)) {
+					addComment(Addr, 0, "");
 				}
-				data->set_array_addr_type(Addr, dst_string, str->length());
+				data->setArrayAddressType(Addr, dst_string, str->length());
 				str->done();
 				delete str;
 				return;
@@ -708,35 +1083,35 @@ void	analyser::data_access(ADDR Addr, taccess access)
 		}
 	}
 
-	if (valid_code_addr(Addr) && access.type == acoffset) {
-		if (add_addr_label(Addr, LPRFX_OFS, label_func)) {
-			add_comment(Addr, 0, "");
+	if (validCodeAddress(Addr) && access.type == acoffset) {
+		if (addAddressSymbol(Addr, LPRFX_OFS, label_func)) {
+			addComment(Addr, 0, "");
 		}
-		taddr *a = find_addr(Addr);
+		Location *a = getLocationByAddress(Addr);
 		assert(a);
 		// test if Addr points to code
 		if ((a->type.type == dt_unknown) || (a->type.type == dt_code)) {
 			// test if Addr points to valid code (test not yet complete)
 			byte buf[16];
-			int bz = bufptr(Addr, buf, sizeof(buf));
-			OPCODE *instr = disasm->decode(buf, MIN(bz, maxopcodelength), map_addr(Addr));
-			if (disasm->valid_insn(instr)) {
-				data->set_code_addr_type(Addr, dst_cunknown);
-				push_addr(Addr, Addr);
+			int bz = bufPtr(Addr, buf, sizeof(buf));
+			OPCODE *instr = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
+			if (disasm->validInsn(instr)) {
+				data->setCodeAddressType(Addr, dst_cunknown);
+				pushAddress(Addr, Addr);
 			}
 		}
 	} else {
 		if (access.type != acoffset) {
 			switch (access.size) {
-				case 1: data->set_int_addr_type(Addr, dst_ibyte, 1); break;
-				case 2: data->set_int_addr_type(Addr, dst_iword, 2); break;
-				case 4: data->set_int_addr_type(Addr, dst_idword, 4); break;
+				case 1: data->setIntAddressType(Addr, dst_ibyte, 1); break;
+				case 2: data->setIntAddressType(Addr, dst_iword, 2); break;
+				case 4: data->setIntAddressType(Addr, dst_idword, 4); break;
 			}
 		}
-		if (valid_addr(Addr, scinitialized)) {
-			add_addr_label(Addr, LPRFX_DTA, label_data);
+		if (validAddress(Addr, scinitialized)) {
+			addAddressSymbol(Addr, LPRFX_DTA, label_data);
 		} else {
-			add_addr_label(Addr, LPRFX_DTU, label_data);
+			addAddressSymbol(Addr, LPRFX_DTU, label_data);
 		}
 	}
 }
@@ -744,27 +1119,27 @@ void	analyser::data_access(ADDR Addr, taccess access)
 /*
  *	disables address, frees misc
  */
-void	analyser::delete_addr(ADDR Addr)
+void	Analyser::deleteLocation(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 	if (a) {
-		disable_label(a->label);
+		disableSymbol(a->label);
 		a->label = NULL;
 		a->flags |= AF_DELETED;
-		addr_count--;
+		location_count--;
 	}
 }
 
 /*
  *	disables label of an address and unassigns address' label
  */
-void analyser::delete_label(ADDR Addr)
+void Analyser::deleteSymbol(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 	if (a) {
-		disable_label(a->label);
+		disableSymbol(a->label);
 		a->label = NULL;
-		label_count--;
+		symbol_count--;
 	}
 }
 
@@ -774,24 +1149,25 @@ void analyser::delete_label(ADDR Addr)
  *	performed this way to preserve the labeltrees structure
  *
  */
-void	analyser::disable_label(tlabel *label)
+void	Analyser::disableSymbol(Symbol *label)
 {
 	if (label) {
-		label->addr = NULL;
+		label->location = NULL;
 	}
 }
 
 /*
  *
  */
-void	analyser::do_branch(tbranchtype branch, OPCODE *opcode, int len)
+void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 {
-	ADDR	branch_addr = analy_disasm->branch_addr(opcode, branch, true);
+	Address *branch_addr = analy_disasm->branchAddr(opcode, branch, true);
 
-	if (branch != brreturn) {
-		if (!valid_code_addr(branch_addr)) {
+	if (branch != br_return) {
+		if (!validCodeAddress(branch_addr)) {
 			char	msg[100];
-			sprintf(msg, "branch to invalid addr %08x from addr %08x", branch_addr, addr);
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+			ht_snprintf(msg, sizeof msg, "branch to invalid addr %y from addr %y", branch_addr, addr);
 			log(msg);
 		}
 	}
@@ -801,142 +1177,157 @@ void	analyser::do_branch(tbranchtype branch, OPCODE *opcode, int len)
 			add_comment(a->addr, 0, "");
 		}
 	}*/
+	Address *next_addr = (Address *)addr->duplicate();
+	if (!next_addr->add(len)) {
+		delete next_addr;
+		next_addr = new InvalidAddress();
+	}
 	switch (branch) {
-		case	brjump:
-			new_addr(addr+len)->flags |= AF_FUNCTION_END;
+		case	br_jump:
+			if (next_addr->isValid())
+				newLocation(next_addr)->flags |= AF_FUNCTION_END;
 
-			add_xref(branch_addr, addr, xrefjump);
-			if (add_addr_label(branch_addr, LPRFX_LOC, label_loc, cur_func)) {
-				add_comment(branch_addr, 0, "");
+			addXRef(branch_addr, addr, xrefjump);
+			if (addAddressSymbol(branch_addr, LPRFX_LOC, label_loc, cur_func)) {
+				addComment(branch_addr, 0, "");
 			}
-			goto_addr(branch_addr, INVALID_ADDR);
+//			gotoAddress(branch_addr, invalid_addr);
+			pushAddress(branch_addr, invalid_addr);
 			break;
-		case	brreturn:
-			new_addr(addr+len)->flags |= AF_FUNCTION_END;
+		case	br_return:
+			if (next_addr->isValid())
+				newLocation(next_addr)->flags |= AF_FUNCTION_END;
 
-			goto_addr(INVALID_ADDR, INVALID_ADDR);
+               next_address_is_invalid = true;
 			break;
-		case	brcall: {
-			add_xref(branch_addr, addr, xrefcall);
+		case	br_call: {
+			addXRef(branch_addr, addr, xrefcall);
 			bool special_func = false;
 			char *lprfx = LPRFX_SUB;
-			if (!explored->contains(branch_addr) && valid_code_addr(branch_addr)) {
+               Symbol *sym = getSymbolByAddress(branch_addr);
+			if (!sym && validCodeAddress(branch_addr)) {
 				// should be in code_analy
 				byte buf[16];
-				int bz = bufptr(branch_addr, buf, sizeof(buf));
-				OPCODE *instr = disasm->decode(buf, MIN(bz, maxopcodelength), map_addr(addr));
-				tbranchtype bt = analy_disasm->is_branch(instr);
+				int bz = bufPtr(branch_addr, buf, sizeof(buf));
+				OPCODE *instr = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(branch_addr));
+				branch_enum_t bt = analy_disasm->isBranch(instr);
 				
-				if (bt == brreturn) {
+				if (bt == br_return) {
 					lprfx = LPRFX_STUB;
-				} else if (bt == brjump) {
+				} else if (bt == br_jump) {
 					char buf[1024], label[1024];
-					ADDR wrap_addr = analy_disasm->branch_addr(instr, bt, false);
-					if (valid_addr(wrap_addr, scvalid)) {
-						tlabel *l = get_addr_label(wrap_addr);
-						add_comment(branch_addr, 0, "");
-						add_comment(branch_addr, 0, ";-----------------------");
+					Address *wrap_addr = analy_disasm->branchAddr(instr, bt, false);
+					if (validAddress(wrap_addr, scvalid)) {
+						Symbol *l = getSymbolByAddress(wrap_addr);
+						addComment(branch_addr, 0, "");
+						addComment(branch_addr, 0, ";----------------------------------------------");
+						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 						if (l && l->name) {
-							sprintf(buf, "%s %s", ";  W R A P P E R for", l->name);
-							sprintf(label, "%s%s_%x", label_prefix(LPRFX_WRAP), l->name, branch_addr);
+							ht_snprintf(buf, sizeof buf, "%s %s", ";  W R A P P E R for", l->name);
+							ht_snprintf(label, sizeof label, "%s%s_%y", label_prefix(LPRFX_WRAP), l->name, branch_addr);
 						} else {
-							sprintf(buf, "%s %s %x", ";  W R A P P E R for", "address", wrap_addr);
-							sprintf(label, "%s%x_%x", label_prefix(LPRFX_WRAP), wrap_addr, branch_addr);
+							ht_snprintf(buf, sizeof buf, "%s %s %y", ";  W R A P P E R for", "address", wrap_addr);
+							ht_snprintf(label, sizeof label, "%s%y_%y", label_prefix(LPRFX_WRAP), wrap_addr, branch_addr);
 						}
-						add_comment(branch_addr, 0, buf);
-						add_comment(branch_addr, 0, ";-----------------------");
-						add_label(branch_addr, label, label_func);
+						addComment(branch_addr, 0, buf);
+						addComment(branch_addr, 0, ";----------------------------------------------");
+						addSymbol(branch_addr, label, label_func);
 						special_func = true;
 					}
+					delete wrap_addr;
 				}
 			}
-			if (!special_func && add_addr_label(branch_addr, lprfx, label_func)) {
-				add_comment(branch_addr, 0, "");
-				add_comment(branch_addr, 0, ";-----------------------");
-				add_comment(branch_addr, 0, ";  S U B R O U T I N E");
-				add_comment(branch_addr, 0, ";-----------------------");
-				if (branch_addr==cur_func->addr) {
-					add_comment(branch_addr, 0, ";  (recursive)");
+			if (!special_func && addAddressSymbol(branch_addr, lprfx, label_func)) {
+				addComment(branch_addr, 0, "");
+				addComment(branch_addr, 0, ";-----------------------");
+				addComment(branch_addr, 0, ";  S U B R O U T I N E");
+				addComment(branch_addr, 0, ";-----------------------");
+				if (branch_addr->compareTo(cur_func->addr) == 0) {
+					addComment(branch_addr, 0, ";  (recursive)");
 				}
 			}
-			push_addr(addr+len, cur_func->addr);
-			goto_addr(branch_addr, branch_addr);
+//			pushAddress(next_addr, cur_func->addr);
+//			gotoAddress(branch_addr, branch_addr);
+			pushAddress(branch_addr, branch_addr);
 			break;
 		}
-		case	brjXX:
-			add_xref(branch_addr, addr, xrefjump);
-			if (add_addr_label(branch_addr, LPRFX_LOC, label_loc, cur_func)) {
-				add_comment(branch_addr, 0, "");
+		case	br_jXX:
+			addXRef(branch_addr, addr, xrefjump);
+			if (addAddressSymbol(branch_addr, LPRFX_LOC, label_loc, cur_func)) {
+				addComment(branch_addr, 0, "");
 			}
-			push_addr(addr+len, cur_func->addr);
-			goto_addr(branch_addr, INVALID_ADDR);
+//			pushAddress(next_addr, cur_func->addr);
+//			gotoAddress(branch_addr, invalid_addr);
+			pushAddress(branch_addr, invalid_addr);
 			break;
 		default:{}
 			// stupid but neccessary
 	}
+	delete next_addr;
+	delete branch_addr;
 }
 
 /*
  *
  */
-void	analyser::engage_codeanalyser()
+void	Analyser::engageCodeanalyser()
 {
-	if (query_config(Q_ENGAGE_CODE_ANALYSER)) {
+	if (queryConfig(Q_ENGAGE_CODE_ANALYSER)) {
 		DPRINTF("starting code analyser.\n");
 	}
 }
 
-static void analyserenum_addrs(taddr *addrs, ADDR at, taddr *&addr)
+static void analyserenum_addrs(Location *locs, Address *at, Location *&loc)
 {
-	if ((at < addrs->addr) || (at == INVALID_ADDR)) {
-		addr = addrs;
-		if (addrs->left) analyserenum_addrs(addrs->left, at, addr);
-	} else /*if (at >= addrs->addr)*/ {
-		if (addrs->right) analyserenum_addrs(addrs->right, at, addr);
+	if ((at->compareTo(locs->addr) < 0) || !at->isValid()) {
+		loc = locs;
+		if (locs->left) analyserenum_addrs(locs->left, at, loc);
+	} else /*if (at >= locs->addr)*/ {
+		if (locs->right) analyserenum_addrs(locs->right, at, loc);
 	}
 }
 
 /*
  *
  */
-taddr *analyser::enum_addrs(ADDR Addr)
+Location *Analyser::enumLocations(Address *Addr)
 {
-	taddr *result = NULL;
-	if (addrs) analyserenum_addrs(addrs, Addr, result);
+	Location *result = NULL;
+	if (locations) analyserenum_addrs(locations, Addr, result);
 	while ((result) && (result->flags & AF_DELETED)) {
-		ADDR a = result->addr;
+		Address *a = result->addr;
 		result = NULL;
-		analyserenum_addrs(addrs, a, result);
+		analyserenum_addrs(locations, a, result);
 	}
 	return result;
 }
 
-static void analyserenum_addrs_back(taddr *addrs, ADDR at, taddr *&addr)
+static void analyserenum_addrs_back(Location *locs, Address *at, Location *&loc)
 {
-	if (at <= addrs->addr) {
-		if (addrs->left) analyserenum_addrs_back(addrs->left, at, addr);
-	} else /*if (at > addrs->addr)*/ {
-		addr = addrs;
-		if (addrs->right) analyserenum_addrs_back(addrs->right, at, addr);
+	if (at->compareTo(locs->addr) <= 0) {
+		if (locs->left) analyserenum_addrs_back(locs->left, at, loc);
+	} else /*if (at > locs->addr)*/ {
+		loc = locs;
+		if (locs->right) analyserenum_addrs_back(locs->right, at, loc);
 	}
 }
 
 /*
  *
  */
-taddr *analyser::enum_addrs_back(ADDR Addr)
+Location *Analyser::enumLocationsReverse(Address *Addr)
 {
-	taddr *result = NULL;
-	if (addrs) analyserenum_addrs_back(addrs, Addr, result);
+	Location *result = NULL;
+	if (locations) analyserenum_addrs_back(locations, Addr, result);
 	while ((result) && (result->flags & AF_DELETED)) {
-		ADDR a = result->addr;
+		Address *a = result->addr;
 		result = NULL;
-		analyserenum_addrs_back(addrs, a, result);
+		analyserenum_addrs_back(locations, a, result);
 	}
 	return result;
 }
 
-static void analyserenum_labels(tlabel *labels, char *at, tlabel *&label)
+static void analyserenum_labels(Symbol *labels, const char *at, Symbol *&label)
 {
 	int i = strcmp(at, labels->name);
 	if (i < 0) {
@@ -960,23 +1351,23 @@ static void analyserenum_labels(tlabel *labels, char *at, tlabel *&label)
 			label = enum_labels(label->name);
 		}
  */
-tlabel *analyser::enum_labels(char *at)
+Symbol *Analyser::enumSymbolsByName(const char *at)
 {
-	tlabel *result = NULL;
+	Symbol *result = NULL;
 	if (!at) at="";
-	if (labels) analyserenum_labels(labels, at, result);
+	if (symbols) analyserenum_labels(symbols, at, result);
 
 	// label with !addr mustnt be returned
-	while ((result) && (!result->addr)) {
+	while ((result) && (!result->location)) {
 		char *name = result->name;
 		result = NULL;
-		analyserenum_labels(labels, name, result);
+		analyserenum_labels(symbols, name, result);
 	}
 
 	return result;
 }
 
-static void analyserenum_labels_back(tlabel *labels, char *at, tlabel *&label)
+static void analyserenum_labels_back(Symbol *labels, const char *at, Symbol *&label)
 {
 	int i = strcmp(at, labels->name);
 	if (i <= 0) {
@@ -990,30 +1381,49 @@ static void analyserenum_labels_back(tlabel *labels, char *at, tlabel *&label)
 /*
  *
  */
-tlabel *analyser::enum_labels_back(char *at)
+Symbol *Analyser::enumSymbolsByNameReverse(const char *at)
 {
-	tlabel *result = NULL;
+	Symbol *result = NULL;
 	// FIXME:
 	if (!at) at="\xff\xff\xff";
-	if (labels) analyserenum_labels_back(labels, at, result);
+	if (symbols) analyserenum_labels_back(symbols, at, result);
 
 	// labels with !addr mustnt be returned
-	while ((result) && (!result->addr)) {
+	while ((result) && (!result->location)) {
 		char *name = result->name;
 		result = NULL;
-		analyserenum_labels_back(labels, name, result);
+		analyserenum_labels_back(symbols, name, result);
 	}
 
 	return result;
 }
 
+Symbol *Analyser::enumSymbols(Symbol *sym)
+{
+	if (sym) {
+		return enumSymbolsByName(sym->name);
+	} else {
+		return enumSymbolsByName(NULL);
+	}
+}
+
+Symbol *Analyser::enumSymbolsReverse(Symbol *sym)
+{
+	if (sym) {
+		return enumSymbolsByNameReverse(sym->name);
+	} else {
+		return enumSymbolsByNameReverse(NULL);
+	}
+}
+
+
 /*
  *
  */
-taddr_typetype analyser::examine_data(ADDR Addr)
+taddr_typetype Analyser::examineData(Address *Addr)
 {
-	if ((valid_read_addr(Addr)) && (valid_addr(Addr, scinitialized))) {
-		DPRINTF("examinating data @%08lx:\n", Addr);
+	if ((validReadAddress(Addr)) && (validAddress(Addr, scinitialized))) {
+		DPRINTF("examinating data @%y:\n", Addr);
 
 	} else return dt_unknown;
 	return dt_unknown;
@@ -1022,12 +1432,12 @@ taddr_typetype analyser::examine_data(ADDR Addr)
 /*
  *
  */
-static taddr *analyserfindaddr(taddr *addrs, ADDR Addr)
+static Location *analyserfindaddr(Location *locs, Address *Addr)
 {
-	if (addrs) {
-		if (Addr < addrs->addr) return analyserfindaddr(addrs->left, Addr);
-		if (Addr > addrs->addr) return analyserfindaddr(addrs->right, Addr);
-		return (addrs->flags & AF_DELETED) ? NULL : addrs;
+	if (locs) {
+		if (Addr->compareTo(locs->addr) < 0) return analyserfindaddr(locs->left, Addr);
+		if (Addr->compareTo(locs->addr) > 0) return analyserfindaddr(locs->right, Addr);
+		return (locs->flags & AF_DELETED) ? NULL : locs;
 	}
 	return NULL;
 }
@@ -1035,34 +1445,39 @@ static taddr *analyserfindaddr(taddr *addrs, ADDR Addr)
 /*
  *
  */
-taddr *analyser::find_addr(ADDR Addr)
+Location *Analyser::getLocationByAddress(Address *Addr)
 {
-	return analyserfindaddr(addrs, Addr);
+	return analyserfindaddr(locations, Addr);
 }
 
 /*
  *   finds the address Addr belongs to (if address has size > 1)
  */
-taddr *analyser::find_addr_context(ADDR Addr)
+Location *Analyser::getLocationContextByAddress(Address *Addr)
 {
-	taddr *res = enum_addrs_back(Addr);
-	if (res && res->type.type != dt_unknown && (res->addr + res->type.length > Addr)) {
-		return res;
-	} else {
-		return NULL;
+	Location *res = enumLocationsReverse(Addr);
+	if (res && res->type.type != dt_unknown) {
+		Address *resaddr = (Address *)res->addr->duplicate();
+		resaddr->add(res->type.length);
+		if (resaddr->compareTo(Addr) > 0) {
+			delete resaddr;
+			return res;
+		}
+		delete resaddr;
 	}
+	return NULL;
 }
 
 /*
  *	findaddrfunc finds the function the Addr belongs to (if possible/applicable).
  */
-taddr *analyser::find_addr_func(ADDR Addr)
+Location *Analyser::getFunctionByAddress(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
-	if (!a) a = enum_addrs_back(Addr);
+	Location *a = getLocationByAddress(Addr);
+	if (!a) a = enumLocationsReverse(Addr);
 	while ((a) && (!(a->flags & AF_FUNCTION_SET))) {
 		if (a->flags & AF_FUNCTION_END) return NULL;
-		a = enum_addrs_back(a->addr);
+		a = enumLocationsReverse(a->addr);
 	}
 	return (a) ? a->thisfunc : NULL;
 }
@@ -1070,13 +1485,13 @@ taddr *analyser::find_addr_func(ADDR Addr)
 /*
  *	findaddrlabel searches back to the last label
  */
-taddr *analyser::find_addr_label(ADDR Addr)
+Location *Analyser::getPreviousSymbolByAddress(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
-	if (!a) a = enum_addrs_back(Addr);
+	Location *a = getLocationByAddress(Addr);
+	if (!a) a = enumLocationsReverse(Addr);
 	while ((a) && (!a->label)) {
 		if (a->flags & AF_FUNCTION_END) return NULL;
-		a = enum_addrs_back(a->addr);
+		a = enumLocationsReverse(a->addr);
 	}
 	return (a) ? a : NULL;
 }
@@ -1084,13 +1499,13 @@ taddr *analyser::find_addr_label(ADDR Addr)
 /*
  *
  */
-static tlabel *analyserfindlabel(tlabel *labels, char *label)
+static Symbol *analyserfindlabel(Symbol *labels, const char *label)
 {
 	if (labels) {
 		int i=strcmp(label, labels->name);
 		if (i < 0) return analyserfindlabel(labels->left, label);
 		if (i > 0) return analyserfindlabel(labels->right, label);
-		return labels->addr ? labels : NULL;
+		return labels->location ? labels : NULL;
 	}
 	return NULL;
 }
@@ -1098,56 +1513,57 @@ static tlabel *analyserfindlabel(tlabel *labels, char *label)
 /*
  *
  */
-tlabel *analyser::find_label(char *label)
+Symbol *Analyser::getSymbolByName(const char *label)
 {
-	return analyserfindlabel(labels, label);
+	return analyserfindlabel(symbols, label);
 }
 
 /*
  *	called once every time the analyser has nothing more to do.
  */
-void	analyser::finish()
+void	Analyser::finish()
 {
 	DPRINTF("the analyser finished (for now).\n");
 	cur_func = NULL;
-	addr = INVALID_ADDR;
-	set_active(false);
+	addr = new InvalidAddress();
+	setActive(false);
 }
 
 /*
  *
  */
-void analyser::free_addr(taddr *Addr)
+void Analyser::freeLocation(Location *loc)
 {
-	if (Addr) {
+	if (loc) {
 		// label will be freed separatly
-          if (Addr->xrefs) {
-          	Addr->xrefs->destroy();
-               delete Addr->xrefs;
-          }
-		free_comments(Addr);
-		free(Addr);
+		if (loc->xrefs) {
+			loc->xrefs->destroy();
+			delete loc->xrefs;
+		}		
+		freeComments(loc);
+		delete loc->addr;
+		free(loc);
 	}
 }
 
 /*
  *
  */
-void	analyser::free_addrs(taddr *addrs)
+void	Analyser::freeLocations(Location *addrs)
 {
 	if (addrs) {
-		free_addrs(addrs->left);
-		free_addrs(addrs->right);
-		free_addr(addrs);
+		freeLocations(addrs->left);
+		freeLocations(addrs->right);
+		freeLocation(addrs);
 	}
 }
 
 /*
  *
  */
-void analyser::free_comments(taddr *Addr)
+void Analyser::freeComments(Location *Addr)
 {
-	comment_list *c = Addr->comments;
+	CommentList *c = Addr->comments;
 	if (c) {
 		c->destroy();
 		delete c;
@@ -1158,7 +1574,7 @@ void analyser::free_comments(taddr *Addr)
 /*
  *
  */
-void analyser::free_label(tlabel *label)
+void Analyser::freeSymbol(Symbol *label)
 {
 	if (label) {
 		if (label->name) free(label->name);
@@ -1170,16 +1586,16 @@ void analyser::free_label(tlabel *label)
 /*
  *
  */
-void analyser::free_labels(tlabel *labels)
+void Analyser::freeSymbols(Symbol *labels)
 {
 	if (labels) {
-		free_labels(labels->left);
-		free_labels(labels->right);
-		free_label(labels);
+		freeSymbols(labels->left);
+		freeSymbols(labels->right);
+		freeSymbol(labels);
 	}
 }
 
-static void analysergetaddrcount(taddr *addr, int *c)
+static void analysergetaddrcount(Location *addr, int *c)
 {
 	if (addr) {
 		analysergetaddrcount(addr->left, c);
@@ -1191,19 +1607,19 @@ static void analysergetaddrcount(taddr *addr, int *c)
 /*
  *
  */
-int	analyser::get_addr_count()
+int	Analyser::getLocationCount()
 {
 	int c=0;
-	analysergetaddrcount(addrs, &c);
+	analysergetaddrcount(locations, &c);
 	return c;
 }
 
 
-static void analysergetlabelcount(tlabel *l, int *c)
+static void analysergetlabelcount(Symbol *l, int *c)
 {
 	if (l) {
 		analysergetlabelcount(l->left, c);
-		if (l->addr) (*c)++;
+		if (l->location) (*c)++;
 		analysergetlabelcount(l->right, c);
 	}
 }
@@ -1211,23 +1627,23 @@ static void analysergetlabelcount(tlabel *l, int *c)
 /*
  *
  */
-int	analyser::get_label_count()
+int	Analyser::getSymbolCount()
 {
 	int c=0;
-	analysergetlabelcount(labels, &c);
+	analysergetlabelcount(symbols, &c);
 	return c;
 }
 /*
  *
  */
-tlabel *analyser::get_addr_label(ADDR Addr)
+Symbol *Analyser::getSymbolByAddress(Address *Addr)
 {
-	taddr	*a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 
 	return (a) ? a->label : NULL;
 }
 
-char *analyser::get_addr_section_name(ADDR Addr)
+char *Analyser::getSegmentNameByAddress(Address *Addr)
 {
 	return NULL;
 }
@@ -1235,60 +1651,81 @@ char *analyser::get_addr_section_name(ADDR Addr)
 /*
  *
  */
-bool	analyser::goto_addr(ADDR Addr, ADDR func)
+bool	Analyser::gotoAddress(Address *Addr, Address *func)
 {
-	if (first_explored < last_explored) {
-		DPRINTF("explored->add(%08lx - %08lx)\n", first_explored, last_explored);
+	DPRINTF("goto(%y, %y)\n", Addr, func);
+	int diff;
+	
+	if (first_explored->difference(diff, last_explored) && diff < 0) {
+		DPRINTF("explored->add(%y - %y)\n", first_explored, last_explored);
 		explored->add(first_explored, last_explored);
 	}
 
-	addr	= Addr;
+	delete first_explored;
+	delete last_explored;
+	delete next_explored;
+	func = (Address *)func->duplicate();
 
-	if (!valid_code_addr(addr) || explored->contains(addr)) {
-		DPRINTF("Address: %08lx Valid: %d Explored: %d\n", addr, validcodeaddr(addr), explored->contains(addr));
+	if (!validCodeAddress(Addr) || explored->contains(Addr)) {
+		DPRINTF("Address: %y Valid: %d Explored: %d\n", addr, validCodeAddress(addr), explored->contains(addr));
 		do {
-			if (!pop_addr(&addr, &func)) {
-				first_explored	= last_explored = INVALID_ADDR;
-				addr	= INVALID_ADDR;
+			delete addr;
+			delete func;
+			if (!popAddress(&addr, &func)) {
+				first_explored = new InvalidAddress();
+				last_explored = new InvalidAddress();
+				next_explored = new InvalidAddress();
+				addr = new InvalidAddress();
 				return false;
 			}
 
-			DPRINTF("pop %08lx   (Valid: %d  Explored: %d)\n", addr, validcodeaddr(addr), explored->contains(addr));
-		} while ((explored->contains(addr)) || (!valid_code_addr(addr)));
+			DPRINTF("pop %y   (Valid: %d  Explored: %d)\n", addr, validCodeAddress(addr), explored->contains(addr));
+		} while ((explored->contains(addr)) || (!validCodeAddress(addr)));          
+	} else {
+		if (addr != Addr) {
+			delete addr;
+			addr = (Address *)Addr->duplicate();
+		}
 	}
 
-	if (func!=INVALID_ADDR) {
-		cur_func = new_addr(func);
-		set_addr_func(cur_func, cur_func);
+	if (func->isValid()) {
+		cur_func = newLocation(func);
+		setLocationFunction(cur_func, cur_func);
 	}
-
-	next_explored = explored->find_next(addr);
-	first_explored	= last_explored = addr;
+	delete func;
+	next_explored = (Address *)explored->findNext(addr);
+	if (!next_explored) {
+		next_explored = new InvalidAddress();
+	} else {
+		next_explored = (Address *)next_explored->duplicate();
+	}
+	first_explored = (Address *)addr->duplicate();
+	last_explored = (Address *)addr->duplicate();
 	return true;
 }
 
 /*
  *
  */
-void analyser::init_code_analyser()
+void Analyser::initCodeAnalyser()
 {
-	code = new code_analyser();
+	code = new CodeAnalyser();
 	code->init(this);
 }
 
 /*
  *
  */
-void analyser::init_data_analyser()
+void Analyser::initDataAnalyser()
 {
-	data = new data_analyser();
+	data = new DataAnalyser();
 	data->init(this);
 }
 
 /*
  *
  */
-void	analyser::log(char *s)
+void	Analyser::log(const char *s)
 {
 	// stub
 }
@@ -1296,7 +1733,7 @@ void	analyser::log(char *s)
 /*
  *
  */
-CPU_ADDR analyser::map_addr(ADDR Addr)
+CPU_ADDR Analyser::mapAddr(Address *Addr)
 {
 	/*
 	 * 	this function should map the independent address Addr to a
@@ -1305,49 +1742,48 @@ CPU_ADDR analyser::map_addr(ADDR Addr)
 	 *   it is only used for relativ calls/jumps
 	 */
 	CPU_ADDR a;
-	a.addr32.seg = 0;
-	a.addr32.offset = Addr;
+	Addr->putIntoCPUAddress(&a);
 	return a;
 }
 
-taddr *analyser::new_addr(taddr *&addrs, ADDR Addr)
+Location *Analyser::newLocation(Location *&locs, Address *Addr)
 {
-	if (addrs) {
-		if (Addr < addrs->addr) return new_addr(addrs->left, Addr);
-		if (Addr > addrs->addr) return new_addr(addrs->right, Addr);
+	if (locs) {
+		if (Addr->compareTo(locs->addr) < 0) return newLocation(locs->left, Addr);
+		if (Addr->compareTo(locs->addr) > 0) return newLocation(locs->right, Addr);
 	} else {
-		addrs = (taddr *) smalloc0(sizeof(taddr));
-		addrs->addr = Addr;
-		addr_count++;
+		locs = (Location *) smalloc0(sizeof(Location));
+		locs->addr = (Address *)Addr->duplicate();
+		location_count++;
 	}
-	addrs->flags &= ~AF_DELETED;
-	return addrs;
+	locs->flags &= ~AF_DELETED;
+	return locs;
 }
 
 /*
  *
  */
-taddr *analyser::new_addr(ADDR Addr)
+Location *Analyser::newLocation(Address *Addr)
 {
 	if (!(cur_addr_ops--)) {
-		optimize_addr_tree();
+		optimizeLocationTree();
 	}
-	return new_addr(addrs, Addr);
+	return newLocation(locations, Addr);
 }
 
-tlabel *analyser::new_label(tlabel *&labels, char *label, taddr *Addr, labeltype type)
+Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *Addr, labeltype type)
 {
 	if (labels) {
 		int i = strcmp(label, labels->name);
-		if (i < 0) return new_label(labels->left, label, Addr, type);
-		if (i > 0) return new_label(labels->right, label, Addr, type);
-		if (!(labels->addr)) goto w;
+		if (i < 0) return newSymbol(labels->left, label, Addr, type);
+		if (i > 0) return newSymbol(labels->right, label, Addr, type);
+		if (!(labels->location)) goto w;
 	} else {
-		labels = (tlabel *) smalloc0(sizeof(tlabel));
+		labels = (Symbol *) smalloc0(sizeof(Symbol));
 		labels->name = ht_strdup(label);
-		label_count++;
+		symbol_count++;
 	    w:
-		labels->addr = Addr;
+		labels->location = Addr;
 		labels->type = type;
 	}
 	return labels;
@@ -1356,55 +1792,47 @@ tlabel *analyser::new_label(tlabel *&labels, char *label, taddr *Addr, labeltype
 /*
  *
  */
-tlabel *analyser::new_label(char *label, taddr *Addr, labeltype type, taddr *infunc)
+Symbol *Analyser::newSymbol(const char *label, Location *Addr, labeltype type, Location *infunc)
 {
 	if (!(cur_label_ops--)) {
-		optimize_label_tree();
+		optimizeSymbolTree();
 	}
-	tlabel *result = new_label(labels, label, Addr, type);
-	if ((result) && (result->addr==Addr) && (infunc)) set_addr_func(Addr, infunc);
+	Symbol *result = newSymbol(symbols, label, Addr, type);
+	if ((result) && (result->location==Addr) && (infunc)) setLocationFunction(Addr, infunc);
 	return result;
-}
-
-/*
- *
- */
-void	analyser::notify_progress(ADDR Addr)
-{
-	// stub
 }
 
 /*
  * optimizes(=balances) addr tree
  */
-void analyser::optimize_addr_tree()
+void Analyser::optimizeLocationTree()
 {
-	cur_addr_ops = addrthreshold;
+	cur_addr_ops = location_threshold;
 	// implement me!
 }
 
 /*
  * see optimize_addr_tree()
  */
-void analyser::optimize_label_tree()
+void Analyser::optimizeSymbolTree()
 {
-	cur_label_ops = labelthreshold;
+	cur_label_ops = symbol_threshold;
 	// implement me!
 }
 
 /*
  *
  */
-bool analyser::pop_addr(ADDR *Addr, ADDR *func)
+bool Analyser::popAddress(Address **Addr, Address **func)
 {
 	if (addr_queue->count()) {
 
-		addrqueueitem *aqi = (addrqueueitem *) addr_queue->dequeue();
-		*Addr = aqi->addr;
-		*func = aqi->func;
+		AddressQueueItem *aqi = (AddressQueueItem *) addr_queue->dequeue();
+		*Addr = (Address *)aqi->addr->duplicate();
+		*func = (Address *)aqi->func->duplicate();
 		delete aqi;
-
-		DPRINTF("addr %08lx (from sub %08lx) poped\n", *Addr, *func);
+		
+		DPRINTF("addr %y (from sub %y) poped\n", *Addr, *func);
 		return true;
 
 	} else {
@@ -1416,71 +1844,57 @@ bool analyser::pop_addr(ADDR *Addr, ADDR *func)
 /*
  *
  */
-void analyser::push_addr(ADDR Addr, ADDR func)
+void Analyser::pushAddress(Address *Addr, Address *func)
 {
-	if (valid_code_addr(Addr)) {
-		DPRINTF("addr %08lx (from func %08lx) pushed\n", Addr, func);
-		addrqueueitem *aqi = new addrqueueitem(Addr, func);
+	if (validCodeAddress(Addr)) {
+		DPRINTF("addr %y (from func %y) pushed\n", Addr, func);
+		AddressQueueItem *aqi = new AddressQueueItem(Addr, func);
 		addr_queue->enqueue(aqi);
 	}
 }
 
-static void saveaddrs(ht_object_stream *st, taddr *addr)
+static void saveaddrs(ht_object_stream *st, Location *addr)
 {
 	if (addr) {
 		saveaddrs(st, addr->left);
 
 		if (!(addr->flags & AF_DELETED)) {
-			st->put_int_hex(addr->addr, sizeof(ADDR), "addr");
+			st->putObject(addr->addr, "addr");
 
-			// xrefs
-               st->put_object(addr->xrefs, "xrefs");
-/* XFIX:
-			txref	*xref = addr->xreflist;
-			int		count = 0;
-			while (xref) {
-				count++;
-				xref = xref->next;
-			}
-			st->put_int_dec(count, 4, "count_of_xrefs");
-			xref = addr->xreflist;
-			while (xref) {
-				st->put_int_hex(xref->addr, sizeof(ADDR), "xref_addr");
-				st->put_int_hex(xref->type, sizeof(txreftype), "xref_type");
-				xref = xref->next;
-			}
-*/
-			st->put_object(addr->comments, "comments");
+			st->putObject(addr->xrefs, "xrefs");
+			st->putObject(addr->comments, "comments");
 
 			analyser_put_addrtype(st, &addr->type);
 			
 			if (addr->thisfunc) {
-				st->put_int_hex(addr->thisfunc->addr, 4, "func");
+				st->putObject(addr->thisfunc->addr, "func");
 			} else {
-				st->put_int_hex(INVALID_ADDR, 4, "func");
+				Address *ia = new InvalidAddress();
+				st->putObject(ia, "func");
+				delete ia;
 			}
 
-			st->put_int_hex(addr->flags, 4, "flags");
+			st->putIntHex(addr->flags, 4, "flags");
 		}
 
 		saveaddrs(st, addr->right);
 	}
 }
 
-static void savelabels(ht_object_stream *st, tlabel *label)
+static void savelabels(ht_object_stream *st, Symbol *label)
 {
 	if (label) {
 		savelabels(st, label->left);
 
-		if (label->addr) {
+		if (label->location) {
 			// label isn't deleted
 
-			st->put_int_hex(label->addr->addr, sizeof(ADDR), "addr");
+			st->putObject(label->location->addr, "addr");
 
-			st->put_string(label->name, "name");
+			st->putString(label->name, "name");
 
 			int a = (int)label->type;
-			st->put_int_hex(a, 1, "type");
+			st->putIntHex(a, 1, "type");
 		}
 
 		savelabels(st, label->right);
@@ -1490,47 +1904,51 @@ static void savelabels(ht_object_stream *st, tlabel *label)
 /*
  *
  */
-void analyser::store(ht_object_stream *st)
+void Analyser::store(ht_object_stream *st)
 {
+	PUT_OBJECT(st, addr);
+	
 	PUT_OBJECT(st, addr_queue);
 	PUT_INT_DEC(st, ops_parsed);
 	PUT_BOOL(st, active);
-	PUT_INT_HEX(st, next_explored);
-	PUT_INT_HEX(st, first_explored);
-	PUT_INT_HEX(st, last_explored);
+	PUT_OBJECT(st, next_explored);
+	PUT_OBJECT(st, first_explored);
+	PUT_OBJECT(st, last_explored);
 	PUT_INT_HEX(st, mode);
 	PUT_OBJECT(st, explored);
 	PUT_OBJECT(st, initialized);
 
-	st->put_info("addresses");
-	st->put_int_dec(get_addr_count(), 4, "addr_count");
-	saveaddrs(st, addrs);
+	st->putInfo("locations");
+	st->putIntDec(getLocationCount(), 4, "location_count");
+	saveaddrs(st, locations);
 
-	st->put_info("labels");
-	st->put_int_dec(get_label_count(), 4, "label_count");
-	savelabels(st, labels);
+	st->putInfo("symbols");
+	st->putIntDec(getSymbolCount(), 4, "symbol_count");
+	savelabels(st, symbols);
 
 	PUT_OBJECT(st, analy_disasm);
 	PUT_OBJECT(st, disasm);
 	PUT_OBJECT(st, code);
 	PUT_OBJECT(st, data);
 
-	PUT_INT_DEC(st, addrthreshold);
-	PUT_INT_DEC(st, labelthreshold);
+	PUT_INT_DEC(st, location_threshold);
+	PUT_INT_DEC(st, symbol_threshold);
 
-	PUT_INT_DEC(st, maxopcodelength);
+	PUT_INT_DEC(st, max_opcode_length);
+	
 	if (cur_func) {
-		st->put_int_hex(cur_func->addr, sizeof(ADDR), "cur_func");
+		st->putObject(cur_func->addr, "cur_func");
 	} else {
-		st->put_int_hex(INVALID_ADDR, sizeof(ADDR), "cur_func");
+		st->putObject(NULL, "cur_func");
 	}
+	
 	dirty = false;
 }
 
 /*
  *
  */
-int	analyser::query_config(int mode)
+int	Analyser::queryConfig(int mode)
 {
 	// stub
 	return 0;
@@ -1539,16 +1957,7 @@ int	analyser::query_config(int mode)
 /*
  *
  */
-bool	analyser::savety_change_addr(ADDR Addr)
-{
-	addr	= Addr;
-	return ((addr>=next_explored) || (!valid_code_addr(addr))) ? goto_addr(addr, INVALID_ADDR) : true;
-}
-
-/*
- *
- */
-void analyser::set_active(bool mode)
+void Analyser::setActive(bool mode)
 {
 	if (mode) {
 		if (!active) {
@@ -1567,7 +1976,7 @@ void analyser::set_active(bool mode)
 /*
  *
  */
-void analyser::set_addr_func(taddr *a, taddr *func)
+void Analyser::setLocationFunction(Location *a, Location *func)
 {
 	if (a) {
 		a->thisfunc = func;
@@ -1579,13 +1988,13 @@ void analyser::set_addr_func(taddr *a, taddr *func)
 /*
  *
  */
-void analyser::set_disasm(disassembler *Disasm)
+void Analyser::setDisasm(Disassembler *d)
 {
-	disasm = Disasm;
+	disasm = d;
 	if (disasm) {
-		maxopcodelength = disasm->getmaxopcodelength();
+		max_opcode_length = disasm->getMaxOpcodeLength();
 	} else {
-		maxopcodelength = 1;
+		max_opcode_length = 1;
 	}
 }
 
@@ -1593,47 +2002,47 @@ void analyser::set_disasm(disassembler *Disasm)
  *	sets addr_threshold. after threshold addr_tree ops the tree will
  *   be optimized
  */
-void analyser::set_addr_tree_optimize_threshold(int threshold)
+void Analyser::setLocationTreeOptimizeThreshold(int threshold)
 {
-	addrthreshold = threshold;
-	if (cur_addr_ops > addrthreshold) cur_addr_ops = addrthreshold;
+	location_threshold = threshold;
+	if (cur_addr_ops > location_threshold) cur_addr_ops = location_threshold;
 }
 
 /*
  *	see set_addr_tree_optimize_threshold
  */
-void analyser::set_label_tree_optimize_threshold(int threshold)
+void Analyser::setSymbolTreeOptimizeThreshold(int threshold)
 {
-	labelthreshold = threshold;
-	if (cur_label_ops > labelthreshold) cur_label_ops = labelthreshold;
+	symbol_threshold = threshold;
+	if (cur_label_ops > symbol_threshold) cur_label_ops = symbol_threshold;
 }
 
 /*
  *
  */
-bool	analyser::valid_code_addr(ADDR Addr)
+bool	Analyser::validCodeAddress(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 	if (a) {
 		if ((a->type.type != dt_code) && (a->type.type != dt_unknown)) return false;
 	}
-	return valid_addr(Addr, sccode);
+	return validAddress(Addr, sccode);
 }
 
 /*
  *
  */
-bool	analyser::valid_read_addr(ADDR Addr)
+bool	Analyser::validReadAddress(Address *Addr)
 {
-	return valid_addr(Addr, scread);
+	return validAddress(Addr, scread);
 }
 
 /*
  *
  */
-bool	analyser::valid_write_addr(ADDR Addr)
+bool	Analyser::validWriteAddress(Address *Addr)
 {
-	return valid_addr(Addr, scwrite);
+	return validAddress(Addr, scwrite);
 }
 
 /*
@@ -1644,20 +2053,21 @@ bool	analyser::valid_write_addr(ADDR Addr)
 
 static char *analy_addr_sym_func2(CPU_ADDR Addr, int *symstrlen, void *analy)
 {
-	/* should only be called/used/assigned if theanaly is set */
-	taddr *a = ((analyser*)analy)->find_addr(Addr.addr32.offset);
-	if ((a) && (a->label)) {
-		if (symstrlen) *symstrlen = strlen(a->label->name);
-		return a->label->name;
+	Address *a = ((Analyser*)analy)->createAddress();     
+	a->getFromCPUAddress(&Addr);
+	Location *loc = ((Analyser*)analy)->getLocationByAddress(a);
+	delete a;
+	if ((loc) && (loc->label)) {
+		if (symstrlen) *symstrlen = strlen(loc->label->name);
+		return loc->label->name;
 	}
 	return NULL;
 }
 
 /*
  *	should return a new instance of an apropriate assembler
- *
  */
-assembler *analyser::create_assembler()
+Assembler *Analyser::createAssembler()
 {
 	return NULL;
 }
@@ -1665,9 +2075,9 @@ assembler *analyser::create_assembler()
 /*
  *
  */
-comment_list *analyser::get_comments(ADDR Addr)
+CommentList *Analyser::getComments(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 	if (a) {
 		return a->comments;
 	}
@@ -1677,14 +2087,15 @@ comment_list *analyser::get_comments(ADDR Addr)
 /*
  *
  */
-char	*analyser::get_disasm_str(ADDR Addr)
+char	*Analyser::getDisasmStr(Address *Addr, int &length)
 {
-	if (valid_addr(Addr, scinitialized)) {
+	if (validAddress(Addr, scinitialized)) {
 		if (disasm) {
 			addr_sym_func = 0;
 			byte buf[16];
-			int bz = bufptr(Addr, buf, sizeof(buf));
-			OPCODE *o=disasm->decode(buf, MIN(bz, maxopcodelength), map_addr(Addr));
+			int bz = bufPtr(Addr, buf, sizeof(buf));
+			OPCODE *o = disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
+			length = disasm->getSize(o);
 			return disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 		} else {
 			return "<no disassembler!>";
@@ -1697,15 +2108,15 @@ char	*analyser::get_disasm_str(ADDR Addr)
 /*
  *
  */
-char	*analyser::get_disasm_str_formatted(ADDR Addr)
+char	*Analyser::getDisasmStrFormatted(Address *Addr)
 {
 	if (disasm) {
 		addr_sym_func_context = this;
 		addr_sym_func = &analy_addr_sym_func2;
 
 		byte buf[16];
-		int bz = bufptr(Addr, buf, sizeof(buf));
-		OPCODE *o=disasm->decode(buf, MIN(bz, maxopcodelength), map_addr(Addr));
+		int bz = bufPtr(Addr, buf, sizeof(buf));
+		OPCODE *o=disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
 		char *res = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 
 		addr_sym_func_context = NULL;
@@ -1720,7 +2131,7 @@ char	*analyser::get_disasm_str_formatted(ADDR Addr)
 /*
  *
  */
-char *analyser::get_name()
+char *Analyser::getName()
 {
 	return "generic";
 }
@@ -1728,7 +2139,7 @@ char *analyser::get_name()
 /*
  *
  */
-char *analyser::get_type()
+char *Analyser::getType()
 {
 	return "generic";
 }
@@ -1736,9 +2147,9 @@ char *analyser::get_type()
 /*
  *
  */
-ht_tree *analyser::get_xrefs(ADDR Addr)
+ht_tree *Analyser::getXRefs(Address *Addr)
 {
-	taddr *a = find_addr(Addr);
+	Location *a = getLocationByAddress(Addr);
 	if (!a) return NULL;
 	return a->xrefs;
 }
@@ -1746,7 +2157,7 @@ ht_tree *analyser::get_xrefs(ADDR Addr)
 /*
  *
  */
-bool analyser::is_dirty()
+bool Analyser::isDirty()
 {
 	return dirty;
 }
@@ -1754,7 +2165,7 @@ bool analyser::is_dirty()
 /*
  *
  */
-void analyser::make_dirty()
+void Analyser::makeDirty()
 {
 	dirty = true;
 }
@@ -1763,45 +2174,57 @@ void analyser::make_dirty()
 /*
  *
  */
-void analyser::set_display_mode(int enable, int disable)
+int Analyser::getDisplayMode()
 {
-	mode |= enable;
-	mode &= ~disable;
+	return mode;
 }
 
 /*
  *
  */
-void analyser::toggle_display_mode(int toggle)
+void Analyser::setDisplayMode(int enable, int disable)
+{
+	mode &= ~disable;
+	mode |= enable;
+}
+
+/*
+ *
+ */
+void Analyser::toggleDisplayMode(int toggle)
 {
 	mode ^= toggle;
 }
 
 /*
- *	converts FILEADDR fileaddr to ADDR
+ *	converts FILEOFS fileaddr to Address
  */
-ADDR analyser::vaddr(FILEADDR fileaddr)
+Address *Analyser::fileofsToAddress(FILEOFS fileaddr)
 {
 	// abstract / stub
-	return INVALID_ADDR;
+	return (Address *)invalid_addr->duplicate();
 }
 
 /****************************************************************************/
 
-/*
- *
- */
-void analy_disassembler::init(analyser *A)
+AnalyDisassembler::AnalyDisassembler()
 {
-	analy = A;
 	disasm = NULL;
-	init_disasm();
 }
 
 /*
  *
  */
-int  analy_disassembler::load(ht_object_stream *st)
+void AnalyDisassembler::init(Analyser *A)
+{
+	analy = A;
+	initDisasm();
+}
+
+/*
+ *
+ */
+int  AnalyDisassembler::load(ht_object_stream *st)
 {
 	return st->get_error();
 }
@@ -1809,24 +2232,24 @@ int  analy_disassembler::load(ht_object_stream *st)
 /*
  *
  */
-void analy_disassembler::done()
+void AnalyDisassembler::done()
 {
 }
 
 /*
  *
  */
-void analy_disassembler::init_disasm()
+void AnalyDisassembler::initDisasm()
 {
 	if (analy) {
-		analy->set_disasm(disasm);
+		analy->setDisasm(disasm);
 	}
 }
 
 /*
  *
  */
-void analy_disassembler::store(ht_object_stream *f)
+void AnalyDisassembler::store(ht_object_stream *f)
 {
 }
 

@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	stddata.h
+ *	snprintf.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,40 +18,16 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STDDATA_H
-#define STDDATA_H
+#ifndef __SNPRINTF_H__
+#define __SNPRINTF_H__
 
-#include "common.h"
+#include <stdlib.h>
+#include <stdarg.h>
 
-struct area_s {
-	area_s	*left, *right;
-	Object	*start, *end;
-};
+int ht_asprintf(char **ptr, const char *format, ...);
+int ht_vasprintf(char **ptr, const char *format, va_list ap);
 
-class Area: public Object {
-public:
-	area_s			*a;
-
-			void     	init();
-			int 		load(ht_object_stream *f);
-	virtual	void 	done();
-			OBJECT_ID	object_id();
-
-			void		add(Object *Start, Object *End);
-			bool		contains(Object *V);
-			area_s	*getArea(Object *at);
-			Object	*findNext(Object *From);
-			Object	*findPrev(Object *From);
-			void		freeRecursive(area_s *p);
-	virtual	void		store(ht_object_stream *f);
-#ifdef DEBUG_FIXNEW
-			void		dump();
-#endif
-};
-
-#define ATOM_AREA MAGICD("AREA")
-
-bool init_stddata();
-void done_stddata();
+int ht_snprintf(char *str, size_t count, const char *fmt, ...);
+int ht_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 
 #endif

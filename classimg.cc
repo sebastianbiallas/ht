@@ -1,0 +1,132 @@
+/*
+ *	HT Editor
+ *	classimg.cc
+ *
+ *	Copyright (C) 2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License version 2 as
+ *	published by the Free Software Foundation.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+
+#include "class.h"
+#include "class_analy.h"
+#include "classimg.h"
+#include "log.h"
+#include "htpal.h"
+#include "formats.h"
+
+#include "htanaly.h"
+
+ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+{
+	ht_class_shared_data *class_shared=(ht_class_shared_data *)group->get_shared_data();
+
+	LOG("%s: JAVA: loading image (starting analyser)...", file->get_filename());
+	ClassAnalyser *a = new ClassAnalyser();
+	a->init(class_shared, file);
+
+	bounds c = *b;
+	ht_group *g = new ht_group();
+	g->init(&c, VO_RESIZE, DESC_JAVA_IMAGE"-g");
+	AnalyInfoline *head;
+
+	c.y+=2;
+	c.h-=2;
+	ht_class_aviewer *v = new ht_class_aviewer();
+	v->init(&c, DESC_JAVA_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, a, class_shared);
+
+	c.y-=2;
+	c.h=2;
+	head=new AnalyInfoline();
+	head->init(&c, v, ANALY_STATUS_DEFAULT);
+
+	v->attachInfoline(head);
+
+/* search for lowest/highest */
+/*	ADDR l=(ADDR)-1, h=0;
+	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
+	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+		if (s->data_address < l) l=s->data_address;
+		if (s->data_address+s->data_size > h) h=s->data_address+s->data_size;
+		s++;
+	}
+	l+=pe_shared->pe32.header_nt.image_base;
+	h+=pe_shared->pe32.header_nt.image_base;
+*/
+	ht_analy_sub *analy=new ht_analy_sub();
+	Address *low = a->createAddress32(0x100);
+	Address *high = a->createAddress32(427);
+	analy->init(file, v, a, low, high);
+	delete low;
+	delete high;
+	v->analy_sub = analy;
+	v->insertsub(analy);
+
+	v->sendmsg(msg_complete_init, 0);
+	
+	viewer_pos entrypoint;
+	if (v->string_to_pos("entrypoint", &entrypoint)) {
+		v->goto_pos(entrypoint);
+	}
+
+	g->insert(head);
+	g->insert(v);
+
+	g->setpalette(palkey_generic_window_default);
+
+//	class_shared->v_image = v;
+	return g;
+}
+
+format_viewer_if htclassimage_if = {
+	htclassimage_init,
+	0
+};
+
+/*
+ *	CLASS ht_class_aviewer
+ */
+void ht_class_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_class_shared_data *Class_shared)
+{
+	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
+	class_shared = Class_shared;
+	file = File;
+}
+
+void ht_class_aviewer::setAnalyser(Analyser *a)
+{
+	((ClassAnalyser *)a)->class_shared = class_shared;
+	((ClassAnalyser *)a)->file = file;
+	analy = a;
+	analy_sub->setAnalyser(a);
+}
+
+#if 0
+static ht_view *
+class_image(bounds *b, ht_streamfile *file, ht_format_group *group)
+{
+  classfile *clazz;
+
+  clazz = ((ht_class_shared_data *)group->get_shared_data())->file;
+  if (clazz) {
+
+    ht_uformat_viewer *v = new ht_uformat_viewer();
+    v->init(b, DESC_JAVA_IMAGE, VC_EDIT, file, group);
+    /* need to insert more code here */
+    return v;
+  } else {
+    return NULL;
+  }
+}
+#endif
+

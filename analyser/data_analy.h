@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	dataanaly.h
+ *	data_analy.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,8 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef dataanaly_h
-#define dataanaly_h
+#ifndef DATA_ANALY_H
+#define DATA_ANALY_H
 
 #include "global.h"
 #include "analy.h"
@@ -89,29 +89,29 @@ struct taddr_type {
 void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at);
 int analyser_get_addrtype(ht_object_stream *f, taddr_type *at);
 
-class analyser;
+class Analyser;
+class Address;
+struct Location;
 
-struct taddr;
-
-class data_analyser: public object	{
+class DataAnalyser: public Object	{
 public:
-	analyser		*analy;
-			void		init(analyser *Analy);
+	Analyser		*analy;
+			void		init(Analyser *Analy);
 			int		load(ht_object_stream *f);
 	virtual	void		done();
 	virtual	OBJECT_ID	object_id();
 
-			void		access(ADDR Addr, OP op, int size);
-			void		set_addr_type(ADDR Addr, taddr_typetype type, int subtype, int length);
-			void		set_addr_type(taddr *Addr, taddr_typetype type, int subtype, int length);
-			void		set_code_addr_type(ADDR Addr, taddr_code_subtype subtype);
-			void		set_code_addr_type(taddr *Addr, taddr_code_subtype subtype);
-			void		set_int_addr_type(ADDR Addr, taddr_int_subtype subtype, int length);
-			void		set_int_addr_type(taddr *Addr, taddr_int_subtype subtype, int length);
-			void		set_float_addr_type(ADDR Addr, taddr_float_subtype subtype, int length);
-			void		set_float_addr_type(taddr *Addr, taddr_float_subtype subtype, int length);
-			void		set_array_addr_type(ADDR Addr, taddr_array_subtype subtype, int length);
-			void		set_array_addr_type(taddr *Addr, taddr_array_subtype subtype, int length);
+			void		access(Address *Addr, OP op, int size);
+			void		setAddressType(Address *Addr, taddr_typetype type, int subtype, int length);
+			void		setAddressType(Location *Addr, taddr_typetype type, int subtype, int length);
+			void		setCodeAddressType(Address *Addr, taddr_code_subtype subtype);
+			void		setCodeAddressType(Location *Addr, taddr_code_subtype subtype);
+			void		setIntAddressType(Address *Addr, taddr_int_subtype subtype, int length);
+			void		setIntAddressType(Location *Addr, taddr_int_subtype subtype, int length);
+			void		setFloatAddressType(Address *Addr, taddr_float_subtype subtype, int length);
+			void		setFloatAddressType(Location *Addr, taddr_float_subtype subtype, int length);
+			void		setArrayAddressType(Address *Addr, taddr_array_subtype subtype, int length);
+			void		setArrayAddressType(Location *Addr, taddr_array_subtype subtype, int length);
 	virtual	void		store(ht_object_stream *f);
 };
 

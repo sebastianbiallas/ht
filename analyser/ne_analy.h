@@ -24,32 +24,35 @@
 #include "analy.h"
 #include "htne.h"
 
-class ne_analyser: public analyser {
+class NEAnalyser: public Analyser {
 public:
 	ht_ne_shared_data *ne_shared;
 	ht_streamfile 		*file;
-	area				*validarea;
+	Area				*validarea;
 
 			void		init(ht_ne_shared_data *ne_shared, ht_streamfile *file);
 			int 		load(ht_object_stream *f);
 	virtual	void		done();
 	virtual	OBJECT_ID	object_id();
 
-	virtual	void		begin_analysis();
-	virtual	UINT		bufptr(ADDR Addr, byte *buf, int size);
-	virtual   assembler *create_assembler();
-	virtual	FILEADDR	file_addr(ADDR Addr);
-	virtual	char		*get_addr_section_name(ADDR Addr);
-	virtual	char		*get_name();
-	virtual   char		*get_type();
-	virtual	void 	init_code_analyser();
-	virtual	void 	init_unasm();
+	virtual	void		beginAnalysis();
+	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+			bool		convertAddressToNEAddress(Address *addr, NEAddress *r);
+	virtual	Address	*createAddress();
+			Address	*createAddress1616(word seg, word ofs);
+	virtual   Assembler *createAssembler();
+	virtual	char		*getName();
+	virtual   char		*getType();
+	virtual	void 	initCodeAnalyser();
+	virtual	void 	initUnasm();
 	virtual	void 	log(char *msg);
-	virtual	ADDR		next_valid(ADDR Addr);
+	virtual	Address	*nextValid(Address *Addr);
 	virtual	void		store(ht_object_stream *f);
-	virtual	int		query_config(int mode);
-	virtual	ADDR		vaddr(FILEADDR fileaddr);
-	virtual	bool 	valid_addr(ADDR Addr, tsectype action);
+	virtual	int		queryConfig(int mode);
+	virtual	Address	*fileofsToAddress(FILEOFS fileofs);
+	virtual	char		*getSegmentNameByAddress(Address *Addr);
+	virtual	FILEOFS	addressToFileofs(Address *Addr);
+	virtual	bool 	validAddress(Address *Addr, tsectype action);
 };
 
 #endif /* ne_analy_h */

@@ -21,6 +21,8 @@
 #ifndef ANALY_NAMES_H
 #define ANALY_NAMES_H
 
+#include "global.h"
+
 char *import_func_name(const char *dllname, const char *funcname, int ordinal);
 char *export_func_name(const char *funcname, int ordinal);
 char *label_type(int lt);
@@ -38,27 +40,10 @@ char xref_type_short(int xt);
 #define LPRFX_STR ((char *)8)
 #define LPRFX_MAX ((char *)9)
 
-char *label_prefix(char *p);
+char *label_prefix(const char *p);
 
 bool valid_name(const char *str);
 void make_valid_name(char *result, const char *str);
-
-/*
- *	generated names
- */
-#define M_PREFIX_DUP ' '
-#define M_PREFIX_DUPs " "
-#define M_PREFIX_REF '*'
-#define M_PREFIX_REFs "*"
-#define M_PREFIX_LABEL 'l'
-#define M_PREFIX_LABELs "l"
-#define QUOTED_STRING(s) M_PREFIX_DUPs##s
-#define REF_STRING(s) M_PREFIX_REFs##s
-
-char *addr_label();
-char *real_name(char *s);
-char *quote_string(char *s);
-char *reference_string(char *s);
-char *comment_lookup(int special);
+char *comment_lookup(UINT c);
 
 #endif

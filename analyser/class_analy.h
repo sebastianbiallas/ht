@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	pe_analy.h
+ *	class_analy.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,30 +18,29 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef pe_analy_h
-#define pe_analy_h
+#ifndef class_analy_h
+#define class_analy_h
 
 #include "analy.h"
-#include "htpe.h"
+#include "class.h"
 
 
-class PEAnalyser: public Analyser {
+class ClassAnalyser: public Analyser {
 public:
-	ht_pe_shared_data 	*pe_shared;
+	ht_class_shared_data 	*class_shared;
 	ht_streamfile 		*file;
 	Area				*validarea;
 
-			void		init(ht_pe_shared_data *Pe_shared, ht_streamfile *File);
+			void		init(ht_class_shared_data *Class_shared, ht_streamfile *File);
 			int 		load(ht_object_stream *f);
 	virtual	void		done();
 	virtual	OBJECT_ID	object_id();
 
 	virtual	void		beginAnalysis();
 	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
-			bool		convertAddressToRVA(Address *addr, RVA *r);
+			bool		convertAddressToRVA(Address *addr, dword *r);
 	virtual	Address	*createAddress();
 			Address	*createAddress32(dword addr);
-			Address	*createAddress64(dword high_addr, dword low_addr);
 	virtual   Assembler *createAssembler();
 	virtual	char		*getName();
 	virtual   char		*getType();

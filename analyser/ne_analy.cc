@@ -18,12 +18,15 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "analy.h"
 #include "analy_alpha.h"
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_x86.h"
-#include "codeanaly.h"
 #include "global.h"
 #include "ne_analy.h"
 
@@ -35,36 +38,33 @@
 #include "htneent.h"
 #include "htstring.h"
 #include "nestruct.h"
+#include "snprintf.h"
 #include "x86asm.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
  *
  */
-void	ne_analyser::init(ht_ne_shared_data *NE_shared, ht_streamfile *File)
+void	NEAnalyser::init(ht_ne_shared_data *NE_shared, ht_streamfile *File)
 {
 	ne_shared = NE_shared;
 	file = File;
 
-	validarea = new area();
+	validarea = new Area();
 	validarea->init();
 
-	analyser::init();
+	Analyser::init();
 
 	/////////////
 
-	set_addr_tree_optimize_threshold(100);
-	set_label_tree_optimize_threshold(100);
+	setLocationTreeOptimizeThreshold(100);
+	setSymbolTreeOptimizeThreshold(100);
 }
 
 
 /*
  *
  */
-int	ne_analyser::load(ht_object_stream *f)
+int	NEAnalyser::load(ht_object_stream *f)
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -72,23 +72,23 @@ int	ne_analyser::load(ht_object_stream *f)
 	area				*validarea;
 	*/
 	GET_OBJECT(f, validarea);
-	return analyser::load(f);
+	return Analyser::load(f);
 }
 
 /*
  *
  */
-void	ne_analyser::done()
+void	NEAnalyser::done()
 {
 	validarea->done();
 	delete validarea;
-	analyser::done();
+	Analyser::done();
 }
 
 /*
  *
  */
-void ne_analyser::begin_analysis()
+void NEAnalyser::beginAnalysis()
 {
 	char	buffer[1024];
 
@@ -96,12 +96,12 @@ void ne_analyser::begin_analysis()
 	 *	entrypoint
 	 */
 	 
-	ADDR entry = ne_shared->hdr.csip;
+	Address *entry = createAddress1616(NE_ADDR_SEG(ne_shared->hdr.csip), NE_ADDR_OFS(ne_shared->hdr.csip));
 	
-	if (ne_shared->hdr.flags & NE_FLAGS_BOUND) {
+	if (ne_shared->hdr.flags & NE_FLAGS_SELFLOAD) {
 		// bound as family app (needs loader)
 		struct bla {
-		    ADDR a;
+		    NEAddress a;
 		    char *b;
 		    char *c;
 		};
@@ -113,23 +113,27 @@ void ne_analyser::begin_analysis()
 		};
 		bla *blla = blabla;
 		while (blla->b) {
-			add_comment(blla->a, 0, "");
-			assign_label(blla->a, blla->b, label_data);
-			data->set_int_addr_type(blla->a, dst_idword, 4);
-			ADDR addr;
+			Address *bllaa = createAddress1616(NE_ADDR_SEG(blla->a), NE_ADDR_OFS(blla->a));
+			addComment(bllaa, 0, "");
+			assignSymbol(bllaa, blla->b, label_data);
+			data->setIntAddressType(bllaa, dst_idword, 4);
+			NEAddress addr;
 			byte buf[4];
-			if (valid_addr(blla->a, scinitialized) && bufptr(blla->a, buf, 4)==4) {
+			if (validAddress(bllaa, scinitialized) && bufPtr(bllaa, buf, 4)==4) {
 				sprintf(buffer, "; pointer to %s", blla->c);
-				add_comment(blla->a, 0, buffer);
+				addComment(bllaa, 0, buffer);
 				addr = create_host_int(buf, 4, little_endian);
-				add_comment(addr, 0, "");
-				assign_label(addr, blla->c, label_func);
-				push_addr(addr, addr);
+				Address *a = createAddress1616(NE_ADDR_SEG(addr), NE_ADDR_OFS(addr));
+				addComment(a, 0, "");
+				assignSymbol(a, blla->c, label_func);
+				pushAddress(a, a);
+				delete a;
 			}
 			blla++;
+			delete bllaa;
 		}
 	} else {
-		push_addr(entry, entry);
+		pushAddress(entry, entry);
 	}
 	
 	/*
@@ -139,34 +143,40 @@ void ne_analyser::begin_analysis()
 	NE_SEGMENT *s = ne_shared->segments.segments;
 	char blub[100];
 	for (UINT i = 0; i < ne_shared->segments.segment_count; i++) {
-		ADDR secaddr = NE_get_seg_addr(ne_shared, i);
+		Address *secaddr = createAddress1616(NE_ADDR_SEG(NE_get_seg_addr(ne_shared, i)), NE_ADDR_OFS(NE_get_seg_addr(ne_shared, i)));
 
-		UINT epsize = MIN(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
+ 		UINT epsize = MIN(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		UINT evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 
-		sprintf(blub, ";  section %d <%s>", i+1, get_addr_section_name(secaddr));
-		add_comment(secaddr, 0, "");
-		add_comment(secaddr, 0, ";******************************************************************");
-		add_comment(secaddr, 0, blub);
+		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+		addComment(secaddr, 0, "");
+		addComment(secaddr, 0, ";******************************************************************");
+		addComment(secaddr, 0, blub);
 		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", NE_get_seg_addr(ne_shared, i), evsize);
-		add_comment(secaddr, 0, blub);
+		addComment(secaddr, 0, blub);
 		sprintf(blub, ";  file offset      %08x  file size      %08x", NE_get_seg_ofs(ne_shared, i), epsize);
-		add_comment(secaddr, 0, blub);
-		add_comment(secaddr, 0, ";******************************************************************");
+		addComment(secaddr, 0, blub);
+		addComment(secaddr, 0, ";******************************************************************");
 
 		// mark end of sections
-		sprintf(blub, ";  end of section <%s>", get_addr_section_name(secaddr));
-		ADDR secend_addr = secaddr + evsize;
-		new_addr(secend_addr)->flags |= AF_FUNCTION_END;
-		add_comment(secend_addr, 0, "");
-		add_comment(secend_addr, 0, ";******************************************************************");
-		add_comment(secend_addr, 0, blub);
-		add_comment(secend_addr, 0, ";******************************************************************");
+		sprintf(blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
+		Address *secend_addr = (Address *)secaddr->duplicate();
+		secend_addr->add(evsize);
+		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
+		addComment(secend_addr, 0, "");
+		addComment(secend_addr, 0, ";******************************************************************");
+		addComment(secend_addr, 0, blub);
+		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		if (valid_addr(secaddr, scinitialized) && valid_addr(secaddr + epsize, scinitialized)) {
-			initialized->add(secaddr, secaddr + epsize);
+		Address *seciniaddr = (Address *)secaddr->duplicate();
+		seciniaddr->add(epsize);
+		if (validAddress(secaddr, scinitialized) && validAddress(seciniaddr, scinitialized)) {
+			initialized->add(secaddr, seciniaddr);
 		}
+		delete secaddr;
+		delete secend_addr;
+		delete seciniaddr;
 		s++;
 	}
 
@@ -177,8 +187,8 @@ void ne_analyser::begin_analysis()
 	for (int i=0; i<entrypoint_count; i++) {
 		ht_ne_entrypoint *f = (ht_ne_entrypoint*)ne_shared->entrypoints->get(*(entropy+i));
 		if (f) {
-			ADDR address = NE_MAKE_ADDR(f->seg, f->offset);
-			if (valid_addr(address, scvalid)) {
+			Address *address = createAddress1616(f->seg, f->offset);
+			if (validAddress(address, scvalid)) {
 				char *label;
 				if (f->name) {
 					sprintf(buffer, "; exported function %s, ordinal %04x", f->name, f->ordinal);
@@ -186,71 +196,82 @@ void ne_analyser::begin_analysis()
 					sprintf(buffer, "; unnamed exported function, ordinal %04x", f->ordinal);
 				}
 				label = export_func_name(f->name, f->ordinal);
-				add_comment(address, 0, "");
-				add_comment(address, 0, ";********************************************************");
-				add_comment(address, 0, buffer);
-				add_comment(address, 0, ";********************************************************");
-				push_addr(address, address);
-				assign_label(address, label, label_func);
+				addComment(address, 0, "");
+				addComment(address, 0, ";********************************************************");
+				addComment(address, 0, buffer);
+				addComment(address, 0, ";********************************************************");
+				pushAddress(address, address);
+				assignSymbol(address, label, label_func);
 				free(label);
 			}
+			delete address;
 		}
 	}
 	if (entropy) free(entropy);
 
-/*	int import_count=pe_shared->imports.funcs->count();
-	entropy = random_permutation(import_count);
+	// imports
+
+	if (ne_shared->imports) {
+		ht_tree *t = ne_shared->imports;
+		ht_data *v;
+		ne_import_rec *imp = NULL;
+		FILEOFS h = ne_shared->hdr_ofs + ne_shared->hdr.imptab;
+		while ((imp = (ne_import_rec*)t->enum_next(&v, imp))) {
+			char *name = NULL;
+			char *mod = (imp->module-1 < ne_shared->modnames_count) ? ne_shared->modnames[imp->module-1] : (char*)"invalid!";
+			if (imp->byname) {
+				file->seek(h+imp->name_ofs);
+				name = getstrp(file);
+			}
+			char *label = import_func_name(mod, name, imp->byname ? 0 : imp->ord);
+			if (name) free(name);
+			Address *addr = createAddress1616(ne_shared->fake_segment+1, imp->addr);
+			addComment(addr, 0, "");
+			assignSymbol(addr, label, label_func);
+			data->setIntAddressType(addr, dst_ibyte, 1);
+			free(label);
+			delete addr;
+		}
+	}
+
+/*	virtual ht_data *enum_next(ht_data **value, ht_data *prevkey);
+	int import_count = ne_shared->imports.funcs->count();
 	for (int i=0; i<import_count; i++) {
 		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->imports.funcs->get(*(entropy+i));
 		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->imports.libs->get(f->libidx);
 		char *label;
 		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
-		add_comment(f->address, 0, "");
-		assign_label(f->address, label, label_func);
+		addComment(f->address, 0, "");
+		assignSymbol(f->address, label, label_func);
 		data->set_int_addr_type(f->address, dst_idword, 4);
 		free(label);
-	}
-	if (entropy) free(entropy);
+	}*/
 
-	int dimport_count=pe_shared->dimports.funcs->count();
-	entropy = random_permutation(dimport_count);
-	for (int i=0; i<dimport_count; i++) {
-		// FIXME: delay imports need work (push addr)
-		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->dimports.funcs->get(*(entropy+i));
-		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->dimports.libs->get(f->libidx);
-		char *label;
-		label = import_func_name(d->name, f->byname ? f->name.name : NULL, f->ordinal);
-		add_comment(f->address, 0, "");
-		assign_label(f->address, label, label_func);
-//		data->setintaddrtype(f->address, dstidword, 4);
-		free(label);
-	}
-	if (entropy) free(entropy);*/
-
-	add_comment(entry, 0, "");
-	add_comment(entry, 0, ";****************************");
+	addComment(entry, 0, "");
+	addComment(entry, 0, ";****************************");
 	if (ne_shared->hdr.flags & NE_FLAGS_NOTAPROCESS) {
-		add_comment(entry, 0, ";  library entry point");
+		addComment(entry, 0, ";  library entry point");
 	} else {
-		add_comment(entry, 0, ";  program entry point");
+		addComment(entry, 0, ";  program entry point");
 	}
-	add_comment(entry, 0, ";****************************");
-	if (valid_code_addr(entry)) {
-		assign_label(entry, "entrypoint", label_func);
+	addComment(entry, 0, ";****************************");
+	if (validCodeAddress(entry)) {
+		assignSymbol(entry, "entrypoint", label_func);
 	} else {
-		assign_label(entry, "entrypoint", label_data);
+		assignSymbol(entry, "entrypoint", label_data);
 	}
 
-	set_addr_tree_optimize_threshold(1000);
-	set_label_tree_optimize_threshold(1000);
-
-	analyser::begin_analysis();
+	setLocationTreeOptimizeThreshold(1000);
+	setSymbolTreeOptimizeThreshold(1000);
+	delete entry;
+	
+	Analyser::beginAnalysis();
 }
 
 /*
  *
  */
-OBJECT_ID	ne_analyser::object_id()
+OBJECT_ID	NEAnalyser::object_id()
 {
 	return ATOM_NE_ANALYSER;
 }
@@ -258,21 +279,44 @@ OBJECT_ID	ne_analyser::object_id()
 /*
  *
  */
-UINT ne_analyser::bufptr(ADDR Addr, byte *buf, int size)
+UINT NEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEADDR ofs = file_addr(Addr);
+	FILEOFS ofs = addressToFileofs(Addr);
+/*     if (ofs == INVALID_FILE_OFS) {
+		int as=1;
+	}*/
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
 	return file->read(buf, size);
 }
 
+bool NEAnalyser::convertAddressToNEAddress(Address *addr, NEAddress *r)
+{
+	if (addr->object_id()==ATOM_ADDRESS_X86_1616) {
+		*r = NE_MAKE_ADDR(((AddressX86_1616*)addr)->seg, ((AddressX86_1616*)addr)->addr);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Address *NEAnalyser::createAddress()
+{
+	return new AddressX86_1616(0, 0);
+}
+
+Address *NEAnalyser::createAddress1616(word seg, word ofs)
+{
+	return new AddressX86_1616(seg, ofs);
+}
+
 /*
  *
  */
-assembler *ne_analyser::create_assembler()
+Assembler *NEAnalyser::createAssembler()
 {
 /* FIXME: 16/32 */
-	assembler *a = new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
+	Assembler *a = new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
 	a->init();
 	return a;
 }
@@ -280,11 +324,13 @@ assembler *ne_analyser::create_assembler()
 /*
  *
  */
-FILEADDR ne_analyser::file_addr(ADDR Addr)
+FILEOFS NEAnalyser::addressToFileofs(Address *Addr)
 {
-	if (valid_addr(Addr, scinitialized)) {
+	if (validAddress(Addr, scinitialized)) {
 		FILEOFS ofs;
-		if (!NE_addr_to_ofs(ne_shared, Addr, &ofs)) {
+		NEAddress na;
+		if (!convertAddressToNEAddress(Addr, &na)) return INVALID_FILE_OFS;
+		if (!NE_addr_to_ofs(ne_shared, na, &ofs)) {
 			return INVALID_FILE_OFS;
 		}
 		return ofs;
@@ -296,19 +342,25 @@ FILEADDR ne_analyser::file_addr(ADDR Addr)
 /*
  *
  */
-char *ne_analyser::get_addr_section_name(ADDR Addr)
+char *NEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char segmentname[16];
 	int i;
-	if (!NE_addr_to_segment(ne_shared, Addr, &i)) return NULL;
-	sprintf(segmentname, "seg%d", i+1);
+	NEAddress na;
+	if (!convertAddressToNEAddress(Addr, &na)) return NULL;
+	if (!NE_addr_to_segment(ne_shared, na, &i)) return NULL;
+	if (i == (int)ne_shared->fake_segment) {
+		strcpy(segmentname, "faked names");
+	} else {
+		sprintf(segmentname, "seg%d", i+1);
+	}
 	return segmentname;
 }
 
 /*
  *
  */
-char	*ne_analyser::get_name()
+char	*NEAnalyser::getName()
 {
 	return file->get_desc();
 }
@@ -316,7 +368,7 @@ char	*ne_analyser::get_name()
 /*
  *
  */
-char *ne_analyser::get_type()
+char *NEAnalyser::getType()
 {
 	return "NE/Analyser";
 }
@@ -324,27 +376,26 @@ char *ne_analyser::get_type()
 /*
  *
  */
-void ne_analyser::init_code_analyser()
+void NEAnalyser::initCodeAnalyser()
 {
-	analyser::init_code_analyser();
-	code->loaddefs("analyser/sign.def");
+	Analyser::initCodeAnalyser();
 }
 
 /*
  *
  */
-void ne_analyser::init_unasm()
+void NEAnalyser::initUnasm()
 {
 	DPRINTF("ne_analy: ");
 	DPRINTF("initing analy_x86_disassembler\n");
-	analy_disasm = new analy_x86_disassembler();
-	((analy_x86_disassembler*)analy_disasm)->init(this, true);
+	analy_disasm = new AnalyX86Disassembler();
+	((AnalyX86Disassembler*)analy_disasm)->init(this, true, true);
 }
 
 /*
  *
  */
-void ne_analyser::log(char *msg)
+void NEAnalyser::log(char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log
@@ -357,32 +408,24 @@ void ne_analyser::log(char *msg)
 /*
  *
  */
-ADDR ne_analyser::next_valid(ADDR Addr)
+Address *NEAnalyser::nextValid(Address *Addr)
 {
-	return INVALID_ADDR; //validarea->findnext(Addr);
-	// FIXME (hack while validarea isnt active):
-//   taddr *a = enum_addrs(Addr);
-//   return (a)?a->addr:INVALID_ADDR;
+	return (Address *)validarea->findNext(Addr);
 }
 
 /*
  *
  */
-void ne_analyser::store(ht_object_stream *st)
+void NEAnalyser::store(ht_object_stream *st)
 {
-	/*
-	ht_pe_shared_data 	*pe_shared;
-	ht_stream 		*file;
-	area				*validarea;
-	*/
 	PUT_OBJECT(st, validarea);
-	analyser::store(st);
+	Analyser::store(st);
 }
 
 /*
  *
  */
-int	ne_analyser::query_config(int mode)
+int	NEAnalyser::queryConfig(int mode)
 {
 	switch (mode) {
 		case Q_DO_ANALYSIS:
@@ -397,24 +440,26 @@ int	ne_analyser::query_config(int mode)
 /*
  *
  */
-ADDR ne_analyser::vaddr(FILEADDR fileaddr)
+Address *NEAnalyser::fileofsToAddress(FILEOFS fileofs)
 {
-	ADDR a;
-	if (NE_ofs_to_addr(ne_shared, fileaddr, &a)) {
-		return a;
+	NEAddress a;
+	if (NE_ofs_to_addr(ne_shared, fileofs, &a)) {
+		return createAddress1616(NE_ADDR_SEG(a), NE_ADDR_OFS(a));
 	} else {
-		return INVALID_ADDR;
+		return new InvalidAddress();
 	}
 }
 
 /*
  *
  */
-bool ne_analyser::valid_addr(ADDR Addr, tsectype action)
+bool NEAnalyser::validAddress(Address *Addr, tsectype action)
 {
 	ne_segment_headers *segments = &ne_shared->segments;
 	int sec;
-	if (!NE_addr_to_segment(ne_shared, Addr, &sec)) return false;
+	NEAddress na;
+	if (!convertAddressToNEAddress(Addr, &na)) return false;
+	if (!NE_addr_to_segment(ne_shared, na, &sec)) return false;
 	NE_SEGMENT *s = segments->segments + sec;
 	switch (action) {
 		case scvalid:
@@ -426,9 +471,9 @@ bool ne_analyser::valid_addr(ADDR Addr, tsectype action)
 		case screadwrite:
 			return !(s->flags & NE_READONLY) && (s->flags & NE_DATA);
 		case sccode:
-			return (!(s->flags & NE_DATA)) && NE_addr_is_physical(ne_shared, Addr);
+			return (!(s->flags & NE_DATA)) && NE_addr_is_physical(ne_shared, na);
 		case scinitialized:
-			return NE_addr_is_physical(ne_shared, Addr);
+			return NE_addr_is_physical(ne_shared, na);
 	}
 	return false;
 }

@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	analy_alpha.cc
+ *	analy_il.cc
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -20,13 +20,13 @@
 
 #include <string.h>
 
-#include "analy_alpha.h"
+#include "analy_il.h"
 #include "analy_register.h"
-#include "alphadis.h"
+#include "ildis.h"
 #include "htiobox.h"
 #include "snprintf.h"
 
-AddressAlphaFlat32::AddressAlphaFlat32()
+/*AddressAlphaFlat32::AddressAlphaFlat32()
 {
 }
 
@@ -138,33 +138,26 @@ int AddressAlphaFlat32::stringify(char *s, int max_length, int format)
 int AddressAlphaFlat32::stringSize()
 {
 	return 8;
-}
+} */
+
 /*
  *
  */
-void AnalyAlphaDisassembler::init(Analyser *A)
+void AnalyILDisassembler::init(Analyser *A, char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context)
 {
-	disasm = new Alphadis();
+	disasm = new ILDisassembler(string_func, token_func, context);
 	AnalyDisassembler::init(A);
 }
 
 /*
  *
  */
-int  AnalyAlphaDisassembler::load(ht_object_stream *f)
-{
-	return AnalyDisassembler::load(f);
-}
-
-/*
- *
- */
-void AnalyAlphaDisassembler::done()
+void AnalyILDisassembler::done()
 {
 	AnalyDisassembler::done();
 }
 
-OBJECT_ID AnalyAlphaDisassembler::object_id()
+OBJECT_ID AnalyILDisassembler::object_id()
 {
 	return ATOM_ANALY_ALPHA;
 }
@@ -172,69 +165,27 @@ OBJECT_ID AnalyAlphaDisassembler::object_id()
 /*
  *
  */
-Address *AnalyAlphaDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
+Address *AnalyILDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
 {
-	Address *a = createAddress(((alphadis_insn *)opcode)->data);
-	if (examine && analy->validAddress(a, scvalid)) {
-		return a;
-	}
-	delete a;
 	return new InvalidAddress();
 }
 
-Address *AnalyAlphaDisassembler::createAddress(dword offset)
+Address *AnalyILDisassembler::createAddress(dword offset)
 {
-	return new AddressAlphaFlat32(offset);
+	return new AddressFlat32(offset);
 }
 
 /*
  *
  */
-void AnalyAlphaDisassembler::examineOpcode(OPCODE *opcode)
+void AnalyILDisassembler::examineOpcode(OPCODE *opcode)
 {
 }
 
 /*
  *
  */
-branch_enum_t AnalyAlphaDisassembler::isBranch(OPCODE *opcode)
+branch_enum_t AnalyILDisassembler::isBranch(OPCODE *opcode)
 {
-	// FIXME: needs work!!
-	alphadis_insn *alpha_insn = (alphadis_insn *) opcode;
-	if (alpha_insn->valid) {
-		switch ((alpha_insn->table+alpha_insn->code)->type) {
-			case ALPHA_GROUP_BRA:
-				if (alpha_insn->table == alpha_instr_tbl) {
-					switch (alpha_insn->code) {
-						case 0x30:
-							return br_jump;
-						case 0x34:
-							return br_call;
-						default:
-							if (alpha_insn->code > 0x30) return br_jXX;
-					}
-				}
-				return br_nobranch;
-			case ALPHA_GROUP_JMP: {
-				switch (alpha_insn->code) {
-					case 0:
-					case 3:
-					case 1:
-						return br_call;
-					case 2:
-						return br_return;
-				}
-			}
-		}
-	}
 	return br_nobranch;
 }
-
-/*
- *
- */
-void AnalyAlphaDisassembler::store(ht_object_stream *f)
-{
-	AnalyDisassembler::store(f);
-}
-

@@ -24,28 +24,137 @@
 #include "asm.h"
 #include "global.h"
 #include "common.h"
-#include "codeanaly.h"
-#include "dataanaly.h"
+#include "code_analy.h"
+#include "data_analy.h"
 #include "htdata.h"
 #include "stddata.h"
 
 extern int num_ops_parsed;
 
-//#define ANALY_TIMINGS
+class Analyser;
 
-class analyser;
+#define ADDRESS_STRING_FORMAT_COMPACT            0
+#define ADDRESS_STRING_FORMAT_LEADING_WHITESPACE 1
+#define ADDRESS_STRING_FORMAT_LEADING_ZEROS      2
+#define ADDRESS_STRING_FORMAT_RESERVED           3
+
+#define ADDRESS_STRING_FORMAT_HEX_CAPS		    4
+#define ADDRESS_STRING_FORMAT_ADD_0X		    8
+#define ADDRESS_STRING_FORMAT_ADD_H		   16
+
+class Address: public ht_data {
+public:
+	virtual bool add(int offset) = 0;
+	virtual int byteSize() = 0;
+	virtual int compareTo(Object *to) = 0;
+	virtual int compareDelinear(Address *to);
+	virtual bool difference(int &result, Address *to) = 0;
+	virtual void getFromArray(const byte *array) = 0;
+	virtual void getFromCPUAddress(CPU_ADDR *ca) = 0;
+	virtual bool isValid();
+	virtual int parseString(const char *s, int length, Analyser *a) = 0;
+	virtual void putIntoArray(byte *array) = 0;
+	virtual void putIntoCPUAddress(CPU_ADDR *ca) = 0;
+	virtual int stringify(char *s, int max_length, int format) = 0;
+	virtual int stringSize() = 0;
+	virtual int toString(char *s, int maxlen);
+};
+
+class InvalidAddress: public Address {
+public:
+	InvalidAddress();
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual bool isValid();
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+/*
+ *	This address type will be used by most analysers, so we define it here.
+ */
+class AddressFlat32: public Address {
+public:
+	dword addr;
+	AddressFlat32();
+	AddressFlat32(dword a);
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual int compareDelinear(Address *to);
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual int load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual void store(ht_object_stream *s);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+class AddressFlat64: public Address {
+public:
+	qword addr;
+	AddressFlat64();
+	AddressFlat64(qword a);
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual int compareDelinear(Address *to);
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual int load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual void store(ht_object_stream *s);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+#define ANALY_SEGMENT_CAP_WRITE 1
+#define ANALY_SEGMENT_CAP_INITIALIZED 2
+// other caps can be defined locally
+
+class Segment: public ht_data {
+	Address *start, *end;
+	char *name;
+	int caps;
+	
+			   Segment(const char *n, Address *s, Address *e, int c, int address_size);
+	virtual bool containsAddress(Address *addr) = 0;
+	virtual char *getName();
+	virtual int getAddressSize();
+	virtual int getCapability(int cap);
+};
 
 /*
  *	these are the different possibilities of a branch
  *	to support further processors other types can be added
  */
 typedef enum {
-			brnobranch,						// straight exec. flow
-			brjump,
-			brreturn,
-			brcall,
-			brjXX
-} tbranchtype;
+			br_nobranch,					// straight exec. flow
+			br_jump,
+			br_return,
+			br_call,
+			br_jXX
+} branch_enum_t;
 
 /*
  *   internal opcodes are interchanged in this format
@@ -55,80 +164,71 @@ typedef enum {
 /*
  *
  */
-class analy_disassembler: public object {
+class AnalyDisassembler: public Object {
 public:
-	analyser			*analy;
-	disassembler        *disasm;
-			void			init(analyser *A);
+	Analyser			*analy;
+	Disassembler        *disasm;
+						AnalyDisassembler::AnalyDisassembler();
+			void			init(Analyser *A);
 			int 			load(ht_object_stream *f);
 	virtual	void			done();
 
-	virtual	ADDR			branch_addr(OPCODE *opcode, tbranchtype branchtype, bool examine) = 0;
-	virtual	void			examine_opcode(OPCODE *opcode) = 0;
-	virtual	void			init_disasm();
-	virtual	tbranchtype 	is_branch(OPCODE *opcode) = 0;
+	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine) = 0;
+	virtual	void			examineOpcode(OPCODE *opcode) = 0;
+	virtual	void			initDisasm();
+	virtual	branch_enum_t 	isBranch(OPCODE *opcode) = 0;
 	virtual	void			store(ht_object_stream *f);
 };
 
 /***************************************************************************/
 
-class ht_addr: public ht_data {
+typedef enum {
+	xrefread,
+	xrefwrite,
+	xrefoffset,
+	xrefjump,
+	xrefcall,
+	xrefijump,
+	xreficall
+} xref_enum_t;
+
+class AddrXRef: public ht_data {
 public:
-	ADDR addr;
-     					ht_addr();
-					     ht_addr(ADDR Addr);
+	xref_enum_t	type;
+						AddrXRef();
+						AddrXRef(xref_enum_t Type);
 			int 			load(ht_object_stream *f);
 	virtual	OBJECT_ID		object_id();
 	virtual	void			store(ht_object_stream *f);
 };
 
-typedef enum {xrefread, xrefwrite, xrefoffset, xrefjump, xrefcall, xrefijump, xreficall} xref_type_t;
-
-class addr_xref: public ht_data {
-public:
-	xref_type_t	type;
-                              addr_xref();
-						addr_xref(xref_type_t Type);
-			int 			load(ht_object_stream *f);
-	virtual	OBJECT_ID		object_id();
-	virtual	void			store(ht_object_stream *f);
-};
-
-/*
-struct txref {
-	txref		*next;
-	ADDR			addr;
-	xref_type_t	type;
-};
-*/
-
-class comment_list: public ht_clist {
+class CommentList: public ht_clist {
 public:
 	void init();
-	void append_pre_comment(char *s);
-	void append_pre_comment(int special);
-	void append_post_comment(char *s);
-	void append_post_comment(int special);
-	char *get_name(UINT i);
+	void appendPreComment(const char *s);
+	void appendPreComment(int special);
+	void appendPostComment(const char *s);
+	void appendPostComment(int special);
+	char *getName(UINT i);
 };
 
-struct tlabel;
+struct Symbol;
 
-struct taddr {
+struct Location {
 	// the address
-	ADDR			addr;
+	Address		*addr;
 	// this is a tree structure (key is addr)
-	taddr		*left, *right;
+	Location		*left, *right;
 	// attached label
-	tlabel		*label;
+	Symbol		*label;
 	// attached xrefs
 	ht_tree		*xrefs;
 	// attached comments
-	comment_list	*comments;
+	CommentList	*comments;
 	// for data types
 	taddr_type	type;
 	// the function the address belongs to (if applicable)
-	taddr		*thisfunc;
+	Location		*thisfunc;
 	// some flags
 	int			flags;
 };
@@ -140,9 +240,20 @@ struct taddr {
 #define AF_FUNCTION_SET 2
 #define AF_FUNCTION_END 4
 
-typedef enum {scvalid, scread, scwrite,	screadwrite, sccode, scinitialized} tsectype;
+typedef enum {
+	scvalid,
+	scread,
+	scwrite,
+	screadwrite,
+	sccode,
+	scinitialized
+} tsectype;
 
-typedef enum {	acread, acwrite, acoffset } taccesstype;
+typedef enum {
+	acread,
+	acwrite,
+	acoffset
+} taccesstype;
 
 struct taccess	{
 	bool			indexed;
@@ -150,168 +261,178 @@ struct taccess	{
 	taccesstype 	type;
 };
 
-typedef enum { label_unknown=0, label_func, label_loc, label_data } labeltype;
+typedef enum {
+	label_unknown=0,
+	label_func,
+	label_loc,
+	label_data
+} labeltype;
 
-struct tlabel {
+struct Symbol {
 	labeltype	type;
-	taddr	*addr;
+	Location	*location;
 	char		*name;
-	tlabel	*left, *right;
+	Symbol	*left, *right;
 };
 
-class addrqueueitem: public ht_data {
+class AddressQueueItem: public ht_data {
 public:
-	ADDR		addr;
-	ADDR		func;
-			addrqueueitem();
-			addrqueueitem(ADDR Addr, ADDR Func);
+	Address	*addr;
+	Address	*func;
+			AddressQueueItem();
+			AddressQueueItem(Address *Addr, Address *Func);
+			~AddressQueueItem();
 			OBJECT_ID	object_id();
 			int	load(ht_object_stream *f);
 	virtual	void	store(ht_object_stream *f);
 };
 
-class code_analyser;
-class data_analyser;
+class CodeAnalyser;
+class DataAnalyser;
 
 
-class analyser: public object	{
+class Analyser: public Object	{
 public:
-	ADDR			addr;
+	Address		*addr;
+	Address		*invalid_addr;
 	ht_queue		*addr_queue;
 	int			ops_parsed;							// for continuing
 	bool			active;
-	ADDR			next_explored,	first_explored, last_explored;
-	area			*explored;
-	area			*initialized;
-	taddr		*addrs;
-	code_analyser	*code;
-	data_analyser	*data;
-	analy_disassembler	*analy_disasm;
-	disassembler	*disasm;
-	tlabel		*labels;
-	int			addrthreshold, labelthreshold;
+	Address		*next_explored, *first_explored, *last_explored;
+     bool			next_address_is_invalid;
+	Area			*explored;
+	Area			*initialized;
+	Location		*locations;
+	CodeAnalyser	*code;
+	DataAnalyser	*data;
+	AnalyDisassembler	*analy_disasm;
+	Disassembler	*disasm;
+	Symbol		*symbols;
+	int			location_threshold, symbol_threshold;
 	int			cur_addr_ops, cur_label_ops;                 // for threshold
-	int			maxopcodelength;
-	taddr          *cur_func;
+	int			max_opcode_length;
+	Location		*cur_func;
 	bool			dirty;
 
-	int			label_count;
-	int			addr_count;
-	
-#ifdef ANALY_TIMINGS
-	int			timer;
-#endif
+	int			symbol_count;
+	int			location_count;
 
 			void			init();
 			int			load(ht_object_stream *f);
 	virtual	void			done();
 
-			bool			add_addr_label(ADDR Addr, char *Prefix, labeltype type, taddr *infunc=NULL);
-			void	 		add_comment(ADDR Addr, int line, char *c);
-			bool			add_label(ADDR Addr, char *label, labeltype type, taddr *infunc=NULL);
-			void			add_xref(ADDR from, ADDR to, xref_type_t action);
-			void	 		assign_comment(ADDR Addr, int line, char *c);
-			bool			assign_label(ADDR Addr, char *label, labeltype type, taddr *infunc=NULL);
-	virtual	void			begin_analysis();
-	virtual	UINT			bufptr(ADDR Addr, byte *buf, int size) = 0;
-			bool	  		continue_analysis();
-			void			continue_analysis_at(ADDR Addr);
-			void			data_access(ADDR Addr, taccess access);
-			void			delete_addr(ADDR Addr);
-			void			delete_label(ADDR Addr);
-			void			disable_label(tlabel *label);
-			void			do_branch(tbranchtype branch, OPCODE *opcode, int len);
-			void			engage_codeanalyser();
-			taddr		*enum_addrs(ADDR Addr);
-			taddr		*enum_addrs_back(ADDR Addr);
-			tlabel		*enum_labels(char *at);
-			tlabel		*enum_labels_back(char *at);
-	virtual	taddr_typetype examine_data(ADDR Addr);
-	virtual	FILEADDR		file_addr(ADDR Addr) = 0;
-			taddr		*find_addr(ADDR Addr);
-			taddr		*find_addr_context(ADDR Addr);
-			taddr		*find_addr_func(ADDR Addr);
-			taddr		*find_addr_label(ADDR Addr);
-			tlabel		*find_label(char *label);
+			bool			addAddressSymbol(Address *Addr, const char *Prefix, labeltype type, Location *infunc=NULL);
+			void	 		addComment(Address *Addr, int line, const char *c);
+			bool			addSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
+	virtual	FILEOFS		addressToFileofs(Address *Addr) = 0;
+			bool			addXRef(Address *from, Address *to, xref_enum_t action);
+			void	 		assignComment(Address *Addr, int line, const char *c);
+			bool			assignSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
+			void			assignXRef(Address *from, Address *to, xref_enum_t action);
+	virtual	void			beginAnalysis();
+	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size) = 0;
+			bool	  		continueAnalysis();
+			void			continueAnalysisAt(Address *Addr);
+	virtual	Address		*createAddress() = 0;
+			void			dataAccess(Address *Addr, taccess access);
+			void			deleteLocation(Address *Addr);
+			void			deleteSymbol(Address *Addr);
+			void			disableSymbol(Symbol *label);
+			void			doBranch(branch_enum_t branch, OPCODE *opcode, int len);
+			void			engageCodeanalyser();
+			Location		*enumLocations(Address *Addr);
+			Location		*enumLocationsReverse(Address *Addr);
+			Symbol		*enumSymbolsByName(const char *at);
+			Symbol		*enumSymbolsByNameReverse(const char *at);
+			Symbol		*enumSymbols(Symbol *sym);
+			Symbol		*enumSymbolsReverse(Symbol *sym);
+	virtual	taddr_typetype examineData(Address *Addr);
 			void			finish();
-			void			free_addr(taddr *Addr);
-			void			free_addrs(taddr *addrs);
-			void			free_comments(taddr *Addr);
-			void			free_label(tlabel *label);
-			void			free_labels(tlabel *labels);
-			int			get_addr_count();
-			int			get_label_count();
-			tlabel 		*get_addr_label(ADDR Addr);
-	virtual	char			*get_addr_section_name(ADDR Addr);
-			bool			goto_addr(ADDR Addr, ADDR func);
-	virtual	void 		init_code_analyser();
-	virtual	void			init_data_analyser();
-	virtual	void			init_unasm() = 0;
-	virtual	void			log(char *s);						// stub
-	virtual	CPU_ADDR 		map_addr(ADDR Addr);					// stub
-			taddr		*new_addr(ADDR Addr);
-			taddr		*new_addr(taddr *&addrs, ADDR Addr);
-			tlabel		*new_label(char *label, taddr *Addr, labeltype type, taddr *infunc);
-			tlabel		*new_label(tlabel *&labels, char *label, taddr *Addr, labeltype type);
-	virtual	ADDR			next_valid(ADDR Addr) = 0;
-	virtual	void			notify_progress(ADDR Addr);			// stub
-			void			optimize_addr_tree();
-			void			optimize_label_tree();
-			bool			pop_addr(ADDR *Addr, ADDR *func);
-			void			push_addr(ADDR Addr, ADDR func);
-	virtual	int			query_config(int mode);				// stub
-			bool			savety_change_addr(ADDR Addr);
-			void			set_active(bool mode);
-			void			set_addr_func(taddr *a, taddr *func);
-			void			set_disasm(disassembler *Disasm);
-			void			set_addr_tree_optimize_threshold(int threshold);
-			void			set_label_tree_optimize_threshold(int threshold);
+			void			freeLocation(Location *loc);
+			void			freeLocations(Location *locs);
+			void			freeComments(Location *loc);
+			void			freeSymbol(Symbol *label);
+			void			freeSymbols(Symbol *labels);
+			Location		*getLocationByAddress(Address *Addr);
+			Location		*getLocationContextByAddress(Address *Addr);
+			int			getLocationCount();
+			Location		*getFunctionByAddress(Address *Addr);
+			Location		*getPreviousSymbolByAddress(Address *Addr);
+	virtual	char			*getSegmentNameByAddress(Address *Addr);
+			Symbol 		*getSymbolByAddress(Address *Addr);
+			Symbol		*getSymbolByName(const char *label);
+			int			getSymbolCount();
+			bool			gotoAddress(Address *Addr, Address *func);
+	virtual	void 		initCodeAnalyser();
+	virtual	void			initDataAnalyser();
+	virtual	void			initUnasm() = 0;
+	virtual	void			log(const char *s);                // stub
+	virtual	CPU_ADDR 		mapAddr(Address *Addr);      // stub
+			Location		*newLocation(Address *Addr);
+			Location		*newLocation(Location *&locs, Address *Addr);
+			Symbol		*newSymbol(const char *label, Location *loc, labeltype type, Location *infunc);
+			Symbol		*newSymbol(Symbol *&syms, const char *label, Location *loc, labeltype type);
+	virtual	Address		*nextValid(Address *Addr) = 0;
+			void			optimizeLocationTree();
+			void			optimizeSymbolTree();
+			bool			popAddress(Address **Addr, Address **func);
+			void			pushAddress(Address *Addr, Address *func);
+	virtual	int			queryConfig(int mode);				// stub
+			void			setActive(bool mode);
+			void			setLocationFunction(Location *a, Location *func);
+			void			setLocationTreeOptimizeThreshold(int threshold);
+			void			setDisasm(Disassembler *d);
+			void			setSymbolTreeOptimizeThreshold(int threshold);
 	virtual	void			store(ht_object_stream *f);
-	virtual	bool			valid_addr(ADDR Addr, tsectype action) = 0;
-			bool			valid_code_addr(ADDR Addr);
-			bool			valid_read_addr(ADDR Addr);
-			bool			valid_write_addr(ADDR Addr);
+	virtual	bool			validAddress(Address *addr, tsectype action) = 0;
+			bool			validCodeAddress(Address *addr);
+			bool			validReadAddress(Address *addr);
+			bool			validWriteAddress(Address *addr);
 
 //  interface only (there's no internal use)
 	int		mode;
 
-	virtual   assembler      *create_assembler();
-			comment_list	*get_comments(ADDR Addr);
-			char			*get_disasm_str(ADDR Addr);
-			char			*get_disasm_str_formatted(ADDR Addr);
-//			bool			get_formatted_line(ADDR Addr, int line, char *buf, int *length);
-//			bool			get_formatted_line_length(ADDR Addr, int line, int *length);
-	virtual   char			*get_name();
-	virtual   char			*get_type();
-			ht_tree		*get_xrefs(ADDR Addr);
-			bool			is_dirty();
-			void			make_dirty();
-			void			set_display_mode(int enable, int disable);
-			void			toggle_display_mode(int toggle);
-	virtual	ADDR			vaddr(FILEADDR fileaddr);
+	virtual   Assembler      *createAssembler();
+	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
+			CommentList	*getComments(Address *Addr);
+			char			*getDisasmStr(Address *Addr, int &length);
+			char			*getDisasmStrFormatted(Address *Addr);
+			int			getDisplayMode();
+	virtual   char			*getName();
+	virtual   char			*getType();
+			ht_tree		*getXRefs(Address *Addr);
+			bool			isDirty();
+			void			makeDirty();
+			void			setDisplayMode(int enable, int disable);
+			void			toggleDisplayMode(int toggle);
 };
 
 /* display modes */
-#define ANALY_EDIT_BYTES 1
-#define ANALY_TRANSLATE_SYMBOLS 2
-#define ANALY_COLLAPSE_XREFS 4
+#define ANALY_SHOW_ADDRESS 1
+#define ANALY_SHOW_COMMENTS 2
+#define ANALY_SHOW_LABELS 4
+#define ANALY_SHOW_XREFS 8
+#define ANALY_SHOW_BYTES 16
+#define ANALY_EDIT_BYTES 32
+#define ANALY_TRANSLATE_SYMBOLS 64
+#define ANALY_COLLAPSE_XREFS 128
 
-/* query_config() constants */
+/* queryConfig() constants */
 #define Q_DO_ANALYSIS 1
 #define Q_ENGAGE_CODE_ANALYSER 2
 #define Q_ENGAGE_DATA_ANALYSER 3
 
 /* interesting constants */
-#define INVALID_ADDR ((ADDR)-1)
-#define EXTERNAL_ENTRY (((ADDR)-1)-1)
 #define INVALID_FILE_OFS ((dword)-1)
 
 /* analyser system constants */
 #define MAX_OPS_PER_CONTINUE 10
 
+extern int global_analyser_address_string_format;
+ 
 /*
  * test;
  */
-extern analyser *testanaly;
+extern Analyser *testanaly;
 
 #endif

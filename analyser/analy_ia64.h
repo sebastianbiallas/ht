@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	stddata.h
+ *	analy_ia64.h
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,40 +18,22 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STDDATA_H
-#define STDDATA_H
+#ifndef ANALY_IL_H
+#define ANALY_IL_H
 
-#include "common.h"
+#include "analy.h"
+#include "ia64dis.h"
 
-struct area_s {
-	area_s	*left, *right;
-	Object	*start, *end;
-};
-
-class Area: public Object {
+class AnalyIA64Disassembler: public AnalyDisassembler {
 public:
-	area_s			*a;
+			void			init(Analyser *A);
+	virtual   void	     	done();
+	virtual	OBJECT_ID		object_id();
 
-			void     	init();
-			int 		load(ht_object_stream *f);
-	virtual	void 	done();
-			OBJECT_ID	object_id();
-
-			void		add(Object *Start, Object *End);
-			bool		contains(Object *V);
-			area_s	*getArea(Object *at);
-			Object	*findNext(Object *From);
-			Object	*findPrev(Object *From);
-			void		freeRecursive(area_s *p);
-	virtual	void		store(ht_object_stream *f);
-#ifdef DEBUG_FIXNEW
-			void		dump();
-#endif
+	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
+			Address		*createAddress(dword offset);
+	virtual	void			examineOpcode(OPCODE *opcode);
+	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
 };
-
-#define ATOM_AREA MAGICD("AREA")
-
-bool init_stddata();
-void done_stddata();
 
 #endif

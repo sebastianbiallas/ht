@@ -18,119 +18,573 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <string.h>
+
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "htdebug.h"
+#include "snprintf.h"
 #include "x86dis.h"
 
-#include <string.h>
+AddressX86Flat32::AddressX86Flat32()
+{
+}
+
+AddressX86Flat32::AddressX86Flat32(dword Addr)
+{
+	addr = Addr;
+}
+
+bool AddressX86Flat32::add(int offset)
+{
+	// check for overflow
+	if ((int)offset < 0) {
+		if (addr+offset > addr) return false;
+	} else {
+		if (addr+offset < addr) return false;
+	}
+	addr+=offset;
+	return true;
+}
+
+int AddressX86Flat32::byteSize()
+{
+	return 4;
+}
+
+int AddressX86Flat32::compareTo(Object *to)
+{
+/*	if (object_id() != to->object_id()) {
+		int as=1;
+	}*/
+	assert(object_id() == to->object_id());
+	if (addr > ((AddressX86Flat32 *)to)->addr) return 1;
+	if (addr < ((AddressX86Flat32 *)to)->addr) return -1;
+	return 0;
+}
+
+int AddressX86Flat32::compareDelinear(Address *to)
+{
+	assert(object_id() == to->object_id());
+	dword da = delinearize(addr);
+	dword db = delinearize(((AddressFlat32 *)to)->addr);
+	if (da > db) return 1;
+	if (da < db) return -1;
+	return 0;
+}
+
+bool AddressX86Flat32::difference(int &result, Address *to)
+{
+	if (object_id() == to->object_id()) {
+		result = addr-((AddressX86Flat32 *)to)->addr;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Object *AddressX86Flat32::duplicate()
+{
+	return new AddressX86Flat32(addr);
+}
+
+void AddressX86Flat32::getFromArray(const byte *array)
+{
+	UNALIGNED_MOVE(addr, *(dword*)array);
+}
+
+void AddressX86Flat32::getFromCPUAddress(CPU_ADDR *ca)
+{
+	addr = ca->addr32.offset;
+}
+
+int AddressX86Flat32::load(ht_object_stream *s)
+{
+	addr = s->getIntHex(4, NULL);
+	return s->get_error();
+}
+
+OBJECT_ID AddressX86Flat32::object_id()
+{
+	return ATOM_ADDRESS_X86_FLAT_32;
+}
+
+int AddressX86Flat32::parseString(const char *s, int length, Analyser *a)
+{
+	return 0;
+}
+
+void AddressX86Flat32::putIntoArray(byte *array)
+{
+	UNALIGNED_MOVE(*(dword*)array, addr);
+}
+
+void AddressX86Flat32::putIntoCPUAddress(CPU_ADDR *ca)
+{
+	ca->addr32.offset = addr;
+}
+
+void AddressX86Flat32::store(ht_object_stream *s)
+{
+	s->putIntHex(addr, 4, NULL);
+}
+
+int AddressX86Flat32::stringify(char *s, int max_length, int format)
+{
+	char *formats[] = {
+		"%s%x%s",
+		"%s%8x%s",
+		"%s%08x%s",
+		"",
+		"%s%X%s",
+		"%s%8X%s",
+		"%s%08X%s",
+		"",
+	};
+	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+}
+
+int AddressX86Flat32::stringSize()
+{
+	return 8;
+}
+
+
+AddressX86_1632::AddressX86_1632()
+{
+}
+
+AddressX86_1632::AddressX86_1632(word Seg, dword Addr)
+{
+	seg = Seg;
+	addr = Addr;
+}
+
+bool AddressX86_1632::add(int offset)
+{
+	// check for overflow
+	if ((int)offset < 0) {
+		if (addr+offset > addr) return false;
+	} else {
+		if (addr+offset < addr) return false;
+	}
+	addr+=offset;
+	return true;
+}
+
+int AddressX86_1632::byteSize()
+{
+	return 6;
+}
+
+int AddressX86_1632::compareTo(Object *to)
+{
+	assert(object_id() == to->object_id());
+	if (seg > ((AddressX86_1632 *)to)->seg) return 1;
+	if (seg < ((AddressX86_1632 *)to)->seg) return -1;
+	if (addr > ((AddressX86_1632 *)to)->addr) return 1;
+	if (addr < ((AddressX86_1632 *)to)->addr) return -1;
+	return 0;
+}
+
+int AddressX86_1632::compareDelinear(Address *to)
+{
+	assert(object_id() == to->object_id());
+	dword s1 = delinearize(seg);
+	dword s2 = delinearize(((AddressX86_1632 *)to)->seg);
+	if (s1 > s2) return 1;
+	if (s1 < s2) return -1;
+	dword a1 = delinearize(addr);
+	dword a2 = delinearize(((AddressX86_1632 *)to)->addr);
+	if (a1 > a2) return 1;
+	if (a1 < a2) return -1;
+	return 0;
+}
+
+bool AddressX86_1632::difference(int &result, Address *to)
+{
+	if ((object_id() == to->object_id()) && (seg == ((AddressX86_1632 *)to)->seg)) {
+		result = addr-((AddressX86_1632 *)to)->addr;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Object *AddressX86_1632::duplicate()
+{
+	return new AddressX86_1632(seg, addr);
+}
+
+void AddressX86_1632::getFromArray(const byte *array)
+{
+	UNALIGNED_MOVE(addr, *(dword*)array);
+	UNALIGNED_MOVE(seg, *(word*)(array+sizeof addr));
+}
+
+void AddressX86_1632::getFromCPUAddress(CPU_ADDR *ca)
+{
+	seg = ca->addr32.seg;
+	addr = ca->addr32.offset;
+}
+
+int AddressX86_1632::load(ht_object_stream *s)
+{
+	seg = s->getIntHex(2, NULL);
+	addr = s->getIntHex(4, NULL);
+	return s->get_error();
+}
+
+OBJECT_ID AddressX86_1632::object_id()
+{
+	return ATOM_ADDRESS_X86_1632;
+}
+
+int AddressX86_1632::parseString(const char *s, int length, Analyser *a)
+{
+	return 0;
+}
+
+void AddressX86_1632::putIntoArray(byte *array)
+{
+	UNALIGNED_MOVE(*(dword*)array, addr);
+	UNALIGNED_MOVE(*(word*)(array+sizeof addr), seg);
+}
+
+void AddressX86_1632::putIntoCPUAddress(CPU_ADDR *ca)
+{
+	ca->addr32.seg = seg;
+	ca->addr32.offset = addr;
+}
+
+void AddressX86_1632::store(ht_object_stream *s)
+{
+	s->putIntHex(seg, 2, NULL);
+	s->putIntHex(addr, 4, NULL);
+}
+
+int AddressX86_1632::stringify(char *s, int max_length, int format)
+{
+	char *formats[] = {
+		"%s%x%s:%s%x%s",
+		"%s%4x%s:%s%08x%s",
+		"%s%04x%s:%s%08x%s",
+		"",
+		"%s%X%s:%s%X%s",
+		"%s%4X%s:%s%08X%s",
+		"%s%04X%s:%s%08X%s",
+		"",
+	};
+	return ht_snprintf(s, max_length, formats[format&7],
+	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", seg, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"",
+	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+}
+
+int AddressX86_1632::stringSize()
+{
+	return 14;
+}
 
 /*
  *
  */
-void analy_x86_disassembler::init(analyser *A, bool __16bit)
+AddressX86_1616::AddressX86_1616()
+{
+}
+
+AddressX86_1616::AddressX86_1616(word Seg, word Addr)
+{
+	seg = Seg;
+	addr = Addr;
+}
+
+bool AddressX86_1616::add(int offset)
+{
+	// check for overflow
+	if ((int)offset < 0) {
+		if (addr+offset > addr) return false;
+	} else {
+		if (addr+offset < addr) return false;
+	}
+	addr+=offset;
+	return true;
+}
+
+int AddressX86_1616::byteSize()
+{
+	return 4;
+}
+
+int AddressX86_1616::compareTo(Object *to)
+{
+	assert(object_id() == to->object_id());
+	if (seg > ((AddressX86_1616 *)to)->seg) return 1;
+	if (seg < ((AddressX86_1616 *)to)->seg) return -1;
+	if (addr > ((AddressX86_1616 *)to)->addr) return 1;
+	if (addr < ((AddressX86_1616 *)to)->addr) return -1;
+	return 0;
+}
+
+int AddressX86_1616::compareDelinear(Address *to)
+{
+	assert(object_id() == to->object_id());
+	dword s1 = delinearize(seg);
+	dword s2 = delinearize(((AddressX86_1616 *)to)->seg);
+	if (s1 > s2) return 1;
+	if (s1 < s2) return -1;
+	dword a1 = delinearize(addr);
+	dword a2 = delinearize(((AddressX86_1616 *)to)->addr);
+	if (a1 > a2) return 1;
+	if (a1 < a2) return -1;
+	return 0;
+}
+
+bool AddressX86_1616::difference(int &result, Address *to)
+{
+	if ((object_id() == to->object_id()) && (seg == ((AddressX86_1616 *)to)->seg)) {
+		result = (int)addr-(int)((AddressX86_1616 *)to)->addr;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Object *AddressX86_1616::duplicate()
+{
+	return new AddressX86_1616(seg, addr);
+}
+
+void AddressX86_1616::getFromArray(const byte *array)
+{
+	UNALIGNED_MOVE(addr, *(word*)array);
+	UNALIGNED_MOVE(seg, *(word*)(array+sizeof addr));
+}
+
+void AddressX86_1616::getFromCPUAddress(CPU_ADDR *ca)
+{
+	seg = ca->addr32.seg;
+	addr = ca->addr32.offset;
+}
+
+int AddressX86_1616::load(ht_object_stream *s)
+{
+	seg = s->getIntHex(2, NULL);
+	addr = s->getIntHex(2, NULL);
+	return s->get_error();
+}
+
+OBJECT_ID AddressX86_1616::object_id()
+{
+	return ATOM_ADDRESS_X86_1616;
+}
+
+int AddressX86_1616::parseString(const char *s, int length, Analyser *a)
+{
+	return 0;
+}
+
+void AddressX86_1616::putIntoArray(byte *array)
+{
+	UNALIGNED_MOVE(*(word*)array, addr);
+	UNALIGNED_MOVE(*(word*)(array+sizeof seg), seg);
+}
+
+void AddressX86_1616::putIntoCPUAddress(CPU_ADDR *ca)
+{
+	ca->addr32.seg = seg;
+	ca->addr32.offset = addr;
+}
+
+void AddressX86_1616::store(ht_object_stream *s)
+{
+	s->putIntHex(seg, 2, NULL);
+	s->putIntHex(addr, 2, NULL);
+}
+
+int AddressX86_1616::stringify(char *s, int max_length, int format)
+{
+	char *formats[] = {
+		"%s%x%s:%s%04x%s",
+		"%s%4x%s:%s%04x%s",
+		"%s%04x%s:%s%04x%s",
+		"",
+		"%s%X%s:%s%04X%s",
+		"%s%4X%s:%s%04X%s",
+		"%s%04X%s:%s%04X%s",
+		"",
+	};
+	return ht_snprintf(s, max_length, formats[format&7],
+	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", seg, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"",
+	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+}
+
+int AddressX86_1616::stringSize()
+{
+	return 9;
+}
+
+
+
+
+/*
+ *
+ */
+void AnalyX86Disassembler::init(Analyser *A, bool __16bit, bool Segmented)
 {
 	_16bit = __16bit;
-	analy_disassembler::init(A);
+	segmented = Segmented;
+	if (_16bit) {
+		disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
+	} else {
+		disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
+	}
+	AnalyDisassembler::init(A);
 }
 
 /*
  *
  */
-int  analy_x86_disassembler::load(ht_object_stream *f)
+int  AnalyX86Disassembler::load(ht_object_stream *f)
 {
-	return analy_disassembler::load(f);
+	GET_BOOL(f, segmented);
+	return AnalyDisassembler::load(f);
 }
 
 /*
  *
  */
-void analy_x86_disassembler::done()
+void AnalyX86Disassembler::done()
 {
-	analy_disassembler::done();
+	AnalyDisassembler::done();
 }
 
 /*
  *
  */
-OBJECT_ID	analy_x86_disassembler::object_id()
+OBJECT_ID	AnalyX86Disassembler::object_id()
 {
 	return ATOM_ANALY_X86;
 }
 
-/*
- *
- */
-ADDR	analy_x86_disassembler::branch_addr(OPCODE *opcode, tbranchtype branchtype, bool examine)
+Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 {
-	ADDR Addr = INVALID_ADDR;
-	x86dis_insn *o = (x86dis_insn*)opcode;
-	assert(o->op[1].type == X86_OPTYPE_EMPTY);
-	switch (o->op[0].type) {
-		case X86_OPTYPE_IMM:
-			Addr = o->op[0].imm;
-			break;
-		case X86_OPTYPE_FARPTR:
-			Addr = o->op[0].farptr.seg * 0x10000 + o->op[0].farptr.offset;
-			break;
-		case X86_OPTYPE_MEM: {
-			taccess access;
-			if (o->op[0].mem.hasdisp) {
-				Addr = o->op[0].mem.disp;
-				access.type = acread;
-				access.indexed = (o->op[0].mem.base != X86_REG_NO) || (o->op[0].mem.index != X86_REG_NO);
-				access.size = o->op[0].size;
-			}
-			if (examine && analy->valid_addr(Addr, scvalid)) {
-				analy->data_access(Addr, access);
-				xref_type_t xref;
-				switch (branchtype) {
-					case brjXX:
-					case brjump:
-						xref = xrefijump;
-						break;
-					case brcall:
-						xref = xreficall;
-						break;
-					default: {assert(0);}
-				}
-				analy->add_xref(Addr, analy->addr, xref);
-			}
-			if (examine) {
-				return INVALID_ADDR;
-			} else {
-				return Addr;
-			}
+	if (segmented) {
+		if (offset <= 0xffff) {
+			return new AddressX86_1616(segment, offset);
+		} else {
+			// FIXME
+//			return new AddressX86_1632(segment, offset);
+			return new AddressX86_1616(segment, offset);
 		}
+	} else {
+		return new AddressX86Flat32(offset);
 	}
-	return Addr;
+}
+
+word AnalyX86Disassembler::getSegment(Address *addr)
+{
+	if (addr->object_id() == ATOM_ADDRESS_X86_1616) {
+		return ((AddressX86_1616*)addr)->seg;
+	} else if (addr->object_id() == ATOM_ADDRESS_X86_1632) {
+		return ((AddressX86_1632*)addr)->seg;
+	} else {
+		assert(0);
+		return 0;
+	}
 }
 
 /*
  *
  */
-void	analy_x86_disassembler::examine_opcode(OPCODE *opcode)
+Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
+{
+	Address *addr;
+	x86dis_insn *o = (x86dis_insn*)opcode;
+	assert(o->op[1].type == X86_OPTYPE_EMPTY);
+	switch (o->op[0].type) {
+		case X86_OPTYPE_IMM: {
+/*          	if (o->op[0].imm == 0x1012c0f) {
+				int as=0;
+			}*/
+			
+			word seg = 0;
+			if (segmented) {
+				seg = getSegment(analy->addr);
+			}
+			addr = createAddress(seg, o->op[0].imm);
+			return addr;
+		}
+		case X86_OPTYPE_FARPTR:
+			if (segmented) {
+				addr = createAddress(o->op[0].farptr.seg, o->op[0].farptr.offset);
+			} else {
+				break;
+			}
+			return addr;
+		case X86_OPTYPE_MEM: {
+			taccess access;
+			addr = NULL;
+			if (o->op[0].mem.hasdisp) {
+				addr = createAddress(0, o->op[0].mem.disp);
+				access.type = acread;
+				access.indexed = (o->op[0].mem.base != X86_REG_NO) || (o->op[0].mem.index != X86_REG_NO);
+				access.size = o->op[0].size;
+			} else {
+				break;
+			}
+			if (examine && analy->validAddress(addr, scvalid)) {
+				analy->dataAccess(addr, access);
+				xref_enum_t xref;
+				switch (branchtype) {
+					case br_jXX:
+					case br_jump:
+						xref = xrefijump;
+						break;
+					case br_call:
+						xref = xreficall;
+						break;
+					default: {assert(0);}
+				}
+				analy->addXRef(addr, analy->addr, xref);
+			}
+			if (examine) {
+				if (addr) delete addr;
+				break;
+			} else {
+				return addr;
+			}
+		}
+	}
+	return new InvalidAddress();
+}
+
+/*
+ *
+ */
+void	AnalyX86Disassembler::examineOpcode(OPCODE *opcode)
 {
 	x86dis_insn *o = (x86dis_insn*)opcode;
 	for (int i=0; i<3; i++) {
 		x86_insn_op *op = &o->op[i];
-		ADDR Addr = INVALID_ADDR;
+		Address *addr = NULL;
 		taccess access;
-		xref_type_t xref = xrefoffset;
+		xref_enum_t xref = xrefoffset;
 		switch (op->type) {
 			case X86_OPTYPE_IMM:
-				Addr = op->imm;
 				access.type = acoffset;
 				access.indexed = false;
+				addr = createAddress(0, op->imm);
 				break;
 			case X86_OPTYPE_FARPTR:
-				Addr = op->farptr.seg * 0x10000 + op->farptr.offset;
+				if (segmented) {
+					addr = createAddress(op->farptr.seg, op->farptr.offset);
+				}
 				access.type = acoffset;
 				access.indexed = false;
 				break;
 			case X86_OPTYPE_MEM:
 				if (op->mem.hasdisp) {
-					Addr = op->mem.disp;
+					addr = createAddress(0, op->mem.disp);
 					access.type = acread;
 					access.indexed = (op->mem.base != X86_REG_NO) || (op->mem.index != X86_REG_NO);
 					access.size = op->size;
@@ -142,54 +596,42 @@ void	analy_x86_disassembler::examine_opcode(OPCODE *opcode)
 				}
 				break;
 		}
-		if (Addr != INVALID_ADDR) {
-			if (analy->valid_addr(Addr, scvalid)) {
-				analy->data_access(Addr, access);
-				analy->add_xref(Addr, analy->addr, xref);
+		if (addr) {
+			if (analy->validAddress(addr, scvalid)) {
+				analy->dataAccess(addr, access);
+				analy->addXRef(addr, analy->addr, xref);
 			}
+			delete addr;
 		}
 	}
-}
-/*
- *
- */
-void analy_x86_disassembler::init_disasm()
-{
-	DPRINTF("analy_x86_disassembler: initing x86dis\n");
-	// FIXME: better impl ?
-	if (_16bit) {
-		disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
-	} else {
-		disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
-	}
-	if (analy) analy->set_disasm(disasm);
 }
 
 /*
  *
  */
-tbranchtype analy_x86_disassembler::is_branch(OPCODE *opcode)
+branch_enum_t AnalyX86Disassembler::isBranch(OPCODE *opcode)
 {
 	x86dis_insn *o = (x86dis_insn*)opcode;
 	char *opcode_str = o->name;
 	if (opcode_str[0]=='j') {
-		if (opcode_str[1]=='m') return brjump; else return brjXX;
+		if (opcode_str[1]=='m') return br_jump; else return br_jXX;
 	} else if ((opcode_str[0]=='l') && (opcode_str[1]=='o')  && (opcode_str[2]=='o')) {
 		// loop opcode will be threated like a jXX
-		return brjXX;
-	} else if (strncmp("call", opcode_str, 4)==0) {
-		return brcall;
-	} else if (strncmp("ret", opcode_str, 3)==0) {
-		return brreturn;
-	} else return brnobranch;
+		return br_jXX;
+	} else if ((opcode_str[0]=='c') && (opcode_str[1]=='a')) {
+		return br_call;
+	} else if ((opcode_str[0]=='r') && (opcode_str[1]=='e')) {
+		return br_return;
+	} else return br_nobranch;
 }
 
 /*
  *
  */
-void analy_x86_disassembler::store(ht_object_stream *f)
+void AnalyX86Disassembler::store(ht_object_stream *f)
 {
-	analy_disassembler::store(f);
+	PUT_BOOL(f, segmented);
+	AnalyDisassembler::store(f);
 }
 
 

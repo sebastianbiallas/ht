@@ -23,19 +23,94 @@
 
 #include "analy.h"
 
-class analy_x86_disassembler: public analy_disassembler {
+class AddressX86Flat32: public Address {
+public:
+	dword addr;
+	AddressX86Flat32();
+	AddressX86Flat32(dword addr);
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual int compareDelinear(Address *to);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual int load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual void store(ht_object_stream *s);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+class AddressX86_1616: public Address {
+public:
+	word seg;
+	word addr;
+public:
+	AddressX86_1616();
+	AddressX86_1616(word seg, word addr);
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual int compareDelinear(Address *to);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual int load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual void store(ht_object_stream *s);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+class AddressX86_1632: public Address {
+public:
+	word seg;
+	dword addr;
+public:
+	AddressX86_1632();
+	AddressX86_1632(word seg, dword addr);
+	virtual bool add(int offset);
+	virtual int byteSize();
+	virtual int compareTo(Object *to);
+	virtual int compareDelinear(Address *to);
+	virtual bool difference(int &result, Address *to);
+	virtual Object *duplicate();
+	virtual void getFromArray(const byte *array);
+	virtual void getFromCPUAddress(CPU_ADDR *ca);
+	virtual int load(ht_object_stream *s);
+	virtual OBJECT_ID object_id();
+	virtual int parseString(const char *s, int length, Analyser *a);
+	virtual void putIntoArray(byte *array);
+	virtual void putIntoCPUAddress(CPU_ADDR *ca);
+	virtual void store(ht_object_stream *s);
+	virtual int stringify(char *s, int max_length, int format);
+	virtual int stringSize();
+};
+
+class AnalyX86Disassembler: public AnalyDisassembler {
 public:
 	bool _16bit;
+	bool segmented;
 
-			void			init(analyser *A, bool _16bit = false);
+			void			init(Analyser *A, bool _16bit, bool segmented);
 			int 			load(ht_object_stream *f);
 	virtual   void    	 	done();
 	virtual	OBJECT_ID		object_id();
 
-	virtual	ADDR			branch_addr(OPCODE *opcode, tbranchtype branchtype, bool examine);
-	virtual	void			examine_opcode(OPCODE *opcode);
-	virtual	void			init_disasm();
-	virtual	tbranchtype 	is_branch(OPCODE *opcode);
+	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
+			Address		*createAddress(word segment, dword offset);
+			word			getSegment(Address *addr);
+	virtual	void			examineOpcode(OPCODE *opcode);
+	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
 	virtual	void			store(ht_object_stream *f);
 };
 

@@ -24,32 +24,40 @@
 #include "analy.h"
 #include "htelf.h"
 
-class elf_analyser: public analyser {
+//test
+#include "elfstruc.h"
+
+class ElfAnalyser: public Analyser {
 public:
 	ht_elf_shared_data 	*elf_shared;
 	ht_streamfile		*file;
-	area				*validarea;
+	Area				*validarea;
 
 			void		init(ht_elf_shared_data *elf_shared, ht_streamfile *File);
 			int 		load(ht_object_stream *f);
 	virtual	void		done();
 	virtual	OBJECT_ID	object_id();
 
-	virtual	UINT		bufptr(ADDR Addr, byte *buf, int size);
-	virtual   assembler *create_assembler();
-	virtual	FILEADDR	file_addr(ADDR Addr);
-	virtual	char		*get_addr_section_name(ADDR Addr);
-	virtual	char		*get_name();
-	virtual   char		*get_type();
-	virtual	void 	init_code_analyser();
-			void		init_insert_symbols(int shidx);
-	virtual	void 	init_unasm();
+	virtual	void		beginAnalysis();
+	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+			bool		convertAddressToELFAddress(Address *addr, ELFAddress *r);
+	virtual	Address	*createAddress();
+			Address	*createAddress32(dword addr);
+			Address	*createAddress64(qword addr);
+	virtual   Assembler *createAssembler();
+	virtual	char		*getName();
+	virtual   char		*getType();
+	virtual	void 	initCodeAnalyser();
+			void		initInsertSymbols(int shidx);
+	virtual	void 	initUnasm();
 	virtual	void 	log(char *msg);
-	virtual	ADDR		next_valid(ADDR Addr);
+	virtual	Address	*nextValid(Address *Addr);
 	virtual	void		store(ht_object_stream *f);
-	virtual	int		query_config(int mode);
-	virtual	ADDR		vaddr(FILEADDR fileaddr);
-	virtual	bool 	valid_addr(ADDR Addr, tsectype action);
+	virtual	int		queryConfig(int mode);
+	virtual	bool 	validAddress(Address *Addr, tsectype action);
+	virtual	Address	*fileofsToAddress(FILEOFS fileofs);
+	virtual	FILEOFS	addressToFileofs(Address *Addr);
+	virtual	char		*getSegmentNameByAddress(Address *Addr);
 };
 
 #endif
