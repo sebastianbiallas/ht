@@ -58,7 +58,8 @@
  *      written instead of the number of characters that would
  *      have been written.
  *    * added '%y' to allow object output using Object's toString() method.
- *    * added '%q'/'%Q' for formatting qwords.
+ *    * added '%q[dioux]' for formatting qwords.
+ *    * added '%b' for formatting in binary notation.
  **************************************************************/
 
 #include <ctype.h>
@@ -255,6 +256,22 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 				    break;
 			 case DP_S_CONV:
 				    switch (ch) {
+				    case 'b':
+						  flags |= DP_F_UNSIGNED;
+						  if (cflags == DP_C_SHORT)
+								value = va_arg (args, unsigned int);
+						  else if (cflags == DP_C_LONG)
+								value = (long)va_arg (args, unsigned long int);
+						  else if (cflags == DP_C_LLONG)
+								value = (LLONG)va_arg (args, unsigned LLONG);
+						  else if (cflags == DP_C_QWORD) {
+							  qword *q = va_arg (args, qword *);
+							  fmtqword(buffer, &currlen, maxlen, q, 2, min, max, flags);
+                                     break;
+						  } else
+								value = (long)va_arg (args, unsigned int);
+						  fmtint (buffer, &currlen, maxlen, value, 2, min, max, flags);
+						  break;
 				    case 'd':
 				    case 'i':
 						  if (cflags == DP_C_SHORT) 
@@ -473,9 +490,10 @@ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 				long value, int base, int min, int max, int flags)
 {
+#define MAX_CONVERT_PLACES 40
 	   int signvalue = 0;
 	   unsigned long uvalue;
-	   char convert[20];
+	   char convert[MAX_CONVERT_PLACES];
 	   int place = 0;
 	   int spadlen = 0; /* amount to space pad */
 	   int zpadlen = 0; /* amount to zero pad */
@@ -505,8 +523,8 @@ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 				    (caps? "0123456789ABCDEF":"0123456789abcdef")
 				    [uvalue % (unsigned)base  ];
 			 uvalue = (uvalue / (unsigned)base );
-	   } while(uvalue && (place < 20));
-	   if (place == 20) place--;
+	   } while(uvalue && (place < MAX_CONVERT_PLACES));
+	   if (place == MAX_CONVERT_PLACES) place--;
 	   convert[place] = 0;
 
 	   zpadlen = max - place;
@@ -557,9 +575,11 @@ static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
 static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
 				qword *value, int base, int min, int max, int flags)
 {
+#undef MAX_CONVERT_PLACES
+#define MAX_CONVERT_PLACES 80
 	   int signvalue = 0;
 	   qword uvalue;
-	   char convert[40];
+	   char convert[MAX_CONVERT_PLACES];
 	   int place = 0;
 	   int spadlen = 0; /* amount to space pad */
 	   int zpadlen = 0; /* amount to zero pad */
@@ -590,8 +610,8 @@ static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
 				    (caps? "0123456789ABCDEF":"0123456789abcdef")
 				    [uv.lo];
 			 uvalue = (uvalue / to_qword((unsigned)base));
-	   } while ((uvalue != to_qword(0)) && (place < 40));
-	   if (place == 40) place--;
+	   } while ((uvalue != to_qword(0)) && (place < MAX_CONVERT_PLACES));
+	   if (place == MAX_CONVERT_PLACES) place--;
 	   convert[place] = 0;
 
 	   zpadlen = max - place;
