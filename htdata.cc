@@ -49,7 +49,7 @@ int qsort_compare_keys_tree_node(const void *e1, const void *e2)
  *	CLASS ht_data_uint
  */
 
-ht_data_uint::ht_data_uint(UINT v)
+ht_data_uint::ht_data_uint(uint v)
 {
 	value=v;
 }
@@ -71,28 +71,28 @@ OBJECT_ID ht_data_uint::object_id() const
 }
 
 /*
- *	CLASS ht_data_dword
+ *	ht_data_uint32
  */
 
-ht_data_dword::ht_data_dword(dword v)
+ht_data_uint32::ht_data_uint32(uint32 v)
 {
-	value=v;
+	value = v;
 }
 
-int ht_data_dword::load(ht_object_stream *s)
+int ht_data_uint32::load(ht_object_stream *s)
 {
-	value=s->getIntHex(4, NULL);
+	value = s->getIntHex(4, NULL);
 	return s->get_error();
 }
 
-void ht_data_dword::store(ht_object_stream *s)
+void ht_data_uint32::store(ht_object_stream *s)
 {
 	s->putIntHex(value, 4, NULL);
 }
 
-OBJECT_ID ht_data_dword::object_id() const
+OBJECT_ID ht_data_uint32::object_id() const
 {
-	return ATOM_HT_DATA_DWORD;
+	return ATOM_HT_DATA_UINT32;
 }
 
 /*
@@ -108,7 +108,7 @@ ht_data_ptr::ht_data_ptr(const void *v)
  *	CLASS ht_data_mem
  */
 
-ht_data_mem::ht_data_mem(const void *v, UINT _size)
+ht_data_mem::ht_data_mem(const void *v, uint _size)
 {
 	size=_size;
 	if (size) {
@@ -165,7 +165,7 @@ void ht_tree::balance()
 {
 }
 
-UINT ht_tree::count()
+uint ht_tree::count()
 {
 	return 0;
 }
@@ -252,7 +252,7 @@ void ht_stree::balance()
 	set_compare_keys(compare_keys);
 }
 
-UINT ht_stree::count()
+uint ht_stree::count()
 {
 	return node_count;
 }
@@ -506,7 +506,7 @@ void ht_stree::insert_ltable(ht_tree_node **node, ht_tree_node **start, ht_tree_
 	}
 }
 
-void stree_load(ht_object_stream *s, ht_tree_node **n, UINT *node_count, int l, int r)
+void stree_load(ht_object_stream *s, ht_tree_node **n, uint *node_count, int l, int r)
 {
 	if (l>r) {
 		*n = NULL;
@@ -529,12 +529,12 @@ int ht_stree::load(ht_object_stream *s)
 	if (!d) return 1;
 	compare_keys=(compare_keys_func_ptr)d;
 	
-	UINT c=s->getIntDec(4, NULL);
+	uint c=s->getIntDec(4, NULL);
 #if 0
 	root=NULL;
 	node_count=0;
 	
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_data *key=s->get_object(NULL);
 		ht_data *value=s->get_object(NULL);
 		if (!key) return 1;
@@ -586,7 +586,7 @@ void ht_stree::populate_ltable(ht_tree_node ***ltable, ht_tree_node *node)
  *	CLASS ht_dtree (rebalancing and dead node tree)
  */
 
-void ht_dtree::init(compare_keys_func_ptr compare_keys, UINT _max_ub_delete, UINT _max_ub_insert)
+void ht_dtree::init(compare_keys_func_ptr compare_keys, uint _max_ub_delete, uint _max_ub_insert)
 {
 	ht_stree::init(compare_keys);
 	dead_node_count=0;
@@ -629,14 +629,14 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 	ub_insert=0;
 	if (node_count-dead_node_count) {
 		/* create ltable from tree */
-		UINT new_node_count = node_count-dead_node_count;
+		uint new_node_count = node_count-dead_node_count;
 		ht_tree_node **ltable = (ht_tree_node**)malloc(sizeof (ht_tree_node*) * new_node_count);
 		assert(ltable);
 		ht_tree_node **l = ltable;
 		populate_ltable_free_dead_nodes(&l, root);
 
 		/* save old tree, empty tree */
-		UINT old_node_count = node_count;
+		uint old_node_count = node_count;
 		node_count = 0;
 		root = NULL;
 		if (compare_keys != new_compare_keys) {
@@ -658,7 +658,7 @@ void ht_dtree::set_compare_keys(compare_keys_func_ptr new_compare_keys)
 	}
 }
 
-UINT ht_dtree::count()
+uint ht_dtree::count()
 {
 	return node_count-dead_node_count;
 }
@@ -830,14 +830,14 @@ void ht_list::append(ht_data *data)
 {
 }
 
-UINT ht_list::count()
+uint ht_list::count()
 {
 	return 0;
 }
 
-void ht_list::copy_to(UINT i, UINT count, ht_list *destlist)
+void ht_list::copy_to(uint i, uint count, ht_list *destlist)
 {
-	UINT j=0;
+	uint j=0;
 	while (count--) {
 		ht_data *w=get(i+j);
 		if (j) {
@@ -849,17 +849,17 @@ void ht_list::copy_to(UINT i, UINT count, ht_list *destlist)
 	}
 }
 
-ht_list *ht_list::cut(UINT i, UINT count)
+ht_list *ht_list::cut(uint i, uint count)
 {
 	return NULL;
 }
 
-bool ht_list::del(UINT i)
+bool ht_list::del(uint i)
 {
 	return false;
 }
 
-bool ht_list::del_multiple(UINT i, UINT count)
+bool ht_list::del_multiple(uint i, uint count)
 {
 	bool b=true;
 	while (count--) {
@@ -872,12 +872,12 @@ void ht_list::empty()
 {
 }
 
-UINT ht_list::find(ht_data *data)
+uint ht_list::find(ht_data *data)
 {
 	return LIST_UNDEFINED;
 }
 
-ht_data *ht_list::get(UINT i)
+ht_data *ht_list::get(uint i)
 {
 	return NULL;
 }
@@ -886,19 +886,19 @@ void ht_list::insert(ht_data *data)
 {
 }
 
-void ht_list::insert_after(ht_data *data, UINT i)
+void ht_list::insert_after(ht_data *data, uint i)
 {
 }
 
-void ht_list::insert_before(ht_data *data, UINT i)
+void ht_list::insert_before(ht_data *data, uint i)
 {
 }
 
-void ht_list::move(UINT source, UINT dest)
+void ht_list::move(uint source, uint dest)
 {
 }
 
-void ht_list::move_multiple(UINT source, UINT dest, UINT count)
+void ht_list::move_multiple(uint source, uint dest, uint count)
 {
 }
 
@@ -906,12 +906,12 @@ void ht_list::prepend(ht_data *data)
 {
 }
 
-ht_data *ht_list::remove(UINT i)
+ht_data *ht_list::remove(uint i)
 {
 	return NULL;
 }
 
-bool ht_list::remove_multiple(UINT i, UINT count)
+bool ht_list::remove_multiple(uint i, uint count)
 {
 	bool b=true;
 	while (count--) {
@@ -920,7 +920,7 @@ bool ht_list::remove_multiple(UINT i, UINT count)
 	return b;
 }
 
-bool ht_list::set(UINT i, ht_data *data)
+bool ht_list::set(uint i, ht_data *data)
 {
 	return false;
 }
@@ -965,23 +965,23 @@ void ht_clist::append(ht_data *data)
 	insert_before(data, c_entry_count);
 }
 
-UINT ht_clist::count()
+uint ht_clist::count()
 {
 	return c_entry_count;
 }
 
-ht_list *ht_clist::cut(UINT start, UINT count)
+ht_list *ht_clist::cut(uint start, uint count)
 {
 	ht_clist *c=new ht_clist();
 	c->init(compare_keys);
-	for (UINT i=0; i<count; i++) {
+	for (uint i=0; i<count; i++) {
 		c->insert(items[start+i]);
 	}
 	remove_multiple(start, count);
 	return c;
 }
 
-bool ht_clist::del(UINT i)
+bool ht_clist::del(uint i)
 {
 	if (i<c_entry_count) {
 		do_free(i);
@@ -991,7 +991,7 @@ bool ht_clist::del(UINT i)
 	return false;
 }
 
-void ht_clist::do_free(UINT i)
+void ht_clist::do_free(uint i)
 {
 	if (items[i]) {
 		items[i]->done();
@@ -999,7 +999,7 @@ void ht_clist::do_free(UINT i)
 	}
 }
 
-void ht_clist::do_remove(UINT i)
+void ht_clist::do_remove(uint i)
 {
 	memmove(&items[i], &items[i+1], sizeof items[i] * (c_entry_count-i-1));
 	c_entry_count--;
@@ -1009,7 +1009,7 @@ Object *ht_clist::duplicate()
 {
 	ht_clist *d=new ht_clist();
 	d->init(compare_keys);
-	for (UINT i=0; i<c_entry_count; i++) {
+	for (uint i=0; i<c_entry_count; i++) {
 		d->insert(items[i]->duplicate());
 	}
 	return d;
@@ -1017,7 +1017,7 @@ Object *ht_clist::duplicate()
 
 void ht_clist::empty()
 {
-	for (UINT i=0; i<c_entry_count; i++) {
+	for (uint i=0; i<c_entry_count; i++) {
 		do_free(i);
 	}
 	c_entry_count=0;
@@ -1033,17 +1033,17 @@ void ht_clist::extend_list()
 	items=new_items;
 }
 
-UINT ht_clist::find(ht_data *data)
+uint ht_clist::find(ht_data *data)
 {
 	if (compare_keys) {
-		for (UINT i=0; i<c_entry_count; i++) {
+		for (uint i=0; i<c_entry_count; i++) {
 			if (compare_keys(data, items[i])==0) return i;
 		}
 	}
 	return LIST_UNDEFINED;
 }
 
-ht_data *ht_clist::get(UINT i)
+ht_data *ht_clist::get(uint i)
 {
 	if (i<c_entry_count) return items[i];
 	return NULL;
@@ -1054,14 +1054,14 @@ void ht_clist::insert(ht_data *data)
 	append(data);
 }
 
-void ht_clist::insert_after(ht_data *data, UINT i)
+void ht_clist::insert_after(ht_data *data, uint i)
 {
 	insert_before(data, i+1);
 }
 
-void ht_clist::insert_before(ht_data *data, UINT i)
+void ht_clist::insert_before(ht_data *data, uint i)
 {
-	UINT hi= i>c_entry_count ? i+1 : c_entry_count+1;
+	uint hi= i>c_entry_count ? i+1 : c_entry_count+1;
 	while (hi>=c_size) extend_list();
 	if (i>c_entry_count) {
 		c_entry_count=i+1;
@@ -1091,7 +1091,7 @@ int  ht_clist::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-void ht_clist::move(UINT source, UINT dest)
+void ht_clist::move(uint source, uint dest)
 {
 	if (dest<=c_entry_count) {
 		ht_data *src=get(source);
@@ -1101,10 +1101,10 @@ void ht_clist::move(UINT source, UINT dest)
 	}
 }
 
-void ht_clist::move_multiple(UINT source, UINT dest, UINT count)
+void ht_clist::move_multiple(uint source, uint dest, uint count)
 {
 	if (dest<=c_entry_count) {
-		for (UINT i=0; i<count; i++) {
+		for (uint i=0; i<count; i++) {
 			move(source, dest+count-1);
 		}
 	}
@@ -1120,7 +1120,7 @@ void ht_clist::prepend(ht_data *data)
 	insert_before(data, 0);
 }
 
-ht_data *ht_clist::remove(UINT i)
+ht_data *ht_clist::remove(uint i)
 {
 	if (i<c_entry_count) {
 		ht_data *d=items[i];
@@ -1130,7 +1130,7 @@ ht_data *ht_clist::remove(UINT i)
 	return NULL;
 }
 
-bool ht_clist::set(UINT i, ht_data *data)
+bool ht_clist::set(uint i, ht_data *data)
 {
 	while (i>=c_entry_count) append(NULL);
 	do_free(i);
@@ -1160,7 +1160,7 @@ void ht_clist::store(ht_object_stream *s)
 
 !!! THERE'S A BUG IN HERE !!!
 
-bool ht_clist::qsort_i(UINT _l, UINT _r)
+bool ht_clist::qsort_i(uint _l, uint _r)
 {
 	int xchg_count=0;
 	int l=(int)_l;
@@ -1210,11 +1210,11 @@ void ht_sorted_list::append(ht_data *data)
 	insert(data);
 }
 
-UINT ht_sorted_list::find(ht_data *data)
+uint ht_sorted_list::find(ht_data *data)
 {
 	if (compare_keys) {
 		HT_ERROR("function untested !");
-		UINT w=(c_entry_count-1)/2, ow=0;
+		uint w=(c_entry_count-1)/2, ow=0;
 		while (w!=ow) {
 			ow=w;
 			int ck=compare_keys(data, items[w]);
@@ -1243,22 +1243,22 @@ void ht_sorted_list::insert(ht_data *data)
 	}
 }
 
-void ht_sorted_list::insert_after(ht_data *data, UINT i)
+void ht_sorted_list::insert_after(ht_data *data, uint i)
 {
 	insert(data);
 }
 
-void ht_sorted_list::insert_before(ht_data *data, UINT i)
+void ht_sorted_list::insert_before(ht_data *data, uint i)
 {
 	insert(data);
 }
 
-void ht_sorted_list::move(UINT source, UINT dest)
+void ht_sorted_list::move(uint source, uint dest)
 {
 	// do nothing
 }
 
-void ht_sorted_list::move_multiple(UINT source, UINT dest, UINT count)
+void ht_sorted_list::move_multiple(uint source, uint dest, uint count)
 {
 	// do nothing
 }
@@ -1268,7 +1268,7 @@ void ht_sorted_list::prepend(ht_data *data)
 	insert(data);
 }
 
-bool ht_sorted_list::set(UINT i, ht_data *data)
+bool ht_sorted_list::set(uint i, ht_data *data)
 {
 	insert(data);
 	return true;
@@ -1356,8 +1356,8 @@ int compare_keys_int(ht_data *key_a, ht_data *key_b)
 
 int compare_keys_uint(ht_data *key_a, ht_data *key_b)
 {
-	UINT a=((ht_data_uint*)key_a)->value;
-	UINT b=((ht_data_uint*)key_b)->value;
+	uint a=((ht_data_uint*)key_a)->value;
+	uint b=((ht_data_uint*)key_b)->value;
 	if (a>b) return 1; else if (a<b) return -1;
 	return 0;
 }
@@ -1367,7 +1367,7 @@ int compare_keys_uint(ht_data *key_a, ht_data *key_b)
  */
  
 BUILDER(ATOM_HT_DATA_UINT, ht_data_uint);
-BUILDER(ATOM_HT_DATA_DWORD, ht_data_dword);
+BUILDER(ATOM_HT_DATA_UINT32, ht_data_uint32);
 BUILDER(ATOM_HT_DATA_MEM, ht_data_mem);
 BUILDER(ATOM_HT_STREE, ht_stree);
 BUILDER(ATOM_HT_CLIST, ht_clist);
@@ -1375,7 +1375,7 @@ BUILDER(ATOM_HT_CLIST, ht_clist);
 bool init_data()
 {
 	REGISTER(ATOM_HT_DATA_UINT, ht_data_uint);
-	REGISTER(ATOM_HT_DATA_DWORD, ht_data_dword);
+	REGISTER(ATOM_HT_DATA_UINT32, ht_data_uint32);
 	REGISTER(ATOM_HT_DATA_MEM, ht_data_mem);
 	REGISTER(ATOM_HT_STREE, ht_stree);
 	REGISTER(ATOM_HT_CLIST, ht_clist);
@@ -1398,7 +1398,7 @@ void done_data()
 	unregister_atom(ATOM_COMPARE_KEYS_UINT);
 	
 	UNREGISTER(ATOM_HT_DATA_UINT, ht_data_uint);
-	UNREGISTER(ATOM_HT_DATA_DWORD, ht_data_dword);
+	UNREGISTER(ATOM_HT_DATA_UINT32, ht_data_uint32);
 	UNREGISTER(ATOM_HT_DATA_MEM, ht_data_mem);
 	UNREGISTER(ATOM_HT_STREE, ht_stree);
 	UNREGISTER(ATOM_HT_CLIST, ht_clist);

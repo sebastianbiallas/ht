@@ -273,13 +273,13 @@ struct ELF_SECTION_HEADER64 {
  *	ELF program header
  */
 
-#define ELF_PT_NULL			0
-#define ELF_PT_LOAD			1
+#define ELF_PT_NULL		0
+#define ELF_PT_LOAD		1
 #define ELF_PT_DYNAMIC		2
 #define ELF_PT_INTERP		3
-#define ELF_PT_NOTE			4
+#define ELF_PT_NOTE		4
 #define ELF_PT_SHLIB		5
-#define ELF_PT_PHDR			6
+#define ELF_PT_PHDR		6
  
 struct ELF_PROGRAM_HEADER32 {
 	elf32_word p_type;
@@ -402,7 +402,7 @@ extern byte ELF_RELA64_struct[];
 
 struct ELFAddress {
 	union {
-		dword a32;
+		uint32 a32;
 		qword a64;
 	};
 };

@@ -69,12 +69,24 @@
 #define ATOM_ELF_ST_TYPE_STR			 "454c460a"
 
 #define ATOM_ELF_R_386_TYPE 			0x454c460b
-#define ATOM_ELF_R_386_TYPE_STR		 "454c460b"
+#define ATOM_ELF_R_386_TYPE_STR		 	 "454c460b"
 
 extern format_viewer_if htelf_if;
 
+class sectionAndIdx: public ht_data {
+public:
+	uint secidx;
+	uint symidx;
+
+	sectionAndIdx(uint asecidx, uint asymidx)
+	{
+		secidx = asecidx;
+		symidx = asymidx;
+	}
+};
+
 struct elf_section_headers {
-	UINT count;
+	uint count;
 	union {
 		ELF_SECTION_HEADER32 *sheaders32;
 		ELF_SECTION_HEADER64 *sheaders64;
@@ -87,7 +99,7 @@ union elf_section_header {
 };
 
 struct elf_program_headers {
-	UINT count;
+	uint count;
 	union {
 		ELF_PROGRAM_HEADER32 *pheaders32;
 		ELF_PROGRAM_HEADER64 *pheaders64;
@@ -115,30 +127,31 @@ struct ht_elf_shared_data {
 	uint reloctables;
 	ht_format_viewer *v_image;
 	int fake_undefined_shidx;
+	uint fake_undefined_size;
+	ht_tree *undefined2fakeaddr;
 };
 
 /*
- *	CLASS ht_elf
+ *	ht_elf
  */
-
 class ht_elf: public ht_format_group {
 protected:
 	bool loc_enum;
-/* new */
-			void auto_relocate32();
-			void fake_undefined_symbols();
-			UINT find_reloc_section_for(UINT si);
-			void relocate_section(ht_reloc_file *f, UINT si, UINT rsi, elf32_addr a);
+	/* new */
+		void auto_relocate32();
+		void fake_undefined_symbols32();
+		uint find_reloc_section_for(UINT si);
+		void relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a);
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
-/* overwritten */
+	/* extends ? */
 	virtual	void loc_enum_start();
 	virtual	bool loc_enum_next(ht_format_loc *loc);
 };
 
 /*
- *	CLASS ht_elf32_reloc_entry
+ *	ht_elf32_reloc_entry
  */
 
 class ht_elf32_reloc_entry: public ht_data {
@@ -149,17 +162,17 @@ public:
 		uint32 r_pc32;
 	} relocs;
 
-	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT type, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
+	ht_elf32_reloc_entry(uint type, uint32 A, uint32 P, uint32 S);
 };
 
 /*
- *	CLASS ht_elf32_reloc_file
+ *	ht_elf32_reloc_file
  */
 
 class ht_elf32_reloc_file: public ht_reloc_file {
 protected:
 	ht_elf_shared_data *data;
-/* overwritten */
+	/* extends ht_reloc_file */
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
@@ -172,11 +185,8 @@ bool elf_valid_section(elf_section_header *s, UINT elfclass);
 bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section);
 bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs);
 bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr);
-//bool elf_addr_is_physical(elf_section_headers *section_headers, UINT elfclass, ADDR addr);
 
 bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr);
 bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, dword *section);
-//bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr, int *section);
 
 #endif /* !__HTELF_H__ */
-

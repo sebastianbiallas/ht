@@ -28,6 +28,7 @@
 #include "htelfrel.h"
 #include "htelfimg.h"
 #include "htendian.h"
+#include "htexcept.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -61,6 +62,15 @@ format_viewer_if htelf_if = {
 	0
 };
 
+/**/
+static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
+{
+	sectionAndIdx *a = (sectionAndIdx*)key_a;
+	sectionAndIdx *b = (sectionAndIdx*)key_b;
+	if (a->secidx == b->secidx) return a->symidx - b->symidx;
+	return a->secidx - b->secidx;
+}
+
 /*
  *	CLASS ht_elf
  */
@@ -81,6 +91,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	elf_shared->v_image = NULL;
 	elf_shared->shrelocs = NULL;
 	elf_shared->fake_undefined_shidx = 0;
+	elf_shared->undefined2fakeaddr = NULL;
 
 	/* read header */
 	file->seek(header_ofs);
@@ -116,11 +127,14 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			for (uint i=0; i<elf_shared->pheaders.count; i++) {
 				create_host_struct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
-			/* create a fake section for undefined symbols */
-			fake_undefined_symbols();
+			// if file is relocatable, relocate it
+			if (elf_shared->header32.e_type == ELF_ET_REL) {
+				/* create a fake section for undefined symbols */
+				fake_undefined_symbols32();
 
-			/* create streamfile layer for relocations */
-			auto_relocate32();
+				/* create streamfile layer for relocations */
+				auto_relocate32();
+			}
 			break;
 		}
 		case ELFCLASS64: {
@@ -227,35 +241,60 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
 
-	FILEOFS h = s[rsi].sh_offset;
+	FILEOFS relh = s[rsi].sh_offset;
+
+	uint symtabidx = s[rsi].sh_link;
+	FILEOFS symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
 
 	if (s[rsi].sh_type == ELF_SHT_REL) {
 		uint relnum = s[rsi].sh_size / sizeof (ELF_REL32);
 		for (uint i=0; i<relnum; i++) {
+			// read ELF_REL32
 			ELF_REL32 r;
-			file->seek(h+i*sizeof r);
+			file->seek(relh+i*sizeof r);
 			if (file->read(&r, sizeof r) != sizeof r) {
-				LOG("I/O error reading relocations for section %d", si+1);
+				LOG("I/O error reading relocations for section %d", si);
 				break;
 			}
 			create_host_struct(&r, ELF_REL32_struct, elf_shared->byte_order);
-			/* FIXME: offset only works for relocatable files */
-			f->insert_reloc(r.r_offset+s[si].sh_offset,
-				new ht_elf32_reloc_entry(
-					s[rsi].sh_link,
-					r.r_offset+s[si].sh_addr,
-					ELF32_R_TYPE(r.r_info),
-					ELF32_R_SYM(r.r_info),
-					0, (ht_elf_shared_data*)shared_data, f));
+
+			// read ELF_SYMBOL32
+			uint symbolidx = ELF32_R_SYM(r.r_info);
+			ELF_SYMBOL32 sym;
+			file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32));
+			file->read(&sym, sizeof sym);
+			create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+
+			// calc reloc vals
+			uint32 A = 0;
+			uint32 P = r.r_offset+s[si].sh_addr;
+			uint32 S;
+			if ((sym.st_shndx > 0) && (sym.st_shndx < elf_shared->sheaders.count)) {
+				S = sym.st_value + elf_shared->shrelocs[sym.st_shndx].relocAddr;
+			} else if (elf_shared->fake_undefined_shidx >= 0) {
+				sectionAndIdx s(symtabidx, symbolidx);
+				ht_data_uint32 *addr = (ht_data_uint32 *)elf_shared->undefined2fakeaddr->get(&s);
+				if (addr) {
+					S = addr->value;
+				} else continue;
+			} else {
+				// skip this one
+				// FIXME: nyi
+				continue;
+			}
+			ht_data *z = new ht_elf32_reloc_entry(
+				ELF32_R_TYPE(r.r_info), A, P, S);
+			f->insert_reloc(r.r_offset+s[si].sh_offset, z);
 		}
 	}
 }
 
 #define	FAKE_SECTION_BASEADDR	0x4acc0000
-void ht_elf::fake_undefined_symbols()
+/* "resolve" undefined references by creating fake section and fake addresses */
+void ht_elf::fake_undefined_symbols32()
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
-	/* "resolve" undefined references (create a fake section) */
+	// create a fake section
 	elf_shared->fake_undefined_shidx = elf_shared->sheaders.count;
 	elf_shared->sheaders.count++;
 	elf_shared->sheaders.sheaders32 = (ELF_SECTION_HEADER32*)
@@ -267,7 +306,7 @@ void ht_elf::fake_undefined_symbols()
 	s[elf_shared->fake_undefined_shidx].sh_flags = ELF_SHF_WRITE | ELF_SHF_ALLOC;
 	s[elf_shared->fake_undefined_shidx].sh_addr = 0;
 	s[elf_shared->fake_undefined_shidx].sh_offset = 0;
-	s[elf_shared->fake_undefined_shidx].sh_size = 64*1024;
+	s[elf_shared->fake_undefined_shidx].sh_size = 0;	// filled in below
 	s[elf_shared->fake_undefined_shidx].sh_link = 0;
 	s[elf_shared->fake_undefined_shidx].sh_info = 0;
 	s[elf_shared->fake_undefined_shidx].sh_addralign = 0;
@@ -275,7 +314,31 @@ void ht_elf::fake_undefined_symbols()
 	elf32_addr a = elf32_invent_address(elf_shared->fake_undefined_shidx,
 		s, elf_shared->sheaders.count, FAKE_SECTION_BASEADDR);
 	s[elf_shared->fake_undefined_shidx].sh_addr = a;
-	LOG("fake section %d", elf_shared->fake_undefined_shidx+1);
+	LOG("fake section %d", elf_shared->fake_undefined_shidx);
+	// allocate fake addresses
+	elf_shared->undefined2fakeaddr = new ht_stree();
+	((ht_stree*)elf_shared->undefined2fakeaddr)->init(compare_keys_sectionAndIdx);
+	uint32 nextFakeAddr = FAKE_SECTION_BASEADDR;
+	for (uint secidx = 0; secidx < elf_shared->sheaders.count; secidx++) {
+		if (elf_shared->sheaders.sheaders32[secidx].sh_type == ELF_SHT_SYMTAB) {
+			FILEOFS symh = elf_shared->sheaders.sheaders32[secidx].sh_offset;
+			uint symnum = elf_shared->sheaders.sheaders32[secidx].sh_size / sizeof (ELF_SYMBOL32);
+			for (uint symidx = 1; symidx < symnum; symidx++) {
+				ELF_SYMBOL32 sym;
+				file->seek(symh+symidx*sizeof (ELF_SYMBOL32));
+				file->read(&sym, sizeof sym);
+				create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+				if (sym.st_shndx == ELF_SHN_UNDEF) {
+					elf_shared->undefined2fakeaddr->insert(
+						new sectionAndIdx(secidx, symidx),
+						new ht_data_uint32(nextFakeAddr));
+					nextFakeAddr += 4;
+				}
+			}
+		}
+	}
+	elf_shared->fake_undefined_size = nextFakeAddr-FAKE_SECTION_BASEADDR;
+	s[elf_shared->fake_undefined_shidx].sh_size = elf_shared->fake_undefined_size;
 }
 
 void ht_elf::auto_relocate32()
@@ -547,26 +610,10 @@ bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfc
 /*
  *	ht_elf32_reloc_entry
  */
-ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
+//ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
+ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
 {
 	type = t;
-
-	FILEOFS h = data->sheaders.sheaders32[symtabidx].sh_offset;
-
-	ELF_SYMBOL32 sym;
-	file->seek(h+symbolidx*sizeof (ELF_SYMBOL32));
-	file->read(&sym, sizeof sym);
-	create_host_struct(&sym, ELF_SYMBOL32_struct, data->byte_order);
-
-	uint32 A = addend;
-	uint32 P = addr;
-	uint32 S;
-	if (sym.st_shndx) {
-		S = sym.st_value;
-	} else if (data->fake_undefined_shidx >= 0) {
-		S = data->sheaders.sheaders32[data->fake_undefined_shidx].sh_addr+
-			4*symbolidx;
-	}
 	switch (type) {
 		case ELF_R_386_32:
 			relocs.r_32 = S+A;
@@ -592,13 +639,18 @@ void	ht_elf32_reloc_file::reloc_apply(ht_data *reloc, byte *buf)
 	ht_elf32_reloc_entry *e=(ht_elf32_reloc_entry*)reloc;
 
 	switch (e->type) {
-		case ELF_R_386_32:
-			create_foreign_int(buf, e->relocs.r_32, 4, data->byte_order);
+		case ELF_R_386_32: {
+			uint32 v = create_host_int(buf, 4, data->byte_order);
+			v += e->relocs.r_32;
+			create_foreign_int(buf, v, 4, data->byte_order);
 			break;
-		case ELF_R_386_PC32:
-			create_foreign_int(buf, e->relocs.r_pc32, 4, data->byte_order);
-//			create_foreign_int(buf, 0x12345678, 4, data->byte_order);
+		}
+		case ELF_R_386_PC32: {
+			uint32 v = create_host_int(buf, 4, data->byte_order);
+			v += e->relocs.r_pc32;
+			create_foreign_int(buf, v, 4, data->byte_order);
 			break;
+		}
 	}
 }
 

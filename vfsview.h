@@ -2,7 +2,7 @@
  *	HT Editor
  *	vfsview.h
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2003 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -34,7 +34,7 @@ struct vfs_extra {
 };
 
 #define VFSV_FORMAT_MAX_COLS		64
-#define VFSV_FORMAT_PROPERTIES	22
+#define VFSV_FORMAT_PROPERTIES		22
 
 #define VfsListboxData ht_itext_listbox_data
 
@@ -44,43 +44,42 @@ protected:
 	Vfs *cvfs;
 	char cdir[VFS_DIR_MAX+1];
 	char cproto[VFS_PROTO_MAX+1];
-/**/
+	/**/
 	int dfmt_cols;
 	int dfmt_props;
 	int dfmt_prop2colidx[VFSV_FORMAT_MAX_COLS];
 	int dfmt_prop[VFSV_FORMAT_MAX_COLS];
 	int dfmt_quickfind;
-/**/
+	/**/
 	ht_text *show_pos;
-	
-	virtual	void			freeExtraData(void *extra_data);
-			void			renderEntry(char *buf, int bufsize, int dfmt, const char *filename, pstat_t stat);
-			void			reread();
-			void			setDisplayFormat(char *fmt);
+
+	virtual	void		freeExtraData(void *extra_data);
+		void		renderEntry(char *buf, int bufsize, int dfmt, const char *filename, pstat_t stat);
+		void		reread();
+		void		setDisplayFormat(char *fmt);
 	virtual	bool 		selectEntry(void *entry);
-			char *		translateProp(char *fmt, int *type);
+		char *		translateProp(char *fmt, int *type);
 public:
-			void			init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
-	virtual	void			done();
-/* overwritten */
-	virtual	void			config_changed();
-	virtual	int			cursorAdjust();
-	virtual	void			handlemsg(htmsg *msg);
+		void		init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
+	virtual	void		done();
+	/* overwritten */
+	virtual	void		config_changed();
+	virtual	int		cursorAdjust();
+	virtual	void		handlemsg(htmsg *msg);
 	virtual	void *		quickfind(char *s);
 	virtual	char *		quickfindCompletition(char *s);
-	virtual	void			update();
-/* new */
-			int			changeURL(const char *url);
-			int			changeDir(const char *dir);
-			const char *	getCurDir();
-			const char *	getCurProto();
-			Vfs *		getCurVfs();
+	virtual	void		update();
+	/* new */
+		int		changeURL(const char *url);
+		int		changeDir(const char *dir);
+		const char *	getCurDir();
+		const char *	getCurProto();
+		Vfs *		getCurVfs();
 };
 
 /*
  *	class VfsListbox2
  */
-
 class VfsListbox2: public VfsListbox {
 public:
 /**/
@@ -88,4 +87,3 @@ public:
 };
 
 #endif /* __VFSVIEW_H__ */
-

@@ -33,31 +33,32 @@ public:
 	ht_streamfile			*file;
 	Area					*validarea;
 
-			void			init(ht_elf_shared_data *elf_shared, ht_streamfile *File);
-			int 			load(ht_object_stream *f);
-	virtual	void			done();
-	virtual	OBJECT_ID		object_id() const;
+		void		init(ht_elf_shared_data *elf_shared, ht_streamfile *File);
+		int 		load(ht_object_stream *f);
+	virtual	void		done();
+	virtual	OBJECT_ID	object_id() const;
 
-	virtual	void			beginAnalysis();
-	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size);
-			bool			convertAddressToELFAddress(Address *addr, ELFAddress *r);
+	virtual	void		beginAnalysis();
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size);
+		bool		convertAddressToELFAddress(Address *addr, ELFAddress *r);
 	virtual	Address		*createAddress();
-			Address		*createAddress32(dword addr);
-			Address		*createAddress64(qword addr);
-	virtual   Assembler 	*createAssembler();
+		Address		*createAddress32(dword addr);
+		Address		*createAddress64(qword addr);
+	virtual	Assembler 	*createAssembler();
 	virtual	const char	*getName();
-	virtual   const char	*getType();
+	virtual	const char	*getType();
 	virtual	void 		initCodeAnalyser();
-			void			initInsertSymbols(int shidx);
+		void		initInsertSymbols(int shidx);
+		void		initInsertFakeSymbols();
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void			store(ht_object_stream *f);
-	virtual	int			queryConfig(int mode);
+	virtual	void		store(ht_object_stream *f);
+	virtual	int		queryConfig(int mode);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
 	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
 	virtual	FILEOFS		addressToFileofs(Address *Addr);
-	virtual	char			*getSegmentNameByAddress(Address *Addr);
+	virtual	char		*getSegmentNameByAddress(Address *Addr);
 };
 
 #endif

@@ -2,7 +2,7 @@
  *	HT Editor
  *	vfsview.cc
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2003 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -26,7 +26,7 @@
 #include "snprintf.h"
 #include "vfsview.h"
 
-vfs_extra *make_vfs_extra(const char *name, pstat_t s)
+static vfs_extra *make_vfs_extra(const char *name, pstat_t s)
 {
 	vfs_extra *e = (vfs_extra*)malloc(sizeof *e);
 	e->stat = s;
@@ -34,7 +34,7 @@ vfs_extra *make_vfs_extra(const char *name, pstat_t s)
 	return e;
 }
 
-void free_vfs_extra(vfs_extra *e)
+static void free_vfs_extra(vfs_extra *e)
 {
 	free(e->name);
 	free(e);
@@ -55,41 +55,41 @@ static int vfslistbox_fncmp(const char *a, const char *b)
 /*
  *	class VfsListbox
  */
- 
-#define VFSV_FORMAT_NAME		0
-#define VFSV_FORMAT_SIZE		1
+
+#define VFSV_FORMAT_NAME	0
+#define VFSV_FORMAT_SIZE	1
 #define VFSV_FORMAT_BSIZE	2
-#define VFSV_FORMAT_TYPE		3
+#define VFSV_FORMAT_TYPE	3
 #define VFSV_FORMAT_MTIME	4
 #define VFSV_FORMAT_ATIME	5
 #define VFSV_FORMAT_CTIME	6
-#define VFSV_FORMAT_PERM		7
-#define VFSV_FORMAT_MODE		8
+#define VFSV_FORMAT_PERM	7
+#define VFSV_FORMAT_MODE	8
 #define VFSV_FORMAT_NLINK	9
-#define VFSV_FORMAT_NGID		10
-#define VFSV_FORMAT_NUID		11
+#define VFSV_FORMAT_NGID	10
+#define VFSV_FORMAT_NUID	11
 #define VFSV_FORMAT_OWNER	12
 #define VFSV_FORMAT_GROUP	13
 #define VFSV_FORMAT_INODE	14
 #define VFSV_FORMAT_SPACE	15
-#define VFSV_FORMAT_MARK		16
+#define VFSV_FORMAT_MARK	16
 #define VFSV_FORMAT_SEPARATOR	17
-#define VFSV_FORMAT_DESC		18
+#define VFSV_FORMAT_DESC	18
 #define VFSV_FORMAT_RMTIME	19
 #define VFSV_FORMAT_RATIME	20
 #define VFSV_FORMAT_RCTIME	21
 
 static char *format_property[VFSV_FORMAT_PROPERTIES]={
-	"name",	"size",
+	"name",		"size",
 	"bsize",	"type",
 	"mtime",	"atime",
 	"ctime",	"perm",
-	"mode",	"nlink",
-	"ngid",	"nuid",
+	"mode",		"nlink",
+	"ngid",		"nuid",
 	"owner",	"group",
 	"inode",	"space",
-	"mark",	"|",
-	"desc",	"rmtime",
+	"mark",		"|",
+	"desc",		"rmtime",
 	"ratime",	"rctime"
 };
 
@@ -102,7 +102,7 @@ static char *format_property[VFSV_FORMAT_PROPERTIES]={
 #define GET_DISPLAY_FORMAT_IS_FIXED_SIZE(dfmt) ((dfmt) & 0x80000000)
 #define GET_DISPLAY_FORMAT_IS_MIN_SIZE(dfmt) (!GET_DISPLAY_FORMAT_IS_FIXED_SIZE(dfmt))
 
-void	VfsListbox::init(bounds *b, ht_list *vl, ht_text *sp)
+void VfsListbox::init(bounds *b, ht_list *vl, ht_text *sp)
 {
 	cvfs = NULL;
 	show_pos = sp;
@@ -235,7 +235,7 @@ int VfsListbox::cursorAdjust()
 	return 1;
 }
 
-void	VfsListbox::freeExtraData(void *extra_data)
+void VfsListbox::freeExtraData(void *extra_data)
 {
 	if (extra_data) {
 		free_vfs_extra((vfs_extra*)extra_data);
@@ -348,7 +348,7 @@ char *VfsListbox::translateProp(char *fmt, int *type)
 	return 0;
 }
 
-void	VfsListbox::reread()
+void VfsListbox::reread()
 {
 #define VFSV_FORMAT_MAX_LENGTH 256
 	if (!cvfs) return;
@@ -403,7 +403,7 @@ void *VfsListbox::quickfind(char *s)
 	return NULL;
 }
 
-char	*VfsListbox::quickfindCompletition(char *s)
+char *VfsListbox::quickfindCompletition(char *s)
 {
 	ht_text_listbox_item *item = first;
 	char *res = NULL;
@@ -660,5 +660,3 @@ bool VfsListbox2::selectEntry(void *entry)
 	}
 	return false;
 }
-
-

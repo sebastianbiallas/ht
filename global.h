@@ -49,6 +49,7 @@
 #	undef dword
 #endif
 
+typedef unsigned int uint;
 typedef unsigned int UINT;
 
 #define byte unsigned char

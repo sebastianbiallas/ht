@@ -219,7 +219,7 @@ struct Location {
 	// the address
 	Address		*addr;
 	// this is a tree structure (key is addr)
-	Location		*left, *right;
+	Location	*left, *right;
 	// attached label
 	Symbol		*label;
 	// attached xrefs
@@ -229,9 +229,9 @@ struct Location {
 	// for data types
 	taddr_type	type;
 	// the function the address belongs to (if applicable)
-	Location		*thisfunc;
+	Location	*thisfunc;
 	// some flags
-	int			flags;
+	int		flags;
 };
 
 /*
@@ -257,13 +257,13 @@ typedef enum {
 } taccesstype;
 
 struct taccess	{
-	bool			indexed;
-	int			size;
+	bool		indexed;
+	int		size;
 	taccesstype 	type;
 };
 
 typedef enum {
-	label_unknown=0,
+	label_unknown = 0,
 	label_func,
 	label_loc,
 	label_data
@@ -271,44 +271,43 @@ typedef enum {
 
 struct Symbol {
 	labeltype	type;
-	Location	*location;
-	char		*name;
-	Symbol	*left, *right;
+	Location *	location;
+	char *		name;
+	Symbol		*left, *right;
 };
 
 class AddressQueueItem: public ht_data {
 public:
 	Address	*addr;
 	Address	*func;
-					AddressQueueItem();
-					AddressQueueItem(Address *Addr, Address *Func);
-					~AddressQueueItem();
-			OBJECT_ID	object_id() const;
-			int		load(ht_object_stream *f);
+				AddressQueueItem();
+				AddressQueueItem(Address *Addr, Address *Func);
+				~AddressQueueItem();
+		OBJECT_ID	object_id() const;
+		int		load(ht_object_stream *f);
 	virtual	void		store(ht_object_stream *f);
 };
 
 class CodeAnalyser;
 class DataAnalyser;
 
-
 class Analyser: public Object	{
 public:
-	Address		*addr;
-	Address		*invalid_addr;
-	ht_queue		*addr_queue;
+	Address *		addr;
+	Address *		invalid_addr;
+	ht_queue *		addr_queue;
 	int			ops_parsed;							// for continuing
 	bool			active;
-	Address		*next_explored, *first_explored, *last_explored;
+	Address			*next_explored, *first_explored, *last_explored;
 	bool			next_address_is_invalid;
-	Area			*explored;
-	Area			*initialized;
-	Location		*locations;
-	CodeAnalyser	*code;
-	DataAnalyser	*data;
-	AnalyDisassembler	*analy_disasm;
-	Disassembler	*disasm;
-	Symbol		*symbols;
+	Area *			explored;
+	Area *			initialized;
+	Location *		locations;
+	CodeAnalyser *		code;
+	DataAnalyser *		data;
+	AnalyDisassembler *	analy_disasm;
+	Disassembler *		disasm;
+	Symbol *		symbols;
 	int			location_threshold, symbol_threshold;
 	int			cur_addr_ops, cur_label_ops;                 // for threshold
 	int			max_opcode_length;
@@ -318,96 +317,96 @@ public:
 	int			symbol_count;
 	int			location_count;
 
-			void			init();
-			int			load(ht_object_stream *f);
-	virtual	void			done();
+		void		init();
+		int		load(ht_object_stream *f);
+	virtual	void		done();
 
-			bool			addAddressSymbol(Address *Addr, const char *Prefix, labeltype type, Location *infunc=NULL);
-			void	 		addComment(Address *Addr, int line, const char *c);
-			bool			addSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
+		bool		addAddressSymbol(Address *Addr, const char *Prefix, labeltype type, Location *infunc=NULL);
+		void	 	addComment(Address *Addr, int line, const char *c);
+		bool		addSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
 	virtual	FILEOFS		addressToFileofs(Address *Addr) = 0;
-			bool			addXRef(Address *from, Address *to, xref_enum_t action);
-			void	 		assignComment(Address *Addr, int line, const char *c);
-			bool			assignSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
-			void			assignXRef(Address *from, Address *to, xref_enum_t action);
-	virtual	void			beginAnalysis();
-	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size) = 0;
-			bool	  		continueAnalysis();
-			void			continueAnalysisAt(Address *Addr);
-	virtual	Address *		createAddress() = 0;
-			void			dataAccess(Address *Addr, taccess access);
-			void			deleteLocation(Address *Addr);
-			void			deleteSymbol(Address *Addr);
-			bool			deleteXRef(Address *from, Address *to);
-			void			disableSymbol(Symbol *label);
-			void			doBranch(branch_enum_t branch, OPCODE *opcode, int len);
-			void			engageCodeanalyser();
-			Location *	enumLocations(Address *Addr);
-			Location *	enumLocationsReverse(Address *Addr);
-			Symbol *		enumSymbolsByName(const char *at);
-			Symbol *		enumSymbolsByNameReverse(const char *at);
-			Symbol *		enumSymbols(Symbol *sym);
-			Symbol *		enumSymbolsReverse(Symbol *sym);
+		bool		addXRef(Address *from, Address *to, xref_enum_t action);
+		void	 	assignComment(Address *Addr, int line, const char *c);
+		bool		assignSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
+		void		assignXRef(Address *from, Address *to, xref_enum_t action);
+	virtual	void		beginAnalysis();
+	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size) = 0;
+		bool	  	continueAnalysis();
+		void		continueAnalysisAt(Address *Addr);
+	virtual	Address *	createAddress() = 0;
+		void		dataAccess(Address *Addr, taccess access);
+		void		deleteLocation(Address *Addr);
+		void		deleteSymbol(Address *Addr);
+		bool		deleteXRef(Address *from, Address *to);
+		void		disableSymbol(Symbol *label);
+		void		doBranch(branch_enum_t branch, OPCODE *opcode, int len);
+		void		engageCodeanalyser();
+		Location *	enumLocations(Address *Addr);
+		Location *	enumLocationsReverse(Address *Addr);
+		Symbol *	enumSymbolsByName(const char *at);
+		Symbol *	enumSymbolsByNameReverse(const char *at);
+		Symbol *	enumSymbols(Symbol *sym);
+		Symbol *	enumSymbolsReverse(Symbol *sym);
 	virtual	taddr_typetype	examineData(Address *Addr);
-			void			finish();
-			void			freeLocation(Location *loc);
-			void			freeLocations(Location *locs);
-			void			freeComments(Location *loc);
-			void			freeSymbol(Symbol *sym);
-			void			freeSymbols(Symbol *syms);
-			Location *	getLocationByAddress(Address *Addr);
-			Location *	getLocationContextByAddress(Address *Addr);
-			int			getLocationCount();
-			Location *	getFunctionByAddress(Address *Addr);
-			Location *	getPreviousSymbolByAddress(Address *Addr);
+		void		finish();
+		void		freeLocation(Location *loc);
+		void		freeLocations(Location *locs);
+		void		freeComments(Location *loc);
+		void		freeSymbol(Symbol *sym);
+		void		freeSymbols(Symbol *syms);
+		Location *	getLocationByAddress(Address *Addr);
+		Location *	getLocationContextByAddress(Address *Addr);
+		int		getLocationCount();
+		Location *	getFunctionByAddress(Address *Addr);
+		Location *	getPreviousSymbolByAddress(Address *Addr);
 	virtual	const char *	getSegmentNameByAddress(Address *Addr);
-			Symbol *		getSymbolByAddress(Address *Addr);
-			Symbol *		getSymbolByName(const char *label);
-			const char *	getSymbolNameByLocation(Location *loc);
-			int			getSymbolCount();
-			bool			gotoAddress(Address *Addr, Address *func);
+		Symbol *	getSymbolByAddress(Address *Addr);
+		Symbol *	getSymbolByName(const char *label);
+		const char *	getSymbolNameByLocation(Location *loc);
+		int		getSymbolCount();
+		bool		gotoAddress(Address *Addr, Address *func);
 	virtual	void 		initCodeAnalyser();
-	virtual	void			initDataAnalyser();
-	virtual	void			initUnasm() = 0;
-	virtual	void			log(const char *s);                // stub
-	virtual	CPU_ADDR 		mapAddr(Address *Addr);      // stub
-			Location *	newLocation(Address *Addr);
-			Location *	newLocation(Location *&locs, Address *Addr);
-			Symbol *		newSymbol(const char *label, Location *loc, labeltype type, Location *infunc);
-			Symbol *		newSymbol(Symbol *&syms, const char *label, Location *loc, labeltype type);
-	virtual	Address *		nextValid(Address *Addr) = 0;
-			void			optimizeLocationTree();
-			void			optimizeSymbolTree();
-			bool			popAddress(Address **Addr, Address **func);
-			void			pushAddress(Address *Addr, Address *func);
-	virtual	int			queryConfig(int mode);				// stub
-			void			setActive(bool mode);
-			void			setLocationFunction(Location *a, Location *func);
-			void			setLocationTreeOptimizeThreshold(int threshold);
-			void			setDisasm(Disassembler *d);
-			void			setSymbolTreeOptimizeThreshold(int threshold);
-	virtual	void			store(ht_object_stream *f);
-	virtual	bool			validAddress(Address *addr, tsectype action) = 0;
-			bool			validCodeAddress(Address *addr);
-			bool			validReadAddress(Address *addr);
-			bool			validWriteAddress(Address *addr);
+	virtual	void		initDataAnalyser();
+	virtual	void		initUnasm() = 0;
+	virtual	void		log(const char *s);                // stub
+	virtual	CPU_ADDR 	mapAddr(Address *Addr);      // stub
+		Location *	newLocation(Address *Addr);
+		Location *	newLocation(Location *&locs, Address *Addr);
+		Symbol *	newSymbol(const char *label, Location *loc, labeltype type, Location *infunc);
+		Symbol *	newSymbol(Symbol *&syms, const char *label, Location *loc, labeltype type);
+	virtual	Address *	nextValid(Address *Addr) = 0;
+		void		optimizeLocationTree();
+		void		optimizeSymbolTree();
+		bool		popAddress(Address **Addr, Address **func);
+		void		pushAddress(Address *Addr, Address *func);
+	virtual	int		queryConfig(int mode);				// stub
+		void		setActive(bool mode);
+		void		setLocationFunction(Location *a, Location *func);
+		void		setLocationTreeOptimizeThreshold(int threshold);
+		void		setDisasm(Disassembler *d);
+		void		setSymbolTreeOptimizeThreshold(int threshold);
+	virtual	void		store(ht_object_stream *f);
+	virtual	bool		validAddress(Address *addr, tsectype action) = 0;
+		bool		validCodeAddress(Address *addr);
+		bool		validReadAddress(Address *addr);
+		bool		validWriteAddress(Address *addr);
 
 //  interface only (there's no internal use)
-	int		mode;
+		int	mode;
 
-	virtual   Assembler *	createAssembler();
-	virtual	Address *		fileofsToAddress(FILEOFS fileofs);
-			CommentList *	getComments(Address *Addr);
-			const char *	getDisasmStr(Address *Addr, int &length);
-			const char *	getDisasmStrFormatted(Address *Addr);
-			int			getDisplayMode();
-	virtual   const char *	getName();
-	virtual   const char *	getType();
-			ht_tree *		getXRefs(Address *Addr);
-			bool			isDirty();
-			void			makeDirty();
-			void			setDisplayMode(int enable, int disable);
-			void			toggleDisplayMode(int toggle);
+	virtual	Assembler *	createAssembler();
+	virtual	Address *	fileofsToAddress(FILEOFS fileofs);
+		CommentList *	getComments(Address *Addr);
+		const char *	getDisasmStr(Address *Addr, int &length);
+		const char *	getDisasmStrFormatted(Address *Addr);
+		int		getDisplayMode();
+	virtual	const char *	getName();
+	virtual	const char *	getType();
+		ht_tree *	getXRefs(Address *Addr);
+		bool		isDirty();
+		void		makeDirty();
+		void		setDisplayMode(int enable, int disable);
+		void		toggleDisplayMode(int toggle);
 };
 
 /* display modes */

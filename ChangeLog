@@ -21,7 +21,7 @@ version 0.7-trunk (to be 0.8):
 	- experimental PEF support
 	- fixed bug, causing invalid history entries when specifying files
 	  on the command-line
-	- improved ELF/relocation support
+	- ELF/relocatable file support
 
 version 0.7.4:
 	- fixed bug in COFF code (hdr_ofs sometimes fixed to 0x800)

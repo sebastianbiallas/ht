@@ -91,7 +91,7 @@ void ElfAnalyser::beginAnalysis()
 	ELF_SECTION_HEADER32 *s32=elf_shared->sheaders.sheaders32;
 	ELF_SECTION_HEADER64 *s64=elf_shared->sheaders.sheaders64;
 	char blub[100];
-	for (UINT i=0; i < elf_shared->sheaders.count; i++) {
+	for (uint i=0; i < elf_shared->sheaders.count; i++) {
 		Address *secaddr;
 		if (c32) {
 //			fprintf(stderr, "desc sec %d, %08x\n", i, s32->sh_addr);
@@ -101,13 +101,17 @@ void ElfAnalyser::beginAnalysis()
 		}
 		if (validAddress(secaddr, scvalid)) {
 //			fprintf(stderr, "valid!\n");
-			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i, getSegmentNameByAddress(secaddr));
 			addComment(secaddr, 0, "");
 			addComment(secaddr, 0, ";******************************************************************");
 			addComment(secaddr, 0, blub);
 			ht_snprintf(blub, sizeof blub, ";  virtual address  %08x  virtual size   %08x", s32->sh_addr, s32->sh_size);
 			addComment(secaddr, 0, blub);
-			ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_offset ? s32->sh_size : 0);
+			if (validAddress(secaddr, scinitialized)) {
+				ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_size);
+			} else {
+				ht_snprintf(blub, sizeof blub, ";  section is not in file");
+			}
 			addComment(secaddr, 0, blub);
 			addComment(secaddr, 0, ";******************************************************************");
 
@@ -136,13 +140,14 @@ void ElfAnalyser::beginAnalysis()
 
 	/* symbols */
 	if (c32) {
-		for (UINT i=1; i<elf_shared->sheaders.count; i++) {
+		for (uint i=1; i<elf_shared->sheaders.count; i++) {
 			if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM)) {
 				initInsertSymbols(i);
 			}
 		}
+		initInsertFakeSymbols();
 	} else {
-		for (UINT i=1; i<elf_shared->sheaders.count; i++) {
+		for (uint i=1; i<elf_shared->sheaders.count; i++) {
 			if ((elf_shared->sheaders.sheaders64[i].sh_type==ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders64[i].sh_type==ELF_SHT_DYNSYM)) {
 				initInsertSymbols(i);
 			}
@@ -180,16 +185,41 @@ void ElfAnalyser::beginAnalysis()
 /*
  *
  */
+void ElfAnalyser::initInsertFakeSymbols()
+{
+	sectionAndIdx *key = NULL;
+	ht_data_uint32 *value;
+	while ((key = (sectionAndIdx*)elf_shared->undefined2fakeaddr->enum_next(
+	(ht_data**)&value, key))) {
+		Address *address = createAddress32(value->value);
+		FILEOFS h = elf_shared->sheaders.sheaders32[key->secidx].sh_offset;
+		ELF_SYMBOL32 sym;
+		file->seek(h+key->symidx*sizeof (ELF_SYMBOL32));
+		file->read(&sym, sizeof sym);
+		create_host_struct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+
+		FILEOFS sto = elf_shared->sheaders.sheaders32[
+			elf_shared->sheaders.sheaders32[key->secidx].sh_link].sh_offset;
+		file->seek(sto+sym.st_name);
+		char *name = fgetstrz(file);
+		char buf[1024];
+		ht_snprintf(buf, sizeof buf, "undef_%s", name);
+		free(name);
+		make_valid_name(buf, buf);
+		assignSymbol(address, buf, label_func);
+	}
+}
+
 void ElfAnalyser::initInsertSymbols(int shidx)
 {
 	char elf_buffer[1024];
 	if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32) {
 		FILEOFS h = elf_shared->sheaders.sheaders32[shidx].sh_offset;
 		FILEOFS sto = elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
-		UINT symnum = elf_shared->sheaders.sheaders32[shidx].sh_size / sizeof (ELF_SYMBOL32);
+		uint symnum = elf_shared->sheaders.sheaders32[shidx].sh_size / sizeof (ELF_SYMBOL32);
 
 		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
+		for (uint i=0; i<symnum; i++) {
 			ELF_SYMBOL32 sym;
 			if (entropy[i] == 0) continue;
 			file->seek(h+entropy[i]*sizeof (ELF_SYMBOL32));
@@ -295,10 +325,10 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 		// FIXME: 64 bit
 		FILEOFS h=elf_shared->sheaders.sheaders64[shidx].sh_offset.lo;
 		FILEOFS sto=elf_shared->sheaders.sheaders64[elf_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
-		UINT symnum=elf_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (ELF_SYMBOL64);
+		uint symnum=elf_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (ELF_SYMBOL64);
 
 		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
+		for (uint i=0; i<symnum; i++) {
 			ELF_SYMBOL64 sym;
 			if (entropy[i] == 0) continue;
 			file->seek(h+entropy[i]*sizeof (ELF_SYMBOL64));
@@ -424,7 +454,7 @@ OBJECT_ID ElfAnalyser::object_id() const
 /*
  *
  */
-UINT ElfAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint ElfAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FILEOFS ofs = addressToFileofs(Addr);
 /*     if (ofs == INVALID_FILE_OFS) {
