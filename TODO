@@ -37,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- eval: int("-1") does not work
 - eval should warn if number too big/cannot parse
 - eval whatis(whatis("whatis")), what is?
 - create ht.cfg in "home dir", implementation+interface sys_get_home_dir()
