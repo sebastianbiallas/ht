@@ -35,7 +35,7 @@ void Area::init()
 	a = NULL;
 }
 
-void areaload(ht_object_stream *st, area_s *&p, int level, int &left)
+static void areaload(ht_object_stream *st, area_s *&p, int level, int &left)
 {
 	if (left<=0) {
 		p = NULL;
@@ -74,7 +74,7 @@ OBJECT_ID	Area::object_id()
 	return ATOM_AREA;
 }
 
-area_s *areaget(area_s *p, Object *V)
+static area_s *areaget(area_s *p, Object *V)
 {
 	if (p) {
 		if (V->compareTo(p->start) < 0) return areaget(p->left, V);
@@ -88,7 +88,7 @@ area_s *Area::getArea(Object *at)
 	return areaget(a, at);
 }
 
-void areaadd(area_s *&p, Object *Start, Object *End)
+static void areaadd(area_s *&p, Object *Start, Object *End)
 {
 	if (p) {
 		if ((Start->compareTo(p->start) >= 0) && (Start->compareTo(p->end)<=0)) {
@@ -129,7 +129,7 @@ void Area::add(Object *Start, Object *End)
 	areaadd(a, Start, End);
 }
 
-bool areacontains(area_s *p, Object *V)
+static bool areacontains(area_s *p, Object *V)
 {
 	if (p) {
 		if (V->compareTo(p->start) < 0) return areacontains(p->left, V);
@@ -144,7 +144,7 @@ bool Area::contains(Object *v)
 	return areacontains(a, v);
 }
 
-void areafindnext(area_s *p, Object *from, Object **res)
+static void areafindnext(area_s *p, Object *from, Object **res)
 {
 	if (!from || from->compareTo(p->start) < 0) {
 		*res = p->start;
@@ -161,7 +161,7 @@ Object *Area::findNext(Object *from)
 	return res;
 }
 
-void areafindprev(area_s *p, Object *from, Object **res)
+static void areafindprev(area_s *p, Object *from, Object **res)
 {
 //FIXME ??:
 	if (p) {
@@ -192,7 +192,7 @@ void Area::freeRecursive(area_s *p)
 	}
 }
 
-void areacount(area_s *p, int &c, Object **startend)
+static void areacount(area_s *p, int &c, Object **startend)
 {
 	if (p) {
 		areacount(p->left, c, startend);
@@ -202,7 +202,7 @@ void areacount(area_s *p, int &c, Object **startend)
 	}
 }
 
-void areastore(ht_object_stream *f, area_s *p, Object **startend)
+static void areastore(ht_object_stream *f, area_s *p, Object **startend)
 {
 	if (p) {
 		areastore(f, p->left, startend);
@@ -231,11 +231,13 @@ void Area::store(ht_object_stream *f)
 }
 
 #ifdef DEBUG_FIXNEW
-void areadump(int sp, area_s *A)
+static void areadump(int sp, area_s *A)
 {
 	if (A) {
 		for (int i=0; i<sp; i++) printf(" ");
-		printf("%08x %08x\n", A->start, A->end);
+          char buf[1024];
+		ht_snprintf(buf, sizeof buf, "%y %y\n", A->start, A->end);
+          printf(buf);
 		++sp;++sp;
 		areadump(sp, A->left);
 		areadump(sp, A->right);

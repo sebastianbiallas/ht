@@ -38,7 +38,7 @@
 #include "tools.h"
 
 //#undef DPRINTF
-//#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); printf(buf);}
+//#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
 
 int global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 
@@ -1193,6 +1193,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			}
 //			gotoAddress(branch_addr, invalid_addr);
 			pushAddress(branch_addr, invalid_addr);
+			next_address_is_invalid = true;
 			break;
 		case	br_return:
 			if (next_addr->isValid())
@@ -1223,10 +1224,10 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 						if (l && l->name) {
 							ht_snprintf(buf, sizeof buf, "%s %s", ";  W R A P P E R for", l->name);
-							ht_snprintf(label, sizeof label, "%s%s_%y", label_prefix(LPRFX_WRAP), l->name, branch_addr);
+							ht_snprintf(label, sizeof label, "%s_%s_%y", label_prefix(LPRFX_WRAP), l->name, branch_addr);
 						} else {
 							ht_snprintf(buf, sizeof buf, "%s %s %y", ";  W R A P P E R for", "address", wrap_addr);
-							ht_snprintf(label, sizeof label, "%s%y_%y", label_prefix(LPRFX_WRAP), wrap_addr, branch_addr);
+							ht_snprintf(label, sizeof label, "%s_%y_%y", label_prefix(LPRFX_WRAP), wrap_addr, branch_addr);
 						}
 						addComment(branch_addr, 0, buf);
 						addComment(branch_addr, 0, ";----------------------------------------------");
@@ -1524,6 +1525,7 @@ void	Analyser::finish()
 {
 	DPRINTF("the analyser finished (for now).\n");
 	cur_func = NULL;
+     delete addr;
 	addr = new InvalidAddress();
 	setActive(false);
 }
@@ -1663,8 +1665,8 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	delete first_explored;
 	delete last_explored;
 	delete next_explored;
-	func = (Address *)func->duplicate();
-
+     func = (Address *)func->duplicate();
+     
 	if (!validCodeAddress(Addr) || explored->contains(Addr)) {
 		DPRINTF("Address: %y Valid: %d Explored: %d\n", addr, validCodeAddress(addr), explored->contains(addr));
 		do {
@@ -1687,10 +1689,10 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 		}
 	}
 
-	if (func->isValid()) {
-		cur_func = newLocation(func);
-		setLocationFunction(cur_func, cur_func);
-	}
+     if (func->isValid()) {
+     	cur_func = newLocation(func);
+     	setLocationFunction(cur_func, cur_func);
+     }
 	delete func;
 	next_explored = (Address *)explored->findNext(addr);
 	if (!next_explored) {
@@ -1846,6 +1848,11 @@ bool Analyser::popAddress(Address **Addr, Address **func)
 void Analyser::pushAddress(Address *Addr, Address *func)
 {
 	if (validCodeAddress(Addr)) {
+     	if (!func->isValid()) {
+               if (cur_func) {
+               	func = cur_func->addr;
+               }
+          }
 		DPRINTF("addr %y (from func %y) pushed\n", Addr, func);
 		AddressQueueItem *aqi = new AddressQueueItem(Addr, func);
 		addr_queue->enqueue(aqi);

@@ -48,7 +48,8 @@ void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File
 
 	Analyser::init();
 
-     validarea = class_shared->valid;
+     initialized->done();
+     delete initialized;
      initialized = class_shared->initialized;
 	/////////////
 
@@ -248,7 +249,7 @@ void ClassAnalyser::log(const char *msg)
  */
 Address *ClassAnalyser::nextValid(Address *Addr)
 {
-	return (Address *)validarea->findNext(Addr);
+	return (Address *)class_shared->valid->findNext(Addr);
 }
 
 /*
@@ -256,12 +257,6 @@ Address *ClassAnalyser::nextValid(Address *Addr)
  */
 void ClassAnalyser::store(ht_object_stream *st)
 {
-	/*
-	ht_pe_shared_data 	*pe_shared;
-	ht_stream 		*file;
-	area				*validarea;
-	*/
-	PUT_OBJECT(st, validarea);
 	Analyser::store(st);
 }
 
@@ -299,34 +294,13 @@ Address *ClassAnalyser::fileofsToAddress(FILEOFS fileaddr)
  */
 bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 {
-/*	pe_section_headers *sections=&pe_shared->sections;
-	int sec;
-	Addr-=pe_shared->pe32.header_nt.image_base;
-	if (!pe_rva_to_section(sections, Addr, &sec)) return false;
-	COFF_SECTION_HEADER *s=sections->sections+sec;
-	switch (action) {
-		case scvalid:
-			return true;
-		case scread:
-			return s->characteristics & COFF_SCN_MEM_READ;
-		case scwrite:
-			return s->characteristics & COFF_SCN_MEM_WRITE;
-		case screadwrite:
-			return s->characteristics & COFF_SCN_MEM_WRITE;
-		case sccode:
-			// FIXME: EXECUTE vs. CNT_CODE ?
-			if (!pe_rva_is_physical(sections, Addr)) return false;
-			return (s->characteristics & (COFF_SCN_MEM_EXECUTE | COFF_SCN_CNT_CODE));
-		case scinitialized:
-			if (!pe_rva_is_physical(sections, Addr)) return false;
-			return !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
-	}*/
 	if (!Addr->isValid() || !class_shared->valid->contains(Addr)) return false;
 	switch (action) {
 		case scinitialized:
 		case sccode:
 			return class_shared->initialized->contains(Addr);
           default:
+
 		     return true;
      }
 }
