@@ -67,178 +67,178 @@ int_hash cpool_tags [] =
 };
 ht_mask_ptable cls_class1_hdr[] = 
 {
-  { "magic",                      STATICTAG_EDIT_DWORD_BE("00000000")},
-  { "minor version",              STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "major version",              STATICTAG_EDIT_WORD_BE ("00000006")},
-  { "constant pool count",        STATICTAG_EDIT_WORD_BE ("00000008")},
-  { 0, 0}
+	{"magic",                      STATICTAG_EDIT_DWORD_BE("00000000")},
+	{"minor version",              STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"major version",              STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"constant pool count",        STATICTAG_EDIT_WORD_BE ("00000008")},
+	{0, 0}
 };
 ht_mask_ptable cls_class2_hdr[] = 
 {
-  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
+	{"access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
 " "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
-  { "this class",                 STATICTAG_EDIT_WORD_BE ("00000002")},
-  { "super class",                STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "interfaces count",           STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}	
+	{"this class",                 STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"super class",                STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"interfaces count",           STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable cpool_class[] = 
 {
-  { "name index",                 STATICTAG_EDIT_WORD_BE("00000001")},
-  { 0, 0}
+	{"name index",                 STATICTAG_EDIT_WORD_BE("00000001")},
+	{0, 0}
 };
 ht_mask_ptable cpool_fmi[] =
 {
-  { "class index",                STATICTAG_EDIT_WORD_BE("00000001")},
-  { "name and type index",        STATICTAG_EDIT_WORD_BE("00000003")},
-  { 0, 0}
+	{"class index",                STATICTAG_EDIT_WORD_BE("00000001")},
+	{"name and type index",        STATICTAG_EDIT_WORD_BE("00000003")},
+	{0, 0}
 };
 ht_mask_ptable cpool_str[] =
 {
-  { "string index",               STATICTAG_EDIT_WORD_BE("00000001")},
-  { 0, 0}
+	{"string index",               STATICTAG_EDIT_WORD_BE("00000001")},
+	{0, 0}
 };
 ht_mask_ptable cpool_if[] = 
 {
-  { "bytes",                      STATICTAG_EDIT_DWORD_BE("00000001")},
-  { 0, 0}
+	{"bytes",                      STATICTAG_EDIT_DWORD_BE("00000001")},
+	{0, 0}
 };
 ht_mask_ptable cpool_ld[] = 
 {
-  { "high bytes",                 STATICTAG_EDIT_DWORD_BE("00000001")},
-  { "low bytes",                  STATICTAG_EDIT_DWORD_BE("00000005")},
-  { 0, 0}
+	{"high bytes",                 STATICTAG_EDIT_DWORD_BE("00000001")},
+	{"low bytes",                  STATICTAG_EDIT_DWORD_BE("00000005")},
+	{0, 0}
 };
 ht_mask_ptable cpool_nat[] = 
 {
-  { "name index",                 STATICTAG_EDIT_WORD_BE("00000001")},
-  { "descriptor index",           STATICTAG_EDIT_WORD_BE("00000003")},
-  { 0, 0}
+	{"name index",                 STATICTAG_EDIT_WORD_BE("00000001")},
+	{"descriptor index",           STATICTAG_EDIT_WORD_BE("00000003")},
+	{0, 0}
 };
 ht_mask_ptable cpool_utf8[] = 
 {
-  { "length",                     STATICTAG_EDIT_WORD_BE("00000001")},
-  { 0, 0}
+	{"length",                     STATICTAG_EDIT_WORD_BE("00000001")},
+	{0, 0}
 };
 ht_mask_ptable cpool_hdr[] = 
 { 
-  { "tag",                        STATICTAG_EDIT_BYTE("00000000")
+	{"tag",                        STATICTAG_EDIT_BYTE("00000000")
 " "STATICTAG_DESC_BYTE("00000000", ATOM_CLS_CPOOL_STR)},
-  { 0, 0}
+	{0, 0}
 };
 ht_mask_ptable iface_hdr[] = 
 {
-  { "class name index",           STATICTAG_EDIT_WORD_BE("00000000")},
-  { 0, 0}
+	{"class name index",           STATICTAG_EDIT_WORD_BE("00000000")},
+	{0, 0}
 };
 ht_mask_ptable field_hdr[] = 
 {
-  { "fields count",               STATICTAG_EDIT_WORD_BE("00000000")},
-  { 0, 0}
+	{"fields count",               STATICTAG_EDIT_WORD_BE("00000000")},
+	{0, 0}
 };
 ht_mask_ptable method_hdr[] = 
 {
-  { "methods count",              STATICTAG_EDIT_WORD_BE("00000000")},
-  { 0, 0}
+	{"methods count",              STATICTAG_EDIT_WORD_BE("00000000")},
+	{0, 0}
 };
 ht_mask_ptable mf_hdr[] = 
 {
-  { "access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
+	{"access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
 " "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
-  { "name index",                 STATICTAG_EDIT_WORD_BE ("00000002")},
-  { "descriptor index",           STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "attributes count",           STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}	
+	{"name index",                 STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"descriptor index",           STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"attributes count",           STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable atr_hdr[] = 
 {
-  { "attributes count",           STATICTAG_EDIT_WORD_BE("00000000")},
-  { 0, 0}
+	{"attributes count",           STATICTAG_EDIT_WORD_BE("00000000")},
+	{0, 0}
 };
 ht_mask_ptable aexpt_hdr[] = 
 {
-  { "exception table length",     STATICTAG_EDIT_WORD_BE("00000000")},
-  { 0, 0}
+	{"exception table length",     STATICTAG_EDIT_WORD_BE("00000000")},
+	{0, 0}
 };
 ht_mask_ptable aexpt_info[] = 
 {
-  { "start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-  { "end pc",                     STATICTAG_EDIT_WORD_BE ("00000002")},
-  { "handler pc",                 STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "catch type",                 STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"end pc",                     STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"handler pc",                 STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"catch type",                 STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 }; 
 ht_mask_ptable ainn_info[] = 
 {
-  { "inner class info index",     STATICTAG_EDIT_WORD_BE ("00000000")},
-  { "outer class info index",     STATICTAG_EDIT_WORD_BE ("00000002")},
-  { "inner name index",           STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "inner class access flags",   STATICTAG_EDIT_WORD_BE ("00000006")
+	{"inner class info index",     STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"outer class info index",     STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"inner name index",           STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"inner class access flags",   STATICTAG_EDIT_WORD_BE ("00000006")
 " "STATICTAG_FLAGS("00000006", ATOM_CLS_ACCESS_STR)},
-  { 0, 0}     
+	{0, 0}
 };
 ht_mask_ptable aline_info[] = 
 {
-  { "start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-  { "line number",                STATICTAG_EDIT_WORD_BE ("00000002")},
-  { 0, 0}     
+	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"line number",                STATICTAG_EDIT_WORD_BE ("00000002")},
+	{0, 0}
 }; 
 ht_mask_ptable aloc_info[] = 
 {
-  { "start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-  { "length",                     STATICTAG_EDIT_WORD_BE ("00000002")},
-  { "name index",                 STATICTAG_EDIT_WORD_BE ("00000004")},
-  { "descriptor index",           STATICTAG_EDIT_WORD_BE ("00000006")},
-  { "index",                      STATICTAG_EDIT_WORD_BE ("00000008")},
-  { 0, 0}     
+	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"length",                     STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"name index",                 STATICTAG_EDIT_WORD_BE ("00000004")},
+	{"descriptor index",           STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"index",                      STATICTAG_EDIT_WORD_BE ("00000008")},
+	{0, 0}
 };
 ht_mask_ptable axpt_info[] = 
 {
-  { "exception",                  STATICTAG_EDIT_WORD_BE ("00000000")},
-  { 0, 0}     
+	{"exception",                  STATICTAG_EDIT_WORD_BE ("00000000")},
+	{0, 0}
 };
 ht_mask_ptable attrib_hdr[] = 
 {
-  { "attribute name index",       STATICTAG_EDIT_WORD_BE ("00000000")},
-  { "attribute length",           STATICTAG_EDIT_DWORD_BE("00000002")},
-  { 0, 0}     
+	{"attribute name index",       STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"attribute length",           STATICTAG_EDIT_DWORD_BE("00000002")},
+	{0, 0}
 };
 ht_mask_ptable aconst_hdr[] = 
 {
-  { "constantvalue index",        STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"constantvalue index",        STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable acode_hdr[] = 
 {
-  { "max stack",                  STATICTAG_EDIT_WORD_BE ("00000006")},
-  { "max locals",                 STATICTAG_EDIT_WORD_BE ("00000008")},
-  { "code length",                STATICTAG_EDIT_DWORD_BE("0000000a")},
-  { 0, 0}     
+	{"max stack",                  STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"max locals",                 STATICTAG_EDIT_WORD_BE ("00000008")},
+	{"code length",                STATICTAG_EDIT_DWORD_BE("0000000a")},
+	{0, 0}
 };
 ht_mask_ptable axpt_hdr[] = 
 {
-  { "number of exceptions",       STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"number of exceptions",       STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable ainn_hdr[] = 
 {
-  { "number of classes",          STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"number of classes",          STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable asrc_hdr[] = 
 {
-  { "sourcefile index",           STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"sourcefile index",           STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable alin_hdr[] = 
 {
-  { "line_number table length",   STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"line_number table length",   STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 ht_mask_ptable aloc_hdr[] = 
 {
-  { "local variable table length",STATICTAG_EDIT_WORD_BE ("00000006")},
-  { 0, 0}     
+	{"local variable table length",STATICTAG_EDIT_WORD_BE ("00000006")},
+	{0, 0}
 };
 
 static void attrib_view(ht_group_sub *g, ht_streamfile *f,
@@ -457,39 +457,36 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 static void mf_view(ht_group_sub *g, ht_streamfile *f,
 	   unsigned *idx, classfile *c, mf_info *mf)
 {
-  ht_group_sub *g2, *g3;
-  ht_mask_sub *s;
-  ht_collapsable_sub *cs, *cs2;
-  unsigned i, j;
-  char info[128];
+	ht_group_sub *g2, *g3;
+	ht_mask_sub *s;
+	ht_collapsable_sub *cs, *cs2;
+	char info[128];
 
-  s = new ht_mask_sub();
-  s->init(f, (*idx)++);
-  s->add_staticmask_ptable(mf_hdr, mf->offset, true);
-  g->insertsub(s);
+	s = new ht_mask_sub();
+	s->init(f, (*idx)++);
+	s->add_staticmask_ptable(mf_hdr, mf->offset, true);
+	g->insertsub(s);
 
-  g2 = new ht_group_sub();
-  g2->init (f);
-  if (!mf->attribs_count) {
-    s = new ht_mask_sub();
-    s->init(f, (*idx)++);
-    s->add_mask("<none>");
-    g2->insertsub (s);
-  }
-  for (i=0; i<mf->attribs_count; i++) {
-    g3 = new ht_group_sub();
-    g3->init(f);
-    attrib_view(g3, f, idx, c, mf->attribs[i]);
-    cs = new ht_collapsable_sub();
-    j = mf->attribs[i]->name;
-    ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
-		  c->cpool[j]->value.string);
-    cs->init(f, g3, 1, info, 1);
-    g2->insertsub (cs);
-  }
-  cs2 = new ht_collapsable_sub();
-  cs2->init(f, g2, 1, "attributes", 1);
-  g->insertsub (cs2);
+	g2 = new ht_group_sub();
+	g2->init (f);
+	if (!mf->attribs_count) {
+		s = new ht_mask_sub();
+		s->init(f, (*idx)++);
+		s->add_mask("<none>");
+		g2->insertsub (s);
+	}
+	for (UINT i=0; i<mf->attribs_count; i++) {
+		g3 = new ht_group_sub();
+		g3->init(f);
+		attrib_view(g3, f, idx, c, mf->attribs[i]);
+		cs = new ht_collapsable_sub();
+		ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i, c->cpool[mf->attribs[i]->name]->value.string);
+		cs->init(f, g3, 1, info, 1);
+		g2->insertsub (cs);
+	}
+	cs2 = new ht_collapsable_sub();
+	cs2->init(f, g2, 1, "attributes", 1);
+	g->insertsub (cs2);
 }
 
 static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
@@ -679,51 +676,50 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
 		  ht_format_group *g, FILEOFS header_ofs)
 {
-  ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA,
-				    f, false, true, 0, g);
-				    
-  shared_data = (void*)class_read(f);
-  ht_format_group::init_ifs(ifs);
+	ht_format_group::init(b, VO_SELECTABLE|VO_BROWSABLE, DESC_JAVA, f, false, true, 0, g);
+     
+	shared_data = (void*)class_read(f);
+	ht_format_group::init_ifs(ifs);
 }
 
 void cview::done()
 {
-  ht_format_group::done();
-  ht_class_shared_data *clazz = (ht_class_shared_data *)shared_data;
-  if (clazz) {
-    class_unread(clazz);
-  }
+	ht_format_group::done();
+	ht_class_shared_data *clazz = (ht_class_shared_data *)shared_data;
+	if (clazz) {
+		class_unread(clazz);
+	}
 }
 
 static format_viewer_if htcls_cview = {
-  &class_view,
-  0
+	&class_view,
+	0
 };
 
 static format_viewer_if *htcls_ifs[] = {
-  &htcls_cview,
-  &htclassimage_if,
-  0
+	&htcls_cview,
+	&htclassimage_if,
+	0
 };
 
 static ht_view *class_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
-  u1 magic[4];
+	u1 magic[4];
 
-  file->seek(0);
-  file->read(magic, 4);
-  if ((magic[0] == 0xca) && (magic[1] == 0xfe)
-	  && (magic[2] == 0xba) && (magic[3] == 0xbe)) {
-    file->seek(0);
-    cview *c = new cview();
-    c->init(b, file, htcls_ifs, group, 0);
-    return c;
-  } 
-  return NULL;
+	file->seek(0);
+	file->read(magic, 4);
+	if ((magic[0] == 0xca) && (magic[1] == 0xfe)
+	&& (magic[2] == 0xba) && (magic[3] == 0xbe)) {
+		file->seek(0);
+		cview *c = new cview();
+		c->init(b, file, htcls_ifs, group, 0);
+		return c;
+	}
+	return NULL;
 }
 
 format_viewer_if htcls_if = {
-  &class_init,
-  0
+	&class_init,
+	0
 };
 

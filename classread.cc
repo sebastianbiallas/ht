@@ -71,22 +71,22 @@ int ClassMethod::compareTo(Object *o)
 
 
 /* extract name from a utf8 constant pool entry */
-static char *get_string(ht_stream *htio, classfile *clazz, int index)
+static char *get_string(ht_stream *htio, classfile *clazz, UINT index)
 {
-	return clazz->cpool[index]->value.string;
+	return (index < clazz->cpool_count) ? clazz->cpool[index]->value.string : (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static char *get_class_name(ht_stream *htio, classfile *clazz, int index)
+static char *get_class_name(ht_stream *htio, classfile *clazz, UINT index)
 {
-	return get_string(htio, clazz, clazz->cpool[index]->value.llval[0]);
+	return (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]): (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static void get_name_and_type(ht_stream *htio, classfile *clazz, int index, char *name, char *type)
+static void get_name_and_type(ht_stream *htio, classfile *clazz, UINT index, char *name, char *type)
 {
-	strcpy(name, get_string(htio, clazz, clazz->cpool[index]->value.llval[0]));
-	strcpy(type, get_string(htio, clazz, clazz->cpool[index]->value.llval[1]));
+	strcpy(name, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]) : "?");
+	strcpy(type, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[1]) : "?");
 }
 
 /* read and return constant pool entry */
@@ -298,8 +298,12 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
                     if (ai->tag == ATTRIB_Code) {
                     	ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, ai->code.start, ai->code.len, clazz->methods[i]->flags);
                          shared->methods->insert(cm, NULL);
-                         shared->initialized->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
-                         shared->valid->add(new AddressFlat32(ai->code.start), new AddressFlat32(ai->code.start+ai->code.len));
+	                    Address *a1 = new AddressFlat32(ai->code.start);
+	                    Address *a2 = new AddressFlat32(ai->code.start+ai->code.len);
+                         shared->initialized->add(a1, a2);
+                         shared->valid->add(a1, a2);
+	                    delete a1;
+	                    delete a2;
                          ok = true;
                     }
                }
@@ -307,7 +311,11 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
                	// fake abstract method
 				ClassMethod *cm = new ClassMethod(clazz->methods[i]->name, clazz->methods[i]->desc, offset, 1, clazz->methods[i]->flags);
 				shared->methods->insert(cm, NULL);
-				shared->valid->add(new AddressFlat32(offset), new AddressFlat32(offset+1));
+                    Address *a1 = new AddressFlat32(offset);
+                    Address *a2 = new AddressFlat32(offset+1);
+				shared->valid->add(a1, a2);
+                    delete a1;
+                    delete a2;
                }
 		}
 	} else {
@@ -332,55 +340,55 @@ ht_class_shared_data *class_read(ht_streamfile *htio)
 	return shared;
 }
 
-void class_unread (ht_class_shared_data *shared)
+void class_unread(ht_class_shared_data *shared)
 {
-  u1 tag;
-  unsigned i, j;
-  classfile *clazz = shared->file;
+	u1 tag;
+	classfile *clazz = shared->file;
 
-  if (!clazz) {
-    return;
-  }
-  for (i=1; i<clazz->cpool_count; i++) {
-    tag = clazz->cpool[i]->tag;
-    free (clazz->cpool[i]);
-    if ((tag == CONSTANT_Long) || (tag == CONSTANT_Double)) {
-	 i++;
-    }
-  }
-  if (clazz->cpool_count)
-    free (clazz->cpool);
-  if (clazz->interfaces) {
-    free (clazz->interfaces);
-  }
-  for (i=0; i<clazz->fields_count; i++) {
-    for (j=0; j<clazz->fields[i]->attribs_count; j++) {
-	 free (clazz->fields[i]->attribs[j]);
-    }
-    if (clazz->fields[i]->attribs_count) 
-	 free (clazz->fields[i]->attribs);
-    free (clazz->fields[i]);
-  }
-  if (clazz->fields_count)
-    free (clazz->fields);
-  for (i=0; i<clazz->methods_count; i++) {
-    for (j=0; j<clazz->methods[i]->attribs_count; j++) {
-	 free (clazz->methods[i]->attribs[j]);
-    }
-    if (clazz->methods[i]->attribs_count) 
-	 free (clazz->methods[i]->attribs);
-    free (clazz->methods[i]);
-  }
-  if (clazz->methods_count)
-    free (clazz->methods);
-  for (i=0; i<clazz->attribs_count; i++) {
-    free (clazz->attribs[i]);
-  }
-  if (clazz->attribs_count) {
-    free (clazz->attribs);
-  }
-  free(shared);
+	if (!clazz) return;
+	for (UINT i=1; i<clazz->cpool_count; i++) {
+		tag = clazz->cpool[i]->tag;
+		free (clazz->cpool[i]);
+		if ((tag == CONSTANT_Long) || (tag == CONSTANT_Double)) {
+			i++;
+		}
+	}
+	if (clazz->cpool_count) free(clazz->cpool);
+	if (clazz->interfaces) free(clazz->interfaces);
+	for (UINT i=0; i<clazz->fields_count; i++) {
+		for (UINT j=0; j<clazz->fields[i]->attribs_count; j++) {
+			free(clazz->fields[i]->attribs[j]);
+		}
+		if (clazz->fields[i]->attribs_count) free(clazz->fields[i]->attribs);
+		free(clazz->fields[i]);
+	}
+	if (clazz->fields_count) free(clazz->fields);
+	for (UINT i=0; i<clazz->methods_count; i++) {
+		for (UINT j=0; j<clazz->methods[i]->attribs_count; j++) {
+			free (clazz->methods[i]->attribs[j]);
+		}
+		if (clazz->methods[i]->attribs_count) free(clazz->methods[i]->attribs);
+		free(clazz->methods[i]);
+	}
+	if (clazz->methods_count) free(clazz->methods);
+	for (UINT i=0; i<clazz->attribs_count; i++) {
+		free(clazz->attribs[i]);
+	}
+	if (clazz->attribs_count) {
+		free(clazz->attribs);
+	}
+     if (shared->valid) {
+     	shared->valid->done();
+          delete shared->valid;
+     }
+/*     if (shared->initialized) {
+     	shared->initialized->done();
+          delete shared->initialized;
+     }*/
+	free(shared);
 }
+
+#define STRIP_PATH
 
 int java_demangle_type(char *result, char **type)
 {
@@ -403,16 +411,18 @@ int java_demangle_type(char *result, char **type)
           case 'J':
           	return sprintf(result, "long");
      	case 'L': {
-               int i=0;
+               char *oldresult = result;
                while (**type != ';') {
                	*result = **type;
+#ifdef STRIP_PATH
+				if (*result == '/') result = oldresult; else
+#endif
                     result++;
                     (*type)++;
-                    i++;
                }
                (*type)++;
                *result = 0;
-               return i;
+               return result-oldresult;
           }
           case 'S':
           	return sprintf(result, "short");
@@ -443,9 +453,21 @@ char *java_demangle_flags(char *result, int flags)
 	return result;
 }
 
+static char *java_strip_path(char *name)
+{
+#ifdef STRIP_PATH
+	char *nname = strrchr(name, '/');
+     return nname?(nname+1):name;
+#else
+     return name;
+#endif
+}
+
 void java_demangle(char *result, char *classname, char *name, char *type, int flags)
 {
 	result = java_demangle_flags(result, flags);
+	name = java_strip_path(name);
+	classname = java_strip_path(classname);
 	strcpy(result, name);
      if (*type != '(') return;
      char *ret = strchr(type, ')');
@@ -479,16 +501,19 @@ int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *sh
      strcpy(classname, "?");
      strcpy(name, "?");
      strcpy(type, "?");
+     if (token < clazz->cpool_count)
      switch (clazz->cpool[token]->tag) {
 		case CONSTANT_Class:
           	strcpy(tag, "Class");
-               strcpy(data, get_class_name(NULL, clazz, token));
+               strcpy(data, java_strip_path(get_class_name(NULL, clazz, token)));
 			break;
 		case CONSTANT_Double:
           	strcpy(tag, "Double");
+               sprintf(data, "double");
 			break;
 		case CONSTANT_Float:
           	strcpy(tag, "Float");
+               sprintf(data, "%f", (float)clazz->cpool[token]->value.llval[0]);
 			break;
 		case CONSTANT_Integer:
           	strcpy(tag, "Int");
@@ -496,6 +521,7 @@ int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *sh
 			break;
 		case CONSTANT_Long:
           	strcpy(tag, "Long");
+               sprintf(data, "long");
 			break;
 		case CONSTANT_String: {
           	strcpy(tag, "String");
