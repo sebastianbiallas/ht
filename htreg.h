@@ -159,8 +159,6 @@ protected:
 	ht_registry_node *root;
 	UINT rec_depth;
 
-			bool find_any_entry(const char *key, ht_registry_data **data, ht_registry_node_type *type);
-
 			ht_registry_node *find_entry_i(ht_tree **dir, const char *key, bool follow_symlinks);
 			ht_registry_node *find_entry_get_node(ht_tree *dir, const char *nodename);
 			ht_registry_node *find_entry_get_subdir(ht_tree *dir, const char *nodename);
@@ -178,6 +176,7 @@ public:
 			const char *enum_next(ht_registry_data **data, ht_registry_node_type *type, const char *dir, const char *prevkey);
 			const char *enum_prev(ht_registry_data **data, ht_registry_node_type *type, const char *dir, const char *nextkey);
 			
+			bool find_any_entry(const char *key, ht_registry_data **data, ht_registry_node_type *type);
 			bool find_data_entry(const char *key, ht_registry_data **data, ht_registry_node_type *type, bool follow_symlinks);
 			/* node type*/
 			ht_registry_node_type lookup_node_type(const char *identifier);
