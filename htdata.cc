@@ -686,7 +686,7 @@ ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
 			}
           } else next = get_leftmost_node(root);
 	}
-     	prevkey = next->key;
+     	if (next) prevkey = next->key;
      } while (next && !next->value);
 	if (next) {
 		*value = next->value;
