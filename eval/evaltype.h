@@ -36,6 +36,7 @@ typedef enum {
 	SCALAR_INT,
 	SCALAR_STR,
 	SCALAR_FLOAT,
+	SCALAR_VARARG,
 	SCALAR_VARARGS
 } eval_scalartype;
 
