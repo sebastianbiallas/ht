@@ -57,7 +57,7 @@ static int parse_integer(eval_scalar *i, char *num, int base, int lenmod)
 		int c=char2int(*num, base);
 		if (c==-1) return 0;
 		k=qword_mul(k, int_to_qword(base));
-		k=qword_mul(k, int_to_qword(c));
+		k=qword_add(k, int_to_qword(c));
 		num++;
 	}
 	i->type=SCALAR_INT;

@@ -2028,7 +2028,7 @@ bool ht_app::create_window_project()
 		get_stdbounds_tool(&b);
 
 		ht_project_window *project_window=new ht_project_window();
-		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, &(ht_project*)project);
+		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, (ht_project**)&project);
 
 		bounds k = b;
 		k.x = b.w-2;

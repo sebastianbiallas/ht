@@ -73,14 +73,16 @@ int is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	}
 
 	// BIG-ENDIAN machines
-	file->seek(ofs);
-	if (file->read(&h, sizeof h)!=sizeof h) return 0;
-	create_host_struct(&h, COFF_HEADER_struct, big_endian);
-	switch (h.machine) {
-		case COFF_MACHINE_R3000BE:
-		case COFF_MACHINE_POWERPC_BE:
-			end = big_endian;
-			machine_found = true;
+	if (!machine_found) {
+		file->seek(ofs);
+		if (file->read(&h, sizeof h)!=sizeof h) return 0;
+		create_host_struct(&h, COFF_HEADER_struct, big_endian);
+		switch (h.machine) {
+			case COFF_MACHINE_R3000BE:
+			case COFF_MACHINE_POWERPC_BE:
+				end = big_endian;
+				machine_found = true;
+		}
 	}
 	if (!machine_found) return false;
 	/* test symbol_table_offset */
