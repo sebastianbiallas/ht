@@ -378,20 +378,6 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 						  strvalue = va_arg (args, char *);
 						  fmtint (buffer, &currlen, maxlen, (long) strvalue, 16, min, max, flags);
 						  break;
-#if 0
-				    case 'q': {
-						  /* qword */
-						  qword *q = va_arg (args, qword *);
-						  fmtqword(buffer, &currlen, maxlen, q, 10, min, max, flags);
-						  break;
-				    }
-				    case 'Q': {
-						  /* qword */
-						  qword *q = va_arg (args, qword *);
-						  fmtqword(buffer, &currlen, maxlen, q, 16, min, max, flags);
-						  break;
-				    }
-#endif
 				    case 'n':
 						  if (cflags == DP_C_SHORT) {
 								short int *num;
