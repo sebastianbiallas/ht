@@ -338,7 +338,7 @@ bool init_cfg()
 #if defined(WIN32) || defined(__WIN32__) || defined(MSDOS) || defined(DJGPP)
 	char d[1024];	/* FIXME: !!!! */
 	sys_dirname(d, appname);
-	char *b = "/"SYSTEM_CONFIG_FILE_NAME;
+	char *b = "\\"SYSTEM_CONFIG_FILE_NAME;
 	systemconfig_file = (char*)malloc(strlen(d)+strlen(b)+1);
 	strcpy(systemconfig_file, d);
 	strcat(systemconfig_file, b);
