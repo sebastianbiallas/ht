@@ -183,6 +183,21 @@ int sys_filename_cmp(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
+int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
+{
+	return ENOSYS;
+}
+
+bool sys_ipc_is_valid(int handle)
+{
+	return false;
+}
+
+int sys_ipc_terminate(int handle)
+{
+	return 0;
+}
+
 /*
  *	INIT
  */
