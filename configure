@@ -1814,7 +1814,7 @@ HAVE_X11=0
 
 if test "x$enable_x11_textmode" = "xyes"; then
 	TEMP_LDFLAGS=$LDFLAGS
-	LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib"
+	LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
 	echo $ac_n "checking for XOpenDisplay in -lX11""... $ac_c" 1>&6
 echo "configure:1820: checking for XOpenDisplay in -lX11" >&5
 ac_lib_var=`echo X11'_'XOpenDisplay | sed 'y%./+-%__p_%'`
@@ -1858,7 +1858,7 @@ fi
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
 		HT_LIBS="$HT_LIBS -lX11"
-		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib"
+		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
 	fi
 fi
 
