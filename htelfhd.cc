@@ -26,7 +26,7 @@
 #include "formats.h"
 #include "snprintf.h"
 
-ht_mask_ptable elfheader[]=
+static ht_mask_ptable elfheader[]=
 {
 	{"ident", 0},
 	{"    magic",		STATICTAG_EDIT_BYTE("00000000")" "STATICTAG_EDIT_BYTE("00000001")" "STATICTAG_EDIT_BYTE("00000002")" "STATICTAG_EDIT_BYTE("00000003")" = "STATICTAG_EDIT_CHAR("00000000") STATICTAG_EDIT_CHAR("00000001") STATICTAG_EDIT_CHAR("00000002") STATICTAG_EDIT_CHAR("00000003")},
@@ -39,7 +39,7 @@ ht_mask_ptable elfheader[]=
 	{0, 0}
 };
 
-ht_mask_ptable elfheader32[]=
+static ht_mask_ptable elfheader32[]=
 {
 	{"type",					STATICTAG_EDIT_WORD_VE("00000010")" ("STATICTAG_DESC_WORD_VE("00000010", ATOM_ELF_TYPE_STR)")"},
 	{"machine",				STATICTAG_EDIT_WORD_VE("00000012")" ("STATICTAG_DESC_WORD_VE("00000012", ATOM_ELF_MACHINE_STR)")"},
@@ -57,7 +57,7 @@ ht_mask_ptable elfheader32[]=
 	{0, 0}
 };
 
-ht_mask_ptable elfheader64[]=
+static ht_mask_ptable elfheader64[]=
 {
 	{"type",					STATICTAG_EDIT_WORD_VE("00000010")" ("STATICTAG_DESC_WORD_VE("00000010", ATOM_ELF_TYPE_STR)")"},
 	{"machine",				STATICTAG_EDIT_WORD_VE("00000012")" ("STATICTAG_DESC_WORD_VE("00000012", ATOM_ELF_MACHINE_STR)")"},
@@ -75,7 +75,7 @@ ht_mask_ptable elfheader64[]=
 	{0, 0}
 };
 
-int_hash elf_class[] =
+static int_hash elf_class[] =
 {
 	{ELFCLASSNONE, "invalid class type"},
 	{ELFCLASS32, "32-bit objects"},
@@ -83,7 +83,7 @@ int_hash elf_class[] =
 	{0, 0}
 };
 
-int_hash elf_data[] =
+static int_hash elf_data[] =
 {
 	{ELFDATANONE, "invalid data encoding"},
 	{ELFDATA2LSB, "LSB encoding"},
@@ -91,7 +91,7 @@ int_hash elf_data[] =
 	{0, 0}
 };
 
-int_hash elf_os_abi[] =
+static int_hash elf_os_abi[] =
 {
 	{ELFOSABI_SYSV, "System V"},
 	{ELFOSABI_HPUX, "HP-UX"},
@@ -111,7 +111,7 @@ int_hash elf_os_abi[] =
 	{0, 0}
 };
 
-int_hash elf_type[] =
+static int_hash elf_type[] =
 {
 	{ELF_ET_NONE, "no file type"},
 	{ELF_ET_REL, "relocatable file"},
@@ -121,7 +121,7 @@ int_hash elf_type[] =
 	{0, 0}
 };
 
-int_hash elf_machine[] =
+static int_hash elf_machine[] =
 {
 	{ELF_EM_NONE,  	"no machine"},
 	{ELF_EM_M32,   	"AT&T WE32100"},

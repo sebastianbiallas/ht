@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	formats.cc
+ *	htpefhd.h
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
@@ -18,44 +18,13 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifndef __HTPEFHD_H__
+#define __HTPEFHD_H__
+
+#include "htobj.h"
 #include "formats.h"
 
-#include "htdebug.h"
+extern format_viewer_if htpefheader_if;
 
-#include "class.h"
-#include "hthex.h"
-#include "httext.h"
-#include "htdisasm.h"
-#include "htfinfo.h"
-#include "htelf.h"
-#include "htcoff.h"
-#include "htle.h"
-#include "htmacho.h"
-#include "htmz.h"
-#include "htne.h"
-#include "htpe.h"
-#include "htflt.h"
-#include "htstruct.h"
-#include "htxbe.h"
-#include "htpef.h"
+#endif /* !__HTPEFHD_H__ */
 
-format_viewer_if *format_viewer_ifs[] =
-{
-	&hthex_if,
-	&httext_if,
-	&htdisasm_if,
-	&htfinfo_if,
-	&htelf_if,
-	&htmz_if,
-	&htcls_if,
-	&htcoff_if,
-	&htpe_if,
-	&htne_if,
-	&htle_if,
-	&htmacho_if,
-	&htflt_if,
-	&htxbe_if,
-	&htpef_if,
-//	&htstructure_if,
-	NULL
-};

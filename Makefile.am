@@ -54,7 +54,8 @@ vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
 htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
 htmachoimg.cc htmachoimg.h fltstruc.h fltstruc.cc htflt.cc htflt.h htflthd.cc \
 htflthd.h htfltimg.cc htfltimg.h xbestruct.cc xbestruct.h htxbehead.cc \
-htxbehead.h htxbe.cc htxbe.h htxbeimg.cc htxbeimg.h htxbeimp.cc htxbeimp.h
+htxbehead.h htxbe.cc htxbe.h htxbeimg.cc htxbeimg.h htxbeimp.cc htxbeimp.h \
+pefstruc.cc pefstruc.h htpef.cc htpef.h htpefhd.cc htpefhd.h htpefimg.cc htpefimg.h
 
 dist2: distdir
 	$(AMTAR) chof - $(distdir) | BZIP2=$(BZIP2_ENV) bzip2 -c >$(distdir).tar.bz2
