@@ -36,6 +36,7 @@
 	- ht_analy::lowest/highest address
 
 +steves
+- disabling "-pipe" on generic-POSIX systems doesn't ssem to work
 - input_date_time()
 - open... new option: preserve mtime
 - htsys.h move to .., implement sys_pstat_fd(pstat_t *s, int fd)

@@ -230,16 +230,16 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		s=new ht_mask_sub();
 		s->init(file, 100+i);
-		
+
 		s->add_staticmask_ptable(coff_section, h+24+pe_shared->coffheader.optional_header_size+i*COFF_SIZEOF_SECTION_HEADER, pe_bigendian);
 
 		char nm[9];
 		memmove(nm, pe_shared->sections.sections[i].name, 8);
 		nm[8]=0;
-		
+
 		char t[32];
-		sprintf(t, "section header %d: %s", i, nm);
-		
+		sprintf(t, "section header %d: %-8s rva %08x vsize %08x", i, nm, pe_shared->sections.sections[i].data_address, pe_shared->sections.sections[i].data_vsize);
+
 		cs=new ht_collapsable_sub();
 		cs->init(file, s, 1, t, 1);
 	
