@@ -36,6 +36,8 @@
 #include "htkeyb.h"
 #include "htpal.h"
 #include "httag.h"
+#include "textedit.h"
+#include "textfile.h"
 #include "process.h"
 #include "snprintf.h"
 #include "tools.h"
@@ -886,6 +888,206 @@ void ht_uformat_viewer::done()
 	clear_subs();
 	free(tagpal.data);
 	ht_format_viewer::done();
+}
+
+#define	FH_HEAD		1
+#define	FH_DESC		2
+
+class ht_help_lexer: public ht_syntax_lexer {
+public:
+/* overwritten */
+	virtual	vcp getcolor_syntax(UINT pal_index)
+     {
+		return VCP(VC_BLUE, VC_TRANSPARENT);
+     }
+
+	virtual	lexer_state getinitstate()
+     {
+     	return FH_HEAD;
+     }
+
+	virtual	lexer_token geterrortoken()
+     {
+     	return 3;
+     }
+
+	virtual	char *getname()
+     {
+     	return "bla";
+     }
+
+	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
+     {
+		*ret_len = buflen;
+          int ps = *ret_state;
+          if (buflen == 0) *ret_state = FH_HEAD; else *ret_state = FH_DESC;
+          return buflen ? ps : 0;
+     }
+
+	virtual	vcp gettoken_color(lexer_token t)
+     {
+     	switch (t) {
+          	case FH_HEAD:
+               	return VCP(VC_LIGHT(VC_WHITE), VC_TRANSPARENT);
+          	case FH_DESC:
+               	return VCP(VC_BLACK, VC_TRANSPARENT);
+          }
+		return VCP(VC_RED, VC_TRANSPARENT);
+     }
+};
+
+void dialog_fhelp(ht_streamfile *f)
+{
+	ht_help_lexer *l = new ht_help_lexer();
+	l->init();
+
+	ht_ltextfile *t = new ht_ltextfile();
+	t->init(f, true, NULL);
+
+	bounds b, c;
+	app->getbounds(&c);
+	b = c;
+	b.w = 70;
+	b.h = 19;
+	b.x = (c.w - b.w) / 2,
+	b.y = (c.h - b.h) / 2;
+     c = b;
+
+	ht_dialog *dialog = new ht_dialog();
+	dialog->init(&b, "eval() - functions", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
+
+	b.x = 0;
+	b.y = 0;
+	b.w -= 2;
+	b.h -= 2;
+
+	ht_text_viewer *v = new ht_text_viewer();
+	v->init(&b, true, t, NULL);
+
+	v->set_lexer(l, true);
+
+	dialog->insert(v);
+
+     b = c;
+     b.x = b.w-2;
+     b.y = 0;
+     b.w = 1;
+     b.h-=2;
+	ht_scrollbar *hs=new ht_scrollbar();
+	hs->init(&b, &dialog->pal, true);
+
+	dialog->setvscrollbar(hs);
+
+	dialog->setpalette(palkey_generic_cyan);
+
+	dialog->run(0);
+
+	v->done();
+	delete v;
+}
+
+int ht_uformat_viewer::address_input(const char *title, char *result, int limit, dword histid)
+{
+	bounds b;
+	app->getbounds(&b);
+	b.x = (b.w - 60) / 2,
+	b.y = (b.h - 8) / 2;
+	b.w = 60;
+	b.h = 8;
+
+	ht_dialog *dialog=new ht_dialog();
+	dialog->init(&b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
+
+     ht_strinputfield *input;
+     char *label = "~Address";
+
+	bounds  b2;
+	b2.x = 3 + strlen(label);
+	b2.y = 1;
+	b2.w = b.w - 3 - b2.x;
+	b2.h = 1;
+
+	ht_clist *hist = 0;
+	if (histid) hist = (ht_clist*)find_atom(histid);
+	input = new ht_strinputfield();
+	input->init(&b2, limit, hist);
+	ht_inputfield_data d;
+	d.text = (byte*)result;
+	d.textlen = strlen((char*)d.text);
+	input->databuf_set(&d, sizeof d);
+	dialog->insert(input);
+
+	if (label) {
+		b2.x = 1;
+		b2.y = 1;
+		b2.w = 3 + strlen(label) - b2.x;
+		b2.h = 1;
+
+		ht_label *lab = new ht_label();
+		lab->init(&b2, label, input);
+		dialog->insert(lab);
+	}
+
+	b2.x = b.w - 45;
+	b2.y = b.h - 5;
+	b2.w = 10;
+	b2.h = 2;
+
+	ht_button *bok = new ht_button();
+	bok->init(&b2, "O~k", button_ok);
+	dialog->insert(bok);
+
+	b2.x += 12;
+
+	ht_button *bcancel = new ht_button();
+	bcancel->init(&b2, "~Cancel", button_cancel);
+	dialog->insert(bcancel);
+
+	b2.x += 12;
+     b2.w = 14;
+
+	ht_button *bhelp = new ht_button();
+	bhelp->init(&b2, "~Functions", 100);
+	dialog->insert(bhelp);
+     
+     int r;
+     bool run = true;
+     int retval = button_cancel;
+     while (run && (r = dialog->run(0)) != button_cancel) {
+		switch (r) {
+          	case 100: {
+				eval_scalar res;
+				if (eval(&res, "help()", format_viewer_func_handler, format_viewer_symbol_handler, this)) {
+					eval_str s;
+					scalar_context_str(&res, &s);
+		               scalar_destroy(&res);
+
+          		     ht_memmap_file *f = new ht_memmap_file();
+		               f->init((byte*)s.value, s.len);
+
+                         dialog_fhelp(f);
+
+		               string_destroy(&s);
+				}
+                    break;
+			}
+               case button_ok: {
+		     	int dsize = input->datasize();
+				ht_inputfield_data *data = (ht_inputfield_data*)malloc(dsize);
+				input->databuf_get(data, dsize);
+				bin2str(result, data->text, data->textlen);
+				delete data;
+				if (hist) insert_history_entry(hist, result, 0);
+                    run = false;
+                    retval = button_ok;
+                    break;
+			}
+		}
+     }
+
+	dialog->done();
+	delete dialog;
+	return retval;
 }
 
 void ht_uformat_viewer::adjust_cursor_group()
@@ -2464,15 +2666,15 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 		case cmd_file_goto: {
 			char addrstr[1024];
 			addrstr[0] = 0;
-			if (inputbox("goto", "~address", addrstr, 1024, HISTATOM_GOTO)) {
+     		while (address_input("goto", addrstr, sizeof addrstr, HISTATOM_GOTO) != button_cancel) {
 				viewer_pos pos;
-				globalerror[0]=0;
-				if (!string_to_pos(addrstr, &pos) || !goto_pos(pos, this)) {
-					if (globalerror[0]) {
-						infobox("error: %s\nin '%s'", globalerror, addrstr);
-					} else {
-						infobox("invalid address: '%s'", addrstr);
-					}
+				globalerror[0] = 0;
+				if (string_to_pos(addrstr, &pos) && goto_pos(pos, this))
+                    	break;
+				if (globalerror[0]) {
+					infobox("error: %s\nin '%s'", globalerror, addrstr);
+				} else {
+					infobox("invalid address: '%s'", addrstr);
 				}
 			}
 			clearmsg(msg);
@@ -3325,7 +3527,7 @@ int ht_uformat_viewer::ref_desc(ID id, FILEOFS offset, UINT size, bool bigendian
 
 		if (g->run(false)==button_ok) {
 			ht_listbox_data da;
-			l->databuf_get(&da);
+			l->databuf_get(&da, sizeof da);
 			int i=da.cursor_id;
 			if (desc[i].value != d) {
 				baseview->sendmsg(cmd_edit_mode_i, file, NULL);

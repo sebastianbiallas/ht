@@ -162,7 +162,7 @@ protected:
 	virtual	bool next_logical_offset(FILEOFS ofs, FILEOFS *nofs);
 public:
 	ht_format_group *format_group;
-	
+
 			void init(bounds *b, const char *desc, UINT caps, ht_streamfile *file, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
@@ -325,6 +325,7 @@ protected:
 	virtual	ht_data *vstate_create();
 	virtual	void vstate_restore(ht_data *view_state);
 /* new */
+	int address_input(const char *title, char *buf, int buflen, dword histid);
 	void adjust_cursor_group();
 	void adjust_cursor_idx();
 	int center_view(viewer_pos p);
