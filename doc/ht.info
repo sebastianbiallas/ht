@@ -1,4 +1,4 @@
-This is ht.info, produced by makeinfo version 4.1 from ht.texi.
+Dies ist ht.info, hergestellt von Makeinfo Version 4.2 aus ht.texi.
 
 START-INFO-DIR-ENTRY
 * ht: (ht.info).             HT Editor.
@@ -417,18 +417,18 @@ a look at `http://sourceforge.net/projects/hte'
 
 
 Tag Table:
-Node: Top590
-Node: About892
-Node: Key bindings1721
-Node: Authors3240
-Node: Features3394
-Node: General features3771
-Node: Configuration files5949
-Node: Clipboard6596
-Node: Global history7405
-Node: Expression evaluation7954
-Node: Block operations9329
-Node: Search and its different modes10221
-Node: Where to download ?12891
+Node: Top594
+Node: About896
+Node: Key bindings1725
+Node: Authors3244
+Node: Features3398
+Node: General features3775
+Node: Configuration files5953
+Node: Clipboard6600
+Node: Global history7409
+Node: Expression evaluation7958
+Node: Block operations9333
+Node: Search and its different modes10225
+Node: Where to download ?12895
 
 End Tag Table
