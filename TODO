@@ -37,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- x86dis: 0f0f0000 should be invalid? 0f^n 00 00 1<n<=13 should be invalid?
 - main.cc: strncpy(appname, argv[0], sizeof appname); --> strncpy(appname, argv[0], sizeof appname-1); ??
 - eval should warn if number too big/cannot parse
 - eval whatis(whatis("whatis")), what is?
