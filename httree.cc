@@ -34,7 +34,7 @@ void ht_treeview::init(bounds *b, char *d)
 	ht_view::init(b, VO_SELECTABLE | VO_BROWSABLE/* <- FIXME */ | VO_RESIZE, d);
 	VIEW_DEBUG_NAME("ht_treeview");
 
-	growmode= GM_HDEFORM | GM_VDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 
 	foc = 0;
 	delta_x = delta_y = 0;

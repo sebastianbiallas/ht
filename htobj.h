@@ -39,28 +39,27 @@ struct palette {
 #define msg_empty 				HT_MESSAGE(0)
 #define msg_retval				HT_MESSAGE(1)
 #define msg_draw 				HT_MESSAGE(2)
-#define msg_resize 				HT_MESSAGE(3)
-#define msg_keypressed 			HT_MESSAGE(4)
-#define msg_kill				HT_MESSAGE(5)
-#define msg_complete_init		HT_MESSAGE(6)
-#define msg_funcexec			HT_MESSAGE(7)
-#define msg_funcquery			HT_MESSAGE(8)
-#define msg_menucapquery			HT_MESSAGE(9)
-#define msg_menuquery			HT_MESSAGE(10)
-#define msg_button_pressed		HT_MESSAGE(11)
-#define msg_dirtyview			HT_MESSAGE(12)
-#define msg_config_changed		HT_MESSAGE(13)
-#define msg_accept_close			HT_MESSAGE(14)
-#define msg_file_changed			HT_MESSAGE(15)
-#define msg_get_scrollinfo		HT_MESSAGE(16)
-#define msg_get_analyser			HT_MESSAGE(17)
-#define msg_set_analyser			HT_MESSAGE(18)	// (Analyser *)
-#define msg_postinit			HT_MESSAGE(19)
-#define msg_contextmenuquery		HT_MESSAGE(20)
-#define msg_project_changed		HT_MESSAGE(21)
-#define msg_vstate_save			HT_MESSAGE(22)	// (Object *data, ht_view *)
-#define msg_vstate_restore		HT_MESSAGE(23) // (Object *data)
-#define msg_goto_offset			HT_MESSAGE(24) // (FILEOFS ofs)
+#define msg_keypressed 			HT_MESSAGE(3)
+#define msg_kill				HT_MESSAGE(4)
+#define msg_complete_init		HT_MESSAGE(5)
+#define msg_funcexec			HT_MESSAGE(6)
+#define msg_funcquery			HT_MESSAGE(7)
+#define msg_menucapquery			HT_MESSAGE(8)
+#define msg_menuquery			HT_MESSAGE(9)
+#define msg_button_pressed		HT_MESSAGE(10)
+#define msg_dirtyview			HT_MESSAGE(11)
+#define msg_config_changed		HT_MESSAGE(12)
+#define msg_accept_close			HT_MESSAGE(13)
+#define msg_file_changed			HT_MESSAGE(14)
+#define msg_get_scrollinfo		HT_MESSAGE(15)
+#define msg_get_analyser			HT_MESSAGE(16)
+#define msg_set_analyser			HT_MESSAGE(17)	// (Analyser *)
+#define msg_postinit			HT_MESSAGE(18)
+#define msg_contextmenuquery		HT_MESSAGE(19)
+#define msg_project_changed		HT_MESSAGE(20)
+#define msg_vstate_save			HT_MESSAGE(21)	// (Object *data, ht_view *)
+#define msg_vstate_restore		HT_MESSAGE(22) // (Object *data)
+#define msg_goto_offset			HT_MESSAGE(23) // (FILEOFS ofs)
 
 #define msg_filesize_changed		HT_MESSAGE(100)
 #define msg_log_changed			HT_MESSAGE(101)
@@ -102,13 +101,18 @@ class ht_group;
 
 #define VIEW_DEBUG_NAME(name)	ht_view::view_debug_name=name;
 
-#define	GM_TOP		0
-#define	GM_BOTTOM		1
-#define	GM_VDEFORM	2
+#define GMV_TOP		0
+#define GMV_BOTTOM		1
+#define GMV_FIT		2
 
-#define	GM_LEFT		0
-#define	GM_RIGHT		4
-#define	GM_HDEFORM	8
+#define GMH_LEFT		0
+#define GMH_RIGHT		1
+#define GMH_FIT		2
+
+#define GET_GM_H(gm)	((gm)>>16)
+#define GET_GM_V(gm)	((gm)&0xffff)
+
+#define MK_GM(gmh, gmv)	((gmv) | ((gmh)<<16))
 
 void clearmsg(htmsg *msg);
 
@@ -176,6 +180,7 @@ public:
 			void fill(int x, int y, int w, int h, int c, int chr);
 	virtual	int focus(ht_view *view);
 			void getbounds(bounds *b);
+	virtual	void getminbounds(int *width, int *height);
 			vcp getcolor(UINT index);
 	virtual	void getdata(ht_object_stream *s);
 	virtual 	ht_view *getfirstchild();
@@ -194,7 +199,6 @@ public:
 	virtual	void redraw();
 			void relocate_to(ht_view *view);
 	virtual	void resize(int rw, int rh);
-	virtual	void resize_group(int rx, int ry);
 	virtual 	void releasefocus();
 	virtual	int select(ht_view *view);
 	virtual	void selectfirst();
@@ -256,6 +260,7 @@ public:
 	virtual	void setpalette(char *pal_name);
 	virtual	void store(ht_object_stream *s);
 /* new */
+	virtual	void reorder_view(ht_view *v, int rx, int ry);
 			void remove(ht_view *view);
 	virtual	void insert(ht_view *view);
 			int focusnext();

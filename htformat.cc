@@ -380,7 +380,7 @@ void ht_viewer::init(bounds *b, char *desc, UINT c)
 	ht_view::init(b, VO_OWNBUFFER | VO_BROWSABLE | VO_SELECTABLE | VO_MOVE | VO_RESIZE, desc);
 	caps = c;
 	
-	growmode = GM_VDEFORM | GM_HDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 }
 
 void ht_viewer::done()

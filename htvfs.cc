@@ -660,7 +660,7 @@ void ht_vfs_viewer_status::init(bounds *b)
 //	c.w=10;
 	url=new ht_statictext();
 	url->init(&c, "?", align_left, false);
-	url->growmode=GM_HDEFORM | GM_TOP;
+	url->growmode = MK_GM(GMH_FIT, GMV_TOP);
 	insert(url);
 }
 

@@ -960,7 +960,7 @@ void ht_text_viewer::init(bounds *b, bool own_t, ht_textfile *t, ht_list *l)
 	ht_view::init(b, VO_OWNBUFFER | VO_SELECTABLE | VO_RESIZE, "text viewer");
 	VIEW_DEBUG_NAME("ht_text_viewer");
 
-	growmode = GM_VDEFORM | GM_HDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 
 	own_textfile = false;
 	textfile = NULL;

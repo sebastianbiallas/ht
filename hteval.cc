@@ -129,7 +129,7 @@ void eval_dialog()
 	BOUNDS_ASSIGN(b, 1, 3, c.w-4, c.h-5);
 	ht_statictext *t=new ht_statictext();
 	t->init(&b, hint, align_left);
-	t->growmode=GM_VDEFORM;
+	t->growmode = MK_GM(GMH_LEFT, GMV_FIT);
 	d->insert(t);
 
 	while (d->run(false) != button_cancel) {

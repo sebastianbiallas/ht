@@ -44,6 +44,9 @@
 #define ATOM_HT_FRAME		MAGICD("OBJ\4")
 #define ATOM_HT_SCROLLBAR	MAGICD("OBJ\5")
 
+#define DEFAULT_VIEW_MIN_WIDTH 	25
+#define DEFAULT_VIEW_MIN_HEIGHT	7
+
 void bounds_and(bounds *a, bounds *b)
 {
 	if (b->x>a->x) {
@@ -86,45 +89,45 @@ void ht_text::settext(char *text)
  *	CLASS ht_view
  */
 
-void ht_view::init(bounds *b, int _options, char *_desc)
+void ht_view::init(bounds *b, int o, char *d)
 {
 	Object::init();
 	VIEW_DEBUG_NAME("ht_view");
-	desc=ht_strdup(_desc);
-	group=0;
-	focused=0;
-	browse_idx=0;
-	view_is_dirty=1;
-	size.x=0;
-	size.y=0;
-	size.w=0;
-	size.h=0;
-	prev=0;
-	next=0;
-	setoptions(_options);
-	buf=0;
-	enabled=1;
+	desc = ht_strdup(d);
+	group = 0;
+	focused = 0;
+	browse_idx = 0;
+	view_is_dirty = true;
+	size.x = 0;
+	size.y = 0;
+	size.w = 0;
+	size.h = 0;
+	prev = NULL;
+	next = NULL;
+	setoptions(o);
+	buf = 0;
+	enabled = true;
 
-	growmode = GM_TOP |  GM_LEFT;
+     growmode = MK_GM(GMH_LEFT, GMV_TOP);
 	
 	if (options & VO_OWNBUFFER) {
-		buf=new drawbuf(&size);
+		buf = new drawbuf(&size);
 		enable_buffering();
 	} else {
-		buf=screen;
+		buf = screen;
 		disable_buffering();
 	}
 
-	g_hdist=0;
-	g_vdist=0;
+	g_hdist = 0;
+	g_vdist = 0;
 
 	setbounds(b);
 
-	pal.data=0;
-	pal.size=0;
+	pal.data = NULL;
+	pal.size = 0;
 
-	pal_class=defaultpaletteclass();
-	pal_name=defaultpalette();
+	pal_class = defaultpaletteclass();
+	pal_name = defaultpalette();
 
 	reloadpalette();
 }
@@ -407,6 +410,12 @@ vcp ht_view::getcolor(UINT index)
 	return getcolorv(&pal, index);
 }
 
+void ht_view::getminbounds(int *width, int *height)
+{
+     *width = DEFAULT_VIEW_MIN_WIDTH;
+     *height = DEFAULT_VIEW_MIN_HEIGHT;
+}
+
 struct databufdup_s {
 	ht_memmap_file *f;
 	ht_object_stream_memmap *s;
@@ -588,40 +597,18 @@ void ht_view::redraw()
 	}
 }
 
-void ht_view::resize(int rw, int rh)
+void ht_view::resize(int sx, int sy)
 {
 	if (options & VO_RESIZE) {
-		if (size.w+rw-1<0) rw=-size.w+1;
-		if (size.h+rh-1<0) rh=-size.h+1;
-		size.w+=rw;
-		size.h+=rh;
-		buf->b_resize(rw, rh);
+		if (size.w+sx <= 0) sx=-size.w+1;
+		if (size.h+sy <= 0) sy=-size.h+1;
+		size.w+=sx;
+		size.h+=sy;
+		buf->b_resize(sx, sy);
 	}
-	vsize=size;
+	vsize = size;
 	if (group) group->clipbounds(&vsize);
 	app->clipbounds(&vsize);
-}
-
-void ht_view::resize_group(int rx, int ry)
-{
-	int px=0, py=0;
-	int sx=0, sy=0;
-	if (growmode & GM_HDEFORM) {
-		sx=rx;
-	} else if (growmode & GM_RIGHT) {
-		px=rx;
-	} else /* GM_LEFT */ {
-     	/* ok, nothing to do */
-	}
-	if (growmode & GM_VDEFORM) {
-		sy=ry;
-	} else if (growmode & GM_BOTTOM) {
-		py=ry;
-	} else /* GM_TOP */ {
-     	/* ok, nothing to do */
-	}
-	move(px, py);
-	resize(sx, sy);
 }
 
 void ht_view::releasefocus()
@@ -796,7 +783,7 @@ void ht_group::init(bounds *b, int options, char *desc)
 	view_count=0;
 	shared_data=0;
 
-	growmode = GM_HDEFORM | GM_VDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 }
 
 void ht_group::done()
@@ -1152,14 +1139,49 @@ void ht_group::remove(ht_view *view)
 	if (last==view) last=last->prev;
 }
 
+void ht_group::reorder_view(ht_view *v, int rx, int ry)
+{
+	int px=0, py=0;
+	int sx=0, sy=0;
+
+     int gmv = GET_GM_V(v->growmode);
+     int gmh = GET_GM_H(v->growmode);
+     switch (gmh) {
+     	case GMH_LEFT:
+          	/* do nothing */
+          	break;
+		case GMH_RIGHT:
+			px = rx;
+          	break;
+		case GMH_FIT:
+			sx = rx;
+          	break;
+     }
+     
+     switch (gmv) {
+     	case GMV_TOP:
+          	/* do nothing */
+          	break;
+		case GMV_BOTTOM:
+			py = ry;
+          	break;
+		case GMV_FIT:
+			sy = ry;
+          	break;
+     }
+
+	v->move(px, py);
+     v->resize(sx, sy);
+}
+
 void ht_group::resize(int rx, int ry)
 {
 	ht_view::resize(rx, ry);
 	
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
-		v->resize_group(rx, ry);
-		v=v->next;
+     	reorder_view(v, rx, ry);
+		v = v->next;
 	}
 }
 
@@ -1338,9 +1360,9 @@ void	ht_scrollbar::init(bounds *b, palette *p, bool isv)
 	isvertical=isv;
 
 	if (isvertical) {
-		growmode=GM_BOTTOM | GM_HDEFORM;
+		growmode = MK_GM(GMH_RIGHT, GMV_FIT);
 	} else {
-		growmode=GM_RIGHT | GM_VDEFORM;
+		growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
 	}
 
 	enable();	// enabled by default
@@ -1416,16 +1438,16 @@ void	ht_scrollbar::store(ht_object_stream *s)
  *	CLASS ht_frame
  */
 
-void ht_frame::init(bounds *b, char *desc, UINT _style, UINT _number)
+void ht_frame::init(bounds *b, char *desc, UINT s, UINT n)
 {
 	ht_view::init(b, VO_RESIZE, desc);
 	VIEW_DEBUG_NAME("ht_frame");
 
-	number=_number;
-	style=_style;
-	framestate=FST_UNFOCUSED;
+	number = n;
+	style = s;
+	framestate = FST_UNFOCUSED;
 	
-	growmode=GM_HDEFORM | GM_VDEFORM;
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
 }
 
 void ht_frame::done()
@@ -1496,10 +1518,10 @@ void ht_frame::draw()
 	char *d;
 	switch (framestate) {
 		case FST_MOVE:
-			d = "cursor keys move, space for resize mode";
+			d = "(moving) - space to switch";
 			break;
 		case FST_RESIZE:
-			d = "cursor keys resize, space for move mode";
+			d = "(resizing) - space to switch";
 			break;
 		default:
 			d = desc;
@@ -1678,15 +1700,17 @@ void ht_window::handlemsg(htmsg *msg)
 				}
 			} else if (action_state==WAC_RESIZE) {
 				if (options & VO_RESIZE) {
+                    	int min_width, min_height;
+                         getminbounds(&min_width, &min_height);
 					switch (msg->data1.integer) {
 						case K_Up:
-							if (size.h>/*MIN(*/7/*, isize.h)*/) resize(0, -1);
+							if (size.h > min_height) resize(0, -1);
 							break;
 						case K_Down:
-							if (size.h<group->size.h) resize(0, 1);
+							if (size.h < group->size.h) resize(0, 1);
 							break;
 						case K_Left:
-							if ((size.x+size.w>1) && (size.w>/*MIN(*/25/*, isize.w)*/)) resize(-1, 0);
+							if ((size.x+size.w>1) && (size.w > min_width)) resize(-1, 0);
 							break;
 						case K_Right:
 							if (size.w<group->size.w) resize(1, 0);

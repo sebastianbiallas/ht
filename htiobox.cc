@@ -43,7 +43,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 	c.h=b->h-4;
 	ht_statictext *text=new ht_statictext();
 	text->init(&c, buf, align);
-	text->growmode= GM_HDEFORM | GM_VDEFORM;
+	text->growmode = MK_GM(GMH_FIT, GMV_FIT);
 
 	dialog->insert(text);
 
@@ -64,7 +64,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "O~K", button_ok);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	} else if (buttonmask & btmask_yes) {
@@ -74,7 +74,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~Yes", button_yes);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	}
@@ -85,7 +85,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~No", button_no);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	} else if (buttonmask & btmask_skip) {
@@ -95,7 +95,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~Skip", button_skip);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	}
@@ -106,7 +106,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~All", button_all);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	}
@@ -117,7 +117,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~None", button_none);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	}
@@ -128,7 +128,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 		c.h=2;
 		ht_button *button=new ht_button();
 		button->init(&c, "~Cancel", button_cancel);
-		button->growmode=GM_BOTTOM | GM_LEFT;
+		button->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		dialog->insert(button);
 		pos++;
 	}

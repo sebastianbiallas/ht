@@ -1340,9 +1340,10 @@ bool ht_app::create_window_log()
 		focus(w);
 	} else {
 		bounds b;
-		battlefield->getbounds(&b);
+/*		battlefield->getbounds(&b);
           b.x = 0;
-          b.y = 0;
+          b.y = 0;*/
+          get_stdbounds_file(&b);
 
 		ht_window *logwindow=new ht_window();
 		logwindow->init(&b, "log window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
@@ -1478,7 +1479,7 @@ bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *
 	ht_statictext *ind=new ht_statictext();
 	ind->init(&k, NULL, align_left, false, true);
 	ind->disable_buffering();
-	ind->growmode=GM_BOTTOM | GM_HDEFORM;
+	ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
 
 	window->setpindicator(ind);
 
@@ -1612,7 +1613,7 @@ bool ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *ti
 	ht_statictext *ind=new ht_statictext();
 	ind->init(&k, NULL, align_left, false, true);
 	ind->disable_buffering();
-	ind->growmode=GM_BOTTOM | GM_HDEFORM;
+	ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
 
 	window->setpindicator(ind);
 
@@ -1663,7 +1664,7 @@ bool ht_app::create_window_help(char *file, char *node)
 		ht_statictext *ind=new ht_statictext();
 		ind->init(&k, NULL, align_left, false, true);
 		ind->disable_buffering();
-		ind->growmode=GM_BOTTOM | GM_HDEFORM;
+		ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
 
 		window->setpindicator(ind);
 
@@ -1895,7 +1896,7 @@ void ht_app::get_stdbounds_file(bounds *b)
 
 void ht_app::get_stdbounds_tool(bounds *b)
 {
-	UINT h = MAX(size.h/5, 3);
+	UINT h = MAX(2*size.h/7, 3);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = b->h - h;
@@ -2353,10 +2354,10 @@ void ht_app::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		}
-		case cmd_window_resizemove:
+/*		case cmd_window_resizemove:
 			sendmsg(msg_resize, 0);
 			clearmsg(msg);
-			return;
+			return;*/
 		case cmd_window_close:
 			if (battlefield->current) sendmsg(msg_kill, battlefield->current);
 			clearmsg(msg);
