@@ -27,7 +27,8 @@
 - store.cc:60: getObject quits with invalid config file
 
 +steves
-- ht_stree::enum_* buggy
+- goto('') should be ignored
+- relfile::read/write: enum_next mysteria
 - goto eval help
 - !! [FIXED?] [FREEBSD] break stream.cc:456; load file; p file; file=0x0; !!
 - !! [FREEBSD] doesnt compile: !!
@@ -73,7 +74,7 @@
 - improve edit_time/dialog ?!
 - homogenous/heterogenous lists
 - cleanup msg interface
-- auto-documentation (esp. keys & eval-funcs)
+- auto-documentation (e.g. keys)
 - portability
 	- compile on sun solaris (curses problems (only?) on cf.sf.net)
 	- compile on MacOS X (curses.h, but no ACS_*)
