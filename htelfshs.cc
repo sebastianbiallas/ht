@@ -24,8 +24,7 @@
 #include "htelfshs.h"
 #include "httag.h"
 #include "formats.h"
-
-#include <stdlib.h>
+#include "snprintf.h"
 
 ht_mask_ptable elfsectionheader32[]=
 {

@@ -24,6 +24,7 @@
 #include "htelfphs.h"
 #include "httag.h"
 #include "formats.h"
+#include "snprintf.h"
 
 ht_mask_ptable elfprogramheader32[]=
 {
