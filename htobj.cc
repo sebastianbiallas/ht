@@ -1375,7 +1375,6 @@ void ht_scrollbar::draw()
 		vcp color = getcolorv(gpal, palidx_generic_scrollbar);
 //          vcp color2 = VCP(VCP_BACKGROUND(color), VCP_FOREGROUND(color));
 		if (isvertical) {
-		} else {
 			buf_printchar(0, 0, color, CHAR_ARROWBIG_UP);
 			fill(0, 1, size.w, size.h-2, color, ' ');
 			buf_printchar(0, size.h-1, color, CHAR_ARROWBIG_DOWN);
@@ -1391,6 +1390,7 @@ void ht_scrollbar::draw()
 				e=1;
 			}
 			fill(0, s+1, 1, e, color, CHAR_FILLED_M);
+		} else {
 		}
 	}
 }

@@ -32,7 +32,7 @@ struct palette {
 	vcp *data;
 };
 
-/* messages */
+/* messages (like in "MESS of AGES") */
 #define msg_message				0x00000000
 #define HT_MESSAGE(m)			(msg_message+(m))
 
@@ -63,6 +63,7 @@ struct palette {
 #define msg_goto_offset			HT_MESSAGE(24) // (FILEOFS ofs)
 
 #define msg_filesize_changed		HT_MESSAGE(100)
+#define msg_log_changed			HT_MESSAGE(101)
 
 #define gsi_pindicator			1
 #define gsi_hscrollbar			2
