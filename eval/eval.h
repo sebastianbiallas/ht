@@ -57,7 +57,7 @@ int debug_dump_ident;
 
 #define MAX_FUNCNAME_LEN		16
 #define MAX_SYMBOLNAME_LEN	32
-#define MAX_ERRSTR_LEN		64
+#define MAX_ERRSTR_LEN		128
 
 /*
 int f2i(double f);

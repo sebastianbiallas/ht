@@ -517,7 +517,8 @@ bool ht_info_viewer::igotonode(char *f, char *n, bool add2hist)
 	char ncwd[HT_NAME_MAX];
 	ncwd[0] = 0;
 	bool newnode = !node || (node && (strcmp(node, n) != 0));
-	if (strcmp(f, "hthelp.info") == 0) {
+     int fl = strlen(f)-strlen(MAGIC_HT_HELP);
+	if ((fl>=0) && (strcmp(f+fl, MAGIC_HT_HELP) == 0)) {
 		infotext = strdup(htinfo);
 		strcpy(ncwd, "");
 		strcpy(nfile, f);

@@ -36,10 +36,6 @@ int debug_dump_ident;
  *
  */
 
-#define MAX_FUNCNAME_LEN		16
-#define MAX_SYMBOLNAME_LEN	32
-#define MAX_ERRSTR_LEN		64
-
 static eval_func_handler g_eval_func_handler;
 static eval_symbol_handler g_eval_symbol_handler;
 static void *eval_context;
@@ -80,6 +76,7 @@ static qword ipow(qword a, qword b)
 	return r;
 }
 
+/*
 static int sprint_basen(char *buffer, int base, qword q)
 {
 	static char *chars="0123456789abcdef";
@@ -99,6 +96,32 @@ static int sprint_basen(char *buffer, int base, qword q)
 	}
 	b[n] = 0;
 	return n;
+}
+*/
+
+static int hexdigit(char a)
+{
+	if ((a>='0') && (a<='9')) {
+		return a-'0';
+	} else if ((a>='a') && (a<='f')) {
+		return a-'a'+10;
+	} else if ((a>='A') && (a<='F')) {
+		return a-'A'+10;
+	}
+	return -1;
+}
+
+static void str2int(char *str, qword *q, int base)
+{
+	*q = to_qword(0);
+     qword qbase = to_qword(base);
+	while (*str) {
+		int c = hexdigit(*str);
+		if ((c == -1) || (c >= base)) break;
+		*q *= qbase;
+		*q += to_qword(c);
+		str++;
+	}
 }
 
 char *binstr2cstr(char *s, int len)
@@ -345,23 +368,24 @@ void scalar_context_str(const eval_scalar *s, eval_str *t)
 {
 	switch (s->type) {
 		case SCALAR_INT: {
-			char buf[16];
-			sprint_basen(buf, 10, s->scalar.integer.value);
-			t->value=(char*)strdup(buf);
-			t->len=strlen(buf);
+			char buf[64];
+			ht_snprintf(buf, sizeof buf, "%qd",
+               	/* FIXME: by reference*/ &s->scalar.integer.value);
+			t->value = (char*)strdup(buf);
+			t->len = strlen(buf);
 			break;
 		}
 		case SCALAR_STR: {
-			t->value=(char*)malloc(s->scalar.str.len ? s->scalar.str.len : 1);
-			t->len=s->scalar.str.len;
+			t->value = (char*)malloc(s->scalar.str.len ? s->scalar.str.len : 1);
+			t->len = s->scalar.str.len;
 			memmove(t->value, s->scalar.str.value, t->len);
 			break;
 		}			
 		case SCALAR_FLOAT: {
-			char buf[32];
-			sprintf(buf, "%f", s->scalar.floatnum.value);
-			t->value=(char*)strdup(buf);
-			t->len=strlen(buf);
+			char buf[64];
+			ht_snprintf(buf, sizeof buf, "%f", s->scalar.floatnum.value);
+			t->value = (char*)strdup(buf);
+			t->len = strlen(buf);
 			break;
 		}
 		default:
@@ -377,10 +401,9 @@ void scalar_context_int(const eval_scalar *s, eval_int *t)
 			break;
 		}
 		case SCALAR_STR: {
-			char *x=binstr2cstr(s->scalar.str.value, s->scalar.str.len);
-			// FIXME
-			t->value=to_qword((int)strtol(x, (char**)NULL, 10));
-			t->type=TYPE_UNKNOWN;
+			char *x = binstr2cstr(s->scalar.str.value, s->scalar.str.len);
+			str2int(x, &t->value, 10);
+			t->type = TYPE_UNKNOWN;
 			free(x);
 			break;
 		}			
