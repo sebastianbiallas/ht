@@ -878,6 +878,22 @@ bool ht_aviewer::canCreateAddress(Address *addr, bool error_msg)
 	return true;
 }
 
+void ht_aviewer::dataIntDialog(taddr_int_subtype subtype, int length)
+{
+	if (!analy) return;
+	Address *current_address;
+	if (!getCurrentAddress(&current_address)) return;
+	if (!canCreateAddress(current_address, true)) {
+		delete current_address;
+		return;
+	}
+	
+	if (analy->validAddress(current_address, scinitialized)) {
+		analy->data->setIntAddressType(current_address, subtype, length);
+	}
+	delete current_address;
+}
+
 void ht_aviewer::dataStringDialog()
 {
 	if (!analy) return;
@@ -1103,6 +1119,9 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			sub=new ht_static_context_menu();
 			sub->init("~Data");
 			sub->insert_entry("Data ~string", "s", cmd_analyser_data_string, 0, 1);
+			sub->insert_entry("Data ~word 32", "i", cmd_analyser_data_int, 0, 1);
+			sub->insert_entry("Data ~halfword 16", "h", cmd_analyser_data_half, 0, 1);
+			sub->insert_entry("Data ~byte 8", "b", cmd_analyser_data_byte, 0, 1);
 			m->insert_submenu(sub);
 			m->insert_separator();
 			m->insert_entry("Symbol reg trace (exp!)", "Alt-Q", cmd_analyser_srt, K_Alt_Q, 1);
@@ -1159,6 +1178,18 @@ void ht_aviewer::handlemsg(htmsg *msg)
 					return;
 				case 'p':
 					sendmsg(cmd_analyser_pause_resume);
+					clearmsg(msg);
+					return;
+				case 'i':
+					sendmsg(cmd_analyser_data_int);
+					clearmsg(msg);
+					return;
+				case 'h':
+					sendmsg(cmd_analyser_data_half);
+					clearmsg(msg);
+					return;
+				case 'b':
+					sendmsg(cmd_analyser_data_byte);
 					clearmsg(msg);
 					return;
 				case 's':
@@ -1367,6 +1398,30 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		case cmd_analyser_export_file:
 			if (!analy) break;
 			exportFileDialog();
+			clearmsg(msg);
+			return;
+		case cmd_analyser_data_int:
+			if (!analy) break;
+			dataIntDialog(dst_idword, 4);
+			analy->makeDirty();
+			analy_sub->output->invalidateCache();
+			dirtyview();
+			clearmsg(msg);
+			return;
+		case cmd_analyser_data_half:
+			if (!analy) break;
+			dataIntDialog(dst_iword, 2);
+			analy->makeDirty();
+			analy_sub->output->invalidateCache();
+			dirtyview();
+			clearmsg(msg);
+			return;
+		case cmd_analyser_data_byte:
+			if (!analy) break;
+			dataIntDialog(dst_ibyte, 1);
+			analy->makeDirty();
+			analy_sub->output->invalidateCache();
+			dirtyview();
 			clearmsg(msg);
 			return;
 		case cmd_analyser_data_string:

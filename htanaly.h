@@ -49,7 +49,10 @@
 #define cmd_analyser_data_string        HT_COMMAND(514)
 #define cmd_analyser_info               HT_COMMAND(515)
 #define cmd_analyser_symbols            HT_COMMAND(516)
-#define cmd_analyser_export_file		HT_COMMAND(517)
+#define cmd_analyser_export_file	HT_COMMAND(517)
+#define cmd_analyser_data_int        	HT_COMMAND(518)
+#define cmd_analyser_data_half		HT_COMMAND(519)
+#define cmd_analyser_data_byte        	HT_COMMAND(520)
 
 /* FIXME: srt-experimental */
 
@@ -196,6 +199,7 @@ public:
 			void	attachInfoline(AnalyInfoline *V);
 			bool canCreateAddress(Address *addr, bool error_msg);
 			void dataStringDialog();
+			void dataIntDialog(taddr_int_subtype subtype, int length);
 			void exportFileDialog();
 	virtual	char *func(UINT i, bool execute);
 			void generateOutputDialog();

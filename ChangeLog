@@ -1,12 +1,19 @@
  HT ChangeLog
 ==============
 
-version 0.8-trunk:
+version 0.9-trunk:
+	- analyser: support for int, half and byte data-types.
+	
+version 0.8.0:
 	- g++ v3 abi demangler
 	- x86 disasm: added undocumented ffreep (df c0) instruction
 	- compiles with gcc 3.4
-	- display hex file
 	- fixed buggy blockop-progress indicator
+	- fixed ugly segfault with elf symbol loading
+	- ppc disassebler updated (altivec instructions)
+	- removed stefan's email address (dead)
+
+version 0.8.0pre1:
 	- disassembler:
 		- IBM/Motorola PowerPC (PPC) (new)
 	- file formats:
