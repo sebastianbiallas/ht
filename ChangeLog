@@ -2,6 +2,7 @@
 ==============
 
 version 0.8-trunk:
+	- x86 disasm: added undocumented ffreep (df c0) instruction
 	- compiles with gcc 3.4
 	- display hex file
 	- fixed buggy blockop-progress indicator
