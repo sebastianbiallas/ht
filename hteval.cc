@@ -18,14 +18,15 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <string.h>
+
 #include "htatom.h"
 #include "htctrl.h"
 #include "htendian.h"
 #include "hthist.h"
 #include "htiobox.h"
 #include "htstring.h"
-
-#include <string.h>
+#include "snprintf.h"
 
 extern "C" {
 #include "evalx.h"
@@ -65,7 +66,7 @@ static int sprint_base2_0(char *x, dword value, int zeros)
 	return x-ix;
 }
 
-static int sprint_basen(char *buffer, int base, qword q)
+/*static int sprint_basen(char *buffer, int base, qword q)
 {
 	static char *chars="0123456789abcdef";
 	if ((base<2) || (base>16)) return 0;
@@ -84,9 +85,9 @@ static int sprint_basen(char *buffer, int base, qword q)
 	}
 	b[n] = 0;
 	return n;
-}
+}*/
 
-static int sprintf_basen(char *buffer, const char *format, int base, qword q)
+/*static int sprintf_basen(char *buffer, const char *format, int base, qword q)
 {
 	int n = 0;
 	while (*format) {
@@ -102,7 +103,7 @@ static int sprintf_basen(char *buffer, const char *format, int base, qword q)
 	}
 	buffer[n] = 0;
 	return n;
-}
+}*/
 
 void eval_dialog()
 {
@@ -152,11 +153,10 @@ void eval_dialog()
 						// FIXME
 						dword lo = QWORD_GET_LO(r.scalar.integer.value);
 						dword hi = QWORD_GET_HI(r.scalar.integer.value);
-						int i = lo;
 						x += sprintf(x, "64bit integer:\n");
-						x += sprintf_basen(x, "hex  %\n", 16, r.scalar.integer.value);
-						x += sprintf_basen(x, "dec  %\n", 10, r.scalar.integer.value);
-						x += sprintf_basen(x, "oct  %\n", 8, r.scalar.integer.value);
+						x += ht_snprintf(x, 64, "hex  %qx\n", &r.scalar.integer.value);
+						x += ht_snprintf(x, 64, "dec  %qd\n", &r.scalar.integer.value);
+						x += ht_snprintf(x, 64, "oct  %qo\n", &r.scalar.integer.value);
 						x += sprintf(x, "bin0 ");
 						x += sprint_base2(x, lo, true);
 						*(x++) = '\n';
@@ -166,6 +166,7 @@ void eval_dialog()
 							*(x++) = '\n';
 						}
 						char bb[4];
+						int i = lo;
 						/* big-endian string */
 						x += sprintf(x, "32bit big-endian (e.g. network) string\n\"");
 						create_foreign_int(bb, i, 4, big_endian);
