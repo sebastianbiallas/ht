@@ -1489,7 +1489,7 @@ void ht_listbox::adjustScrollbar()
 {
 	int pstart, psize;
 	if (scrollbar_pos(pos-cursor, size.h, cached_count, &pstart, &psize)) {
-     	mScrollbarEnabled = true;
+		mScrollbarEnabled = true;
 		scrollbar->enable();
 		bounds c = size;
 		c.x = c.w-1;
@@ -1498,7 +1498,7 @@ void ht_listbox::adjustScrollbar()
 		scrollbar->setbounds(&c);
 		scrollbar->setpos(pstart, psize);
 	} else {
-     	mScrollbarEnabled = false;
+		mScrollbarEnabled = false;
 		scrollbar->disable();
 	}
 }
