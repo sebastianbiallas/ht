@@ -102,6 +102,7 @@ public:
 		virtual	void done();
 		virtual	void	beginAddr();
 		virtual	void	beginLine();
+          virtual	void changeConfig();
 		virtual	int	elementLength(char *s);
 		virtual	void	endAddr();
 		virtual	void	endLine();

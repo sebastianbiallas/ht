@@ -27,7 +27,7 @@
 #include "htdialog.h"
 #include "htformat.h"
 #include "httree.h"
-#include "out_ht.h"
+#include "out.h"
 
 /*
  *	Commands
@@ -160,7 +160,7 @@ class ht_analy_sub: public ht_sub {
 public:
 	Analyser		*analy;
 	Address        *lowestaddress, *highestaddress;
-	AnalyserHtOutput *output;
+	AnalyserOutput *output;
 	ht_aviewer	*aviewer;
 	
 			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);

@@ -123,6 +123,7 @@ void	AnalyserOutput::init(Analyser *Analy)
 	work_buffer = work_buffer_start;
 	temp_buffer = (byte*)malloc(WORKBUF_LEN);
 	dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
+	changeConfig();
 }
 
 void AnalyserOutput::done()
@@ -144,6 +145,10 @@ void	AnalyserOutput::beginLine()
 {
 	work_buffer = work_buffer_start;
 	bytes_line = 0;
+}
+
+void	AnalyserOutput::changeConfig()
+{
 }
 
 int	AnalyserOutput::elementLength(char *s)

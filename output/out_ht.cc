@@ -32,26 +32,25 @@
 #define palclasskey_analyser						"analyser"
 #define palkey_analyser_default					"default"
 
-void	AnalyserHtOutput::init(Analyser *Analy)
+void	AnalyserHTOutput::init(Analyser *Analy)
 {
-	AnalyserOutput::init(Analy);
 	analy_pal.data=NULL;
 	analy_pal.size=0;
-	reloadPalette();
+	AnalyserOutput::init(Analy);
 }
 
-void AnalyserHtOutput::done()
+void AnalyserHTOutput::done()
 {
 	if (analy_pal.data) free(analy_pal.data);
 	AnalyserOutput::done();
 }
 
-vcp AnalyserHtOutput::getcolor_analy(UINT pal_index)
+vcp AnalyserHTOutput::getcolor_analy(UINT pal_index)
 {
 	return getcolorv(&analy_pal, pal_index);
 }
 
-void AnalyserHtOutput::reloadPalette()
+void AnalyserHTOutput::reloadPalette()
 {
 	if (analy_pal.data) {
 	    free(analy_pal.data);
@@ -60,12 +59,12 @@ void AnalyserHtOutput::reloadPalette()
 	load_pal(palclasskey_analyser, palkey_analyser_default, &analy_pal);
 }
 
-void	AnalyserHtOutput::beginAddr()
+void	AnalyserHTOutput::beginAddr()
 {
 	AnalyserOutput::beginAddr();
 }
 
-void	AnalyserHtOutput::beginLine()
+void	AnalyserHTOutput::beginLine()
 {
 	AnalyserOutput::beginLine();
 	if (analy->mode & ANALY_SHOW_ADDRESS) {
@@ -104,17 +103,22 @@ void	AnalyserHtOutput::beginLine()
 	work_buffer_edit_bytes_insert = work_buffer;
 }
 
-int	AnalyserHtOutput::elementLength(char *s)
+void	AnalyserHTOutput::changeConfig()
+{
+	reloadPalette();
+}
+
+int	AnalyserHTOutput::elementLength(char *s)
 {
 	return tag_strlen(s);
 }
 
-void	AnalyserHtOutput::endAddr()
+void	AnalyserHTOutput::endAddr()
 {
 	AnalyserOutput::endAddr();
 }
 
-void	AnalyserHtOutput::endLine()
+void	AnalyserHTOutput::endLine()
 {
 	if ((analy->mode & ANALY_EDIT_BYTES) && bytes_line) {
 		if (analy->validAddress(addr, scinitialized)) {
@@ -143,14 +147,14 @@ void	AnalyserHtOutput::endLine()
 	AnalyserOutput::endLine();
 }
 
-char *AnalyserHtOutput::externalLink(char *s, int type1, int type2, int type3, int type4, void *special)
+char *AnalyserHTOutput::externalLink(char *s, int type1, int type2, int type3, int type4, void *special)
 {
 	*(tag_make_ref(tmpbuffer, type1, type2, type3, type4, s)) = 0;
 	return tmpbuffer;
 }
 
 
-char *AnalyserHtOutput::link(char *s, Address *Addr)
+char *AnalyserHTOutput::link(char *s, Address *Addr)
 {
 	// FIXNEW
 	if (Addr->byteSize()==4) {
@@ -165,7 +169,7 @@ char *AnalyserHtOutput::link(char *s, Address *Addr)
 	return tmpbuffer;
 }
 
-void AnalyserHtOutput::putElement(int element_type, char *element)
+void AnalyserHTOutput::putElement(int element_type, char *element)
 {
 	// bufferbla's
 	switch (element_type) {

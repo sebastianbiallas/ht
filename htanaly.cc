@@ -1611,7 +1611,7 @@ int ht_aviewer::ref_sel(LINE_ID *id)
 void ht_aviewer::reloadpalette()
 {
 	ht_uformat_viewer::reloadpalette();
-	if (analy_sub) analy_sub->output->reloadPalette();
+	if (analy_sub) analy_sub->output->changeConfig();
 }
 
 void ht_aviewer::searchForXRefs(Address *Addr)
@@ -1969,8 +1969,8 @@ void ht_analy_sub::init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, 
 	ht_sub::init(file);
 	aviewer = A;
 	analy = analyser;
-	output = new AnalyserHtOutput();
-	((AnalyserHtOutput*)output)->init(analy);
+	output = new AnalyserHTOutput();
+	((AnalyserHTOutput*)output)->init(analy);
 	lowestaddress = (Address *)Lowestaddress->duplicate();
 	highestaddress = (Address *)Highestaddress->duplicate();
 }

@@ -41,7 +41,7 @@
  *	CLASS analyser_ht_output
  */
 
-class AnalyserHtOutput: public AnalyserOutput {
+class AnalyserHTOutput: public AnalyserOutput {
 		palette	analy_pal;
 		char		tmpbuffer[1024];
 		byte 	*work_buffer_edit_bytes_insert;
@@ -54,12 +54,14 @@ public:
 		virtual	void done();
 		virtual	void	beginAddr();
 		virtual	void	beginLine();
+          virtual	void	changeConfig();
 		virtual	int	elementLength(char *s);
 		virtual	void	endAddr();
 		virtual	void	endLine();
 		virtual	void putElement(int element_type, char *element);
 		virtual	char *link(char *s, Address *Addr);
 		virtual	char *externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+private:
 				void reloadPalette();
 };
 
