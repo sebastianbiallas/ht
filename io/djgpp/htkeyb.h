@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	sysinit.cc - Win32-specific initialization
+ *	htkeyb.h (DJGPP implementation)
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
@@ -18,15 +18,26 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-bool initKeyb();
-void doneKeyb();
+#ifndef __HTKEYB_H__
+#define __HTKEYB_H__
 
-bool initSystem()
-{
-	return initKeyb();
-}
+#include "htio.h"
 
-void doneSystem()
-{
-	doneKeyb();
-}
+bool ht_keypressed();
+
+ht_key ht_getkey();
+int ht_raw_getkey();
+
+/*
+ *	INIT
+ */
+ 
+bool init_keyb();
+
+/*
+ *	DONE
+ */
+ 
+void done_keyb();
+
+#endif /* !__HTKEYB_H__ */

@@ -1,6 +1,6 @@
 /* 
  *	HT Editor
- *	syskeyb.cc - keyboard access functions for Win32
+ *	htkeyb.cc (WIN32 implementation)
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
  *
@@ -18,12 +18,13 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "../keyb.h"
+#include "htkeyb.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 HANDLE input_handle;
 INPUT_RECORD key_event_record;
@@ -313,7 +314,7 @@ ht_key ht_getkey()
 	return k;
 }
 
-bool initKeyb()
+bool init_keyb()
 {
 	input_handle = GetStdHandle(STD_INPUT_HANDLE);
 	SetConsoleMode(input_handle, 0); //ENABLE_PROCESSED_INPUT);
@@ -334,7 +335,7 @@ bool initKeyb()
 	return true;
 }
 
-void doneKeyb()
+void done_keyb()
 {
 #ifdef KEY_DEBUG
 	fclose(kd);

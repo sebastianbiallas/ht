@@ -1,9 +1,8 @@
-/* 
+/*
  *	HT Editor
- *	clipboard.cc - Win32-specific (windows-)clipboard functions
+ *	htkeyb.h (WIN32 implementation)
  *
  *	Copyright (C) 1999-2002 Sebastian Biallas (sb@web-productions.de)
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -18,3 +17,27 @@
  *	along with this program; if not, write to the Free Software
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
+#ifndef __HTKEYB_H__
+#define __HTKEYB_H__
+
+#include "htio.h"
+
+bool ht_keypressed();
+
+ht_key ht_getkey();
+int ht_raw_getkey();
+
+
+/*
+ *	INIT
+ */
+bool init_keyb();
+
+/*
+ *	DONE
+ */
+void done_keyb();
+
+
+#endif /* !__HTKEYB_H__ */

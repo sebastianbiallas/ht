@@ -1,6 +1,6 @@
 /*
  *	HT Editor
- *	syskeyb.cc - keyboard access functions for DJGPP
+ *	htkeyb.cc (DJGPP implementation)
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
  *
@@ -18,9 +18,10 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "keyb.h"
-#include "types.h"
+#include "htkeyb.h"
 
+#include <pc.h>
+#include <stdio.h>
 #include <bios.h>
 
 #define SHIFT_KEY(k)		 (k | 0x80000000)
@@ -37,9 +38,9 @@ bool ht_keypressed()
 
 int ht_raw_getkey()
 {
-	int k = -1;
+	int k=-1;
 	if (ht_shift_pressed()) {
-		k = getkey();
+		k=getkey();
 		switch (k) {
 			case 0x14b:	/* K_Left */
 			case 0x14d:	/* K_Right */
@@ -53,18 +54,18 @@ int ht_raw_getkey()
 			case 0x153:	/* K_Delete */
 			case 0x173:	/* K_Control_Left */
 			case 0x174:	/* K_Control_Right */
-				k = SHIFT_KEY(k);
+				k=SHIFT_KEY(k);
 				break;
 		}
-	} else k = getkey();
+	} else k=getkey();
 	return k;
 }
 
 ht_key ht_getkey()
 {
-	uint r = ht_raw_getkey();
-	ht_key k = ht_rawkey2key(r);
-	if ((k == K_INVALID) && (r <= 255)) return (ht_key)r;
+	UINT r=ht_raw_getkey();
+	ht_key k=ht_rawkey2key(r);
+	if ((k==K_INVALID) && (r<=255)) return (ht_key)r;
 	return k;
 }
 
@@ -239,9 +240,13 @@ ht_key_keycode ht_dj_key_defs[] = {
 	{K_Control_Shift_Right,	SHIFT_KEY(0x174)}
 };
 
-bool initKeyb()
+/*
+ *	INIT
+ */
+ 
+bool init_keyb()
 {
-	uint i;
+	UINT i;
 	
 	for (i=0; i<K_COUNT; i++) {
 		ht_set_key((ht_key)i, -1);
@@ -254,7 +259,11 @@ bool initKeyb()
 	return true;
 }
 
-void doneKeyb()
+/*
+ *	DONE
+ */
+ 
+void done_keyb()
 {
 }
 
