@@ -18,12 +18,17 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "analy.h"
 #include "analy_alpha.h"
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "coff_analy.h"
+#include "coff_s.h"
 #include "global.h"
 
 #include "htctrl.h"
@@ -31,12 +36,8 @@
 #include "htiobox.h"
 #include "htcoff.h"
 #include "htstring.h"
-#include "coff_s.h"
+#include "snprintf.h"
 #include "x86asm.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
  *

@@ -302,17 +302,11 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	
 	beginLine();
 
+	bool is_valid_ini_addr = analy->validAddress(addr, scinitialized);
 	bool is_valid_code_addr = analy->validCodeAddress(addr);
-
-/*     char bbuf[1232];
-	addr->stringify(bbuf, 1024, 0);
-	if (strcmp(bbuf, "30:00b2")==0) {
-		int asf=0;
-	}*/
 	
-	
-	if ((cur_addr && ((cur_addr->type.type == dt_code) || ((cur_addr->type.type == dt_unknown) && (is_valid_code_addr))))
-	|| (!cur_addr && is_valid_code_addr)) {
+	if (is_valid_ini_addr && ((cur_addr && ((cur_addr->type.type == dt_code) || ((cur_addr->type.type == dt_unknown) && (is_valid_code_addr))))
+	|| (!cur_addr && is_valid_code_addr))) {
 		// code
 		Location *next_addr = analy->enumLocations(addr);
 		int op_len;
@@ -365,7 +359,9 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	} else {
 		// data
 		if (analy->validAddress(addr, scvalid)) {
-			if (cur_addr && (cur_addr->type.type != dt_unknown) && (cur_addr->type.type != dt_unknown_data)) {
+			if (cur_addr && (cur_addr->type.type != dt_unknown)
+               && (cur_addr->type.type != dt_unknown_data)
+               && (cur_addr->type.type != dt_code)) {
 				switch (cur_addr->type.type) {
 					case dt_int: {
 						bytes_line += cur_addr->type.length;

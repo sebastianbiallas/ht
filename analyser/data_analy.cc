@@ -24,9 +24,10 @@
 #include "analy_register.h"
 #include "data_analy.h"
 #include "global.h"
+#include "snprintf.h"
 
 //#undef DPRINTF
-//#define DPRINTF(msg...) printf(##msg)
+//#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
 #define DPRINTF(msg...)
 
 void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at)
