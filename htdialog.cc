@@ -1388,7 +1388,6 @@ void ht_listbox_title::setText(int cols, ...)
 	va_start(vargs, cols);
 	setTextv(cols, vargs);
 	va_end(vargs);
-	va_end(vargs);
 }
 
 void ht_listbox_title::setTextv(int c, va_list vargs)
