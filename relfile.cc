@@ -106,9 +106,6 @@ UINT	ht_reloc_file::read(void *buf, UINT size)
                // SB: warum hier sizeof und oben MAX_RELOC_TOKEN_LEN ?
 			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
-               if (mm+s>8) {
-               	int a=1;
-               }
                assert(mm+s <= sizeof b);
 
 			memmove(b+s, ((byte*)buf)+e, mm);
