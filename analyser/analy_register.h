@@ -62,8 +62,6 @@
 #define ATOM_ADDRESS_X86_1616 MAGICD("ADR\x11")
 #define ATOM_ADDRESS_X86_1632 MAGICD("ADR\x12")
 
-#define ATOM_ADDRESS_ALPHA_FLAT_32 MAGICD("ADR\x20")
-
 bool init_analyser();
 void done_analyser();
 

@@ -520,26 +520,18 @@ void	Analyser::init()
 	mode = ANALY_TRANSLATE_SYMBOLS;
 }
 
-static void loadlocations(ht_object_stream *st, Location *&loc, int level, int &left)
+static int loadlocations(ht_object_stream *st, Location *&loc, int l, int r)
 {
-	if (left<=0) {
+	if (l > r) {
 		loc = NULL;
-		return;
+		return st->get_error();
 	}
-	if (st->get_error()) {
-		loc = NULL;
-		return;
-	}
-
+     int m = (l+r)/2;
 	loc = (Location *) smalloc0(sizeof(Location));
 
-	bool sdf=!((level<= 1) || (left == 1));
-	if (sdf) loadlocations(st, loc->left, level / 2, left);
-	if (st->get_error()) {
-		free(loc);
-		loc = NULL;
-		return;
-	}
+	if (loadlocations(st, loc->left, l, m-1) != 0) {
+     	return st->get_error();
+     }
 
 	loc->addr = (Address *)st->getObject("addr");
 
@@ -552,45 +544,46 @@ static void loadlocations(ht_object_stream *st, Location *&loc, int level, int &
 	if (st->get_error()) {
 		free(loc);
 		loc = NULL;
-		return;
+		return 1;
 	}
 
 	analyser_get_addrtype(st, &loc->type);
-
 
 	// must be resolved later (thisfunc is of type Location not Address)
 	loc->thisfunc = (Location *)st->getObject("func");
 
 	loc->flags = st->getIntHex(4, "flags");
 	
-	left--;
-
 	if (st->get_error()) {
 		free(loc);
 		loc = NULL;
-		return;
+		return 1;
 	}
-	if (sdf) loadlocations(st, loc->right, level / 2 -1, left);
+	if (loadlocations(st, loc->right, m+1, r) != 0) {
+     	return st->get_error();
+     }
+     return st->get_error();
 }
 
-static void loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, int level, int &left)
+static int loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, int l, int r)
 {
-	if (left<=0) {
+	if (l > r) {
 		symbol = NULL;
-		return;
+		return st->get_error();
 	}
-	if (st->get_error()) {
-		symbol = NULL;
-		return;
-	}
-
+     int m = (l+r)/2;
 	symbol = (Symbol *) smalloc0(sizeof(Symbol));
 
-	bool sdf=!((level<= 1) || (left == 1));
-	if (sdf) loadsymbols(analy, st, symbol->left, level / 2, left);
+	if (loadsymbols(analy, st, symbol->left, l, m-1) != 0) {
+     	return st->get_error();
+     }
 
 	Address *a;
 	a = (Address *)st->getObject("addr");
+     if (!a) {
+		// FIXME: exception bla..
+		return 1;
+     }
 	(symbol->location = analy->newLocation(a))->label = symbol;
 	delete a;
 	
@@ -598,14 +591,15 @@ static void loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, 
 
 	symbol->type = (labeltype)st->getIntHex(1, "type");
 
-	left--;
-
 	if (st->get_error()) {
 		free(symbol);
 		symbol = NULL;
-		return;
+		return st->get_error();
 	}
-	if (sdf) loadsymbols(analy, st, symbol->right, level / 2 -1, left);
+	if (loadsymbols(analy, st, symbol->right, m+1, r) != 0) {
+     	return st->get_error();
+     }
+     return st->get_error();
 }
 
 static void resolveaddrs(Analyser *a, Location *loc)
@@ -653,14 +647,14 @@ int Analyser::load(ht_object_stream *st)
 	setSymbolTreeOptimizeThreshold(1000);
 
 	GET_INT_DEC(st, location_count);
-	loadlocations(st, locations, location_count, location_count);
+	loadlocations(st, locations, 0, location_count-1);
 
 	if (st->get_error()) return st->get_error();
 
 	resolveaddrs(this, locations);
 
 	GET_INT_DEC(st, symbol_count);
-	loadsymbols(this, st, symbols, symbol_count, symbol_count);
+	loadsymbols(this, st, symbols, 0, symbol_count-1);
 
 	if (st->get_error()) return st->get_error();
 

@@ -300,9 +300,6 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 	} else if (oid == ATOM_ADDRESS_X86_FLAT_32) {
 		*r = ((AddressX86Flat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
-	} else if (oid == ATOM_ADDRESS_ALPHA_FLAT_32) {
-		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
-		return true;
 	} else if (oid == ATOM_ADDRESS_FLAT_64) {
 		qword q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
 		if (QWORD_GET_HI(q)) return false;
@@ -322,8 +319,6 @@ Address *PEAnalyser::createAddress32(dword addr)
 		case COFF_MACHINE_I486:
 		case COFF_MACHINE_I586:
 			return new AddressX86Flat32(addr);
-		case COFF_MACHINE_ALPHA:
-			return new AddressAlphaFlat32(addr);
 	}
 	// fallback to standard-addrs
 	return new AddressFlat32(addr);
@@ -348,8 +343,6 @@ Address *PEAnalyser::createAddress()
 			} else {
 				return new AddressX86Flat32();
 			}
-		case COFF_MACHINE_ALPHA:
-			return new AddressAlphaFlat32();
 	}
 	if (pe_shared->opt_magic == COFF_OPTMAGIC_PE64) {
 		return new AddressFlat64();
