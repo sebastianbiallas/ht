@@ -115,7 +115,7 @@ struct pstat_t {
 };
 
 struct pfind_t {
-	char *name;
+	const char *name;
 	pstat_t stat;
 	void *findstate;
 };
