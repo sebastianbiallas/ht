@@ -102,23 +102,48 @@ ht_mask_ptable pe32header_nt[] = {
 	{0, 0}
 };
 
+ht_mask_ptable pe64header_nt[] = {
+	{"image base",					STATICTAG_EDIT_QWORD_LE("0000002c")},
+	{"section alignment",			STATICTAG_EDIT_DWORD_LE("00000034")},
+	{"file alignment",				STATICTAG_EDIT_DWORD_LE("00000038")},
+	{"major OS version",			STATICTAG_EDIT_WORD_LE("0000003c")},
+	{"minor OS version",			STATICTAG_EDIT_WORD_LE("0000003e")},
+	{"major image version",			STATICTAG_EDIT_WORD_LE("00000040")},
+	{"minor image version",			STATICTAG_EDIT_WORD_LE("00000042")},
+	{"major subsystem version",		STATICTAG_EDIT_WORD_LE("00000044")},
+	{"minor subsystem version",		STATICTAG_EDIT_WORD_LE("00000046")},
+	{"Win32 version",				STATICTAG_EDIT_DWORD_LE("00000048")},
+	{"size of image",				STATICTAG_EDIT_DWORD_LE("0000004c")},
+	{"size of headers",				STATICTAG_EDIT_DWORD_LE("00000050")},
+	{"checksum",					STATICTAG_EDIT_DWORD_LE("00000054")},
+	{"subsystem",					STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
+	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")},
+	{"stack reserve",				STATICTAG_EDIT_QWORD_LE("0000005c")},
+	{"stack commit",				STATICTAG_EDIT_QWORD_LE("00000064")},
+	{"heap reserve",				STATICTAG_EDIT_QWORD_LE("0000006c")},
+	{"heap commit",				STATICTAG_EDIT_QWORD_LE("00000074")},
+	{"loader flags",				STATICTAG_EDIT_DWORD_LE("0000007c")},
+	{"number of directory entries",	STATICTAG_EDIT_DWORD_LE("00000080")},
+	{0, 0}
+};
+
 ht_mask_ptable pe32header_nt_dirs[] = {
-	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_REF("0000000100000000", "04", "goto")},
-	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_EDIT_DWORD_LE("00000080")" "STATICTAG_REF("0000000200000000", "04", "goto")},
-	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000084")" "STATICTAG_EDIT_DWORD_LE("00000088")" "STATICTAG_REF("0000000300000000", "04", "goto")},
-	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("0000008c")" "STATICTAG_EDIT_DWORD_LE("00000090")" "STATICTAG_REF("0000000000000003", "04", "goto")},
-	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000094")" "STATICTAG_EDIT_DWORD_LE("00000098")" "STATICTAG_REF("0000000000000004", "04", "goto")},
-	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("0000009c")" "STATICTAG_EDIT_DWORD_LE("000000a0")" "STATICTAG_REF("0000000000000005", "04", "goto")},
-	{"debug directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000a4")" "STATICTAG_EDIT_DWORD_LE("000000a8")" "STATICTAG_REF("0000000000000006", "04", "goto")},
-	{"description string (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000ac")" "STATICTAG_EDIT_DWORD_LE("000000b0")" "STATICTAG_REF("0000000000000007", "04", "goto")},
-	{"machine value (GP) (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000b4")" "STATICTAG_EDIT_DWORD_LE("000000b8")" "STATICTAG_REF("0000000000000008", "04", "goto")},
-	{"thread local storage (TLS) (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000bc")" "STATICTAG_EDIT_DWORD_LE("000000c0")" "STATICTAG_REF("0000000000000009", "04", "goto")},
-	{"load configuration directory (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000c4")" "STATICTAG_EDIT_DWORD_LE("000000c8")" "STATICTAG_REF("000000000000000a", "04", "goto")},
-	{"bound import directory (rva/size)",		STATICTAG_EDIT_DWORD_LE("000000cc")" "STATICTAG_EDIT_DWORD_LE("000000d0")" "STATICTAG_REF("000000000000000b", "04", "goto")},
-	{"import address table (IAT) (rva/size)",	STATICTAG_EDIT_DWORD_LE("000000d4")" "STATICTAG_EDIT_DWORD_LE("000000d8")" "STATICTAG_REF("000000000000000c", "04", "goto")},
-	{"delay import descriptor (rva/size)",		STATICTAG_EDIT_DWORD_LE("000000dc")" "STATICTAG_EDIT_DWORD_LE("000000e0")" "STATICTAG_REF("000000000000000d", "04", "goto")},
-	{"COM+ runtime header (rva/size)",			STATICTAG_EDIT_DWORD_LE("000000e4")" "STATICTAG_EDIT_DWORD_LE("000000e8")" "STATICTAG_REF("000000000000000e", "04", "goto")},
-	{"reserved (15) (rva/size)",				STATICTAG_EDIT_DWORD_LE("000000ec")" "STATICTAG_EDIT_DWORD_LE("000000f0")" "STATICTAG_REF("000000000000000f", "04", "goto")},
+	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000100000000", "04", "goto")},
+	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000200000000", "04", "goto")},
+	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000300000000", "04", "goto")},
+	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000018")" "STATICTAG_EDIT_DWORD_LE("0000001c")" "STATICTAG_REF("0000000000000003", "04", "goto")},
+	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000020")" "STATICTAG_EDIT_DWORD_LE("00000024")" "STATICTAG_REF("0000000000000004", "04", "goto")},
+	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000028")" "STATICTAG_EDIT_DWORD_LE("0000002c")" "STATICTAG_REF("0000000000000005", "04", "goto")},
+	{"debug directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000030")" "STATICTAG_EDIT_DWORD_LE("00000034")" "STATICTAG_REF("0000000000000006", "04", "goto")},
+	{"description string (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000038")" "STATICTAG_EDIT_DWORD_LE("0000003c")" "STATICTAG_REF("0000000000000007", "04", "goto")},
+	{"machine value (GP) (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000040")" "STATICTAG_EDIT_DWORD_LE("00000044")" "STATICTAG_REF("0000000000000008", "04", "goto")},
+	{"thread local storage (TLS) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000048")" "STATICTAG_EDIT_DWORD_LE("0000004c")" "STATICTAG_REF("0000000000000009", "04", "goto")},
+	{"load configuration directory (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000050")" "STATICTAG_EDIT_DWORD_LE("00000054")" "STATICTAG_REF("000000000000000a", "04", "goto")},
+	{"bound import directory (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000058")" "STATICTAG_EDIT_DWORD_LE("0000005c")" "STATICTAG_REF("000000000000000b", "04", "goto")},
+	{"import address table (IAT) (rva/size)",	STATICTAG_EDIT_DWORD_LE("00000060")" "STATICTAG_EDIT_DWORD_LE("00000064")" "STATICTAG_REF("000000000000000c", "04", "goto")},
+	{"delay import descriptor (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000068")" "STATICTAG_EDIT_DWORD_LE("0000006c")" "STATICTAG_REF("000000000000000d", "04", "goto")},
+	{"COM+ runtime header (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000070")" "STATICTAG_EDIT_DWORD_LE("00000074")" "STATICTAG_REF("000000000000000e", "04", "goto")},
+	{"reserved (15) (rva/size)",				STATICTAG_EDIT_DWORD_LE("00000078")" "STATICTAG_EDIT_DWORD_LE("0000007c")" "STATICTAG_REF("000000000000000f", "04", "goto")},
 	{0, 0}
 };
 
@@ -167,6 +192,8 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	opt = create_host_int(&opt, 2, little_endian);
 	switch (opt) {
 		case COFF_OPTMAGIC_PE32:
+		case COFF_OPTMAGIC_PE64: {
+           	bool pe32 = (opt==COFF_OPTMAGIC_PE32);
 			s->add_staticmask_ptable(pe32header, h+4, pe_bigendian);
 			cs=new ht_collapsable_sub();
 			cs->init(file, s, 1, "optional header", 1);
@@ -174,18 +201,19 @@ ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 			
 			s=new ht_mask_sub();
 			s->init(file, 3);
-			s->add_staticmask_ptable(pe32header_nt, h+4, pe_bigendian);
+			s->add_staticmask_ptable(pe32?pe32header_nt:pe64header_nt, h+4, pe_bigendian);
 			cs=new ht_collapsable_sub();
 			cs->init(file, s, 1, "optional header: NT fields", 1);
 			v->insertsub(cs);
 			
 			s=new ht_mask_sub();
 			s->init(file, 4);
-			s->add_staticmask_ptable(pe32header_nt_dirs, h+4, pe_bigendian);
+			s->add_staticmask_ptable(pe32header_nt_dirs, h+4+(pe32?0x74:0x84), pe_bigendian);
 			cs=new ht_collapsable_sub();
 			cs->init(file, s, 1, "optional header: directories", 1);
 			v->insertsub(cs);
 			break;
+          }
 		default: {
 			s->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_PE_OPTIONAL_MAGICS_STR), h+4, pe_bigendian);
 			s->add_mask("-------------------------------------------------------------------------");

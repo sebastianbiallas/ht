@@ -19,24 +19,24 @@
  */
 
 #include "log.h"
+#include "formats.h"
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htpeimg.h"
 #include "htstring.h"
-#include "formats.h"
-
-#include "pestruct.h"
-
-#include "htanaly.h"
 #include "pe_analy.h"
+#include "pestruct.h"
+#include "snprintf.h"
 
 ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return 0;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32 && pe_shared->opt_magic!=COFF_OPTMAGIC_PE64) return 0;
 
-	LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
+     bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
+
+     LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
 	PEAnalyser *p = new PEAnalyser();
 	p->init(pe_shared, file);
 
@@ -66,12 +66,18 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		s++;
 	}
 /**/
-	l += pe_shared->pe32.header_nt.image_base;
-	h += pe_shared->pe32.header_nt.image_base;
-
-	Address *low = p->createAddress32(l);
-	Address *high = p->createAddress32(h);
-
+	Address *low;
+	Address *high;
+	if (pe32) {
+		l += pe_shared->pe32.header_nt.image_base;
+		h += pe_shared->pe32.header_nt.image_base;
+		low = p->createAddress32(l);
+		high = p->createAddress32(h);
+     } else {
+		low = p->createAddress64(to_qword(l) + pe_shared->pe64.header_nt.image_base);
+		high = p->createAddress64(to_qword(h) + pe_shared->pe64.header_nt.image_base);
+     }
+     
 	ht_analy_sub *analy=new ht_analy_sub();
 	analy->init(file, v, p, low, high);
 	
@@ -83,7 +89,12 @@ ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 
 	v->sendmsg(msg_complete_init, 0);
 
-	Address *tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+     Address *tmpaddr;
+     if (pe32) {
+     	tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+     } else {
+     	tmpaddr = p->createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
+     }
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
 	

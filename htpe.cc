@@ -110,7 +110,7 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 	pe_shared->opt_magic = create_host_int(&pe_shared->opt_magic, sizeof pe_shared->opt_magic, little_endian);
 	file->seek(header_ofs+4+sizeof pe_shared->coffheader);
 	switch (pe_shared->opt_magic) {
-		case COFF_OPTMAGIC_PE32:
+		case COFF_OPTMAGIC_PE32: {
 			file->read(&pe_shared->pe32.header, sizeof pe_shared->pe32.header);
 			create_host_struct(&pe_shared->pe32.header, COFF_OPTIONAL_HEADER32_struct, little_endian);
 			file->read(&pe_shared->pe32.header_nt, sizeof pe_shared->pe32.header_nt);
@@ -119,6 +119,17 @@ void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_form
 				create_host_struct(&pe_shared->pe32.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
 			}
 			break;
+          }
+		case COFF_OPTMAGIC_PE64: {
+			file->read(&pe_shared->pe64.header, sizeof pe_shared->pe64.header);
+			create_host_struct(&pe_shared->pe64.header, COFF_OPTIONAL_HEADER32_struct, little_endian);
+			file->read(&pe_shared->pe64.header_nt, sizeof pe_shared->pe64.header_nt);
+			create_host_struct(&pe_shared->pe64.header_nt, PE_OPTIONAL_HEADER64_NT_struct, little_endian);
+			for (UINT i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
+				create_host_struct(&pe_shared->pe64.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
+			}
+			break;
+          }
 	}
 
 /* read section headers */

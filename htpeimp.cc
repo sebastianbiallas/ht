@@ -43,11 +43,18 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
+	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32 && pe_shared->opt_magic!=COFF_OPTMAGIC_PE64) return NULL;
+
+     bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
 	dword sec_rva, sec_size;
-	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
-	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+     if (pe32) {
+		sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
+		sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+     } else {
+		sec_rva = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
+		sec_size = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+     }
 	if (!sec_rva || !sec_size) return NULL;
 
 	int h0=new_timer();
@@ -80,8 +87,15 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 /* get import directory offset */
 	/* 1. get import directory rva */
 	FILEOFS iofs;
-	RVA irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
-	UINT isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+	RVA irva;
+	UINT isize;
+     if (pe32) {
+		irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
+		isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+     } else {
+		irva = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
+		isize = pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
+     }
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 	LOG("%s: PE: reading import directory at offset %08x, rva %08x, size %08x...", file->get_filename(), iofs, irva, isize);

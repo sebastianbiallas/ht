@@ -63,6 +63,7 @@ typedef struct	COFF_HEADER {
 #define COFF_MACHINE_SH3			   	0x1a2   // Hitachi SH3
 #define COFF_MACHINE_SH4		   	 	0x1a6   // Hitachi SH4
 #define COFF_MACHINE_ARM				0x1c0   // ARM
+#define COFF_MACHINE_THUMB			0x1c2   // THUMB
 #define COFF_MACHINE_POWERPC		   	0x1f0   // IBM PowerPC Little-Endian
 #define COFF_MACHINE_IA64			0x200   // Intel IA64
 #define COFF_MACHINE_MIPS16			0x266   // MIPS16
@@ -95,6 +96,20 @@ typedef struct	COFF_OPTIONAL_HEADER32 {
 	dword entrypoint_address HTPACKED;
 	dword code_base HTPACKED;
 	dword data_base HTPACKED;
+};
+
+/*
+ *	same as COFF_OPTIONAL_HEADER32 but no data_base
+ */
+typedef struct	COFF_OPTIONAL_HEADER64 {
+	word magic HTPACKED;
+	byte major_linker_version HTPACKED;
+	byte minor_linker_version HTPACKED;
+	dword code_size HTPACKED;
+	dword data_size HTPACKED;
+	dword bss_size HTPACKED;
+	dword entrypoint_address HTPACKED;
+	dword code_base HTPACKED;
 };
 
 /*
@@ -168,6 +183,7 @@ struct COFF_SECTION_HEADER {
 
 extern byte COFF_HEADER_struct[];
 extern byte COFF_OPTIONAL_HEADER32_struct[];
+extern byte COFF_OPTIONAL_HEADER64_struct[];
 extern byte COFF_SECTION_HEADER_struct[];
 
 #endif /* !__COFF_S_H_ */

@@ -72,6 +72,32 @@ typedef struct	PE_OPTIONAL_HEADER32_NT {
 	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES] HTPACKED;
 };
 
+typedef struct	PE_OPTIONAL_HEADER64_NT {
+// NT additional fields.
+	qword image_base HTPACKED;
+	dword section_alignment HTPACKED;
+	dword file_alignment HTPACKED;
+	word major_os_version	HTPACKED;
+	word minor_os_version	HTPACKED;
+	word major_image_version	HTPACKED;
+	word minor_image_version	HTPACKED;
+	word major_subsystem_version HTPACKED;
+	word minor_subsystem_version HTPACKED;
+	dword win32_version HTPACKED;
+	dword image_size HTPACKED;
+	dword header_size HTPACKED;
+	dword checksum HTPACKED;
+	word	subsystem HTPACKED;
+	word dll_characteristics HTPACKED;
+	qword stack_reserve_size HTPACKED;
+	qword stack_commit_size HTPACKED;
+	qword heap_reserve_size HTPACKED;
+	qword heap_commit_size HTPACKED;
+	dword loader_flags HTPACKED;
+	dword directory_count HTPACKED;
+	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES] HTPACKED;
+};
+
 // Subsystem Values
 
 #define PE_SUBSYSTEM_NATIVE			   1	  // Image doesn't require a subsystem.
@@ -219,6 +245,7 @@ struct PE_IL_DIRECTORY {
 
 extern byte PE_DATA_DIRECTORY_struct[];
 extern byte PE_OPTIONAL_HEADER32_NT_struct[];
+extern byte PE_OPTIONAL_HEADER64_NT_struct[];
 extern byte PE_EXPORT_DIRECTORY_struct[];
 extern byte PE_THUNK_DATA_struct[];
 extern byte PE_IMPORT_DESCRIPTOR_struct[];

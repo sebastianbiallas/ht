@@ -68,6 +68,10 @@ struct ht_pe_shared_data {
 			COFF_OPTIONAL_HEADER32 header;
 			PE_OPTIONAL_HEADER32_NT header_nt;
 		} pe32;
+		struct {
+			COFF_OPTIONAL_HEADER64 header;
+			PE_OPTIONAL_HEADER64_NT header_nt;
+		} pe64;
 	};
 	pe_section_headers sections;
 	ht_pe_il *il;
