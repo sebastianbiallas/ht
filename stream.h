@@ -325,7 +325,7 @@ protected:
 	byte *buf;
 
 public:
-		   void		init(byte *buf, UINT size = 0);
+		   void		init(byte *buf, UINT size);
 	virtual void		done();
 /* overwritten */
 	virtual const char *get_desc();

@@ -738,16 +738,18 @@ UINT ht_memmap_file::get_size()
 	return size;
 }
 
-UINT ht_memmap_file::read(void *b, UINT size)
+UINT ht_memmap_file::read(void *b, UINT s)
 {
-	memmove(b, (char*)buf+pos, size);
-	pos+=size;
-	return size;
+	if (pos+s > size) s = size-pos;
+	memmove(b, (char*)buf+pos, s);
+	pos += s;
+	return s;
 }
 
 int ht_memmap_file::seek(FILEOFS offset)
 {
-	pos=offset;
+	pos = offset;
+	if (pos > size) pos = size;
 	return 0;
 }
 
@@ -756,11 +758,12 @@ FILEOFS ht_memmap_file::tell()
 	return pos;
 }
 
-UINT ht_memmap_file::write(const void *b, UINT size)
+UINT ht_memmap_file::write(const void *b, UINT s)
 {
-	memmove(((byte*)buf)+pos, b, size);
-	pos+=size;
-	return size;
+	if (pos+s > size) s = size-pos;
+	memmove(((byte*)buf)+pos, b, s);
+	pos += s;
+	return s;
 }
 
 /*
