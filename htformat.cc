@@ -3219,7 +3219,7 @@ UINT ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, UINT maxlen, 
 					int shift=((ht_tag_edit_bit*)n)->bitidx;
 					int op=shift/8;
 					byte d;
-					
+
 					tag_offset=tag_get_offset(n);
 					tag_color=getcolor_tag(palidx_tags_edit_tag);
 					bool isdirty = false;
@@ -3227,7 +3227,7 @@ UINT ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, UINT maxlen, 
 					if (isdirty) tag_color=vcp_mix(tag_color, getcolor_tag(palidx_tags_edit_tag_modified));
 					if ((tag_offset>=sel_start) && (tag_offset<sel_end)) tag_color=vcp_mix(tag_color, getcolor_tag(palidx_tags_edit_tag_selected));
 					if (is_cursor) tag_color=vcp_mix(tag_color, getcolor_tag(edit() ? palidx_tags_edit_tag_cursor_edit : palidx_tags_edit_tag_cursor_select));
-					
+
 					if (pread(tag_offset+op, &d, 1)==1) {
 						str[0]=(d& (1 << (shift%8))) ? '1' : '0';
 						str[1]=0;

@@ -36,6 +36,7 @@
 	- ht_analy::lowest/highest address
 
 +steves
+- eval text_viewer
 - NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 - LE binary search does not work
 - Resources in VxDs (like in PE)
