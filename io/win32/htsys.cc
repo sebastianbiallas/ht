@@ -20,6 +20,7 @@
 
 #include "htsys.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,10 +37,10 @@ struct winfindstate {
 	WIN32_FIND_DATA find_data;
 };
 
-int sys_canonicalize(char *filename, const char *fullfilename)
+int sys_canonicalize(char *result, const char *filename)
 {
 	char *dunno;
-	return (GetFullPathName(filename, HT_NAME_MAX, fullfilename, &dunno) > 0) ? 0 : ENOENT;
+	return (GetFullPathName(filename, HT_NAME_MAX, result, &dunno) > 0) ? 0 : ENOENT;
 }
 
 void sys_findfill(pfind_t *pfind)
@@ -183,19 +184,148 @@ int sys_filename_cmp(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd)
+/*
+ *	Win32 IPC
+ */
+
+class ht_win32_file: public ht_streamfile {
+private:
+	HANDLE h;
+public:
+	        void init(HANDLE h);
+/* overwritten */
+	virtual UINT		read(void *buf, UINT size);
+	virtual UINT		write(const void *buf, UINT size);
+};
+
+void ht_win32_file::init(HANDLE H)
 {
-	return ENOSYS;
+	ht_streamfile::init();
+	h = H;
+}
+
+UINT ht_win32_file::read(void *buf, UINT size)
+{
+	DWORD avail, unread;
+	if (!PeekNamedPipe(h, NULL, 0, NULL, &avail, &unread)) return 0;
+	DWORD n = 0;
+	if (avail) {
+		int c = (avail > size) ? size : avail;
+		if (!ReadFile(h, buf, c, &n, NULL)) n = 0;
+	}
+	return n;
+}
+
+UINT ht_win32_file::write(const void *buf, UINT size)
+{
+	DWORD n = 0;
+	if (!WriteFile(h, buf, size, &n, NULL)) n = 0;
+	return n;
+}
+
+/**/
+
+BOOL CreateChildProcess(DWORD *pid, const char *cmd, HANDLE in, HANDLE out, HANDLE err)
+{
+	PROCESS_INFORMATION piProcInfo;
+	STARTUPINFO siStartInfo;
+
+	ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+	siStartInfo.cb = sizeof(STARTUPINFO);
+	siStartInfo.dwFlags = STARTF_USESTDHANDLES;
+	siStartInfo.hStdInput = in;
+	siStartInfo.hStdOutput = out;
+	siStartInfo.hStdError = err;
+
+#if 0
+	TCHAR shellCmd[_MAX_PATH];
+	if(!GetEnvironmentVariable(_T("ComSpec"), shellCmd, _MAX_PATH)) return FALSE;
+#ifdef _UNICODE
+	_tcscat( shellCmd, _T(" /U") );
+#else
+	_tcscat( shellCmd, _T(" /A") );
+#endif
+#endif
+	TCHAR shellCmd[_MAX_PATH];
+	strcpy(shellCmd, cmd);
+	BOOL ret = CreateProcess(NULL, shellCmd, NULL, NULL, TRUE, 0/*DETACHED_PROCESS*/,
+		NULL, NULL, &siStartInfo, &piProcInfo);
+
+	if (ret) *pid = piProcInfo.dwProcessId;
+	return ret;
+}
+
+static HANDLE myPID = NULL;
+
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd)
+{
+	if (myPID != NULL) return EBUSY;
+	HANDLE old_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE outr, outw, outr_dup;
+	if (!CreatePipe(&outr, &outw, NULL, 0)) return EIO;
+	if (!SetStdHandle(STD_OUTPUT_HANDLE, outw)) return EIO;
+	if (!DuplicateHandle(GetCurrentProcess(), outr,	GetCurrentProcess(),
+		&outr_dup, 0, FALSE, DUPLICATE_SAME_ACCESS)) return EIO;
+	CloseHandle(outr);
+
+	HANDLE old_in = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE inr, inw, inw_dup;
+	if (!CreatePipe(&inr, &inw, NULL, 0)) return EIO;
+	if (!SetStdHandle(STD_INPUT_HANDLE, inr)) return EIO;
+	if (!DuplicateHandle(GetCurrentProcess(), inw, GetCurrentProcess(),
+		&inw_dup, 0, FALSE, DUPLICATE_SAME_ACCESS)) return EIO;
+	CloseHandle(inw);
+
+	DWORD child_pid;
+	if (!CreateChildProcess(&child_pid, cmd, inr, outw, outw))
+		return EIO;
+
+	SetStdHandle(STD_OUTPUT_HANDLE, old_out);
+	SetStdHandle(STD_INPUT_HANDLE, old_in);
+
+	HANDLE ph = OpenProcess(PROCESS_ALL_ACCESS, false, child_pid);
+	if (ph == NULL) return EIO;
+
+	myPID = ph;
+	*handle = (int)ph;
+
+	ht_win32_file *wf;
+
+	wf = new ht_win32_file();
+	wf->init(inw_dup);
+	*in = wf;
+
+	wf = new ht_win32_file();
+	wf->init(outr_dup);
+	*out = wf;
+
+	wf = new ht_win32_file();
+	wf->init(outr_dup);
+	*err = wf;
+
+	return 0;
 }
 
 bool sys_ipc_is_valid(int handle)
 {
+	HANDLE h = (HANDLE)handle;
+	if (h == myPID) {
+		return (WaitForSingleObject(h, 0) != WAIT_OBJECT_0);
+	}
 	return false;
 }
 
 int sys_ipc_terminate(int handle)
 {
-	return 0;
+	if (sys_ipc_is_valid(handle)) {
+		HANDLE h = (HANDLE)handle;
+		int r = (TerminateProcess(h, 1)) ? 0 : EIO;
+		CloseHandle(h);
+		myPID = NULL;
+		return r;
+	}
+	myPID = NULL;
+	return EINVAL;
 }
 
 /*

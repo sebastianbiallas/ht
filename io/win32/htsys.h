@@ -23,10 +23,11 @@
 
 #include "htio.h"
 #include "global.h"
+#include "stream.h"
 
 #define HT_SYS_NAME			"Win32"
 
-int sys_canonicalize(char *filename, const char *fullfilename);
+int sys_canonicalize(char *result, const char *filename);
 int sys_findclose(pfind_t *pfind);
 int sys_findfirst(const char *dirname, pfind_t *pfind);
 int sys_findnext(pfind_t *pfind);
@@ -38,7 +39,7 @@ int sys_deletefile(const char *filename);
 bool sys_is_path_delim(char c);
 int sys_filename_cmp(const char *a, const char *b);
 
-int sys_ipc_exec(int *in, int *out, int *err, int *handle, const char *cmd);
+int sys_ipc_exec(ht_streamfile **in, ht_streamfile **out, ht_streamfile **err, int *handle, const char *cmd);
 bool sys_ipc_is_valid(int handle);
 int sys_ipc_terminate(int handle);
 
