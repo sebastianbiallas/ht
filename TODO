@@ -37,6 +37,8 @@
 - document commandline options in help
 
 +steves
+- cbw (opsize 16) and cwde (opsize 32) are distinct
+  same with cwd and cdq
 - mov eax, [eax+ebp] vs. mov eax, [ebp+eax]
 - blockop should support multiple endianesses (currently only big-endian)
 - eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
