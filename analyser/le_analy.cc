@@ -28,6 +28,7 @@
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "global.h"
+#include "htanaly.h"		// FIXME: for ht_aviewer, to call gotoAddress(entrypoint)
 #include "le_analy.h"
 
 #include "htctrl.h"
@@ -89,15 +90,13 @@ void	LEAnalyser::done()
  */
 void LEAnalyser::beginAnalysis()
 {
-	char	buffer[1024];
+//	char	buffer[1024];
 
 	/*
 	 *	entrypoint
 	 */
 
-	Address *entry = (le_shared->hdr.startobj != 0) ?
-     	createAddressFlat32(LE_MAKE_ADDR(le_shared, le_shared->hdr.startobj-1, le_shared->hdr.eip)) : NULL;
-
+    	LEAddress a;
      Address *control = NULL;
      Address *v86control = NULL;
      Address *pmcontrol = NULL;
@@ -105,24 +104,37 @@ void LEAnalyser::beginAnalysis()
      	LEAddress addr;
      	int temp;
 
-          addr = le_shared->vxd_desc.ctrl_ofs;
-		if (LE_addr_to_segment(le_shared, addr, &temp))
-			control = createAddressFlat32(
-               	LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
-                    LE_ADDR_OFS(le_shared, addr)));
-
           addr = le_shared->vxd_desc.v86_ctrl_ofs;
-		if (LE_addr_to_segment(le_shared, addr, &temp))
-			v86control = createAddressFlat32(
-               	LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
-                    LE_ADDR_OFS(le_shared, addr)));
+		if (LE_addr_to_segment(le_shared, addr, &temp)) {
+          	a = LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
+                    LE_ADDR_OFS(le_shared, addr));
+			v86control = createAddressFlat32(a);
+               le_shared->best_entrypoint = a;
+		}
 
           addr = le_shared->vxd_desc.pm_ctrl_ofs;
-		if (LE_addr_to_segment(le_shared, addr, &temp))
-			pmcontrol = createAddressFlat32(
-               	LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
-                    LE_ADDR_OFS(le_shared, addr)));
+		if (LE_addr_to_segment(le_shared, addr, &temp)) {
+          	a = LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
+                    LE_ADDR_OFS(le_shared, addr));
+			pmcontrol = createAddressFlat32(a);
+               le_shared->best_entrypoint = a;
+		}
+          
+          addr = le_shared->vxd_desc.ctrl_ofs;
+		if (LE_addr_to_segment(le_shared, addr, &temp)) {
+          	a = LE_MAKE_ADDR(le_shared, LE_ADDR_SEG(le_shared, addr),
+                    LE_ADDR_OFS(le_shared, addr));
+			control = createAddressFlat32(a);
+               le_shared->best_entrypoint = a;
+		}
 	}
+
+	Address *entry = NULL;
+	if (le_shared->hdr.startobj != 0) {
+     	a = LE_MAKE_ADDR(le_shared, le_shared->hdr.startobj-1, le_shared->hdr.eip);
+     	le_shared->best_entrypoint = a;
+		entry = createAddressFlat32(a);
+     }
 
 	if (v86control) pushAddress(v86control, v86control);
 
@@ -142,19 +154,17 @@ void LEAnalyser::beginAnalysis()
      	LEAddress la = LE_get_seg_addr(le_shared, i);
 		Address *secaddr = createAddressFlat32(la);
 
-		UINT psize = LE_get_seg_psize(le_shared, i);
+//		UINT psize = LE_get_seg_psize(le_shared, i);
 		UINT vsize = LE_get_seg_vsize(le_shared, i);
 
-		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+		sprintf(blub, ";  section %d <%s> USE%d", i+1, getSegmentNameByAddress(secaddr), (le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32) ? 32 : 16);
 		addComment(secaddr, 0, "");
 		addComment(secaddr, 0, ";******************************************************************");
 		addComment(secaddr, 0, blub);
-          // fixnu
-		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", 0, vsize);
+		sprintf(blub, ";  virtual address  %08x  virtual size   %08x", LE_get_seg_addr(le_shared, i), vsize);
 		addComment(secaddr, 0, blub);
-          // fixnu
-		sprintf(blub, ";  file offset      %08x  file size      %08x", 0, psize);
-		addComment(secaddr, 0, blub);
+/*		sprintf(blub, ";  file offset      %08x  file size      %08x", psize);
+		addComment(secaddr, 0, blub);*/
 		addComment(secaddr, 0, ";******************************************************************");
 
 		// mark end of sections
@@ -247,26 +257,7 @@ void LEAnalyser::beginAnalysis()
 		free(label);
 	}*/
 
-     if (entry) {
-		addComment(entry, 0, "");
-		addComment(entry, 0, ";****************************");
-		addComment(entry, 0, ";  program entry point");
-		addComment(entry, 0, ";****************************");
-		if (validCodeAddress(entry)) {
-			assignSymbol(entry, "entrypoint", label_func);
-		} else {
-			assignSymbol(entry, "entrypoint", label_data);
-		}
-	}
-
      if (le_shared->is_vxd) {
-     	if (control) {
-			addComment(control, 0, "");
-			addComment(control, 0, ";****************************");
-			addComment(control, 0, ";  VxD control procedure");
-			addComment(control, 0, ";****************************");
-			assignSymbol(control, "VxD_control", label_func);
-          }
      	if (v86control) {
 			addComment(v86control, 0, "");
 			addComment(v86control, 0, ";****************************");
@@ -281,12 +272,37 @@ void LEAnalyser::beginAnalysis()
 			addComment(pmcontrol, 0, ";****************************");
 			assignSymbol(pmcontrol, "VxD_pm_control", label_func);
           }
+     	if (control) {
+			addComment(control, 0, "");
+			addComment(control, 0, ";****************************");
+			addComment(control, 0, ";  VxD control procedure");
+			addComment(control, 0, ";****************************");
+			assignSymbol(control, "VxD_control", label_func);
+          }
      }
+
+     if (entry) {
+		addComment(entry, 0, "");
+		addComment(entry, 0, ";****************************");
+		addComment(entry, 0, ";  program entry point");
+		addComment(entry, 0, ";****************************");
+		if (validCodeAddress(entry)) {
+			assignSymbol(entry, "entrypoint", label_func);
+		} else {
+			assignSymbol(entry, "entrypoint", label_data);
+		}
+	}
 
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 	delete entry;
 	
+	if (le_shared->best_entrypoint != LE_ADDR_INVALID) {
+		Address *tmpaddr = createAddressFlat32(le_shared->best_entrypoint);
+		((ht_aviewer*)le_shared->v_image)->gotoAddress(tmpaddr, NULL);
+		delete tmpaddr;
+	}
+
 	Analyser::beginAnalysis();
 }
 
@@ -484,6 +500,8 @@ bool LEAnalyser::validAddress(Address *Addr, tsectype action)
 	LEAddress na;
  	if (!convertAddressToLEAddress(Addr, &na)) return false;
 	if (!LE_addr_to_segment(le_shared, na, &sec)) return false;
+     LEAddress temp;
+	bool init = LE_addr_to_ofs(le_shared, na, &temp);
 	LE_OBJECT *s = objects->header + sec;
 
 	switch (action) {
@@ -495,13 +513,10 @@ bool LEAnalyser::validAddress(Address *Addr, tsectype action)
 			return (s->flags & LE_OBJECT_FLAG_WRITEABLE);
 		case screadwrite:
 			return (s->flags & LE_OBJECT_FLAG_READABLE) && (s->flags & LE_OBJECT_FLAG_WRITEABLE);
-		case sccode: {
-               FILEOFS ofs;
-               if (!LE_addr_to_ofs(le_shared, na, &ofs)) return false;
-			return (s->flags & LE_OBJECT_FLAG_EXECUTABLE);
-          }
+		case sccode:
+			return (s->flags & LE_OBJECT_FLAG_EXECUTABLE) && init;
 		case scinitialized:
-			return true;
+			return init;
 	}
 	return false;
 }

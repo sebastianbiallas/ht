@@ -102,6 +102,8 @@ public:
 #define ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS	8
 
 class AnalyX86Disassembler: public AnalyDisassembler {
+protected:
+			void			createUnasm();
 public:
 	int flags;
 

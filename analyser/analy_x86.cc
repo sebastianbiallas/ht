@@ -24,18 +24,7 @@
 #include "analy_x86.h"
 #include "htdebug.h"
 #include "snprintf.h"
-#include "vxd.h"
 #include "x86dis.h"
-
-class x86dis_vxd: public x86dis {
-protected:
-	virtual void str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
-public:
-	x86dis_vxd(int opsize, int addrsize);
-	virtual ~x86dis_vxd();
-
-	virtual dis_insn *decode(byte *code, byte maxlen, CPU_ADDR addr);
-};
 
 AddressX86Flat32::AddressX86Flat32()
 {
@@ -435,91 +424,12 @@ int AddressX86_1616::stringSize()
 }
 
 /*
- *	CLASS x86dis_vxd
- */
-
-x86dis_vxd::x86dis_vxd(int opsize, int addrsize)
-: x86dis(opsize, addrsize)
-{
-}
-
-x86dis_vxd::~x86dis_vxd()
-{
-}
-
-dis_insn *x86dis_vxd::decode(byte *code, byte maxlen, CPU_ADDR addr)
-{
-	if ((maxlen>=6) && (code[0]==0xcd) && (code[1]==0x20)) {
-		insn.name="VxDCall";
-		insn.size=6;
-		vxd_t *v=find_vxd(vxds, *(word*)(code+4));
-
-		if (v) {
-			insn.op[1].type=X86_OPTYPE_USER;
-			insn.op[1].user[0]=*(word*)(code+4);
-			insn.op[1].user[1]=(int)v->name;
-		
-			char *vs=find_vxd_service(v->services, *(word*)(code+2) & 0x7fff);
-
-			if (vs) {
-				insn.op[0].type=X86_OPTYPE_USER;
-				insn.op[0].user[0]=*(word*)(code+2);
-				insn.op[0].user[1]=(int)vs;
-			} else {
-				insn.op[0].type=X86_OPTYPE_IMM;
-				insn.op[0].size=2;
-				insn.op[0].imm=*(word*)(code+2);
-			}
-		} else {
-			insn.op[0].type=X86_OPTYPE_IMM;
-			insn.op[0].size=2;
-			insn.op[0].imm=*(word*)(code+2);
-		
-			insn.op[1].type=X86_OPTYPE_IMM;
-			insn.op[1].size=2;
-			insn.op[1].imm=*(word*)(code+4);
-		}
-		insn.op[2].type=X86_OPTYPE_EMPTY;
-		insn.lockprefix=X86_PREFIX_NO;
-		insn.repprefix=X86_PREFIX_NO;
-		insn.segprefix=X86_PREFIX_NO;
-		return &insn;
-	}
-	return x86dis::decode(code, maxlen, addr);
-}
-
-void x86dis_vxd::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params)
-{
-	if (op->type==X86_OPTYPE_USER) {
-		*opstrlen=0;
-		strcpy(opstr, (char*)op->user[1]);
-	} else {
-		x86dis::str_op(opstr, opstrlen, insn, op, explicit_params);
-	}
-}
-
-
-
-
-/*
  *
  */
 void AnalyX86Disassembler::init(Analyser *A, int f)
 {
 	flags = f;
-     if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
-		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
-			disasm = new x86dis_vxd(X86_OPSIZE16, X86_ADDRSIZE16);
-		} else {
-			disasm = new x86dis_vxd(X86_OPSIZE32, X86_ADDRSIZE32);
-		}
-     } else {
-		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
-			disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
-		} else {
-			disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
-		}
-	}
+     createUnasm();
 	AnalyDisassembler::init(A);
 }
 
@@ -565,6 +475,22 @@ Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 	}
 }
 
+void AnalyX86Disassembler::createUnasm()
+{
+     if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
+		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
+			disasm = new x86dis_vxd(X86_OPSIZE16, X86_ADDRSIZE16);
+		} else {
+			disasm = new x86dis_vxd(X86_OPSIZE32, X86_ADDRSIZE32);
+		}
+     } else {
+		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
+			disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
+		} else {
+			disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
+		}
+	}
+}
 word AnalyX86Disassembler::getSegment(Address *addr)
 {
 	if (addr->object_id() == ATOM_ADDRESS_X86_1616) {
