@@ -455,25 +455,30 @@ int hexdigit(char a)
 	return -1;
 }
 
-dword hexb(char *s)
+bool hexb_ex(uint8 &result, const char *s)
 {
-	byte b=*(byte*)s;
-	b-='0';
-	if (b>9) b-='a'-'0'-10;
-	byte c=*(byte*)(s+1);
-	c-='0';
-	if (c>9) c-='a'-'0'-10;
-	return (b<<4)+c;
+	int v, w;
+	v = hexdigit(s[0]);
+	w = hexdigit(s[1]);
+	if ((v < 0) || (w < 0)) return false;
+	result = (v<<4) | w;
+	return true;
 }
 
-dword hexw(char *s)
+bool hexw_ex(uint16 &result, const char *s)
 {
-	return (hexb(s)<<8) | hexb(s+2);
+	uint8 v, w;
+	if (!hexb_ex(v, s) || !hexb_ex(w, s+2)) return false;
+	result = (v<<8) | w;
+	return true;
 }
 
-dword hexd(char *s)
+bool hexd_ex(uint32 &result, const char *s)
 {
-	return (hexw(s)<<16) | hexw(s+4);
+	uint16 v, w;
+	if (!hexw_ex(v, s) || !hexw_ex(w, s+4)) return false;
+	result = (v<<16) | w;
+	return true;
 }
 
 char *mkhexb(char *buf, byte d)
@@ -527,9 +532,8 @@ char *mkhexq(char *buf, qword q)
 }
 
 /*
- *	CLASS ht_data_string
+ *	ht_data_string
  */
-
 ht_data_string::ht_data_string(const char *s)
 {
 	value = ht_strdup(s);
@@ -562,9 +566,8 @@ OBJECT_ID ht_data_string::object_id() const
 }
 
 /*
- *	CLASS ht_string_list
+ *	ht_string_list
  */
-
 void ht_string_list::init()
 {
 	ht_clist::init(compare_keys_string);
@@ -583,9 +586,8 @@ void ht_string_list::insert_string(char *s)
 }
 
 /*
- *	CLASS ht_sorted_string_list
+ *	ht_sorted_string_list
  */
- 
 void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, ht_data *key_b))
 {
 	ht_sorted_list::init(compare_keys_proc);
@@ -654,4 +656,3 @@ void done_string()
 	unregister_atom(ATOM_COMPARE_KEYS_STRING);
 	unregister_atom(ATOM_ICOMPARE_KEYS_STRING);
 }
-

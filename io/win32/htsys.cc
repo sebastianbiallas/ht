@@ -146,7 +146,7 @@ int sys_pstat(pstat_t *s, const char *filename)
 
 void sys_suspend()
 {
-	Sleep(0);
+	Sleep(42);
 }
 
 int sys_get_free_mem()

@@ -56,9 +56,9 @@ bool bnstr(char **str, qword *q, int defaultbase);
 
 int hexdigit(char a);
 
-dword hexb(char *s);
-dword hexw(char *s);
-dword hexd(char *s);
+bool hexb_ex(uint8 &result, const char *s);
+bool hexw_ex(uint16 &result, const char *s);
+bool hexd_ex(uint32 &result, const char *s);
 
 char *mkhexb(char *buf, byte d);
 char *mkhexw(char *buf, word d);
@@ -66,16 +66,15 @@ char *mkhexd(char *buf, dword d);
 char *mkhexq(char *buf, qword q);
 
 /*
- *	CLASS ht_data_string
+ *	ht_data_string
  */
-
 class ht_data_string: public ht_data {
 public:
 	char *value;
 
 			ht_data_string(const char *s = 0);
 	virtual 	~ht_data_string();
-/* overwritten */
+	/* overwritten */
 	virtual	int  load(ht_object_stream *f);
 	virtual	void store(ht_object_stream *f);
 	virtual	int	toString(char *s, int maxlen);
@@ -83,19 +82,18 @@ public:
 };
 
 /*
- *	CLASS ht_string_list
+ *	ht_string_list
  */
-
 class ht_string_list: public ht_clist {
 public:
 			void init();
-/* new */
+	/* new */
 			char *get_string(UINT i);
 			void insert_string(char *s);
 };
 
 /*
- *	CLASS ht_sorted_string_list
+ *	ht_sorted_string_list
  */
 
 class ht_sorted_string_list: public ht_sorted_list {

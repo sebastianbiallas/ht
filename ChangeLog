@@ -22,6 +22,7 @@ version 0.8.0pre1:
 	- eval: not ('~') and logical-not ('!') operators
 	- disassembler interface (int maxlen, not byte maxlen)
 	- Win32: fixed access to native windows clipboard
+	- Win32: high CPU usage problems fixed (sys_suspend() bugged)
 
 version 0.7.5:
 	- fixed bug in bnstr() with defaultbase > 10

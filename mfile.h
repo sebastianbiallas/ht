@@ -27,9 +27,8 @@
 typedef FILEOFS PAGEOFS;
 
 /*
- *	CLASS ht_mod_page
+ *	ht_mod_page
  */
-
 #define DEFAULT_MOD_PAGE_SIZE 8*1024	/* MUST BE 2^n */
 
 class ht_mod_page: public ht_data {
@@ -39,15 +38,14 @@ public:
 
 			ht_mod_page(UINT size);
 			~ht_mod_page();
-/* new */
+	/* new */
 	virtual UINT	read(PAGEOFS pofs, byte *buf, UINT len);
 	virtual UINT	write(PAGEOFS pofs, const byte *buf, UINT len);
 };
 
 /*
- *	CLASS ht_streamfile_modifier
+ *	ht_streamfile_modifier
  */
-
 class ht_streamfile_modifier: public ht_layer_streamfile {
 protected:
 	ht_tree *mod_pages;
@@ -61,7 +59,7 @@ protected:
 	UINT page_mask;
 
 	bool active;
-/* new */
+	/* new */
 	virtual void	mod_pages_create();
 	virtual void	mod_pages_destroy();
 
@@ -84,7 +82,7 @@ protected:
 public:
 		   void	init(ht_streamfile *streamfile, int own_streamfile, UINT page_granularity = DEFAULT_MOD_PAGE_SIZE);
 	virtual void	done();
-/* overwritten */
+	/* overwritten */
 	virtual int	extend(UINT newsize);
 	virtual UINT	get_size();
 	virtual UINT	read(void *buf, UINT size);

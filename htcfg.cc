@@ -170,18 +170,24 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 
-	// FIXME: bad code, no conversion errors reported
-	if (hexw((char*)h.version) != ht_systemconfig_fileversion) {
+	uint16 readver;
+	if (!hexw_ex(readver, (char*)h.version) || (readver != ht_systemconfig_fileversion)) {
 		*result = LS_ERROR_VERSION;
-		*error_info = hexw((char*)h.version);
+		*error_info = readver;
 		f->done();
 		delete f;
 		return false;
 	}
 
-	dword object_stream_type = hexb((char*)h.stream_type);
-
 	/* object stream type */
+	uint8 object_stream_type;
+	if (!hexb_ex(object_stream_type, (char*)h.stream_type)) {
+		*result = LS_ERROR_FORMAT;
+		f->done();
+		delete f;
+		return false;
+	}
+
 	ht_object_stream *d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		*result = LS_ERROR_FORMAT;
@@ -189,7 +195,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		delete f;
 		return false;
 	}
-	
+
 	/* read config */
 	if (app->load(d)!=0) {
 		*result = LS_ERROR_CORRUPTED;
@@ -290,15 +296,20 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	
 	if (memcmp(h.magic, magic, sizeof h.magic)!=0) return LS_ERROR_MAGIC;
 
-	// FIXME: bad code, no conversion errors reported
-	if (hexw((char*)h.version) != version) {
+	uint16 readver;
+	if (!hexw_ex(readver, (char*)h.version) || (readver != version)) {
 		f->done();
 		delete f;
-		*error_info = hexw((char*)h.version);
+		*error_info = readver;
 		return LS_ERROR_VERSION;
 	}
 	
-	dword object_stream_type=hexb((char*)h.stream_type);
+	uint8 object_stream_type;
+	if (!hexb_ex(object_stream_type, (char*)h.stream_type)) {
+		f->done();
+		delete f;
+		return LS_ERROR_FORMAT;
+	}
 
 	/* object stream type */
 	ht_object_stream *d = create_object_stream(f, object_stream_type);
