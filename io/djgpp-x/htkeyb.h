@@ -1,8 +1,8 @@
 /* 
  *	HT Editor
- *	srt_x86.h
+ *	htkeyb.h (DJGPP implementation)
  *
- *	Copyright (C) 2001, 2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999, 2000, 2001 Stefan Weyergraf (stefan@weyergraf.de)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -18,11 +18,26 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __SRT_X86_H__
-#define __SRT_X86_H__
+#ifndef __HTKEYB_H__
+#define __HTKEYB_H__
 
-#include "srt.h"
+#include "htio.h"
 
-void srt_x86(Analyser *analy, Address *addr);
+bool ht_keypressed();
 
-#endif /* __SRT_X86_H__ */
+ht_key ht_getkey();
+int ht_raw_getkey();
+
+/*
+ *	INIT
+ */
+ 
+bool init_keyb();
+
+/*
+ *	DONE
+ */
+ 
+void done_keyb();
+
+#endif /* !__HTKEYB_H__ */

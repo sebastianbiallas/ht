@@ -202,6 +202,9 @@ void AnalyserHtOutput::putElement(int element_type, char *element)
 					if (*element == '@') {
 						element++;
 						switch (*element) {
+							case '#': // comment
+								work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));
+								break;
 							case 'c': // symbol
 								work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_symbol));
 								break;

@@ -108,7 +108,7 @@ bool sym_int_symbol::compare_eq(sym_int_token *t)
 	return (strcmp(name, s->name) == 0);
 }
 
-object *sym_int_symbol::duplicate()
+Object *sym_int_symbol::duplicate()
 {
 	sym_int_symbol *p = new sym_int_symbol(name);
 	return p;
@@ -147,7 +147,7 @@ bool sym_int_const::compare_eq(sym_int_token *t)
 	return (value == s->value);
 }
 
-object *sym_int_const::duplicate()
+Object *sym_int_const::duplicate()
 {
 	return new sym_int_const(value);
 }
@@ -193,7 +193,7 @@ public:
 		delete token;
 	}
 
-	object *duplicate()
+	Object *duplicate()
 	{
 		return new sym_int_token_rec(uop, bop, (sym_int_token*)token->duplicate());
 	}
@@ -321,7 +321,7 @@ bool sym_int::comp_eq(sym_int_token *a, sym_int_token *b)
 	return false;
 }
 
-object *sym_int::duplicate()
+Object *sym_int::duplicate()
 {
 	sym_int *p = new sym_int();
 	p->tokens = (ht_list*)tokens->duplicate();
@@ -696,7 +696,7 @@ bool sym_bool_symbol::compare_eq(sym_bool_token *t)
 	return (strcmp(name, s->name) == 0);
 }
 
-object *sym_bool_symbol::duplicate()
+Object *sym_bool_symbol::duplicate()
 {
 	sym_bool_symbol *p = new sym_bool_symbol(name);
 	return p;
@@ -784,7 +784,7 @@ bool sym_bool_intcmp::compare_eq(sym_bool_token *t)
 	return (int1->compare_eq(s->int1) && int2->compare_eq(s->int2) && cop == s->cop);
 }
 
-object *sym_bool_intcmp::duplicate()
+Object *sym_bool_intcmp::duplicate()
 {
 	return new sym_bool_intcmp((sym_int_token*)int1->duplicate(), cop, (sym_int_token*)int2->duplicate());
 }
@@ -898,7 +898,7 @@ public:
 		return i + token->nstrfy(buf+i, n-i);
 	}
 	
-	object *duplicate()
+	Object *duplicate()
 	{
 		return new sym_bool_token_rec(nop, lop, (sym_bool_token*)token->duplicate());
 	}
@@ -926,7 +926,7 @@ bool sym_bool::compare_eq(sym_bool_token *t)
 	return false;
 }
 
-object *sym_bool::duplicate()
+Object *sym_bool::duplicate()
 {
 	sym_bool *p = new sym_bool();
 	p->tokens = (ht_list*)tokens->duplicate();

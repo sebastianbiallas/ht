@@ -63,7 +63,7 @@ bool sym_int_reg::compare_eq(sym_int_token *t)
 	return (regidx == s->regidx);
 }
 
-object *sym_int_reg::duplicate()
+Object *sym_int_reg::duplicate()
 {
 	return new sym_int_reg(regidx);
 }
@@ -100,7 +100,7 @@ bool sym_int_mem::compare_eq(sym_int_token *t)
 	return false;
 }
 
-object *sym_int_mem::duplicate()
+Object *sym_int_mem::duplicate()
 {
 	return new sym_int_mem((sym_int*)addr->duplicate(), size, endian);
 }
@@ -136,10 +136,10 @@ char *srt_endian_to_str(srt_endian endian)
 	return "?";
 }
 
-void test_srt(analyser *analy, ADDR addr)
+void test_srt(Analyser *analy, Address *addr)
 {
 /* FIXME: ... find a better way ... */
-	HT_ATOM a = analy->disasm->object_id();
+	OBJECT_ID a = analy->disasm->object_id();
 	if (a == ATOM_DISASM_X86) {
 		srt_x86(analy, addr);
 	}

@@ -307,9 +307,9 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 {
 	if (style & DIS_STYLE_HIGHLIGHT) enable_highlighting();
 	
-	const char *cs_default = get_cs_default();
-	const char *cs_number = get_cs_number();
-	const char *cs_symbol = get_cs_symbol();
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_number = get_cs(e_cs_number);
+	const char *cs_symbol = get_cs(e_cs_symbol);
 
 	alphadis_insn *alpha_insn = (alphadis_insn *) disasm_insn;
 	

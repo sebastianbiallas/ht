@@ -72,7 +72,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 	}
 	role >>= 4;
 	
-	dword major_opcode = QWORD_LO((slot->data >> 37) & to_qword(0x0f));
+	dword major_opcode = QWORD_GET_LO((slot->data >> 37) & to_qword(0x0f));
 	IA64DecisionTreeEntry dtree_entry = IA64DecisionTree[major_opcode * IA64_INST_ROLE_COUNT + role];
 
 	while (!IA64_DECISION_TREE_LEAF_NODE(dtree_entry)) {
@@ -84,9 +84,9 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 			/* extensions in bits 0-5 */
 			// FIXME:redundant?
 			pos += 6;
-			value = QWORD_LO(slot->data >> pos) & ((1 << size)-1);
+			value = QWORD_GET_LO(slot->data >> pos) & ((1 << size)-1);
 		} else {
-			value = QWORD_LO(slot->data >> (pos+6)) & ((1 << size)-1);
+			value = QWORD_GET_LO(slot->data >> (pos+6)) & ((1 << size)-1);
 		}
 		word next = dtree_entry.next_node + value;
 		dtree_entry = IA64DecisionTree[next];
@@ -99,7 +99,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 	} else {
 		slot->valid = true;
 		slot->opcode = &IA64OpcodeTable[inst_id];
-		slot->qp = QWORD_LO(slot->data) & 0x3f;
+		slot->qp = QWORD_GET_LO(slot->data) & 0x3f;
 		for (int i=0; i<7; i++) slot->op[i].type = IA64_OPERAND_NO;
 		int dest = 0;
 		if (slot->opcode->op1.role == IA64_OPROLE_DST) {
@@ -120,74 +120,74 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 		if (dest) {
 			slot->op[dest-1].type = IA64_OPERAND_EQUALS;
 		}
-		if (strcmp(slot->opcode->name, "adds")==0) {
+/*		if (strcmp(slot->opcode->name, "adds")==0) {
 			int as=0;
-		}
+		}*/
 		switch (slot->opcode->format) {
 			case IA64_FORMAT_A1:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				if (slot->opcode->op1.type == IA64_OPTYPE_ONE) {
 					slot->op[4].type = IA64_OPERAND_1;
 				}
 				break;
 			case IA64_FORMAT_A3:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
 				slot->op[2].imm = ((slot->data >> 13) & to_qword(0x7f))
 							|(((slot->data >> 36) & to_qword(1)) << 7);
 				slot->op[2].imm = signExtend(slot->op[2].imm, 8);
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_A4:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
 				slot->op[2].imm = ((slot->data >> 13) & to_qword(0x7f))
 							| (((slot->data >> 27) & to_qword(0x3f)) << 7)
 							|(((slot->data >> 36) & to_qword(1)) << 13);
 				slot->op[2].imm = signExtend(slot->op[2].imm, 14);
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_A5:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
 				slot->op[2].imm = ((slot->data >> 13) & to_qword(0x7f))
 							| (((slot->data >> 22) & to_qword(0x7fff)) << 7);
 				slot->op[2].imm = signExtend(slot->op[2].imm, 22);
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 20) & to_qword(0x3));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x3));
 				break;
 			case IA64_FORMAT_A6:
 			case IA64_FORMAT_A7:
 				slot->op[0].type = IA64_OPERAND_PREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x3f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x3f));
 				slot->op[1].type = IA64_OPERAND_PREG;
-				slot->op[1].reg = QWORD_LO((slot->data >> 27) & to_qword(0x3f));
+				slot->op[1].reg = QWORD_GET_LO((slot->data >> 27) & to_qword(0x3f));
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				slot->op[4].type = IA64_OPERAND_REG;
-				slot->op[4].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[4].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_A8:
 				slot->op[0].type = IA64_OPERAND_PREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x3f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x3f));
 				slot->op[1].type = IA64_OPERAND_PREG;
-				slot->op[1].reg = QWORD_LO((slot->data >> 27) & to_qword(0x3f));
+				slot->op[1].reg = QWORD_GET_LO((slot->data >> 27) & to_qword(0x3f));
 				slot->op[3].type = IA64_OPERAND_IMM;
 				slot->op[3].imm = (slot->data >> 13) & to_qword(0x7f)
 							|(((slot->data >> 36) & to_qword(1)) << 7);
 				slot->op[3].imm = signExtend(slot->op[3].imm, 8);
 				slot->op[4].type = IA64_OPERAND_REG;
-				slot->op[4].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[4].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_B1:
 			case IA64_FORMAT_B2:
@@ -200,7 +200,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				break;
 			case IA64_FORMAT_B3:
 				slot->op[0].type = IA64_OPERAND_BREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7));
 				slot->op[2].type = IA64_OPERAND_ADDRESS;
 				slot->op[2].ofs = ((slot->data >> 13) & to_qword((1<<20)-1))
 							  |(((slot->data >> 36) & to_qword(1)) << 20);
@@ -210,13 +210,13 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				break;
 			case IA64_FORMAT_B4:
 				slot->op[0].type = IA64_OPERAND_BREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7));
 				break;
 			case IA64_FORMAT_B5:
 				slot->op[0].type = IA64_OPERAND_BREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7));
 				slot->op[2].type = IA64_OPERAND_BREG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7));
 				break;
 			case IA64_FORMAT_B9:
 			case IA64_FORMAT_F15:
@@ -228,33 +228,33 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				break;
 			case IA64_FORMAT_F2:               
 				slot->op[0].type = IA64_OPERAND_FREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_FREG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				slot->op[3].type = IA64_OPERAND_FREG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 27) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 27) & to_qword(0x7f));
 				slot->op[4].type = IA64_OPERAND_FREG;
-				slot->op[4].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[4].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_I21:
 				slot->op[0].type = IA64_OPERAND_BREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				slot->op[3].type = IA64_OPERAND_ADDRESS;
 				slot->op[3].imm = (slot->data >> 24) & to_qword(0x1ff);
 				slot->op[3].imm = (signExtend(slot->op[3].imm, 9)<<4)+cpu_addr.flat64.addr;
 				break;
 			case IA64_FORMAT_I22:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_BREG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7));
 				break;
 			case IA64_FORMAT_I23:
 				slot->op[0].type = IA64_OPERAND_PRALL;
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				slot->op[3].type = IA64_OPERAND_IMM;
 				slot->op[3].imm = (((slot->data >> 6) & to_qword(0x7f)) << 1)
 							|(((slot->data >> 24) & to_qword(0xff)) << 8)
@@ -270,7 +270,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				break;
 			case IA64_FORMAT_I25:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				if (slot->opcode->op2.type == IA64_OPTYPE_IP) {
 					slot->op[2].type = IA64_OPERAND_IP;
 				} else {
@@ -280,24 +280,24 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 			case IA64_FORMAT_I26:
 			case IA64_FORMAT_M29:
 				slot->op[0].type = IA64_OPERAND_AREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_I27:
 			case IA64_FORMAT_M31:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_AREG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_I28:
 				break;
 			case IA64_FORMAT_I29:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M3:
 				slot->op[3].type = IA64_OPERAND_IMM;
@@ -308,14 +308,14 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				goto m1;
 			case IA64_FORMAT_M2:
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[3].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				// fall-through
 			case IA64_FORMAT_M1:
 				m1:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_MEM_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M5:
 				slot->op[3].type = IA64_OPERAND_IMM;
@@ -327,25 +327,25 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 			case IA64_FORMAT_M4:
 				m4:
 				slot->op[0].type = IA64_OPERAND_MEM_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M18:
 				slot->op[0].type = IA64_OPERAND_FREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M19:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_FREG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M30:
 				slot->op[0].type = IA64_OPERAND_AREG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
 				slot->op[2].imm = (slot->data >> 13) & to_qword(0x7f)
 							|(((slot->data >> 36) & to_qword(1)) << 7);
@@ -357,7 +357,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				break;
 			case IA64_FORMAT_M34:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_AR_PFS;
 				slot->op[3].type = IA64_OPERAND_IMM;
 				slot->op[3].imm = (slot->data >> 20) & to_qword(0x7f);
@@ -375,64 +375,22 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 			case IA64_FORMAT_M42:
 				slot->op[0].type = IA64_OPERAND_REG_FILE;
 				slot->op[0].regfile.db = slot->opcode->op1.type - IA64_OPTYPE_PMC;
-				slot->op[0].regfile.idx = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[0].regfile.idx = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				
 				slot->op[2].type = IA64_OPERAND_REG;
-				slot->op[2].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[2].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				break;
 			case IA64_FORMAT_M43:
 				break;
 			case IA64_FORMAT_M45:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 13) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 13) & to_qword(0x7f));
 				slot->op[1].type = IA64_OPERAND_REG;
-				slot->op[1].reg = QWORD_LO((slot->data >> 20) & to_qword(0x7f));
+				slot->op[1].reg = QWORD_GET_LO((slot->data >> 20) & to_qword(0x7f));
 				break;
-/*
-0 00 07 d7 6e 00 40
-
-000 d7 d7 6e 00 40
-
-					    7b      r1      qp
-0110 1 011111010 11101 1 0 1110000 0000001 000000
-10111111111111111111111111111111111111111
-i=1
-9d=011111010      ok
-5c=11101          ok
-ic=1
-7b=1110000        ok
-imm41=
-
-000000001
-01111111111111111111111111111111
-
-r1=0000001
-
-10000000010111111111111111111111 0x805fffff
-11111111111111010111110101110000 0xFFFD7D70
-
-00 02 00 80 08 00 84 00
-
-00010001 00000000 00000000 00000000
-00000001 00000000 00000000 00000000
-00000000 00000010 00000000 10000000
-00001000 00000000 10000100 00000000
-
-rev:
-00000000 10000100 00000000 00001000
-10000000 0.0000000 00000010 00000000
-00000000 00000000 00.000000 00000001
-00000000 00000000 00000000 000.10001
-
-00000000000001000000000000000000000000000 slot 0
-00000000000001000000000000000000000000000 slot 1
-0000.0.0.00.100001.00000000000.000.1.000.100.000000 slot 2
-opc    d wh
-
-*/
 			case IA64_FORMAT_X2:
 				slot->op[0].type = IA64_OPERAND_REG;
-				slot->op[0].reg = QWORD_LO((slot->data >> 6) & to_qword(0x7f));
+				slot->op[0].reg = QWORD_GET_LO((slot->data >> 6) & to_qword(0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
 				slot->op[2].imm = ((slot->data >> 13) & to_qword(0x7f))
 							|(((slot->data >> 27) & to_qword(0x1ff)) << 7)
@@ -494,29 +452,35 @@ rev:
 10001100111111000110011000000001100000000
 10001100111111000110011000000001100000000
 */
-			QWORD_LO(insn.slot[0].data) = ((dword)(code[0] >> 5))
+			QWORD_SET_LO(insn.slot[0].data,
+               	  ((dword)(code[0] >> 5))
 				| (((dword)code[1]) << 3)
 				| (((dword)code[2]) << 11)
 				| (((dword)code[3]) << 19)
-				| (((dword)code[4] & 0x1f) << 27);   // 32 bits
-			QWORD_HI(insn.slot[0].data) = ((dword)(code[4] >> 5))
-				| (((dword)code[5] & 0x3f) << 3);    // +9 = 41 bits
+				| (((dword)code[4] & 0x1f) << 27));    // 32 bits
+			QWORD_SET_HI(insn.slot[0].data,
+               	  ((dword)(code[4] >> 5))
+				| (((dword)code[5] & 0x3f) << 3));     // +9 = 41 bits
 
-			QWORD_LO(insn.slot[1].data) = ((dword)(code[5] >> 6))
+			QWORD_SET_LO(insn.slot[1].data,
+               	  ((dword)(code[5] >> 6))
 				| (((dword)code[6]) << 2)
 				| (((dword)code[7]) << 10)
 				| (((dword)code[8]) << 18)
-				| (((dword)code[9] & 0x3f) << 26);    // 32 bits
-			QWORD_HI(insn.slot[1].data) = ((dword)(code[9] >> 6))
-				| (((dword)code[10] & 0x7f) << 2);     // +9 = 41 bits
+				| (((dword)code[9] & 0x3f) << 26));    // 32 bits
+			QWORD_SET_HI(insn.slot[1].data,
+               	  ((dword)(code[9] >> 6))
+				| (((dword)code[10] & 0x7f) << 2));    // +9 = 41 bits
 
-			QWORD_LO(insn.slot[2].data) = ((dword)(code[10] >> 7))
+			QWORD_SET_LO(insn.slot[2].data,
+               	  ((dword)(code[10] >> 7))
 				| (((dword)code[11]) << 1)
 				| (((dword)code[12]) << 9)
 				| (((dword)code[13]) << 17)
-				| (((dword)code[14] & 0x7f) << 25);    // 32 bits
-			QWORD_HI(insn.slot[2].data) = ((dword)(code[14] >> 7))
-				| (((dword)code[15]) << 1);            // +9 = 41 bits
+				| (((dword)code[14] & 0x7f) << 25));   // 32 bits
+			QWORD_SET_HI(insn.slot[2].data,
+               	  ((dword)(code[14] >> 7))
+				| (((dword)code[15]) << 1));           // +9 = 41 bits
 		}
 		for (int i=0; i<3; ) {
 			insn.slot[i].valid = false;
@@ -568,10 +532,11 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 {
 	if (style & DIS_STYLE_HIGHLIGHT) enable_highlighting();
 
-	const char *cs_default = get_cs_default();
-	const char *cs_number = get_cs_number();
-	const char *cs_symbol = get_cs_symbol();
-	const char *cs_string = get_cs_string();
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_number = get_cs(e_cs_number);
+	const char *cs_symbol = get_cs(e_cs_symbol);
+//	const char *cs_string = get_cs(e_cs_string);
+	const char *cs_comment = get_cs(e_cs_comment);
 
 	IA64DisInsn *dis_insn = (IA64DisInsn *) disasm_insn;
 	if (!dis_insn->valid) {
@@ -595,7 +560,7 @@ char *IA64Disassembler::strf(dis_insn *disasm_insn, int style, char *format)
 			} else {
 				qp[0]=0;
 			}
-			is += ht_snprintf(is, 256, "%d %5s %-20s", dis_insn->selected, qp, slot->opcode->name);
+			is += ht_snprintf(is, 256, "%s%d %5s %s%-20s", cs_comment, dis_insn->selected, qp, cs_default, slot->opcode->name);
 			for (int i=0; i<7; i++) {
 				if (slot->op[i].type==IA64_OPERAND_NO) break;
 				if (slot->op[i].type==IA64_OPERAND_EQUALS) {

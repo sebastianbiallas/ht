@@ -107,7 +107,7 @@ public:
 	~sym_int();
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -132,7 +132,7 @@ public:
 	~sym_int_symbol();
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -149,7 +149,7 @@ public:
 	sym_int_const(UINT value);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(UINT *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -180,7 +180,7 @@ public:
 	~sym_bool_symbol();
 /* overwritten */
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -214,7 +214,7 @@ public:
 	sym_bool_intcmp(sym_int_token *int1, c_op cop, sym_int_token *int2);
 /* overwritten */	
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -235,7 +235,7 @@ public:
 	~sym_bool();
 /* overwritten */
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();

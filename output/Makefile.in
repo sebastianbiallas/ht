@@ -204,21 +204,21 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 out.o: out.cc ../analyser/analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h \
-	../analyser/codeanaly.h ../analyser/dataanaly.h ../htdata.h \
-	../analyser/stddata.h ../analyser/analy_names.h ../htdebug.h \
+	../htdebug.h ../analyser/code_analy.h ../stream.h \
+	../io/posix/htsys.h ../io/htio.h ../analyser/data_analy.h \
+	../htdata.h ../analyser/stddata.h ../analyser/analy_names.h \
 	../htstring.h ../config.h ../tools.h out.h ../asm/x86dis.h \
 	../asm/x86opc.h
 out_ht.o: out_ht.cc ../analyser/analy.h ../asm/asm.h ../common.h \
-	../global.h ../stream.h ../io/posix/htsys.h ../io/htio.h \
-	../analyser/codeanaly.h ../analyser/dataanaly.h ../htdata.h \
-	../analyser/stddata.h ../htatom.h ../htctrl.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htdebug.h ../httag.h \
+	../global.h ../htdebug.h ../analyser/code_analy.h ../stream.h \
+	../io/posix/htsys.h ../io/htio.h ../analyser/data_analy.h \
+	../htdata.h ../analyser/stddata.h ../htatom.h ../htctrl.h \
+	../htobj.h ../io/posix/htcurses.h ../config.h ../httag.h \
 	../htpal.h ../htreg.h ../htstring.h out_ht.h out.h
 out_html.o: out_html.cc ../analyser/analy_names.h ../htdebug.h \
 	../global.h ../htinfo.h out_html.h ../analyser/analy.h \
-	../asm/asm.h ../common.h ../stream.h ../io/posix/htsys.h \
-	../io/htio.h ../analyser/codeanaly.h ../analyser/dataanaly.h \
+	../asm/asm.h ../common.h ../analyser/code_analy.h ../stream.h \
+	../io/posix/htsys.h ../io/htio.h ../analyser/data_analy.h \
 	../htdata.h ../analyser/stddata.h ../tools.h ../asm/x86dis.h \
 	../asm/x86opc.h
 

@@ -1379,13 +1379,13 @@ void ht_button::push()
 class ht_listbox_vstate: public ht_data {
 public:
 	void *e_top;
-     void *e_cursor;
+	void *e_cursor;
 
-     ht_listbox_vstate(void *top, void *cursor)
-     {
-     	e_top = top;
-          e_cursor = cursor;
-     }
+	ht_listbox_vstate(void *top, void *cursor)
+	{
+		e_top = top;
+		e_cursor = cursor;
+	}
 };
 
 void ht_listbox::init(bounds *b, UINT Listboxcaps)
@@ -1637,10 +1637,10 @@ void ht_listbox::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_vstate_restore: {
-          	ht_listbox_vstate *vs = (ht_listbox_vstate*)msg->data1.ptr;
+			ht_listbox_vstate *vs = (ht_listbox_vstate*)msg->data1.ptr;
 			e_top = vs->e_top;
 			e_cursor = vs->e_cursor;
-               update();
+			update();
 // FIXME: what about deleting entries !!!
 			clearmsg(msg);
 			return;
@@ -1760,7 +1760,7 @@ void ht_listbox::handlemsg(htmsg *msg)
 				}
 			}
 		}
-          break;
+		break;
 	}
 	ht_view::handlemsg(msg);
 }
@@ -1829,13 +1829,13 @@ void ht_listbox::vstate_save()
 {
 	ht_data *vs = vstate_create();
 	if (vs) {
-     	htmsg m;
-          m.msg = msg_vstate_save;
-          m.type = mt_empty;
-          m.data1.ptr = vs;
-          m.data2.ptr = this;
-          app->sendmsg(&m);
-     }
+		htmsg m;
+		m.msg = msg_vstate_save;
+		m.type = mt_empty;
+		m.data1.ptr = vs;
+		m.data2.ptr = this;
+		app->sendmsg(&m);
+	}
 }
 
 /*

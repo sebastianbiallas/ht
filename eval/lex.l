@@ -17,7 +17,7 @@
 #include <stdlib.h>
 
 #include "evaltype.h"
-#include "eval.h"
+#include "evalparse.h"
 
 static int lex_pos;
 

@@ -227,9 +227,9 @@ OBJECT_ID javadis::object_id()
 
 void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_op *op)
 {
-	const char *cs_default = get_cs_default();
-	const char *cs_number = get_cs_number();
-//	const char *cs_symbol = get_cs_symbol();
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_number = get_cs(e_cs_number);
+//	const char *cs_symbol = get_cs(e_cs_symbol);
 	
 	*opstrlen=0;
 	switch (op->type) {
@@ -286,8 +286,9 @@ void javadis::str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_o
 
 void javadis::str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print)
 {
-	const char *cs_default = get_cs_default();
-	const char *cs_symbol = get_cs_symbol();
+     
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_symbol = get_cs(e_cs_symbol);
 
 	char *f=*format;
 	char *s=*str;

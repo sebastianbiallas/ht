@@ -321,7 +321,7 @@ void ClassAnalyser::initUnasm()
 /*
  *
  */
-void ClassAnalyser::log(char *msg)
+void ClassAnalyser::log(const char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log

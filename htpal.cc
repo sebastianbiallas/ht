@@ -221,7 +221,7 @@ palette_entry::palette_entry(UINT _idx, vcp _color)
 	color=_color;
 }
 
-bool palette_entry::editdialog(char *keyname)
+bool palette_entry::editdialog(const char *keyname)
 {
 	bool r=0;
 	bounds b;

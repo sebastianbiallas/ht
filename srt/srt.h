@@ -66,7 +66,7 @@ public:
 	sym_int_reg(UINT r);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -85,7 +85,7 @@ public:
 	sym_int_mem(sym_int_token *a, UINT s, srt_endian e);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual object *duplicate();
+	virtual Object *duplicate();
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
 	virtual OBJECT_ID object_id();
@@ -95,6 +95,6 @@ public:
 
 char *srt_endian_to_str(srt_endian endian);
 
-void test_srt(analyser *analy, ADDR addr);
+void test_srt(Analyser *analy, Address *addr);
 
 #endif /* __SRT_H__ */

@@ -80,7 +80,7 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libanalyser.a
 
-libanalyser_a_SOURCES = analy.cc analy.h analy_alpha.cc analy_alpha.h analy_names.cc analy_names.h analy_x86.cc analy_x86.h analyinfo.h codeanaly.cc codeanaly.h dataanaly.cc dataanaly.h language.cc language.h pe_analy.cc pe_analy.h stddata.cc stddata.h TODO elf_analy.cc elf_analy.h analy_register.cc analy_register.h coff_analy.cc coff_analy.h ne_analy.cc ne_analy.h
+libanalyser_a_SOURCES = analy.cc analy.h analy_alpha.cc analy_alpha.h analy_names.cc analy_names.h analy_x86.cc analy_x86.h analyinfo.h code_analy.cc code_analy.h data_analy.cc data_analy.h language.cc language.h pe_analy.cc pe_analy.h stddata.cc stddata.h elf_analy.cc elf_analy.h analy_register.cc analy_register.h coff_analy.cc coff_analy.h analy_java.cc analy_java.h class_analy.cc class_analy.h ne_analy.cc ne_analy.h analy_il.cc analy_il.h analy_ia64.cc analy_ia64.h
 
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/asm -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/output
@@ -96,8 +96,9 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libanalyser_a_LIBADD = 
 libanalyser_a_OBJECTS =  analy.o analy_alpha.o analy_names.o analy_x86.o \
-codeanaly.o dataanaly.o language.o pe_analy.o stddata.o elf_analy.o \
-analy_register.o coff_analy.o ne_analy.o
+code_analy.o data_analy.o language.o pe_analy.o stddata.o elf_analy.o \
+analy_register.o coff_analy.o analy_java.o class_analy.o ne_analy.o \
+analy_il.o analy_ia64.o
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -206,95 +207,6 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-analy.o: analy.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_names.h \
-	analy_register.h ../tools.h ../htatom.h ../htctrl.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htdebug.h ../htstring.h \
-	../httag.h language.h
-analy_alpha.o: analy_alpha.cc analy_alpha.h analy.h ../asm/asm.h \
-	../common.h ../global.h ../stream.h ../io/posix/htsys.h \
-	../io/htio.h codeanaly.h dataanaly.h ../htdata.h stddata.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_register.h ../tools.h \
-	../htiobox.h ../htdialog.h ../htdebug.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htstring.h
-analy_names.o: analy_names.cc analy_names.h ../htdebug.h ../global.h \
-	../htstring.h ../config.h ../htdata.h ../common.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h language.h ../tools.h
-analy_register.o: analy_register.cc analy_register.h ../tools.h \
-	../global.h ../htdata.h ../common.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h analy_alpha.h analy.h \
-	../asm/asm.h codeanaly.h dataanaly.h stddata.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_x86.h coff_analy.h \
-	../htcoff.h ../formats.h ../htformat.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htstring.h ../coff_s.h \
-	../htanaly.h ../cmds.h ../htdialog.h ../htdebug.h ../httree.h \
-	../output/out_ht.h ../output/out.h ../htcoffhd.h ../httag.h \
-	elf_analy.h ../htelf.h ../elfstruc.h ../htendian.h ../relfile.h \
-	ne_analy.h ../htne.h ../nestruct.h pe_analy.h ../htpe.h \
-	../pestruct.h ../htpeexp.h ../htpeimp.h ../htpedimp.h \
-	../htatom.h
-analy_x86.o: analy_x86.cc analy_register.h ../tools.h ../global.h \
-	../htdata.h ../common.h ../stream.h ../io/posix/htsys.h \
-	../io/htio.h analy_x86.h analy.h ../asm/asm.h codeanaly.h \
-	dataanaly.h stddata.h ../htdebug.h ../asm/x86dis.h \
-	../asm/x86opc.h
-codeanaly.o: codeanaly.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_register.h ../tools.h \
-	language.h ../htdebug.h
-coff_analy.o: coff_analy.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_alpha.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_names.h \
-	analy_register.h ../tools.h analy_x86.h coff_analy.h \
-	../htcoff.h ../formats.h ../htformat.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htstring.h ../coff_s.h \
-	../htanaly.h ../cmds.h ../htdialog.h ../htdebug.h ../httree.h \
-	../output/out_ht.h ../output/out.h ../htcoffhd.h ../httag.h \
-	../htctrl.h ../htiobox.h ../asm/x86asm.h ../asm/x86opc.h
-dataanaly.o: dataanaly.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_register.h ../tools.h
-elf_analy.o: elf_analy.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_alpha.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_names.h \
-	analy_register.h ../tools.h analy_x86.h elf_analy.h ../htelf.h \
-	../elfstruc.h ../formats.h ../htformat.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htstring.h ../htanaly.h \
-	../cmds.h ../htdialog.h ../htdebug.h ../httree.h \
-	../output/out_ht.h ../output/out.h ../htendian.h ../relfile.h \
-	../htctrl.h ../htiobox.h ../pestruct.h ../coff_s.h \
-	../asm/x86asm.h ../asm/x86opc.h ../demangle.h
-language.o: language.cc ../htdebug.h ../global.h ../htstring.h \
-	../config.h ../htdata.h ../common.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h language.h ../tools.h
-ne_analy.o: ne_analy.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_alpha.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_names.h \
-	analy_register.h ../tools.h analy_x86.h ne_analy.h ../htne.h \
-	../htanaly.h ../cmds.h ../htdialog.h ../htdebug.h ../htobj.h \
-	../io/posix/htcurses.h ../config.h ../htstring.h ../htformat.h \
-	../formats.h ../httree.h ../output/out_ht.h ../output/out.h \
-	../relfile.h ../nestruct.h ../htctrl.h ../htendian.h \
-	../htiobox.h ../htneent.h ../asm/x86asm.h ../asm/x86opc.h
-pe_analy.o: pe_analy.cc analy.h ../asm/asm.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h codeanaly.h \
-	dataanaly.h ../htdata.h stddata.h analy_alpha.h \
-	../asm/alphadis.h ../asm/alphaopc.h analy_names.h \
-	analy_register.h ../tools.h analy_x86.h pe_analy.h ../htpe.h \
-	../formats.h ../htformat.h ../htobj.h ../io/posix/htcurses.h \
-	../config.h ../htstring.h ../pestruct.h ../coff_s.h \
-	../htanaly.h ../cmds.h ../htdialog.h ../htdebug.h ../httree.h \
-	../output/out_ht.h ../output/out.h ../htpeexp.h ../htpeimp.h \
-	../htpedimp.h ../htctrl.h ../htiobox.h ../asm/x86asm.h \
-	../asm/x86opc.h
-stddata.o: stddata.cc stddata.h ../common.h ../global.h ../stream.h \
-	../io/posix/htsys.h ../io/htio.h ../tools.h ../htdata.h \
-	../htatom.h
-
 info-am:
 info: info-am
 dvi-am:

@@ -136,8 +136,8 @@ public:
  */
 
 struct ht_vfs_viewer_status_data {
-	char *cproto;
-	char *cwd;
+	DDECL_PTR(char, cproto);
+	DDECL_PTR(char, cwd);
 };
  
 class ht_vfs_viewer_status: public ht_group {
@@ -147,7 +147,7 @@ protected:
 public:
 			void	init(bounds *b);
 /* overwritten */
-	virtual	void	setdata(void *buf);
+	virtual	void	setdata(ht_object_stream *buf);
 };
 
 /*

@@ -1874,18 +1874,21 @@ char *ht_app::func(UINT i, bool execute)
 
 void ht_app::get_stdbounds_file(bounds *b)
 {
+	bounds c;
+     get_stdbounds_tool(&c);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = 0;
-	b->h -= 6;
+	b->h -= c.h;
 }
 
 void ht_app::get_stdbounds_tool(bounds *b)
 {
+	UINT h = MAX(size.h/5, 3);
 	battlefield->getbounds(b);
 	b->x = 0;
-	b->y = b->h-6;
-	b->h = 6;
+	b->y = b->h - h;
+	b->h = h;
 }
 
 ht_window *ht_app::get_window_by_filename(char *filename)

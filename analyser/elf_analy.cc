@@ -572,7 +572,7 @@ void ElfAnalyser::initUnasm()
 /*
  *
  */
-void ElfAnalyser::log(char *msg)
+void ElfAnalyser::log(const char *msg)
 {
 	/*
 	 *	log() does to much traffic so dont log

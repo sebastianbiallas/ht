@@ -305,6 +305,26 @@ genericdrawbuf::~genericdrawbuf()
 {
 }
 
+void genericdrawbuf::b_line(int px1, int py1, int px2, int py2, int c)
+{
+}
+
+void genericdrawbuf::b_putpixel(int px, int py, int c)
+{
+}
+
+void genericdrawbuf::text_to_pixel_coord(int tx, int ty, int *px, int *py)
+{
+	*px = tx;
+	*py = ty;
+}
+
+void genericdrawbuf::pixel_to_text_coord(int px, int py, int *tx, int *ty)
+{
+	*tx = px;
+	*ty = py;
+}
+
 void genericdrawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
 {
 }

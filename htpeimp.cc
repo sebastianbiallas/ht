@@ -365,7 +365,7 @@ void ht_pe_import_viewer::handlemsg(htmsg *msg)
 /*		case msg_get_scrollinfo:
 			switch (msg->data1.integer) {
 				case gsi_pindicator: {
-                    	strcpy((char*)msg->data2.ptr, " Enter to view, Backspace to return here");
+					strcpy((char*)msg->data2.ptr, " Enter to view, Backspace to return here");
 					break;
 				}
 			}

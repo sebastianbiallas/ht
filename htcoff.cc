@@ -155,8 +155,8 @@ int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *sec
 	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 // FIXME: what about data_vsize in COFFs ?
-//		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
-		(rva<s->data_address+s->data_size)) {
+		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
+//		(rva<s->data_address+s->data_size)) {
 			*section=i;
 			return 1;
 		}

@@ -44,7 +44,7 @@ public:
 
 			palette_entry(UINT idx=0, vcp color=0);
 /* overwritten */
-	virtual	bool editdialog(char *keyname);
+	virtual	bool editdialog(const char *keyname);
 	virtual   void strvalue(char *buf32bytes);
 	virtual	int  load(ht_object_stream *f);
 	virtual	OBJECT_ID object_id();

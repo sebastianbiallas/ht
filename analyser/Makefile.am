@@ -4,10 +4,12 @@ noinst_LIBRARIES = libanalyser.a
 
 libanalyser_a_SOURCES = analy.cc analy.h analy_alpha.cc analy_alpha.h \
 analy_names.cc analy_names.h analy_x86.cc analy_x86.h analyinfo.h \
-codeanaly.cc codeanaly.h dataanaly.cc dataanaly.h \
-language.cc language.h pe_analy.cc pe_analy.h stddata.cc stddata.h TODO \
+code_analy.cc code_analy.h data_analy.cc data_analy.h \
+language.cc language.h pe_analy.cc pe_analy.h stddata.cc stddata.h \
 elf_analy.cc elf_analy.h analy_register.cc analy_register.h \
-coff_analy.cc coff_analy.h ne_analy.cc ne_analy.h
+coff_analy.cc coff_analy.h analy_java.cc analy_java.h \
+class_analy.cc class_analy.h ne_analy.cc ne_analy.h \
+analy_il.cc analy_il.h analy_ia64.cc analy_ia64.h
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/asm -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/output
 

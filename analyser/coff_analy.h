@@ -47,7 +47,7 @@ public:
 	virtual   char		*getType();
 	virtual	void 	initCodeAnalyser();
 	virtual	void 	initUnasm();
-	virtual	void 	log(char *msg);
+	virtual	void 	log(const char *msg);
 	virtual	Address	*nextValid(Address *Addr);
 	virtual	void		store(ht_object_stream *f);
 	virtual	int		queryConfig(int mode);

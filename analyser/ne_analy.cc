@@ -395,7 +395,7 @@ void NEAnalyser::initUnasm()
 /*
  *
  */
-void NEAnalyser::log(char *msg)
+void NEAnalyser::log(const char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log

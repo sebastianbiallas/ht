@@ -61,8 +61,8 @@ void clear_line_id(LINE_ID *l)
 bool compeq_line_id(const LINE_ID &a, const LINE_ID &b)
 {
 	return ((a.id1 == b.id1) && (a.id2 == b.id2)
-     	&& (a.id3 == b.id3) && (a.id4 == b.id4)
-          && (a.id5 == b.id5));
+		&& (a.id3 == b.id3) && (a.id4 == b.id4)
+		&& (a.id5 == b.id5));
 }
 
 /*
@@ -566,11 +566,11 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_goto_offset: {
 			FILEOFS o = (FILEOFS)msg->data1.integer;	// FIXME: int != FILEOFS
-               if (goto_offset(o, NULL)) {
+			if (goto_offset(o, NULL)) {
 				clearmsg(msg);
 				return;
 			}
-               break;
+			break;
 		}
 		case msg_vstate_restore:
 			vstate_restore((ht_data*)msg->data1.ptr);
@@ -656,14 +656,14 @@ bool ht_format_viewer::vstate_save(ht_view *focused)
 {
 	ht_data *vs = vstate_create();
 	if (vs) {
-     	htmsg m;
-          m.msg = msg_vstate_save;
-          m.type = mt_empty;
-          m.data1.ptr = vs;
-          m.data2.ptr = this;
-          app->sendmsg(&m);
+		htmsg m;
+		m.msg = msg_vstate_save;
+		m.type = mt_empty;
+		m.data1.ptr = vs;
+		m.data2.ptr = this;
+		app->sendmsg(&m);
 		return true;
-     }
+	}
 	return false;
 }
 
@@ -1798,29 +1798,29 @@ void ht_uformat_viewer::focus_cursor()
 char *ht_uformat_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
-     	case 2: {
+		case 2: {
 			if (execute) {
-                   	FILEOFS o;
+				FILEOFS o;
 				if (get_current_offset(&o)) {
-                    	char title[128];
-                         ht_snprintf(title, sizeof title, "view offset %08x in...", o);
-	               	ht_view *v = ((ht_app*)app)->popup_view_list(title);
-     	               if (v) {
-                         	htmsg m;
-          	     		m.msg = msg_goto_offset;
-                              m.type = mt_empty;
-                              m.data1.integer = o;	// FIXME: int = FILEOFS
-                              v->sendmsg(&m);
-                              if (m.msg == msg_empty) {
-                              	vstate_save(NULL);
-                                   app->focus(v);
-                              } else {
-                                   errorbox("offset %08x is invalid for view '%s'", o, v->desc);
-                              }
-               	     }
+					char title[128];
+					ht_snprintf(title, sizeof title, "view offset %08x in...", o);
+					ht_view *v = ((ht_app*)app)->popup_view_list(title);
+					if (v) {
+						htmsg m;
+						m.msg = msg_goto_offset;
+						m.type = mt_empty;
+						m.data1.integer = o;	// FIXME: int = FILEOFS
+						v->sendmsg(&m);
+						if (m.msg == msg_empty) {
+							vstate_save(NULL);
+							app->focus(v);
+						} else {
+							errorbox("offset %08x is invalid for view '%s'", o, v->desc);
+						}
+					}
 				}
-               }
-          	return "go ofs";
+			}
+			return "go ofs";
 		}
 		case 3:
 			if (caps & VC_REPLACE) {
@@ -2402,7 +2402,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 		}
 		case cmd_file_search: {
 			viewer_pos start_pos, end_pos;
-               get_current_pos(&start_pos);
+			get_current_pos(&start_pos);
 			clear_viewer_pos(&end_pos);
 			end_pos.u.sub = last_sub;
 			end_pos.u.tag_idx = -1;
@@ -2413,10 +2413,10 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				switch (request->search_class) {
 					case SC_PHYSICAL: {
 						FILEOFS start, end;
-                              if (pos_to_offset(start_pos, &start)
-                              && pos_to_offset(end_pos, &end)) {
+						if (pos_to_offset(start_pos, &start)
+						&& pos_to_offset(end_pos, &end)) {
 							result = psearch(request, start, end);
-                              }
+						}
 						break;
 					}
 					case SC_VISUAL: {
@@ -2549,7 +2549,7 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 	while (p.sub) {
 		if (p.sub->convert_ofs_to_id(offset, &p.line_id)) {
 			if (source_object) vstate_save(source_object);
-               switch (cursor_state) {
+			switch (cursor_state) {
 				case cursor_state_visible:
 					/* FIXME: magic 42 */
 					if (find_first_edit_tag_with_offset(&p, 42, offset)) {
@@ -2557,13 +2557,13 @@ bool ht_uformat_viewer::goto_offset(FILEOFS offset, ht_view *source_object)
 					} else if (find_first_tag(&p, size.h)) {
 						return set_cursor(p);
 					}
-                    	break;
+					break;
 				case cursor_state_invisible:
 					p.tag_group = -1;
 					p.tag_idx = -1;
 					return set_cursor(p);
 			}
-               break;
+			break;
 		}
 		p.sub = p.sub->next;
 	}
@@ -3479,7 +3479,7 @@ void ht_uformat_viewer::clear_viewer_pos(viewer_pos *p)
 void ht_uformat_viewer::clear_viewer_pos(uformat_viewer_pos *p)
 {
 	p->sub = NULL;
-     clear_line_id(&p->line_id);
+	clear_line_id(&p->line_id);
 	p->tag_idx = 0;
 	p->tag_group = 0;
 }
@@ -3614,7 +3614,7 @@ void ht_uformat_viewer::update_misc_info()
 				cursor_tag_offset=tag_get_offset(e);
 				break;
 			case tag_class_sel:
-               	clear_line_id(&cursor_tag_id.id);
+				clear_line_id(&cursor_tag_id.id);
 				tag_get_id(e, &cursor_tag_id.id.id1, &cursor_tag_id.id.id2, &cursor_tag_id.id.id3, &cursor_tag_id.id.id4);
 				break;
 		}

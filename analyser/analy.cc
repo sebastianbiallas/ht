@@ -1204,7 +1204,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			addXRef(branch_addr, addr, xrefcall);
 			bool special_func = false;
 			char *lprfx = LPRFX_SUB;
-			if (!explored->contains(branch_addr) && validCodeAddress(branch_addr)) {
+			if (!getSymbolByAddress(branch_addr) && validCodeAddress(branch_addr)) {
 				// should be in code_analy
 				byte buf[16];
 				int bz = bufPtr(branch_addr, buf, sizeof(buf));

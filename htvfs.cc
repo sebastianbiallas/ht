@@ -639,7 +639,7 @@ void ht_vfs_viewer::update_status()
 		ht_vfs_viewer_status_data d;
 		d.cproto=((ht_vfs_sub*)cursor.sub)->cproto;
 		d.cwd=((ht_vfs_sub*)cursor.sub)->cwd;
-		if (status && d.cwd) status->setdata(&d);
+		if (status && d.cwd) status->databuf_set(&d);
 	}
 }
 
@@ -664,13 +664,15 @@ void ht_vfs_viewer_status::init(bounds *b)
 	insert(url);
 }
 
-void ht_vfs_viewer_status::setdata(void *buf)
+void ht_vfs_viewer_status::setdata(ht_object_stream *buf)
 {
-	ht_vfs_viewer_status_data *d=(ht_vfs_viewer_status_data*)buf;
-	int lcwd=strlen(d->cwd);
-	int lcproto=strlen(d->cproto);
+	ht_vfs_viewer_status_data d;
+     d.cwd = (char*)buf->getInt(sizeof(char *), NULL);
+     d.cproto = (char*)buf->getInt(sizeof(char *), NULL);
+	int lcwd=strlen(d.cwd);
+	int lcproto=strlen(d.cproto);
 	char *u=(char*)malloc(lcwd+3+lcproto+1);
-	sprintf(u, "%s://%s", d->cproto, d->cwd);
+	sprintf(u, "%s://%s", d.cproto, d.cwd);
 	url->settext(u);
 	url->dirtyview();
 	free(u);

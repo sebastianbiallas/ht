@@ -27,6 +27,7 @@
 
 //#undef DPRINTF
 //#define DPRINTF(msg...) printf(##msg)
+#define DPRINTF(msg...)
 
 void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at)
 {
@@ -124,7 +125,7 @@ void	DataAnalyser::setAddressType(Address *Addr, taddr_typetype type, int subtyp
 
 void	DataAnalyser::setAddressType(Location *Addr, taddr_typetype type, int subtype, int length)
 {
-	DPRINTF("Addr %08lx set to %d (%d) length %d\n", Addr->addr, type, subtype, length);
+	DPRINTF("Addr %y set to %d (%d) length %d\n", Addr->addr, type, subtype, length);
 	Addr->type.type = type;
 	Addr->type.subtype = subtype;
 	Addr->type.length = length;

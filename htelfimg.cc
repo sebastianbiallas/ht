@@ -98,12 +98,24 @@ ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	}
 
 	ht_analy_sub *analy=new ht_analy_sub();
-	char buff[1000];
-	ht_snprintf(buff, sizeof buff, "low: %y high: %y", low, high);
-	analy->init(file, v, p, low, high);
-	v->analy_sub = analy;
-	v->insertsub(analy);
 
+     if (low->compareTo(high) < 0) {
+		analy->init(file, v, p, low, high);
+		v->analy_sub = analy;
+		v->insertsub(analy);
+     } else {
+     	delete analy;
+          v->done();
+          delete v;
+          head->done();          
+          delete head;
+          g->done();
+          delete g;
+		delete high;
+		delete low;
+          return NULL;
+     }
+     
 	delete high;
 	delete low;
 

@@ -34,16 +34,6 @@ void ht_assert_failed(char *file, int line, char *assertion)
 	exit(1);
 }
 
-void ht_warn(char *file, int line, char *format,...)
-{
-	va_list arg;
-	va_start(arg, format);
-	fprintf(stderr, "in file %s, line %d: warning: ", file, line);
-	vfprintf(stderr, format, arg);
-	fputc('\n', stderr);
-	va_end(arg);
-}
-
 void ht_error(char *file, int line, char *format,...)
 {
 	va_list arg;
@@ -53,6 +43,27 @@ void ht_error(char *file, int line, char *format,...)
 	fputc('\n', stderr);
 	va_end(arg);
 	exit(1);
+}
+
+void ht_trace(char *file, int line, char *format,...)
+{
+	FILE *ht_debug_file = stderr;
+	va_list arg;
+	va_start(arg, format);
+	fprintf(ht_debug_file, "TRACE: %s.%d: ", file, line);
+	vfprintf(ht_debug_file, format, arg);
+	fputc('\n', ht_debug_file);
+	va_end(arg);
+}
+
+void ht_warn(char *file, int line, char *format,...)
+{
+	va_list arg;
+	va_start(arg, format);
+	fprintf(stderr, "in file %s, line %d: warning: ", file, line);
+	vfprintf(stderr, format, arg);
+	fputc('\n', stderr);
+	va_end(arg);
 }
 
 #ifdef DJGPP

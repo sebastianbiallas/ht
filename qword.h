@@ -24,15 +24,20 @@
 
 #include "global.h"		// for types dword and UINT
 
-struct qword {
+typedef struct {
 	dword hi;
 	dword lo;
-};
+} qword;
 
-#define QWORD_HI(q) ((q).hi)
-#define QWORD_LO(q) ((q).lo)
+#define QWORD_SET_HI(q, v) (((q).hi) = (v))
+#define QWORD_SET_LO(q, v) (((q).lo) = (v))
+#define QWORD_GET_HI(q) ((q).hi)
+#define QWORD_GET_LO(q) ((q).lo)
 
 int qword_cmp(qword a, qword b);
+qword int_to_qword(int i);
+
+#ifdef __cplusplus
 qword to_qword(int i);
 qword to_qword(UINT i);
 
@@ -67,6 +72,7 @@ bool operator > (qword a, qword b);
 bool operator >= (qword a, qword b);
 bool operator == (qword a, qword b);
 bool operator != (qword a, qword b);
+#endif /* __cplusplus */
 
 #endif /* __QWORD_H__ */
 

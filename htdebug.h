@@ -30,8 +30,9 @@
 /****************************************************************************/
 
 void ht_assert_failed(char *file, int line, char *assertion);
-void ht_warn(char *file, int line, char *format,...);
 void ht_error(char *file, int line, char *format,...);
+void ht_trace(char *file, int line, char *format,...);
+void ht_warn(char *file, int line, char *format,...);
 
 typedef qword timepoint;
 
@@ -46,8 +47,14 @@ dword get_timer_sec(timer_handle handle);
 dword get_timer_msec(timer_handle handle);
 dword get_timer_tick(timer_handle h);
 
-#define HT_WARN(a...) ht_warn(__FILE__, __LINE__, a)
 #define HT_ERROR(a...) ht_error(__FILE__, __LINE__, a)
+#define HT_WARN(a...) ht_warn(__FILE__, __LINE__, a)
+
+#ifdef HTDEBUG
+#define HT_TRACE(a...) ht_trace(__FILE__, __LINE__, a)
+#else
+#define HT_TRACE(a...) ((void)0)
+#endif
 
 #ifdef HTDEBUG
 #	define assert(a) if (!(a)) ht_assert_failed(__FILE__, __LINE__, (#a));
@@ -56,3 +63,4 @@ dword get_timer_tick(timer_handle h);
 #endif
 
 #endif /* !__HTDEBUG_H__ */
+

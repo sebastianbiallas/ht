@@ -25,12 +25,14 @@
  *	packed structures
  */
 
+#ifdef __cplusplus
 #ifdef __GNUC__
 #define HTPACKED __attribute__ ((packed))
 #else
-#error this is not the GNU C compiler :-) so you must add your definition of HTPACKED here (global.h)
+#error "you're not using the GNU C compiler :-) please add the macro and conditionals for your compiler"
 #define HTPACKED blabla
-#endif
+#endif /* !__GNUC__ */
+#endif /* __cplusplus */
 
 /*
  *	types
@@ -54,13 +56,6 @@ typedef unsigned int UINT;
 
 #include "qword.h"
 
-#define DDECL_UINT(name)	dword name HTPACKED
-#define DDECL_PTR(type, name)	type *name HTPACKED
-
-typedef unsigned int ID;
-
-typedef unsigned int OBJECT_ID;
-
 #ifndef NULL
 #	define NULL 0
 #endif
@@ -70,8 +65,15 @@ typedef unsigned int OBJECT_ID;
 typedef UINT FILEOFS;
 #endif
 
-#define STUB
-#define ABSTRACT
+/* C++ specific */
+#ifdef __cplusplus
+
+#define DDECL_UINT(name)	dword name HTPACKED
+#define DDECL_PTR(type, name)	type *name HTPACKED
+
+typedef unsigned int ID;
+
+typedef unsigned int OBJECT_ID;
 
 /*
  *	steves strucs
@@ -104,20 +106,9 @@ struct htmsg {
 #define NEW_OBJECT(instance, class, params...) \
 ((class *)(instance = new class()))->init(params)
 #define DELETE_OBJECT(obj) obj->done(); delete obj;
-
-#ifdef DEBUG
-#define DPRINTF(msg...) printf(msg)
-#else
 #define DPRINTF(msg...)
-#endif
 
-/*
- *	compile time formats
- */
-
-// #define HEX8FORMAT8 "%08x"
-// #define HEX8FORMAT "%08x"
-#define HEX8FORMAT8 "%8x"
-#define HEX8FORMAT "%x"
+#endif /* __cplusplus */
 
 #endif
+

@@ -193,6 +193,11 @@ public:
 	virtual void b_resize(int rw, int rh);
 	virtual void b_rmove(int rx, int ry);
 	virtual void b_setbounds(bounds *b);
+/* graphical extension */
+     virtual void b_line(int px1, int py1, int px2, int py2, int c);
+     virtual void b_putpixel(int px, int py, int c);
+     virtual void text_to_pixel_coord(int tx, int ty, int *px, int *py);
+     virtual void pixel_to_text_coord(int px, int py, int *tx, int *ty);
 };
 
 /*

@@ -204,20 +204,20 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 srt.o: srt.cc ../htatom.h ../htdata.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h ../htiobox.h \
-	../htdialog.h ../htdebug.h ../htobj.h ../io/posix/htcurses.h \
-	../config.h ../htstring.h srt.h ../analyser/analy.h \
-	../asm/asm.h ../analyser/codeanaly.h ../analyser/dataanaly.h \
+	../htdebug.h ../htiobox.h ../htdialog.h ../htobj.h \
+	../io/posix/htcurses.h ../config.h ../io/htio.h ../htstring.h \
+	srt.h ../analyser/analy.h ../asm/asm.h ../analyser/code_analy.h \
+	../stream.h ../io/posix/htsys.h ../analyser/data_analy.h \
 	../analyser/stddata.h symmath.h srt_x86.h
 srt_x86.o: srt_x86.cc ../htctrl.h ../htobj.h ../common.h ../global.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h \
-	../io/posix/htcurses.h ../config.h ../htexcept.h ../htiobox.h \
-	../htdialog.h ../htdebug.h ../htstring.h ../htdata.h srt_x86.h \
-	srt.h ../analyser/analy.h ../asm/asm.h ../analyser/codeanaly.h \
-	../analyser/dataanaly.h ../analyser/stddata.h symmath.h \
+	../htdebug.h ../io/posix/htcurses.h ../config.h ../io/htio.h \
+	../htexcept.h ../htiobox.h ../htdialog.h ../htstring.h \
+	../htdata.h srt_x86.h srt.h ../analyser/analy.h ../asm/asm.h \
+	../analyser/code_analy.h ../stream.h ../io/posix/htsys.h \
+	../analyser/data_analy.h ../analyser/stddata.h symmath.h \
 	../asm/x86dis.h ../asm/x86opc.h
 symmath.o: symmath.cc ../tools.h ../global.h ../htdata.h ../common.h \
-	../stream.h ../io/posix/htsys.h ../io/htio.h symmath.h
+	../htdebug.h symmath.h
 
 info-am:
 info: info-am

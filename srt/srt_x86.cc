@@ -53,20 +53,20 @@ char *srt_x86_idx2reg(UINT idx)
 	return x86_regs[2][idx & 7];
 }
 
-void srt_x86_setreg(CPU *cpu, UINT idx, object *o)
+void srt_x86_setreg(CPU *cpu, UINT idx, Object *o)
 {
 	if (idx >= 8) {
 		sym_bool **k;
 		k = &cpu->flags[(idx-8) % X86_FLAGS];
 		(*k)->done();
 		delete *k;
-		((object*)*k) = o;
+		((Object*)*k) = o;
 	} else {
 		sym_int **k;
 		k = &cpu->regs[idx & 7];
 		(*k)->done();
 		delete *k;
-		((object*)*k) = o;
+		((Object*)*k) = o;
 	}
 }
 
@@ -80,7 +80,7 @@ public:
 	{
 	}
 
-	object *duplicate()
+	Object *duplicate()
 	{
 		return new sym_int_reg_x86(regidx);
 	}
@@ -655,14 +655,13 @@ void destroy_cpu(CPU *cpu)
 	}
 }
 
-void srt_x86(analyser *analy, ADDR addr)
+void srt_x86(Analyser *analy, Address *addr)
 {
 	x86dis *x = (x86dis*)analy->disasm;
 	CPU_ADDR a;
 	byte buf[15];
 
-	a.addr32.seg = 0;
-	a.addr32.offset = addr;
+	addr->putIntoCPUAddress(&a);
 	CPU cpu;
 
 	create_cpu(&cpu);
@@ -693,10 +692,10 @@ void srt_x86(analyser *analy, ADDR addr)
 /**/
 #define MAX_INSNS	20
 	for (int i=0; i<MAX_INSNS; i++) {
-		if (!analy->valid_addr(addr, scinitialized)) break;
-		UINT bz = analy->bufptr(addr, buf, sizeof buf);
+		if (!analy->validAddress(addr, scinitialized)) break;
+		UINT bz = analy->bufPtr(addr, buf, sizeof buf);
 		dis_insn *i = (x86dis_insn*)x->decode(buf, bz, a);
-		if (!x->valid_insn(i)) break;
+		if (!x->validInsn(i)) break;
 		x86dis_insn *xi = (x86dis_insn*)i;
 		char *dname = x->str(i, DIS_STYLE_HEX_NOZEROPAD + DIS_STYLE_HEX_ASMSTYLE);
 		ht_list *rm = NULL;
@@ -740,9 +739,8 @@ void srt_x86(analyser *analy, ADDR addr)
 				srt_x86_setreg(&cpu, r->dest.regidx, r->value.integer);
 			}
 		}
-		addr += x->getsize(xi);
+		addr->add(x->getSize(xi));
 	}
-
 	destroy_cpu(&cpu);
 /**/
 	list->update();

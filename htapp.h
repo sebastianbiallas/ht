@@ -304,7 +304,6 @@ protected:
 			
 			bool accept_close_all_windows();
 			UINT find_free_window_number();
-			void	insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 			
 			UINT get_window_number(ht_window *window);
 			UINT get_window_listindex(ht_window *window);
@@ -318,6 +317,7 @@ protected:
 	virtual	char *defaultpaletteclass();
 public:
 	ht_view *menu;
+			void	insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 
 			void init(bounds *b);
 	virtual	void done();

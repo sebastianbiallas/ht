@@ -1,4 +1,4 @@
-/* 
+/*
  *	The HT Editor
  *	asm.h
  *
@@ -104,15 +104,20 @@ public:
 extern char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context);
 extern void* addr_sym_func_context;
 
+enum AsmSyntaxHighlightEnum {
+     e_cs_default=0,
+     e_cs_comment,
+     e_cs_number,
+     e_cs_symbol,
+     e_cs_string
+};
+
 class Disassembler: public Object {
 protected:
 	int options;
 	bool highlight;
 	
-			const char *get_cs_default();
-			const char *get_cs_number();
-			const char *get_cs_symbol();
-			const char *get_cs_string();
+			const char *get_cs(AsmSyntaxHighlightEnum style);
 			void hexd(char **s, int size, int options, int imm);
 			void enable_highlighting();
 			void disable_highlighting();
@@ -168,6 +173,7 @@ public:
 #define ATOM_DISASM_JAVA MAGICD("DIS\x03")
 
 #define ASM_SYNTAX_DEFAULT "\\@d"
+#define ASM_SYNTAX_COMMENT "\\@#"
 #define ASM_SYNTAX_NUMBER "\\@n"
 #define ASM_SYNTAX_SYMBOL "\\@c"
 #define ASM_SYNTAX_STRING "\\@s"

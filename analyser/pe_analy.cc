@@ -265,12 +265,13 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 		*r = ((AddressFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
 	} else if (oid == ATOM_ADDRESS_X86_FLAT_32) {
-//     	printf("--  %x  --\n", ((AddressX86Flat32*)addr)->addr);
-//     	printf("--  %x  --\n", ((AddressX86Flat32*)addr)->addr - pe_shared->pe32.header_nt.image_base);
 		*r = ((AddressX86Flat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
-	}
-	return false;     
+	} else if (oid == ATOM_ADDRESS_ALPHA_FLAT_32) {
+		*r = ((AddressAlphaFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
+		return true;
+     }
+	return false;
 }
 
 /*
@@ -473,7 +474,7 @@ void PEAnalyser::initUnasm()
 		case COFF_MACHINE_ALPHA:	// Alpha_AXP
 			DPRINTF("initing alpha_axp_disassembler\n");
 			analy_disasm = new AnalyAlphaDisassembler();
-			analy_disasm->init(this);
+			((AnalyAlphaDisassembler *)analy_disasm)->init(this);
 			break;
 		case COFF_MACHINE_POWERPC:	// IBM PowerPC Little-Endian
 			DPRINTF("no apropriate disassembler for POWER PC\n");
@@ -490,7 +491,7 @@ void PEAnalyser::initUnasm()
 /*
  *
  */
-void PEAnalyser::log(char *msg)
+void PEAnalyser::log(const char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log

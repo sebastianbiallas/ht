@@ -110,15 +110,37 @@ void load_file(char *fn, UINT mode)
 	((ht_app*)app)->create_window_file(fn, mode, true);
 }
 
+//#define SPLINE_TEST
+#ifdef SPLINE_TEST
+//#include "mathfunc.h"
+#include "htspline.h"
+#endif
+
 void show_help()
 {
+#ifdef SPLINE_TEST
+	bounds b;
+     b.x = 0; b.y = 0; b.w = 80; b.h = 23;
+	ht_window *s=new ht_window();
+	s->init(&b, "spline", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE, 0);
+     b.w = 78;
+     b.h = 21;
+/*	MathFuncPlotter *sv = new MathFuncPlotter();
+     sv->init(&b, "test");
+     s->insert(sv);*/
+	ht_spline_view *sv = new ht_spline_view();
+     sv->init(&b, "test");
+     s->insert(sv);
+	((ht_app*)app)->insert_window(s, AWT_LOG, 0, false, NULL);
+#else
 	((ht_app*)app)->create_window_help("hthelp.info", "Top");
+#endif
 }
 
 void params(int argc, char *argv[])
 {
 	int escaped_params_start = 0;
-	// FIXME: FOM_AUTO should be standardmode
+	// FIXME: FOM_AUTO should be the default
 	int load_mode = FOM_BIN;
 	bool showhelp = false;
 	

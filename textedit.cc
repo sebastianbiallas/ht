@@ -19,9 +19,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-extern "C" {
 #include "evalx.h"
-}
 #include "cmds.h"
 #include "htctrl.h"
 #include "htdialog.h"
@@ -2173,16 +2171,16 @@ char *ht_text_editor::func(UINT i, bool execute)
 		case 2:
 			if (execute) {
 				if (textfile->get_filename()) {
-                    	sendmsg(cmd_file_save);
-                    } else {
-                    	// FIXME: !! call undolist->mark_clean() !!
-                    	app->sendmsg(cmd_file_saveas);
+					sendmsg(cmd_file_save);
+				} else {
+					// FIXME: !! call undolist->mark_clean() !!
+					app->sendmsg(cmd_file_saveas);
 					bool dirty = true;
 					textfile->cntl(FCNTL_MODS_IS_DIRTY, 0, 0x7fffffff, &dirty);
 					if (undo_list && !dirty) {
 						undo_list->mark_clean();
 					}
-                    }
+				}
 			}
 			return "save";
 	}
@@ -2488,12 +2486,12 @@ bool ht_text_editor::save()
 
 	char tempfile[PATH_MAX+20];
 
-     ht_file *temp = NULL;
+	ht_file *temp = NULL;
 	tempfile[0] = 0;
-     if (tmpnam(tempfile)) {
+	if (tmpnam(tempfile)) {
 		temp = new ht_file();
 		temp->init(tempfile, FAM_CREATE | FAM_WRITE);
-     }
+	}
 
 	if ((!temp) || (temp->get_error())) {
 		errorbox("couldn't create tempfile %s", tempfile);

@@ -727,9 +727,9 @@ int x86dis::special_param_ambiguity(x86dis_insn *disasm_insn)
 
 void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params)
 {
-	const char *cs_default = get_cs_default();
-	const char *cs_number = get_cs_number();
-	const char *cs_symbol = get_cs_symbol();
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_number = get_cs(e_cs_number);
+	const char *cs_symbol = get_cs(e_cs_symbol);
 	
 	*opstrlen=0;
 	switch (op->type) {
@@ -956,8 +956,8 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 
 void x86dis::str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print)
 {
-	const char *cs_default = get_cs_default();
-	const char *cs_symbol = get_cs_symbol();
+	const char *cs_default = get_cs(e_cs_default);
+	const char *cs_symbol = get_cs(e_cs_symbol);
 
 	char *f=*format;
 	char *s=*str;

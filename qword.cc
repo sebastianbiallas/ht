@@ -37,6 +37,14 @@ qword::qword(UINT i)
 	hi = 0;
 }*/
 
+qword int_to_qword(int i)
+{
+	qword res;
+	res.lo = i;
+	res.hi = (i<0) ? ((dword)-1) : 0;
+	return res;
+}
+
 qword to_qword(int i)
 {
 	qword res;

@@ -456,7 +456,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			if (next && next->isValid() && next->difference(d, Addr)) {
 				bytes_line += d;
 				char buf[100];
-				sprintf(buf, "  db      ?? * %d", d);
+				sprintf(buf, "db      ?? * %d", d);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 			} else {
 				bytes_line += 1;

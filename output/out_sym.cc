@@ -74,7 +74,7 @@ struct ImageSymHeader {
 	word u0 HTPACKED;				// 0000
 	word u1 HTPACKED;				// 0015 (some flags ?, 0014 for 16-bit .SYM ?)
 	word seg_count HTPACKED;
-    	dword u2 HTPACKED;				// 04020002 (some flags ?)
+	dword u2 HTPACKED;				// 04020002 (some flags ?)
 	byte	module_name[16] HTPACKED;
 };
 
@@ -103,39 +103,39 @@ struct ImageSymDescriptor {
 
 static void write_sym(ht_stream *stream, dword addr, char *name, UINT *bytes_written)
 {
-     ImageSymDescriptor desc;
-     desc.address = addr;
-     stream->write(&desc, sizeof desc); // FIXME: endianess !
-     putstrp(stream, name);
-     *bytes_written += sizeof desc + 1 + strlen(name);
+	ImageSymDescriptor desc;
+	desc.address = addr;
+	stream->write(&desc, sizeof desc); // FIXME: endianess !
+	putstrp(stream, name);
+	*bytes_written += sizeof desc + 1 + strlen(name);
 }
 
 static void g(ht_stream *stream, Symbol *s, UINT *bytes_written, UINT *symbols_written, word *ptr_table)
 {
-     if (*bytes_written >= MAX_BYTES_PER_SEGMENT) return;
-     if (*symbols_written >= MAX_SYMBOLS_PER_SEGMENT) return;
+	if (*bytes_written >= MAX_BYTES_PER_SEGMENT) return;
+	if (*symbols_written >= MAX_SYMBOLS_PER_SEGMENT) return;
 
-     dword addr;
-     if (s->location->addr->byteSize() == sizeof addr) {
-          s->location->addr->putIntoArray((byte*)&addr);
+	dword addr;
+	if (s->location->addr->byteSize() == sizeof addr) {
+		s->location->addr->putIntoArray((byte*)&addr);
 //          addr -= 0xbff70000;	/* FIXME: hack for kernel32.dll */
-     } else {
-     	addr = 0;
-     }
-     
-     ptr_table[*symbols_written] = *bytes_written;
-     write_sym(stream, addr, s->name, bytes_written);
-     
-     (*symbols_written) ++;
+	} else {
+		addr = 0;
+	}
+	
+	ptr_table[*symbols_written] = *bytes_written;
+	write_sym(stream, addr, s->name, bytes_written);
+	
+	(*symbols_written) ++;
 }
 
 static void align16(ht_streamfile *file, UINT *bytes_written)
 {
 	byte c = 0;
-     while (*bytes_written % 16) {
-     	file->write(&c, 1);
-          (*bytes_written) ++;
-     }
+	while (*bytes_written % 16) {
+		file->write(&c, 1);
+		(*bytes_written) ++;
+	}
 }
  
 int export_to_sym(Analyser *analy, ht_streamfile *file)
@@ -143,72 +143,72 @@ int export_to_sym(Analyser *analy, ht_streamfile *file)
 	if ((!analy) || (!file)) return /*HTML_OUTPUT_ERR_GENERIC*/1;
 	if (analy->active) return /*HTML_OUTPUT_ERR_ANALY_NOT_FINISHED*/1;
 
-     char *module_name = "TEST";
-     ImageSymHeader head;
-     ImageSymSegHeader seg_head;
+	char *module_name = "TEST";
+	ImageSymHeader head;
+	ImageSymSegHeader seg_head;
 
 // write dummy header
-     memset(&head, 0, sizeof head);
-     file->write(&head, sizeof head);
+	memset(&head, 0, sizeof head);
+	file->write(&head, sizeof head);
 
 
 /* foreach ($seg) { */
 
 // write dummy seg header
-     memset(&seg_head, 0, sizeof seg_head);
-     file->write(&seg_head, sizeof seg_head);
+	memset(&seg_head, 0, sizeof seg_head);
+	file->write(&seg_head, sizeof seg_head);
 
-     UINT bytes_written = sizeof seg_head, symbols_written = 0;
+	UINT bytes_written = sizeof seg_head, symbols_written = 0;
 
-     write_sym(file, 0xff000000, "_TEXT", &bytes_written);
+	write_sym(file, 0xff000000, "_TEXT", &bytes_written);
 
-     word *ptr_table = (word*)malloc(MAX_SYMBOLS_PER_SEGMENT * sizeof *ptr_table);
+	word *ptr_table = (word*)malloc(MAX_SYMBOLS_PER_SEGMENT * sizeof *ptr_table);
 
-     Symbol *sym = NULL;
-     while ((sym = analy->enumSymbols(sym))) {
+	Symbol *sym = NULL;
+	while ((sym = analy->enumSymbols(sym))) {
 		g(file, sym, &bytes_written, &symbols_written, ptr_table);
 	}
-     
-     UINT sym_ptr_table_ptr = bytes_written;
+	
+	UINT sym_ptr_table_ptr = bytes_written;
 
 	// FIXME: endianess !
-     file->write(ptr_table, sizeof *ptr_table * symbols_written);
-     bytes_written += sizeof *ptr_table * symbols_written;
-     free(ptr_table);
+	file->write(ptr_table, sizeof *ptr_table * symbols_written);
+	bytes_written += sizeof *ptr_table * symbols_written;
+	free(ptr_table);
 
-     align16(file, &bytes_written);
+	align16(file, &bytes_written);
 
-     // FIXME: wrong code order, endianess !
-     dword terminator = 0x04000000;
-     file->write(&terminator, sizeof terminator);
-     bytes_written += 4;
+	// FIXME: wrong code order, endianess !
+	dword terminator = 0x04000000;
+	file->write(&terminator, sizeof terminator);
+	bytes_written += 4;
 
 	file->seek(0x0020);
 // write segment header
-     seg_head.next_rec_ofs = 0x0002;
-     seg_head.sym_count = symbols_written;
-     seg_head.sym_ptr_table_ptr = sym_ptr_table_ptr;
-     seg_head.seg_idx = 1;
-     seg_head.seg_start = 0;
-     seg_head.seg_size = 0x0000ffff;
+	seg_head.next_rec_ofs = 0x0002;
+	seg_head.sym_count = symbols_written;
+	seg_head.sym_ptr_table_ptr = sym_ptr_table_ptr;
+	seg_head.seg_idx = 1;
+	seg_head.seg_start = 0;
+	seg_head.seg_size = 0x0000ffff;
 	// FIXME: endianess !
-     file->write(&seg_head, sizeof seg_head);
-     
+	file->write(&seg_head, sizeof seg_head);
+	
 /* } */
 
 
-     bytes_written += sizeof head;
-     file->seek(0);
+	bytes_written += sizeof head;
+	file->seek(0);
 // write header
-     head.file_size = (bytes_written-1) / 16;
-     head.entry_seg = 0;
-     head.u0 = 0;
-     head.u1 = 0x0015;
-     head.seg_count = 1;
-     head.u2 = 0x04020002;
-     memcpy(head.module_name, module_name, MIN(strlen(module_name), sizeof head.module_name));
+	head.file_size = (bytes_written-1) / 16;
+	head.entry_seg = 0;
+	head.u0 = 0;
+	head.u1 = 0x0015;
+	head.seg_count = 1;
+	head.u2 = 0x04020002;
+	memcpy(head.module_name, module_name, MIN(strlen(module_name), sizeof head.module_name));
 	// FIXME: endianess !
-     file->write(&head, sizeof head);
+	file->write(&head, sizeof head);
 
 	return 0;
 }

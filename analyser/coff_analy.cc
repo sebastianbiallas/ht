@@ -394,7 +394,7 @@ void CoffAnalyser::initUnasm()
 /*
  *
  */
-void CoffAnalyser::log(char *msg)
+void CoffAnalyser::log(const char *msg)
 {
 	/*
 	 *	log() creates to much traffic so dont log

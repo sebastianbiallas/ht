@@ -242,24 +242,16 @@ char *Disassembler::str(dis_insn *disasm_insn, int style)
 	return strf(disasm_insn, style, DISASM_STRF_DEFAULT_FORMAT);
 }
 
-const char *Disassembler::get_cs_default()
+const char *Disassembler::get_cs(AsmSyntaxHighlightEnum style)
 {
-	return (highlight) ? ASM_SYNTAX_DEFAULT : "";
-}
-
-const char *Disassembler::get_cs_number()
-{
-	return (highlight) ? ASM_SYNTAX_NUMBER : "";
-}
-
-const char *Disassembler::get_cs_symbol()
-{
-	return (highlight) ? ASM_SYNTAX_SYMBOL : "";
-}
-
-const char *Disassembler::get_cs_string()
-{
-	return (highlight) ? ASM_SYNTAX_STRING : "";
+	const char *highlights[] = {
+          ASM_SYNTAX_DEFAULT,
+		ASM_SYNTAX_COMMENT,
+		ASM_SYNTAX_NUMBER,
+		ASM_SYNTAX_SYMBOL,
+		ASM_SYNTAX_STRING
+     };
+     return (highlight) ? highlights[(int)style] : "";
 }
 
 void Disassembler::enable_highlighting()

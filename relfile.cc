@@ -34,7 +34,7 @@ void	ht_reloc_file::init(ht_streamfile *s, bool os)
 	ht_layer_streamfile::init(s, os);
 	relocs = new ht_stree();
 	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
-     enabled = true;
+	enabled = true;
 }
 
 void	ht_reloc_file::done()
@@ -53,12 +53,12 @@ int	ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_GET_RELOC: {
-               bool *e = va_arg(vargs, bool*);
-               *e = enabled;
+			bool *e = va_arg(vargs, bool*);
+			*e = enabled;
 			return 0;
-          }
+		}
 		case FCNTL_SET_RELOC: {
-               enabled = va_arg(vargs, bool);
+			enabled = va_arg(vargs, bool);
 			return 0;
 		}
 	}
