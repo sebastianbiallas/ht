@@ -28,6 +28,8 @@
 - snprintf.cc needs correct indentation
 
 +steves
+- syntax.cc:bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count):
+  better use bsearch() (ANSI, POSIX)
 - goto('') should be ignored
 - relfile::read/write: enum_next mysteria
 - goto eval help
