@@ -23,8 +23,9 @@
 
 #include "global.h"
 
-#include <dirent.h>
+// include sys/types.h _before_ dirent.h because Darwin needs this (!)
 #include <sys/types.h>
+#include <dirent.h>
 #include <time.h>
 
 /*

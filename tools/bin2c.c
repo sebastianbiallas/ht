@@ -17,6 +17,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <sys/types.h>		// needed for dirent.h on Darwin
 #include <dirent.h>		/* for NAME_MAX */
 #include <stdio.h>
 #include <string.h>
