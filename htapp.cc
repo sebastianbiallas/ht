@@ -151,7 +151,7 @@ bool file_new_dialog(UINT *mode)
 			ht_listbox_data type;
 		} data;
 
-		d->databuf_get(&data);
+		d->databuf_get(&data, sizeof data);
 
 		*mode = data.type.cursor_id;
 		
@@ -273,7 +273,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 bool FileBrowser::extract_url(char *buf)
 {
 	ht_strinputfield_data i;
-	name_input->databuf_get(&i);
+	name_input->databuf_get(&i, sizeof i);
 /*     ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
 	vfs_extra *x = (vfs_extra*)t->extra_data;*/
 	Vfs *vfs = listbox->getCurVfs();
@@ -290,14 +290,14 @@ bool FileBrowser::extract_url(char *buf)
 void FileBrowser::listbox_changed()
 {
 	FileBrowserVfsListboxData l;
-	listbox->databuf_get(&l);
+	listbox->databuf_get(&l, sizeof l);
 	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(l.cursor_id);
 	if (t) {
 		vfs_extra *x = (vfs_extra*)t->extra_data;
 		ht_strinputfield_data i;
 		i.textlen = strlen(x->name);
 		i.text = (byte*)x->name;
-		name_input->databuf_set(&i);
+		name_input->databuf_set(&i, sizeof i);
 	}
 }
 /**/
@@ -418,7 +418,7 @@ bool file_open_dialog(char **name, UINT *mode)
 			ht_listpopup_data mode;
 		} data;
 
-		d->databuf_get(&data);
+		d->databuf_get(&data, sizeof data);
 
 		char buf[VFS_URL_MAX];
 		d->extract_url(buf);
@@ -2764,7 +2764,7 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	ht_view *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
-		listbox->databuf_get(&data);
+		listbox->databuf_get(&data, sizeof data);
 		ht_data_ptr *p=(ht_data_ptr*)structure->get(data.cursor_id);
 		if (p) result = (ht_view*)p->value;
 	}
@@ -2850,7 +2850,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	ht_window *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
-		listbox->databuf_get(&data);
+		listbox->databuf_get(&data, sizeof data);
 		result = get_window_by_number(data.cursor_id);
 	}
 	dialog->done();

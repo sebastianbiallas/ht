@@ -192,35 +192,37 @@ bool inputbox(const char *title, const char *label, char *result, int limit, dwo
 	return inputboxrect(&b, title, label, result, limit, histid);
 }
 
-bool inputboxrect(bounds *b, const char *title, const char *Label, char *result, int limit, dword histid)
+bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 
+     ht_strinputfield *input;
+
 	bounds  b2;
-	b2.x = 3 + strlen(Label);
+	b2.x = 3 + strlen(label);
 	b2.y = 1;
 	b2.w = b->w - 3 - b2.x;
 	b2.h = 1;
 
-	ht_clist *hist=0;
-	if (histid) hist=(ht_clist*)find_atom(histid);
-	ht_strinputfield *input=new ht_strinputfield();
+	ht_clist *hist = 0;
+	if (histid) hist = (ht_clist*)find_atom(histid);
+	input = new ht_strinputfield();
 	input->init(&b2, limit, hist);
 	ht_inputfield_data d;
-	d.text=(byte *)result;
-	d.textlen=strlen((char*)d.text);
-	input->databuf_set(&d);
+	d.text = (byte *)result;
+	d.textlen = strlen((char*)d.text);
+	input->databuf_set(&d, sizeof d);
 	dialog->insert(input);
 
-	if (Label) {
+	if (label) {
 		b2.x = 1;
 		b2.y = 1;
-		b2.w = 3 + strlen(Label) - b2.x;
+		b2.w = 3 + strlen(label) - b2.x;
 		b2.h = 1;
 
-		ht_label *lab=new ht_label();
-		lab->init(&b2, Label, input);
+		ht_label *lab = new ht_label();
+		lab->init(&b2, label, input);
 		dialog->insert(lab);
 	}
 
@@ -229,19 +231,20 @@ bool inputboxrect(bounds *b, const char *title, const char *Label, char *result,
 	b2.w = 10;
 	b2.h = 2;
 
-	ht_button *bok=new ht_button();
+	ht_button *bok = new ht_button();
 	bok->init(&b2, "O~k", button_ok);
 	dialog->insert(bok);
 
 	b2.x += 12;
 
-	ht_button *bcancel=new ht_button();
+	ht_button *bcancel = new ht_button();
 	bcancel->init(&b2, "~Cancel", button_cancel);
 	dialog->insert(bcancel);
 
 	if (dialog->run(0)) {
-		ht_inputfield_data *data=(ht_inputfield_data*)malloc(input->datasize());
-		input->databuf_get(data);
+     	int dsize = input->datasize();
+		ht_inputfield_data *data=(ht_inputfield_data*)malloc(dsize);
+		input->databuf_get(data, dsize);
 		bin2str(result, data->text, data->textlen);
 		delete data;
 		if (hist) insert_history_entry(hist, result, 0);

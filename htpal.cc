@@ -258,8 +258,8 @@ bool palette_entry::editdialog(const char *keyname)
 
 	if (d->run(false)) {
 		ht_color_block_data fgd, bgd;
-		fgc->databuf_get(&fgd);
-		bgc->databuf_get(&bgd);
+		fgc->databuf_get(&fgd, sizeof fgd);
+		bgc->databuf_get(&bgd, sizeof bgd);
 		color=VCP(fgd.color, bgd.color);
 		r=1;
 	}

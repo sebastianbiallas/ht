@@ -1000,7 +1000,7 @@ void ht_strinputfield::history_dialog()
 		l->init(&b, history);
 		if (l->run(false)) {
 			ht_listpopup_dialog_data d;
-			l->databuf_get(&d);
+			l->databuf_get(&d, sizeof d);
 
 			if (d.cursor_string) {
 				ht_history_entry *v=(ht_history_entry*)history->get(d.cursor_id);
@@ -1011,7 +1011,7 @@ void ht_strinputfield::history_dialog()
 					ht_inputfield_data e;
 					e.textlen=strlen(d.cursor_string);
 					e.text=(byte*)d.cursor_string;
-					databuf_set(&e);
+					databuf_set(&e, sizeof e);
 				}
 			}
 			is_virgin=0;
@@ -2549,7 +2549,7 @@ char *ht_listpopup_dialog::defaultpalette()
 void ht_listpopup_dialog::getdata(ht_object_stream *s)
 {
 	ht_listbox_data d;
-	listbox->databuf_get(&d);
+	listbox->databuf_get(&d, sizeof d);
 
 	s->putIntDec(d.cursor_id, 4, NULL);
 
@@ -2644,7 +2644,7 @@ void ht_listpopup::getdata(ht_object_stream *s)
 char *ht_listpopup::gettext()
 {
 	ht_listpopup_dialog_data d;
-	listpopup->databuf_get(&d);
+	listpopup->databuf_get(&d, sizeof d);
 	return d.cursor_string;
 }
 
@@ -2655,21 +2655,21 @@ void ht_listpopup::handlemsg(htmsg *msg)
 			case K_Up: {
 				int r;
 				ht_listpopup_dialog_data d;
-				listpopup->databuf_get(&d);
+				listpopup->databuf_get(&d, sizeof d);
 				listpopup->select_prev();
 				r=run_listpopup();
 				clearmsg(msg);
-				if (!r) listpopup->databuf_set(&d);
+				if (!r) listpopup->databuf_set(&d, sizeof d);
 				return;
 			}
 			case K_Down: {
 				int r;
 				ht_listpopup_dialog_data d;
-				listpopup->databuf_get(&d);
+				listpopup->databuf_get(&d, sizeof d);
 				listpopup->select_next();
 				r=run_listpopup();
 				clearmsg(msg);
-				if (!r) listpopup->databuf_set(&d);
+				if (!r) listpopup->databuf_set(&d, sizeof d);
 				return;
 			}				
 		}
@@ -2814,8 +2814,8 @@ void ht_color_block::init(bounds *b, int selected, int Flags)
 	flags=Flags;
 	
 	ht_color_block_data d;
-	d.color=selected;
-	databuf_set(&d);
+	d.color = selected;
+	databuf_set(&d, sizeof d);
 	if (flags & cf_light) colors=16; else colors=8;
 }
 

@@ -145,7 +145,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			ok = r;
 			if (r == button_ok) {
 				ht_listbox_data d;
-				list->databuf_get(&d);
+				list->databuf_get(&d, sizeof d);
 				ht_text_listbox_item *i=(ht_text_listbox_item *)list->getbyid(d.cursor_id);
 				asm_code *ac3 = ac;
 				int ac3i=0;

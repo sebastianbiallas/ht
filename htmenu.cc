@@ -65,15 +65,15 @@ bool execute_submenu(int x, int y, ht_context_menu *m)
 				b.y = 0;
 			}
 		}
-		ht_menu_window *d=new ht_menu_window();
+		ht_menu_window *d = new ht_menu_window();
 		d->init(&b, m);
 		ht_menu_window_data a;
-		a.selected=curentry;
-		d->databuf_set(&a);
-		b.x=0;
-		b.y=0;
-		ht_frame *frame=new ht_menu_frame();
-		frame->init(&b, 0, FS_MOVE);	// just for fun
+		a.selected = curentry;
+		d->databuf_set(&a, sizeof a);
+		b.x = 0;
+		b.y = 0;
+		ht_frame *frame = new ht_menu_frame();
+		frame->init(&b, 0, FS_MOVE/*just for fun*/);
 		d->setframe(frame);
 		d->setpalette(palkey_generic_menu_default);
 		int r=d->run(false);
@@ -311,8 +311,8 @@ void ht_menu::execute_menu(int i)
 		ht_menu_window *d=new ht_menu_window();
 		d->init(&b, m);
 		ht_menu_window_data a;
-		a.selected=curentry;
-		d->databuf_set(&a);
+		a.selected = curentry;
+		d->databuf_set(&a, sizeof a);
 		b.x=0;
 		b.y=0;
 		ht_frame *frame=new ht_menu_frame();
@@ -750,7 +750,7 @@ void ht_menu_window::handlemsg(htmsg *msg)
 		switch (msg->data1.integer) {
 			case button_ok: {
 				ht_menu_window_data a;
-				databuf_get(&a);
+				databuf_get(&a, sizeof a);
 				int curentry = a.selected;
 				ht_context_menu_entry *e = menu->get_entry(a.selected);
 				if ((e->type == CME_ENTRY) && (e->entry.active)) {

@@ -434,10 +434,10 @@ void ht_view::databuf_freedup(void *handle)
 	free(s);
 }
 
-void ht_view::databuf_get(void *buf)
+void ht_view::databuf_get(void *buf, int bufsize)
 {
 	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf);
+	f->init((byte*)buf, bufsize);
 	
 	ht_object_stream_memmap *s=new ht_object_stream_memmap();
 	s->init(f, false);
@@ -451,10 +451,10 @@ void ht_view::databuf_get(void *buf)
 	delete f;
 }
 
-void *ht_view::databuf_getdup(void *buf)
+void *ht_view::databuf_getdup(void *buf, int bufsize)
 {
 	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf);
+	f->init((byte*)buf, bufsize);
 	
 	ht_object_stream_memmap *s=new ht_object_stream_memmap();
 	s->init(f, true);
@@ -467,10 +467,10 @@ void *ht_view::databuf_getdup(void *buf)
 	return q;
 }
 
-void ht_view::databuf_set(void *buf)
+void ht_view::databuf_set(void *buf, int bufsize)
 {
 	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf);
+	f->init((byte*)buf, bufsize);
 	
 	ht_object_stream_memmap *s=new ht_object_stream_memmap();
 	s->init(f, false);

@@ -137,7 +137,7 @@ void eval_dialog()
 		ht_strinputfield_data str;
 		eval_scalar r;
 		char b[1024];
-		s->databuf_get(&str);
+		s->databuf_get(&str, sizeof str);
 		if (str.textlen) {
 			bin2str(b, str.text, str.textlen);
 		

@@ -50,8 +50,8 @@ int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statict
 #define warnbox_modal(a...) msgbox(btmask_ok, "warning", true, align_center, a)
 #define confirmbox_modal(a...) msgbox(btmask_yes+btmask_no, "confirmation", true, align_center, a)
 
-bool inputbox(const char *title, const char *label, char *result, int limit, dword histid=0);
-bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid=0);
+bool inputbox(const char *title, const char *label, char *result, int limit, dword histid = 0);
+bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid = 0);
 
 void get_std_progress_indicator_metrics(bounds *b);
 

@@ -67,7 +67,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 		ht_inputfield_data d;
 		d.textlen=strlen(t);
 		d.text=(byte*)t;
-		start->databuf_set(&d);
+		start->databuf_set(&d, sizeof d);
 	}
 
 /* start_desc */
@@ -92,7 +92,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 		ht_inputfield_data d;
 		d.textlen=strlen(t);
 		d.text=(byte*)t;
-		end->databuf_set(&d);
+		end->databuf_set(&d, sizeof d);
 	}
 
 
@@ -559,7 +559,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 	d->init(&b, pstart, pend, 0);
 	if (d->run(false)) {
 		ht_blockop_dialog_data t;
-		d->databuf_get(&t);
+		d->databuf_get(&t, sizeof t);
 		
 		ht_streamfile *file=format->get_file();
 

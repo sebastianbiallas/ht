@@ -117,7 +117,7 @@ ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, h
 {
 	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 	
 	ht_fxbin_search_request *request;
 	
@@ -139,7 +139,7 @@ void create_desc_hexascii(char *buf, int buflen, ht_view *f)
 {
 	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
 		throw new ht_io_exception("%s: string is empty", "hex/ascii");
@@ -180,7 +180,7 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 #define EVALSTR_MAXSTRLEN		256
 	ht_evalstr_search_form *form=(ht_evalstr_search_form*)f;
 	ht_evalstr_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 	
 	ht_fxbin_search_request *request = NULL;
 		
@@ -217,7 +217,7 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 {
 	ht_evalstr_search_form *form=(ht_evalstr_search_form*)f;
 	ht_evalstr_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
 		throw new ht_io_exception("%s: string is empty", "eval str");
@@ -280,7 +280,7 @@ ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_
 #define VREGEX_MAXSTRLEN		256
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 
 	ht_regex_search_request *request=NULL;
 
@@ -304,7 +304,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 {
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
 		throw new ht_io_exception("%s: string is empty", "regex");
@@ -387,7 +387,7 @@ ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_vi
 #define EXPR_MAXSTRLEN		256
 	ht_expr_search_form *form=(ht_expr_search_form*)f;
 	ht_expr_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 	
 	ht_expr_search_request *request = NULL;
 
@@ -411,7 +411,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 {
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
 		throw new ht_io_exception("%s: string is empty", "expr");
@@ -622,14 +622,14 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 	c.w=35;
 	c.y=8;
 	c.h=2;
-	ht_string_list *opts=new ht_string_list();
+	ht_string_list *opts = new ht_string_list();
 	opts->init();
 	opts->insert_string("case ~insensitive");
-	option_boxes=new ht_checkboxes();
+	option_boxes = new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
-	d.state=options;
-	option_boxes->databuf_set(&d);
+	d.state = options;
+	option_boxes->databuf_set(&d, sizeof d);
 	insert(option_boxes);
 }
 
@@ -700,17 +700,17 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 	relabel->init(&c, "~to ofs", range_end);
 	insert(relabel);
 /* options */
-	c.w=35;
-	c.y=8;
-	c.h=2;
-	ht_string_list *opts=new ht_string_list();
+	c.w = 35;
+	c.y = 8;
+	c.h = 2;
+	ht_string_list *opts = new ht_string_list();
 	opts->init();
 	opts->insert_string("case ~insensitive");
-	option_boxes=new ht_checkboxes();
+	option_boxes = new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
-	d.state=options;
-	option_boxes->databuf_set(&d);
+	d.state = options;
+	option_boxes->databuf_set(&d, sizeof d);
 	insert(option_boxes);
 }
 
@@ -773,17 +773,17 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 	relabel->init(&c, "~to addr", range_end);
 	insert(relabel);
 /* options */
-	c.w=35;
-	c.y=8;
-	c.h=2;
-	ht_string_list *opts=new ht_string_list();
+	c.w = 35;
+	c.y = 8;
+	c.h = 2;
+	ht_string_list *opts = new ht_string_list();
 	opts->init();
 	opts->insert_string("case ~insensitive");
-	option_boxes=new ht_checkboxes();
+	option_boxes = new ht_checkboxes();
 	option_boxes->init(&c, opts);
 	ht_checkboxes_data d;
-	d.state=options;
-	option_boxes->databuf_set(&d);
+	d.state = options;
+	option_boxes->databuf_set(&d, sizeof d);
 	insert(option_boxes);
 }
 
@@ -886,7 +886,7 @@ ht_view* create_form_replace_hexascii(bounds *b, HT_ATOM histid)
 ht_data* create_replace_hexascii_context(ht_streamfile *file, FILEOFS ofs, UINT len, ht_view *form, UINT *return_repllen)
 {
 	ht_replace_hexascii_search_form_data d;
-	form->databuf_get(&d);
+	form->databuf_get(&d, sizeof d);
 	
 	ht_replace_bin_context *ctx = (ht_replace_bin_context*)
 	create_replace_bin_context(file, ofs, len, d.str.text, d.str.textlen, return_repllen);
@@ -1330,7 +1330,7 @@ void ht_search_dialog::handlemsg(htmsg *msg)
 	if (msg->msg==msg_keypressed) {
 		ht_dialog::handlemsg(msg);
 		ht_listpopup_data data;
-		search_mode_popup->databuf_get(&data);
+		search_mode_popup->databuf_get(&data, sizeof data);
 		if ((int)data.cursor_id != smodeidx) {
 			smodeidx = data.cursor_id;
 			select_search_mode_bymodeidx();
@@ -1372,8 +1372,8 @@ void ht_search_dialog::select_search_mode(int id)
 void ht_search_dialog::select_search_mode_bymodeidx()
 {
 	ht_listpopup_data d;
-	d.cursor_id=smodeidx;
-	search_mode_popup->databuf_set(&d);
+	d.cursor_id = smodeidx;
+	search_mode_popup->databuf_set(&d, sizeof d);
 	focus(smodes[smodeidx].view);
 	sendmsg(msg_dirtyview, 0);
 }
@@ -1440,11 +1440,11 @@ int ht_replace_dialog::find_replace_mode(int id)
 
 void ht_replace_dialog::handlemsg(htmsg *msg)
 {
-	if (msg->msg==msg_keypressed) {
+	if (msg->msg == msg_keypressed) {
 		ht_search_dialog::handlemsg(msg);
 		ht_listpopup_data data;
-		replace_mode_popup->databuf_get(&data);
-		if ((int)data.cursor_id!=rmodeidx) {
+		replace_mode_popup->databuf_get(&data, sizeof data);
+		if ((int)data.cursor_id != rmodeidx) {
 			rmodeidx=data.cursor_id;
 			select_replace_mode_bymodeidx();
 		}
@@ -1485,8 +1485,8 @@ void ht_replace_dialog::select_replace_mode(int id)
 void ht_replace_dialog::select_replace_mode_bymodeidx()
 {
 	ht_listpopup_data d;
-	d.cursor_id=rmodeidx;
-	replace_mode_popup->databuf_set(&d);
+	d.cursor_id = rmodeidx;
+	replace_mode_popup->databuf_set(&d, sizeof d);
 //	focus(rmodes[rmodeidx].view);
 	sendmsg(msg_dirtyview, 0);
 }

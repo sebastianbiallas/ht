@@ -716,7 +716,7 @@ static void setdatastr(ht_view *v, char *str)
 	ht_inputfield_data id;
 	id.textlen = strlen(str);
 	id.text = (byte*)str;
-	v->databuf_set(&id);
+	v->databuf_set(&id, sizeof id);
 }
 
 static void getdatastr(ht_inputfield_data *id, char *result)
@@ -811,7 +811,7 @@ void ht_aviewer::generateOutputDialog()
 		viewer_pos start, end;
 		bool by_lines;
 		output_dialog_data odd;
-		dialog->databuf_get(&odd);
+		dialog->databuf_get(&odd, sizeof odd);
 		getdatastr(&odd.id1, filename);
 		getdatastr(&odd.id2, start_str);
 		getdatastr(&odd.id3, end_str);
@@ -978,7 +978,7 @@ void ht_aviewer::exportFileDialog()
 		viewer_pos start, end;
 		bool by_lines;
 		output_dialog_data odd;
-		dialog->databuf_get(&odd);
+		dialog->databuf_get(&odd, sizeof odd);
 		getdatastr(&odd.id1, filename);
 		getdatastr(&odd.id2, start_str);
 		getdatastr(&odd.id3, end_str);
@@ -1615,7 +1615,7 @@ void ht_aviewer::showCallChain(Address *Addr)
 	int r = dialog->run(false);
 	if (r == button_ok) {
 		ht_treeview_data tvd;
-		dialog->databuf_get(&tvd);
+		dialog->databuf_get(&tvd, sizeof tvd);
 		gotoAddress(((CallChainNode*)tvd.selected)->xa, this);
 	}
 	dialog->done();
@@ -1770,7 +1770,7 @@ void ht_aviewer::showSymbols(Address *addr)
 	if (r == button_ok) {
 		// goto selected symbol
 		ht_listbox_data d;
-		sym->databuf_get(&d);
+		sym->databuf_get(&d, sizeof d);
 		gotoAddress(((Symbol *)(sym->getbyid(d.cursor_id)))->location->addr, this);
 	}
 	dialog->done();
@@ -1849,7 +1849,7 @@ restart:
 		dialog->insert(new_xref);
 		int r = dialog->run(false);
 		ht_listbox_data data;
-		list->databuf_get(&data);
+		list->databuf_get(&data, sizeof data);
 		switch (r) {
 			case 666:
 				searchForXRefs(Addr);
