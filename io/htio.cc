@@ -22,6 +22,7 @@
 
 #include "htsys.h"		// for sys_is_path_delim
 
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -231,9 +232,12 @@ static int flatten_path(char *path, is_path_delim delim)
 		return 0;
 	char *q = next_delim(path, delim);
 	int pp = flatten_path(q, delim);
-	if (strncmp(path+1, "..", 2) == 0) {
+	int ll = q ? (q-path-1) : strlen(path)-1;
+	if ((ll == 2) && (strncmp(path+1, "..", 2) == 0)) {
 		if (q) memmove(path, q, strlen(q)+1); else *path = 0;
 		pp++;
+	} else if ((ll == 1) && (strncmp(path+1, ".", 1) == 0)) {
+		if (q) memmove(path, q, strlen(q)+1); else *path = 0;
 	} else if (pp) {
 		if (q) memmove(path, q, strlen(q)+1); else *path = 0;
 		pp--;
@@ -241,10 +245,15 @@ static int flatten_path(char *path, is_path_delim delim)
 	return pp;
 }
 
+bool sys_path_is_absolute(const char *filename, is_path_delim delim)
+{
+	return delim(filename[0]) || (isalpha(filename[0]) && (filename[1] == ':'));
+}
+
 int sys_common_canonicalize(char *result, const char *filename, const char *cwd, is_path_delim delim)
 {
 	char *o = result;
-	if (!delim(*filename)) {
+	if (!sys_path_is_absolute(filename, delim)) {
 		if (cwd) strcpy(o, cwd); else *o = 0;
 		int ol = strlen(o);
 		if (ol && !delim(o[ol-1])) {
