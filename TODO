@@ -37,6 +37,7 @@
 - document commandline options in help
 
 +steves
+- eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
 - eval: int("-1") does not work
 - eval should warn if number too big/cannot parse
 - eval whatis(whatis("whatis")), what is?
@@ -136,8 +137,6 @@
 - clipboard: limit size somehow
 - smart window positioning (don't hide cursor)
 - split up htobj.cc and htdialog.cc into smaller files
-- move source files (especially object system) into separate directories,
-  solve name problems (ht* only when necessary for ht obj system)
 - extended search (continue as idle w/result window)
 - CHAR-TAGs must also be editable as hex
 - full support of: pe, le, lx, mz, ne, elf, a archives, pure/dj coff,
