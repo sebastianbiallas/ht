@@ -179,7 +179,7 @@ void ht_le::do_fixups()
 			size -= sizeof f;
 			file->read(&f, sizeof f);
 			create_host_struct(&f, LE_FIXUP_struct, le_shared->byteorder);
-               /* only internal references (16/32) supported for now... */
+			/* only internal references (16/32) supported for now... */
 			if ((f.reloc_type != 0) && (f.reloc_type != 16)) {
 				error = true;
 				break;
@@ -190,7 +190,7 @@ void ht_le::do_fixups()
 				case LE_FIXUP_ADDR_TYPE_0_8:
 				case LE_FIXUP_ADDR_TYPE_16_0:
 				case LE_FIXUP_ADDR_TYPE_16_16:
-                    case LE_FIXUP_ADDR_TYPE_0_16:
+				case LE_FIXUP_ADDR_TYPE_0_16:
 				case LE_FIXUP_ADDR_TYPE_16_32:
 				case LE_FIXUP_ADDR_TYPE_0_32:
 				case LE_FIXUP_ADDR_TYPE_REL32:
@@ -461,12 +461,12 @@ bool ht_le_page_file::map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize)
 bool ht_le_page_file::unmap_ofs(FILEOFS pofs, UINT *lofs)
 {
 	for (UINT i=0; i<pagemapsize; i++) {
-     	if ((pofs >= pagemap->offset[i]) && (pofs < pagemap->offset[i]+pagemap->vsize[i])) {
-               *lofs = pofs - pagemap->offset[i] + i*page_size;
-               return true;
-          }
-     }
-     return false;
+		if ((pofs >= pagemap->offset[i]) && (pofs < pagemap->offset[i]+pagemap->vsize[i])) {
+			*lofs = pofs - pagemap->offset[i] + i*page_size;
+			return true;
+		}
+	}
+	return false;
 }
 
 UINT ht_le_page_file::read(void *buf, UINT size)
@@ -543,7 +543,7 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 UINT ht_le_page_file::write(const void *buf, UINT size)
 {
 	FILEOFS mofs;
-     UINT msize;
+	UINT msize;
 	int c = 0;
 	while (size) {
 		UINT s = size;
@@ -565,7 +565,7 @@ UINT ht_le_page_file::write(const void *buf, UINT size)
 ht_le_reloc_entry::ht_le_reloc_entry(UINT o, UINT s, LEAddress a, uint8 at, uint8 rt)
 {
 	ofs = o;
-     seg = s;
+	seg = s;
 	addr = a;
 	address_type = at;
 	reloc_type = rt;

@@ -129,7 +129,7 @@ public:
 class ht_le_reloc_entry: public ht_data {
 public:
 	UINT ofs;	// FIXME: hack
-     UINT seg;
+	UINT seg;
 	LEAddress addr;
 	uint8 address_type;
 	uint8 reloc_type;

@@ -122,6 +122,15 @@ char *ht_le_aviewer::func(UINT i, bool execute)
 	return ht_aviewer::func(i, execute);
 }
 
+bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
+{
+	FILEOFS o;
+     if (!get_current_offset(&o)) return false;
+     UINT m;
+     if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;
+     return true;
+}
+
 void ht_le_aviewer::setAnalyser(Analyser *a)
 {
 	((LEAnalyser*)a)->le_shared = le_shared;

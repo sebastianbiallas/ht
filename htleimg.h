@@ -40,6 +40,7 @@ public:
 /* overwritten */
 	virtual char *func(UINT i, bool execute);
 	virtual void setAnalyser(Analyser *a);
+	virtual bool get_current_real_offset(FILEOFS *ofs);
 };
 
 #endif /* !__HTLEIMG_H__ */
