@@ -131,7 +131,7 @@ private:
 /* new */
 	int cursor_up(int n);
 	int cursor_down(int n);
-	bool get_hscrollbar_pos(int *pstart, int *psize);
+	bool get_vscrollbar_pos(int *pstart, int *psize);
 	void update();
 public:
 			void init(bounds *b, ht_window *window, ht_log *log, bool own_log);

@@ -1029,7 +1029,7 @@ void ht_logviewer::draw()
 	}
 }
 
-bool ht_logviewer::get_hscrollbar_pos(int *pstart, int *psize)
+bool ht_logviewer::get_vscrollbar_pos(int *pstart, int *psize)
 {
 	return scrollbar_pos(ofs, size.h, lines->count(), pstart, psize);
 }
@@ -1044,22 +1044,32 @@ void ht_logviewer::handlemsg(htmsg *msg)
 					get_pindicator_str((char*)msg->data2.ptr);
 					break;
 				}*/
-				case gsi_hscrollbar: {
+/*				case gsi_hscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
 					if (!get_hscrollbar_pos(&p->pstart, &p->psize)) {
 						p->pstart = 0;
 						p->psize = 100;
 					}
 					break;
-				}
-/*				case gsi_vscrollbar: {
-					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
-					get_vscrollbar_pos(&p->pstart, &p->psize);
-					break;
 				}*/
+				case gsi_vscrollbar: {
+					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
+					if (!get_vscrollbar_pos(&p->pstart, &p->psize)) {
+						p->pstart = 0;
+						p->psize = 100;
+					}
+					break;
+				}
 			}
 			clearmsg(msg);
 			return;
+		case msg_log_changed: {
+			ofs = lines->count()-size.h;
+			if (ofs < 0) ofs = 0;
+               update();
+			clearmsg(msg);
+			return;
+          }
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_Up:
@@ -1112,8 +1122,6 @@ void ht_logviewer::handlemsg(htmsg *msg)
 void ht_logviewer::update()
 {
 	dirtyview();
-/*	ofs = lines->count()-size.h;
-	if (ofs < 0) ofs = 0;*/
 }
 
 /*
@@ -1344,9 +1352,9 @@ bool ht_app::create_window_log()
 		k.w=1;
 		k.h-=2;
 		ht_scrollbar *hs=new ht_scrollbar();
-		hs->init(&k, &logwindow->pal, false);
+		hs->init(&k, &logwindow->pal, true);
 
-		logwindow->sethscrollbar(hs);
+		logwindow->setvscrollbar(hs);
 
 		b.x=0;
 		b.y=0;
@@ -1381,9 +1389,9 @@ bool ht_app::create_window_clipboard()
 		k.w=1;
 		k.h-=2;
 		ht_scrollbar *hs=new ht_scrollbar();
-		hs->init(&k, &window->pal, false);
+		hs->init(&k, &window->pal, true);
 
-		window->sethscrollbar(hs);*/
+		window->setvscrollbar(hs);*/
 
 		b.x=0;
 		b.y=0;
@@ -1457,9 +1465,9 @@ bool ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *
 	k.w=1;
 	k.h-=2;
 	ht_scrollbar *hs=new ht_scrollbar();
-	hs->init(&k, &window->pal, false);
+	hs->init(&k, &window->pal, true);
 
-	window->sethscrollbar(hs);
+	window->setvscrollbar(hs);
 
 	k=*b;
 	k.x=3;
@@ -1590,9 +1598,9 @@ bool ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *ti
 	k.w=1;
 	k.h-=2;
 	ht_scrollbar *hs=new ht_scrollbar();
-	hs->init(&k, &window->pal, false);
+	hs->init(&k, &window->pal, true);
 
-	window->sethscrollbar(hs);
+	window->setvscrollbar(hs);
 
 	k=*c;
 	k.x=3;
@@ -1643,9 +1651,9 @@ bool ht_app::create_window_help(char *file, char *node)
 		b.x+=b.w;
 		b.w=1;
 		ht_scrollbar *scrollbar=new ht_scrollbar();
-		scrollbar->init(&b, &window->pal, false);
+		scrollbar->init(&b, &window->pal, true);
 		scrollbar->enable();
-		window->sethscrollbar(scrollbar);
+		window->setvscrollbar(scrollbar);
 
 		k.x=3;
 		k.y=k.h-2;
@@ -1695,7 +1703,7 @@ bool ht_app::create_window_project()
 		k.w = 1;
 		k.h -= 2;
 		ht_scrollbar *hs = new ht_scrollbar();
-		hs->init(&k, &project_window->pal, false);
+		hs->init(&k, &project_window->pal, true);
 
 		project_window->sethscrollbar(hs);
 
