@@ -288,7 +288,7 @@ struct ht_listbox_data {
 
 class ht_listbox: public ht_view {
 public:
-	int		cursor, pos, count;
+	int		cursor, pos, cached_count;
 	int		visible_height;
 	void		*e_top, *e_cursor;
 	int		x;
@@ -333,8 +333,9 @@ public:
 	virtual	char	*quickfind_completition(char *s);            // stub
 	virtual	void redraw();
 	virtual	bool	seek(int index);
-	virtual   void select_entry(void *entry);
+	virtual   bool select_entry(void *entry);
 	virtual	void setdata(ht_object_stream *s);
+	virtual	void state_changed();
 	virtual	void	store(ht_object_stream *f);
 	virtual	void update();
 			void update_cursor();
@@ -350,9 +351,12 @@ protected:
  *	CLASS ht_text_listbox
  */
 
+#define ht_text_listbox_data ht_listbox_data
+
 struct ht_text_listbox_item {
 	ht_text_listbox_item	*next, *prev;
 	int					id;
+	void					*extra_data;
 	char					*data[0];
 };
 
@@ -362,15 +366,19 @@ struct ht_text_listbox_sort_order {
 };
 
 class ht_text_listbox: public ht_listbox {
-public:
+protected:
 	int					cols, keycol, count;
 	ht_text_listbox_item	*first, *last;
 	int					Cursor_adjust;
+
+	virtual	void clear_all();
+	virtual	void free_extra_data(void *extra_data);
+public:
 			void	init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void	done();
+/**/
 	virtual	int 	load(ht_object_stream *f);
 	virtual   int  calc_count();
-     virtual	void	clear_all();
 	virtual	int	compare_strn(char *s1, char *s2, int l);
 	virtual	int	compare_ccomm(char *s1, char *s2);
 	virtual   int	cursor_adjust();
@@ -383,6 +391,9 @@ public:
 			void goto_item_by_id(UINT id);
 			void goto_item_by_position(UINT pos);
 			void	insert_str(int id, char *str, ...);
+			void	insert_str(int id, char **strs);
+			void	insert_str_extra(int id, void *extra_data, char *str, ...);
+			void	insert_str_extra(int id, void *extra_data, char **strs);
 	virtual   int	numColumns();
 	virtual	void	*quickfind(char *s);
 	virtual	char	*quickfind_completition(char *s);
@@ -390,6 +401,8 @@ public:
 			void sort(int count, ht_text_listbox_sort_order *so);
 	virtual   void update();
 };
+
+#define ht_itext_listbox_data ht_text_listbox_data
 
 class ht_itext_listbox: public ht_text_listbox {
 public:
