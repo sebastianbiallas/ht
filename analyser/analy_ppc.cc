@@ -54,11 +54,7 @@ OBJECT_ID AnalyPPCDisassembler::object_id() const
 Address *AnalyPPCDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
 {
 	Address *a;
-	if (branchtype == br_jXX) {
-		a = createAddress(((ppcdis_insn *)opcode)->op[1].rel.mem);
-	} else {
-		a = createAddress(((ppcdis_insn *)opcode)->op[0].rel.mem);
-	}
+	a = createAddress(((ppcdis_insn *)opcode)->op[((ppcdis_insn *)opcode)->ops-1].rel.mem);
 	if (/*examine &&*/ analy->validAddress(a, scvalid)) {
 		return a;
 	}
