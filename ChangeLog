@@ -18,7 +18,7 @@ version 0.7-trunk (to be 0.8):
 	  whole program. Thanks Jerome (freejazz).
 	- fixed bug in Java class processing code: errors always crash HT
 	- fixed: 0xcafebabe in mach_kernel... made classread more strict
-	- Mach-O little-endian support
+	- Mach-O little-endian support (x86)
 	- fixed object streaming bug in GET_OBJECT (only when compiled with GCC 3.3+)
 
 version 0.7.3:

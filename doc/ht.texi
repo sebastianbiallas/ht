@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.7, April 2003}
+@subtitle{Edition 0.8cvs, Nov 2003}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.7-trunk
+0.8.0cvs
 @end macro
 
 @macro hturl
@@ -272,7 +272,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, ia64, alpha, ppc)
+- image with code/data analyser (x86, ia-64, Alpha, PowerPC)
 @end itemize
 @item 
 linear executables (LE)
@@ -328,7 +328,7 @@ Mach exe/link format (MachO)
 @itemize @w
 @item
 - header @*
-- image with code/data analyser (ppc) @*
+- image with code/data analyser (x86, PowerPC) @*
 @end itemize
 @item
 Still some to be implemented (M$-OBJ, ARCH, LX)

@@ -1,7 +1,7 @@
 HT Editor
 =========
 
-This is HT 0.7-trunk; please note that this is a beta version of the
+This is HT 0.8.0cvs; please note that this is a beta version of the
 program.  Therefore HT is incomplete and sometimes buggy. Enjoy
 anyway...
 
@@ -96,7 +96,8 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia64, alpha, ppc)
+               - image with code/data analyser (x86, ia-64, Alpha,
+               PowerPC)
 
         * linear executables (LE)
                - header
@@ -135,7 +136,7 @@ General features
 
         * Mach exe/link format (MachO)
                - header
-               - image with code/data analyser (ppc)
+               - image with code/data analyser (x86, PowerPC)
 
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 

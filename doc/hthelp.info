@@ -28,9 +28,9 @@ File: hthelp.info,  Node: Top,  Prev: (dir),  Up: (dir)
 HT Editor
 =========
 
-This is HT 0.7-trunk; please note that this is a beta version
-of the program.  Therefore HT is incomplete and sometimes
-buggy. Enjoy anyway...
+This is HT 0.8.0cvs; please note that this is a beta version of
+the program.  Therefore HT is incomplete and sometimes buggy.
+Enjoy anyway...
 
 * Menu:
 
@@ -161,8 +161,8 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, ia64,
-               alpha, ppc)
+               - image with code/data analyser (x86, ia-64,
+               Alpha, PowerPC)
 
         * linear executables (LE)
                - header
@@ -203,7 +203,7 @@ General features
 
         * Mach exe/link format (MachO)
                - header
-               - image with code/data analyser (ppc)
+               - image with code/data analyser (x86, PowerPC)
 
         * Still some to be implemented (M$-OBJ, ARCH, LX)
 
@@ -444,17 +444,17 @@ also take a look at `http://sourceforge.net/projects/hte'
 
 Tag Table:
 Node: Top585
-Node: About895
-Node: Key bindings1743
-Node: Authors3231
-Node: Features3389
-Node: General features3770
-Node: Configuration files6129
-Node: Clipboard6779
-Node: Global history7592
-Node: Expression evaluation8145
-Node: Block operations9526
-Node: Search and its different modes10427
-Node: Where to download ?13117
+Node: About894
+Node: Key bindings1742
+Node: Authors3230
+Node: Features3388
+Node: General features3769
+Node: Configuration files6142
+Node: Clipboard6792
+Node: Global history7605
+Node: Expression evaluation8158
+Node: Block operations9539
+Node: Search and its different modes10440
+Node: Where to download ?13130
 
 End Tag Table
