@@ -204,62 +204,6 @@ void ht_pe_il_viewer::done()
 	ht_uformat_viewer::done();
 }
 
-int ht_pe_il_viewer::ref_sel(LINE_ID *id)
-{
-#if 0
-	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
-
-	switch (id_high) {
-		case 0: {
-			// FIXME: God forgive us...
-			ht_group *vr_group=group;
-			while (strcmp(vr_group->desc, VIEWERGROUP_NAME)) vr_group=vr_group->group;
-			ht_view *c=vr_group->getfirstchild();
-			ht_format_viewer *hexv=0;
-			while (c) {
-				if (c->desc && (strcmp(c->desc, DESC_HEX)==0)) {
-					hexv=(ht_format_viewer*)c;
-					break;
-				}
-				c=c->next;
-			}
-			// ok now.
-			if (hexv && (pe_shared->opt_magic == COFF_OPTMAGIC_PE32)) {
-				UINT rva = pe_shared->pe32.header_nt.directory[id_low].address;
-				UINT size = pe_shared->pe32.header_nt.directory[id_low].size;
-				FILEOFS ofs = 0;
-				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)
-				&& hexv->goto_offset(ofs, this)) {
-					hexv->pselect_set(ofs, ofs+size);
-					app->focus(hexv);
-				} else errorbox("can't follow: %s %08x is not valid !", "directory RVA", rva);
-			}
-			break;
-		}
-		case 1:
-			if (pe_shared->v_exports) {
-//				pe_shared->v_exports->push_vs_history(this);
-				app->focus(pe_shared->v_exports);
-			}
-			break;
-		case 2:
-			if (pe_shared->v_imports) {
-//				pe_shared->v_imports->push_vs_history(this);
-				app->focus(pe_shared->v_imports);
-			}
-			break;
-		case 3:
-// FIXME: not a *_viewer ... !!!
-/*          	if (pe_shared->v_resources) {
-				pe_shared->v_resources->push_vs_history(this);
-				app->focus(pe_shared->v_resources);
-			}*/
-			break;
-	}
-#endif
-	return 1;
-}
-
 ht_il_metadata_entry::ht_il_metadata_entry(char *n, dword o, dword s)
 {
 	name = ht_strdup(n);

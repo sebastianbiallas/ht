@@ -157,6 +157,15 @@ struct PE_THUNK_DATA {
 	};
 };
 
+struct PE_THUNK_DATA_64 {
+	union {
+		qword forwarder_string HTPACKED;
+		qword function_desc_address HTPACKED;
+		qword ordinal HTPACKED;
+		qword data_address HTPACKED;
+	};
+};
+
 struct PE_IMPORT_DESCRIPTOR {
 	union {
 		dword characteristics HTPACKED; 		// 0 for terminating null import descriptor
@@ -248,6 +257,7 @@ extern byte PE_OPTIONAL_HEADER32_NT_struct[];
 extern byte PE_OPTIONAL_HEADER64_NT_struct[];
 extern byte PE_EXPORT_DIRECTORY_struct[];
 extern byte PE_THUNK_DATA_struct[];
+extern byte PE_THUNK_DATA_64_struct[];
 extern byte PE_IMPORT_DESCRIPTOR_struct[];
 extern byte PE_DELAY_IMPORT_DESCRIPTOR_struct[];
 extern byte PE_RESOURCE_DIRECTORY_struct[];

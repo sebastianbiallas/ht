@@ -137,7 +137,7 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	for (UINT i=0; i<edir.function_count; i++) {
 		if (lord[i]) continue;
 
-		RVA f = efunct[i]+pe_shared->pe32.header_nt.image_base;
+		RVA f = efunct[i];
 
 		ht_pe_export_function *efd = new ht_pe_export_function(f, i+edir.ordinal_base);
 		pe_shared->exports.funcs->insert(efd);
@@ -146,7 +146,7 @@ ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 /* exports by name */
 	for (UINT i=0; i < edir.name_count; i++) {
 		UINT o = eordt[i];
-		RVA f = efunct[o]+pe_shared->pe32.header_nt.image_base;
+		RVA f = efunct[o];
 		FILEOFS en;
 		if (!pe_rva_to_ofs(&pe_shared->sections, *(enamet+i), &en)) goto pe_read_error;
 		file->seek(en);

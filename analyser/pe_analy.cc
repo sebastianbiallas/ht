@@ -167,9 +167,9 @@ void PEAnalyser::beginAnalysis()
 		ht_pe_export_function *f=(ht_pe_export_function *)pe_shared->exports.funcs->get(*(entropy+i));
           Address *faddr;
           if (pe32) {
-			faddr = createAddress32(f->address);
+			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
           } else {
-			faddr = createAddress64(to_qword(f->address));
+			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
           }
 		if (validAddress(faddr, scvalid)) {
 			char *label;
@@ -200,9 +200,9 @@ void PEAnalyser::beginAnalysis()
 		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
 		Address *faddr;
           if (pe32) {
-			faddr = createAddress32(f->address);
+			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
           } else {
-			faddr = createAddress64(to_qword(f->address));
+			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
           }
 		addComment(faddr, 0, "");
 		if (!assignSymbol(faddr, label, label_func)) {
@@ -212,7 +212,11 @@ void PEAnalyser::beginAnalysis()
 			sprintf(buffer, "%s_%x", label, f->address);
 			assignSymbol(faddr, buffer, label_func);
 		}
-		data->setIntAddressType(faddr, dst_idword, 4);
+          if (pe32) {
+			data->setIntAddressType(faddr, dst_idword, 4);
+          } else {
+			data->setIntAddressType(faddr, dst_iqword, 8);
+          }
 		free(label);
 		delete faddr;
 	}

@@ -84,7 +84,7 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	UINT dll_index;
 	char iline[256];
 	
-/* get import directory offset */
+	/* get import directory offset */
 	/* 1. get import directory rva */
 	FILEOFS iofs;
 	RVA irva;
@@ -100,12 +100,12 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 	LOG("%s: PE: reading import directory at offset %08x, rva %08x, size %08x...", file->get_filename(), iofs, irva, isize);
 
-/* make a memfile out of the whole file */
+	/* make a memfile out of the whole file */
 
-/* doesn't work because import information is NOT contained into
-   the import directory !!! only the import dir header. (I !love M$) */
+	/* doesn't work because import information is NOT contained into
+	   the import directory !!! only the import dir header. (I !love M$) */
 
-/*** read import directory ***/
+	/*** read import directory ***/
 	dofs = iofs;
 	dll_index = 0;
 
@@ -115,30 +115,30 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		create_host_struct(&import, PE_IMPORT_DESCRIPTOR_struct, little_endian);
 		if ((!import.characteristics) && (!import.name)) break;
 		dofs = file->tell();
-/* get name of dll */
+		/* get name of dll */
 		FILEOFS iname_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)) goto pe_read_error;
 		file->seek(iname_ofs);
 		char *dllname = fgetstrz(file);	/* dont forget to free it at the end of the scope !!! */
 		dll_count++;
 
-/*** imported functions by name or by ordinal ***/
+		/*** imported functions by name or by ordinal ***/
 
-/*
- *	First thunk (FT)
- *   The first thunk table will be overwritten by the system/loader with
- *	the function entry-points. So the program will treat this table
- *	as if it contained just imported addresses.
- */
+		/*
+		 *	First thunk (FT)
+		 *   The first thunk table will be overwritten by the system/loader with
+		 *	the function entry-points. So the program will treat this table
+		 *	as if it contained just imported addresses.
+		 */
 		RVA fthunk_rva = import.first_thunk;
 		FILEOFS fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
-/*
- *   ...and Original First Thunk (OFT)
- * 	I saw executables that have the OFT ptr set to 0 and seem to
- *	use the FT ptr instead, but also some that have both !=0 and use
- *	the original one (bound executables).
- */
+		/*
+		 *   ...and Original First Thunk (OFT)
+		 * 	I saw executables that have the OFT ptr set to 0 and seem to
+		 *	use the FT ptr instead, but also some that have both !=0 and use
+		 *	the original one (bound executables).
+		 */
 		RVA thunk_rva;
 		FILEOFS thunk_ofs;
 		if (import.original_first_thunk) {
@@ -152,50 +152,95 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		pe_shared->imports.libs->insert(lib);
 
 		PE_THUNK_DATA thunk;
+		PE_THUNK_DATA_64 thunk64;
 		UINT thunk_count = 0;
 		file->seek(thunk_ofs);
 		while (1) {
-			file->read(&thunk, sizeof thunk);
-			create_host_struct(&thunk, PE_THUNK_DATA_struct, little_endian);
-			if (!thunk.ordinal)	break;
+          	if (pe32) {
+				file->read(&thunk, sizeof thunk);
+				create_host_struct(&thunk, PE_THUNK_DATA_struct, little_endian);
+				if (!thunk.ordinal) break;
+               } else {
+				file->read(&thunk64, sizeof thunk64);
+				create_host_struct(&thunk64, PE_THUNK_DATA_64_struct, little_endian);
+				if (!QWORD_GET_LO(thunk64.ordinal)) break;
+               }
 			thunk_count++;
 		}
 
 		PE_THUNK_DATA *thunk_table;
+		PE_THUNK_DATA_64 *thunk_table64;
 		thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
+		thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
 		file->seek(thunk_ofs);
-		file->read(thunk_table, sizeof *thunk_table * thunk_count);
-		// FIXME: ?
-		for (UINT i=0; i<thunk_count; i++) {
-			create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
-		}
+          if (pe32) {
+			file->read(thunk_table, sizeof *thunk_table * thunk_count);
+			// FIXME: ?
+			for (UINT i=0; i<thunk_count; i++) {
+				create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
+			}
+          } else {
+			file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
+			// FIXME: ?
+			for (UINT i=0; i<thunk_count; i++) {
+				create_host_struct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
+			}
+          }
 		for (dword i=0; i<thunk_count; i++) {
 			function_count++;
 			ht_pe_import_function *func;
-/* follow (original) first thunk */
-			thunk = *(thunk_table+i);
+			/* follow (original) first thunk */
+			if (pe32) {
+				thunk = *(thunk_table+i);
 
-			if (thunk.ordinal & 0x80000000) {
-/* by ordinal */
-				func = new ht_pe_import_function(dll_index, fthunk_rva+pe_shared->pe32.header_nt.image_base, thunk.ordinal&0xffff);
-			} else {
-/* by name */
-				FILEOFS function_desc_ofs;
-				word hint = 0;
-				if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)) goto pe_read_error;
-				file->seek(function_desc_ofs);
-				file->read(&hint, 2);
-				hint = create_host_int(&hint, 2, little_endian);
-				char *name = fgetstrz(file);
-				func = new ht_pe_import_function(dll_index, fthunk_rva+pe_shared->pe32.header_nt.image_base, name, hint);
-				free(name);
-			}
+				if (thunk.ordinal & 0x80000000) {
+					/* by ordinal */
+					func = new ht_pe_import_function(dll_index, fthunk_rva, thunk.ordinal&0xffff);
+				} else {
+					/* by name */
+					FILEOFS function_desc_ofs;
+					word hint = 0;
+					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)) goto pe_read_error;
+					file->seek(function_desc_ofs);
+					file->read(&hint, 2);
+					hint = create_host_int(&hint, 2, little_endian);
+					char *name = fgetstrz(file);
+					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
+					free(name);
+                    }
+               } else {
+				thunk64 = *(thunk_table64+i);
+
+                    // FIXME: is this correct ?
+				if (QWORD_GET_LO(thunk64.ordinal) & 0x80000000) {
+					/* by ordinal */
+					func = new ht_pe_import_function(dll_index, fthunk_rva, QWORD_GET_LO(thunk64.ordinal)&0xffff);
+				} else {
+					/* by name */
+					FILEOFS function_desc_ofs;
+					word hint = 0;
+					if (!pe_rva_to_ofs(&pe_shared->sections, QWORD_GET_LO(thunk64.function_desc_address), &function_desc_ofs)) goto pe_read_error;
+					file->seek(function_desc_ofs);
+					file->read(&hint, 2);
+					hint = create_host_int(&hint, 2, little_endian);
+					char *name = fgetstrz(file);
+					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
+					free(name);
+                    }
+               }
 			pe_shared->imports.funcs->insert(func);
 
-			thunk_ofs+=4;
-			thunk_rva+=4;
-			fthunk_ofs+=4;
-			fthunk_rva+=4;
+               if (pe32) {
+				thunk_ofs+=4;
+				thunk_rva+=4;
+				fthunk_ofs+=4;
+				fthunk_rva+=4;
+               } else {
+				thunk_ofs+=8;
+				thunk_rva+=8;
+				fthunk_ofs+=8;
+				fthunk_rva+=8;
+               }
 		}
 		
 		dll_index++;
@@ -215,7 +260,7 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 
 	g->insert(head);
 	g->insert(v);
-//
+	//
 	for (UINT i=0; i<pe_shared->imports.funcs->count(); i++) {
 		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->imports.funcs->get(i);
 		assert(func);
@@ -230,7 +275,7 @@ ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		}
 		v->insert_str(i, lib->name, addr, name);
 	}
-//
+	//
 	v->update();
 
 	g->setpalette(palkey_generic_window_default);
@@ -407,7 +452,12 @@ void ht_pe_import_viewer::select_entry(void *entry)
 	if (pe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
 		PEAnalyser *a = (PEAnalyser*)av->analy;
-		Address *addr = a->createAddress32(e->address);
+          Address *addr;
+          if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+			addr = a->createAddress32(e->address+pe_shared->pe32.header_nt.image_base);
+          } else {
+			addr = a->createAddress64(to_qword(e->address)+pe_shared->pe64.header_nt.image_base);
+          }
 		if (av->gotoAddress(addr, NULL)) {
 			app->focus(av);
 			vstate_save();

@@ -128,9 +128,9 @@ ht_mask_ptable pe64header_nt[] = {
 };
 
 ht_mask_ptable pe32header_nt_dirs[] = {
-	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000100000000", "04", "goto")},
-	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000200000000", "04", "goto")},
-	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000300000000", "04", "goto")},
+	{"export directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000000")" "STATICTAG_EDIT_DWORD_LE("00000004")" "STATICTAG_REF("0000000000000000", "04", "goto")},
+	{"import directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000008")" "STATICTAG_EDIT_DWORD_LE("0000000c")" "STATICTAG_REF("0000000000000001", "04", "goto")},
+	{"resource directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_EDIT_DWORD_LE("00000014")" "STATICTAG_REF("0000000000000002", "04", "goto")},
 	{"exception directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000018")" "STATICTAG_EDIT_DWORD_LE("0000001c")" "STATICTAG_REF("0000000000000003", "04", "goto")},
 	{"security directory (rva/size)",			STATICTAG_EDIT_DWORD_LE("00000020")" "STATICTAG_EDIT_DWORD_LE("00000024")" "STATICTAG_REF("0000000000000004", "04", "goto")},
 	{"base relocation table (rva/size)",		STATICTAG_EDIT_DWORD_LE("00000028")" "STATICTAG_EDIT_DWORD_LE("0000002c")" "STATICTAG_REF("0000000000000005", "04", "goto")},
@@ -265,10 +265,8 @@ void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *f
 
 int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 {
-#if 0
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
-
-	switch (id_high) {
+	switch (id->id1) {
 		case 0: {
 			// FIXME: God forgive us...
 			ht_group *vr_group=group;
@@ -283,9 +281,16 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 				c=c->next;
 			}
 			// ok now.
-			if (hexv && (pe_shared->opt_magic == COFF_OPTMAGIC_PE32)) {
-				UINT rva = pe_shared->pe32.header_nt.directory[id_low].address;
-				UINT size = pe_shared->pe32.header_nt.directory[id_low].size;
+               if (hexv) {
+				UINT rva;
+				UINT size;
+				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
+	                    rva = pe_shared->pe32.header_nt.directory[id->id2].address;
+	                    size = pe_shared->pe32.header_nt.directory[id->id2].size;
+                    } else {
+	                    rva = pe_shared->pe64.header_nt.directory[id->id2].address;
+	                    size = pe_shared->pe64.header_nt.directory[id->id2].size;
+                    }
 				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save(NULL);
@@ -296,6 +301,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 			}
 			break;
 		}
+#if 0
 		case 1:
 			if (pe_shared->v_exports) {
 				vstate_save(NULL);
@@ -314,8 +320,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 				app->focus(pe_shared->v_resources);
 			}
 			break;
+#endif
 	}
 	return 1;
-#endif
 }
 
