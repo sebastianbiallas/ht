@@ -25,37 +25,6 @@
 
 #include "formats.h"
 
-/*
- *	CLASS ht_le_image
- */
-
-class ht_le_image: public ht_uformat_viewer {
-public:
-	virtual	void	done();
-};
-
-/*
- *	CLASS ht_le_page_file
- */
-
-class ht_le_page_file: public ht_layer_streamfile {
-protected:
-	ht_le_pagemap *pagemap;
-	dword pagemapsize;
-	dword page_size;
-	FILEOFS ofs;
-/* new */
-		   int map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
-public:
-		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
-/* overwritten */
-	virtual bool isdirty(FILEOFS offset, UINT range);
-	virtual UINT read(void *buf, dword size);
-	virtual int seek(FILEOFS offset);
-	virtual FILEOFS tell();
-	virtual UINT write(const void *buf, UINT size);
-};
-
 extern format_viewer_if htleimage_if;
 
 #endif /* !__HTLEIMG_H__ */

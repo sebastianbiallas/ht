@@ -93,13 +93,13 @@ ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 	FILEOFS o=h+le_shared->hdr.enttab;
 	while (1) {
 		char t[32];
-		IMAGE_LE_ENTRYPOINT_HEADER hdr;
+		LE_ENTRYPOINT_BUNDLE hdr;
 		hdr.entry_count=0;
 		file->seek(o);
 		o+=file->read(&hdr, sizeof hdr);
 		if (!hdr.entry_count) break;
 		char *flags_str;
-		if (hdr.flags & IMAGE_LE_ENTRYPOINT_32BIT) {
+		if (hdr.flags & LE_ENTRYPOINT_BUNDLE_32BIT) {
 			flags_str="32-bit";
 		} else {
 			flags_str="16-bit";
@@ -107,7 +107,7 @@ ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *g
 		for (int i=0; i<hdr.entry_count; i++) {
 			m=new ht_mask_sub();
 			m->init(file, i);
-			if (hdr.flags & IMAGE_LE_ENTRYPOINT_32BIT) {
+			if (hdr.flags & LE_ENTRYPOINT_BUNDLE_32BIT) {
 				m->add_staticmask_ptable(le_entry32, o, le_bigendian);
 				o+=1+4;
 			} else {

@@ -47,20 +47,15 @@ public:
 ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
+	ht_streamfile *myfile = le_shared->reloc_file;
 
-// construction of le_page_file
-// dont just change; see below
-	ht_le_page_file *mfile = new ht_le_page_file();
-	mfile->init(file, false, &le_shared->pagemap, le_shared->pagemap.count,
-		le_shared->hdr.pagesize);
-
-	ht_le_image *v = new ht_le_image();
-	v->init(b, "le/image", VC_EDIT | VC_GOTO | VC_SEARCH, mfile, group);
+	ht_uformat_viewer *v = new ht_uformat_viewer();
+	v->init(b, "le/image", VC_EDIT | VC_GOTO | VC_SEARCH, myfile, group);
 
 	for (int i=0; i<le_shared->objmap.count; i++) {
 		char t[64];
 		char n[5];
-		bool use32=le_shared->objmap.header[i].flags & IMAGE_LE_OBJECT_FLAG_USE32;
+		bool use32=le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32;
 		memmove(n, le_shared->objmap.header[i].name, 4);
 		n[4]=0;
 		sprintf(t, "object %d USE%d: %s (psize=%08x, vsize=%08x)", i+1, use32 ? 32 : 16, n, le_shared->objmap.psize[i], le_shared->objmap.vsize[i]);
@@ -74,11 +69,11 @@ ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 		}
 
 		ht_disasm_sub *d = new ht_disasm_sub();
-		d->init(mfile, (le_shared->objmap.header[i].page_map_index-1)*
+		d->init(myfile, (le_shared->objmap.header[i].page_map_index-1)*
 			le_shared->hdr.pagesize, le_shared->objmap.vsize[i], disasm,
 			true, X86DIS_STYLE_OPTIMIZE_ADDR);
 		ht_collapsable_sub *cs = new ht_collapsable_sub();
-		cs->init(file, d, 1, t, 1);
+		cs->init(myfile, d, 1, t, 1);
 		v->insertsub(cs);
 	}
 
@@ -89,115 +84,6 @@ format_viewer_if htleimage_if = {
 	htleimage_init,
 	0
 };
-
-/*
- *	CLASS ht_le_image
- */
- 
-// watch out ! we're free'ing file. this is only valid if
-// file is constructed accordingly:
-// (1) file must be a layer on what "everybody else" treats
-//     as "our file".
-// (2) file must not own "our file"
-// see construction above
-
-void ht_le_image::done()
-{
-	ht_uformat_viewer::done();
-	file->done();
-	delete file;
-}
-
-/*
- *	CLASS ht_le_page_file
- */
-
-void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm, dword pms, dword ps)
-{
-	ht_layer_streamfile::init(file, own_file);
-	pagemap = pm;
-	pagemapsize = pms;
-	page_size = ps;
-	ofs = 0;
-}
-
-bool ht_le_page_file::isdirty(FILEOFS offset, UINT range)
-{
-	FILEOFS mofs;
-	UINT msize;
-	while (range) {
-		dword s=range;
-		if (!map_ofs(offset, &mofs, &msize)) break;
-		if (s>msize) s=msize;
-		bool isdirty;
-		streamfile->cntl(FCNTL_MODS_IS_DIRTY, mofs, s, &isdirty);
-		if (isdirty) return 1;
-		range-=s;
-		ofs+=s;
-	}
-	return 0;
-}
-
-int ht_le_page_file::map_ofs(dword qofs, FILEOFS *offset, dword *maxsize)
-{
-	dword i=qofs/page_size, j=qofs % page_size;
-	if (i<pagemapsize) {
-		if (j<pagemap->vsize[i]) {
-			*offset=pagemap->offset[i]+j;
-			*maxsize=pagemap->vsize[i]-j;
-			return 1;
-		}
-	}
-	return 0;
-}
-
-UINT ht_le_page_file::read(void *buf, UINT size)
-{
-	FILEOFS mofs;
-	UINT msize;
-	int c=0;
-	while (size) {
-		dword s=size;
-		if (!map_ofs(ofs, &mofs, &msize)) break;
-		if (s>msize) s=msize;
-		streamfile->seek(mofs);
-		s=streamfile->read(buf, s);
-		if (!s) break;
-		((byte*)buf)+=s;
-		size-=s;
-		c+=s;
-		ofs+=s;
-	}
-	return c;
-}
-
-int ht_le_page_file::seek(FILEOFS offset)
-{
-	ofs=offset;
-	return 0;
-}
-
-FILEOFS ht_le_page_file::tell()
-{
-	return ofs;
-}
-
-UINT ht_le_page_file::write(const void *buf, UINT size)
-{
-	dword mofs, msize;
-	int c=0;
-	while (size) {
-		dword s=size;
-		if (!map_ofs(ofs, &mofs, &msize)) break;
-		if (s>msize) s=msize;
-		streamfile->seek(mofs);
-		((byte*)buf)+=streamfile->write(buf, s);
-		size-=s;
-		c+=s;
-		ofs+=s;
-	}
-	return c;
-}
 
 /*
  *	CLASS x86dis_le

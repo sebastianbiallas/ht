@@ -81,10 +81,6 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	char t[64];
 	sprintf(t, "* LE object headers at offset %08x", h+le_shared->hdr.objtab);
 	m->add_mask(t);
-	le_shared->objmap.count=le_shared->hdr.objcnt;
-	le_shared->objmap.header=(IMAGE_LE_OBJECT_HEADER*)malloc(le_shared->objmap.count*sizeof *le_shared->objmap.header);
-	le_shared->objmap.vsize=(dword*)malloc(le_shared->objmap.count*sizeof *le_shared->objmap.vsize);
-	le_shared->objmap.psize=(dword*)malloc(le_shared->objmap.count*sizeof *le_shared->objmap.psize);
 
 	v->insertsub(m);
 	
@@ -93,29 +89,12 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		m->init(file, i);
 		
 		char n[5];
-		file->seek(h+le_shared->hdr.objtab+i*24);
-		file->read(&le_shared->objmap.header[i], sizeof *le_shared->objmap.header);
-
-/* sum up page sizes to find object's physical size */
-		dword psize=0;
-		for (dword j=0; j<le_shared->objmap.header[i].page_map_count; j++) {
-			psize+=le_shared->pagemap.psize[j+le_shared->objmap.header[i].page_map_index-1];
-/* FIXME: security hole: array-index uncontrolled */
-			if (j==le_shared->objmap.header[i].page_map_count-1)
-				le_shared->pagemap.vsize[j+le_shared->objmap.header[i].page_map_index-1]=le_shared->objmap.header[i].virtual_size % le_shared->hdr.pagesize;
-			else
-				le_shared->pagemap.vsize[j+le_shared->objmap.header[i].page_map_index-1]=le_shared->hdr.pagesize;
-		}
-		le_shared->objmap.psize[i]=psize;
-
-		le_shared->objmap.vsize[i]=le_shared->objmap.header[i].virtual_size;
-
 		m->add_staticmask_ptable(leobj, h+le_shared->hdr.objtab+i*24, le_bigendian);
 		
 		memmove(&n, le_shared->objmap.header[i].name, 4);
 		n[4]=0;
 
-		bool use32=le_shared->objmap.header[i].flags & IMAGE_LE_OBJECT_FLAG_USE32;
+		bool use32=le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32;
 
 		sprintf(t, "--- object %d USE%d: %s ---", i+1, use32 ? 32 : 16, (char*)&n);
 		
@@ -124,7 +103,7 @@ ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group
 		v->insertsub(cs);
 	}
 
-	le_shared->v_objects=v;
+	le_shared->v_objects = v;
 	return v;
 }
 

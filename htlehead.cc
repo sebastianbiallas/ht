@@ -29,24 +29,46 @@
 
 int_hash le_machines[] =
 {
-	{ IMAGE_LE_CPU_286,	"Intel 286" },
-	{ IMAGE_LE_CPU_386,	"Intel 386" },
-	{ IMAGE_LE_CPU_486,	"Intel 486" },
-	{ IMAGE_LE_CPU_586,	"Intel 586" },
-	{ IMAGE_LE_CPU_N10,	"Intel i860(N10)" },
-	{ IMAGE_LE_CPU_N11,	"Intel N11" },
-	{ IMAGE_LE_CPU_R2000, "MIPS R2000"	},
-	{ IMAGE_LE_CPU_R6000, "MIPS R6000"	},
-	{ IMAGE_LE_CPU_R4000, "MIPS R4000"	},
+	{ LE_CPU_286,	"Intel 286" },
+	{ LE_CPU_386,	"Intel 386" },
+	{ LE_CPU_486,	"Intel 486" },
+	{ LE_CPU_586,	"Intel 586" },
+	{ LE_CPU_N10,	"Intel i860(N10)" },
+	{ LE_CPU_N11,	"Intel N11" },
+	{ LE_CPU_R2000, "MIPS R2000"	},
+	{ LE_CPU_R6000, "MIPS R6000"	},
+	{ LE_CPU_R4000, "MIPS R4000"	},
 	{0, 0}
 };
 
 int_hash le_os[] =
 {
-	{ IMAGE_LE_OS_OS2, "OS/2"},
-	{ IMAGE_LE_OS_WIN, "Windows"},
-	{ IMAGE_LE_OS_DOS4,	"DOS 4.x"},
-	{ IMAGE_LE_OS_WIN386, "Windows 386" },
+	{ LE_OS_OS2, "OS/2"},
+	{ LE_OS_WIN, "Windows"},
+	{ LE_OS_DOS4,	"DOS 4.x"},
+	{ LE_OS_WIN386, "Windows 386" },
+	{0, 0}
+};
+
+ht_tag_flags_s le_flags[] =
+{
+	{-1, "LE - module flags"},
+	{0,  "[00] ?"},
+	{1,  "[01] ?"},
+	{2,  "[02] per-process library initialization"},
+	{3,  "[03] ?"},
+	{4,  "[04] no internal fixups"},
+	{5,  "[05] no external fixups"},
+	{6,  "[06] ?"},
+	{7,  "[07] ?"},
+	{8,  "[08] w0"},
+	{9,  "[09] w1"},
+	{10, "[10] w2"},
+	{11, "[11] ?"},
+	{12, "[12] ?"},
+	{13, "[13] errors in image"},
+	{14, "[14] ?"},
+	{15, "[15] is library"},
 	{0, 0}
 };
 
@@ -59,7 +81,7 @@ ht_mask_ptable leheader[]=
 	{"cpu type",						STATICTAG_EDIT_WORD_LE("00000008")" "STATICTAG_DESC_WORD_LE("00000008", ATOM_LE_MACHINE_STR)},
 	{"os type",						STATICTAG_EDIT_WORD_LE("0000000a")" "STATICTAG_DESC_WORD_LE("0000000a", ATOM_LE_OS_STR)},
 	{"module version",					STATICTAG_EDIT_DWORD_LE("0000000c")},
-	{"module flags",					STATICTAG_EDIT_DWORD_LE("00000010")},
+	{"module flags",					STATICTAG_EDIT_DWORD_LE("00000010")" "STATICTAG_FLAGS("00000010", ATOM_LE_FLAGS_STR)},
 	{"number of pages",					STATICTAG_EDIT_DWORD_LE("00000014")},
 	{"logical cs",						STATICTAG_EDIT_DWORD_LE("00000018")},
 	{"eip",							STATICTAG_EDIT_DWORD_LE("0000001c")},
@@ -113,22 +135,26 @@ ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
-/* FIXME: */
+	/* FIXME: */
 	bool le_bigendian = false;
-	int h=le_shared->hdr_ofs;
-	ht_uformat_viewer *v=new ht_uformat_viewer();
+
+	FILEOFS h = le_shared->hdr_ofs;
+	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_LE_HEADER, VC_EDIT | VC_SEARCH, file, group);
-	ht_mask_sub *m=new ht_mask_sub();
+	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
+
+	register_atom(ATOM_LE_FLAGS, le_flags);
 	register_atom(ATOM_LE_MACHINE, le_machines);
 	register_atom(ATOM_LE_OS, le_os);
+
 	char info[128];
 	sprintf(info, "* LE header at offset %08x", le_shared->hdr_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(leheader, h, le_bigendian);
 	v->insertsub(m);
 
-	le_shared->v_header=v;
+	le_shared->v_header = v;
 	return v;
 }
 

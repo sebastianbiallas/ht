@@ -23,45 +23,61 @@
 
 #include "htobj.h"
 #include "formats.h"
+#include "relfile.h"
 
 #include "lestruct.h"
 
 #define DESC_LE "le - win,os2 linear exe"
 #define DESC_LE_HEADER "le/header"
+#define DESC_LE_VXD "le/vxd descriptor"
 #define DESC_LE_OBJECTS "le/objects"
 #define DESC_LE_PAGEMAP "le/page map"
 #define DESC_LE_ENTRYPOINTS "le/entrypoints"
 #define DESC_LE_IMAGE "le/image"
 
-#define ATOM_LE_MACHINE			0x4c450000
-#define ATOM_LE_MACHINE_STR		 "4c450000"
+#define ATOM_LE_FLAGS			0x4c450000
+#define ATOM_LE_FLAGS_STR		 "4c450000"
 
-#define ATOM_LE_OS				0x4c450001
-#define ATOM_LE_OS_STR			 "4c450001"
+#define ATOM_LE_MACHINE			0x4c450001
+#define ATOM_LE_MACHINE_STR		 "4c450001"
 
-#define ATOM_LE_OBJFLAGS   		0x4c450002
-#define ATOM_LE_OBJFLAGS_STR		 "4c450002"
+#define ATOM_LE_OS				0x4c450002
+#define ATOM_LE_OS_STR			 "4c450002"
 
-#define ATOM_LE_ENTRY_FLAGS		0x4c450003
-#define ATOM_LE_ENTRY_FLAGS_STR	 "4c450003"
+#define ATOM_LE_OBJFLAGS   		0x4c450003
+#define ATOM_LE_OBJFLAGS_STR		 "4c450003"
 
-#define ATOM_LE_ENTRY_BUNDLE_FLAGS		0x4c450004
-#define ATOM_LE_ENTRY_BUNDLE_FLAGS_STR	 "4c450004"
+#define ATOM_LE_ENTRY_FLAGS		0x4c450004
+#define ATOM_LE_ENTRY_FLAGS_STR	 "4c450004"
+
+#define ATOM_LE_ENTRY_BUNDLE_FLAGS		0x4c450005
+#define ATOM_LE_ENTRY_BUNDLE_FLAGS_STR	 "4c450005"
 
 struct ht_le_shared_data {
 	dword hdr_ofs;
-	IMAGE_LE_HEADER hdr;
+	LE_HEADER hdr;
 	ht_viewer *v_header;
 	ht_viewer *v_objects;
 	ht_viewer *v_pagemaps;
 	ht_viewer *v_image;
+	ht_viewer *v_le_vxd;
 	ht_le_objmap objmap;
 	ht_le_pagemap pagemap;
+	bool is_vxd;
+	UINT vxd_desc_linear_ofs;
+	LE_VXD_DESCRIPTOR vxd_desc;
+	ht_streamfile *linear_file;
+	ht_reloc_file *reloc_file;
 };
 
 class ht_le: public ht_format_group {
 protected:
 	bool loc_enum;
+
+			void check_vxd();
+			void do_fixups();
+			void read_pagemap();
+			void read_objects();
 public:
 			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h);
 	virtual	void done();
@@ -72,4 +88,54 @@ public:
 
 extern format_viewer_if htle_if;
 
+/*
+ *	CLASS ht_le_page_file
+ */
+
+class ht_le_page_file: public ht_layer_streamfile {
+protected:
+	ht_le_pagemap *pagemap;
+	dword pagemapsize;
+	dword page_size;
+	FILEOFS ofs;
+/* new */
+		   int map_ofs(dword ofs, FILEOFS *offset, dword *maxsize);
+public:
+		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
+/* overwritten */
+	virtual bool isdirty(FILEOFS offset, UINT range);
+	virtual UINT read(void *buf, dword size);
+	virtual int seek(FILEOFS offset);
+	virtual FILEOFS tell();
+	virtual UINT write(const void *buf, UINT size);
+};
+
+/*
+ *	CLASS ht_le_reloc_entry
+ */
+
+class ht_le_reloc_entry: public ht_data {
+public:
+	uint32 target_ofs;
+	uint8 address_type;
+	uint8 reloc_type;
+
+	ht_le_reloc_entry(uint32 target_ofs, uint8 address_type, uint8 reloc_type);
+};
+
+/*
+ *	CLASS ht_le_reloc_file
+ */
+
+class ht_le_reloc_file: public ht_reloc_file {
+protected:
+	ht_le_shared_data *data;
+/* overwritten */
+	virtual void	reloc_apply(ht_data *reloc, byte *data);
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+public:
+		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_le_shared_data *data);
+};
+
 #endif /* __HTLE_H__ */
+

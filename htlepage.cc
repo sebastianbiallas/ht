@@ -52,46 +52,20 @@ ht_view *htlepagemaps_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	sprintf(t, "* LE page maps at offset %08x", h+le_shared->hdr.pagemap);
 	m->add_mask(t);
 
-	le_shared->pagemap.count=le_shared->hdr.pagecnt;
-	le_shared->pagemap.offset=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.offset);
-	le_shared->pagemap.psize=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.psize);
-	le_shared->pagemap.vsize=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.vsize);
-
 	v->insertsub(m);
 
 /* FIXME: */
 	bool le_bigendian = false;
 
-	dword last_page_offset=0, last_page=0;
 	for (dword i=0; i<le_shared->hdr.pagecnt; i++) {
 		m=new ht_mask_sub();
 		m->init(file, i);
 		
-		IMAGE_LE_PAGE_MAP_ENTRY e;
-		file->seek(h+le_shared->hdr.pagemap+i*4);
-		file->read(&e, sizeof e);
-/* FIXME: is this formula correct ? it comes straight from my docs... */
-		dword eofs=(e.high+e.low-1)*le_shared->hdr.pagesize+le_shared->hdr.datapage;
-		le_shared->pagemap.offset[i]=eofs;
-
-		if (le_shared->pagemap.offset[i]>last_page_offset) {
-			last_page_offset=le_shared->pagemap.offset[i];
-			last_page=i;
-		}
-
-		sprintf(t, "--- page %d at %08x ---", i+1, eofs);
+		sprintf(t, "--- page %d at %08x ---", i+1, le_shared->pagemap.offset[i]);
 		m->add_staticmask_ptable(lepagemap, h+le_shared->hdr.pagemap+i*4, le_bigendian);
 		ht_collapsable_sub *cs=new ht_collapsable_sub();
 		cs->init(file, m, 1, t, 1);
 		v->insertsub(cs);
-	}
-
-	for (dword i=0; i<le_shared->hdr.pagecnt; i++) {
-		le_shared->pagemap.vsize[i]=0;	/* filled by htleobj.cc */
-		if (i==last_page)
-			le_shared->pagemap.psize[i]=le_shared->hdr.lastpagesize;
-		else
-			le_shared->pagemap.psize[i]=le_shared->hdr.pagesize;
 	}
 
 	le_shared->v_pagemaps=v;
