@@ -1800,7 +1800,7 @@ void ht_aviewer::showSymbols(Address *addr)
 	b.h = 15;
 	center_bounds(&b);
 	ht_dialog *dialog = new ht_dialog();
-	dialog->init(&b, "symbols", FS_KILLER | FS_TITLE | FS_MOVE);
+	dialog->init(&b, "symbols", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	/* pull down */
 	BOUNDS_ASSIGN(b, 30, 0, 20, 1);
 /*				ht_listpopup *lp = new ht_listpopup();
@@ -1853,7 +1853,7 @@ restart:
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
 		ht_dialog *dialog = new ht_dialog();
-		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE);
+		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 		BOUNDS_ASSIGN(b, 1, 0, bw-4, 1);
 		ht_statictext *text = new ht_statictext();
 		text->init(&b, " xref to   type     from function", 0);
@@ -1865,13 +1865,16 @@ restart:
 		BOUNDS_ASSIGN(b, 2, bh-4, 26, 2);
 		ht_button *search_for_xrefs;
 		NEW_OBJECT(search_for_xrefs, ht_button, &b, "~Search for more XRefs", 666);
+          search_for_xrefs->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		BOUNDS_ASSIGN(b, 29, bh-4, 11, 2);
 		ht_button *delete_xref;
 		NEW_OBJECT(delete_xref, ht_button, &b, "~Delete", 667);
+          delete_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		// FIXME: disable button when possible
 		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
 		ht_button *new_xref;
 		NEW_OBJECT(new_xref, ht_button, &b, "~New", 668);
+          new_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		char str2[1024];
 		AddrXRef *x;
 		Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
