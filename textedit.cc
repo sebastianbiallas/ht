@@ -2558,7 +2558,7 @@ void ht_text_editor::show_protocol()
 	NEW_OBJECT(dialog, ht_dialog, &b, "protocol", FS_KILLER | FS_TITLE | FS_MOVE);
 	BOUNDS_ASSIGN(b, 1, 0, b.w-4, 1);
 	ht_statictext *text;
-	NEW_OBJECT(text, ht_statictext, &b, " ", 0);
+	NEW_OBJECT(text, ht_statictext, &b, " ", align_left);
 	dialog->insert(text);
 	b.y = 1;
 	b.h = bh-5;

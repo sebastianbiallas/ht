@@ -197,7 +197,7 @@ bool SymbolBox::idle()
 	return 0;
 }
 
-int	SymbolBox::num_cols()
+int	SymbolBox::numColumns()
 {
 	return 3;
 }
@@ -1601,7 +1601,7 @@ void ht_aviewer::showCallChain(Address *Addr)
 	} else {
 		ht_snprintf(str, sizeof str, "address %y %s", a->addr, "is referenced by ..");
 	}
-	text->init(&b, str, 0);
+	text->init(&b, str, align_left);
 	dialog->insert(text);
 	BOUNDS_ASSIGN(b, 1, 1, 56, 10);
 	CallChain *cc;
@@ -1751,7 +1751,7 @@ void ht_aviewer::showSymbols(Address *addr)
 	/* text */
 	BOUNDS_ASSIGN(b, 1, 0, 30, 1);
 	ht_statictext *text = new ht_statictext();
-	text->init(&b, " Address   Type   Name", 0);
+	text->init(&b, " Address   Type   Name", align_left);
 	dialog->insert(text);
 	/* list */
 	BOUNDS_ASSIGN(b, 1, 1, 56, 12);
@@ -1780,12 +1780,12 @@ void ht_aviewer::showXRefs(Address *Addr)
 	if (x_tree) {
 		bounds c, b;
 		app->getbounds(&c);
-		UINT bw;
-		bw = b.w = c.w*5/6;
-		UINT bh;
-		bh = b.h = c.h*5/6;
+          b.w = c.w*5/6;
+          b.h = c.h*5/6;
 		center_bounds(&b);
 restart:
+		UINT bw = b.w;
+		UINT bh = b.h;
 		char str[256];
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
@@ -1793,7 +1793,8 @@ restart:
 		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 		BOUNDS_ASSIGN(b, 1, 0, bw-4, 1);
 		ht_statictext *text = new ht_statictext();
-		text->init(&b, " xref to   type     from function", 0);
+		text->init(&b, " xref to   type     from function", align_left, false);
+		text->growmode = MK_GM(GMH_FIT, GMV_FIT);
 		dialog->insert(text);          
 		b.y = 1;          
 		b.h = bh-6;

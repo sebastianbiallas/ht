@@ -32,8 +32,8 @@
 #define btmask_all			32
 #define btmask_none			64
 
-int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...);
-int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, int align, bounds *b, char *format, ...);
+int msgbox(int buttonmask, char *title, bool modal, statictext_align align, char *format, ...);
+int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, bounds *b, char *format, ...);
 
 #define errorbox(a...) msgbox(btmask_ok, "error", false, align_center, a)
 #define infobox(a...) msgbox(btmask_ok, "information", false, align_center, a)

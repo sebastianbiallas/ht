@@ -94,7 +94,7 @@ public:
 	virtual   void *getprev(void *entry);
 	virtual   char *getstr(int col, void *entry);
 	virtual	bool idle();
-	virtual   int	num_cols();
+	virtual   int	numColumns();
 	virtual	void *quickfind(char *s);
 	virtual	char	*quickfind_completition(char *s);
 };

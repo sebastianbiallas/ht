@@ -232,7 +232,7 @@ public:
 	virtual   void *getprev(void *entry);
 	virtual   char *getstr(int col, void *entry);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	int num_cols();
+	virtual	int numColumns();
 	virtual	void *quickfind(char *s);
 	virtual	char	*quickfind_completition(char *s);
 	virtual	void select_entry(void *entry);

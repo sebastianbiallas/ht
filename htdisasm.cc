@@ -101,7 +101,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			dialog->init(&b, "choose opcode", FS_KILLER | FS_TITLE | FS_MOVE);
 			BOUNDS_ASSIGN(b, 1, 0, 56, 1);
 			ht_statictext *text = new ht_statictext();
-			text->init(&b, " opcode (& disassembly)", 0);
+			text->init(&b, " opcode (& disassembly)", align_left);
 			dialog->insert(text);
 			BOUNDS_ASSIGN(b, 1, 1, 56, 12);
 			ht_text_listbox *list=new ht_text_listbox();

@@ -823,7 +823,7 @@ void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
 	c.w=b->w-2;
 	c.h=1;
 	ht_statictext *hint=new ht_statictext();
-	hint->init(&c, "stops if expression evaluates to non-zero", 0);
+	hint->init(&c, "stops if expression evaluates to non-zero", align_left);
 	insert(hint);
 
 /* range start */

@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char *buf)
+int imsgbox(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, char *buf)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | (modal ? 0 : FS_MOVE | FS_RESIZE));
@@ -145,7 +145,7 @@ int imsgbox(bounds *b, int buttonmask, char *title, bool modal, int align, char 
 	return r;
 }
 
-int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...)
+int msgbox(int buttonmask, char *title, bool modal, statictext_align align, char *format, ...)
 {
 	char buf[1024];
 	va_list arg;
@@ -170,7 +170,7 @@ int msgbox(int buttonmask, char *title, bool modal, int align, char *format, ...
 	return imsgbox(&b, buttonmask, title, modal, align, buf);
 }
 
-int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, int align, char *format, ...)
+int msgboxrect(bounds *b, int buttonmask, char *title, bool modal, statictext_align align, char *format, ...)
 {
 	char buf[1024];
 	va_list arg;

@@ -651,7 +651,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 	ht_listbox::handlemsg(msg);
 }
 
-int ht_project_listbox::num_cols()
+int ht_project_listbox::numColumns()
 {
 	return 2;
 }

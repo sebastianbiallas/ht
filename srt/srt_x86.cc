@@ -682,7 +682,7 @@ void srt_x86(Analyser *analy, Address *addr)
 	d.w = b.w-2;
 	d.h = 1;
 	ht_statictext *text = new ht_statictext();
-	text->init(&d, "insn   |  register | new value", 0);
+	text->init(&d, "insn   |  register | new value", align_left);
 	dialog->insert(text);
 	d.y = 1;
 	d.h = b.h-3;
