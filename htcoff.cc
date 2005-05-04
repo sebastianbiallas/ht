@@ -168,12 +168,13 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	h -= 4;
 
 	file->seek(h+os+24);
-	coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
-	file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
-	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
-		create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
-	}
-
+	if (coff_shared->sections.section_count) {
+		coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
+		file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
+		for (UINT i=0; i<coff_shared->sections.section_count; i++) {
+			create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
+		}
+	} /* CHECK - sufficient */
 	shared_data = coff_shared;
 
 	ht_format_group::init_ifs(ifs);

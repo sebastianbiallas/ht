@@ -99,16 +99,18 @@ void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 	/* read section headers */
 	pef_shared->sheaders.count = pef_shared->contHeader.sectionCount;
-	pef_shared->sheaders.sheaders = (PEF_SECTION_HEADER*)
-		malloc(pef_shared->sheaders.count*sizeof (PEF_SECTION_HEADER));
-	for (uint i=0; i<pef_shared->sheaders.count; i++) {
-		file->read(&pef_shared->sheaders.sheaders[i], sizeof pef_shared->sheaders.sheaders[i]);
-		create_host_struct(&pef_shared->sheaders.sheaders[i], PEF_SECTION_HEADER_struct, pef_shared->byte_order);
-		// FIXME: hack
-		pef_shared->sheaders.sheaders[i].defaultAddress = i*0x100000;
-		if (!pef_shared->loader_info_header_ofs
-		&& pef_shared->sheaders.sheaders[i].sectionKind == PEF_SK_Loader) {
-			pef_shared->loader_info_header_ofs = pef_shared->sheaders.sheaders[i].containerOffset;
+	if (pef_shared->sheaders.count) {
+		pef_shared->sheaders.sheaders = (PEF_SECTION_HEADER*)
+			malloc(pef_shared->sheaders.count*sizeof (PEF_SECTION_HEADER));
+		for (uint i=0; i<pef_shared->sheaders.count; i++) {
+			file->read(&pef_shared->sheaders.sheaders[i], sizeof pef_shared->sheaders.sheaders[i]);
+			create_host_struct(&pef_shared->sheaders.sheaders[i], PEF_SECTION_HEADER_struct, pef_shared->byte_order);
+			// FIXME: hack
+			pef_shared->sheaders.sheaders[i].defaultAddress = i*0x100000;
+			if (!pef_shared->loader_info_header_ofs
+			&& pef_shared->sheaders.sheaders[i].sectionKind == PEF_SK_Loader) {
+				pef_shared->loader_info_header_ofs = pef_shared->sheaders.sheaders[i].containerOffset;
+			}
 		}
 	}
 

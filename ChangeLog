@@ -9,6 +9,8 @@ version 0.9-trunk:
 	  other than x86
 	- removed 'include <malloc.h>' from cp-demangle.c
 	- fixed a buffer overflow in htperes.cc
+	- handle ELFs w/o segment or program sections (Thanks Daniel Black)
+	- don't malloc(0) (Thanks Daniel Black)
 
 version 0.8.0:
 	- g++ v3 abi demangler

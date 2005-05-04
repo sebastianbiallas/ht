@@ -150,6 +150,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			create_host_struct(&elf_shared->header32, ELF_HEADER32_struct, elf_shared->byte_order);
 			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header32.e_shnum;
+			if (!elf_shared->sheaders.count) throw new ht_msg_exception("Zero count for section headers");
 			elf_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			if (file->seek(header_ofs+elf_shared->header32.e_shoff)) throw new ht_msg_exception("seek error");
 			if (file->read(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32)
@@ -162,6 +163,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	
 			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header32.e_phnum;
+			if (!elf_shared->pheaders.count) throw new ht_msg_exception("Zero count in program section headers");
 			elf_shared->pheaders.pheaders32=(ELF_PROGRAM_HEADER32*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
 			if (file->seek(header_ofs+elf_shared->header32.e_phoff)) throw new ht_msg_exception("seek error");
 			if (file->read(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32)
@@ -197,6 +199,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 			create_host_struct(&elf_shared->header64, ELF_HEADER64_struct, elf_shared->byte_order);
 			/* read section headers */
 			elf_shared->sheaders.count=elf_shared->header64.e_shnum;
+			if (!elf_shared->sheaders.count) throw new ht_msg_exception("Zero count for section headers");
 			elf_shared->sheaders.sheaders64=(ELF_SECTION_HEADER64*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
 			/* FIXME: 64-bit */
 			if (file->seek(header_ofs+elf_shared->header64.e_shoff.lo)) throw new ht_msg_exception("seek error");
@@ -210,6 +213,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 			/* read program headers */
 			elf_shared->pheaders.count=elf_shared->header64.e_phnum;
+			if (!elf_shared->pheaders.count) throw new ht_msg_exception("Zero count in program section headers");
 			elf_shared->pheaders.pheaders64=(ELF_PROGRAM_HEADER64*)malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
 			/* FIXME: 64-bit */
 			if (file->seek(header_ofs+elf_shared->header64.e_phoff.lo)) throw new ht_msg_exception("seek error");
@@ -417,8 +421,11 @@ void ht_elf::auto_relocate32()
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
-
-	elf_shared->shrelocs = (ht_elf_reloc_section32*)malloc(elf_shared->sheaders.count * sizeof (ht_elf_reloc_section32));
+	if (!elf_shared->sheaders.count) {
+		LOG("%s: ELF: segment header count is zero", file->get_filename());
+	} else {
+		elf_shared->shrelocs = (ht_elf_reloc_section32*)malloc(elf_shared->sheaders.count * sizeof (ht_elf_reloc_section32));
+	}
 
 	/* relocate sections */
 	for (uint i=0; i<elf_shared->sheaders.count; i++) {

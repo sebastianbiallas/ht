@@ -1572,7 +1572,7 @@ demangle_template_value_parm (work, mangled, s, tk)
 	 else
 	{
 	  int symbol_len  = consume_count (mangled);
-	  if (symbol_len == -1)
+	  if (symbol_len <= -1)
 	    return -1;
 	  if (symbol_len == 0)
 	    string_appendn (s, "0", 1);
@@ -1690,7 +1690,7 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
     {
 	 return (0);
     }
-  if (!is_type)
+  if (!is_type && r)
     {
 	 /* Create an array for saving the template argument values. */
 	 work->tmpl_argvec = (char**) xmalloc (r * sizeof (char *));
@@ -1718,9 +1718,11 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 		{
 		  /* Save the template argument. */
 		  int len = temp.p - temp.b;
-		  work->tmpl_argvec[i] = xmalloc (len + 1);
-		  memcpy (work->tmpl_argvec[i], temp.b, len);
-		  work->tmpl_argvec[i][len] = '\0';
+		  if (len) {
+			work->tmpl_argvec[i] = xmalloc (len + 1);
+		 	memcpy (work->tmpl_argvec[i], temp.b, len);
+			work->tmpl_argvec[i][len] = '\0';
+		  }
 		}
 	    }
 	  string_delete(&temp);
@@ -1746,9 +1748,12 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 		{
 		  /* Save the template argument. */
 		  int len = r2;
-		  work->tmpl_argvec[i] = xmalloc (len + 1);
-		  memcpy (work->tmpl_argvec[i], *mangled, len);
-		  work->tmpl_argvec[i][len] = '\0';
+		  if (len >=0)
+		    {
+			  work->tmpl_argvec[i] = xmalloc (len + 1);
+			  memcpy (work->tmpl_argvec[i], *mangled, len);
+			  work->tmpl_argvec[i][len] = '\0';
+		    }
 		}
 		 *mangled += r2;
 	    }
@@ -1792,9 +1797,11 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	  if (!is_type)
 	    {
 		 int len = s->p - s->b;
-		 work->tmpl_argvec[i] = xmalloc (len + 1);
-		 memcpy (work->tmpl_argvec[i], s->b, len);
-		 work->tmpl_argvec[i][len] = '\0';
+		 if (len<=0) {
+			 work->tmpl_argvec[i] = xmalloc (len + 1);
+			 memcpy (work->tmpl_argvec[i], s->b, len);
+			 work->tmpl_argvec[i][len] = '\0';
+		 }
 
 		 string_appends (tname, s);
 		 string_delete (s);
@@ -2594,6 +2601,7 @@ recursively_demangle(work, mangled, result, namelength)
   char * recurse = (char *)NULL;
   char * recurse_dem = (char *)NULL;
 
+  if (namelength <= 0) return; /* not sure about this one */
   recurse = (char *) xmalloc (namelength + 1);
   memcpy (recurse, *mangled, namelength);
   recurse[namelength] = '\000';
@@ -3730,6 +3738,7 @@ remember_type (work, start, len)
 				  sizeof (char *) * work -> typevec_size);
 	}
     }
+  if (len<=0) len=0;
   tem = xmalloc (len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';
@@ -3762,6 +3771,7 @@ remember_Ktype (work, start, len)
 				  sizeof (char *) * work -> ksize);
 	}
     }
+  if (len<=0) len=0;
   tem = xmalloc (len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';
@@ -3809,6 +3819,7 @@ remember_Btype (work, start, len, index)
 {
   char *tem;
 
+  if (len<=0) len=0;
   tem = xmalloc (len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';

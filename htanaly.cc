@@ -1354,6 +1354,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			if (!getCurrentAddress(&c)) break;
 			b = analy->createAddress();
 			UINT bz = b->byteSize();
+			if (!bz) break;
 			byte *buf = (byte*)smalloc(bz);
 			if (analy->bufPtr(c, buf, bz) != bz) break;
 			b->getFromArray(buf);
