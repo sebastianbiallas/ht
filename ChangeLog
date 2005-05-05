@@ -11,6 +11,7 @@ version 0.9-trunk:
 	- fixed a buffer overflow in htperes.cc
 	- handle ELFs w/o segment or program sections (Thanks Daniel Black)
 	- don't malloc(0) (Thanks Daniel Black)
+	- some keyboard fixed for windows xp
 
 version 0.8.0:
 	- g++ v3 abi demangler

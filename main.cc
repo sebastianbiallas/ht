@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
 		return 1;
 	} catch (...) {
 		done();
-		fprintf(stderr, "FATAL: unknown %s !?\n", "unhandled exception");
+		fprintf(stderr, "FATAL: unknown %s!?\n", "unhandled exception");
 		return 1;
 	}
 
@@ -372,17 +372,17 @@ int main(int argc, char *argv[])
 	bool save_config = true;
 
 	if (systemconfig_magic) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "magic")!=button_ok) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "magic")!=button_ok) {
 			save_config = false;
 		}
 	}
 
 	if (systemconfig_version < 0) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "older", "version")!=button_ok) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "older", "version")!=button_ok) {
 			save_config = false;
 		}
 	} else if (systemconfig_version > 0) {
-		if (confirmbox_modal("%s %s %s...\noverwrite it ?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "NEWER", "version")!=button_ok) {
+		if (confirmbox_modal("%s %s %s...\noverwrite it?", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "NEWER", "version")!=button_ok) {
 			save_config = false;
 		}
 	}

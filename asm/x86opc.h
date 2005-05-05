@@ -34,7 +34,7 @@
 #define X86_PREFIX_FS		4	/* 64 */
 #define X86_PREFIX_GS		5	/* 65 */
 
-#define X86_PREFIX_REPNZ		0	/* f2 */
+#define X86_PREFIX_REPNZ	0	/* f2 */
 #define X86_PREFIX_REPZ		1	/* f3 */
 
 #define X86_OPSIZEUNKNOWN	-1
@@ -91,6 +91,7 @@ struct x86_insn_op {
 		int trx;
 		int stx;
 		int mmx;
+		int xmm;
 		int_or_ptr user[4];
 	};
 };

@@ -68,52 +68,52 @@ protected:
 	int maxlen;
 
 /* new */
-			void decode_insn(x86opc_insn *insn);
-			void decode_modrm(x86_insn_op *op, char size, int allow_reg, int allow_mem, int mmx);
-			void decode_op(x86_insn_op *op, x86opc_insn_op *xop);
-			void decode_sib(x86_insn_op *op, int mod);
-			int esizeaddr(char c);
-			int esizeop(char c);
-			byte getbyte();
-			word getword();
-			dword getdword();
-			int getmodrm();
-			int getsib();
-			void invalidate();
-			int isfloat(char c);
-			void prefixes();
-			int special_param_ambiguity(x86dis_insn *disasm_insn);
-			void str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print);
-	virtual	void str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
+			void	decode_insn(x86opc_insn *insn);
+			void	decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm);
+			void	decode_op(x86_insn_op *op, x86opc_insn_op *xop);
+			void	decode_sib(x86_insn_op *op, int mod);
+			int	esizeaddr(char c);
+			int	esizeop(char c);
+			byte	getbyte();
+			word	getword();
+			dword	getdword();
+			int	getmodrm();
+			int	getsib();
+			void	invalidate();
+			bool	isfloat(char c);
+			void	prefixes();
+			int	special_param_ambiguity(x86dis_insn *disasm_insn);
+			void	str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print);
+	virtual		void	str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
 public:
-	x86dis();
-	x86dis(int opsize, int addrsize);
-	virtual ~x86dis();
+				x86dis();
+				x86dis(int opsize, int addrsize);
+	virtual			~x86dis();
 
 /* overwritten */
-	virtual dis_insn *decode(byte *code, int maxlen, CPU_ADDR addr);
-	virtual dis_insn *duplicateInsn(dis_insn *disasm_insn);
-	virtual void getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
-	virtual char *getName();
-	virtual byte getSize(dis_insn *disasm_insn);
-		   int load(ht_object_stream *f);
-	virtual OBJECT_ID object_id() const;
-	virtual char *str(dis_insn *disasm_insn, int options);
-	virtual char *strf(dis_insn *disasm_insn, int options, char *format);
-	virtual void store(ht_object_stream *f);
-	virtual bool validInsn(dis_insn *disasm_insn);
+	virtual	dis_insn *	decode(byte *code, int maxlen, CPU_ADDR addr);
+	virtual	dis_insn *	duplicateInsn(dis_insn *disasm_insn);
+	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
+	virtual	char *		getName();
+	virtual	byte		getSize(dis_insn *disasm_insn);
+		int		load(ht_object_stream *f);
+	virtual OBJECT_ID	object_id() const;
+	virtual char *		str(dis_insn *disasm_insn, int options);
+	virtual char *		strf(dis_insn *disasm_insn, int options, char *format);
+	virtual void		store(ht_object_stream *f);
+	virtual bool		validInsn(dis_insn *disasm_insn);
 };
 
 class x86dis_vxd: public x86dis {
 protected:
 	virtual void str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
 public:
-	x86dis_vxd();
-	x86dis_vxd(int opsize, int addrsize);
-	virtual ~x86dis_vxd();
+				x86dis_vxd();
+				x86dis_vxd(int opsize, int addrsize);
+	virtual			~x86dis_vxd();
 
-	virtual dis_insn *decode(byte *code, byte maxlen, CPU_ADDR addr);
-	virtual OBJECT_ID object_id() const;
+	virtual dis_insn *	decode(byte *code, byte maxlen, CPU_ADDR addr);
+	virtual OBJECT_ID	object_id() const;
 };
 
 #endif /* __X86DIS_H__ */

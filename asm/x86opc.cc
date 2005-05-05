@@ -115,7 +115,7 @@
 #define Vd	TYPE_Px, 0, SIZE_D, SIZE_D
 #define Vo	TYPE_Px, 0, SIZE_D, SIZE_D
 #define Wq	TYPE_Qx, 0, SIZE_D, SIZE_D
-#define Wo	TYPE_Qx, 0, SIZE_D, SIZE_D
+#define Wo	TYPE_Qx, 0, SIZE_O, SIZE_O
 
 #define Ft	TYPE_F, 0, SIZE_T, SIZE_T
 
