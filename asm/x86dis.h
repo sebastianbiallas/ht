@@ -26,7 +26,9 @@
 
 #define X86DIS_OPCODE_CLASS_STD		0		/* no prefix */
 #define X86DIS_OPCODE_CLASS_EXT		1		/* 0F */
-#define X86DIS_OPCODE_CLASS_EXTEXT	2		/* 0F0F */
+#define X86DIS_OPCODE_CLASS_EXT_F2	2		/* F2 0F */
+#define X86DIS_OPCODE_CLASS_EXT_F3	3		/* F3 0F */
+#define X86DIS_OPCODE_CLASS_EXTEXT	4		/* 0F 0F */
 
 /* x86-specific styles */
 #define X86DIS_STYLE_EXPLICIT_MEMSIZE	0x00000001	/* IF SET: mov word ptr [0000], ax 	ELSE: mov [0000], ax */
@@ -36,6 +38,7 @@
 
 struct x86dis_insn {
 	bool invalid;
+	char opsizeprefix;
 	char lockprefix;
 	char repprefix;
 	char segprefix;

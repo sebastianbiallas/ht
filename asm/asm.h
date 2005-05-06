@@ -92,14 +92,14 @@ public:
  */
 
 /* generic disassembler styles */
-#define DIS_STYLE_HIGHLIGHT			0x80000000		/* create highlighting information in strf() */
-#define DIS_STYLE_HEX_CSTYLE			0x40000000		/* IF SET: mov eax, 0x12345678 		ELSE: mov eax, 12345678 */
+#define DIS_STYLE_HIGHLIGHT		0x80000000		/* create highlighting information in strf() */
+#define DIS_STYLE_HEX_CSTYLE		0x40000000		/* IF SET: mov eax, 0x12345678 		ELSE: mov eax, 12345678 */
 #define DIS_STYLE_HEX_ASMSTYLE		0x20000000		/* IF SET: mov eax, 12345678h 		ELSE: mov eax, 12345678 */
-#define DIS_STYLE_HEX_UPPERCASE		0x10000000		/* IF SET: mov eax, 5678ABCD	 		ELSE: mov eax, 5678abcd */
-#define DIS_STYLE_HEX_NOZEROPAD		0x08000000		/* IF SET: mov eax, 8002344	 		ELSE: mov eax, 008002344 */
-#define DIS_STYLE_SIGNED				0x04000000		/* IF SET: mov eax, -1	 			ELSE: mov eax, 0ffffffffh */
+#define DIS_STYLE_HEX_UPPERCASE		0x10000000		/* IF SET: mov eax, 5678ABCD	 	ELSE: mov eax, 5678abcd */
+#define DIS_STYLE_HEX_NOZEROPAD		0x08000000		/* IF SET: mov eax, 8002344	 	ELSE: mov eax, 008002344 */
+#define DIS_STYLE_SIGNED		0x04000000		/* IF SET: mov eax, -1	 		ELSE: mov eax, 0ffffffffh */
 
-#define DIS_STYLE_TABSIZE			8
+#define DIS_STYLE_TABSIZE			12
 
 extern char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context);
 extern void* addr_sym_func_context;
@@ -156,10 +156,10 @@ public:
 */
 
 #define DISASM_STRF_VAR			'%'
-#define DISASM_STRF_COND			'?'
+#define DISASM_STRF_COND		'?'
 
 #define DISASM_STRF_PREFIX		'p'
-#define DISASM_STRF_NAME			'n'
+#define DISASM_STRF_NAME		'n'
 #define DISASM_STRF_FIRST		'1'
 #define DISASM_STRF_SECOND		'2'
 #define DISASM_STRF_THIRD		'3'

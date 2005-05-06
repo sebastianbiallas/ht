@@ -37,6 +37,8 @@
 #define X86_PREFIX_REPNZ	0	/* f2 */
 #define X86_PREFIX_REPZ		1	/* f3 */
 
+#define X86_PREFIX_OPSIZE	0	/* 66 */
+
 #define X86_OPSIZEUNKNOWN	-1
 #define X86_OPSIZE16		0
 #define X86_OPSIZE32		1
@@ -110,16 +112,16 @@ struct x86_insn_op {
 #define TYPE_M		10		/* ModR/M (memory only) */
 #define TYPE_O		11		/* direct memory without ModR/M */
 #define TYPE_P		12		/* reg of ModR/M picks MMX register */
-#define TYPE_Q		13		/* ModR/M (MMX reg or memory) */
-#define TYPE_Px		14		/* reg of ModR/M picks XMM register */
-#define TYPE_Qx		15		/* ModR/M (XMM reg or memory) */
-#define TYPE_R		16		/* rm of ModR/M picks general register */
-#define TYPE_Rx		17		/* extra picks register */
-#define TYPE_S		18		/* reg of ModR/M picks segment register */
-#define TYPE_Sx		19		/* extra picks segment register */
-#define TYPE_T		20		/* reg of ModR/M picks test register */
-#define TYPE_U		21		/* reg of ModR/M picks XMM register */
-#define TYPE_V		22		/* ModR/M (XMM reg or memory) */
+#define TYPE_PR		13		/* reg of ModR/M picks MMX register */
+#define TYPE_Q		14		/* ModR/M (MMX reg or memory) */
+#define TYPE_R		15		/* rm of ModR/M picks general register */
+#define TYPE_Rx		16		/* extra picks register */
+#define TYPE_S		17		/* reg of ModR/M picks segment register */
+#define TYPE_Sx		18		/* extra picks segment register */
+#define TYPE_T		19		/* reg of ModR/M picks test register */
+#define TYPE_V		20		/* reg of ModR/M picks XMM register */
+#define TYPE_VR		21		/* reg of ModR/M picks XMM register */
+#define TYPE_W		22		/* ModR/M (XMM reg or memory) */
 #define TYPE_F		23		/* r/m of ModR/M picks a fpu register */
 #define TYPE_Fx		24		/* extra picks a fpu register */
 
@@ -134,8 +136,9 @@ struct x86_insn_op {
 #define SIZE_W			'w'		/* word */
 #define SIZE_D			'd'		/* dword */
 #define SIZE_Q			'q'		/* qword */
-#define SIZE_O			'o'		/* dqword */
-#define SIZE_C			'c'		/* byte OR word */
+#define SIZE_U			'u'		/* qword OR oword */
+#define SIZE_Z			'z'		/* dword OR qword */
+#define SIZE_O			'o'		/* oword */
 #define SIZE_V			'v'		/* word OR dword */
 #define SIZE_P			'p'		/* word:word OR word:dword, memory only ! */
 #define SIZE_S			's'		/* short/single real (32-bit) */
@@ -169,7 +172,7 @@ struct x86opc_finsn {
 	x86opc_insn insn;
 };
 
-#define X86_REG_INVALID	-2
+#define X86_REG_INVALID		-2
 #define X86_REG_NO		-1
 #define X86_REG_AX		0
 #define X86_REG_CX		1
@@ -180,12 +183,14 @@ struct x86opc_finsn {
 #define X86_REG_SI		6
 #define X86_REG_DI		7
 
-#define X86_GROUPS		20
+#define X86_GROUPS		22
 
 extern char *x86_regs[3][8];
 extern char *x86_segs[8];
 extern x86opc_insn x86_insns[256];
 extern x86opc_insn x86_insns_ext[256];
+extern x86opc_insn x86_insns_ext_f2[256];
+extern x86opc_insn x86_insns_ext_f3[256];
 extern x86opc_insn x86_group_insns[X86_GROUPS][8];
 
 extern x86opc_insn x86_modfloat_group_insns[8][8];
