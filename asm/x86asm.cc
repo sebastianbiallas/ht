@@ -27,15 +27,17 @@
 
 #define X86ASM_PREFIX_NO			0
 #define X86ASM_PREFIX_0F			1
-#define X86ASM_PREFIX_0F0F			2
-#define X86ASM_PREFIX_D8			3
-#define X86ASM_PREFIX_D9			4
-#define X86ASM_PREFIX_DA			5
-#define X86ASM_PREFIX_DB			6
-#define X86ASM_PREFIX_DC			7
-#define X86ASM_PREFIX_DD			8
-#define X86ASM_PREFIX_DE			9
-#define X86ASM_PREFIX_DF			10
+#define X86ASM_PREFIX_F20F			2
+#define X86ASM_PREFIX_F30F			3
+#define X86ASM_PREFIX_0F0F			4
+#define X86ASM_PREFIX_D8			5
+#define X86ASM_PREFIX_D9			6
+#define X86ASM_PREFIX_DA			7
+#define X86ASM_PREFIX_DB			8
+#define X86ASM_PREFIX_DC			9
+#define X86ASM_PREFIX_DD			10
+#define X86ASM_PREFIX_DE			11
+#define X86ASM_PREFIX_DF			12
 
 #define X86ASM_ERRMSG_AMBIGUOUS		"ambiguous command"
 #define X86ASM_ERRMSG_UNKNOWN_COMMAND	"unknown command '%s'"
@@ -341,6 +343,8 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 	ambiguous=0;
 	match_opcodes(x86_insns, insn, X86ASM_PREFIX_NO);
 	match_opcodes(x86_insns_ext, insn, X86ASM_PREFIX_0F);
+	match_opcodes(x86_insns_ext_f2, insn, X86ASM_PREFIX_F20F);
+	match_opcodes(x86_insns_ext_f3, insn, X86ASM_PREFIX_F30F);
 	match_fopcodes(insn);
 	if (error) {
 		free_asm_codes();
@@ -406,6 +410,16 @@ int x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int
 	case X86ASM_PREFIX_0F:
 		emitbyte(0x0f);
 	case X86ASM_PREFIX_NO:
+		emitbyte(opcodeb);
+		break;
+	case X86ASM_PREFIX_F20F:
+		emitbyte(0xf2);
+		emitbyte(0x0f);
+		emitbyte(opcodeb);
+		break;
+	case X86ASM_PREFIX_F30F:
+		emitbyte(0xf3);
+		emitbyte(0x0f);
 		emitbyte(opcodeb);
 		break;
 	case X86ASM_PREFIX_DF: i++;
@@ -625,8 +639,27 @@ int x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eops
 		/* reg of ModR/M picks MMX register */
 		emitmodrm_reg(op->mmx);
 		break;
+	case TYPE_PR:
+		/* rm of ModR/M picks MMX register */
+		emitmodrm_mod(3);
+		emitmodrm_rm(op->mmx);
+		break;
 	case TYPE_Q:
 		/* ModR/M (MMX reg or memory) */
+		if (!encode_modrm(op, xop->extendedsize, 1, 1, eopsize, eaddrsize)) return 0;
+		psize = esizeop(xop->extendedsize, eopsize);
+		break;
+	case TYPE_V:
+		/* reg of ModR/M picks XMM register */
+		emitmodrm_reg(op->xmm);
+		break;
+	case TYPE_VR:
+		/* rm of ModR/M picks XMM register */
+		emitmodrm_mod(3);
+		emitmodrm_rm(op->xmm);
+		break;
+	case TYPE_W:
+		/* ModR/M (XMM reg or memory) */
 		if (!encode_modrm(op, xop->extendedsize, 1, 1, eopsize, eaddrsize)) return 0;
 		psize = esizeop(xop->extendedsize, eopsize);
 		break;
@@ -928,6 +961,10 @@ bool x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 		} else {
 			hsz = immlsz2hsz(op->size, opsize);
 		}
+	} else if (op->type == X86_OPTYPE_MMX) {
+		return true;
+	} else if (op->type == X86_OPTYPE_XMM) {
+		return true;
 	} else {
 		hsz = lsz2hsz(op->size, opsize);
 	}
@@ -959,7 +996,8 @@ static void pickname(char *result, const char *name, int n)
 {
 	char *s = strchr(name+1, '|');
 	if (!s) {
-		strcpy(result, "test");
+		strcpy(result, name);
+		return;
 	}
 	if (n == 0) {
 		ht_snprintf(result, s - name, "%s", name + 1);
@@ -1134,7 +1172,7 @@ bool x86asm::opmmx(x86_insn_op *op, char *xop)
 bool x86asm::opxmm(x86_insn_op *op, char *xop)
 {
 	if (strlen(xop) == 4 && xop[0] == 'x' && xop[1] == 'm' && xop[2] == 'm'
-	 && xop[3] >= '0' && xop[2] <= '7') {
+	 && xop[3] >= '0' && xop[3] <= '7') {
 		op->type = X86_OPTYPE_XMM;
 		op->size = 16;
 		op->xmm = xop[3] - '0';

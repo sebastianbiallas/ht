@@ -1158,6 +1158,7 @@ static void pickname(char *result, const char *name, int n)
 	char *s = strchr(name+1, '|');
 	if (!s) {
 		strcpy(result, name);
+		return;
 	}
 	if (n == 0) {
 		ht_snprintf(result, s - name, "%s", name + 1);

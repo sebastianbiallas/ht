@@ -4,6 +4,7 @@
 version 0.9-trunk:
 	- analyser: support for int, half and byte data-types.
 	- x86 disasm: invlpg, fisttp instructions added
+	- x86 disasm: sse, sse2, sse3 instructions added
 	- x86 asm: support for mmx instructions
 	- configure: set -DNO_NATIVE_UNALIGNED_MOVES for platforms
 	  other than x86
