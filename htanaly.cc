@@ -496,7 +496,10 @@ void ht_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_f
 {
 	analy = Analy;
 	if (Analy) {
-		analy->setDisplayMode(ANALY_SHOW_ADDRESS|ANALY_SHOW_COMMENTS|ANALY_SHOW_LABELS|ANALY_SHOW_XREFS|ANALY_TRANSLATE_SYMBOLS|ANALY_COLLAPSE_XREFS, ANALY_EDIT_BYTES);
+		analy->setDisplayMode(ANALY_SHOW_ADDRESS | ANALY_SHOW_COMMENTS
+			| ANALY_SHOW_LABELS | ANALY_SHOW_XREFS
+			| ANALY_TRANSLATE_SYMBOLS | ANALY_COLLAPSE_XREFS, 
+			ANALY_EDIT_BYTES);
 	}
 	analy_sub = NULL;
 	ht_uformat_viewer::init(b, desc, caps, file, format_group);
@@ -1086,446 +1089,452 @@ void ht_aviewer::handlemsg(htmsg *msg)
 {
 	char str[1024];
 	switch (msg->msg) {
-		case msg_contextmenuquery: {
-			ht_static_context_menu *m=new ht_static_context_menu();
-			m->init("~Analyser");
-			m->insert_entry("~Assemble...", "Ctrl-A", cmd_analyser_call_assembler, K_Control_A, 1);
-			m->insert_separator();
-			ht_static_context_menu *sub=new ht_static_context_menu();
-			sub->init("~Control");
-			sub->insert_entry("~Information...", 0, cmd_analyser_info, 0, 1);
-			sub->insert_separator();
-			sub->insert_entry("~Save state", 0, cmd_analyser_save, 0, 1);
-			sub->insert_entry("~Export to file...", NULL, cmd_analyser_export_file, 0, 1);
-			sub->insert_separator();
-			sub->insert_entry("~Continue at address", "c", cmd_analyser_continue, 0, 1);
-			sub->insert_entry("~Pause / resume", "p", cmd_analyser_pause_resume, 0, 1);
-			m->insert_submenu(sub);
-			sub=new ht_static_context_menu();
-			sub->init("~Jump");
-			sub->insert_entry("~Symbol list", "F8", cmd_analyser_symbols, 0, 1);
-			sub->insert_entry("~Function start", "Ctrl-F", cmd_analyser_this_function, K_Control_F, 1);
-			sub->insert_entry("Prev ~label", "Ctrl-L", cmd_analyser_previous_label, K_Control_L, 1);
-			sub->insert_entry("Follow ~ptr", "f", cmd_analyser_follow, 0, 1);
-			m->insert_submenu(sub);
-			sub=new ht_static_context_menu();
-			sub->init("~Location");
-			sub->insert_entry("~Name address (label)...", "n", cmd_analyser_name_addr, 0, 1);
-			sub->insert_entry("Edit co~mments", "#", cmd_analyser_comments, 0, 1);
-			sub->insert_entry("Show ~xrefs", "x", cmd_analyser_xrefs, 0, 1);
-			sub->insert_entry("~Delete location", "Del", cmd_analyser_del_addr_bindings, 0, 1);
-			sub->insert_entry("~Callchain", "Ctrl-T", cmd_analyser_call_chain, K_Control_T, 1);
-			m->insert_submenu(sub);
-			sub=new ht_static_context_menu();
-			sub->init("~Data");
-			sub->insert_entry("Data ~string", "s", cmd_analyser_data_string, 0, 1);
-			sub->insert_entry("Data ~word 32", "i", cmd_analyser_data_int, 0, 1);
-			sub->insert_entry("Data ~halfword 16", "h", cmd_analyser_data_half, 0, 1);
-			sub->insert_entry("Data ~byte 8", "b", cmd_analyser_data_byte, 0, 1);
-			m->insert_submenu(sub);
-			m->insert_separator();
-			m->insert_entry("Symbol reg trace (exp!)", "Alt-Q", cmd_analyser_srt, K_Alt_Q, 1);
-	
-			msg->msg = msg_retval;
-			msg->data1.ptr = m;
+	case msg_contextmenuquery: {
+		ht_static_context_menu *m=new ht_static_context_menu();
+		m->init("~Analyser");
+		m->insert_entry("~Assemble...", "Ctrl-A", cmd_analyser_call_assembler, K_Control_A, 1);
+		m->insert_separator();
+		ht_static_context_menu *sub=new ht_static_context_menu();
+		sub->init("~Control");
+		sub->insert_entry("~Information...", 0, cmd_analyser_info, 0, 1);
+		sub->insert_separator();
+		sub->insert_entry("~Save state", 0, cmd_analyser_save, 0, 1);
+		sub->insert_entry("~Export to file...", NULL, cmd_analyser_export_file, 0, 1);
+		sub->insert_separator();
+		sub->insert_entry("~Continue at address", "c", cmd_analyser_continue, 0, 1);
+		sub->insert_entry("~Pause / resume", "p", cmd_analyser_pause_resume, 0, 1);
+		m->insert_submenu(sub);
+		sub=new ht_static_context_menu();
+		sub->init("~Jump");
+		sub->insert_entry("~Symbol list", "F8", cmd_analyser_symbols, 0, 1);
+		sub->insert_entry("~Function start", "Ctrl-F", cmd_analyser_this_function, K_Control_F, 1);
+		sub->insert_entry("Prev ~label", "Ctrl-L", cmd_analyser_previous_label, K_Control_L, 1);
+		sub->insert_entry("Follow ~ptr", "f", cmd_analyser_follow, 0, 1);
+		m->insert_submenu(sub);
+		sub=new ht_static_context_menu();
+		sub->init("~Location");
+		sub->insert_entry("~Name address (label)...", "n", cmd_analyser_name_addr, 0, 1);
+		sub->insert_entry("Edit co~mments", "#", cmd_analyser_comments, 0, 1);
+		sub->insert_entry("Show ~xrefs", "x", cmd_analyser_xrefs, 0, 1);
+		sub->insert_entry("~Delete location", "Del", cmd_analyser_del_addr_bindings, 0, 1);
+		sub->insert_entry("~Callchain", "Ctrl-T", cmd_analyser_call_chain, K_Control_T, 1);
+		m->insert_submenu(sub);
+		sub=new ht_static_context_menu();
+		sub->init("~Data");
+		sub->insert_entry("Data ~string", "s", cmd_analyser_data_string, 0, 1);
+		sub->insert_entry("Data ~word 32", "i", cmd_analyser_data_int, 0, 1);
+		sub->insert_entry("Data ~halfword 16", "h", cmd_analyser_data_half, 0, 1);
+		sub->insert_entry("Data ~byte 8", "b", cmd_analyser_data_byte, 0, 1);
+		m->insert_submenu(sub);
+		m->insert_separator();
+		m->insert_entry("Symbol reg trace (exp!)", "Alt-Q", cmd_analyser_srt, K_Alt_Q, 1);
+
+		msg->msg = msg_retval;
+		msg->data1.ptr = m;
+		return;
+	}
+	case msg_keypressed:
+		switch (msg->data1.integer) {
+		case K_Control_L:
+			sendmsg(cmd_analyser_previous_label);
+			clearmsg(msg);
 			return;
-		}
-		case msg_keypressed:
-			switch (msg->data1.integer) {
-				case K_Control_L: {
-					sendmsg(cmd_analyser_previous_label);
-					clearmsg(msg);
-					return;
-				}
-				case K_Control_F: {
-					sendmsg(cmd_analyser_this_function);
-					clearmsg(msg);
-					return;
-				}
-				case K_Control_O: {
-					sendmsg(cmd_analyser_generate_output);
-					clearmsg(msg);
-					return;
-				}
-				case 'c':
-					if (cursor_tag_class == tag_class_sel) {
-						sendmsg(cmd_analyser_continue);
-						clearmsg(msg);
-						return;
-					}
-					break;
-				case '#':
-					sendmsg(cmd_analyser_comments);
-					clearmsg(msg);
-					return;
-				case 'F':
-					if (cursor_tag_class == tag_class_sel) {
-						sendmsg(cmd_analyser_follow_ex);
-						clearmsg(msg);
-						return;
-					}
-					break;
-				case 'f':
-					if (cursor_tag_class == tag_class_sel) {
-						sendmsg(cmd_analyser_follow);
-						clearmsg(msg);
-						return;
-					}
-					break;
-				case 'n':
-					sendmsg(cmd_analyser_name_addr);
-					clearmsg(msg);
-					return;
-				case 'p':
-					sendmsg(cmd_analyser_pause_resume);
-					clearmsg(msg);
-					return;
-				case 'i':
-					sendmsg(cmd_analyser_data_int);
-					clearmsg(msg);
-					return;
-				case 'h':
-					sendmsg(cmd_analyser_data_half);
-					clearmsg(msg);
-					return;
-				case 'b':
-					sendmsg(cmd_analyser_data_byte);
-					clearmsg(msg);
-					return;
-				case 's':
-					sendmsg(cmd_analyser_data_string);
-					clearmsg(msg);
-					return;
-				case 'x':
-					sendmsg(cmd_analyser_xrefs);
-					clearmsg(msg);
-					return;
-				case K_Control_D:
-				case K_Delete:
-					sendmsg(cmd_analyser_del_addr_bindings);
-					clearmsg(msg);
-					return;
+		case K_Control_F:
+			sendmsg(cmd_analyser_this_function);
+			clearmsg(msg);
+			return;
+		case K_Control_O:
+			sendmsg(cmd_analyser_generate_output);
+			clearmsg(msg);
+			return;
+		case 'c':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_continue);
+				clearmsg(msg);
+				return;
 			}
 			break;
-		case cmd_analyser_call_assembler: {
-			if (!analy) break;
-			Assembler *a = analy->createAssembler();
-			if (!a) {
-				// FIXME: select assembler for list
-				infobox("no assembler available.");
+		case '#':
+			sendmsg(cmd_analyser_comments);
+			clearmsg(msg);
+			return;
+		case 'F':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_follow_ex);
 				clearmsg(msg);
 				return;
 			}
-			viewer_pos current_pos;
-			Address *current_address;
-			if (get_current_pos(&current_pos) && getCurrentAddress(&current_address)) {
-				a->set_imm_eval_proc((int(*)(void *context, char **s, dword *v))ht_aviewer_symbol_to_addr, (void*)this);
-				int want_length;
-				analy->getDisasmStr(current_address, want_length);
-				dialog_assemble(this, current_pos, analy->mapAddr(current_address), a, analy->disasm, analy->getDisasmStrFormatted(current_address), want_length);
-				delete current_address;
-			}			
-			a->done();
-			delete a;
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_this_function: {
-			if (!analy) break;
-			Address *c;
-			if (!getCurrentAddress(&c)) break;
-			Location *a = analy->getFunctionByAddress(c);
-			if (a) {
-				gotoAddress(a->addr, this);
-			} else {
-				global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-				errorbox("Address %y doesn't belong to a function.", c);
-			}
-			delete c;
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_previous_label: {
-			if (!analy) break;
-			Address *c;
-			if (!getCurrentAddress(&c)) break;
-			Location *a = analy->getPreviousSymbolByAddress(c);
-			if (a) {
-				gotoAddress(a->addr, this);
-			} else {
-				global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-				errorbox("Address %y doesn't belong to a symbol.", c);
-			}
-			delete c;
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_continue: {
-			if (!analy) break;
-			Address *a;
-			if (!getCurrentAddress(&a)) break;
-			analy->continueAnalysisAt(a);
-			delete a;
-			analy->makeDirty();
-			analy_sub->output->invalidateCache();
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_comments: {
-			if (!analy) break;
-			Address *current_address;
-			if (getCurrentAddress(&current_address)) {
-				showComments(current_address);
-				delete current_address;
-			}
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_name_addr: {
-			if (!analy) break;
-			Address *addr;
-			if (!getCurrentAddress(&addr) || !canCreateAddress(addr, true)) {
-				delete addr;
+			break;
+		case 'f':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_follow);
 				clearmsg(msg);
 				return;
 			}
+			break;
+		case 'n':
+			sendmsg(cmd_analyser_name_addr);
+			clearmsg(msg);
+			return;
+		case 'p':
+			sendmsg(cmd_analyser_pause_resume);
+			clearmsg(msg);
+			return;
+		case 'i':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_data_int);
+				clearmsg(msg);
+			}
+			return;
+		case 'h':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_data_half);
+				clearmsg(msg);
+				return;
+			}
+			break;
+		case 'b':
+			if (cursor_tag_class == tag_class_sel) {
+				sendmsg(cmd_analyser_data_byte);
+				clearmsg(msg);
+				return;
+			}
+			break;
+		case 's':
+			sendmsg(cmd_analyser_data_string);
+			clearmsg(msg);
+			return;
+		case 'x':
+			sendmsg(cmd_analyser_xrefs);
+			clearmsg(msg);
+			return;
+		case K_Control_D:
+		case K_Delete:
+			sendmsg(cmd_analyser_del_addr_bindings);
+			clearmsg(msg);
+			return;
+		}
+		break;
+	case cmd_analyser_call_assembler: {
+		if (!analy) break;
+		Assembler *a = analy->createAssembler();
+		if (!a) {
+			// FIXME: select assembler for list
+			infobox("no assembler available.");
+			clearmsg(msg);
+			return;
+		}
+		viewer_pos current_pos;
+		Address *current_address;
+		if (get_current_pos(&current_pos) && getCurrentAddress(&current_address)) {
+			a->set_imm_eval_proc((int(*)(void *context, char **s, dword *v))ht_aviewer_symbol_to_addr, (void*)this);
+			int want_length;
+			analy->getDisasmStr(current_address, want_length);
+			dialog_assemble(this, current_pos, analy->mapAddr(current_address), a, analy->disasm, analy->getDisasmStrFormatted(current_address), want_length);
+			delete current_address;
+		}			
+		a->done();
+		delete a;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_this_function: {
+		if (!analy) break;
+		Address *c;
+		if (!getCurrentAddress(&c)) break;
+		Location *a = analy->getFunctionByAddress(c);
+		if (a) {
+			gotoAddress(a->addr, this);
+		} else {
 			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-			if (analy->validAddress(addr, scvalid)) {
-				char n[255];
-				Symbol *l = analy->getSymbolByAddress(addr);
-				// FIXME strncpy
-				if (l) ht_snprintf(n, sizeof n, "%s", l->name); else n[0] = 0;
-				ht_snprintf(str, sizeof str, "name for address %y", addr);
-				while (inputbox(str, "~label name:", n, 255, HISTATOM_NAME_ADDR)) {
-					if (n[0]) {
-						if (valid_name(n)) {
-							char *n2 = ht_strdup(n);
-							if (!analy->assignSymbol(addr, n2, (l)?l->type:label_unknown)) {
-								l = analy->getSymbolByName(n);
-								global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-								errorbox("Label '%s' already exists at address %y!", n, l->location->addr);
-								free(n2);
-							} else {
-								analy->makeDirty();
-								analy_sub->output->invalidateCache();
-								break;
-							}
-						} else {
-							global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-							if (confirmbox("'%s' is an invalid label name.\nMake valid?", n)==button_yes) {
-								char n2[255];
-								make_valid_name(n2, n);
-								strcpy(n, n2);
-							}
-						}
-					} else {
-						if (l) {
-							// delete label if applicable
-							global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-							if (confirmbox("Really delete label '%s' at address %y?", l->name, addr)==button_yes) {
-								analy->deleteSymbol(addr);
-								analy->makeDirty();
-								analy_sub->output->invalidateCache();
-							}
-						}
-						break;
-					}
-				}
-			} else {
-				global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-				errorbox("Address %y is invalid!", addr);
-			}
+			errorbox("Address %y doesn't belong to a function.", c);
+		}
+		delete c;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_previous_label: {
+		if (!analy) break;
+		Address *c;
+		if (!getCurrentAddress(&c)) break;
+		Location *a = analy->getPreviousSymbolByAddress(c);
+		if (a) {
+			gotoAddress(a->addr, this);
+		} else {
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+			errorbox("Address %y doesn't belong to a symbol.", c);
+		}
+		delete c;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_continue: {
+		if (!analy) break;
+		Address *a;
+		if (!getCurrentAddress(&a)) break;
+		analy->continueAnalysisAt(a);
+		delete a;
+		analy->makeDirty();
+		analy_sub->output->invalidateCache();
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_comments: {
+		if (!analy) break;
+		Address *current_address;
+		if (getCurrentAddress(&current_address)) {
+			showComments(current_address);
+			delete current_address;
+		}
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_name_addr: {
+		if (!analy) break;
+		Address *addr;
+		if (!getCurrentAddress(&addr) || !canCreateAddress(addr, true)) {
 			delete addr;
 			clearmsg(msg);
 			return;
 		}
-		case cmd_analyser_xrefs: {
-			if (!analy) break;
-			Address *a;
-			if (!getCurrentAddress(&a)) break;
-			showXRefs(a);
-			delete a;
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_follow: {
-			if (!analy) break;
-			Address *c, *b;
-			if (!getCurrentAddress(&c)) break;
-			b = analy->createAddress();
-			UINT bz = b->byteSize();
-			if (!bz) break;
-			byte *buf = (byte*)smalloc(bz);
-			if (analy->bufPtr(c, buf, bz) != bz) break;
-			b->getFromArray(buf);
-			if (analy->validAddress(b, scvalid)) {
-				gotoAddress(b, this);
-			} else {
-				global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-				errorbox("Follow: address %y is invalid!", b);
-			}
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_follow_ex:
-			if (!analy) break;
-			clearmsg(msg);
-			return;
-		case cmd_analyser_pause_resume:
-			if (!analy) break;
-			pause = !pause;
-			clearmsg(msg);
-			return;
-		case cmd_analyser_del_addr_bindings: {
-			if (!analy) break;
-			Address *addr;
-			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-			if (getCurrentAddress(&addr)) {
-				if (confirmbox("Forget about address' %y bindings?\n(name, comments, xrefs, etc.)", addr)==button_yes) {
-					analy->deleteLocation(addr);
-					analy->makeDirty();
-					analy_sub->output->invalidateCache();
-				}
-				delete addr;
-			}
-			clearmsg(msg);
-			return;
-		}
-		case cmd_analyser_generate_output:
-			if (!analy) break;
-			generateOutputDialog();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_export_file:
-			if (!analy) break;
-			exportFileDialog();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_data_int:
-			if (!analy) break;
-			dataIntDialog(dst_idword, 4);
-			analy->makeDirty();
-			analy_sub->output->invalidateCache();
-			dirtyview();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_data_half:
-			if (!analy) break;
-			dataIntDialog(dst_iword, 2);
-			analy->makeDirty();
-			analy_sub->output->invalidateCache();
-			dirtyview();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_data_byte:
-			if (!analy) break;
-			dataIntDialog(dst_ibyte, 1);
-			analy->makeDirty();
-			analy_sub->output->invalidateCache();
-			dirtyview();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_data_string:
-			if (!analy) break;
-			dataStringDialog();
-			analy->makeDirty();
-			analy_sub->output->invalidateCache();
-			dirtyview();
-			clearmsg(msg);
-			return;
-		case cmd_analyser_info:
-			if (!analy) break;
-			Address *current_address;
-			if (!getCurrentAddress(&current_address)) {
-				showInfo(0);
-			} else {
-				showInfo(current_address);
-				delete current_address;
-			}
-			dirtyview();
-			clearmsg(msg);               
-			return;
-		case cmd_analyser_symbols: {
-			Address *current_address;
-			if (!getCurrentAddress(&current_address)) return;
-			showSymbols(current_address);
-			delete current_address;
-			clearmsg(msg);
-			return;
-		}
-		case cmd_edit_mode:
-		case cmd_view_mode:
-			if (analy) {
-				if (edit()) {
-					analy->setDisplayMode(ANALY_EDIT_BYTES, 0);
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+		if (analy->validAddress(addr, scvalid)) {
+			char n[255];
+			Symbol *l = analy->getSymbolByAddress(addr);
+			// FIXME strncpy
+			if (l) ht_snprintf(n, sizeof n, "%s", l->name); else n[0] = 0;
+			ht_snprintf(str, sizeof str, "name for address %y", addr);
+			while (inputbox(str, "~label name:", n, 255, HISTATOM_NAME_ADDR)) {
+				if (n[0]) {
+					if (valid_name(n)) {
+						char *n2 = ht_strdup(n);
+						if (!analy->assignSymbol(addr, n2, (l)?l->type:label_unknown)) {
+							l = analy->getSymbolByName(n);
+							global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+							errorbox("Label '%s' already exists at address %y!", n, l->location->addr);
+							free(n2);
+						} else {
+							analy->makeDirty();
+							analy_sub->output->invalidateCache();
+							break;
+						}
+					} else {
+						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+						if (confirmbox("'%s' is an invalid label name.\nMake valid?", n)==button_yes) {
+							char n2[255];
+							make_valid_name(n2, n);
+							strcpy(n, n2);
+						}
+					}
 				} else {
-					analy->setDisplayMode(0, ANALY_EDIT_BYTES);
+					if (l) {
+						// delete label if applicable
+						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+						if (confirmbox("Really delete label '%s' at address %y?", l->name, addr)==button_yes) {
+							analy->deleteSymbol(addr);
+							analy->makeDirty();
+							analy_sub->output->invalidateCache();
+						}
+					}
+					break;
 				}
 			}
-			analy_sub->output->invalidateCache();
-			break;
-		case msg_file_changed: {
-			analy_sub->output->invalidateCache();
-			break;
+		} else {
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+			errorbox("Address %y is invalid!", addr);
 		}
-		case cmd_analyser_call_chain: {
-			if (!analy) break;
-			Address *addr;
-			if (getCurrentAddress(&addr)) {
-				showCallChain(addr);
-				delete addr;
-			}
-			return;
+		delete addr;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_xrefs: {
+		if (!analy) break;
+		Address *a;
+		if (!getCurrentAddress(&a)) break;
+		showXRefs(a);
+		delete a;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_follow: {
+		if (!analy) break;
+		Address *c, *b;
+		if (!getCurrentAddress(&c)) break;
+		b = analy->createAddress();
+		UINT bz = b->byteSize();
+		if (!bz) break;
+		byte *buf = (byte*)smalloc(bz);
+		if (analy->bufPtr(c, buf, bz) != bz) break;
+		b->getFromArray(buf);
+		if (analy->validAddress(b, scvalid)) {
+			gotoAddress(b, this);
+		} else {
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+			errorbox("Follow: address %y is invalid!", b);
 		}
-		/* FIXME: srt-experimental */
-		case cmd_analyser_srt: {
-			Address *current_addr;
-			if (getCurrentAddress(&current_addr)) {
-				test_srt(analy, current_addr);
-				delete current_addr;
-			}
-			clearmsg(msg);
-			return;
-		}
-		case msg_get_analyser: {
-			msg->msg=msg_retval;
-			msg->data1.ptr=analy;
-			return;
-		}
-		case msg_set_analyser: {
-			Analyser *a=(Analyser*)msg->data1.ptr;
-			if (analy) {
-				analy->done();
-				delete analy;
-			}
-			a->setDisplayMode(0, ANALY_EDIT_BYTES);
-			setAnalyser(a);
-			analy_sub->output->invalidateCache();
-			clearmsg(msg);
-			one_load_hack = true;
-			return;
-		}
-		case msg_postinit: {
-			if (analy && !one_load_hack) {
-				analy->beginAnalysis();
+		clearmsg(msg);
+		return;
+	}
+	case cmd_analyser_follow_ex:
+		if (!analy) break;
+		clearmsg(msg);
+		return;
+	case cmd_analyser_pause_resume:
+		if (!analy) break;
+		pause = !pause;
+		clearmsg(msg);
+		return;
+	case cmd_analyser_del_addr_bindings: {
+		if (!analy) break;
+		Address *addr;
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+		if (getCurrentAddress(&addr)) {
+			if (confirmbox("Forget about address' %y bindings?\n(name, comments, xrefs, etc.)", addr)==button_yes) {
+				analy->deleteLocation(addr);
+				analy->makeDirty();
 				analy_sub->output->invalidateCache();
 			}
-			return;
+			delete addr;
 		}
+		clearmsg(msg);
+		return;
 	}
-	ht_uformat_viewer::handlemsg(msg);
-	switch (msg->msg) {
-		case msg_draw:
-			if (infoline) {
-				FILEOFS a;
-				Address *addr;
-				if (!getCurrentAddress(&addr)) {
-					addr = new InvalidAddress();
-				}
-				infoline->update(addr, (get_current_real_offset(&a)) ? a : INVALID_FILE_OFS);
-				delete addr;
+	case cmd_analyser_generate_output:
+		if (!analy) break;
+		generateOutputDialog();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_export_file:
+		if (!analy) break;
+		exportFileDialog();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_data_int:
+		if (!analy) break;
+		dataIntDialog(dst_idword, 4);
+		analy->makeDirty();
+		analy_sub->output->invalidateCache();
+		dirtyview();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_data_half:
+		if (!analy) break;
+		dataIntDialog(dst_iword, 2);
+		analy->makeDirty();
+		analy_sub->output->invalidateCache();
+		dirtyview();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_data_byte:
+		if (!analy) break;
+		dataIntDialog(dst_ibyte, 1);
+		analy->makeDirty();
+		analy_sub->output->invalidateCache();
+		dirtyview();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_data_string:
+		if (!analy) break;
+		dataStringDialog();
+		analy->makeDirty();
+		analy_sub->output->invalidateCache();
+		dirtyview();
+		clearmsg(msg);
+		return;
+	case cmd_analyser_info:
+		if (!analy) break;
+		Address *current_address;
+		if (!getCurrentAddress(&current_address)) {
+			showInfo(0);
+		} else {
+			showInfo(current_address);
+			delete current_address;
+		}
+		dirtyview();
+		clearmsg(msg);               
+		return;
+	case cmd_analyser_symbols: {
+		Address *current_address;
+		if (!getCurrentAddress(&current_address)) return;
+		showSymbols(current_address);
+		delete current_address;
+		clearmsg(msg);
+		return;
+	}
+	case cmd_edit_mode:
+	case cmd_view_mode:
+		if (analy) {
+			if (edit()) {
+				analy->setDisplayMode(ANALY_EDIT_BYTES, 0);
+			} else {
+				analy->setDisplayMode(0, ANALY_EDIT_BYTES);
 			}
-			break;
+		}
+		analy_sub->output->invalidateCache();
+		break;
+	case msg_file_changed: {
+		analy_sub->output->invalidateCache();
+		break;
+	}
+	case cmd_analyser_call_chain: {
+		if (!analy) break;
+		Address *addr;
+		if (getCurrentAddress(&addr)) {
+			showCallChain(addr);
+			delete addr;
+		}
+		return;
+	}
+	/* FIXME: srt-experimental */
+	case cmd_analyser_srt: {
+		Address *current_addr;
+		if (getCurrentAddress(&current_addr)) {
+			test_srt(analy, current_addr);
+			delete current_addr;
+		}
+		clearmsg(msg);
+		return;
+	}
+	case msg_get_analyser: {
+		msg->msg=msg_retval;
+		msg->data1.ptr=analy;
+		return;
+	}
+	case msg_set_analyser: {
+		Analyser *a=(Analyser*)msg->data1.ptr;
+		if (analy) {
+			analy->done();
+			delete analy;
+		}
+		a->setDisplayMode(0, ANALY_EDIT_BYTES);
+		setAnalyser(a);
+		analy_sub->output->invalidateCache();
+		clearmsg(msg);
+		one_load_hack = true;
+		return;
+	}
+	case msg_postinit:
+		if (analy && !one_load_hack) {
+			analy->beginAnalysis();
+			analy_sub->output->invalidateCache();
+		}
+		return;
+	}
+
+	ht_uformat_viewer::handlemsg(msg);
+	
+	switch (msg->msg) {
+	case msg_draw:
+		if (infoline) {
+			FILEOFS a;
+			Address *addr;
+			if (!getCurrentAddress(&addr)) {
+				addr = new InvalidAddress();
+			}
+			infoline->update(addr, (get_current_real_offset(&a)) ? a : INVALID_FILE_OFS);
+			delete addr;
+		}
+		break;
 	}
 }
 
@@ -1568,24 +1577,24 @@ int ht_aviewer::ref_sel(LINE_ID *id)
 {
 	if ((id->id1 | id->id2 |  id->id3 |id->id4) == 0) return 0;
 	switch (id->id4) {
-		case 0:
-			if (analy) {
-				Address *a = analy->createAddress();
-				a->getFromArray((byte*)&id->id1);
-				bool res = gotoAddress(a, this);
-				delete a;
-				return res;
-			} else {
-				return 0;
-			}
-		case 1:
-			if (analy) {
-				Address *a = analy->createAddress();
-				a->getFromArray((byte*)&id->id1);
-				showXRefs(a);
-				delete a;
-			}
+	case 0:
+		if (analy) {
+			Address *a = analy->createAddress();
+			a->getFromArray((byte*)&id->id1);
+			bool res = gotoAddress(a, this);
+			delete a;
+			return res;
+		} else {
 			return 0;
+		}
+	case 1:
+		if (analy) {
+			Address *a = analy->createAddress();
+			a->getFromArray((byte*)&id->id1);
+			showXRefs(a);
+			delete a;
+		}
+		return 0;
 	}
 	return 0;
 }
@@ -1598,7 +1607,7 @@ void ht_aviewer::reloadpalette()
 
 void ht_aviewer::searchForXRefs(Address *Addr)
 {
-// FIXME: viewer_pos && FIXNEW
+	// FIXME: viewer_pos && FIXNEW
 	char str[100];
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 	ht_snprintf(str, sizeof str, "%y", Addr);
@@ -2130,7 +2139,7 @@ int	ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
 
 ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
-// FIXME: viewer pos     
+	// FIXME: viewer pos     
 	Address *st = NULL;
 	ht_search_result *r = NULL;
 	while (!r) {

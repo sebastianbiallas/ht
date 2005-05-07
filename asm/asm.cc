@@ -58,27 +58,27 @@ void Assembler::deletecode(asm_code *code)
 {
 	asm_code **p=&codes, *c=codes;
 	while (c) {
-		if (c==code) {
-			*p=c->next;
+		if (c == code) {
+			*p = c->next;
 			delete c;
 			return;
 		}
-		c=c->next;
-		p=&(*p)->next;
+		c = c->next;
+		p = &(*p)->next;
 	}
 }
 
 asm_code *Assembler::encode(asm_insn *asm_insn, int _options, CPU_ADDR cur_address)
 {
 	free_asm_codes();
-	error=0;
-	options=_options;
+	error = 0;
+	options = _options;
 	return 0;
 }
 
 void Assembler::clearcode()
 {
-	code.size=0;
+	code.size = 0;
 }
 
 void Assembler::emitbyte(byte b)
@@ -118,9 +118,9 @@ void Assembler::emitdword(dword d)
 void Assembler::free_asm_codes()
 {
 	while (codes) {
-		asm_code *t=codes->next;
+		asm_code *t = codes->next;
 		delete codes;
-		codes=t;
+		codes = t;
 	}
 }
 
@@ -136,7 +136,7 @@ char *Assembler::get_name()
 
 void Assembler::newcode()
 {
-	code.size=0;
+	code.size = 0;
 }
 
 asm_code *Assembler::shortest(asm_code *codes)
@@ -144,12 +144,12 @@ asm_code *Assembler::shortest(asm_code *codes)
 	asm_code *best=0;
 	dword bestv=0xffffffff;
 	while (codes) {
-		if (codes->size<bestv) {
-			best=codes;
-			bestv=codes->size;
+		if (codes->size < bestv) {
+			best = codes;
+			bestv = codes->size;
 		}
-		codes=codes->next;
-	};
+		codes = codes->next;
+	}
 	return best;
 }
 
@@ -157,12 +157,12 @@ void Assembler::pushcode()
 {
 	asm_code **t=&codes;
 	while (*t) {
-		t=&(*t)->next;
+		t = &(*t)->next;
 	}
-	*t=new asm_code;
+	*t = new asm_code;
 
-	memmove(*t, &code, sizeof code);
-	(*t)->next=0;
+	memcpy(*t, &code, sizeof code);
+	(*t)->next = NULL;
 }
 
 int Assembler::translate_str(asm_insn *asm_insn, const char *s)
@@ -181,8 +181,8 @@ void Assembler::set_error_msg(char *format, ...)
 
 void Assembler::set_imm_eval_proc(int (*p)(void *context, char **s, dword *v), void *c)
 {
-	imm_eval_proc=p;
-	imm_eval_context=c;
+	imm_eval_proc = p;
+	imm_eval_context = c;
 }
 
 /*
@@ -212,7 +212,7 @@ void Disassembler::hexd(char **s, int size, int options, int imm)
 	char *f = (char*)&ff;
 	char *t = *s;
 	*f++ = '%';
-	if ((imm>=0) && (imm<=9)) {
+	if (imm >= 0 && imm <= 9) {
 		*s += sprintf(*s, "%d", imm);
 	} else if (options & DIS_STYLE_SIGNED) {
 		if (!(options & DIS_STYLE_HEX_NOZEROPAD)) f += sprintf(f, "0%d", size);

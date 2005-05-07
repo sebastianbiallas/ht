@@ -3,6 +3,7 @@
  *	x86opc.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
+ *	Copyright (C) 2005 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -776,7 +777,7 @@ x86opc_insn x86_insns_ext[256] = {
 {"pmulhuw", {{Pu}, {Qu}}},
 {"pmulhw", {{Pu}, {Qu}}},
 {"cvttpd2dq", {{Vo}, {WO}}},
-{"movntq", {{Mu}, {Pu}}},
+{"&movntq|movntdq", {{Mu}, {Pu}}},
 /* E8 */
 {"psubsb", {{Pu}, {Qu}}},
 {"psubsw", {{Pu}, {Qu}}},
@@ -785,16 +786,16 @@ x86opc_insn x86_insns_ext[256] = {
 {"paddsb", {{Pu}, {Qu}}},
 {"paddsw", {{Pu}, {Qu}}},
 {"pmaxsw", {{Pu}, {Qu}}},
-{"pxor", {{Pq}, {Qq}}},
+{"pxor", {{Pu}, {Qu}}},
 /* F0 */
 {0},
 {"psllw", {{Pu}, {Qu}}},
 {"pslld", {{Pu}, {Qu}}},
 {"psllq", {{Pu}, {Qu}}},
 {"pmuludq", {{Pu}, {Qu}}},
-{"pmaddwd", {{Pq}, {Qq}}},
-{"psadbw", {{Pq}, {Qq}}},
-{"maskmovq", {{Pu}, {PRu}}},
+{"pmaddwd", {{Pu}, {Qu}}},
+{"psadbw", {{Pu}, {Qu}}},
+{"&maskmovq|maskmovdqu", {{Pu}, {PRu}}},
 /* F8 */
 {"psubb", {{Pu}, {Qu}}},
 {"psubw", {{Pu}, {Qu}}},
