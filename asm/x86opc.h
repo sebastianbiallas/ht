@@ -81,13 +81,14 @@ struct x86_insn_op {
 		int reg;
 		int seg;
 		struct {
-			int floatptr;
-			int hasdisp;
 			dword disp;
 			int base;
 			int index;
 			int scale;
 			int addrsize;
+			bool floatptr;
+			bool addrptr;
+			bool hasdisp;
 		} mem;
 		int crx;
 		int drx;

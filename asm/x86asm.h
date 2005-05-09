@@ -29,6 +29,7 @@ struct x86asm_insn {
 	char lockprefix;
 	char repprefix;
 	char segprefix;
+	char opsizeprefix;
 	char n[16];
 	char *name;
 	x86_insn_op op[3];
@@ -44,7 +45,7 @@ struct x86addrcoding {
  *	CLASS x86asm
  */
 
-#define X86ASM_NULL     				0x00000000
+#define X86ASM_NULL			0x00000000
 #define X86ASM_ALLOW_AMBIGUOUS		0x00000001		/* IF SET: allow "mov [0], 1" 	ELSE: deny "mov [0], 1" (ambiguous) */
 
 class x86asm: public Assembler {
@@ -89,14 +90,14 @@ protected:
 	char flsz2hsz(int size);
 	char *immlsz2hsz(int size, int opsize);
 	char *lsz2hsz(int size, int opsize);
-	bool match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int addrsize);
+	int match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int addrsize);
 	void match_fopcodes(x86asm_insn *insn);
 	void match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode);
 	int match_opcode_name(char *input_name, const char *opcodelist_name);
-	int match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int opsize, int addrsize);
+	int match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int opsize, int addrsize, int match);
 	void match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix);
 	bool match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize);
-	bool match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize);
+	int match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize);
 	bool opfarptr(x86_insn_op *op, char *xop);
 	bool opimm(x86_insn_op *op, char *xop);
 	bool opplugimm(x86_insn_op *op, char *xop);

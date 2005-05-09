@@ -148,6 +148,7 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 			op->type = X86_OPTYPE_MEM;
 			op->size = esizeop(size);
 			op->mem.floatptr = isfloat(size);
+			op->mem.addrptr = isaddr(size);
 			if (mod == 0 && rm == 6) {
 				op->mem.hasdisp = 1;
 				op->mem.disp = getword();
@@ -177,6 +178,7 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 			op->type = X86_OPTYPE_MEM;
 			op->size = esizeop(size);
 			op->mem.floatptr = isfloat(size);
+			op->mem.addrptr = isaddr(size);
 			if (mod == 0 && rm == 5) {
 				op->mem.hasdisp = 1;
 				op->mem.disp = getdword();
@@ -422,6 +424,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->type = X86_OPTYPE_MEM;
 		op->size = esizeop(xop->size);
 		op->mem.floatptr = isfloat(xop->size);
+		op->mem.addrptr = isaddr(xop->size);
 		op->mem.addrsize = insn.eaddrsize;
 		switch (insn.eaddrsize) {
 			case X86_ADDRSIZE16:
@@ -727,6 +730,15 @@ bool x86dis::isfloat(char c)
 	return false;
 }
 
+bool x86dis::isaddr(char c)
+{
+	switch (c) {
+	case SIZE_P:
+		return true;
+	}
+	return false;
+}
+
 int x86dis::load(ht_object_stream *f)
 {
 	GET_INT_HEX(f, opsize);
@@ -914,6 +926,13 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 							break;
 						case 10:
 							d += sprintf(d, "extended ptr ");
+							break;
+					}
+				} else if (op->mem.addrptr) {
+					switch (op->size) {
+						case 4:
+						case 6:
+							d += sprintf(d, "far ptr ");
 							break;
 					}
 				} else {

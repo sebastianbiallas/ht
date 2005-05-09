@@ -85,6 +85,7 @@ protected:
 			int	getsib();
 			void	invalidate();
 			bool	isfloat(char c);
+			bool	isaddr(char c);
 			void	prefixes();
 			int	special_param_ambiguity(x86dis_insn *disasm_insn);
 			void	str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print);
