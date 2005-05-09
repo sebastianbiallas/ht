@@ -391,7 +391,7 @@ FILEOFS PEAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *PEAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *PEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char sectionname[9];
 	pe_section_headers *sections=&pe_shared->sections;

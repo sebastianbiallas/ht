@@ -434,7 +434,7 @@ FILEOFS PEFAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char pef_sectionname[33];
 	pef_section_headers *sections=&pef_shared->sheaders;

@@ -312,7 +312,7 @@ FILEOFS CoffAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *CoffAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *CoffAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char sectionname[9];
 	coff_section_headers *sections=&coff_shared->sections;

@@ -315,7 +315,7 @@ FILEOFS MachoAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *MachoAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *MachoAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char macho_sectionname[33];
 	macho_sections *sections = &macho_shared->sections;

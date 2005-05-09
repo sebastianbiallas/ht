@@ -342,7 +342,7 @@ FILEOFS NEAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *NEAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *NEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char segmentname[16];
 	int i;

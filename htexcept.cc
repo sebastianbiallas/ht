@@ -32,6 +32,10 @@ ht_exception::ht_exception()
 {
 }
 
+ht_exception::~ht_exception()
+{
+}
+
 const char *ht_exception::what()
 {
 	return NULL;

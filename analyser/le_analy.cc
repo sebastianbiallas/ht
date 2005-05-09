@@ -409,7 +409,7 @@ Assembler *LEAnalyser::createAssembler()
 /*
  *
  */
-char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char segmentname[16];
 	int i;

@@ -184,7 +184,7 @@ FILEOFS ClassAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *ClassAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *ClassAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char sectionname[9];
 	strcpy(sectionname, "test");

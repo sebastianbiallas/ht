@@ -26,34 +26,34 @@
 
 class LEAnalyser: public Analyser {
 public:
-	ht_le_shared_data		*le_shared;
-	ht_streamfile 			*file;
-	Area					*validarea;
+	ht_le_shared_data	*le_shared;
+	ht_streamfile 		*file;
+	Area			*validarea;
 
-			void			init(ht_le_shared_data *le_shared, ht_streamfile *file);
-			int 			load(ht_object_stream *f);
-	virtual	void			done();
-	virtual	OBJECT_ID		object_id() const;
+		void		init(ht_le_shared_data *le_shared, ht_streamfile *file);
+		int 		load(ht_object_stream *f);
+	virtual	void		done();
+	virtual	OBJECT_ID	object_id() const;
 
-	virtual	void			beginAnalysis();
-	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size);
-			bool			convertAddressToLEAddress(Address *addr, LEAddress *r);
+	virtual	void		beginAnalysis();
+	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+		bool		convertAddressToLEAddress(Address *addr, LEAddress *r);
 	virtual	Address		*createAddress();
-			Address		*createAddressFlat32(uint32 ofs);
-	virtual   Assembler 	*createAssembler();
+		Address		*createAddressFlat32(uint32 ofs);
+	virtual Assembler 	*createAssembler();
 	virtual	const char	*getName();
-	virtual   const char	*getType();
+	virtual const char	*getType();
 	virtual	void 		initCodeAnalyser();
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void			store(ht_object_stream *f);
-	virtual	int			queryConfig(int mode);
+	virtual	void		store(ht_object_stream *f);
+	virtual	int		queryConfig(int mode);
 	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-	virtual	char			*getSegmentNameByAddress(Address *Addr);
+	virtual	const char	*getSegmentNameByAddress(Address *Addr);
 	virtual	FILEOFS		addressToFileofs(Address *Addr);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
-	virtual	Address *		realFileofsToAddress(FILEOFS fileofs);
+	virtual	Address *	realFileofsToAddress(FILEOFS fileofs);
 	virtual	FILEOFS		addressToRealFileofs(Address *Addr);
 };
 

@@ -552,7 +552,7 @@ FILEOFS ElfAnalyser::addressToFileofs(Address *Addr)
  *
  */
 
-char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char elf_sectionname[33];
 	elf_section_headers *sections=&elf_shared->sheaders;

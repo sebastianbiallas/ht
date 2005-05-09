@@ -200,7 +200,7 @@ FILEOFS FLTAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *FLTAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *FLTAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	FLTAddress ea;
 	if (!convertAddressToFLTAddress(Addr, &ea)) return NULL;

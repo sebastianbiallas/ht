@@ -30,6 +30,7 @@
 class ht_exception {
 public:
 			ht_exception();
+	virtual		~ht_exception();
 /* new */
 	virtual const char *what();
 };

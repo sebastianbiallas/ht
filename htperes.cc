@@ -109,7 +109,7 @@ static void read_resource_dir(void *node, int ofs, int level)
 				ht_snprintf(peresource_string, sizeof peresource_string, "%s [%d]", name, subdir.name_count+subdir.id_count);
 				free(name);
 			} else {
-				char *s = (!level) ? s = matchhash(entry.name & 0xffff, restypes) : NULL;
+				char *s = (!level) ? matchhash(entry.name & 0xffff, restypes) : NULL;
 				if (s) {
 					ht_snprintf(peresource_string, sizeof peresource_string, "ID %04x, %s [%d]", entry.name & 0xffff, s, subdir.name_count+subdir.id_count);
 				} else {

@@ -291,7 +291,7 @@ FILEOFS XBEAnalyser::addressToFileofs(Address *Addr)
 /*
  *
  */
-char *XBEAnalyser::getSegmentNameByAddress(Address *Addr)
+const char *XBEAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char sectionname[9];
 	xbe_section_headers *sections=&xbe_shared->sections;
