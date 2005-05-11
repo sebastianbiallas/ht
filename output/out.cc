@@ -235,7 +235,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 		bool collapsed_xrefs = false;
 		if (analy->mode & ANALY_COLLAPSE_XREFS) {
 			// count xrefs
-			if (xref_count>=(MAX_XREF_COLS*MAX_XREF_LINES)) {
+			if (xref_count >= MAX_XREF_COLS * MAX_XREF_LINES) {
 				collapsed_xrefs = true;
 			}
 		}               
@@ -328,17 +328,26 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			addr_sym_func_context = this;
 			if (analy->mode & ANALY_TRANSLATE_SYMBOLS) addr_sym_func = &analyser_output_addr_sym_func;
 
-			bool s;
+			int complete_bytes_line = analy->disasm->getSize(o);
+			bool s = true;
 			do {
-				char *x = analy->disasm->str(o, dis_style);
-				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, x);
-				if ((s = analy->disasm->selectNext(o))) {
+				if (s) {
+					char *x = analy->disasm->str(o, dis_style);
+					putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, x);
+				}
+				if (analy->mode & ANALY_EDIT_BYTES) {
+					want_bytes_line = MIN(complete_bytes_line, 16);
+				} else {
+					want_bytes_line = complete_bytes_line;
+				}
+				bytes_line += want_bytes_line;
+				complete_bytes_line -= want_bytes_line;
+				if ((s = analy->disasm->selectNext(o)) || complete_bytes_line) {
 					endLine();
 					beginLine();
 				}
-			} while (s);
+			} while (s || complete_bytes_line);
 			
-			bytes_line += analy->disasm->getSize(o);
 			/* deinits for addr-sym transformations */
 			addr_sym_func_context = NULL;
 			addr_sym_func = NULL;

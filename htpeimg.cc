@@ -212,8 +212,8 @@ int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist
 
 void ht_pe_aviewer::setAnalyser(Analyser *a)
 {
-	((PEAnalyser *)a)->pe_shared = pe_shared;
-	((PEAnalyser *)a)->file = file;
+	((PEAnalyser *)a)->reinit(pe_shared, file);
+	
 	analy = a;
 	analy_sub->setAnalyser(a);
 }

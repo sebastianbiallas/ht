@@ -57,6 +57,9 @@ void	PEAnalyser::init(ht_pe_shared_data *Pe_shared, ht_streamfile *File)
 }
 
 
+static char *string_func(dword ofs, void *context);
+static char *token_func(dword token, void *context);
+
 /*
  *
  */
@@ -79,6 +82,18 @@ void	PEAnalyser::done()
 	validarea->done();
 	delete validarea;
 	Analyser::done();
+}
+
+/*
+ *
+ */
+void	PEAnalyser::reinit(ht_pe_shared_data *Pe_shared, ht_streamfile *File)
+{
+	pe_shared = Pe_shared;
+	file = File;
+	if (disasm->object_id() == ATOM_DISASM_IL) {
+		((ILDisassembler *)disasm)->initialize(string_func, token_func, pe_shared);
+	}
 }
 
 /*
@@ -493,7 +508,7 @@ void PEAnalyser::initUnasm()
 		analy_disasm = new AnalyILDisassembler();
 		((AnalyILDisassembler *)analy_disasm)->init(this, string_func, token_func, pe_shared);
 	} else {
-	switch (pe_shared->coffheader.machine) {
+		switch (pe_shared->coffheader.machine) {
 		case COFF_MACHINE_I386:	// Intel 386
 		case COFF_MACHINE_I486:	// Intel 486
 		case COFF_MACHINE_I586:	// Intel 586
@@ -542,7 +557,7 @@ void PEAnalyser::initUnasm()
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", pe_shared->coffheader.machine);
 			warnbox("No disassembler for unknown machine type %04x!", pe_shared->coffheader.machine);
-	}
+		}
 	}
 }
 
@@ -575,7 +590,7 @@ void PEAnalyser::store(ht_object_stream *st)
 	/*
 	ht_pe_shared_data 	*pe_shared;
 	ht_stream 		*file;
-	area				*validarea;
+	area			*validarea;
 	*/
 	PUT_OBJECT(st, validarea);
 	Analyser::store(st);

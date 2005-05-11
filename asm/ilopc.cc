@@ -100,7 +100,7 @@ ILOpcodeTabEntry il_opcode_table[MAX_IL_OPCODE] = {
 	{"ble.un", IL_OPCODE_ARGS_LONG_JUMP, 5},
 	{"blt.un", IL_OPCODE_ARGS_LONG_JUMP, 5},
 
-	{"switch", IL_OPCODE_ARGS_SWITCH, 1}, // FIXME: 0
+	{"switch", IL_OPCODE_ARGS_SWITCH, 5}, // must be at least 5 bytes long
 
 	{"ldind.i1", IL_OPCODE_ARGS_NONE, 1},
 	{"ldind.u1", IL_OPCODE_ARGS_NONE, 1},
@@ -156,7 +156,7 @@ ILOpcodeTabEntry il_opcode_table[MAX_IL_OPCODE] = {
 	{"isinst", IL_OPCODE_ARGS_TOKEN, 5},
 
 	{"conv.r.un", IL_OPCODE_ARGS_NONE, 1},
-	{"ann.data.s", IL_OPCODE_ARGS_ANN_DATA, 1}, // FIXME: 0
+	{"ann.data.s", IL_OPCODE_ARGS_ANN_DATA_S, 2}, // // must be at least 2 bytes long
 
 	{NULL, IL_OPCODE_ARGS_INVALID, 1}, // 0x78
 
@@ -258,8 +258,8 @@ ILOpcodeTabEntry il_opcode_table[MAX_IL_OPCODE] = {
 	{"ann.hoisted_call", IL_OPCODE_ARGS_TOKEN, 5},
 	{"ann.lab", IL_OPCODE_ARGS_NONE, 1},
 	{"ann.def", IL_OPCODE_ARGS_NONE, 1},
-	{"ann.ref.s", IL_OPCODE_ARGS_ANN_REF, 2},
-	{"ann.phi", IL_OPCODE_ARGS_ANN_PHI, 1}, // FIXME: 0
+	{"ann.ref.s", IL_OPCODE_ARGS_ANN_REF_S, 2},
+	{"ann.phi", IL_OPCODE_ARGS_ANN_PHI, 3}, // must be at least 3 bytes long
 
 	{"ldtoken", IL_OPCODE_ARGS_TOKEN, 5},
 
@@ -367,6 +367,6 @@ ILOpcodeTabEntry il_prefix_opcode_table[MAX_IL_OPCODE_PREFIX] = {
 	{NULL, IL_OPCODE_ARGS_INVALID, 2}, // 0x20
 	{NULL, IL_OPCODE_ARGS_INVALID, 2}, // 0x21
 
-	{"ann.data", IL_OPCODE_ARGS_ANN_DATA, 1}, // FIXME: 0
+	{"ann.data", IL_OPCODE_ARGS_ANN_DATA, 6}, // must be at least 6 bytes long
 	{"ann.arg", IL_OPCODE_ARGS_ANN_ARG, 4},
 };

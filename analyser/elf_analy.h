@@ -31,7 +31,7 @@ class ElfAnalyser: public Analyser {
 public:
 	ht_elf_shared_data 		*elf_shared;
 	ht_streamfile			*file;
-	Area					*validarea;
+	Area				*validarea;
 
 		void		init(ht_elf_shared_data *elf_shared, ht_streamfile *File);
 		int 		load(ht_object_stream *f);

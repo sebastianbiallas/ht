@@ -25,17 +25,27 @@
 #include "htendian.h"
 #include "ildis.h"
 #include "ilopc.h"
+#include "snprintf.h"
 
+
+ILDisassembler::ILDisassembler()
+{
+}
 
 ILDisassembler::ILDisassembler(char* (*sf)(dword string_ofs, void *context), char* (*tf)(dword token, void *context), void *ctx)
 {
-	string_func = sf;
-	token_func = tf;
-	context = ctx;
+	initialize(sf, tf, ctx);
 }
 
 ILDisassembler::~ILDisassembler()
 {
+}
+
+void ILDisassembler::initialize(char* (*sf)(dword string_ofs, void *context), char* (*tf)(dword token, void *context), void *ctx)
+{
+	string_func = sf;
+	token_func = tf;
+	context = ctx;
 }
 
 dis_insn *ILDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
@@ -43,13 +53,13 @@ dis_insn *ILDisassembler::decode(byte *code, int maxlen, CPU_ADDR addr)
 	insn.valid = false;
 	insn.prefix = NULL;
 	insn.size = 0;
-	insn.data = *code;
-restart:
+	insn.data.ui = *code;
 	if (!maxlen) {
 		return (dis_insn *)&insn;
 	}
+restart:
 	insn.opcode = &il_opcode_table[*code];
-	insn.size += insn.opcode->size;
+	insn.size = insn.opcode->size;
 	if (insn.size > maxlen) {
 		insn.size = 1;
 		insn.valid = false;
@@ -57,59 +67,106 @@ restart:
 	}
 	insn.op = insn.opcode->op;
 	switch (insn.op) {
-		case IL_OPCODE_ARGS_INVALID:
-			return (dis_insn *)&insn;
-		case IL_OPCODE_ARGS_NONE:
-			break;
-		case IL_OPCODE_ARGS_PREFIX:
-			insn.opcode = NULL;
+	case IL_OPCODE_ARGS_INVALID:
+		return (dis_insn *)&insn;
+	case IL_OPCODE_ARGS_NONE:
+		break;
+	case IL_OPCODE_ARGS_PREFIX:
+		insn.opcode = NULL;
+		code++;
+		if (*code < MAX_IL_OPCODE_PREFIX) {
+			insn.prefix = &il_prefix_opcode_table[*code];
 			code++;
-			if (*code < MAX_IL_OPCODE_PREFIX) {
-				insn.prefix = &il_prefix_opcode_table[*code];
-				insn.size--;
-				code++;
-				goto restart;
-			} else {
-				return (dis_insn *)&insn;
-			}
-		case IL_OPCODE_ARGS_SHORT_JUMP: {
-			int c = ((char)code[1]);
-			insn.data = addr.addr32.offset+2+c;
-			break;
+			goto restart;
+		} else {
+			insn.size = 1;
+			insn.valid = false;
+			return (dis_insn *)&insn;
 		}
-		case IL_OPCODE_ARGS_LONG_JUMP: {
-			int c = create_host_int(code+1, 4, little_endian);
-			insn.data = addr.addr32.offset+5+c;
-			break;
+	case IL_OPCODE_ARGS_SHORT_JUMP: {
+		int c = ((char)code[1]);
+		insn.data.ui = addr.addr32.offset+2+c;
+		break;
+	}
+	case IL_OPCODE_ARGS_LONG_JUMP: {
+		int c = create_host_int(code+1, 4, little_endian);
+		insn.data.ui = addr.addr32.offset+5+c;
+		break;
+	}
+	case IL_OPCODE_ARGS_UINT16:
+	case IL_OPCODE_ARGS_LONG_ARG:
+	case IL_OPCODE_ARGS_LONG_VAR:
+	case IL_OPCODE_ARGS_ANN_ARG: 
+	case IL_OPCODE_ARGS_ANN_DEAD: 
+	case IL_OPCODE_ARGS_ANN_LIVE: {
+		word w = create_host_int(code+1, 2, little_endian);
+		insn.data.ui = w;
+		break;
+	}
+	case IL_OPCODE_ARGS_INT16: {
+		word w = create_host_int(code+1, 2, little_endian);
+		insn.data.i = (int)((short)w);
+		break;
+	}
+	case IL_OPCODE_ARGS_UINT8:
+		insn.data.ui = (byte)code[1];
+		break;
+	case IL_OPCODE_ARGS_INT8:
+	case IL_OPCODE_ARGS_SHORT_VAR:
+	case IL_OPCODE_ARGS_SHORT_ARG:
+	case IL_OPCODE_ARGS_ANN_REF_S: {
+		insn.data.i = (int)((char)code[1]);
+		break;
+	}
+	case IL_OPCODE_ARGS_INT64:
+	        QWORD_SET_LO(insn.data.q, create_host_int(code+1, 4, little_endian));
+	        QWORD_SET_HI(insn.data.q, create_host_int(code+5, 4, little_endian));
+		break;
+	case IL_OPCODE_ARGS_TOKEN:
+	case IL_OPCODE_ARGS_NEW:
+	case IL_OPCODE_ARGS_CALL:
+	case IL_OPCODE_ARGS_CALLVIRT:
+	case IL_OPCODE_ARGS_INT32:
+	case IL_OPCODE_ARGS_STRING:
+		insn.data.ui = create_host_int(code+1, 4, little_endian);
+		break;
+	case IL_OPCODE_ARGS_FLOAT32:
+		// FIXME: hack
+		insn.data.ui = create_host_int(code+1, 4, little_endian);
+		break;
+	case IL_OPCODE_ARGS_FLOAT64:
+		// FIXME: hack
+	        QWORD_SET_LO(insn.data.q, create_host_int(code+1, 4, little_endian));
+	        QWORD_SET_HI(insn.data.q, create_host_int(code+5, 4, little_endian));
+		break;
+		
+	// variable length opcodes
+
+	case IL_OPCODE_ARGS_SWITCH: {
+		dword num = create_host_int(code+1, 4, little_endian);
+		if (num > 10000) {
+			insn.valid = false;
+			insn.size = 1;
+			return (dis_insn *)&insn;
 		}
-		case IL_OPCODE_ARGS_UINT16: {
-			word w = create_host_int(code+1, 2, little_endian);
-			insn.data = w;
-			break;
-		}
-		case IL_OPCODE_ARGS_INT16: {
-			word w = create_host_int(code+1, 2, little_endian);
-			insn.data = (int)((short)w);
-			break;
-		}
-		case IL_OPCODE_ARGS_UINT8: {
-			insn.data = (byte)code[1];
-			break;
-		}
-		case IL_OPCODE_ARGS_INT8:
-		case IL_OPCODE_ARGS_SHORT_VAR:
-		case IL_OPCODE_ARGS_SHORT_ARG: {
-			insn.data = (int)((char)code[1]);
-			break;
-		}
-		case IL_OPCODE_ARGS_TOKEN:
-		case IL_OPCODE_ARGS_NEW:
-		case IL_OPCODE_ARGS_CALL:
-		case IL_OPCODE_ARGS_CALLVIRT:
-		case IL_OPCODE_ARGS_INT32:
-		case IL_OPCODE_ARGS_STRING:
-			insn.data = create_host_int(code+1, 4, little_endian);
-			break;
+		insn.size += num * 4;
+		break;
+	}
+	case IL_OPCODE_ARGS_ANN_DATA_S: {
+		dword num = (byte)code[1];
+		insn.size += num;
+		break;
+	}
+	case IL_OPCODE_ARGS_ANN_DATA: {
+		dword num = create_host_int(code+1, 4, little_endian);
+		insn.size += num;
+		break;
+	}
+	case IL_OPCODE_ARGS_ANN_PHI: {
+		dword num = create_host_int(code+1, 2, little_endian);
+		insn.size += num * 2;
+		break;
+	}
 	}
 	insn.valid = true;
 	return (dis_insn *)&insn;
@@ -161,31 +218,40 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 	if (!dis_insn->valid) {
 //		is_invalid:
 //          assert(dis_insn->size==1);
-		sprintf(insnstr, "db              %s0x%02x", cs_number, dis_insn->data);
+		sprintf(insnstr, "db              %s0x%02x", cs_number, dis_insn->data.ui);
 	} else {
 		switch (dis_insn->op) {
 			case IL_OPCODE_ARGS_NONE:
 				sprintf(insnstr, "%-15s", dis_insn->opcode->name);
 				break;
-			case IL_OPCODE_ARGS_UINT8: {
-				sprintf(insnstr, "%-15s %s0x%02x", dis_insn->opcode->name, cs_number, dis_insn->data);
+			case IL_OPCODE_ARGS_UINT8:
+			case IL_OPCODE_ARGS_UINT16:
+			case IL_OPCODE_ARGS_LONG_ARG:
+			case IL_OPCODE_ARGS_LONG_VAR:
+			case IL_OPCODE_ARGS_ANN_ARG: 
+			case IL_OPCODE_ARGS_ANN_DEAD: 
+			case IL_OPCODE_ARGS_ANN_LIVE:  {
+				sprintf(insnstr, "%-15s %s%u", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 				break;
 			}
 			case IL_OPCODE_ARGS_INT8:
+			case IL_OPCODE_ARGS_INT16:
+			case IL_OPCODE_ARGS_INT32:
 			case IL_OPCODE_ARGS_SHORT_VAR:
-			case IL_OPCODE_ARGS_SHORT_ARG: {
-				sprintf(insnstr, "%-15s %s0x%x", dis_insn->opcode->name, cs_number, dis_insn->data);
+			case IL_OPCODE_ARGS_SHORT_ARG:
+			case IL_OPCODE_ARGS_ANN_REF_S: {
+				sprintf(insnstr, "%-15s %s%d", dis_insn->opcode->name, cs_number, dis_insn->data.i);
 				break;
 			}
-			case IL_OPCODE_ARGS_INT32:
-				sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data);
+			case IL_OPCODE_ARGS_INT64:
+				ht_snprintf(insnstr, 100, "%-15s %s%qd", dis_insn->opcode->name, cs_number, &dis_insn->data.q);
 				break;                    
 			case IL_OPCODE_ARGS_CALL:
 			case IL_OPCODE_ARGS_CALLI:
 			case IL_OPCODE_ARGS_CALLVIRT:
 			case IL_OPCODE_ARGS_NEW:
 			case IL_OPCODE_ARGS_TOKEN: {
-				dword token = dis_insn->data;                    
+				dword token = dis_insn->data.ui;
 				char *tokenstr = NULL;
 				if (token_func) {
 					tokenstr = token_func(token, context);
@@ -198,8 +264,8 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 				break;
 			}
 			case IL_OPCODE_ARGS_STRING: {
-				if ((dis_insn->data & IL_META_TOKEN_MASK) == IL_META_TOKEN_STRING) {
-					dword strofs = dis_insn->data & (~IL_META_TOKEN_MASK);
+				if ((dis_insn->data.ui & IL_META_TOKEN_MASK) == IL_META_TOKEN_STRING) {
+					dword strofs = dis_insn->data.ui & (~IL_META_TOKEN_MASK);
 					char *str = NULL;
 					if (string_func) {
 						str = string_func(strofs, context);
@@ -209,13 +275,13 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 						break;
 					}
 				}
-				sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data);
+				sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 				break;
 			}
 			case IL_OPCODE_ARGS_LONG_JUMP:
 			case IL_OPCODE_ARGS_SHORT_JUMP: {
 				CPU_ADDR caddr;
-				caddr.addr32.offset = (dword)dis_insn->data;
+				caddr.addr32.offset = dis_insn->data.ui;
 				int slen;
 				char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : NULL;
 				if (s) {
@@ -223,8 +289,16 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 					memmove(p, s, slen);
 					p[slen] = 0;
 				} else {
-					sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data);
+					sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 				}
+				break;
+			}
+			case IL_OPCODE_ARGS_FLOAT32: {
+				sprintf(insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.f);
+				break;
+			}
+			case IL_OPCODE_ARGS_FLOAT64: {
+				sprintf(insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.df);
 				break;
 			}
 			default:
@@ -238,8 +312,7 @@ char *ILDisassembler::strf(dis_insn *disasm_insn, int style, char *format)
 
 OBJECT_ID ILDisassembler::object_id() const
 {
-	// FIXME
-	return 0;
+	return ATOM_DISASM_IL;
 }
 
 bool ILDisassembler::validInsn(dis_insn *disasm_insn)

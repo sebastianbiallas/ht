@@ -273,6 +273,7 @@ BUILDER(ATOM_DISASM_ALPHA, Alphadis)
 BUILDER(ATOM_DISASM_JAVA, javadis)
 BUILDER(ATOM_DISASM_IA64, IA64Disassembler)
 BUILDER(ATOM_DISASM_PPC, PPCDisassembler)
+BUILDER(ATOM_DISASM_IL, ILDisassembler)
 
 bool init_asm()
 {
@@ -282,11 +283,13 @@ bool init_asm()
 	REGISTER(ATOM_DISASM_JAVA, javadis)
 	REGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	REGISTER(ATOM_DISASM_PPC, PPCDisassembler)
+	REGISTER(ATOM_DISASM_IL, ILDisassembler)
 	return true;
 }
 
 void done_asm()
 {
+	UNREGISTER(ATOM_DISASM_IL, ILDisassembler)
 	UNREGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	UNREGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	UNREGISTER(ATOM_DISASM_JAVA, javadis)

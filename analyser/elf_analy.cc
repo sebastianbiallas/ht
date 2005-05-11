@@ -433,7 +433,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
  */
 int ElfAnalyser::load(ht_object_stream *f)
 {
-	GET_OBJECT(f, validarea);
+    	GET_OBJECT(f, validarea);
 	return Analyser::load(f);
 }
 

@@ -657,7 +657,6 @@ int Analyser::load(ht_object_stream *st)
 
 	if (st->get_error()) return st->get_error();
 
-//	st->getObject((Object*)analy_disasm, "analy_disasm");
 	GET_OBJECT(st, analy_disasm);
 	GET_OBJECT(st, disasm);     
 	if (analy_disasm) {
@@ -2244,14 +2243,6 @@ void AnalyDisassembler::init(Analyser *A)
 /*
  *
  */
-int  AnalyDisassembler::load(ht_object_stream *st)
-{
-	return st->get_error();
-}
-
-/*
- *
- */
 void AnalyDisassembler::done()
 {
 }
@@ -2264,12 +2255,5 @@ void AnalyDisassembler::initDisasm()
 	if (analy) {
 		analy->setDisasm(disasm);
 	}
-}
-
-/*
- *
- */
-void AnalyDisassembler::store(ht_object_stream *f)
-{
 }
 

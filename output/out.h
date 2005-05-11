@@ -38,17 +38,17 @@ public:
 
 class OutAddr: public ht_data {
 public:
-	Address	*addr;
+	Address		*addr;
 	UINT		time;
-	ht_clist  *lines;
+	ht_clist	*lines;
 	int		size;                     // size in memory
 	int		bytes;                    // bytes of address in file
 	
 			OutAddr(Address *Addr, UINT Time);
 			~OutAddr();
-	void      appendLine(OutLine *l);
+	void     	appendLine(OutLine *l);
 	void		clear();
-	OutLine  *getLine(int i);
+	OutLine		*getLine(int i);
 	void		updateTime(UINT Time);
 };
 
@@ -79,11 +79,12 @@ public:
 class AnalyserOutput: public Object {
 public:
 	Analyser	*analy;
-	Address   *addr;
+	Address		*addr;
 	int		line;
-	Location  *cur_addr;
-	OutAddr	*cur_out_addr;
+	Location	*cur_addr;
+	OutAddr		*cur_out_addr;
 	int		bytes_line;               // bytes of current line in file
+	int		want_bytes_line;
 	int		bytes_addr;               // bytes of current addr in file
 		
 	ht_dtree	*out_addrs;
@@ -98,7 +99,7 @@ public:
 		
 	int		dis_style;
 		
-			void			init(Analyser *analy);
+		void			init(Analyser *analy);
 	virtual	void			done();
 	virtual	void			beginAddr();
 	virtual	void			beginLine();
@@ -106,27 +107,27 @@ public:
 	virtual	int			elementLength(const char *s);
 	virtual	void			endAddr();
 	virtual	void			endLine();
-	virtual	char *		externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+	virtual	char *			externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
 	virtual	void			footer();
-			void			generateAddr(Address *Addr, OutAddr *oa);
-			int			generateFile(Address *from, Address *to);
-	virtual	ht_stream *	getGenerateStream();
-			void			generatePage(Address *from, int lines);
-			OutAddr *		getAddr(Address *Addr);
-			OutLine *		getLine(Address *Addr, int line);
-			bool			getLineString(char *buf, int maxlen, Address *Addr, int line);
-			bool			getLineByteLength(int &len, Address *Addr, int line);
-			int			getLineCount(Address *Addr);
-			int			getAddrByteLength(Address *Addr);
+			void		generateAddr(Address *Addr, OutAddr *oa);
+			int		generateFile(Address *from, Address *to);
+	virtual	ht_stream *		getGenerateStream();
+			void		generatePage(Address *from, int lines);
+			OutAddr *	getAddr(Address *Addr);
+			OutLine *	getLine(Address *Addr, int line);
+			bool		getLineString(char *buf, int maxlen, Address *Addr, int line);
+			bool		getLineByteLength(int &len, Address *Addr, int line);
+			int		getLineCount(Address *Addr);
+			int		getAddrByteLength(Address *Addr);
 	virtual	void			header();
-			void			invalidateCache();
-	virtual	char *		link(char *s, Address *Addr);
-			int			nextLine(Address *&Addr, int &line, int n, Address *max);
-			int			prevLine(Address *&Addr, int &line, int n, Address *min);
+			void		invalidateCache();
+	virtual	char *			link(char *s, Address *Addr);
+			int		nextLine(Address *&Addr, int &line, int n, Address *max);
+			int		prevLine(Address *&Addr, int &line, int n, Address *min);
 	virtual	void			putElement(int element_type, const char *element);
-			void			reset();
-			void			write(const char *s);
-			void			write(const char *s, int n);
+			void		reset();
+			void		write(const char *s);
+			void		write(const char *s, int n);
 };
 
 #endif

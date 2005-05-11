@@ -123,17 +123,19 @@ void	AnalyserHTOutput::endLine()
 	if ((analy->mode & ANALY_EDIT_BYTES) && bytes_line) {
 		if (analy->validAddress(addr, scinitialized)) {
 
-			// FIXME: bufferbla ? and ugly
+			// FIXME: bufferbla? and ugly
 			FILEOFS a=analy->addressToFileofs(addr);
 			assert(a != INVALID_FILE_OFS);
 
 			char workbuf2[1024];
 			char *work_buffer2 = workbuf2;
 			
-			for (int i=0; i < bytes_line; i++) {
+			a += bytes_line - want_bytes_line;
+			
+			for (int i=0; i < want_bytes_line; i++) {
 				work_buffer2 = tag_make_edit_byte(work_buffer2, a+i);
 			}
-			for (int i=0; i <= analy->max_opcode_length*2-bytes_line*2; i++) {
+			for (int i=0; i <= analy->max_opcode_length*2-want_bytes_line*2; i++) {
 				*(work_buffer2++)=' ';
 			}
 

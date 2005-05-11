@@ -26,11 +26,16 @@
 #include "ilopc.h"
 
 struct ILDisInsn {
-	bool				valid;
-	int				size;
-	byte                op;
-	dword			data;
-	dword			data2;
+	bool			valid;
+	int			size;
+	byte			op;
+	union {
+				dword			ui;
+				qword			q;
+				float			f;
+				double			df;
+				int			i;
+	} data;
 	ILOpcodeTabEntry	*prefix;
 	ILOpcodeTabEntry	*opcode;
 };
@@ -47,14 +52,16 @@ protected:
 	char* (*string_func)(dword string_ofs, void *context);
 	char* (*token_func)(dword token, void *context);
 public:
-		ILDisassembler(char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
-	virtual	~ILDisassembler();
+				ILDisassembler();
+				ILDisassembler(char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
+	virtual			~ILDisassembler();
 
 	virtual	dis_insn	*decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
 	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
 	virtual	byte		getSize(dis_insn *disasm_insn);
 	virtual	char		*getName();
+	virtual void		initialize(char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
 	virtual	char		*str(dis_insn *disasm_insn, int style);
 	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
 	virtual	OBJECT_ID object_id() const;

@@ -167,18 +167,16 @@ typedef enum {
  */
 class AnalyDisassembler: public Object {
 public:
-	Analyser			*analy;
-	Disassembler        *disasm;
-						AnalyDisassembler();
-			void			init(Analyser *A);
-			int 			load(ht_object_stream *f);
+	Analyser		*analy;
+	Disassembler		*disasm;
+					AnalyDisassembler();
+			void		init(Analyser *A);
 	virtual	void			done();
 
 	virtual	Address *		branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine) = 0;
 	virtual	void			examineOpcode(OPCODE *opcode) = 0;
 	virtual	void			initDisasm();
-	virtual	branch_enum_t 	isBranch(OPCODE *opcode) = 0;
-	virtual	void			store(ht_object_stream *f);
+	virtual	branch_enum_t		isBranch(OPCODE *opcode) = 0;
 };
 
 /***************************************************************************/
