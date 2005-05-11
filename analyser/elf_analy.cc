@@ -140,14 +140,14 @@ void ElfAnalyser::beginAnalysis()
 
 	/* symbols */
 	if (c32) {
-		for (uint i=1; i<elf_shared->sheaders.count; i++) {
+		for (uint i=1; i < elf_shared->sheaders.count; i++) {
 			if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM)) {
 				initInsertSymbols(i);
 			}
 		}
 		initInsertFakeSymbols();
 	} else {
-		for (uint i=1; i<elf_shared->sheaders.count; i++) {
+		for (uint i=1; i < elf_shared->sheaders.count; i++) {
 			if ((elf_shared->sheaders.sheaders64[i].sh_type==ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders64[i].sh_type==ELF_SHT_DYNSYM)) {
 				initInsertSymbols(i);
 			}
@@ -266,7 +266,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 					char *label = name;
 					if (!getSymbolByName(label)) {
 						elf32_addr sym_addr = sym.st_value;
-						if (elf_shared->shrelocs && (sym.st_shndx>0) && (sym.st_shndx<elf_shared->sheaders.count)
+						if (elf_shared->shrelocs && sym.st_shndx > 0 && sym.st_shndx < elf_shared->sheaders.count
 						&& elf_shared->shrelocs[sym.st_shndx].relocAddr) {
 							sym_addr += elf_shared->shrelocs[sym.st_shndx].relocAddr;
 						}
@@ -324,9 +324,9 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 		if (entropy) free(entropy);
 	} else {
 		// FIXME: 64 bit
-		FILEOFS h=elf_shared->sheaders.sheaders64[shidx].sh_offset.lo;
-		FILEOFS sto=elf_shared->sheaders.sheaders64[elf_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
-		uint symnum=elf_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (ELF_SYMBOL64);
+		FILEOFS h = elf_shared->sheaders.sheaders64[shidx].sh_offset.lo;
+		FILEOFS sto = elf_shared->sheaders.sheaders64[elf_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
+		uint symnum = elf_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (ELF_SYMBOL64);
 
 		int *entropy = random_permutation(symnum);
 		for (uint i=0; i<symnum; i++) {

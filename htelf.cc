@@ -104,7 +104,7 @@ static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
 {
-	return (idx > 0) && (idx<(int)elf_shared->sheaders.count);
+	return idx > 0 && (uint)idx < elf_shared->sheaders.count;
 }
 
 /*
@@ -117,7 +117,7 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 	LOG("%s: ELF: found header at %08x", file->get_filename(), header_ofs);
 
-	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
+	ht_elf_shared_data *elf_shared = (ht_elf_shared_data *)malloc(sizeof(ht_elf_shared_data));
 
 	shared_data = elf_shared;
 	elf_shared->header_ofs = header_ofs;
@@ -144,12 +144,11 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32: {
-			if (file->read(&elf_shared->header32, sizeof elf_shared->header32)
-			!= sizeof elf_shared->header32)
+			if (file->read(&elf_shared->header32, sizeof elf_shared->header32) != sizeof elf_shared->header32)
 				throw new ht_msg_exception("read error");
 			create_host_struct(&elf_shared->header32, ELF_HEADER32_struct, elf_shared->byte_order);
 			/* read section headers */
-			elf_shared->sheaders.count=elf_shared->header32.e_shnum;
+			elf_shared->sheaders.count = elf_shared->header32.e_shnum;
 			if (!elf_shared->sheaders.count) throw new ht_msg_exception("Zero count for section headers");
 			elf_shared->sheaders.sheaders32=(ELF_SECTION_HEADER32*)malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			if (file->seek(header_ofs+elf_shared->header32.e_shoff)) throw new ht_msg_exception("seek error");
