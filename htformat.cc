@@ -502,8 +502,8 @@ bool ht_format_viewer::continue_search()
 							r=psearch(last_search_request, no, last_search_end_ofs);
 						}
 					}
-				} catch (ht_exception *e) {
-					errorbox("error: %s", e->what());
+				} catch (const ht_exception &e) {
+					errorbox("error: %s", e.what());
 				}
 			}
 		} else {
@@ -515,8 +515,8 @@ bool ht_format_viewer::continue_search()
 							r=vsearch(last_search_request, na, last_search_end_pos);
 						}
 					}
-				} catch (ht_exception *e) {
-					errorbox("error: %s", e->what());
+				} catch (const ht_exception &e) {
+					errorbox("error: %s", e.what());
 				}
 			}
 		}
@@ -2630,16 +2630,16 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 							&& pos_to_offset(end_pos, &end)) {
 								result = psearch(request, start, end);
 							}
-						} catch (ht_exception *e) {
-							errorbox("error: %s", e->what());
+						} catch (const ht_exception &e) {
+							errorbox("error: %s", e.what());
 						}
 						break;
 					}
 					case SC_VISUAL: {
 						try {
 							result = vsearch(request, start_pos, end_pos);
-						} catch (ht_exception *e) {
-							errorbox("error: %s", e->what());
+						} catch (const ht_exception &e) {
+							errorbox("error: %s", e.what());
 						}
 						break;
 					}
@@ -4160,7 +4160,7 @@ bool process_search_expr(ht_data *ctx, ht_text *progress_indicator)
 			char *str;
 			int pos;
 			get_eval_error(&str, &pos);
-			throw new ht_io_exception("eval error at pos %d: %s", pos, str);
+			throw ht_io_exception("eval error at pos %d: %s", pos, str);
 		}
 		c->i++;
 		c->o++;

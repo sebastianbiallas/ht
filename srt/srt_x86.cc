@@ -278,7 +278,7 @@ void srt_x86_mkdest(CPU *cpu, state_mod *m, x86_insn_op *d)
 			m->dest.mem.endian = srte_le;
 			break;
 		default:
-			throw new ht_io_exception("unknown dest type: %d", d->type);
+			throw ht_io_exception("unknown dest type: %d", d->type);
 	}
 }
 
@@ -298,7 +298,7 @@ sym_int *srt_x86_mkvalue(CPU *cpu, x86_insn_op *o)
 			r->set(new sym_int_mem(srt_x86_mkaddr(cpu, o), o->size, srte_le));
 			break;
 		default:
-			throw new ht_io_exception("unknown op type: %d", o->type);
+			throw ht_io_exception("unknown op type: %d", o->type);
 	}
 	return r;
 }
@@ -410,7 +410,7 @@ void srt_x86_lea(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 {
 	state_mod *m = new state_mod();
 	srt_x86_mkdest(cpu, m, &insn->op[0]);
-	if (insn->op[1].type != X86_OPTYPE_MEM) throw new ht_io_exception("internal error in %s at %d", __FILE__, __LINE__);
+	if (insn->op[1].type != X86_OPTYPE_MEM) throw ht_io_exception("internal error in %s at %d", __FILE__, __LINE__);
 	m->isbool = false;
 	m->value.integer = srt_x86_mkaddr(cpu, &insn->op[1]);
 	rm->insert(m);
@@ -535,7 +535,7 @@ void srt_x86_shl(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	sym_int *s = srt_x86_mkvalue(cpu, &insn->op[1]);
 	UINT S;
-	if (!s->evaluate(&S)) throw new ht_io_exception("shl/shr with non-constant operand not supported");
+	if (!s->evaluate(&S)) throw ht_io_exception("shl/shr with non-constant operand not supported");
 	delete s;
 	v->b_operate(b_mul, new sym_int_const(1 << S));
 
@@ -550,7 +550,7 @@ void srt_x86_shr(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	sym_int *s = srt_x86_mkvalue(cpu, &insn->op[1]);
 	UINT S;
-	if (!s->evaluate(&S)) throw new ht_io_exception("shl/shr with non-constant operand not supported");
+	if (!s->evaluate(&S)) throw ht_io_exception("shl/shr with non-constant operand not supported");
 	delete s;
 	v->b_operate(b_div, new sym_int_const(1 << S));
 
@@ -620,7 +620,7 @@ ht_list *srt_x86_single(CPU *cpu, x86dis_insn *i)
 		}
 		e++;
 	}
-	throw new ht_io_exception("unsupported cmd: %s", i->name);
+	throw ht_io_exception("unsupported cmd: %s", i->name);
 }
 
 void create_cpu(CPU *cpu)
@@ -704,8 +704,8 @@ void srt_x86(Analyser *analy, Address *addr)
 
 		try{
 			rm = srt_x86_single(&cpu, xi);
-		} catch (ht_exception *x) {
-			errorbox("error: %s", x->what());
+		} catch (const ht_exception &x) {
+			errorbox("error: %s", x.what());
 			break;
 		}
 

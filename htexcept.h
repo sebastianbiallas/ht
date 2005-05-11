@@ -32,7 +32,7 @@ public:
 			ht_exception();
 	virtual		~ht_exception();
 /* new */
-	virtual const char *what();
+	virtual const char *what() const;
 };
 
 /*
@@ -47,7 +47,7 @@ protected:
 public:
 			    ht_msg_exception(char *errstr,...);
 /* new */
-	virtual const char *what();
+	virtual const char *what() const;
 };
 
 /*

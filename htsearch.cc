@@ -71,14 +71,14 @@ bool test_str_to_ofs(FILEOFS *ofs, byte *str, UINT strlen, ht_format_viewer *for
 {
 #define TEST_STR_TO_OFS_MAXSTRLEN       128
 	if (strlen>TEST_STR_TO_OFS_MAXSTRLEN) {
-		throw new ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_OFS_MAXSTRLEN);
+		throw ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_OFS_MAXSTRLEN);
 		return false;
 	}
 	if (strlen>0) {
 		char s[TEST_STR_TO_OFS_MAXSTRLEN+1];
 		bin2str(s, str, strlen);
 		if (!format->string_to_offset(s, ofs)) {
-			throw new ht_io_exception("%s: invalid expression: '%s'", desc, s);
+			throw ht_io_exception("%s: invalid expression: '%s'", desc, s);
 			return false;
 		}
 	}
@@ -89,14 +89,14 @@ bool test_str_to_pos(viewer_pos *pos, byte *str, UINT strlen, ht_format_viewer *
 {
 #define TEST_STR_TO_POS_MAXSTRLEN      128
 	if (strlen>TEST_STR_TO_POS_MAXSTRLEN) {
-		throw new ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_POS_MAXSTRLEN);
+		throw ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_POS_MAXSTRLEN);
 		return false;
 	}
 	if (strlen>0) {
 		char s[TEST_STR_TO_POS_MAXSTRLEN+1];
 		bin2str(s, str, strlen);
 		if (!format->string_to_pos(s, pos)) {
-			throw new ht_io_exception("%s: invalid expression: '%s'", desc, s);
+			throw ht_io_exception("%s: invalid expression: '%s'", desc, s);
 			return false;
 		}
 	}
@@ -123,7 +123,7 @@ ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, h
 	ht_fxbin_search_request *request;
 	
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "hex/ascii");
+		throw ht_io_exception("%s: string is empty", "hex/ascii");
 	}
 	if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
 	&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {
@@ -143,7 +143,7 @@ void create_desc_hexascii(char *buf, int buflen, ht_view *f)
 	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "hex/ascii");
+		throw ht_io_exception("%s: string is empty", "hex/ascii");
 	}
 
 	char *b = buf;
@@ -186,7 +186,7 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 	ht_fxbin_search_request *request = NULL;
 		
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "eval str");
+		throw ht_io_exception("%s: string is empty", "eval str");
 	} else if (d.str.textlen<=EVALSTR_MAXSTRLEN) {
 		char strbuf[EVALSTR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -206,10 +206,10 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 			char *str;
 			int pos;
 			get_eval_error(&str, &pos);
-			throw new ht_io_exception("eval error at pos %d: %s", pos, str);
+			throw ht_io_exception("eval error at pos %d: %s", pos, str);
 		}
 	} else {
-		throw new ht_io_exception("%s: expression too long (len %d, max %d)", "eval str", d.str.textlen, EVALSTR_MAXSTRLEN);
+		throw ht_io_exception("%s: expression too long (len %d, max %d)", "eval str", d.str.textlen, EVALSTR_MAXSTRLEN);
 	}
 	return request;
 }
@@ -221,7 +221,7 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "eval str");
+		throw ht_io_exception("%s: string is empty", "eval str");
 	}
 
 	char *b = buf;
@@ -286,7 +286,7 @@ ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_
 	ht_regex_search_request *request=NULL;
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "regex");
+		throw ht_io_exception("%s: string is empty", "regex");
 	} else if (d.str.textlen <= VREGEX_MAXSTRLEN) {
 		char strbuf[VREGEX_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -296,7 +296,7 @@ ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_
 			request = new ht_regex_search_request(search_class, d.options.state & 1 ? SF_REGEX_CASEINSENSITIVE : 0, strbuf);
 		}
 	} else {
-		throw new ht_io_exception("%s: expression too long (size %d, max %d)", "regex", strlen, VREGEX_MAXSTRLEN);
+		throw ht_io_exception("%s: expression too long (size %d, max %d)", "regex", strlen, VREGEX_MAXSTRLEN);
 	}
 	return request;
 }
@@ -308,7 +308,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "regex");
+		throw ht_io_exception("%s: string is empty", "regex");
 	}
 
 	char *b = buf;
@@ -339,7 +339,7 @@ ht_regex_search_request::ht_regex_search_request(UINT search_class, UINT flags, 
 {
 	rx_str = ht_strdup(regex);
 	int r = regcomp(&rx, rx_str, REG_EXTENDED | ((flags & SF_REGEX_CASEINSENSITIVE) ? REG_ICASE : 0));
-	if (r) throw new ht_regex_search_exception(r, &rx);
+	if (r) throw ht_regex_search_exception(r, &rx);
 }
 
 ht_regex_search_request::~ht_regex_search_request()
@@ -359,15 +359,12 @@ Object *ht_regex_search_request::duplicate()
  
 ht_regex_search_exception::ht_regex_search_exception(int e, regex_t *r)
 {
-	errorcode=e;
-	regex=r;
-
 	char s[128];
-	regerror(errorcode, regex, s, sizeof s);
+	regerror(e, r, s, sizeof s);
 	ht_snprintf(rxerr, sizeof rxerr, "error compiling regex: %s", s);
 }
 	
-const char* ht_regex_search_exception::what()
+const char* ht_regex_search_exception::what() const
 {
 	return rxerr;
 }
@@ -393,7 +390,7 @@ ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_vi
 	ht_expr_search_request *request = NULL;
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "expr");
+		throw ht_io_exception("%s: string is empty", "expr");
 	} else if (d.str.textlen <= EXPR_MAXSTRLEN) {
 		char strbuf[EXPR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -403,7 +400,7 @@ ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_vi
 			request = new ht_expr_search_request(search_class, 0, strbuf);
 		}
 	} else {
-		throw new ht_io_exception("%s: expression too long (size %d, max %d)", "expr", strlen, EXPR_MAXSTRLEN);
+		throw ht_io_exception("%s: expression too long (size %d, max %d)", "expr", strlen, EXPR_MAXSTRLEN);
 	}
 	return request;
 }
@@ -415,7 +412,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 	form->databuf_get(&d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "expr");
+		throw ht_io_exception("%s: string is empty", "expr");
 	}
 
 	char *b = buf;
@@ -1001,7 +998,7 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 				case SC_PHYSICAL:
 					if (!format->pos_to_offset(*start, &sstart.offset)
 						|| !format->pos_to_offset(*end, &send.offset)) {
-						throw new ht_io_exception("Internal error: can't convert viewer_pos to offset");
+						throw ht_io_exception("Internal error: can't convert viewer_pos to offset");
 					}
 					break;
 				case SC_VISUAL:
@@ -1014,7 +1011,7 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 				case SC_PHYSICAL:
 					if (!format->offset_to_pos(sstart.offset, start)
 					|| !format->offset_to_pos(send.offset, end)) {
-						throw new ht_io_exception("Internal error: can't convert offset to viewer_pos");
+						throw ht_io_exception("Internal error: can't convert offset to viewer_pos");
 					}
 					break;
 				case SC_VISUAL:
@@ -1022,8 +1019,8 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 					*end = send.pos;
 					break;
 			}
-		} catch (ht_exception *e) {
-			errorbox("error: %s", e->what());
+		} catch (const ht_exception &e) {
+			errorbox("error: %s", e.what());
 		}
 	}
 	dialog->done();
@@ -1116,8 +1113,8 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 			format->get_current_offset(&start.offset);
 
 			request = s->create_request(&start, &end, sform, format, s->search_class);
-		} catch (ht_exception *e) {
-			errorbox("error: %s", e->what());
+		} catch (const ht_exception &e) {
+			errorbox("error: %s", e.what());
 		}
 		
 		if (request) {
@@ -1172,8 +1169,8 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 					}
 					delete result;
 				}
-			} catch (ht_exception *e) {
-				errorbox("error: %s", e->what());
+			} catch (const ht_exception &e) {
+				errorbox("error: %s", e.what());
 			}
 
 			app->sendmsg(cmd_vstate_restore);
@@ -1230,16 +1227,16 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		}
 		c->file->seek(c->o);
 		if (c->file->read(c->buf, c->z) != c->z)
-			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o+c->repllen-c->len);
 		if (c->file->write(c->buf, c->z) != c->z)
-			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 			
 		if (c->o > c->ofs + c->len) return true;
 		
 		c->file->seek(c->ofs);
 		if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		free(c->buf);
 	} else if (c->repllen < c->len) {
 		/* shrink */
@@ -1247,7 +1244,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
 			if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		}
 		
 		if (c->z > size - c->o) {
@@ -1255,10 +1252,10 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		}
 		c->file->seek(c->o);
 		if (c->file->read(c->buf, c->z) != c->z)
-			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->file->seek(c->o - (c->len - c->repllen));
 		if (c->file->write(c->buf, c->z) != c->z)
-			throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 		c->o += REPLACE_COPY_BUF_SIZE;
 		
 		if (c->z == REPLACE_COPY_BUF_SIZE) return true;
@@ -1268,7 +1265,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 	} else {
 		c->file->seek(c->ofs);
 		if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw new ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
 	}
 	if (c->return_repllen) *c->return_repllen = c->repllen;
 	return false;

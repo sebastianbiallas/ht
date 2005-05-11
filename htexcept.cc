@@ -36,7 +36,7 @@ ht_exception::~ht_exception()
 {
 }
 
-const char *ht_exception::what()
+const char *ht_exception::what() const
 {
 	return NULL;
 }
@@ -53,7 +53,7 @@ ht_msg_exception::ht_msg_exception(char *e,...)
 	va_end(va);
 }
 
-const char *ht_msg_exception::what()
+const char *ht_msg_exception::what() const
 {
 	return estr;
 }

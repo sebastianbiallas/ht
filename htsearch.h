@@ -76,12 +76,9 @@ public:
 class ht_regex_search_exception: public ht_exception {
 protected:
 	char rxerr[128];
-public:
-	int errorcode;
-	regex_t *regex;
-	
+public:	
 	ht_regex_search_exception(int e, regex_t *r);
-	virtual const char *what();
+	virtual const char *what() const;
 };
 
 class ht_regex_search_request: public ht_search_request {

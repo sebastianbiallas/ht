@@ -352,7 +352,7 @@ ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 		char *s;
 		int p;
 		get_eval_error(&s, &p);
-		throw new ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
+		throw ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
 	}
 
 	ctx->expr_const = blockop_expr_is_const;
@@ -379,7 +379,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 			
 			ctx->file->seek(ctx->o);
 			if (ctx->file->write(ctx->v.value, s)!=s) {
-				throw new ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
+				throw ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
 			}
 			ctx->o += s;
 		} else {
@@ -398,7 +398,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 				char *s;
 				int p;
 				get_eval_error(&s, &p);
-				throw new ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
+				throw ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
 			}
 			scalar_context_str(&r, &sr);
 			scalar_destroy(&r);
@@ -408,7 +408,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 
 			ctx->file->seek(ctx->o);
 			if (ctx->file->write(sr.value, s)!=s) {
-				throw new ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
+				throw ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
 			}
 			string_destroy(&sr);
 			ctx->o += s;
@@ -472,7 +472,7 @@ ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 		char *s;
 		int p;
 		get_eval_error(&s, &p);
-		throw new ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
+		throw ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
 	}
 
 	ctx->expr_const = blockop_expr_is_const;
@@ -501,7 +501,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			UINT s = ctx->size;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
 			if (ctx->file->write(ibuf, s)!=s) {
-				throw new ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
+				throw ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
 			}
 			ctx->o += s;
 		} else {
@@ -520,7 +520,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 				char *s;
 				int p;
 				get_eval_error(&s, &p);
-				throw new ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
+				throw ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
 			}
 			scalar_context_int(&r, &ir);
 			scalar_destroy(&r);
@@ -532,7 +532,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			byte ibuf[4];
 			create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
 			if ((ctx->file->seek(ctx->o) != 0) || (ctx->file->write(ibuf, s)!=s)) {
-				throw new ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
+				throw ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
 			}
 			ctx->o += s;
 			ctx->i++;
@@ -621,8 +621,8 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 								if (ctx) {
 									/*bool b = */execute_process(blockop_int_process, ctx);
 								}
-							} catch (ht_exception *e) {
-								errorbox("error: %s", e->what());
+							} catch (const ht_exception &e) {
+								errorbox("error: %s", e.what());
 							}
 							if (ctx) delete ctx;
 							break;
@@ -645,8 +645,8 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 								if (ctx) {
 									/*bool b = */execute_process(blockop_str_process, ctx);
 								}
-							} catch (ht_exception *e) {
-								errorbox("error: %s", e->what());
+							} catch (const ht_exception &e) {
+								errorbox("error: %s", e.what());
 							}
 							if (ctx) delete ctx;
 							break;

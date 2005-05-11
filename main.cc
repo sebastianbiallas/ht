@@ -354,9 +354,17 @@ int main(int argc, char *argv[])
 
 	try {
 		((ht_app*)app)->run(false);
+	} catch (const ht_io_exception &x) {
+		done();
+		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x.what());
+		return 1;
 	} catch (ht_io_exception *x) {
 		done();
 		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x->what());
+		return 1;
+	} catch (const std::exception &x) {
+		done();
+		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x.what());
 		return 1;
 	} catch (std::exception *x) {
 		done();

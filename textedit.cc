@@ -52,7 +52,7 @@ static ht_search_request* create_request_hexascii(text_search_pos *start, text_s
 	ht_fxbin_search_request *request;
 	
 	if (!d.str.textlen) {
-		throw new ht_io_exception("%s: string is empty", "hex/ascii");
+		throw ht_io_exception("%s: string is empty", "hex/ascii");
 	}
 /*	if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
 	&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {*/
@@ -144,8 +144,8 @@ ht_search_request *text_search_dialog(ht_text_viewer *text_viewer, UINT searchmo
 				}
 			}
 			result = s->create_request(&start, &end, form, s->search_class);
-		} catch (ht_exception *e) {
-			errorbox("error: %s", e->what());
+		} catch (const ht_exception &e) {
+			errorbox("error: %s", e.what());
 		}
 	}
 	dialog->done();
@@ -1060,8 +1060,8 @@ bool ht_text_viewer::continue_search()
 				end.offset = last_search_end_ofs;
 				r = search(last_search_request, &start, &end);
 			}
-		} catch (ht_exception *e) {
-			errorbox("error: %s", e->what());
+		} catch (const ht_exception &e) {
+			errorbox("error: %s", e.what());
 		}
 		
 		if (r) return show_search_result(r);

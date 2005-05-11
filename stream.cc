@@ -615,7 +615,7 @@ bool	ht_file::set_access_mode(UINT am)
 	UINT orig_access_mode = access_mode;
 	bool r = set_access_mode_internal(am);
 	if (!r && !set_access_mode_internal(orig_access_mode))
-		throw new ht_io_exception("fatal error: couldn't restore file access mode. %s possibly damaged...", get_filename());
+		throw ht_io_exception("fatal error: couldn't restore file access mode. %s possibly damaged...", get_filename());
 	return r;
 }
 
@@ -873,7 +873,7 @@ void ht_mem_file::init(FILEOFS o, UINT size, UINT am)
 	pos = 0;
 	dsize = 0;
 	access_mode = 0;
-	if (!set_access_mode(am)) throw new ht_io_exception("unable to open memfile");
+	if (!set_access_mode(am)) throw ht_io_exception("unable to open memfile");
 }
 
 void ht_mem_file::done()
