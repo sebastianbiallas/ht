@@ -49,7 +49,6 @@
 - eval: "-2+1.0" vs. "2+1.0" (difficult)
 - option to open a file without attempting to parse
   'special information' - i.e. to edit it as pure hex.
-- cbw (opsize 16) and cwde (opsize 32) are distinct, same with cwd and cdq
 - mov eax, [eax+ebp] vs. mov eax, [ebp+eax]
 - blockop should support multiple endianesses (currently only big-endian)
 - eval: int(-1.0) results in 0xffffffff instead of 0xffffffffffffffff
@@ -62,7 +61,6 @@
 - open... new option: preserve mtime
 - htsys.h move to .., implement sys_pstat_fd(pstat_t *s, int fd)
 - eval text_viewer
-- NO_NATIVE_UNALIGNED_MOVES in configure (aka SPARC_SHIT)
 - LE binary search does not work
 - Resources in VxDs (like in PE)
 - IPC-djgpp: recognize gui progs and close window !?

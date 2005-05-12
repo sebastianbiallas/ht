@@ -502,7 +502,7 @@ int file_window_load_fcfg_func(ht_object_stream *f, void *context)
 		t=gmtime((time_t*)&oldtime);
 		strftime(s_oldtime, sizeof s_oldtime, "%X %d %b %Y", t);
 
-		if (confirmbox_c("\ecconfig file applies to different version of file '%s'.\n\n\elcurrent: %10d %s\n\elold:     %10d %s\n\n\ecload config file ?", w->file->get_desc(), newsize, s_newtime, oldsize, s_oldtime) != button_yes) {
+		if (confirmbox_c("\ecconfig file applies to different version of file '%s'.\n\n\elcurrent: %10d %s\n\elold:     %10d %s\n\n\ecload config file?", w->file->get_desc(), newsize, s_newtime, oldsize, s_oldtime) != button_yes) {
 			return f->get_error();
 		}
 	}
@@ -569,7 +569,7 @@ int app_stream_error_func(ht_stream *stream)
 				stat(name, &sbuf);
 
 				if (!(sbuf.st_mode & S_IWUSR)) {
-					if (msgbox(btmask_yes | btmask_no, "title", 1, align_center, "%s: stream error (Permission denied), seems to be a (DOS) read-only file. Change attribute ?", name)==button_yes) {
+					if (msgbox(btmask_yes | btmask_no, "title", 1, align_center, "%s: stream error (Permission denied), seems to be a (DOS) read-only file. Change attribute?", name)==button_yes) {
 						if (chmod(name, S_IRUSR | S_IWUSR)) {
 							errorbox_modal("%s: error (%04x) changing attribute", name, errno & 0xffff);
 						} else {
@@ -821,7 +821,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		}
 		case cmd_project_remove_item: {
 			int p = pos;
-			if (calcCount() && confirmbox("Really remove item '%s' ?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
+			if (calcCount() && confirmbox("Really remove item '%s'?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
 				cursorUp(1);
 				project->del(p);
 				update();
@@ -2353,7 +2353,7 @@ void ht_app::handlemsg(htmsg *msg)
 					bool work = true;
 
 					if (access(fn, F_OK) == 0) {
-						work = (confirmbox("File '%s' already exists. Overwrite ?", fn) == button_yes);
+						work = (confirmbox("File '%s' already exists. Overwrite?", fn) == button_yes);
 					}
 
 					if (work) {
@@ -2551,7 +2551,7 @@ void ht_app::handlemsg(htmsg *msg)
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
 			UINT s = (UINT)msg->data2.integer;
 			// don't ask. only for truncates
-//			if (confirmbox("really extend %s to offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
+//			if (confirmbox("really extend %s to offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
 				int oam = f->get_access_mode();
 				if (!(oam & FAM_WRITE)) f->set_access_mode(oam | FAM_WRITE);
 				int e = f->extend(s);
@@ -2572,7 +2572,7 @@ void ht_app::handlemsg(htmsg *msg)
 					}
 				} while ((e=windows->enum_first()));
 			}*/
-			if (confirmbox("really truncate %s at offset %08x/%d ?", f->get_filename(), s, s) == button_ok) {
+			if (confirmbox("really truncate %s at offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
 				f->truncate(s);
 			}
 			clearmsg(msg);
@@ -2642,7 +2642,7 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_edit_clear_clipboard: {
-			if (confirmbox("Do you really want to delete the clipboard ?")==button_ok) {
+			if (confirmbox("Do you really want to delete the clipboard?")==button_ok) {
 				clipboard_clear();
 			}
 			clearmsg(msg);
@@ -2971,7 +2971,7 @@ void ht_app::project_opencreate(char *filename)
 		LOG_EX(LOG_ERROR, "%s: error in line %d", fn, einfo);
 		errorbox("%s: error in line %d", fn,  einfo);
 	} else if (lsr == LS_ERROR_NOT_FOUND) {
-		if (confirmbox("%s: no such project.\nDo you want to create this project ?", fn) == button_yes) {
+		if (confirmbox("%s: no such project.\nDo you want to create this project?", fn) == button_yes) {
 			project = new ht_project();
 			((ht_project*)project)->init(fn);
 			LOG("%s: new project created", fn);
@@ -3104,9 +3104,9 @@ void ht_file_window::handlemsg(htmsg *msg)
 			if (modified) {
 				char q[1024];
 				if (file->get_filename()) {
-					ht_snprintf(q, sizeof q, "file %s has been modified, save ?", file->get_filename());
+					ht_snprintf(q, sizeof q, "file %s has been modified, save?", file->get_filename());
 				} else {
-					ht_snprintf(q, sizeof q, "untitled file has been modified, save ?");
+					ht_snprintf(q, sizeof q, "untitled file has been modified, save?");
 				}
 				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, q)) {
 					case button_yes: {

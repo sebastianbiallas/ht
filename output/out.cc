@@ -354,13 +354,13 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 		} else {
 			if (buffer_size >= 1) {
 				char buff[20];
-				sprintf(buff, "db      \\@n%02xh", buf[0]);
+				sprintf(buff, "db          \\@n%02xh", buf[0]);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buff);
 				sprintf(buff, " ; '%c'", (buf[0]<32)?' ':buf[0]);
 				putElement(ELEMENT_TYPE_COMMENT, buff);
 
 			} else {
-				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ??");
+				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 			}
 			bytes_line++;
 		}
@@ -381,21 +381,21 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 								case dst_iword: {
 									word c;
 									analy->bufPtr(addr, (byte *)&c, 2);
-									sprintf(buf, "dw      \\@n%04xh", c);
+									sprintf(buf, "dw          \\@n%04xh", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
 								case dst_idword: {
 									dword c;
 									analy->bufPtr(addr, (byte *)&c, 4);
-									sprintf(buf, "dd      \\@n%08xh", c);
+									sprintf(buf, "dd          \\@n%08xh", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
 								case dst_iqword: {
 									qword c;
 									analy->bufPtr(addr, (byte *)&c, 8);
-									ht_snprintf(buf, sizeof buf, "dq      \\@n%016qxh", &c);
+									ht_snprintf(buf, sizeof buf, "dq          \\@n%016qxh", &c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
@@ -403,12 +403,12 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 								default: {
 									byte c;
 									if (analy->bufPtr(addr, (byte *)&c, 1)==1) {
-										sprintf(buf, "db      \\@n%02xh ", c);
+										sprintf(buf, "db          \\@n%02xh ", c);
 										putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 										sprintf(buf, "; '%c'", (c<32)?32:c);
 										putElement(ELEMENT_TYPE_COMMENT, buf);
 									} else {
-										putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ??");
+										putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 									}
 								}
 							}
@@ -416,14 +416,14 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 							// not initialized
 							switch (cur_addr->type.int_subtype) {
 								case dst_iword:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dw      ????");
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dw          ????");
 									break;
 								case dst_idword:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dd      ????????");
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dd          ????????");
 									break;
 								case dst_ibyte:
 								default:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ??");
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 							}
 						}
 						break;
@@ -436,7 +436,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 									byte bufread[1024];
 									char *b;
 									int r = analy->bufPtr(addr, bufread, MIN(cur_addr->type.length, 1024));
-									strcpy(buf, "db      \\@s\"");
+									strcpy(buf, "db          \\@s\"");
 									b = buf + 12 + escape_special(buf+12, 100, bufread, r, "\"", false);
 									*b = '\"'; b++; *b = 0;
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
@@ -446,7 +446,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 								default: {assert(0);}
 							}
 						} else {
-							putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ?");
+							putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ?");
 						}
 						break;
 					}                         
@@ -460,12 +460,12 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				byte c;
 				if (analy->validAddress(addr, scinitialized) && (analy->bufPtr(addr, &c, 1)==1)) {
 					char buf[20];
-					sprintf(buf, "db      \\@n%02xh ", c);
+					sprintf(buf, "db          \\@n%02xh ", c);
 					putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 					sprintf(buf, "; '%c'", (c<32)?32:c);
 					putElement(ELEMENT_TYPE_COMMENT, buf);
 				} else {
-					putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ??");
+					putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 				}
 			}
 		} else {
@@ -475,11 +475,11 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			if (next && next->isValid() && next->difference(d, Addr)) {
 				bytes_line += d;
 				char buf[100];
-				sprintf(buf, "db      ?? * %d", d);
+				sprintf(buf, "db          ?? * %d", d);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 			} else {
 				bytes_line += 1;
-				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db      ??");
+				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 			}
 		}
 	}

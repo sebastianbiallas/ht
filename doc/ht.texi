@@ -23,7 +23,7 @@ END-INFO-DIR-ENTRY
 This file documents the HT Editor.
 
 @c 
-Copyright @copyright{} 1999-2003 The HT authors. @*
+Copyright @copyright{} 1999-2005 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -51,14 +51,14 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.9trunk, Sep 2004}
+@subtitle{Edition 0.9trunk, May 2005}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999-2003 The HT authors. @*
+Copyright @copyright{} 1999-2005 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.9trunk
+0.9.0
 @end macro
 
 @macro hturl
@@ -96,7 +96,7 @@ be registered in certain jurisdictions.
 @c TOP NODE
 @c
 @node Top, , (dir), (dir)
-@section HT Editor
+@unnumberedsec HT Editor
 
 @noindent
 This is HT @htversion{};
@@ -108,11 +108,11 @@ Therefore HT is incomplete and sometimes buggy. Enjoy anyway@dots{}
 * Key bindings::
 * Features::
 * Authors::
-* Where to download ?::
+* Where to download?::
 @end menu
 
 @node About, , Top, Top
-@section About
+@unnumberedsec About
 
 @noindent
 This program is a file viewer, editor and analyzer for text, binary, and (especially) executable files.
@@ -134,7 +134,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
 @end quotation
 
 @node Key bindings, , Top, Top
-@section Key bindings
+@unnumberedsec Key bindings
 
 @macro key_table_columns
 .25 .75
@@ -235,7 +235,7 @@ Note: Some keys don't work in HT-posix. Try using Escape
 instead of Control or something...
 
 @node Authors, , Top, Top
-@section Authors
+@unnumberedsec Authors
 
 @itemize @bullet
 
@@ -245,7 +245,7 @@ instead of Control or something...
 @end itemize
 
 @node Features, , Top, Top
-@section Features
+@unnumberedsec Features
 
 HT is beta software and should not always regarded as stable, but
 nevertheless contains some very advanced and useful features:
@@ -261,7 +261,7 @@ nevertheless contains some very advanced and useful features:
 @end menu
 
 @node General features, , Features, Features
-@section General features
+@unnumberedsec General features
 
 @enumerate 1
 @item
@@ -388,21 +388,21 @@ Target systems
 @end enumerate
 
 @node Configuration files, , Features, Features
-@section Configuration files
+@unnumberedsec Configuration files
 
-@subsection Global configuration
+@unnumberedsubsec Global configuration
 HT automatically creates a file to store its configuration.
 It is called @file{~/.htcfg} on Unices and @file{ht.cfg} (where 
 ht.exe resides) on Windows. More specifically it contains HT's registry 
 and the @xref{Global history}.
 
-@subsection Per file configuration
+@unnumberedsubsec Per file configuration
 The analyser (for analysable files) will be stored in an extra file called 
 @file{FILENAME.htcfg}, where FILENAME is the analysed file. This file contains
 all information to restore the complete state of the analyser.
 
 @node Clipboard, , Features, Features
-@section Clipboard
+@unnumberedsec Clipboard
 
 All open files and dialogs use the common clipboard, where all
 copied and cut text or binary data is stored. Clipboard operations are 
@@ -418,12 +418,12 @@ the input lines' @xref{Global history, history}, which is stored and
 retrieved from the config file automatically.
 
 @node Global history, , Features, Features
-@section Global history
+@unnumberedsec Global history
 
 HTs history system is global, which means that you can use it for all open
 files. Histories are also grouped by their context. I.e. file-related and 
 regex-search-related dialogs have their own history (who would want to 
-open "[0-9][0-9a-z]+" anyway ?).
+open "[0-9][0-9a-z]+" anyway?).
 
 History entries are stored within the @xref{Configuration files}, so they
 can be reused when you relaunch.
@@ -431,7 +431,7 @@ can be reused when you relaunch.
 You can delete a history entry by pressing DEL inside the history popup.
 
 @node Expression evaluation, , Features, Features
-@section Expression evaluation
+@unnumberedsec Expression evaluation
 
 HT contains a very powerful expression evaluator which is used in all dialogs
 where expressions are expected. These are mainly blockoperation, goto,
@@ -447,7 +447,7 @@ The evaluator uses integer, string and float types depending on context. You
 can always convert a result via the @code{int()}, @code{string()} and @code{float()} functions
 to appropriate type. Try Edit->Evaluate to see how it works@dots{}
 
-@subsection Functions and symbols
+@unnumberedsubsec Functions and symbols
 You can always use the standard built-in math (@code{round}, @code{sin}, @code{random}, etc.) and
 string (@code{strcmp}, @code{strchr}, @code{sprintf}, etc.) functions, they work more or less like the corresponding
 C functions (actually they ARE more or less wrappers for them); see @file{eval/eval.y} for 
@@ -456,7 +456,7 @@ When using @xref{Block operations}, or searching you have some
 context depending functions and symbols; see these sections for explanation.
 
 @node Block operations, , Features, Features
-@section Block operations
+@unnumberedsec Block operations
 
 Block operation (Blockop) is a very powerful tool to perform modifications
 on binary files. It is available in hex viewer only.
@@ -488,29 +488,29 @@ contains the current offset
 @end table
 
 @node Search and its different modes, , Features, Features
-@section Search and its different modes
+@unnumberedsec Search and its different modes
 
 The search function is one of the most advanced functions of HT.
 It is invoked through F7, Shift-F7 continues a search from cursor.
 Depending on context (ie. file type and mode) the following modes are enabled:
 
-@subsection bin: ASCII / Hex
+@unnumberedsubsec bin: ASCII / Hex
 Enter an exact search string either via ascii characters or via hexadecimal
 interpretation. This is the fastest search mode. You may specify a 
 case-insensitive search.
 
-@subsection bin: eval str
+@unnumberedsubsec bin: eval str
 Enter an expression, it will be evaluated ONCE (difference to the 4th mode),
 and HT will then search for the result-string. This is pretty useful when
 searching for intermixed text and control-chars/binary, e.g. @code{"hello world\n\0"}
 
-@subsection display: regex
+@unnumberedsubsec display: regex
 As the prefix indicates, this search doesn't search in the binary file but
 in the display on screen. HT searches for a regular expression so this can
 be very powerful, e.g. in PE/Image you can search for @code{(add|sub).+?,\ [78]$}.
 This will find all add or sub instructions with second parameter 7 or 8.
 
-@subsection expr nonzero
+@unnumberedsubsec expr nonzero
 This is the slowest but also most advanced search mode. Enter an expression
 and the search stops if this expression evaluates to non-zero (it will be 
 evaluated on every byte). In this mode there are two predefined symbols
@@ -548,8 +548,8 @@ one please let us know!
 
 @end enumerate
 
-@node Where to download ?, , Top, Top
-@section Where to download ?
+@node Where to download?, , Top, Top
+@unnumberedsec Where to download?
 
 @noindent
 The HT homepage is at 
@@ -571,8 +571,8 @@ one please let us know!
 
 @end enumerate
 
-@node Where to download ?, , Top, Top
-@section Where to download ?
+@node Where to download?, , Top, Top
+@unnumberedsec Where to download?
 
 @noindent
 The HT homepage is at 
