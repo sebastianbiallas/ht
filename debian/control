@@ -1,0 +1,19 @@
+Source: ht-editor
+Section: utils
+Priority: optional
+Maintainer: Reimar Döffinger <Reimar.Doeffinger@stud.uni-karlsruhe.de>
+Standards-Version:
+Build-Depends:
+
+Package: ht-editor
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: The Hex Editor
+ HT is a file editor/viewer/analyzer for executables. It also works perfectly
+ as "normal" hex editor.
+ .
+ Supports among others ELF, COFF and Window PE as file formats and
+ alpha, ia64, x86 and java as instruction sets.
+ .
+ The goal is to combine the low-level functionality of a debugger and the
+ usability of IDEs.
