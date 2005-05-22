@@ -14,7 +14,7 @@ endif
 
 noinst_LIBRARIES = libcomio.a
 libcomio_a_SOURCES = htio.cc htio.h
-INCLUDES = -I. -I.. -I$(MY_IO_DIR)
+INCLUDES = -I$(srcdir) -I$(top_srcdir) -I$(srcdir)/$(MY_IO_DIR)
 
 SUBDIRS = $(MY_IO_DIR)
 EXTRA_SUBDIRS = djgpp posix win32

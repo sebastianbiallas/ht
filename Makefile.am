@@ -15,7 +15,7 @@ SRT_DIR		= srt
 EXTRA_DIST	= TODO ChangeLog README KNOWNBUGS INSTALL COPYING AUTHORS
 SUBDIRS		= tools analyser asm doc info io output eval minilzo srt
 
-INCLUDES	= -I$(ANALYSER_DIR) -I$(ASM_DIR) -I$(INFO_DIR) -I$(IO_DIR) -I$(COMIO_DIR) -I$(OUTPUT_DIR) -I$(EVAL_DIR) -I$(MINILZO_DIR) -I$(SRT_DIR) -I.
+INCLUDES	= -I$(srcdir)/$(ANALYSER_DIR) -I$(srcdir)/$(ASM_DIR) -I$(srcdir)/$(INFO_DIR) -I$(srcdir)/$(IO_DIR) -I$(srcdir)/$(COMIO_DIR) -I$(srcdir)/$(OUTPUT_DIR) -I$(srcdir)/$(EVAL_DIR) -I$(srcdir)/$(MINILZO_DIR) -I$(srcdir)/$(SRT_DIR) -I$(srcdir)
 
 ht_LDADD	= $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a $(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a $(MINILZO_DIR)/liblzo.a $(SRT_DIR)/libsrt.a
 ht_LDFLAGS	= @HT_LDFLAGS@
@@ -64,5 +64,5 @@ dist2: distdir
 
 dist-all2: dist2
 
-htdoc.c htdoc.h: doc/hthelp.info tools/bin2c
-	tools/bin2c -Nhtinfo doc/hthelp.info htdoc.c htdoc.h
+htdoc.c htdoc.h: $(srcdir)/doc/hthelp.info tools/bin2c
+	tools/bin2c -Nhtinfo $(srcdir)/doc/hthelp.info htdoc.c htdoc.h
