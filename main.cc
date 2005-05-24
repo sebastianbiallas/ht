@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 			case LS_OK:
 				break;
 			case LS_ERROR_NOT_FOUND:
-				LOG_EX(LOG_WARN, "couldn't load configuration file...");
+				LOG_EX(LOG_WARN, "couldn't load configuration file, using defaults");
 				break;
 			case LS_ERROR_READ:
 				LOG_EX(LOG_ERROR, "couldn't read configuration file...");
