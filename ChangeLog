@@ -2,6 +2,9 @@
 ==============
 
 version 0.9-trunk:
+	- updated cp-demangle.c
+
+version 0.9.0:
 	- analyser: support for int, half and byte data-types.
 	- x86 disasm: invlpg, fisttp instructions added
 	- x86 disasm: sse, sse2, sse3 instructions added
