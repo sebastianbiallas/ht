@@ -130,6 +130,8 @@ fi
 
 dnl Checks for header files.
 AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h])
+AC_CHECK_HEADERS([string.h])
 
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
