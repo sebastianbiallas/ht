@@ -232,92 +232,87 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			if (!name) continue;
 
 			switch (sym.st_shndx) {
-				case ELF_SHN_UNDEF:
-					break;
-				case ELF_SHN_ABS:
-					break;
-				case ELF_SHN_COMMON:
-					break;
-				default: {
-					// sym.st_shndx
-					break;
-				}
+			case ELF_SHN_UNDEF:
+				break;
+			case ELF_SHN_ABS:
+				break;
+			case ELF_SHN_COMMON:
+				break;
+			default:
+				// sym.st_shndx
+				break;
 			}
 
 			char *bind;
 			switch (ELF32_ST_BIND(sym.st_info)) {
-				case ELF_STB_LOCAL:
-					bind="local";
-					break;
-				case ELF_STB_GLOBAL:
-					bind="global";
-					break;
-				case ELF_STB_WEAK:
-					bind="weak";
-					break;
-				default:
-					bind="?";
-					break;
+			case ELF_STB_LOCAL:
+				bind="local";
+				break;
+			case ELF_STB_GLOBAL:
+				bind="global";
+				break;
+			case ELF_STB_WEAK:
+				bind="weak";
+				break;
+			default:
+				bind="?";
+				break;
 			}
 
 			switch (ELF32_ST_TYPE(sym.st_info)) {
-				case ELF_STT_NOTYPE:
-				case ELF_STT_FUNC: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						elf32_addr sym_addr = sym.st_value;
-						if (elf_shared->shrelocs && sym.st_shndx > 0 && sym.st_shndx < elf_shared->sheaders.count
-						&& elf_shared->shrelocs[sym.st_shndx].relocAddr) {
-							sym_addr += elf_shared->shrelocs[sym.st_shndx].relocAddr;
-						}
-						Address *address = createAddress32(sym_addr);
-						if (validAddress(address, scvalid)) {
-							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-							if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
-							make_valid_name(label, label);
-
-							ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
-
-							if (demangled) free(demangled);
-
-							addComment(address, 0, "");
-							addComment(address, 0, ";********************************************************");
-							addComment(address, 0, elf_buffer);
-							addComment(address, 0, ";********************************************************");
-							pushAddress(address, address);
-							assignSymbol(address, label, label_func);
-						}
-						delete address;
+			case ELF_STT_NOTYPE:
+			case ELF_STT_FUNC: {
+				char *label = name;
+				if (!getSymbolByName(label)) {
+					elf32_addr sym_addr = sym.st_value;
+					if (elf_shared->shrelocs && sym.st_shndx > 0 && sym.st_shndx < elf_shared->sheaders.count
+					&& elf_shared->shrelocs[sym.st_shndx].relocAddr) {
+						sym_addr += elf_shared->shrelocs[sym.st_shndx].relocAddr;
 					}
-					break;
-				}
-				case ELF_STT_OBJECT: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress32(sym.st_value);
-						if (validAddress(address, scvalid)) {
-
-							char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-					
-							make_valid_name(label, label);
-					
-							ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size, bind);
-
-							if (demangled) free(demangled);
-
-							addComment(address, 0, "");
-							addComment(address, 0, ";********************************************************");
-							addComment(address, 0, elf_buffer);
-							addComment(address, 0, ";********************************************************");
-							assignSymbol(address, label, label_data);
-						}
-						delete address;
+					Address *address = createAddress32(sym_addr);
+					if (validAddress(address, scvalid)) {
+						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+						if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+						make_valid_name(label, label);
+						ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
+						if (demangled) free(demangled);
+						addComment(address, 0, "");
+						addComment(address, 0, ";********************************************************");
+						addComment(address, 0, elf_buffer);
+						addComment(address, 0, ";********************************************************");
+						pushAddress(address, address);
+						assignSymbol(address, label, label_func);
 					}
-					break;
+					delete address;
 				}
-				case ELF_STT_SECTION:
-				case ELF_STT_FILE:
-					break;
+				break;
+			}
+			case ELF_STT_OBJECT: {
+				char *label = name;
+				if (!getSymbolByName(label)) {
+					Address *address = createAddress32(sym.st_value);
+					if (validAddress(address, scvalid)) {
+						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+
+						make_valid_name(label, label);
+
+						ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size, bind);
+
+						if (demangled) free(demangled);
+
+						addComment(address, 0, "");
+						addComment(address, 0, ";********************************************************");
+						addComment(address, 0, elf_buffer);
+						addComment(address, 0, ";********************************************************");
+						assignSymbol(address, label, label_data);
+					}
+					delete address;
+				}
+				break;
+			}
+			case ELF_STT_SECTION:
+			case ELF_STT_FILE:
+				break;
 			}
 			free(name);
 		}
@@ -341,86 +336,85 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			if (!name) continue;
 
 			switch (sym.st_shndx) {
-				case ELF_SHN_UNDEF:
-					break;
-				case ELF_SHN_ABS:
-					break;
-				case ELF_SHN_COMMON:
-					break;
-				default: {
-					// sym.st_shndx
-					break;
-				}
+			case ELF_SHN_UNDEF:
+				break;
+			case ELF_SHN_ABS:
+				break;
+			case ELF_SHN_COMMON:
+				break;
+			default: {
+				// sym.st_shndx
+				break;
+			}
 			}
 
 			char *bind;
 			switch (ELF64_ST_BIND(sym.st_info)) {
-				case ELF_STB_LOCAL:
-					bind="local";
-					break;
-				case ELF_STB_GLOBAL:
-					bind="global";
-					break;
-				case ELF_STB_WEAK:
-					bind="weak";
-					break;
-				default:
-					bind="?";
-					break;
+			case ELF_STB_LOCAL:
+				bind="local";
+				break;
+			case ELF_STB_GLOBAL:
+				bind="global";
+				break;
+			case ELF_STB_WEAK:
+				bind="weak";
+				break;
+			default:
+				bind="?";
+				break;
 			}
 
 			switch (ELF64_ST_TYPE(sym.st_info)) {
-				case ELF_STT_NOTYPE:
-				case ELF_STT_FUNC: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress64(sym.st_value);
+			case ELF_STT_NOTYPE:
+			case ELF_STT_FUNC: {
+				char *label = name;
+				if (!getSymbolByName(label)) {
+					Address *address = createAddress64(sym.st_value);
 
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+					char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
 
-						make_valid_name(label, label);
+					make_valid_name(label, label);
 
-						ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
+					ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
 
-						if (demangled) free(demangled);
+					if (demangled) free(demangled);
 
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, elf_buffer);
-						addComment(address, 0, ";********************************************************");
-						pushAddress(address, address);
-						assignSymbol(address, label, label_func);
-						
-						delete address;
-					}
-					break;
-				}
-				case ELF_STT_OBJECT: {
-					char *label = name;
-					if (!getSymbolByName(label)) {
-						Address *address = createAddress64(sym.st_value);
-
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+					addComment(address, 0, "");
+					addComment(address, 0, ";********************************************************");
+					addComment(address, 0, elf_buffer);
+					addComment(address, 0, ";********************************************************");
+					pushAddress(address, address);
+					assignSymbol(address, label, label_func);
 					
-						make_valid_name(label, label);
-					
-						ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size.lo, bind);
-
-						if (demangled) free(demangled);
-
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, elf_buffer);
-						addComment(address, 0, ";********************************************************");
-						assignSymbol(address, label, label_data);
-						
-						delete address;
-					}
-					break;
+					delete address;
 				}
-				case ELF_STT_SECTION:
-				case ELF_STT_FILE:
-					break;
+				break;
+			}
+			case ELF_STT_OBJECT: {
+				char *label = name;
+				if (!getSymbolByName(label)) {
+					Address *address = createAddress64(sym.st_value);
+					char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+				
+					make_valid_name(label, label);
+				
+					ht_snprintf(elf_buffer, sizeof elf_buffer, "; data object %s, size %d (%s)", (demangled) ? demangled : label, sym.st_size.lo, bind);
+
+					if (demangled) free(demangled);
+
+					addComment(address, 0, "");
+					addComment(address, 0, ";********************************************************");
+					addComment(address, 0, elf_buffer);
+					addComment(address, 0, ";********************************************************");
+					assignSymbol(address, label, label_data);
+					
+					delete address;
+				}
+				break;
+			}
+			case ELF_STT_SECTION:
+			case ELF_STT_FILE:
+				break;
 			}
 			free(name);
 		}
@@ -606,40 +600,48 @@ void ElfAnalyser::initUnasm()
 		case ELFCLASS64: machine = elf_shared->header64.e_machine; elf64 = true; break;
 	}
 	switch (machine) {
-		case ELF_EM_386: // Intel
-			DPRINTF("initing analy_x86_disassembler\n");
+	case ELF_EM_386:
+		DPRINTF("initing analy_x86_disassembler\n");
+		analy_disasm = new AnalyX86Disassembler();
+		((AnalyX86Disassembler*)analy_disasm)->init(this, elf64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
+		break;
+	case ELF_EM_X86_64:
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
+			errorbox("x86_64 cant be used in a 32-Bit ELF.");
+		} else {
 			analy_disasm = new AnalyX86Disassembler();
-			((AnalyX86Disassembler*)analy_disasm)->init(this, elf64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
-			break;
-		case ELF_EM_IA_64: // Intel ia64
-			if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-				errorbox("Intel IA64 cant be used in a 32-Bit ELF.");
-			} else {
-				analy_disasm = new AnalyIA64Disassembler();
-				((AnalyIA64Disassembler*)analy_disasm)->init(this);
-			}
-			break;
-		case ELF_EM_PPC: // PowerPC
-			if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-				errorbox("Intel PowerPC cant be used in a 64-Bit ELF.");
-			} else {
-				DPRINTF("initing analy_ppc_disassembler\n");
-				analy_disasm = new AnalyPPCDisassembler();
-				((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			}
-			break;
-		case ELF_EM_PPC64: // PowerPC64
-			if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-				errorbox("Intel PowerPC64 cant be used in a 32-Bit ELF.");
-			} else {
-				DPRINTF("initing analy_ppc_disassembler\n");
-				analy_disasm = new AnalyPPCDisassembler();
-				((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			}
-			break;
-		default:
-			DPRINTF("no apropriate disassembler for machine %04x\n", machine);
-			warnbox("No disassembler for unknown machine type %04x!", machine);
+			((AnalyX86Disassembler*)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_AMD64 | ANALYX86DISASSEMBLER_FLAGS_FLAT64);
+		}
+		break;
+	case ELF_EM_IA_64: // Intel ia64
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
+			errorbox("Intel IA64 cant be used in a 32-Bit ELF.");
+		} else {
+			analy_disasm = new AnalyIA64Disassembler();
+			((AnalyIA64Disassembler*)analy_disasm)->init(this);
+		}
+		break;
+	case ELF_EM_PPC: // PowerPC
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
+			errorbox("PowerPC cant be used in a 64-Bit ELF.");
+		} else {
+			DPRINTF("initing analy_ppc_disassembler\n");
+			analy_disasm = new AnalyPPCDisassembler();
+			((AnalyPPCDisassembler*)analy_disasm)->init(this);
+		}
+		break;
+	case ELF_EM_PPC64: // PowerPC64
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
+			errorbox("PowerPC64 cant be used in a 32-Bit ELF.");
+		} else {
+			DPRINTF("initing analy_ppc_disassembler\n");
+			analy_disasm = new AnalyPPCDisassembler();
+			((AnalyPPCDisassembler*)analy_disasm)->init(this);
+		}
+		break;
+	default:
+		DPRINTF("no apropriate disassembler for machine %04x\n", machine);
+		warnbox("No disassembler for unknown machine type %04x!", machine);
 	}
 }
 

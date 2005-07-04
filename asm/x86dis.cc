@@ -1246,6 +1246,19 @@ bool x86dis::validInsn(dis_insn *disasm_insn)
 }
 
 /*
+ *	CLASS x86_64dis
+ */
+
+x86_64dis::x86_64dis()
+	: x86dis(X86_OPSIZE32, X86_ADDRSIZE32)
+{
+}
+
+x86_64dis::~x86_64dis()
+{
+}
+
+/*
  *	CLASS x86dis_vxd
  */
 

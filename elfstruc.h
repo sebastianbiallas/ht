@@ -104,7 +104,7 @@ typedef word elf64_quarter;
 /* e_machine */
 #define ELF_EM_NONE			0
 #define ELF_EM_M32			1
-#define ELF_EM_SPARC		2
+#define ELF_EM_SPARC			2
 #define ELF_EM_386			3
 #define ELF_EM_68K			4
 #define ELF_EM_88K			5
@@ -112,53 +112,53 @@ typedef word elf64_quarter;
 #define ELF_EM_860			7	/* Intel 80860 */
 #define ELF_EM_MIPS			8	/* MIPS R3000 (officially, big-endian only) */
 #define ELF_EM_S370			9	/* IBM System/370 */
-#define ELF_EM_MIPS_RS4_BE	10	/* MIPS R4000 big-endian */ /* Depreciated */
-#define ELF_EM_MIPS_RS3_LE	10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Depreciated */
+#define ELF_EM_MIPS_RS4_BE		10	/* MIPS R4000 big-endian */ /* Depreciated */
+#define ELF_EM_MIPS_RS3_LE		10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Depreciated */
 
-#define ELF_EM_PARISC		15	/* HPPA */
+#define ELF_EM_PARISC			15	/* HPPA */
 
-#define ELF_EM_VPP550		17	/* Fujitsu VPP500 */
-#define ELF_EM_SPARC32PLUS	18	/* Sun's "v8plus" */
+#define ELF_EM_VPP550			17	/* Fujitsu VPP500 */
+#define ELF_EM_SPARC32PLUS		18	/* Sun's "v8plus" */
 #define ELF_EM_960			19	/* Intel 80960 */
 #define ELF_EM_PPC			20	/* PowerPC */
-#define ELF_EM_PPC64		21	/* 64-bit PowerPC */
+#define ELF_EM_PPC64			21	/* 64-bit PowerPC */
 
 #define ELF_EM_V800			36	/* NEC V800 series */
 #define ELF_EM_FR20			37	/* Fujitsu FR20 */
 #define ELF_EM_RH32			38	/* TRW RH32 */
-#define ELF_EM_MCORE		39	/* Motorola M*Core */ /* May also be taken by Fujitsu MMA */
+#define ELF_EM_MCORE			39	/* Motorola M*Core */ /* May also be taken by Fujitsu MMA */
 #define ELF_EM_RCE			39	/* Old name for MCore */
 #define ELF_EM_ARM			40	/* ARM */
 #define ELF_EM_OLD_ALPHA		41	/* Digital Alpha */
 #define ELF_EM_SH			42	/* Hitachi SH */
-#define ELF_EM_SPARCV9		43	/* SPARC v9 64-bit */
-#define ELF_EM_TRICORE		44	/* Siemens Tricore embedded processor */
+#define ELF_EM_SPARCV9			43	/* SPARC v9 64-bit */
+#define ELF_EM_TRICORE			44	/* Siemens Tricore embedded processor */
 #define ELF_EM_ARC			45	/* Argonaut RISC Core, Argonaut Technologies Inc. */
-#define ELF_EM_H8_300		46	/* Hitachi H8/300 */
-#define ELF_EM_H8_300H		47	/* Hitachi H8/300H */
+#define ELF_EM_H8_300			46	/* Hitachi H8/300 */
+#define ELF_EM_H8_300H			47	/* Hitachi H8/300H */
 #define ELF_EM_H8S			48	/* Hitachi H8S */
-#define ELF_EM_H8_500		49	/* Hitachi H8/500 */
-#define ELF_EM_IA_64		50	/* Intel IA-64 Processor */
-#define ELF_EM_MIPS_X		51	/* Stanford MIPS-X */
-#define ELF_EM_COLDFIRE		52	/* Motorola Coldfire */
-#define ELF_EM_68HC12		53	/* Motorola M68HC12 */
+#define ELF_EM_H8_500			49	/* Hitachi H8/500 */
+#define ELF_EM_IA_64			50	/* Intel IA-64 Processor */
+#define ELF_EM_MIPS_X			51	/* Stanford MIPS-X */
+#define ELF_EM_COLDFIRE			52	/* Motorola Coldfire */
+#define ELF_EM_68HC12			53	/* Motorola M68HC12 */
 #define ELF_EM_MMA			54	/* Fujitsu Multimedia Accelerator */
 #define ELF_EM_PCP			55	/* Siemens PCP */
 #define ELF_EM_NCPU			56	/* Sony nCPU embedded RISC processor */
 #define ELF_EM_NDR1			57	/* Denso NDR1 microprocesspr */
-#define ELF_EM_STARCORE		58	/* Motorola Star*Core processor */
+#define ELF_EM_STARCORE			58	/* Motorola Star*Core processor */
 #define ELF_EM_ME16			59	/* Toyota ME16 processor */
-#define ELF_EM_ST100		60	/* STMicroelectronics ST100 processor */
-#define ELF_EM_TINYJ		61	/* Advanced Logic Corp. TinyJ embedded processor */
-#define ELF_EM_X86_64		62	/* X86-64 (AMD Opteron) */
+#define ELF_EM_ST100			60	/* STMicroelectronics ST100 processor */
+#define ELF_EM_TINYJ			61	/* Advanced Logic Corp. TinyJ embedded processor */
+#define ELF_EM_X86_64			62	/* X86-64 (AMD Opteron) */
 
 #define ELF_EM_FX66			66	/* Siemens FX66 microcontroller */
-#define ELF_EM_ST9PLUS		67	/* STMicroelectronics ST9+ 8/16 bit microcontroller */
+#define ELF_EM_ST9PLUS			67	/* STMicroelectronics ST9+ 8/16 bit microcontroller */
 #define ELF_EM_ST7			68	/* STMicroelectronics ST7 8-bit microcontroller */
-#define ELF_EM_68HC16		69	/* Motorola MC68HC16 Microcontroller */
-#define ELF_EM_68HC11		70	/* Motorola MC68HC11 Microcontroller */
-#define ELF_EM_68HC08		71	/* Motorola MC68HC08 Microcontroller */
-#define ELF_EM_68HC05		72	/* Motorola MC68HC05 Microcontroller */
+#define ELF_EM_68HC16			69	/* Motorola MC68HC16 Microcontroller */
+#define ELF_EM_68HC11			70	/* Motorola MC68HC11 Microcontroller */
+#define ELF_EM_68HC08			71	/* Motorola MC68HC08 Microcontroller */
+#define ELF_EM_68HC05			72	/* Motorola MC68HC05 Microcontroller */
 #define ELF_EM_SVX			73	/* Silicon Graphics SVx */
 #define ELF_EM_ST19			74	/* STMicroelectronics ST19 8-bit microcontroller */
 #define ELF_EM_VAX			75	/* Digital VAX */
@@ -167,7 +167,7 @@ typedef word elf64_quarter;
 
 /* e_version */
 #define ELF_EV_NONE			0
-#define ELF_EV_CURRENT		1
+#define ELF_EV_CURRENT			1
 
 struct ELF_HEADER {
 	elf_unsigned_char e_ident[EI_NIDENT];

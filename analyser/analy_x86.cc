@@ -477,17 +477,21 @@ Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
 
 void AnalyX86Disassembler::createUnasm()
 {
-	if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
-		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
-			disasm = new x86dis_vxd(X86_OPSIZE16, X86_ADDRSIZE16);
-		} else {
-			disasm = new x86dis_vxd(X86_OPSIZE32, X86_ADDRSIZE32);
-		}
+	if (flags & ANALYX86DISASSEMBLER_FLAGS_AMD64) {
+		disasm = new x86_64dis();
 	} else {
-		if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
-			disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
+		if (flags & ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS) {
+			if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
+				disasm = new x86dis_vxd(X86_OPSIZE16, X86_ADDRSIZE16);
+			} else {
+				disasm = new x86dis_vxd(X86_OPSIZE32, X86_ADDRSIZE32);
+			}
 		} else {
-			disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
+			if (flags & ANALYX86DISASSEMBLER_FLAGS_16BIT) {
+				disasm = new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
+			} else {
+				disasm = new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
+			}
 		}
 	}
 }

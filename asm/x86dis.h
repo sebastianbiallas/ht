@@ -109,6 +109,12 @@ public:
 	virtual bool		validInsn(dis_insn *disasm_insn);
 };
 
+class x86_64dis: public x86dis {
+public:	
+				x86_64dis();
+	virtual			~x86_64dis();
+};
+
 class x86dis_vxd: public x86dis {
 protected:
 	virtual void str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);

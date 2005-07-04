@@ -258,6 +258,7 @@ nevertheless contains some very advanced and useful features:
 * Expression evaluation::
 * Block operations::
 * Search and its different modes::
+* Command line options::
 @end menu
 
 @node General features, , Features, Features
@@ -547,6 +548,27 @@ Note: the @code{entropy()} function is not the best of its kind, if you know of 
 one please let us know!
 
 @end enumerate
+
+@node Command line options, , Features, Features
+@unnumberedsec Command line options
+
+@multitable @columnfractions .10 .20 .70
+
+@item 
+@code{-v}
+@tab
+@code{--version}
+@tab
+show version and copyright on console
+
+@item
+@code{-h}
+@tab
+@code{--help}
+@tab
+show help
+
+@end multitable
 
 @node Where to download?, , Top, Top
 @unnumberedsec Where to download?

@@ -522,10 +522,10 @@ x86opc_insn x86_insns_ext[256] = {
 {0, {{SPECIAL_TYPE_GROUP, GROUP_EXT_01}}},
 {"lar", {{Gv}, {Ew}}},
 {"lsl", {{Gv}, {Ew}}},
-{0},
+{"syscall"},
 {0},
 {"clts"},
-{0},
+{"sysret"},
 /* 08 */
 {"invd"},
 {"wbinvd"},

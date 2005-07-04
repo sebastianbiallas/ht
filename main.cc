@@ -162,17 +162,17 @@ static void params(int argc, char *argv[], bool started)
 	// FIXME: FOM_AUTO should be the default
 	int load_mode = FOM_BIN;
 	bool showhelp = false;
-	
+
 #define PARAM_ERROR(a...) {if (started) LOG_EX(LOG_ERROR, a);}
 #define EXPECT_PARAMEND(b) if ((j+1)!=len) { PARAM_ERROR("syntax error in options"); b;}
 #define EXPECT_PARAMS(p, b) if (i+p+1 > argc) { PARAM_ERROR("syntax error in options"); b;}
 #define NOTHING ((void)(0))
-	for (int i=1; i<argc; i++) {
-		if (argv[i][0]=='-') {
+	for (int i = 1; i < argc; i++) {
+		if (argv[i][0] == '-') {
 			int len = strlen(argv[i]);
 			if (len==1) PARAM_ERROR("unknown option: %s", argv[i]);
-			if (argv[i][1]=='-') {
-				if (len==2) {
+			if (argv[i][1] == '-') {
+				if (len == 2) {
 					// --
 					escaped_params_start = i+1;
 					break;
@@ -213,48 +213,48 @@ static void params(int argc, char *argv[], bool started)
 			} else {
 				for (int j=1; j<len; j++) {
 					switch (argv[i][j]) {
-						case 'A':
-							load_mode = FOM_AUTO;
-							break;
-						case 'B':
-							load_mode = FOM_BIN;
-							break;
-						case 'T':
-							load_mode = FOM_TEXT;
-							break;
-						case 'a':
-							EXPECT_PARAMEND(break);
-							EXPECT_PARAMS(1, break);
-							if (started) load_file(argv[i+1], FOM_AUTO);
-							i++;
-							break;
-						case 'b':
-							EXPECT_PARAMEND(break);
-							EXPECT_PARAMS(1, break);
-							if (started) load_file(argv[i+1], FOM_BIN);
-							i++;
-							break;
-						case 'h':
-							showhelp = true;
-							break;
-						case 'p':
-							EXPECT_PARAMEND(break);
-							EXPECT_PARAMS(1, break);
-							if (started) ((ht_app*)app)->project_opencreate(argv[i+1]);
-							i++;
-							break;
-						case 't':
-							EXPECT_PARAMEND(break);
-							EXPECT_PARAMS(1, break);
-							if (started) load_file(argv[i+1], FOM_TEXT);
-							i++;
-							break;
-						case 'v':
-							show_version();
-							break;
-						default:
-							PARAM_ERROR("unknown option: -%c", argv[i][j]);
-							break;
+					case 'A':
+						load_mode = FOM_AUTO;
+						break;
+					case 'B':
+						load_mode = FOM_BIN;
+						break;
+					case 'T':
+						load_mode = FOM_TEXT;
+						break;
+					case 'a':
+						EXPECT_PARAMEND(break);
+						EXPECT_PARAMS(1, break);
+						if (started) load_file(argv[i+1], FOM_AUTO);
+						i++;
+						break;
+					case 'b':
+						EXPECT_PARAMEND(break);
+						EXPECT_PARAMS(1, break);
+						if (started) load_file(argv[i+1], FOM_BIN);
+						i++;
+						break;
+					case 'h':
+						showhelp = true;
+						break;
+					case 'p':
+						EXPECT_PARAMEND(break);
+						EXPECT_PARAMS(1, break);
+						if (started) ((ht_app*)app)->project_opencreate(argv[i+1]);
+						i++;
+						break;
+					case 't':
+						EXPECT_PARAMEND(break);
+						EXPECT_PARAMS(1, break);
+						if (started) load_file(argv[i+1], FOM_TEXT);
+						i++;
+						break;
+					case 'v':
+						show_version();
+						break;
+					default:
+						PARAM_ERROR("unknown option: -%c", argv[i][j]);
+						break;
 					}
 				}
 			}
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 	strncpy(appname, argv[0], sizeof appname-1);
 #endif
 
-	params(argc, argv, 0);
+	params(argc, argv, false);
 	
 	if (!init()) {
 		int init_failed = htstate;
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	params(argc, argv, 1);
+	params(argc, argv, true);
 
 	try {
 		((ht_app*)app)->run(false);
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 	}
 	LOG("exit.");
 	done();
-	if (save!=LS_OK) {
+	if (save != LS_OK) {
 		printf("save_systemconfig(): error\n");
 		return 1;
 	}

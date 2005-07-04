@@ -99,25 +99,26 @@ public:
 #define ANALYX86DISASSEMBLER_FLAGS_16BIT		1
 #define ANALYX86DISASSEMBLER_FLAGS_SEGMENTED		2
 #define ANALYX86DISASSEMBLER_FLAGS_FLAT64		4
-#define ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS	8
+#define ANALYX86DISASSEMBLER_FLAGS_VXD_X86DIS		8
+#define ANALYX86DISASSEMBLER_FLAGS_AMD64		16
 
 class AnalyX86Disassembler: public AnalyDisassembler {
 protected:
-			void			createUnasm();
+		void		createUnasm();
 public:
 	int flags;
 
-			void			init(Analyser *A, int flags);
-			int 			load(ht_object_stream *f);
-	virtual   void    	 	done();
-	virtual	OBJECT_ID		object_id() const;
+		void		init(Analyser *A, int flags);
+		int 		load(ht_object_stream *f);
+	virtual	void    	done();
+	virtual	OBJECT_ID	object_id() const;
 
 	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-			Address		*createAddress(word segment, dword offset);
-			word			getSegment(Address *addr);
-	virtual	void			examineOpcode(OPCODE *opcode);
+		Address		*createAddress(word segment, dword offset);
+		word		getSegment(Address *addr);
+	virtual	void		examineOpcode(OPCODE *opcode);
 	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
-	virtual	void			store(ht_object_stream *f);
+	virtual	void		store(ht_object_stream *f);
 };
 
 #endif
