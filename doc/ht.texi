@@ -555,6 +555,13 @@ one please let us know!
 @multitable @columnfractions .10 .20 .70
 
 @item 
+@code{--}
+@tab
+
+@tab
+thread all additional parameters as file names
+
+@item 
 @code{-v}
 @tab
 @code{--version}
@@ -576,29 +583,7 @@ show help
 @noindent
 The HT homepage is at 
 @hturl{}
-@noindent
-Downloads are available from the 'download' section. 
-Please also take a look at
-@htsfurl{}
 
-@ifinfo
-@contents
-@end ifinfo
-@bye
-ter than 82% (guessed value)
-is encountered, which normally indicates packed or encryted data.
-
-Note: the @code{entropy()} function is not the best of its kind, if you know of a better
-one please let us know!
-
-@end enumerate
-
-@node Where to download?, , Top, Top
-@unnumberedsec Where to download?
-
-@noindent
-The HT homepage is at 
-@hturl{}
 @noindent
 Downloads are available from the 'download' section. 
 Please also take a look at
