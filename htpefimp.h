@@ -54,8 +54,8 @@ public:
 };
 
 struct ht_pef_import {
-	ht_clist *funcs;
-	ht_clist *libs;
+	Container *funcs;
+	Container *libs;
 };
 
 /*

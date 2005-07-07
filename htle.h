@@ -113,8 +113,8 @@ public:
 /* overwritten */
 	virtual bool isdirty(FileOfs offset, uint range);
 	virtual uint read(void *buf, uint size);
-	virtual int seek(FileOfs offset);
-	virtual FileOfs tell();
+	virtual void seek(FileOfs offset);
+	virtual FileOfs tell() const;
 	virtual int vcntl(uint cmd, va_list vargs);
 	virtual uint write(const void *buf, uint size);
 /* new */
@@ -145,10 +145,10 @@ class ht_le_reloc_file: public ht_reloc_file {
 protected:
 	ht_le_shared_data *data;
 /* overwritten */
-	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+	virtual void	reloc_apply(Object *reloc, byte *data);
+	virtual bool	reloc_unapply(Object *reloc, byte *data);
 public:
-		   void	init(File *streamfile, bool own_streamfile, ht_le_shared_data *data);
+			ht_le_reloc_file(File *streamfile, bool own_streamfile, ht_le_shared_data *data);
 };
 
 FileOfs LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i);

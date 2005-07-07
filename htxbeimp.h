@@ -49,8 +49,8 @@ public:
 };
 
 struct ht_xbe_import {
-	ht_clist *funcs;
-	ht_clist *libs;
+	Container *funcs;
+	Container *libs;
 };
 
 /*
@@ -62,15 +62,15 @@ protected:
 	bool grouplib;
 	uint sortby;
 	/* new */
-			void dosort();
+		void dosort();
 public:
-			void	init(bounds *b, char *desc, ht_format_group *fg);
+		void	init(bounds *b, char *desc, ht_format_group *fg);
 	virtual	void	done();
 	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 	/* new */
-			char *func(uint i, bool execute);
+		char *func(uint i, bool execute);
 };
 
 #endif /* !__HTXBEIMP_H__ */

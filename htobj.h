@@ -209,7 +209,7 @@ public:
 		void		setbounds(bounds *b);
 		void		setvisualbounds(bounds *b);
 		void		setcursor(int x, int y, cursor_mode c=cm_normal);
-	virtual	void		setdata(ObjectStream *s);
+	virtual	void		setdata(ObjectStream &s);
 	virtual	void		setgroup(ht_group *group);
 	virtual	void		setnumber(uint number);
 		void		setoptions(int options);
@@ -240,7 +240,7 @@ public:
 	virtual	int enum_start();
 	virtual	ht_view *enum_next(int *handle);
 	virtual	int focus(ht_view *view);
-	virtual	void getdata(ObjectStream *s);
+	virtual	void getdata(ObjectStream &s);
 	virtual	ht_view *getselected();
 	virtual 	ht_view *getfirstchild();
 	virtual	void handlemsg(htmsg *msg);
@@ -256,7 +256,7 @@ public:
 	virtual	int select(ht_view *view);
 	virtual	void selectfirst();
 	virtual	void selectlast();
-	virtual	void setdata(ObjectStream *s);
+	virtual	void setdata(ObjectStream &s);
 	virtual	void setpalette(char *pal_name);
 	virtual	void		store(ObjectStream &s) const;
 /* new */
