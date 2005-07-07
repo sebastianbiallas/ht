@@ -28,17 +28,17 @@
  *	CLASS ht_reloc_file
  */
 
-class ht_reloc_file: public ht_layer_streamfile {
+class ht_reloc_file: public FileLayer {
 protected:
-	ht_tree *relocs;
+	Container *relocs;
 	bool enabled;
 
 /* new */
-	virtual void	reloc_apply(ht_data *reloc, byte *data) = 0;
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data) = 0;
+	virtual void	reloc_apply(Object *reloc, byte *data) = 0;
+	virtual bool	reloc_unapply(Object *reloc, byte *data) = 0;
 public:
-		   void	init(File *streamfile, bool own_streamfile);
-	virtual void	done();
+			ht_reloc_file(File *File, bool own_streamfile);
+	virtual		~ht_reloc_file();
 /* overwritten */
 		   void	finalize();
 		   void	insert_reloc(FileOfs o, Object *reloc);

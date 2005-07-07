@@ -28,18 +28,15 @@
 /*
  *	ht_reloc_file
  */
-void ht_reloc_file::init(File *s, bool os)
+ht_reloc_file::ht_reloc_file(File *s, bool os)
+	: FileLayer(s, os)
 {
-	ht_layer_streamfile::init(s, os);
-	relocs = new ht_stree();
-//	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
-	((ht_stree*)relocs)->init(compare_keys_uint);
+	relocs = new AVLTree(true);
 	enabled = true;
 }
 
-void ht_reloc_file::done()
+ht_reloc_file::~ht_reloc_file()
 {
-	relocs->destroy();
 	delete relocs;
 	ht_layer_streamfile::done();
 }

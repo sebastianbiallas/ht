@@ -79,8 +79,8 @@ struct ht_ne_shared_data {
 	uint modnames_count;
 	char **modnames;
 	uint fake_segment;
-	ht_list *entrypoints;
-	ht_tree *imports;
+	Container *entrypoints;
+	Container *imports;
 	ht_aviewer *v_image;
 };
 
@@ -88,15 +88,15 @@ class ht_ne: public ht_format_group {
 protected:
 	bool loc_enum;
 
-			bool create_fake_segment();
-			bool relocate(ht_reloc_file *rf);
-			bool relocate_single(ht_reloc_file *rf, uint seg, FileOfs ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
+		bool create_fake_segment();
+		bool relocate(ht_reloc_file *rf);
+		bool relocate_single(ht_reloc_file *rf, uint seg, FileOfs ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
 public:
-			void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
+		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
 	virtual	void done();
 /* overwritten */
-	virtual   void loc_enum_start();
-	virtual   bool loc_enum_next(ht_format_loc *loc);
+	virtual void loc_enum_start();
+	virtual bool loc_enum_next(ht_format_loc *loc);
 };
 
 extern format_viewer_if htne_if;
@@ -140,10 +140,10 @@ class ht_ne_reloc_file: public ht_reloc_file {
 protected:
 	ht_ne_shared_data *data;
 /* overwritten */
-	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+	virtual void	reloc_apply(Object *reloc, byte *data);
+	virtual bool	reloc_unapply(Object *reloc, byte *data);
 public:
-		   void	init(File *streamfile, bool own_streamfile, ht_ne_shared_data *data);
+			ht_ne_reloc_file(File *streamfile, bool own_streamfile, ht_ne_shared_data *data);
 };
 
 /*

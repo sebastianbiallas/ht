@@ -102,14 +102,14 @@ extern format_viewer_if htle_if;
  *	CLASS ht_le_page_file
  */
 
-class ht_le_page_file: public ht_layer_streamfile {
+class ht_le_page_file: public FileLayer {
 protected:
 	ht_le_pagemap *pagemap;
 	uint32 pagemapsize;
 	uint32 page_size;
 	FileOfs ofs;
 public:
-		   void init(File *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
+			ht_le_page_file(File *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
 /* overwritten */
 	virtual bool isdirty(FileOfs offset, uint range);
 	virtual uint read(void *buf, uint size);
@@ -118,8 +118,8 @@ public:
 	virtual int vcntl(uint cmd, va_list vargs);
 	virtual uint write(const void *buf, uint size);
 /* new */
-		   bool map_ofs(uint lofs, FileOfs *pofs, uint *maxsize);
-		   bool unmap_ofs(FileOfs pofs, uint *lofs);
+	   bool map_ofs(uint lofs, FileOfs *pofs, uint *maxsize);
+	   bool unmap_ofs(FileOfs pofs, uint *lofs);
 };
 
 /*

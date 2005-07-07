@@ -128,7 +128,7 @@ struct ht_elf_shared_data {
 	ht_format_viewer *v_image;
 	int fake_undefined_shidx;
 	uint fake_undefined_size;
-	ht_tree *undefined2fakeaddr;
+	Container *undefined2fakeaddr;
 };
 
 /*
@@ -173,10 +173,10 @@ class ht_elf32_reloc_file: public ht_reloc_file {
 protected:
 	ht_elf_shared_data *data;
 	/* extends ht_reloc_file */
-	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+	virtual void	reloc_apply(Object *reloc, byte *data);
+	virtual bool	reloc_unapply(Object *reloc, byte *data);
 public:
-		   void	init(File *streamfile, bool own_streamfile, ht_elf_shared_data *data);
+		   	ht_elf32_reloc_file(File *File, bool own_streamfile, ht_elf_shared_data *data);
 };
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);

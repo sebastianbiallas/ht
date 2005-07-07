@@ -131,7 +131,7 @@ typedef struct _classfile {
 } classfile;
 
 struct ht_class_shared_data {
-	ht_stree	*methods;
+	Container	*methods;
 	classfile	*file;
 	Area *valid;
 	Area *initialized;
@@ -139,13 +139,13 @@ struct ht_class_shared_data {
 	struct {
 		char *thisclass;
 		char *superclass;
-		ht_list *interfaces;
+		Container *interfaces;
 	} classinfo;
 };
 
 extern ht_class_shared_data *class_read(File *);
 extern void class_unread(ht_class_shared_data *);
-extern attrib_info *attribute_read(ht_stream *, classfile *);
+extern attrib_info *attribute_read(Stream *, classfile *);
 
 int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared);
 void java_demangle(char *result, char *classname, char *name, char *type, int flags);
@@ -154,7 +154,7 @@ char *java_demangle_flags(char *result, int flags);
 class cview : public ht_format_group {
 public:
   void init(bounds *, File *, format_viewer_if **,
-		  ht_format_group *, FILEOFS, void *shared);
+		  ht_format_group *, FileOfs, void *shared);
   virtual void done();
 };
 
