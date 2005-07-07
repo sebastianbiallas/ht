@@ -43,7 +43,7 @@
 #define button_all			3
 #define button_none			4
 
-class ht_queued_msg: public ht_data {
+class ht_queued_msg: public Object {
 public:
 	ht_view *target;
 	htmsg msg;
@@ -54,13 +54,13 @@ protected:
 	int state;
 	int return_val;
 
-	ht_queue *msgqueue;
+	Queue *msgqueue;
 
 /* overwritten */
 	virtual	char *defaultpalette();
 			ht_queued_msg *dequeuemsg();
 public:
-			void	init(bounds *b, const char *desc, UINT framestyle);
+			void	init(bounds *b, const char *desc, uint framestyle);
 	virtual	void	done();
 /* overwritten */
 	virtual	int alone();
@@ -171,7 +171,7 @@ public:
 /* new */
 			void attach(ht_inputfield *inputfield);
 			void query(byte ***curchar, byte ***text, byte ***selstart, byte ***selend, int **textlen, int **maxtextlen);
-			void isetcursor(UINT pos);
+			void isetcursor(uint pos);
 };
 
 /*
@@ -295,7 +295,7 @@ public:
 	int		x;
 	char		quickfinder[100];
 	char		*qpos;
-	UINT		listboxcaps;
+	uint		listboxcaps;
 
 	int		cols;
 	int		*widths;
@@ -305,7 +305,7 @@ public:
 	ht_listbox_title *title;
 
 public:
-			void		init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
+			void		init(bounds *b, uint Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
 			void		attachTitle(ht_listbox_title *title);
 			void		adjustPosHack();
@@ -326,7 +326,7 @@ public:
 	virtual	void *	getPrev(void *entry) = 0;
 	virtual	char *	getStr(int col, void *entry) = 0;
 			void		gotoItemByEntry(void *entry, bool clear_quickfind = true);
-	virtual	void		gotoItemByPosition(UINT pos);
+	virtual	void		gotoItemByPosition(uint pos);
 	virtual	void		handlemsg(htmsg *msg);
 	virtual	int		numColumns();
 	virtual	void *	quickfind(char *s) = 0;
@@ -369,16 +369,16 @@ protected:
 	int					Cursor_adjust;
 
 public:
-			void		init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
+			void		init(bounds *b, int Cols=1, int Keycol=0, uint Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
 	virtual   int		calcCount();
 	virtual	int		compare_strn(char *s1, char *s2, int l);
 	virtual	int		compare_ccomm(char *s1, char *s2);
 	virtual   int		cursorAdjust();
-			void *	getEntryByID(UINT id);
+			void *	getEntryByID(uint id);
 	virtual   void *	getFirst();
 	virtual   void *	getLast();
-			UINT		getID(void *entry);
+			uint		getID(void *entry);
 	virtual   void *	getNext(void *entry);
 	virtual   void *	getPrev(void *entry);
 	virtual   char *	getStr(int col, void *entry);

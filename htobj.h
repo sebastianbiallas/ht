@@ -24,36 +24,36 @@
 class ht_view;
 class ht_group;
 
-#include "common.h"
+#include "io/types.h"
 #include "htcurses.h"
 
 struct palette {
-	UINT size;
+	uint size;
 	vcp *data;
 };
 
 /* messages (like in "MESS of AGES") */
-#define msg_message				0x00000000
+#define msg_message			0x00000000
 #define HT_MESSAGE(m)			(msg_message+(m))
 
-#define msg_empty 				HT_MESSAGE(0)
-#define msg_retval				HT_MESSAGE(1)
-#define msg_draw 				HT_MESSAGE(2)
+#define msg_empty			HT_MESSAGE(0)
+#define msg_retval			HT_MESSAGE(1)
+#define msg_draw 			HT_MESSAGE(2)
 #define msg_keypressed 			HT_MESSAGE(3)
-#define msg_kill				HT_MESSAGE(4)
+#define msg_kill			HT_MESSAGE(4)
 #define msg_complete_init		HT_MESSAGE(5)
 #define msg_funcexec			HT_MESSAGE(6)
 #define msg_funcquery			HT_MESSAGE(7)
-#define msg_menucapquery			HT_MESSAGE(8)
+#define msg_menucapquery		HT_MESSAGE(8)
 #define msg_menuquery			HT_MESSAGE(9)
 #define msg_button_pressed		HT_MESSAGE(10)
 #define msg_dirtyview			HT_MESSAGE(11)
 #define msg_config_changed		HT_MESSAGE(12)
-#define msg_accept_close			HT_MESSAGE(13)
-#define msg_file_changed			HT_MESSAGE(14)
+#define msg_accept_close		HT_MESSAGE(13)
+#define msg_file_changed		HT_MESSAGE(14)
 #define msg_get_scrollinfo		HT_MESSAGE(15)
-#define msg_get_analyser			HT_MESSAGE(16)
-#define msg_set_analyser			HT_MESSAGE(17)	// (Analyser *)
+#define msg_get_analyser		HT_MESSAGE(16)
+#define msg_set_analyser		HT_MESSAGE(17)	// (Analyser *)
 #define msg_postinit			HT_MESSAGE(18)
 #define msg_contextmenuquery		HT_MESSAGE(19)
 #define msg_project_changed		HT_MESSAGE(20)
@@ -138,8 +138,8 @@ public:
 
 	bounds size;
 	bounds vsize;	/* visual bounds */
-	UINT growmode;
-	UINT g_hdist, g_vdist;
+	uint growmode;
+	uint g_hdist, g_vdist;
 
 	palette pal;
 	char *pal_class;
@@ -147,76 +147,76 @@ public:
 
 /*debug:*/char *view_debug_name;
 
-			void	init(bounds *b, int options, const char *desc);
-	virtual	void done();
+		void		init(bounds *b, int options, const char *desc);
+	virtual	void		done();
 /* new */
-			void *allocdatabuf(void *handle);
-	virtual	int alone();
-			int buf_lprint(int x, int y, int c, int l, char *text);
-			int buf_lprintw(int x, int y, int c, int l, int *text);
-			int buf_print(int x, int y, int c, char *text);
-			void buf_printchar(int x, int y, int c, int ch);
-			int buf_printf(int x, int y, int c, char *format, ...);
-			int buf_printw(int x, int y, int c, int *text);
-	virtual	int childcount();
-			void clear(int color);
-	virtual	void clipbounds(bounds *b);
-	virtual	void config_changed();
-	virtual	int countselectables();
-			void databuf_freedup(void *handle);
-			void databuf_get(void *buf, int bufsize);
-			void *databuf_getdup(void *buf, int bufsize);
-			void databuf_set(void *buf, int bufsize);
-	virtual	int datasize();
-			void dirtyview();
-	virtual	void disable();
-			void disable_buffering();
-	virtual 	void draw();
-	virtual	void enable();
-			void enable_buffering();
-	virtual	int enum_start();
-	virtual	ht_view *enum_next(int *handle);
-			bool exposed();
-			void fill(int x, int y, int w, int h, int c, int chr);
-	virtual	int focus(ht_view *view);
-			void getbounds(bounds *b);
-	virtual	void getminbounds(int *width, int *height);
-			vcp getcolor(UINT index);
-	virtual	void getdata(ht_object_stream *s);
-	virtual 	ht_view *getfirstchild();
-	virtual	UINT getnumber();
-			char *getpalette();
-	virtual	ht_view *getselected();
-	virtual 	void handlemsg(htmsg *msg);
-			void hidecursor();
-			int isviewdirty();
-	virtual	int isalone(ht_view *view);
-	virtual   int	load(ht_object_stream *s);
-	virtual	void move(int rx, int ry);
-	virtual   OBJECT_ID object_id() const;
-			int pointvisible(int x, int y);
-	virtual	void receivefocus();
-	virtual	void redraw();
-			void relocate_to(ht_view *view);
-	virtual	void resize(int rw, int rh);
-	virtual 	void releasefocus();
-	virtual	int select(ht_view *view);
-	virtual	void selectfirst();
-	virtual	void selectlast();
-			void sendmsg(htmsg *msg);
-			void sendmsg(int msg, int data1=0, int data2=0);
-			void sendmsg(int msg, void *data1, void *data2=0);
-			void setbounds(bounds *b);
-			void setvisualbounds(bounds *b);
-			void setcursor(int x, int y, cursor_mode c=cm_normal);
-	virtual	void setdata(ht_object_stream *s);
-	virtual	void setgroup(ht_group *group);
-	virtual	void setnumber(UINT number);
-			void setoptions(int options);
-	virtual	void setpalette(char *pal_name);
-			void setpalettefull(char *pal_name, char *pal_class);
-	virtual   void	store(ht_object_stream *s);
-			void unrelocate_to(ht_view *view);
+		void		*allocdatabuf(void *handle);
+	virtual	int		alone();
+		int		buf_lprint(int x, int y, int c, int l, char *text);
+		int		buf_lprintw(int x, int y, int c, int l, int *text);
+		int		buf_print(int x, int y, int c, char *text);
+		void		buf_printchar(int x, int y, int c, int ch);
+		int		buf_printf(int x, int y, int c, char *format, ...);
+		int		buf_printw(int x, int y, int c, int *text);
+	virtual	int		childcount();
+		void		clear(int color);
+	virtual	void		clipbounds(bounds *b);
+	virtual	void		config_changed();
+	virtual	int		countselectables();
+		void		databuf_freedup(void *handle);
+		void 		atabuf_get(void *buf, int bufsize);
+		void		*databuf_getdup(void *buf, int bufsize);
+		void		databuf_set(void *buf, int bufsize);
+	virtual	int		datasize();
+		void		dirtyview();
+	virtual	void		disable();
+		void		disable_buffering();
+	virtual void		draw();
+	virtual	void		enable();
+		void		enable_buffering();
+	virtual	int		enum_start();
+	virtual	ht_view 	*enum_next(int *handle);
+		bool		exposed();
+		void		fill(int x, int y, int w, int h, int c, int chr);
+	virtual	int		focus(ht_view *view);
+		void		getbounds(bounds *b);
+	virtual	void		getminbounds(int *width, int *height);
+		vcp		getcolor(uint index);
+	virtual	void		getdata(ObjectStream &s);
+	virtual ht_view 	*getfirstchild();
+	virtual	uint		getnumber();
+		char		*getpalette();
+	virtual	ht_view		*getselected();
+	virtual void		handlemsg(htmsg *msg);
+		void		hidecursor();
+		int		isviewdirty();
+	virtual	int		isalone(ht_view *view);
+	virtual	void		load(ObjectStream &s);
+	virtual	void		move(int rx, int ry);
+	virtual	ObjectID	getObjectID() const;
+		int		pointvisible(int x, int y);
+	virtual	void		receivefocus();
+	virtual	void		redraw();
+		void		relocate_to(ht_view *view);
+	virtual	void		resize(int rw, int rh);
+	virtual void		releasefocus();
+	virtual	int		select(ht_view *view);
+	virtual	void		selectfirst();
+	virtual	void		selectlast();
+		void		sendmsg(htmsg *msg);
+		void		sendmsg(int msg, int data1=0, int data2=0);
+		void		sendmsg(int msg, void *data1, void *data2=0);
+		void		setbounds(bounds *b);
+		void		setvisualbounds(bounds *b);
+		void		setcursor(int x, int y, cursor_mode c=cm_normal);
+	virtual	void		setdata(ObjectStream *s);
+	virtual	void		setgroup(ht_group *group);
+	virtual	void		setnumber(uint number);
+		void		setoptions(int options);
+	virtual	void		setpalette(char *pal_name);
+		void		setpalettefull(char *pal_name, char *pal_class);
+	virtual	void		store(ObjectStream &s) const;
+		void 		unrelocate_to(ht_view *view);
 };
 
 /*
@@ -231,7 +231,7 @@ public:
 	ht_view 	*first, *current, *last;
 	void		*shared_data;
 
-			void	init(bounds *b, int options, const char *desc);
+		void	init(bounds *b, int options, const char *desc);
 	virtual	void done();
 /* overwritten */
 	virtual	int childcount();
@@ -240,32 +240,32 @@ public:
 	virtual	int enum_start();
 	virtual	ht_view *enum_next(int *handle);
 	virtual	int focus(ht_view *view);
-	virtual	void getdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream *s);
 	virtual	ht_view *getselected();
 	virtual 	ht_view *getfirstchild();
 	virtual	void handlemsg(htmsg *msg);
 	virtual	int isalone(ht_view *view);
 			int isviewdirty();
-	virtual	int load(ht_object_stream *s);
+	virtual	void		load(ObjectStream &s);
 	virtual	void move(int x, int y);
-	virtual   OBJECT_ID object_id() const;
-			void putontop(ht_view *view);
+	virtual	ObjectID	getObjectID() const;
+		void putontop(ht_view *view);
 	virtual 	void receivefocus();
 	virtual	void resize(int rw, int rh);
 	virtual 	void releasefocus();
 	virtual	int select(ht_view *view);
 	virtual	void selectfirst();
 	virtual	void selectlast();
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void setdata(ObjectStream *s);
 	virtual	void setpalette(char *pal_name);
-	virtual	void store(ht_object_stream *s);
+	virtual	void		store(ObjectStream &s) const;
 /* new */
 	virtual	void reorder_view(ht_view *v, int rx, int ry);
-			void remove(ht_view *view);
+		void remove(ht_view *view);
 	virtual	void insert(ht_view *view);
-			int focusnext();
-			int focusprev();
-			ht_view *get_by_browse_idx(int i);
+		int focusnext();
+		int focusprev();
+		ht_view *get_by_browse_idx(int i);
 };
 
 /*
@@ -274,18 +274,18 @@ public:
 
 class ht_xgroup: public ht_group {
 public:
-			void	init(bounds *b, int options, const char *desc);
-	virtual	void done();
+		void		init(bounds *b, int options, const char *desc);
+	virtual	void		done();
 /* overwritten */
-	virtual	int countselectables();
-	virtual	void handlemsg(htmsg *msg);
-	virtual	int isalone(ht_view *view);
-	virtual	int load(ht_object_stream *s);
-	virtual   OBJECT_ID object_id() const;
-	virtual	void redraw();
-	virtual	void selectfirst();
-	virtual	void selectlast();
-	virtual	void store(ht_object_stream *s);
+	virtual	int		countselectables();
+	virtual	void		handlemsg(htmsg *msg);
+	virtual	int		isalone(ht_view *view);
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
+	virtual	void		redraw();
+	virtual	void		selectfirst();
+	virtual	void		selectlast();
+	virtual	void		store(ObjectStream &s) const;
 };
 
 /*
@@ -298,15 +298,15 @@ protected:
 	palette *gpal;
 	bool isvertical;
 public:
-			void	init(bounds *b, palette *gpal, bool isvertical);
+		void	init(bounds *b, palette *gpal, bool isvertical);
 	virtual	void done();
 /* overwritten */
 	virtual	void enable();
 	virtual	void disable();
 	virtual 	void draw();
-	virtual	int load(ht_object_stream *s);
-	virtual   OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *s);
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
+	virtual	void		store(ObjectStream &s) const;
 /* new */
 	virtual	void setpos(int pstart, int psize);
 };
@@ -339,28 +339,28 @@ public:
 
 class ht_frame: public ht_text {
 protected:
-	UINT number;
-	UINT style;
-	UINT framestate;
+	uint number;
+	uint style;
+	uint framestate;
 
 /* new */
 	virtual	vcp getcurcol_normal();
 	virtual	vcp getcurcol_killer();
 public:
-			void	init(bounds *b, const char *desc, UINT style, UINT number=0);
-	virtual	void done();
+		void		init(bounds *b, const char *desc, uint style, uint number=0);
+	virtual	void		done();
 /* overwritten */
-	virtual	void draw();
-	virtual	UINT getnumber();
-	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void setnumber(UINT number);
-	virtual	void settext(const char *text);
-	virtual	void store(ht_object_stream *s);
+	virtual	void		draw();
+	virtual	uint		getnumber();
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
+	virtual	void		setnumber(uint number);
+	virtual	void		settext(const char *text);
+	virtual	void		store(ObjectStream &s) const;
 /* new */
-			UINT getstyle();
-			void setframestate(UINT framestate);
-			void setstyle(UINT style);
+		uint		getstyle();
+		void		setframestate(uint framestate);
+		void		setstyle(uint style);
 };
 
 /*
@@ -377,35 +377,35 @@ protected:
 	ht_scrollbar *hscrollbar;
 	ht_scrollbar *vscrollbar;
 	ht_text *pindicator;
-	UINT number;
+	uint number;
 
 	int action_state;
 	
 			bool next_action_state();
 public:
-			void	init(bounds *b, const char *desc, UINT framestyle, UINT number=0);
+			void	init(bounds *b, const char *desc, uint framestyle, uint number=0);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();
-	virtual	UINT getnumber();
+	virtual	uint getnumber();
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void insert(ht_view *view);
-	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
 	virtual	void receivefocus();
 	virtual	void releasefocus();
 	virtual	void redraw();
 	virtual	void resize(int rw, int rh);
-	virtual	void setnumber(UINT number);
-	virtual	void store(ht_object_stream *s);
+	virtual	void setnumber(uint number);
+	virtual	void store(ObjectStream &s) const;
 /* new */
-			void getclientarea(bounds *b);
-			ht_frame *getframe();
-			void setframe(ht_frame *frame);
-			void sethscrollbar(ht_scrollbar *scrollbar);
-			void setpindicator(ht_text *pindicator);
-			void settitle(char *title);
-			void setvscrollbar(ht_scrollbar *scrollbar);
+		void getclientarea(bounds *b);
+		ht_frame *getframe();
+		void setframe(ht_frame *frame);
+		void sethscrollbar(ht_scrollbar *scrollbar);
+		void setpindicator(ht_text *pindicator);
+		void settitle(char *title);
+		void setvscrollbar(ht_scrollbar *scrollbar);
 };
 
 bool scrollbar_pos(int start, int size, int all, int *pstart, int *psize);
