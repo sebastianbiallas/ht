@@ -333,7 +333,7 @@ int ht_disasm_viewer::ref_sel(LINE_ID *id)
 	return goto_offset(id->id1, true);
 }
 
-bool ht_disasm_viewer::qword_to_pos(qword q, viewer_pos *p)
+bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 {
 	ht_linear_sub *s = get_disasm_sub();
 	FILEOFS ofs = QWORD_GET_INT(q);

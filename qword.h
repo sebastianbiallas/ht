@@ -29,7 +29,7 @@ typedef struct {
 	uint32 hi;
 } uint64;
 
-#define qword uint64
+#define uint64 uint64
 
 typedef struct {
 	uint32 lo;

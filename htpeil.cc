@@ -155,7 +155,7 @@ static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				if (strcmp(entry->name, "#~") == 0) {
 					// token index
 					char dummy[8];
-					qword types;
+					uint64 types;
 					file->seek(entry->offset);
 					file->read(&dummy, 8);
 					file->read(&types, 8);

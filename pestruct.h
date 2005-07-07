@@ -74,7 +74,7 @@ typedef struct	PE_OPTIONAL_HEADER32_NT {
 
 typedef struct	PE_OPTIONAL_HEADER64_NT {
 // NT additional fields.
-	qword image_base HTPACKED;
+	uint64 image_base HTPACKED;
 	uint32 section_alignment HTPACKED;
 	uint32 file_alignment HTPACKED;
 	uint16 major_os_version	HTPACKED;
@@ -89,10 +89,10 @@ typedef struct	PE_OPTIONAL_HEADER64_NT {
 	uint32 checksum HTPACKED;
 	uint16	subsystem HTPACKED;
 	uint16 dll_characteristics HTPACKED;
-	qword stack_reserve_size HTPACKED;
-	qword stack_commit_size HTPACKED;
-	qword heap_reserve_size HTPACKED;
-	qword heap_commit_size HTPACKED;
+	uint64 stack_reserve_size HTPACKED;
+	uint64 stack_commit_size HTPACKED;
+	uint64 heap_reserve_size HTPACKED;
+	uint64 heap_commit_size HTPACKED;
 	uint32 loader_flags HTPACKED;
 	uint32 directory_count HTPACKED;
 	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES] HTPACKED;
@@ -162,10 +162,10 @@ struct PE_THUNK_DATA {
 
 struct PE_THUNK_DATA_64 {
 	union {
-		qword forwarder_string HTPACKED;
-		qword function_desc_address HTPACKED;
-		qword ordinal HTPACKED;
-		qword data_address HTPACKED;
+		uint64 forwarder_string HTPACKED;
+		uint64 function_desc_address HTPACKED;
+		uint64 ordinal HTPACKED;
+		uint64 data_address HTPACKED;
 	};
 };
 

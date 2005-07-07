@@ -591,7 +591,7 @@ static void fmtqword(char *buffer, size_t *currlen, size_t maxlen,
 	   if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
 
 	   do {
-			 qword uv = uvalue % to_qword((unsigned)base);
+			 uint64 uv = uvalue % to_qword((unsigned)base);
 			 convert[place++] =
 				    (caps? "0123456789ABCDEF":"0123456789abcdef")
 				    [uv.lo];

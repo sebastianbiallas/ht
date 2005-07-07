@@ -55,7 +55,7 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *addr);
 	virtual	bool pos_to_offset(viewer_pos addr, FILEOFS *ofs);
-	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
+	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
 	virtual	int ref_sel(LINE_ID *id);
 	virtual	int symbol_handler(eval_scalar *result, char *name);
 };

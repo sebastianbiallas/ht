@@ -36,10 +36,10 @@ typedef uint32 elf32_sword;
 typedef uint32 elf32_word;
 
 /* 64bit architectures */
-typedef qword elf64_addr;
-typedef qword elf64_off;
-typedef qword elf64_sword;
-typedef qword elf64_word;
+typedef uint64 elf64_addr;
+typedef uint64 elf64_off;
+typedef uint64 elf64_sword;
+typedef uint64 elf64_word;
 typedef uint32 elf64_half;
 typedef uint16 elf64_quarter;
 
@@ -403,7 +403,7 @@ extern byte ELF_RELA64_struct[];
 struct ELFAddress {
 	union {
 		uint32 a32;
-		qword a64;
+		uint64 a64;
 	};
 };
 

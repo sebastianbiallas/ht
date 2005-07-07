@@ -189,7 +189,7 @@ bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_hex_viewer::qword_to_pos(qword q, viewer_pos *p)
+bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 {
 	int ll = h->get_line_length();
 	ht_linear_sub *s = (ht_linear_sub*)cursor.sub;

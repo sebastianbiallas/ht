@@ -368,10 +368,10 @@ static bool bnstr2bin(char *str, char *p, int base, uint32 *v)
 }
 */
 
-static bool bnstr2bin(char *str, char *p, int base, qword *q)
+static bool bnstr2bin(char *str, char *p, int base, uint64 *q)
 {
 	*q = to_qword(0);
-	qword qbase = to_qword(base);
+	uint64 qbase = to_qword(base);
 	do {
 		int c = hexdigit(*str);
 		if ((c == -1) || (c >= base)) return false;
@@ -382,7 +382,7 @@ static bool bnstr2bin(char *str, char *p, int base, qword *q)
 	return true;
 }
 
-bool bnstr(char **str, qword *q, int defaultbase)
+bool bnstr(char **str, uint64 *q, int defaultbase)
 {
 	int base=defaultbase;
 	int t=0;
@@ -435,7 +435,7 @@ bool bnstr(char **str, qword *q, int defaultbase)
 
 bool bnstr(char **str, uint32 *v, int defaultbase)
 {
-	qword q;
+	uint64 q;
 	bool res = bnstr(str, &q, defaultbase);
 	*v = QWORD_GET_LO(q);
 	return res;
@@ -510,7 +510,7 @@ char *mkhexd(char *buf, uint32 d)
 	return buf;
 }
 
-char *mkhexq(char *buf, qword q)
+char *mkhexq(char *buf, uint64 q)
 {
 	*buf++=hexchars[(q.hi>>28)&0xf];
 	*buf++=hexchars[(q.hi>>24)&0xf];

@@ -608,7 +608,7 @@ static int aviewer_func_addr(eval_scalar *result, eval_str *str)
 	int l = addr->parseString(str->value, str->len, aviewer->analy);
 	if (l) {
 		// FIXNEW
-		qword q = to_qword(0);          
+		uint64 q = to_qword(0);          
 		addr->putIntoArray((byte*)&q);
 		scalar_create_int_q(result, q);
 		return 1;
@@ -628,7 +628,7 @@ static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 	Symbol *l;
 	if ((l = aviewer->analy->getSymbolByName(buffer))) {
 		// FIXNEW
-		qword q = to_qword(0);
+		uint64 q = to_qword(0);
 		l->location->addr->putIntoArray((byte*)&q);
 		scalar_create_int_q(result, q);
 		return 1;
@@ -645,7 +645,7 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 	viewer_pos p;
 	if (aviewer->offset_to_pos(QWORD_GET_INT(i->value), &p)) {
 		Address *a;
-		qword q = to_qword(0);
+		uint64 q = to_qword(0);
 		aviewer->convertViewerPosToAddress(p, &a);
 		a->putIntoArray((byte*)&q);
 		delete a;
@@ -1975,7 +1975,7 @@ int ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *p
 
 int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 {
-	qword v;
+	uint64 v;
 	viewer_pos vp;
 	Address *w;
 	if (*name == '@') {
@@ -1988,7 +1988,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 				return 0;
 			}
 			convertViewerPosToAddress(vp, &w);
-			qword b = to_qword(0);
+			uint64 b = to_qword(0);
 			w->putIntoArray((byte*)&b);
 			delete w;
 			scalar_create_int_q(result, b);
@@ -1998,7 +1998,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 	} else {
 		if (strcmp(name, "$")==0) {
 			if (getCurrentAddress(&w)) {
-				qword b = to_qword(0);
+				uint64 b = to_qword(0);
 				w->putIntoArray((byte*)&b);
 				scalar_create_int_q(result, b);
 				delete w;
@@ -2011,7 +2011,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 		Symbol *l = analy->getSymbolByName(name);
 		if (l) {
 			w=l->location->addr;
-			qword b;
+			uint64 b;
 			w->putIntoArray((byte*)&b);
 			scalar_create_int_q(result, b);
 			return 1;
@@ -2020,7 +2020,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 	
-bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
+bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
 {
 	if (!analy) return false;
 	Address *a=analy->createAddress();

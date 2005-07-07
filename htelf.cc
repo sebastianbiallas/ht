@@ -535,8 +535,8 @@ bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAdd
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
-					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+					uint64 qofs = addr.a64 - s->sh_addr + s->sh_offset;
 					*ofs = qofs.lo;
 					return true;
 				}
@@ -565,7 +565,7 @@ bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, EL
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i = 0; i < section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					*section = i;
 					return true;
 				}
@@ -593,7 +593,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFA
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i=0; i<section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
 				s++;
@@ -630,9 +630,9 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			qword qofs = to_qword(ofs);
+			uint64 qofs = to_qword(ofs);
 			for (uint i = 0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (uint64_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					addr->a64 = qofs - s->sh_offset + s->sh_addr;
 					return true;
 				}
@@ -660,10 +660,10 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uin
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			qword qofs;
+			uint64 qofs;
 			qofs.hi = 0; qofs.lo = ofs;
 			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					*section = i;
 					return true;
 				}

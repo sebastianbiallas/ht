@@ -722,12 +722,12 @@ uint ht_format_viewer::pwrite(FILEOFS ofs, void *buf, uint size)
 	return 0;
 }
 
-bool ht_format_viewer::qword_to_offset(qword q, FILEOFS *ofs)
+bool ht_format_viewer::qword_to_offset(uint64 q, FILEOFS *ofs)
 {
 	return false;
 }
 
-bool ht_format_viewer::qword_to_pos(qword q, viewer_pos *pos)
+bool ht_format_viewer::qword_to_pos(uint64 q, viewer_pos *pos)
 {
 	return false;
 }
@@ -761,7 +761,7 @@ static int format_viewer_symbol_handler(eval_scalar *result, char *name)
 	return viewer->symbol_handler(result, name);
 }
 
-bool ht_format_viewer::string_to_qword(char *string, qword *q)
+bool ht_format_viewer::string_to_qword(char *string, uint64 *q)
 {
 	eval_scalar r;
 	if (eval(&r, string, format_viewer_func_handler, format_viewer_symbol_handler, this)) {
@@ -781,14 +781,14 @@ bool ht_format_viewer::string_to_qword(char *string, qword *q)
 
 bool ht_format_viewer::string_to_pos(char *string, viewer_pos *pos)
 {
-	qword q;
+	uint64 q;
 	if (!string_to_qword(string, &q)) return false;
 	return qword_to_pos(q, pos);
 }
 
 bool ht_format_viewer::string_to_offset(char *string, FILEOFS *ofs)
 {
-	qword q;
+	uint64 q;
 	if (!string_to_qword(string, &q)) return false;
 	return qword_to_offset(q, ofs);
 }
@@ -2892,7 +2892,7 @@ void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *t
 		int_hash *tbl;
 		if ((tbl=(int_hash*)find_atom(id))) {
 			char *str;
-			qword q;
+			uint64 q;
 			q.hi = 0;
 			q.lo = 0;
 			FILEOFS tag_offset=tag_get_offset(tag);
@@ -2930,7 +2930,7 @@ void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *t
 						}
 						break;
 				}
-/* FIXME: qword ? */
+/* FIXME: uint64 ? */
 				if ((str=matchhash(q.lo, tbl))) {
 					*string=str;
 					*length=strlen(*string);
@@ -3028,7 +3028,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_QWORD_LE: {
-					qword q;
+					uint64 q;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
@@ -3085,7 +3085,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_QWORD_BE: {
-					qword q;
+					uint64 q;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
@@ -3817,7 +3817,7 @@ void ht_uformat_viewer::scroll_down(int n)
 	check_cursor_visibility();
 }
 
-bool ht_uformat_viewer::qword_to_offset(qword q, FILEOFS *ofs)
+bool ht_uformat_viewer::qword_to_offset(uint64 q, FILEOFS *ofs)
 {
 // FIXME: not "The Right Thing(tm)"
 	*ofs = QWORD_GET_INT(q);

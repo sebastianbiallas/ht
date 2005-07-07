@@ -24,7 +24,7 @@
 class ht_format_group;
 
 #include "evalx.h"
-#include "htdata.h"
+#include "data.h"
 #include "htobj.h"
 #include "htstring.h"
 #include "formats.h"
@@ -56,7 +56,7 @@ union viewer_pos {
  *	CLASS ht_search_request
  */
  
-class ht_search_request: public ht_data {
+class ht_search_request: public Object {
 public:
 	uint search_class;
 	uint type;
@@ -69,7 +69,7 @@ public:
  *	CLASS ht_search_result
  */
  
-class ht_search_result: public ht_data {
+class ht_search_result: public Object {
 public:
 	uint search_class;
 
@@ -105,7 +105,7 @@ public:
  *	formats
  */
 
-class ht_format_loc: public ht_data {
+class ht_format_loc: public Object {
 public:
 	char *name;
 	FILEOFS start;
@@ -155,8 +155,8 @@ protected:
 /* new */
 	virtual	bool compeq_viewer_pos(viewer_pos *a, viewer_pos *b);
 
-	virtual	void vstate_restore(ht_data *view_state);
-	virtual	ht_data *vstate_create();
+	virtual	void vstate_restore(Object *view_state);
+	virtual	Object *vstate_create();
 	
 	virtual	bool next_logical_pos(viewer_pos pos, viewer_pos *npos);
 	virtual	bool next_logical_offset(FILEOFS ofs, FILEOFS *nofs);
@@ -189,7 +189,7 @@ public:
 	virtual	void pselect_set(FILEOFS start, FILEOFS end);
 	virtual	uint pwrite(FILEOFS ofs, void *buf, uint size);
 	virtual	bool string_to_offset(char *string, FILEOFS *ofs);
-	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
+	virtual	bool qword_to_offset(uint64 q, FILEOFS *ofs);
 
 	virtual	bool get_current_real_offset(FILEOFS *ofs);
 
@@ -203,7 +203,7 @@ public:
 	virtual	void vselect_set(viewer_pos start, viewer_pos end);
 	virtual	uint vwrite(viewer_pos pos, void *buf, uint size);
 	virtual	bool string_to_pos(char *string, viewer_pos *pos);
-	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
+	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
 
 	/* string evaluation */
 	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
@@ -215,7 +215,7 @@ public:
 	/* misc */
 			void clear_viewer_pos(viewer_pos *p);
 			ht_streamfile *get_file();
-			bool string_to_qword(char *string, qword *q);
+			bool string_to_qword(char *string, uint64 *q);
 			bool vstate_save();
 };
 
@@ -223,7 +223,7 @@ public:
  *	CLASS ht_format_viewer_entry
  */
 
-class ht_format_viewer_entry: public ht_data {
+class ht_format_viewer_entry: public Object {
 public:
 	ht_view *instance;
 	format_viewer_if *interface;
@@ -324,8 +324,8 @@ protected:
 	virtual	char *func(UINT i, bool execute);
 	virtual	bool next_logical_pos(viewer_pos pos, viewer_pos *npos);
 	virtual	bool next_logical_offset(FILEOFS ofs, FILEOFS *nofs);
-	virtual	ht_data *vstate_create();
-	virtual	void vstate_restore(ht_data *view_state);
+	virtual	Object *vstate_create();
+	virtual	void vstate_restore(Object *view_state);
 /* new */
 	int address_input(const char *title, char *buf, int buflen, uint32 histid);
 	void adjust_cursor_group();
@@ -402,7 +402,7 @@ public:
 	virtual	void pselect_get(FILEOFS *start, FILEOFS *end);
 	virtual	void pselect_set(FILEOFS start, FILEOFS end);
 	virtual	uint pwrite(FILEOFS ofs, void *buf, uint size);
-	virtual	bool qword_to_offset(qword q, FILEOFS *ofs);
+	virtual	bool qword_to_offset(uint64 q, FILEOFS *ofs);
 	virtual	ht_search_result *vsearch(ht_search_request *search, viewer_pos start, viewer_pos end);
 /* new */
 	virtual	bool compeq_viewer_pos(viewer_pos *a, viewer_pos *b);
@@ -596,9 +596,9 @@ public:
  *	CLASS ht_data_tagstring
  */
 
-class ht_data_tagstring: public ht_data_string {
+class ht_data_tagstring: public String {
 public:
-			ht_data_tagstring(char *tagstr=0);
+		ht_data_tagstring(char *tagstr = NULL);
 	virtual	~ht_data_tagstring();
 };
 
