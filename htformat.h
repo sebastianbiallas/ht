@@ -143,7 +143,7 @@ public:
 
 class ht_format_viewer: public ht_viewer {
 protected:
-	ht_streamfile *file;
+	File *file;
 // last search (request)
 	ht_search_request *last_search_request;
 	bool last_search_physical;

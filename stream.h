@@ -26,25 +26,7 @@
 
 #include "data.h"
 #include "str.h"
-#include "system/file.h"
-
-#if 0
-// just an idea. but it probably sucks...
-enum StreamEvent {
-	SEV_NULL = 0,
-	SEV_CONTENT_MODIFIED = 1		// ()
-};
-
-typedef uint StreamEventMask;
-
-/**
- *	A stream event listener
- */
-class StreamEventListener: public Object {
-public:
-	virtual	void handleEvent(StreamEvent aStreamEvent, va_list args) = 0;
-};
-#endif
+#include "io/file.h"
 
 class String;
 
@@ -127,6 +109,9 @@ public:
 #define PUTX_INT(st, d, size, dstr)	(st).putInt(d, size, dstr)
 #define PUTX_INTD(st, d, size, dstr)	(st).putInt(d, size, dstr, OS_FMT_DEC)
 #define PUTX_INTX(st, d, size, dstr)	(st).putInt(d, size, dstr, OS_FMT_HEX)
+#define PUTX_INT16(st, d, dstr)		(st).putInt(d, 2, dstr)
+#define PUTX_INT16D(st, d, dstr)	(st).putInt(d, 2, dstr, OS_FMT_DEC)
+#define PUTX_INT16X(st, d, dstr)	(st).putInt(d, 2, dstr, OS_FMT_HEX)
 #define PUTX_INT32(st, d, dstr)		(st).putInt(d, 4, dstr)
 #define PUTX_INT32D(st, d, dstr)	(st).putInt(d, 4, dstr, OS_FMT_DEC)
 #define PUTX_INT32X(st, d, dstr)	(st).putInt(d, 4, dstr, OS_FMT_HEX)
@@ -142,6 +127,9 @@ public:
 #define PUT_INT(st, d, size)		PUTX_INT(st, d, size, #d)
 #define PUT_INTD(st, d, size)		PUTX_INTD(st, d, size, #d)
 #define PUT_INTX(st, d, size)		PUTX_INTX(st, d, size, #d)
+#define PUT_INT16(st, d)		PUTX_INT16(st, d, #d)
+#define PUT_INT16D(st, d)		PUTX_INT16D(st, d, #d)
+#define PUT_INT16X(st, d)		PUTX_INT16X(st, d, #d)
 #define PUT_INT32(st, d)		PUTX_INT32(st, d, #d)
 #define PUT_INT32D(st, d)		PUTX_INT32D(st, d, #d)
 #define PUT_INT32X(st, d)		PUTX_INT32X(st, d, #d)
@@ -157,6 +145,9 @@ public:
 #define GETX_INT(st, size, dstr)	(st).getInt(size, dstr)
 #define GETX_INTD(st, size, dstr)       GETX_INT(st, size, dstr)
 #define GETX_INTX(st, size, dstr)       GETX_INT(st, size, dstr)
+#define GETX_INT16(st, dstr)		(st).getInt(2, dstr)
+#define GETX_INT16D(st, dstr)		GETX_INT16(st, dstr)
+#define GETX_INT16X(st, dstr)		GETX_INT16(st, dstr)
 #define GETX_INT32(st, dstr)		(st).getInt(4, dstr)
 #define GETX_INT32D(st, dstr)		GETX_INT32(st, dstr)
 #define GETX_INT32X(st, dstr)		GETX_INT32(st, dstr)
@@ -172,6 +163,9 @@ public:
 #define GET_INT(st, d, size)		d=GETX_INT(st, size, #d)
 #define GET_INTD(st, d, size)		d=GET_INT(st, d, size)
 #define GET_INTX(st, d, size)		d=GET_INT(st, d, size)
+#define GET_INT16(st, d)		d=GETX_INT16(st, #d)
+#define GET_INT16D(st, d)		d=GETX_INT16D(st, #d)
+#define GET_INT16X(st, d)		d=GETX_INT16X(st, #d)
 #define GET_INT32(st, d)		d=GETX_INT32(st, #d)
 #define GET_INT32D(st, d)		d=GETX_INT32D(st, #d)
 #define GET_INT32X(st, d)		d=GETX_INT32X(st, #d)
