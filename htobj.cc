@@ -405,7 +405,7 @@ void ht_view::getbounds(bounds *b)
 	*b=size;
 }
 
-vcp ht_view::getcolor(UINT index)
+vcp ht_view::getcolor(uint index)
 {
 	return getcolorv(&pal, index);
 }
@@ -725,7 +725,7 @@ void ht_view::setgroup(ht_group *_group)
 	group=_group;
 }
 
-void ht_view::setnumber(UINT number)
+void ht_view::setnumber(uint number)
 {
 }
 
@@ -1581,19 +1581,19 @@ ObjectID ht_frame::getObjectID() const
 	return ATOM_HT_FRAME;
 }
 
-void ht_frame::setframestate(UINT _framestate)
+void ht_frame::setframestate(uint _framestate)
 {
 	framestate=_framestate;
 	dirtyview();
 }
 
-void ht_frame::setnumber(UINT _number)
+void ht_frame::setnumber(uint _number)
 {
 	number=_number;
 	dirtyview();
 }
 
-void ht_frame::setstyle(UINT s)
+void ht_frame::setstyle(uint s)
 {
 	style=s;
 }
@@ -1923,7 +1923,7 @@ void ht_window::setframe(ht_frame *newframe)
 	frame=newframe;
 }
 
-void ht_window::setnumber(UINT _number)
+void ht_window::setnumber(uint _number)
 {
 	if (frame) frame->setnumber(_number);
 	number=_number;

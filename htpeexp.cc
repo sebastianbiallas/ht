@@ -61,7 +61,7 @@ static ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group
 	const char *filename = file->get_filename();
 	char *esectionbuf;
 	char eline[256];
-	FILEOFS ename_ofs;
+	FileOfs ename_ofs;
 	char *ename;
 	bool *lord;
 
@@ -72,7 +72,7 @@ static ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group
 	
 /* get export directory offset */
 	/* 1. get export directory rva */
-	FILEOFS eofs;
+	FileOfs eofs;
 	uint32 erva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_EXPORT].address;
 	uint32 esize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_EXPORT].size;
 	/* 2. transform it into an offset */
@@ -98,43 +98,43 @@ static ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group
 	file->seek(ename_ofs);
 	ename=fgetstrz(file);
 /* read in function entrypoint table */
-	FILEOFS efunct_ofs;
+	FileOfs efunct_ofs;
 	efunct=(uint32*)malloc(edir.function_count*sizeof *efunct);
 	if (!pe_rva_to_ofs(&pe_shared->sections, edir.function_table_address, &efunct_ofs)) goto pe_read_error;
 	file->seek(efunct_ofs);
 	file->read(efunct, edir.function_count*sizeof *efunct);
-	for (UINT i=0; i<edir.function_count;i++) {
+	for (uint i=0; i<edir.function_count;i++) {
 		efunct[i] = create_host_int(efunct+i, sizeof *efunct, little_endian);
 	}
 /* read in name address table */
-	FILEOFS enamet_ofs;
+	FileOfs enamet_ofs;
 	enamet=(uint32*)malloc(edir.name_count*sizeof *enamet);
 	if (!pe_rva_to_ofs(&pe_shared->sections, edir.name_table_address, &enamet_ofs)) goto pe_read_error;
 	file->seek(enamet_ofs);
 	file->read(enamet, edir.name_count*sizeof *enamet);
-	for (UINT i=0; i<edir.name_count; i++) {
+	for (uint i=0; i<edir.name_count; i++) {
 		enamet[i] = create_host_int(enamet+i, sizeof *enamet, little_endian);
 	}
 /* read in ordinal table */
-	FILEOFS eordt_ofs;
+	FileOfs eordt_ofs;
 	eordt=(uint16*)malloc(edir.name_count*sizeof *eordt);
 	if (!pe_rva_to_ofs(&pe_shared->sections, edir.ordinal_table_address, &eordt_ofs)) goto pe_read_error;
 	file->seek(eordt_ofs);
 	file->read(eordt, edir.name_count*sizeof *eordt);
-	for (UINT i=0; i<edir.name_count; i++) {
+	for (uint i=0; i<edir.name_count; i++) {
 		eordt[i] = create_host_int(eordt+i, sizeof *eordt, little_endian);
 	}
 
 	lord=(bool*)malloc(sizeof *lord*edir.function_count);
 	memset(lord, 0, sizeof *lord*edir.function_count);
-	for (UINT i=0; i < edir.name_count; i++) {
+	for (uint i=0; i < edir.name_count; i++) {
 		if (eordt[i] < edir.function_count) {
 			lord[eordt[i]]=true;
 		}
 	}
 
 /* exports by ordinal */
-	for (UINT i=0; i<edir.function_count; i++) {
+	for (uint i=0; i<edir.function_count; i++) {
 		if (lord[i]) continue;
 
 		RVA f = efunct[i];
@@ -144,10 +144,10 @@ static ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group
 	}
 	free(lord);
 /* exports by name */
-	for (UINT i=0; i < edir.name_count; i++) {
+	for (uint i=0; i < edir.name_count; i++) {
 		uint o = eordt[i];
 		RVA f = efunct[o];
-		FILEOFS en;
+		FileOfs en;
 		if (!pe_rva_to_ofs(&pe_shared->sections, *(enamet+i), &en)) goto pe_read_error;
 		file->seek(en);
 		char *s = fgetstrz(file);
@@ -178,7 +178,7 @@ static ht_view *htpeexports_init(bounds *b, ht_streamfile *file, ht_format_group
 	g->insert(head);
 	g->insert(v);
 //
-	for (UINT i=0; i<pe_shared->exports.funcs->count(); i++) {
+	for (uint i=0; i<pe_shared->exports.funcs->count(); i++) {
 		ht_pe_export_function *e = (ht_pe_export_function *)pe_shared->exports.funcs->get(i);
 		char ord[32], addr[32];
 		ht_snprintf(ord, sizeof ord, "%04x", e->ordinal);
@@ -243,7 +243,7 @@ void	ht_pe_export_viewer::done()
 	ht_text_listbox::done();
 }
 
-char *ht_pe_export_viewer::func(UINT i, bool execute)
+char *ht_pe_export_viewer::func(uint i, bool execute)
 {
 	ht_text_listbox_sort_order sortord;
 	switch (i) {

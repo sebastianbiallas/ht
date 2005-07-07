@@ -84,7 +84,7 @@ int LocalFs::deleteFile(const char *filename)
 	return remove(filename);
 }
 
-void *LocalFs::enumFiletype(UINT *type, char **name, void *handle)
+void *LocalFs::enumFiletype(uint *type, char **name, void *handle)
 {
 	*type = 0;
 	*name = "file";
@@ -275,7 +275,7 @@ void	RegNodeFile::store_node(ObjectStream &s, ht_registry_node_type type, ht_reg
 	}
 }
 
-bool	RegNodeFile::set_access_mode(UINT am)
+bool	RegNodeFile::set_access_mode(uint am)
 {
 	access_mode = access_mode0;
 	return (am == access_mode0);
@@ -353,7 +353,7 @@ int RegistryFs::deleteFile(const char *filename)
 	return e;
 }
 
-void *RegistryFs::enumFiletype(UINT *type, char **name, void *handle)
+void *RegistryFs::enumFiletype(uint *type, char **name, void *handle)
 {
 	ht_data_string *key = (ht_data_string*)handle;
 	ht_registry_node_type_desc *value;

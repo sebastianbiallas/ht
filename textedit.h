@@ -37,7 +37,7 @@ struct text_viewer_pos {
 };
 
 union text_search_pos {
-	FILEOFS offset;
+	FileOfs offset;
 };
 
 class ht_text_editor;
@@ -234,7 +234,7 @@ public:
 	int current_position;
 	bool goto_state;
 public:
-	void init(UINT max_undo_size);
+	void init(uint max_undo_size);
 	void insert_undo(ht_text_editor *te, ht_undo_data *undo);
 	bool is_clean();
 	bool	is_clean(int i);
@@ -293,7 +293,7 @@ protected:
 	uint	tab_size;
 
 	ht_search_request *last_search_request;
-	FILEOFS last_search_end_ofs;
+	FileOfs last_search_end_ofs;
 
 /* new */
 			int buf_lprint0(int x, int y, int c, int l, char *text);
@@ -305,7 +305,7 @@ protected:
 			void normalize_selection();
 			uint physical_cursorx();
 			void popup_change_highlight();
-			void render_meta(UINT x, uint y, text_viewer_pos *pos, vcp color);
+			void render_meta(uint x, uint y, text_viewer_pos *pos, vcp color);
 			void render_str(int x, int y, vcp color, text_viewer_pos *pos, uint len, char *str, bool multi);
 			void render_str_color(vcp *color, text_viewer_pos *pos);
 			ht_search_result *search(ht_search_request *request, text_search_pos *start, text_search_pos *end);
@@ -319,12 +319,12 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void resize(int rw, int rh);
 /* new */
-	virtual	char *func(UINT i, bool execute);
-			uint get_line_length(UINT line);
-			uint get_line_vlength(UINT line);
-			uint get_line_indent(UINT line);
+	virtual	char *func(uint i, bool execute);
+			uint get_line_length(uint line);
+			uint get_line_vlength(uint line);
+			uint get_line_indent(uint line);
 			void get_selection(text_viewer_pos *start, text_viewer_pos *end);
-			bool goto_line(UINT line);
+			bool goto_line(uint line);
 	/* position indicator string */
 	virtual	void get_pindicator_str(char *buf);
 	/* scrollbar pos */
@@ -334,7 +334,7 @@ public:
 	virtual	cursor_mode get_cursor_mode();
 	virtual	void get_cursor_pos(text_viewer_pos *cursor);
 	/* conversions */
-	virtual	bool pos_to_offset(text_viewer_pos *pos, FILEOFS *ofs);
+	virtual	bool pos_to_offset(text_viewer_pos *pos, FileOfs *ofs);
 	/**/
 			ht_syntax_lexer *get_lexer();
 			int ppos_str(char *buf, uint bufsize, text_viewer_pos *ppos);
@@ -342,19 +342,19 @@ public:
 			void set_textfile(ht_textfile *t, bool own_t);
 			ht_textfile *get_textfile();
 /**/
-			uint cursor_up(UINT n);
-			uint cursor_down(UINT n);
-			uint cursor_left(UINT n);
-			uint cursor_right(UINT n);
+			uint cursor_up(uint n);
+			uint cursor_down(uint n);
+			uint cursor_left(uint n);
+			uint cursor_right(uint n);
 			void cursor_home();
 			void cursor_end();
-			void cursor_vput(UINT vx);
-			void cursor_pput(UINT px);
+			void cursor_vput(uint vx);
+			void cursor_pput(uint px);
 			void cursor_set(text_viewer_pos *pos);
-			uint scroll_up(UINT n);
-			uint scroll_down(UINT n);
-			uint scroll_left(UINT n);
-			uint scroll_right(UINT n);
+			uint scroll_up(uint n);
+			uint scroll_down(uint n);
+			uint scroll_left(uint n);
+			uint scroll_right(uint n);
 			void select_add(text_viewer_pos *from, text_viewer_pos *to);
 			void select_clear();
 			void select_end();
@@ -384,21 +384,21 @@ public:
 	virtual	void done();
 /* overwritten */
 	virtual	void config_changed();
-	virtual	char *func(UINT i, bool execute);
+	virtual	char *func(uint i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
 	/* position indicator string */
 	virtual	void get_pindicator_str(char *buf);
 	/* cursor mode */
 	virtual	cursor_mode get_cursor_mode();
 /* new */
-			bool concat_lines(UINT a);
-			void delete_chars(UINT line, uint ofs, uint count);
-			void delete_lines(UINT line, uint count);
-			void indent(UINT line, uint start, uint size);
-			void insert_chars(UINT line, uint ofs, void *chars, uint len);
-			void insert_lines(UINT line, uint count);
-			void split_line(UINT a, uint pos);
-			void unindent(UINT line, uint start, uint size);
+			bool concat_lines(uint a);
+			void delete_chars(uint line, uint ofs, uint count);
+			void delete_lines(uint line, uint count);
+			void indent(uint line, uint start, uint size);
+			void insert_chars(uint line, uint ofs, void *chars, uint len);
+			void insert_lines(uint line, uint count);
+			void split_line(uint a, uint pos);
+			void unindent(uint line, uint start, uint size);
 	/* undo/redo */
 			void textoperation_apply(ht_undo_data *ud);
 			void redo();

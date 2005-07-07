@@ -67,7 +67,7 @@ class ht_syntax_lexer: public Object {
 public:
 /* new */
 	virtual	void config_changed();
-	virtual	vcp getcolor_syntax(UINT pal_index)=0;
+	virtual	vcp getcolor_syntax(uint pal_index)=0;
 	virtual	lexer_state getinitstate()=0;
 	virtual	lexer_token geterrortoken()=0;
 	virtual	char *getname()=0;
@@ -112,7 +112,7 @@ public:
 			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index);
+	virtual	vcp getcolor_syntax(uint pal_index);
 	virtual	lexer_state getinitstate();
 	virtual	lexer_token geterrortoken();
 	virtual	char *getname();
@@ -138,7 +138,7 @@ public:
 			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index);
+	virtual	vcp getcolor_syntax(uint pal_index);
 	virtual	lexer_state getinitstate();
 	virtual	lexer_token geterrortoken();
 	virtual	char *getname();

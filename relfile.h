@@ -43,7 +43,7 @@ public:
 		   void	finalize();
 		   void	insert_reloc(FILEOFS o, ht_data *reloc);
 	virtual uint	read(void *buf, uint size);
-	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual int	vcntl(uint cmd, va_list vargs);
 	virtual uint	write(const void *buf, uint size);
 };
 

@@ -37,7 +37,7 @@ extern format_viewer_if htflt_if;
 typedef uint32 FLTAddress;
 
 struct ht_flt_shared_data {
-	FILEOFS header_ofs;
+	FileOfs header_ofs;
 	flat_hdr header;
 
 	FLTAddress code_start;
@@ -54,7 +54,7 @@ struct ht_flt_shared_data {
 
 class ht_flt: public ht_format_group {
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 };
 

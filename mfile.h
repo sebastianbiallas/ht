@@ -24,7 +24,7 @@
 #include "htdata.h"
 #include "stream.h"
 
-typedef FILEOFS PAGEOFS;
+typedef FileOfs PAGEOFS;
 
 /*
  *	ht_mod_page
@@ -36,7 +36,7 @@ public:
 	uint size;
 	byte *data;
 
-			ht_mod_page(UINT size);
+			ht_mod_page(uint size);
 			~ht_mod_page();
 	/* new */
 	virtual uint	read(PAGEOFS pofs, byte *buf, uint len);
@@ -52,7 +52,7 @@ protected:
 
 	bool modified;
 
-	FILEOFS offset;
+	FileOfs offset;
 	uint size;
 
 	uint page_granularity;
@@ -83,14 +83,14 @@ public:
 		   void	init(ht_streamfile *streamfile, int own_streamfile, uint page_granularity = DEFAULT_MOD_PAGE_SIZE);
 	virtual void	done();
 	/* overwritten */
-	virtual int	extend(UINT newsize);
+	virtual int	extend(uint newsize);
 	virtual uint	get_size();
 	virtual uint	read(void *buf, uint size);
 	virtual int	seek(FILEOFS offset);
-	virtual bool	set_access_mode(UINT access_mode);
-	virtual FILEOFS tell();
-	virtual int	truncate(UINT newsize);
-	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual bool	set_access_mode(uint access_mode);
+	virtual FileOfs tell();
+	virtual int	truncate(uint newsize);
+	virtual int	vcntl(uint cmd, va_list vargs);
 	virtual uint	write(const void *buf, uint size);
 };
 

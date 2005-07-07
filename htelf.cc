@@ -47,7 +47,7 @@ static format_viewer_if *htelf_ifs[] = {
 
 static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
-	FILEOFS header_ofs = 0;
+	FileOfs header_ofs = 0;
 	ELF_HEADER header;
 	// read header
 	if (file->seek(header_ofs) != 0) return NULL;
@@ -109,7 +109,7 @@ bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
 /*
  *	CLASS ht_elf
  */
-void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
+void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_ELF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_elf");
@@ -304,11 +304,11 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
 
-	FILEOFS relh = s[rsi].sh_offset;
+	FileOfs relh = s[rsi].sh_offset;
 
 	uint symtabidx = s[rsi].sh_link;
 	if (!isValidELFSectionIdx(elf_shared, symtabidx)) throw ht_msg_exception("invalid symbol table index %d", symtabidx);
-	FILEOFS symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
+	FileOfs symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
 
 	if (s[rsi].sh_type != ELF_SHT_REL) throw ht_msg_exception(
 		"invalid section type for section %d (expeecting %d)",
@@ -386,7 +386,7 @@ void ht_elf::fake_undefined_symbols32()
 	uint32 nextFakeAddr = FAKE_SECTION_BASEADDR;
 	for (uint secidx = 0; secidx < elf_shared->sheaders.count; secidx++) {
 		if (elf_shared->sheaders.sheaders32[secidx].sh_type == ELF_SHT_SYMTAB) {
-			FILEOFS symh = elf_shared->sheaders.sheaders32[secidx].sh_offset;
+			FileOfs symh = elf_shared->sheaders.sheaders32[secidx].sh_offset;
 			uint symnum = elf_shared->sheaders.sheaders32[secidx].sh_size / sizeof (ELF_SYMBOL32);
 			for (uint symidx = 1; symidx < symnum; symidx++) {
 				ELF_SYMBOL32 sym;

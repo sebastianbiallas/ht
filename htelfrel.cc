@@ -55,7 +55,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 	uint skip = elf_shared->reloctables;
 	uint reloctab_shidx = ELF_SHN_UNDEF;
 	uint reloctab_sh_type = ELF_SHT_NULL;
-	for (UINT i=1; i<elf_shared->sheaders.count; i++) {
+	for (uint i=1; i<elf_shared->sheaders.count; i++) {
 		if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_REL) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_RELA)) {
 			if (!skip--) {
 				reloctab_sh_type=elf_shared->sheaders.sheaders32[i].sh_type;
@@ -66,7 +66,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 	}
 	if (!isValidELFSectionIdx(elf_shared, reloctab_shidx)) return NULL;
 
-	FILEOFS h=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
+	FileOfs h=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
 	
 	/* section index of associated symbol table */
 	int si_symbol=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_link;
@@ -103,7 +103,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 		case ELF_SHT_REL: {
 			m->add_mask("destofs  symidx type");
 			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_REL32);
-			for (UINT i=0; i<relnum; i++) {
+			for (uint i=0; i<relnum; i++) {
 				char *tt=t;
 				/* dest offset */
 				tt=tag_make_edit_dword(tt, h+i*sizeof (ELF_REL32), elf_bigendian ? tag_endian_big : tag_endian_little);
@@ -127,7 +127,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 		case ELF_SHT_RELA: {
 			m->add_mask("destofs  symidx addend   type");
 			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_RELA32);
-			for (UINT i=0; i<relnum; i++) {
+			for (uint i=0; i<relnum; i++) {
 				char *tt=t;
 				/* dest offset */
 				tt=tag_make_edit_dword(tt, h+i*sizeof (ELF_RELA32), elf_bigendian ? tag_endian_big : tag_endian_little);

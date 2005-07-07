@@ -112,7 +112,7 @@ struct ht_elf_reloc_section32 {
 };
 
 struct ht_elf_shared_data {
-	FILEOFS header_ofs;
+	FileOfs header_ofs;
 	ELF_HEADER ident;
 	endianess byte_order;
 	union {
@@ -140,10 +140,10 @@ protected:
 	/* new */
 		void auto_relocate32();
 		void fake_undefined_symbols32();
-		uint find_reloc_section_for(UINT si);
+		uint find_reloc_section_for(uint si);
 		void relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a);
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 	/* extends ? */
 	virtual	void loc_enum_start();

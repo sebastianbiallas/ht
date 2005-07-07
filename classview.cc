@@ -475,7 +475,7 @@ static void mf_view(ht_group_sub *g, ht_streamfile *f,
 		s->add_mask("<none>");
 		g2->insertsub (s);
 	}
-	for (UINT i=0; i<mf->attribs_count; i++) {
+	for (uint i=0; i<mf->attribs_count; i++) {
 		g3 = new ht_group_sub();
 		g3->init(f);
 		attrib_view(g3, f, idx, c, mf->attribs[i]);
@@ -674,7 +674,7 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 }
 
 void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
-		  ht_format_group *g, FILEOFS header_ofs, void *shared)
+		  ht_format_group *g, FileOfs header_ofs, void *shared)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_JAVA, f, false, true, 0, g);
 

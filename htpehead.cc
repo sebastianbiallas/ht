@@ -165,7 +165,7 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	FILEOFS h=pe_shared->header_ofs;
+	FileOfs h=pe_shared->header_ofs;
 	ht_pe_header_viewer *v=new ht_pe_header_viewer();
 	v->init(b, DESC_PE_HEADER, VC_EDIT | VC_SEARCH, file, group);
 	register_atom(ATOM_COFF_MACHINES, coff_machines);
@@ -242,7 +242,7 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	
 	/* section headers */
 	
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+	for (uint i=0; i<pe_shared->sections.section_count; i++) {
 		s=new ht_mask_sub();
 		s->init(file, 100+i);
 
@@ -309,7 +309,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					rva = pe_shared->pe64.header_nt.directory[id->id2].address;
 					size = pe_shared->pe64.header_nt.directory[id->id2].size;
 				}
-				FILEOFS ofs = 0;
+				FileOfs ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save();
 					hexv->goto_offset(ofs, false);

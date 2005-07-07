@@ -376,7 +376,7 @@ void ht_registry::init()
 		{"raw", RNT_RAW, create_empty_raw}
 	};
 
-	for (UINT i=0; i<sizeof (b) / sizeof b[0]; i++) {
+	for (uint i=0; i<sizeof (b) / sizeof b[0]; i++) {
 		ht_registry_node_type_desc *d=new ht_registry_node_type_desc();
 		d->type = b[i].type;
 		d->create_empty_registry_data = b[i].create_empty_registry_data;

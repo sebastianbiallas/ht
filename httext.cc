@@ -61,7 +61,7 @@ format_viewer_if httext_if = {
 	return true;
 }
 
-bool ht_text_viewer2::pos_to_offset(viewer_pos pos, FILEOFS *ofs)
+bool ht_text_viewer2::pos_to_offset(viewer_pos pos, FileOfs *ofs)
 {
 	*ofs = pos.u.line_id.id1;
 	return true;
@@ -121,7 +121,7 @@ void *memrchr(const void *string, int ch, size_t num)
 
 byte ht_text_sub_line[TEXT_SUB_MAX_LINELEN];
 
-void ht_text_sub::init(ht_streamfile *file, FILEOFS offset, int size)
+void ht_text_sub::init(ht_streamfile *file, FileOfs offset, int size)
 {
 	ht_linear_sub::init(file, offset, size);
 }
@@ -131,7 +131,7 @@ void ht_text_sub::done()
 	ht_linear_sub::done();
 }
 
-bool ht_text_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+bool ht_text_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	clear_line_id(line_id);
 	line_id->id1 = offset;
@@ -139,16 +139,16 @@ bool ht_text_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 	return true;
 }
 
-bool ht_text_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
+bool ht_text_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
 {
 	return false;
 }
 
-uint ht_text_sub::find_linelen_backwd(byte *buf, uint maxbuflen, FILEOFS ofs, int *le_len)
+uint ht_text_sub::find_linelen_backwd(byte *buf, uint maxbuflen, FileOfs ofs, int *le_len)
 {
 	uint readlen=(maxbuflen>TEXT_SUB_READSIZE) ? TEXT_SUB_READSIZE : maxbuflen;
 	uint oreadlen=readlen;
-	FILEOFS oofs=ofs;
+	FileOfs oofs=ofs;
 	byte *bufp;
 	uint s;
 	uint len=0;
@@ -194,7 +194,7 @@ uint ht_text_sub::find_linelen_backwd(byte *buf, uint maxbuflen, FILEOFS ofs, in
 	return len;
 }
 
-uint ht_text_sub::find_linelen_forwd(byte *buf, uint maxbuflen, FILEOFS ofs, int *le_len)
+uint ht_text_sub::find_linelen_forwd(byte *buf, uint maxbuflen, FileOfs ofs, int *le_len)
 {
 	uint readlen=(maxbuflen>TEXT_SUB_READSIZE) ? TEXT_SUB_READSIZE : maxbuflen;
 	byte *bufp;
@@ -239,7 +239,7 @@ void ht_text_sub::first_line_id(LINE_ID *line_id)
 bool ht_text_sub::getline(char *line, const LINE_ID line_id)
 {
 	byte *bufp = (byte*)line;
-	FILEOFS ofs = line_id.id1;
+	FileOfs ofs = line_id.id1;
 	int ll;
 	uint l=find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, &ll);
 	if (l) {
@@ -260,7 +260,7 @@ bool ht_text_sub::getline(char *line, const LINE_ID line_id)
 void ht_text_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
-	FILEOFS ofs = fofs+fsize;
+	FileOfs ofs = fofs+fsize;
 	uint l = find_linelen_backwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
 	line_id->id1 = ofs-l;
 }
@@ -301,7 +301,7 @@ byte *ht_text_sub::match_lineend_backwd(byte *buf, uint buflen, int *le_len)
 
 int ht_text_sub::next_line_id(LINE_ID *line_id, int n)
 {
-	FILEOFS ofs = line_id->id1;
+	FileOfs ofs = line_id->id1;
 	int r=0;
 	while (n--) {
 		uint l=find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);
@@ -315,7 +315,7 @@ int ht_text_sub::next_line_id(LINE_ID *line_id, int n)
 
 int ht_text_sub::prev_line_id(LINE_ID *line_id, int n)
 {
-	FILEOFS ofs = line_id->id1;
+	FileOfs ofs = line_id->id1;
 	int r=0;
 	while (n--) {
 		uint l=find_linelen_backwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, NULL);

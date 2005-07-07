@@ -46,7 +46,7 @@ public:
 		   void		init(const char *nodename, uint am, uint om);
 	virtual void		done();
 /* overwritten */
-	virtual bool		set_access_mode(UINT access_mode);
+	virtual bool		set_access_mode(uint access_mode);
 };
 
 /*
@@ -61,7 +61,7 @@ public:
 	virtual	int			canonicalize(char *result, const char *filename, const char *cwd) = 0;
 	virtual	int			createFile(const char *filename, uint createtype) = 0;
 	virtual	int			deleteFile(const char *filename) = 0;
-	virtual	void *		enumFiletype(UINT *type, char **name, void *handle) = 0;
+	virtual	void *		enumFiletype(uint *type, char **name, void *handle) = 0;
 	virtual	int			compareFilenames(const char *a, const char *b) = 0;
 	virtual	bool			findFirst(const char *dirname, pfind_t *f) = 0;
 	virtual	bool			findNext(pfind_t *f) = 0;
@@ -90,7 +90,7 @@ public:
 	virtual	int			compareFilenames(const char *a, const char *b);
 	virtual	int			createFile(const char *filename, uint createtype);
 	virtual	int			deleteFile(const char *filename);
-	virtual	void *		enumFiletype(UINT *type, char **name, void *handle);
+	virtual	void *		enumFiletype(uint *type, char **name, void *handle);
 	virtual	bool			findFirst(const char *dirname, pfind_t *f);
 	virtual	bool			findNext(pfind_t *f);
 	virtual	bool			findClose(pfind_t *f);
@@ -124,7 +124,7 @@ public:
 	virtual	int			canonicalize(char *result, const char *filename, const char *cwd);
 	virtual	int			createFile(const char *filename, uint createtype);
 	virtual	int			deleteFile(const char *filename);
-	virtual	void *		enumFiletype(UINT *type, char **name, void *handle);
+	virtual	void *		enumFiletype(uint *type, char **name, void *handle);
 	virtual	int			compareFilenames(const char *a, const char *b);
 	virtual	bool			findFirst(const char *dirname, pfind_t *f);
 	virtual	bool			findNext(pfind_t *f);

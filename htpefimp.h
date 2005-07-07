@@ -49,7 +49,7 @@ public:
 	char *name;
 	uint sym_class;
 
-	ht_pef_import_function(UINT libidx, int num, const char *name, uint sym_class);
+	ht_pef_import_function(uint libidx, int num, const char *name, uint sym_class);
 	~ht_pef_import_function();
 };
 
@@ -77,7 +77,7 @@ public:
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	select_entry(void *entry);
 	/* new */
-		char *	func(UINT i, bool execute);
+		char *	func(uint i, bool execute);
 };
 
 #endif /* !__HTPEFIMP_H__ */

@@ -29,7 +29,7 @@
  *	CLASS ht_mod_page
  */
 
-ht_mod_page::ht_mod_page(UINT s)
+ht_mod_page::ht_mod_page(uint s)
 {
 	size = s;
 	data = (byte*)malloc(size);
@@ -62,8 +62,8 @@ uint ht_mod_page::write(PAGEOFS pofs, const byte *buf, uint len)
 
 int compare_keys_file_delinear(ht_data *key_a, ht_data *key_b)
 {
-	FILEOFS a = (FILEOFS)delinearize((uint32)((ht_data_uint*)key_a)->value);
-	FILEOFS b = (FILEOFS)delinearize((uint32)((ht_data_uint*)key_b)->value);
+	FileOfs a = (FILEOFS)delinearize((uint32)((ht_data_uint*)key_a)->value);
+	FileOfs b = (FILEOFS)delinearize((uint32)((ht_data_uint*)key_b)->value);
 	return a-b;
 }
 
@@ -222,7 +222,7 @@ void ht_streamfile_modifier::mod_page_flush(FILEOFS offset)
 	ht_layer_streamfile::write(m->data, s);
 }
 
-int ht_streamfile_modifier::extend(UINT newsize)
+int ht_streamfile_modifier::extend(uint newsize)
 {
 	// must be opened writable to extend
 	if (!active) return EIO;
@@ -249,7 +249,7 @@ uint ht_streamfile_modifier::read(void *buf, uint s)
 	if (!active) return ht_layer_streamfile::read(buf, s);
 	uint c = 0;
 	byte *b = (byte*)buf;
-	FILEOFS o = tell();
+	FileOfs o = tell();
 #if 0
 	while (s--) {
 		if (o+c >= size) break;
@@ -315,7 +315,7 @@ int ht_streamfile_modifier::seek(FILEOFS o)
 	return 0;
 }
 
-bool	ht_streamfile_modifier::set_access_mode(UINT access_mode)
+bool	ht_streamfile_modifier::set_access_mode(uint access_mode)
 {
 	bool b=ht_layer_streamfile::set_access_mode(access_mode);
 	if (get_access_mode() & FAM_WRITE) {
@@ -327,13 +327,13 @@ bool	ht_streamfile_modifier::set_access_mode(UINT access_mode)
 	return b;
 }
 
-FILEOFS ht_streamfile_modifier::tell()
+FileOfs ht_streamfile_modifier::tell()
 {
 	if (!active) return ht_layer_streamfile::tell();
 	return offset;
 }
 
-int ht_streamfile_modifier::truncate(UINT newsize)
+int ht_streamfile_modifier::truncate(uint newsize)
 {
 	// must be opened writable to truncate
 	if (!active) return EIO;
@@ -347,7 +347,7 @@ int ht_streamfile_modifier::truncate(UINT newsize)
 	return 0;
 }
 
-int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
+int ht_streamfile_modifier::vcntl(uint cmd, va_list vargs)
 {
 	if (active) switch (cmd) {
 		case FCNTL_MODS_INVD:
@@ -357,7 +357,7 @@ int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
 			mod_pages_flush();
 			return 0;
 		case FCNTL_MODS_CLEAR_DIRTY_RANGE: {
-			FILEOFS o=va_arg(vargs, FILEOFS);
+			FileOfs o=va_arg(vargs, FILEOFS);
 			uint s=va_arg(vargs, UINT);
 			uint i=0;
 			while (s--) {
@@ -367,7 +367,7 @@ int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
 			return 0;
 		}
 		case FCNTL_MODS_IS_DIRTY: {
-			FILEOFS o=va_arg(vargs, FILEOFS);
+			FileOfs o=va_arg(vargs, FILEOFS);
 			uint s=va_arg(vargs, UINT);
 			bool *b=va_arg(vargs, bool*);
 			if ((o==0) && (s==size)) {
@@ -384,7 +384,7 @@ int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
 uint ht_streamfile_modifier::write(const void *buf, uint s)
 {
 	if (!active) return ht_layer_streamfile::write(buf, s);
-	FILEOFS o = tell();
+	FileOfs o = tell();
 	byte *b = (byte*)buf;
 	uint c = 0;
 

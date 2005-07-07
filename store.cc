@@ -95,13 +95,13 @@ void	ht_object_stream_bin::init(ht_stream *s)
 void *ht_object_stream_bin::getBinary(int size, char *desc)
 {
 	void *p = smalloc(size);
-	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(p, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 	return p;
 }
 
 void	ht_object_stream_bin::getBinary(void *p, int size, char *desc)
 {
-	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(p, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 bool ht_object_stream_bin::getBool(char *desc)
@@ -120,7 +120,7 @@ int  ht_object_stream_bin::getIntHex(int size, char *desc)
 {
 	assert(size <= 8);
 	byte neta[8];
-	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&neta, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
 	return create_host_int(neta, size, big_endian);
 }
 
@@ -133,7 +133,7 @@ uint64  ht_object_stream_bin::getQWordHex(int size, char *desc)
 {
 	assert(size == 8);
 	byte neta[8];
-	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&neta, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
 	return create_host_int64(neta, big_endian);
 }
 
@@ -149,7 +149,7 @@ char *ht_object_stream_bin::getString(char *desc)
 
 void ht_object_stream_bin::putBinary(void *mem, int size, char *desc)
 {
-	if (stream->write(mem, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(mem, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void ht_object_stream_bin::putBool(bool b, char *desc)
@@ -173,7 +173,7 @@ void ht_object_stream_bin::putIntHex(int a, int size, char *desc)
 	assert(size <= 8);
 	byte neta[8];
 	create_foreign_int(neta, a, size, big_endian);
-	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&neta, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void ht_object_stream_bin::putQWordDec(uint64 a, int size, char *desc)
@@ -186,7 +186,7 @@ void ht_object_stream_bin::putQWordHex(uint64 a, int size, char *desc)
 	assert(size == 8);
 	byte neta[8];
 	create_foreign_int64(neta, a, size, big_endian);
-	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&neta, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void ht_object_stream_bin::putSeparator()
@@ -593,7 +593,7 @@ int  ht_object_stream_memmap::getIntHex(int size, char *desc)
 {
 	assert(size <= 8);
 	int a;
-	if (stream->read(&a, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&a, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
 	return a;
 }
 
@@ -606,7 +606,7 @@ uint64 ht_object_stream_memmap::getQWordHex(int size, char *desc)
 {
 	assert(size==8);
 	uint64 a;
-	if (stream->read(&a, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&a, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
 	return a;
 }
 
@@ -617,14 +617,14 @@ char	*ht_object_stream_memmap::getString(char *desc)
 	return pp;
 }
 
-uint	ht_object_stream_memmap::recordStart(UINT size)
+uint	ht_object_stream_memmap::recordStart(uint size)
 {
 	return ((ht_streamfile*)stream)->tell()+size;
 }
 
-void	ht_object_stream_memmap::recordEnd(UINT a)
+void	ht_object_stream_memmap::recordEnd(uint a)
 {
-	FILEOFS o =((ht_streamfile*)stream)->tell();
+	FileOfs o =((ht_streamfile*)stream)->tell();
 	if (o>a) HT_ERROR("kput");
 	((ht_streamfile*)stream)->seek(a);
 }
@@ -643,7 +643,7 @@ void	ht_object_stream_memmap::putIntDec(int a, int size, char *desc)
 void	ht_object_stream_memmap::putIntHex(int a, int size, char *desc)
 {
 	assert(size <= 8);
-	if (stream->write(&a, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&a, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void	ht_object_stream_memmap::putQWordDec(uint64 a, int size, char *desc)
@@ -654,7 +654,7 @@ void	ht_object_stream_memmap::putQWordDec(uint64 a, int size, char *desc)
 void	ht_object_stream_memmap::putQWordHex(uint64 a, int size, char *desc)
 {
 	assert(size <= 8);
-	if (stream->write(&a, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&a, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void	ht_object_stream_memmap::putString(char *string, char *desc)

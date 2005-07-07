@@ -42,7 +42,7 @@ public:
 	uint idx;
 	vcp color;
 
-			palette_entry(UINT idx=0, vcp color=0);
+			palette_entry(uint idx=0, vcp color=0);
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
 	virtual   void strvalue(char *buf32bytes);

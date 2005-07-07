@@ -191,8 +191,8 @@ static ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_gro
 	m->add_mask(info);
 	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, isbigendian);
 
-	FILEOFS ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
-	for (UINT i=0; i<macho_shared->cmds.count; i++) {
+	FileOfs ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
+	for (uint i=0; i<macho_shared->cmds.count; i++) {
 		switch (macho_shared->cmds.cmds[i]->cmd.cmd) {
 			case LC_SEGMENT: {
 				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds.cmds[i];
@@ -202,8 +202,8 @@ static ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_gro
 				ht_snprintf(info, sizeof info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, isbigendian);
-				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
-				for (UINT j=0; j<c->nsects; j++) {
+				FileOfs sofs = sizeof (MACHO_SEGMENT_COMMAND);
+				for (uint j=0; j<c->nsects; j++) {
 					ht_snprintf(info, sizeof info, "**** section %d ****", j);
 					m->add_mask(info);
 					m->add_staticmask_ptable(macho_section_header, ofs+sofs, isbigendian);

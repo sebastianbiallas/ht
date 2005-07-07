@@ -49,12 +49,12 @@ struct pef_section_headers {
 };
 
 struct ht_pef_shared_data {
-	FILEOFS header_ofs;
+	FileOfs header_ofs;
 	PEF_CONTAINER_HEADER contHeader;
 	endianess byte_order;
 	pef_section_headers sheaders;
 	PEF_ARCH arch;
-	FILEOFS loader_info_header_ofs; 	// 0 if not loader_info_header
+	FileOfs loader_info_header_ofs; 	// 0 if not loader_info_header
 	PEF_LOADER_INFO_HEADER loader_info_header;
 	
 	ht_pef_import imports;
@@ -73,7 +73,7 @@ protected:
 	bool loc_enum;
 	/* new */
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 };
 

@@ -80,13 +80,13 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	c.h=1;
 
 	PE_IMPORT_DESCRIPTOR import;
-	FILEOFS dofs;
+	FileOfs dofs;
 	uint dll_index;
 	char iline[256];
 	
 	/* get import directory offset */
 	/* 1. get import directory rva */
-	FILEOFS iofs;
+	FileOfs iofs;
 	RVA irva;
 	uint isize;
 	if (pe32) {
@@ -116,7 +116,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		if ((!import.characteristics) && (!import.name)) break;
 		dofs = file->tell();
 		/* get name of dll */
-		FILEOFS iname_ofs;
+		FileOfs iname_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)
 			|| file->seek(iname_ofs)) {
 			/* ? try as ofs?*/
@@ -134,7 +134,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		 *	as if it contained just imported addresses.
 		 */
 		RVA fthunk_rva = import.first_thunk;
-		FILEOFS fthunk_ofs;
+		FileOfs fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
 		/*
 		 *	...and Original First Thunk (OFT)
@@ -143,7 +143,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		 *	the original one (bound executables).
 		 */
 		RVA thunk_rva;
-		FILEOFS thunk_ofs;
+		FileOfs thunk_ofs;
 		if (import.original_first_thunk) {
 			thunk_rva = import.original_first_thunk;
 			if (!pe_rva_to_ofs(&pe_shared->sections, thunk_rva, &thunk_ofs)) goto pe_read_error;
@@ -179,14 +179,14 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 				thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
 				file->read(thunk_table, sizeof *thunk_table * thunk_count);
 				// FIXME: ?
-				for (UINT i=0; i<thunk_count; i++) {
+				for (uint i=0; i<thunk_count; i++) {
 					create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
 				}
 			} else {
 				thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
 				file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
 				// FIXME: ?
-				for (UINT i=0; i<thunk_count; i++) {
+				for (uint i=0; i<thunk_count; i++) {
 					create_host_struct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
 				}
 			}
@@ -203,7 +203,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 					func = new ht_pe_import_function(dll_index, fthunk_rva, thunk.ordinal&0xffff);
 				} else {
 					/* by name */
-					FILEOFS function_desc_ofs;
+					FileOfs function_desc_ofs;
 					uint16 hint = 0;
 					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)
 						|| file->seek(function_desc_ofs)) {
@@ -224,7 +224,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 					func = new ht_pe_import_function(dll_index, fthunk_rva, QWORD_GET_LO(thunk64.ordinal)&0xffff);
 				} else {
 					/* by name */
-					FILEOFS function_desc_ofs;
+					FileOfs function_desc_ofs;
 					uint16 hint = 0;
 					if (!pe_rva_to_ofs(&pe_shared->sections, QWORD_GET_LO(thunk64.function_desc_address), &function_desc_ofs)) goto pe_read_error;
 					file->seek(function_desc_ofs);
@@ -272,7 +272,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	g->insert(head);
 	g->insert(v);
 	//
-	for (UINT i=0; i<pe_shared->imports.funcs->count(); i++) {
+	for (uint i=0; i<pe_shared->imports.funcs->count(); i++) {
 		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->imports.funcs->get(i);
 		assert(func);
 		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->imports.libs->get(func->libidx);
@@ -326,7 +326,7 @@ ht_pe_import_library::~ht_pe_import_library()
  *	class ht_pe_import_function
  */
 
-ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, uint o)
+ht_pe_import_function::ht_pe_import_function(uint li, RVA a, uint o)
 {
 	libidx = li;
 	ordinal = o;
@@ -334,7 +334,7 @@ ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, uint o)
 	byname = false;
 }
 
-ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, char *n, uint h)
+ht_pe_import_function::ht_pe_import_function(uint li, RVA a, char *n, uint h)
 {
 	libidx= li;
 	name.name = ht_strdup(n);
@@ -386,7 +386,7 @@ void ht_pe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_pe_import_viewer::func(UINT i, bool execute)
+char *ht_pe_import_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:

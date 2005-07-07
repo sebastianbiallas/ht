@@ -153,14 +153,14 @@ int hist_atoms[]={
 	HISTATOM_EVAL_EXPR
 };
 
-void create_hist_atom(UINT atom)
+void create_hist_atom(uint atom)
 {
 	ht_clist *c=new ht_clist();
 	c->init(compare_keys_history_entry);
 	register_atom(atom, c);
 }
 
-void destroy_hist_atom(UINT atom)
+void destroy_hist_atom(uint atom)
 {
 	ht_clist *c=(ht_clist*)find_atom(atom);
 	if (c) {
@@ -174,7 +174,7 @@ void store_history(ObjectStream &s)
 {
 	uint count=sizeof hist_atoms / sizeof hist_atoms[0];
 	s->putIntDec(count, 4, NULL);
-	for (UINT i=0; i<count; i++) {
+	for (uint i=0; i<count; i++) {
 		s->putIntHex(hist_atoms[i], 4, NULL);
 		ht_clist *c=(ht_clist*)find_atom(hist_atoms[i]);
 		s->putObject(c, NULL);
@@ -184,7 +184,7 @@ void store_history(ObjectStream &s)
 bool load_history(ObjectStream &s)
 {
 	uint count=s->getIntDec(4, NULL);
-	for (UINT i=0; i<count; i++) {
+	for (uint i=0; i<count; i++) {
 		int atom=s->getIntHex(4, NULL);
 		destroy_hist_atom(atom);
 		ht_clist *c=(ht_clist*)s->getObject(NULL);
@@ -201,7 +201,7 @@ BUILDER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
 
 bool init_hist()
 {
-	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (uint i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		create_hist_atom(hist_atoms[i]);
 	}
 	
@@ -223,7 +223,7 @@ void done_hist()
 	
 	UNREGISTER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
 
-	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (uint i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		destroy_hist_atom(hist_atoms[i]);
 	}
 }

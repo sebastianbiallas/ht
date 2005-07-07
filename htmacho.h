@@ -102,7 +102,7 @@ struct macho_sections {
 };
 
 struct ht_macho_shared_data {
-	FILEOFS header_ofs;
+	FileOfs header_ofs;
 	MACHO_HEADER header;
 	macho_commands cmds;
 	macho_sections sections;
@@ -129,7 +129,7 @@ struct ht_macho_shared_data {
 
 class ht_macho: public ht_format_group {
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess image_endianess);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess image_endianess);
 	virtual	void done();
 };
 

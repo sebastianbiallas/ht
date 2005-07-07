@@ -74,7 +74,7 @@ static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_
 	c.h=1;
 /* get delay import directory offset */
 	/* 1. get import directory rva */
-	FILEOFS iofs;
+	FileOfs iofs;
 	RVA irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].address;
 //	uint isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size;
 	/* 2. transform it into an offset */
@@ -91,7 +91,7 @@ static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_
 		if (!dimport.name) break;
 		uint32 base = dimport.attributes & 1 ? 0 : pe_shared->pe32.header_nt.image_base;
 
-		FILEOFS dllname_ofs;
+		FileOfs dllname_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.name-base, &dllname_ofs)) goto pe_read_error;
 		file->seek(dllname_ofs);
 		char *dllname=fgetstrz(file);
@@ -99,7 +99,7 @@ static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_
 		pe_shared->dimports.libs->insert(lib);
 		dll_count++;
 
-		FILEOFS ntofs, atofs;
+		FileOfs ntofs, atofs;
 		uint nva, ava;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.delay_int-base, &ntofs)) goto pe_read_error;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.delay_iat-base, &atofs)) goto pe_read_error;
@@ -117,7 +117,7 @@ static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_
 /* import by ordinal */
 				func=new ht_pe_import_function(dll_index, ava, nva&0xffff);
 			} else {
-				FILEOFS nofs;
+				FileOfs nofs;
 /* import by name */
 				if (!pe_rva_to_ofs(&pe_shared->sections, nva-base, &nofs)) goto pe_read_error;
 				uint16 hint=0;
@@ -150,7 +150,7 @@ static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_
 	g->insert(head);
 	g->insert(v);
 //
-	for (UINT i=0; i<pe_shared->dimports.funcs->count(); i++) {
+	for (uint i=0; i<pe_shared->dimports.funcs->count(); i++) {
 		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->dimports.funcs->get(i);
 		assert(func);
 		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->dimports.libs->get(func->libidx);

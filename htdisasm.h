@@ -49,12 +49,12 @@ public:
 			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t);
 	virtual 	void done();
 /* overwritten */
-	virtual	char *func(UINT i, bool execute);
+	virtual	char *func(uint i, bool execute);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *addr);
-	virtual	bool pos_to_offset(viewer_pos addr, FILEOFS *ofs);
+	virtual	bool pos_to_offset(viewer_pos addr, FileOfs *ofs);
 	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
 	virtual	int ref_sel(LINE_ID *id);
 	virtual	int symbol_handler(eval_scalar *result, char *name);
@@ -70,11 +70,11 @@ private:
 	bool own_disasm;
 	int display_style;
 public:
-			void init(ht_streamfile *file, FILEOFS ofs, int size, Disassembler *disasm, bool own_disasm, int display_style);
+			void init(ht_streamfile *file, FileOfs ofs, int size, Disassembler *disasm, bool own_disasm, int display_style);
 	virtual 	void done();
 /* overwritten */
-	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
-	virtual	bool convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset);
+	virtual	bool convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
+	virtual	bool convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset);
 	virtual	void first_line_id(LINE_ID *line_id);
 	virtual	bool getline(char *line, const LINE_ID line_id);
 	virtual	void last_line_id(LINE_ID *line_id);

@@ -236,7 +236,7 @@ public:
 	virtual	char *	quickfindCompletition(char *s);
 	virtual	bool		selectEntry(void *entry);
 /* new */
-			char *	func(UINT i, bool execute);
+			char *	func(uint i, bool execute);
 			void		set_project(ht_project *project);
 };
 
@@ -325,7 +325,7 @@ public:
 /* overwritten */
 	virtual	void draw();
 	virtual	int focus(ht_view *view);
-	virtual	char *func(UINT i, bool execute);
+	virtual	char *func(uint i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	int load(ObjectStream &f);
 	virtual ObjectID getObjectID() const;
@@ -343,8 +343,8 @@ public:
 			ht_window *create_window_term(const char *cmd);
 			void delete_window(ht_window *window);
 			ht_window *get_window_by_filename(char *filename);
-			ht_window *get_window_by_number(UINT number);
-			ht_window *get_window_by_type(UINT type);
+			ht_window *get_window_by_number(uint number);
+			ht_window *get_window_by_type(uint type);
 			ht_view *popup_view_list(char *dialog_title);
 			ht_window *popup_window_list(char *dialog_title);
 			void project_opencreate(char *filename);

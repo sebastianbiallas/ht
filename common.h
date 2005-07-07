@@ -81,13 +81,13 @@ public:
 					UInt64();
 					UInt64(const UInt64 &u);
 					UInt64(const SInt64 &s);
-					UInt64(UINT u);
+					UInt64(uint u);
 					UInt64(uint64 u);
 	virtual			~UInt64();
 
 			void		assign(const UInt64 &u);
 			void		assign(const SInt64 &s);
-			void		assign(UINT u);
+			void		assign(uint u);
 			void		assign(uint64 u);
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	Object *	duplicate();

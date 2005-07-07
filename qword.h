@@ -67,7 +67,7 @@ sint64 sint64_mul(sint64 a, sint64 b);
 
 #ifdef __cplusplus
 sint64 to_sint64(int i);
-uint64 to_uint64(UINT i);
+uint64 to_uint64(uint i);
 sint64 to_sint64(const uint64 &u);
 uint64 to_uint64(const sint64 &s);
 #define to_qword to_uint64

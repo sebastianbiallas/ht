@@ -58,8 +58,8 @@ public:
 /* overwritten */
 	virtual	void draw();
 	virtual 	void handlemsg(htmsg *msg);
-	virtual	void pselect_add(FILEOFS start, FILEOFS end);
-	virtual	void pselect_set(FILEOFS start, FILEOFS end);
+	virtual	void pselect_add(FILEOFS start, FileOfs end);
+	virtual	void pselect_set(FILEOFS start, FileOfs end);
 /* new */
 			void update_content();
 };

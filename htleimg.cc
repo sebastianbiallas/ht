@@ -63,7 +63,7 @@ static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 /* search for lowest/highest */
 	LEAddress l=(LEAddress)-1, h=0;
 	LE_OBJECT *s = le_shared->objmap.header;
-	for (UINT i=0; i<le_shared->objmap.count; i++) {
+	for (uint i=0; i<le_shared->objmap.count; i++) {
 		LEAddress base = LE_MAKE_ADDR(le_shared, i, 0);
 		uint evsize = MAX(LE_get_seg_vsize(le_shared, i), LE_get_seg_psize(le_shared, i));
 		if (base < l) l = base;
@@ -107,7 +107,7 @@ void ht_le_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, h
 	file = File;
 }
 
-char *ht_le_aviewer::func(UINT i, bool execute)
+char *ht_le_aviewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 3: {
@@ -133,12 +133,12 @@ bool ht_le_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return res;
 }
 
-bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_le_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	if (analy) {
 		Address *addr;
 		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FILEOFS o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
+		FileOfs o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
 		delete addr;
 		if (o!=INVALID_FILE_OFS) {
 			*ofs=o;
@@ -150,7 +150,7 @@ bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 
 bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
 {
-	FILEOFS o;
+	FileOfs o;
 	if (!get_current_offset(&o)) return false;
 	uint m;
 	if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;

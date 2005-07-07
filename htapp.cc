@@ -100,7 +100,7 @@ void ht_help_window::handlemsg(htmsg *msg)
 	}
 }
 
-bool file_new_dialog(UINT *mode)
+bool file_new_dialog(uint *mode)
 {
 	bounds b, c;
 	
@@ -735,7 +735,7 @@ void ht_project_listbox::draw()
 	}
 }
 
-char *ht_project_listbox::func(UINT i, bool execute)
+char *ht_project_listbox::func(uint i, bool execute)
 {
 	return NULL;
 }
@@ -760,7 +760,7 @@ void *ht_project_listbox::getLast()
 
 void *ht_project_listbox::getNext(void *entry)
 {
-	uint e=(UINT)entry;
+	uint e=(uint)entry;
 	if (!e) return NULL;
 	if (project && (e < project->count())) {
 		return (void*)(e+1);
@@ -771,7 +771,7 @@ void *ht_project_listbox::getNext(void *entry)
 
 void *ht_project_listbox::getPrev(void *entry)
 {
-	uint e=(UINT)entry;
+	uint e=(uint)entry;
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -1558,7 +1558,7 @@ bool ht_app::accept_close_all_windows()
 {
 	uint wc=windows->count();
 	ht_app_window_entry *e;
-	for (UINT i=0; i<wc; i++) {
+	for (uint i=0; i<wc; i++) {
 		e=(ht_app_window_entry*)windows->get(i);
 		htmsg m;
 		m.msg=msg_accept_close;
@@ -2202,7 +2202,7 @@ uint ht_app::find_free_window_number()
 	uint k=0;
 repeat:
 	k++;
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->number==k) goto repeat;
 	}
@@ -2214,7 +2214,7 @@ int ht_app::focus(ht_view *view)
 	return ht_dialog::focus(view);
 }
 
-char *ht_app::func(UINT i, bool execute)
+char *ht_app::func(uint i, bool execute)
 {
 	switch (i) {
 		case 1:
@@ -2267,7 +2267,7 @@ void ht_app::get_stdbounds_tool(bounds *b)
 ht_window *ht_app::get_window_by_filename(char *filename)
 {
 	uint c=windows->count();
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 // FIXME: filename_compare (taking into account slash/backslash, and case)
 		if (strcmp(e->window->desc, filename) == 0) return e->window;
@@ -2275,20 +2275,20 @@ ht_window *ht_app::get_window_by_filename(char *filename)
 	return NULL;
 }
 
-ht_window *ht_app::get_window_by_number(UINT number)
+ht_window *ht_app::get_window_by_number(uint number)
 {
 	uint c=windows->count();
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->number==number) return e->window;
 	}
 	return NULL;
 }
 
-ht_window *ht_app::get_window_by_type(UINT type)
+ht_window *ht_app::get_window_by_type(uint type)
 {
 	uint c=windows->count();
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->type==type) return e->window;
 	}
@@ -2304,7 +2304,7 @@ uint ht_app::get_window_number(ht_window *window)
 uint ht_app::get_window_listindex(ht_window *window)
 {
 	uint c=windows->count();
-	for (UINT i=0; i<c; i++) {
+	for (uint i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->window==window) return i;
 	}
@@ -2549,7 +2549,7 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_file_extend: {
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			uint s = (UINT)msg->data2.integer;
+			uint s = (uint)msg->data2.integer;
 			// don't ask. only for truncates
 //			if (confirmbox("really extend %s to offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
 				int oam = f->get_access_mode();
@@ -2563,7 +2563,7 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_file_truncate: {
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			uint s = (UINT)msg->data2.integer;
+			uint s = (uint)msg->data2.integer;
 /*               ht_app_window_entry *e;
 			if ((e=windows->enum_first())) {
 				do {
@@ -2923,7 +2923,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	listbox->init(&c, 2, 1);
 
 	uint vc=windows->count();
-	for (UINT i=0; i<vc; i++) {
+	for (uint i=0; i<vc; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		char l[16];	/* secure */
 		ht_snprintf(l, sizeof l, " %2d", e->number);
@@ -3115,7 +3115,7 @@ void ht_file_window::handlemsg(htmsg *msg)
 						msg.msg = cmd_file_save;
 						msg.type = mt_empty;
 						app->sendmsg(&msg);
-						if ((UINT)msg.msg != cmd_file_save) break;
+						if ((uint)msg.msg != cmd_file_save) break;
 					}
 					case button_cancel:
 						clearmsg(msg);

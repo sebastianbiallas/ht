@@ -85,7 +85,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		register_atom(ATOM_ELF_PH_TYPE, elf_ph_type);
 		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 	
-		FILEOFS h=elf_shared->header32.e_phoff;
+		FileOfs h=elf_shared->header32.e_phoff;
 	
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -96,7 +96,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+		for (uint i=0; i<elf_shared->pheaders.count; i++) {
 		
 			ht_mask_sub *n=new ht_mask_sub();
 			n->init(file, i);
@@ -121,7 +121,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 
 /* FIXME: 64-bit */
-		FILEOFS h=elf_shared->header64.e_phoff.lo;
+		FileOfs h=elf_shared->header64.e_phoff.lo;
 	
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -132,7 +132,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+		for (uint i=0; i<elf_shared->pheaders.count; i++) {
 		
 			ht_mask_sub *n=new ht_mask_sub();
 			n->init(file, i);

@@ -118,13 +118,13 @@ void ht_clipboard_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-void ht_clipboard_viewer::pselect_add(FILEOFS start, FILEOFS end)
+void ht_clipboard_viewer::pselect_add(FILEOFS start, FileOfs end)
 {
 	ht_uformat_viewer::pselect_add(start, end);
 	selection_changed();
 }
 
-void ht_clipboard_viewer::pselect_set(FILEOFS start, FILEOFS end)
+void ht_clipboard_viewer::pselect_set(FILEOFS start, FileOfs end)
 {
 	ht_uformat_viewer::pselect_set(start, end);
 	selection_changed();
@@ -132,7 +132,7 @@ void ht_clipboard_viewer::pselect_set(FILEOFS start, FILEOFS end)
 
 void ht_clipboard_viewer::selection_changed()
 {
-	FILEOFS s, e;
+	FileOfs s, e;
 	pselect_get(&s, &e);
 	clipboard->select_start=s;
 	clipboard->select_len=e-s;
@@ -169,8 +169,8 @@ void ht_clipboard_viewer::update_content()
 
 void ht_clipboard_viewer::get_pindicator_str(char *buf)
 {
-	FILEOFS o;
-	FILEOFS sel_start, sel_end;
+	FileOfs o;
+	FileOfs sel_start, sel_end;
 	pselect_get(&sel_start, &sel_end);
 	if (get_current_offset(&o)) {
 		char ttemp[1024];

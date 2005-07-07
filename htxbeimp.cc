@@ -434,9 +434,9 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	c.y--;
 	c.h=1;
 
-	FILEOFS ofs;
+	FileOfs ofs;
 	uint thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
-	uint *thunktable = (UINT *)malloc(sizeof(xbox_exports));
+	uint *thunktable = (uint *)malloc(sizeof(xbox_exports));
 	if (!thunktable) goto xbe_read_error;
 	memset(thunktable, 0, sizeof(xbox_exports));
 
@@ -469,7 +469,7 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	g->insert(head);
 	g->insert(v);
 	//
-	for (UINT i=0; i<xbe_shared->imports.funcs->count(); i++) {
+	for (uint i=0; i<xbe_shared->imports.funcs->count(); i++) {
 		ht_xbe_import_function *func = (ht_xbe_import_function*)xbe_shared->imports.funcs->get(i);
 		assert(func);
 		char addr[32], name[256];
@@ -563,7 +563,7 @@ void ht_xbe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_xbe_import_viewer::func(UINT i, bool execute)
+char *ht_xbe_import_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:

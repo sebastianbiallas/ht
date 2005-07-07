@@ -573,7 +573,7 @@ void ht_string_list::init()
 	ht_clist::init(compare_keys_string);
 }
 
-char *ht_string_list::get_string(UINT i)
+char *ht_string_list::get_string(uint i)
 {
 	ht_data_string *s=(ht_data_string*)get(i);
 	if (s) return s->value;

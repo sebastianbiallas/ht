@@ -77,7 +77,7 @@ public:
 };
 
 static ht_streamfile *peresource_file;
-static FILEOFS peresource_dir_ofs;
+static FileOfs peresource_dir_ofs;
 static ht_static_treeview *peresource_tree;
 static char peresource_string[128];
 static pe_section_headers *peresource_section_headers;
@@ -134,7 +134,7 @@ static void read_resource_dir(void *node, int ofs, int level)
 			create_host_struct(&data, PE_RESOURCE_DATA_ENTRY_struct, little_endian);
 			
 			ht_pe_resource_leaf *xdata = NULL;
-			FILEOFS dofs=0;
+			FileOfs dofs=0;
 			if (pe_rva_to_ofs(peresource_section_headers, data.offset_to_data, &dofs)) {
 				xdata = new ht_pe_resource_leaf();
 				xdata->offset = dofs;
@@ -173,7 +173,7 @@ static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_gro
 	void *root;
 /* get resource directory offset */
 	/* 1. get resource directory rva */
-	FILEOFS iofs;
+	FileOfs iofs;
 	uint32 irva;
 	if (pe32) {
 		irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;

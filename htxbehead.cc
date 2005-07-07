@@ -239,7 +239,7 @@ static ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group
 	
 	/* library versions */
 	
-	for (UINT i=0; i<xbe_shared->header.number_of_library_versions; i++) {
+	for (uint i=0; i<xbe_shared->header.number_of_library_versions; i++) {
 		s=new ht_mask_sub();
 		s->init(file, 50+i);
 
@@ -256,7 +256,7 @@ static ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group
 	
 	/* section headers */
 	
-	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
+	for (uint i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		char *name;
 //		uint ofs;
 	

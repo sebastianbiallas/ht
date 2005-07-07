@@ -370,7 +370,7 @@ void ht_c_syntax_lexer::config_changed()
 	reloadpalette();
 }
 
-vcp ht_c_syntax_lexer::getcolor_syntax(UINT pal_index)
+vcp ht_c_syntax_lexer::getcolor_syntax(uint pal_index)
 {
 	return getcolorv(&c_pal, pal_index);
 }
@@ -580,7 +580,7 @@ void ht_html_syntax_lexer::config_changed()
 	reloadpalette();
 }
 
-vcp ht_html_syntax_lexer::getcolor_syntax(UINT pal_index)
+vcp ht_html_syntax_lexer::getcolor_syntax(uint pal_index)
 {
 //	return getcolorv(&c_pal, pal_index);
 	return VCP(VC_LIGHT(VC_BLUE), VC_TRANSPARENT);

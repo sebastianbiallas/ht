@@ -66,7 +66,7 @@ static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
 	uint32 sec_rva, sec_size;
-	FILEOFS sec_ofs;
+	FileOfs sec_ofs;
 	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IL].address;
 	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IL].size;
 	if (!sec_rva || !sec_size) return NULL;
@@ -107,7 +107,7 @@ static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 	s->add_staticmask_ptable(il_directory, sec_ofs, pe_bigendian);
 	v->insertsub(s);
 	
-	FILEOFS metadata_ofs;
+	FileOfs metadata_ofs;
 	if (pe_rva_to_ofs(&pe_shared->sections, dir.metadata_section_rva, &metadata_ofs)) {
 		/* read metadata section*/
 		IL_METADATA_SECTION metadata;
@@ -124,14 +124,14 @@ static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 				version_string_length = create_host_int(&version_string_length, 4, little_endian);
 				add += version_string_length + 8;
 			}
-			FILEOFS ofs = metadata_ofs + sizeof metadata + add;
+			FileOfs ofs = metadata_ofs + sizeof metadata + add;
 			file->seek(ofs);
 			uint16 count;
 			file->read(&count, 2);
 			count = create_host_int(&count, 2, little_endian);
 			pe_shared->il->entries = new ht_clist();
 			pe_shared->il->entries->init();
-			for (UINT i=0; i<count; i++) {
+			for (uint i=0; i<count; i++) {
 				IL_METADATA_SECTION_ENTRY sec_entry;
 				ht_il_metadata_entry *entry;
 				// FIXME: error handling
@@ -150,7 +150,7 @@ static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *gro
 
 				free(name);
 			}
-			for (UINT i=0; i<count; i++) {
+			for (uint i=0; i<count; i++) {
 				ht_il_metadata_entry *entry = (ht_il_metadata_entry *)pe_shared->il->entries->get(i);
 				if (strcmp(entry->name, "#~") == 0) {
 					// token index

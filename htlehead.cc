@@ -139,7 +139,7 @@ static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	/* FIXME: */
 	bool le_bigendian = false;
 
-	FILEOFS h = le_shared->hdr_ofs;
+	FileOfs h = le_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_LE_HEADER, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();

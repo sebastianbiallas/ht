@@ -41,7 +41,7 @@
  *	CLASS ht_blockop_dialog
  */
 
-void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history)
+void ht_blockop_dialog::init(bounds *b, FileOfs pstart, FileOfs pend, ht_list *history)
 {
 	ht_dialog::init(b, "operate on block", FS_TITLE | FS_KILLER | FS_MOVE);
 	bounds c;
@@ -308,7 +308,7 @@ class ht_blockop_str_context: public ht_data {
 public:
 	ht_streamfile *file;
 
-	FILEOFS ofs;
+	FileOfs ofs;
 	uint len;
 
 	uint size;
@@ -317,7 +317,7 @@ public:
 	char *action;
 
 	uint i;
-	FILEOFS o;
+	FileOfs o;
 
 	bool expr_const;
 	eval_str v;
@@ -329,7 +329,7 @@ public:
 	}
 };
 
-ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, uint len, uint size, bool netendian, char *action)
+ht_data *create_blockop_str_context(ht_streamfile *file, FileOfs ofs, uint len, uint size, bool netendian, char *action)
 {
 	ht_blockop_str_context *ctx = new ht_blockop_str_context();
 	ctx->file = file;
@@ -372,7 +372,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 	if (ctx->expr_const) {
 		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", (int)(((double)(ctx->o-ctx->ofs)) * 100 / ctx->len));
 		progress_indicator->settext(status);
-		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			uint s = ctx->v.len;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
@@ -390,7 +390,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_str sr;
-		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_i = ctx->i;
 			blockop_o = ctx->o;
@@ -428,7 +428,7 @@ class ht_blockop_int_context: public ht_data {
 public:
 	ht_streamfile *file;
 
-	FILEOFS ofs;
+	FileOfs ofs;
 	uint len;
 
 	uint size;
@@ -437,7 +437,7 @@ public:
 	char *action;
 
 	uint i;
-	FILEOFS o;
+	FileOfs o;
 
 	bool expr_const;
 	uint v;
@@ -448,7 +448,7 @@ public:
 	}
 };
 
-ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, uint len, uint size, endianess endian, char *action)
+ht_data *create_blockop_int_context(ht_streamfile *file, FileOfs ofs, uint len, uint size, endianess endian, char *action)
 {
 	ht_blockop_int_context *ctx = new ht_blockop_int_context();
 	ctx->file = file;
@@ -496,7 +496,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 		byte ibuf[4];
 		create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
 		ctx->file->seek(ctx->o);
-		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			uint s = ctx->size;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
@@ -512,7 +512,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_int ir;
-		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_o = ctx->o;
 			blockop_i = ctx->i;
@@ -547,7 +547,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
  *
  */
 
-bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FILEOFS *ofs)
+bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FileOfs *ofs)
 {
 	if (string && *string && stringlen<64) {
 		char str[64];
@@ -563,7 +563,7 @@ bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, in
 }
 		
 		
-void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
+void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 {
 	bounds b;
 	b.w=65;
@@ -590,7 +590,7 @@ void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 		baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 		
 		if (file->get_access_mode() & FAM_WRITE) {
-			FILEOFS start=pstart, end=pend;
+			FileOfs start=pstart, end=pend;
 
 			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start) &&
 			format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {

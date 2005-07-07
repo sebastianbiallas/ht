@@ -58,7 +58,7 @@ format_viewer_if htxbe_if = {
 /*
  *	CLASS ht_xbe
  */
-void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
+void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_XBE, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_xbe");
@@ -102,7 +102,7 @@ void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_for
 	xbe_shared->libraries=(XBE_LIBRARY_VERSION*)malloc(xbe_shared->header.number_of_library_versions * sizeof *xbe_shared->libraries);
 	file->read(xbe_shared->libraries, xbe_shared->header.number_of_library_versions * sizeof *xbe_shared->libraries);
 
-	for (UINT i=0; i<xbe_shared->header.number_of_library_versions; i++) {
+	for (uint i=0; i<xbe_shared->header.number_of_library_versions; i++) {
 		create_host_struct(&xbe_shared->libraries[i], XBE_LIBRARY_VERSION_struct, little_endian);
 	}
 
@@ -115,11 +115,11 @@ void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_for
 	xbe_shared->sections.number_of_sections=xbe_shared->header.number_of_sections;
 	xbe_shared->sections.base_address=xbe_shared->header.base_address;
 
-	for (UINT i=0; i<xbe_shared->header.number_of_sections; i++) {
+	for (uint i=0; i<xbe_shared->header.number_of_sections; i++) {
 		create_host_struct(&xbe_shared->sections.sections[i], XBE_SECTION_HEADER_struct, little_endian);
 		
 		// XXX: this is crashable!!!
-		xbe_shared->sections.sections[i].section_name_address += (UINT) xbe_shared->headerspace - xbe_shared->header.base_address;
+		xbe_shared->sections.sections[i].section_name_address += (uint) xbe_shared->headerspace - xbe_shared->header.base_address;
 		xbe_shared->sections.sections[i].virtual_address -= xbe_shared->header.base_address;
 	}
 
@@ -184,11 +184,11 @@ bool ht_xbe::loc_enum_next(ht_format_loc *loc)
  *	rva conversion routines
  */
 
-bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
+bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FileOfs *ofs)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
 	
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+s->raw_size)) {
 			*ofs=rva-s->virtual_address+s->raw_address;
@@ -203,7 +203,7 @@ bool xbe_rva_to_section(xbe_section_headers *section_headers, RVA rva, int *sect
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
 
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+MAX(s->virtual_size, s->raw_size))) {
 			*section=i;
@@ -217,7 +217,7 @@ bool xbe_rva_to_section(xbe_section_headers *section_headers, RVA rva, int *sect
 bool xbe_rva_is_valid(xbe_section_headers *section_headers, RVA rva)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+MAX(s->virtual_size, s->raw_size))) {
 			return true;
@@ -231,7 +231,7 @@ bool xbe_rva_is_physical(xbe_section_headers *section_headers, RVA rva)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
 
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((rva>=s->virtual_address) &&
 		(rva<s->virtual_address+s->raw_size)) {
 			return true;
@@ -245,10 +245,10 @@ bool xbe_rva_is_physical(xbe_section_headers *section_headers, RVA rva)
  *	ofs conversion routines
  */
 
-bool xbe_ofs_to_rva(xbe_section_headers *section_headers, FILEOFS ofs, RVA *rva)
+bool xbe_ofs_to_rva(xbe_section_headers *section_headers, FileOfs ofs, RVA *rva)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((ofs>=s->raw_address) &&
 		(ofs<s->raw_address+s->raw_size)) {
 			*rva=ofs-s->raw_address+s->virtual_address;
@@ -259,10 +259,10 @@ bool xbe_ofs_to_rva(xbe_section_headers *section_headers, FILEOFS ofs, RVA *rva)
 	return false;
 }
 
-bool xbe_ofs_to_section(xbe_section_headers *section_headers, FILEOFS ofs, int *section)
+bool xbe_ofs_to_section(xbe_section_headers *section_headers, FileOfs ofs, int *section)
 {
 	XBE_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->number_of_sections; i++) {
+	for (uint i=0; i<section_headers->number_of_sections; i++) {
 		if ((ofs>=s->raw_address) &&
 		(ofs<s->raw_address+s->raw_size)) {
 			*section=i;
@@ -273,7 +273,7 @@ bool xbe_ofs_to_section(xbe_section_headers *section_headers, FILEOFS ofs, int *
 	return false;
 }
 
-bool xbe_ofs_to_rva_and_section(xbe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section)
+bool xbe_ofs_to_rva_and_section(xbe_section_headers *section_headers, FileOfs ofs, RVA *rva, int *section)
 {
 	bool r = xbe_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
@@ -282,7 +282,7 @@ bool xbe_ofs_to_rva_and_section(xbe_section_headers *section_headers, FILEOFS of
 	return r;
 }
 
-bool xbe_ofs_is_valid(xbe_section_headers *section_headers, FILEOFS ofs)
+bool xbe_ofs_is_valid(xbe_section_headers *section_headers, FileOfs ofs)
 {
 	RVA rva;
 	return xbe_ofs_to_rva(section_headers, ofs, &rva);
@@ -297,7 +297,7 @@ bool xbe_section_name_to_section(xbe_section_headers *section_headers, const cha
 	XBE_SECTION_HEADER *s = section_headers->sections;
 	int slen = strlen(name);
 
-	for (UINT i=0; i < section_headers->number_of_sections; i++) {
+	for (uint i=0; i < section_headers->number_of_sections; i++) {
 		if (strncmp(name, (char *)s->section_name_address, slen) == 0) {
 			*section = i;
 			return true;

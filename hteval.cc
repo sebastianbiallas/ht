@@ -47,7 +47,7 @@ extern "C" {
 class ht_help_lexer: public ht_syntax_lexer {
 public:
 /* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index)
+	virtual	vcp getcolor_syntax(uint pal_index)
 	{
 		return VCP(VC_BLUE, VC_TRANSPARENT);
 	}
@@ -275,7 +275,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				*(x++)='\n';
 				/* raw */
 				x+=sprintf(x, "raw       '");
-				int ll = MIN((UINT)r.scalar.str.len, 0xff);
+				int ll = MIN((uint)r.scalar.str.len, 0xff);
 				bin2str(x, r.scalar.str.value, ll);
 				x+=ll;
 				*(x++)='\'';

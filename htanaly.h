@@ -144,13 +144,13 @@ class AnalyInfoline: public ht_statictext {
 public:
 	ht_aviewer	*analy;
 	char			*s;
-	FILEOFS		fofs;
+	FileOfs		fofs;
 	Address		*addr;
 	char			*displayformat;
 			void	init(bounds *b, ht_aviewer *A, char *Format);
 	virtual	void done();
 	virtual	char *gettext();
-			void update(Address *cursor_addr, FILEOFS ecursor_addr);
+			void update(Address *cursor_addr, FileOfs ecursor_addr);
 			bool valid();
 };
 
@@ -168,7 +168,7 @@ public:
 	
 			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
-	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
+	virtual	bool convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
 	virtual	bool closest_line_id(LINE_ID *line_id);
 	virtual	void	first_line_id(LINE_ID *line_id);
 	virtual	bool	getline(char *line, const LINE_ID line_id);
@@ -176,7 +176,7 @@ public:
 	virtual	int	next_line_id(LINE_ID *line_id, int n);
 	virtual	int	prev_line_id(LINE_ID *line_id, int n);
 			void	setAnalyser(Analyser *Analy);
-	virtual	ht_search_result *search(ht_search_request *search, FILEOFS start, FILEOFS end);
+	virtual	ht_search_result *search(ht_search_request *search, FileOfs start, FileOfs end);
 };
 
 /*
@@ -201,7 +201,7 @@ public:
 			void dataStringDialog();
 			void dataIntDialog(taddr_int_subtype subtype, int length);
 			void exportFileDialog();
-	virtual	char *func(UINT i, bool execute);
+	virtual	char *func(uint i, bool execute);
 			void generateOutputDialog();
 			bool getCurrentAddress(Address **a);
 	virtual	bool get_current_offset(FILEOFS *ofs);
@@ -211,7 +211,7 @@ public:
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	idle();
 	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
-	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
+	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
 			bool pos_to_string(viewer_pos p, char *result, int maxlen);
 	virtual	int	ref_sel(LINE_ID *id);
 	virtual	void reloadpalette();

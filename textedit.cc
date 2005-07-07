@@ -658,7 +658,7 @@ text_viewer_pos insert_text_block(ht_text_editor *te, text_viewer_pos apos, text
 	te->cursor_pput(apos.pofs);
 
 	ht_textfile *textfile = te->get_textfile();
-	FILEOFS o;
+	FileOfs o;
 	
 	textfile->convert_line2ofs(apos.line, apos.pofs, &o);
 
@@ -691,7 +691,7 @@ void delete_text_block(ht_text_editor *te, text_viewer_pos apos, text_viewer_pos
 {
 	ht_textfile *textfile = te->get_textfile();
 
-	FILEOFS s, e;
+	FileOfs s, e;
 	if (textfile->convert_line2ofs(sel_start.line, sel_start.pofs, &s) &&
 	textfile->convert_line2ofs(sel_end.line, sel_end.pofs, &e) && copy) {
 		uint sz = e-s;
@@ -839,7 +839,7 @@ void ht_undo_data_delete_block::unapply(ht_text_editor *te, bool *goto_only)
 /*
  *	CLASS ht_text_editor_undo
  */
-void ht_text_editor_undo::init(UINT max_undo_size)
+void ht_text_editor_undo::init(uint max_undo_size)
 {
 	ht_clist::init();
 	size = 0;
@@ -860,7 +860,7 @@ void ht_text_editor_undo::insert_undo(ht_text_editor *tv, ht_undo_data *undo)
 		if (current_position!=(int)c_entry_count) {
 			// remove all pending redo's
 			uint test=c_entry_count;
-			for (UINT i=current_position; i<test; i++) {
+			for (uint i=current_position; i<test; i++) {
 				ht_undo_data *u = (ht_undo_data*)get(current_position);
 				size-=u->getsize();
 				del(current_position);
@@ -1020,7 +1020,7 @@ uint ht_text_viewer::char_vsize(char c, uint x)
 void ht_text_viewer::clipboard_copy_cmd()
 {
 	if (text_viewer_pos_compare(&sel_start, &sel_end)<0) {
-		FILEOFS s, e;
+		FileOfs s, e;
 		if (textfile->convert_line2ofs(sel_start.line, sel_start.pofs, &s)
 		   && textfile->convert_line2ofs(sel_end.line, sel_end.pofs, &e)) {
 			char dsc[1024];
@@ -1047,7 +1047,7 @@ bool ht_text_viewer::continue_search()
 {
 	if (last_search_request) {
 		ht_search_result *r = NULL;
-		FILEOFS o, no;
+		FileOfs o, no;
 		text_viewer_pos cursor;
 		get_cursor_pos(&cursor);
 		o = 0;
@@ -1069,7 +1069,7 @@ bool ht_text_viewer::continue_search()
 	return false;
 }
 
-uint ht_text_viewer::cursor_up(UINT n)
+uint ht_text_viewer::cursor_up(uint n)
 {
 	if (cursory>n) cursory-=n; else {
 		n=scroll_up(n-cursory);
@@ -1078,21 +1078,21 @@ uint ht_text_viewer::cursor_up(UINT n)
 	return n;
 }
 
-uint ht_text_viewer::cursor_down(UINT n)
+uint ht_text_viewer::cursor_down(uint n)
 {
 	uint lmh=textfile->linecount()-top_line;
-	if (lmh>(UINT)size.h) lmh=size.h;
+	if (lmh>(uint)size.h) lmh=size.h;
 	if (cursory+n>lmh-1) {
 		uint k = scroll_down(cursory+n-(lmh-1));
 		lmh = textfile->linecount()-top_line;
-		if (lmh>(UINT)size.h) lmh = size.h;
+		if (lmh>(uint)size.h) lmh = size.h;
 		n = k+(lmh-1)-cursory;
 		cursory = lmh-1;
 	} else cursory+=n;
 	return n;
 }
 
-uint ht_text_viewer::cursor_left(UINT n)
+uint ht_text_viewer::cursor_left(uint n)
 {
 	uint p;
 	if (cursorx+xofs>n) p=cursorx+xofs-n; else p=0;
@@ -1100,7 +1100,7 @@ uint ht_text_viewer::cursor_left(UINT n)
 	return 1;
 }
 
-uint ht_text_viewer::cursor_right(UINT n)
+uint ht_text_viewer::cursor_right(uint n)
 {
 	cursor_vput(cursorx+xofs+n);
 	return 1;
@@ -1116,7 +1116,7 @@ void ht_text_viewer::cursor_end()
 	cursor_vput(get_line_vlength(top_line+cursory));
 }
 
-void ht_text_viewer::cursor_pput(UINT dx)
+void ht_text_viewer::cursor_pput(uint dx)
 {
 	uint vx = 0, px = 0;
 	char line[1024];
@@ -1137,7 +1137,7 @@ void ht_text_viewer::cursor_pput(UINT dx)
 		xofs = vx;
 	} else {
 		cursorx = vx-xofs;
-		if (cursorx > (UINT)size.w-1) {
+		if (cursorx > (uint)size.w-1) {
 			xofs += cursorx-(size.w-1);
 			cursorx = size.w-1;
 		}
@@ -1150,14 +1150,14 @@ void ht_text_viewer::cursor_set(text_viewer_pos *pos)
 	cursor_pput(pos->pofs);
 }
 
-void ht_text_viewer::cursor_vput(UINT vx)
+void ht_text_viewer::cursor_vput(uint vx)
 {
 	if ((vx>=xofs) && (vx<xofs+size.w)) {
 		cursorx=vx-xofs;
 	} else if (vx<xofs) {
 		xofs=vx;
 		cursorx=0;
-	} else if (vx>(UINT)size.w-1) {
+	} else if (vx>(uint)size.w-1) {
 		xofs=vx-(size.w-1);
 		cursorx=size.w-1;
 	} else {
@@ -1216,7 +1216,7 @@ void ht_text_viewer::draw()
 				if (x>=xofs) {
 					k=x-xofs;
 					i=0;
-					if (k>(UINT)size.w-1) {
+					if (k>(uint)size.w-1) {
 						break;
 					}
 				} else if (x+vtoklen>=xofs) {
@@ -1252,7 +1252,7 @@ void ht_text_viewer::draw()
 			while (linelen--) {
 				uint vtoklen=char_vsize(*linep, x);
 				if (x>=xofs) {
-					if (x-xofs>(UINT)size.w-1) break;
+					if (x-xofs>(uint)size.w-1) break;
 					if (*linep=='\t') {
 						vcp c=bgcolor;
 						char tab[17];
@@ -1291,7 +1291,7 @@ void ht_text_viewer::draw()
 #endif /* TIME_DRAW */
 }
 
-char *ht_text_viewer::func(UINT i, bool execute)
+char *ht_text_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 5: {
@@ -1352,7 +1352,7 @@ ht_syntax_lexer *ht_text_viewer::get_lexer()
 /*
  * 0xffffffff --> ignore this line
  */
-uint ht_text_viewer::get_line_indent(UINT line)
+uint ht_text_viewer::get_line_indent(uint line)
 {
 	char s[1024];
 	uint i, r, j;
@@ -1370,12 +1370,12 @@ uint ht_text_viewer::get_line_indent(UINT line)
 	return r;
 }
 
-uint ht_text_viewer::get_line_length(UINT line)
+uint ht_text_viewer::get_line_length(uint line)
 {
 	return textfile->getlinelength(line);
 }
 
-uint ht_text_viewer::get_line_vlength(UINT line)
+uint ht_text_viewer::get_line_vlength(uint line)
 {
 	char l[1024];
 	char *linep=l;
@@ -1419,12 +1419,12 @@ bool ht_text_viewer::get_hscrollbar_pos(int *pstart, int *psize)
 	return false;
 }
 
-bool ht_text_viewer::goto_line(UINT line)
+bool ht_text_viewer::goto_line(uint line)
 {
 	if (line >= textfile->linecount()) {
 		return false;
 	}
-	if ((line >= top_line) && (line - top_line < (UINT)size.h)) {
+	if ((line >= top_line) && (line - top_line < (uint)size.h)) {
 		cursory = line - top_line;
 	} else {
 		cursory = 0;
@@ -1501,7 +1501,7 @@ void ht_text_viewer::handlemsg(htmsg *msg)
 							px--;
 						}
 						if (!px && !phase) goto bloed3;
-						px = (UINT)-1;
+						px = (uint)-1;
 						i--;
 					}
 					return;
@@ -1766,7 +1766,7 @@ void ht_text_viewer::popup_change_highlight()
 	mode_input->insert_str(-1, "no highlighting");
 	uint lc = lexers->count();
 	int selected = -1;
-	for (UINT i=0; i<lc; i++) {
+	for (uint i=0; i<lc; i++) {
 		ht_syntax_lexer *l = (ht_syntax_lexer*)lexers->get(i);
 		mode_input->insert_str(i, l->getname());
 		if (lexer && (strcmp(lexer->getname(), l->getname()) == 0)) {
@@ -1805,7 +1805,7 @@ void ht_text_viewer::popup_change_highlight()
 	delete d;
 }
 
-bool ht_text_viewer::pos_to_offset(text_viewer_pos *pos, FILEOFS *ofs)
+bool ht_text_viewer::pos_to_offset(text_viewer_pos *pos, FileOfs *ofs)
 {
 	return textfile->convert_line2ofs(pos->line, pos->pofs, ofs);
 }
@@ -1815,7 +1815,7 @@ int ht_text_viewer::ppos_str(char *buf, uint bufsize, text_viewer_pos *ppos)
 	return ht_snprintf(buf, bufsize, "some pos");
 }
 
-void ht_text_viewer::render_meta(UINT x, uint y, text_viewer_pos *pos, vcp color)
+void ht_text_viewer::render_meta(uint x, uint y, text_viewer_pos *pos, vcp color)
 {
 	text_viewer_pos p=*pos;
 	render_str_color(&color, &p);
@@ -1878,7 +1878,7 @@ void ht_text_viewer::resize(int rw, int rh)
 	}
 }
 
-uint ht_text_viewer::scroll_up(UINT n)
+uint ht_text_viewer::scroll_up(uint n)
 {
 	if (top_line > n) top_line -= n; else {
 		int q = top_line;
@@ -1889,11 +1889,11 @@ uint ht_text_viewer::scroll_up(UINT n)
 	return n;
 }
 
-uint ht_text_viewer::scroll_down(UINT n)
+uint ht_text_viewer::scroll_down(uint n)
 {
 	uint lc=textfile->linecount();
 	if (top_line+n+size.h <= lc) top_line+=n; else {
-		if (lc-top_line>=(UINT)size.h) {
+		if (lc-top_line>=(uint)size.h) {
 			int q=top_line;
 			top_line=lc-size.h;
 			cursory=size.h-1;
@@ -1905,13 +1905,13 @@ uint ht_text_viewer::scroll_down(UINT n)
 	return n;
 }
 
-uint ht_text_viewer::scroll_left(UINT n)
+uint ht_text_viewer::scroll_left(uint n)
 {
 	if (xofs>n) xofs-=n; else xofs=0;
 	return n;
 }
 
-uint ht_text_viewer::scroll_right(UINT n)
+uint ht_text_viewer::scroll_right(uint n)
 {
 	xofs+=n;
 	return n;
@@ -1927,7 +1927,7 @@ ht_search_result *ht_text_viewer::search(ht_search_request *request, text_search
 
 	switch (request->search_class) {
 		case SC_PHYSICAL: {
-			FILEOFS start = s->offset, end = e->offset;
+			FileOfs start = s->offset, end = e->offset;
 			return linear_bin_search(request, start, end, textfile, 0, 0xffffffff);
 		}
 	}
@@ -2097,7 +2097,7 @@ void ht_text_editor::clipboard_paste_cmd()
 	free(block);
 }
 
-bool ht_text_editor::concat_lines(UINT a)
+bool ht_text_editor::concat_lines(uint a)
 {
 	uint b=a+1;
 	if (textfile->has_line(a) && textfile->has_line(b)) {
@@ -2146,7 +2146,7 @@ void ht_text_editor::config_changed()
 	ht_text_viewer::config_changed();
 }
 
-void ht_text_editor::delete_chars(UINT line, uint ofs, uint count)
+void ht_text_editor::delete_chars(uint line, uint ofs, uint count)
 {
 	text_viewer_pos pos;
 	pos.line=line;
@@ -2163,7 +2163,7 @@ void ht_text_editor::delete_chars(UINT line, uint ofs, uint count)
 	textfile->delete_chars(line, ofs, count);
 }
 
-void ht_text_editor::delete_lines(UINT line, uint count)
+void ht_text_editor::delete_lines(uint line, uint count)
 {
 	if (sel_start.line+1>line) sel_start.line--;
 	if (sel_end.line>line) sel_end.line--;
@@ -2171,7 +2171,7 @@ void ht_text_editor::delete_lines(UINT line, uint count)
 	textfile->delete_lines(line, count);
 }
 
-char *ht_text_editor::func(UINT i, bool execute)
+char *ht_text_editor::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:
@@ -2460,7 +2460,7 @@ void ht_text_editor::handlemsg(htmsg *msg)
 	ht_text_viewer::handlemsg(msg);
 }
 
-void ht_text_editor::indent(UINT line, uint start, uint size)
+void ht_text_editor::indent(uint line, uint start, uint size)
 {
 	char *w = (char*)malloc(size);
 	memset(w, ' ', size);
@@ -2468,12 +2468,12 @@ void ht_text_editor::indent(UINT line, uint start, uint size)
 	free(w);
 }
 
-void ht_text_editor::unindent(UINT line, uint start, uint size)
+void ht_text_editor::unindent(uint line, uint start, uint size)
 {
 	textfile->delete_chars(line, start, size);
 }
 
-void ht_text_editor::insert_chars(UINT line, uint ofs, void *chars, uint len)
+void ht_text_editor::insert_chars(uint line, uint ofs, void *chars, uint len)
 {
 	text_viewer_pos pos;
 	pos.line=line;
@@ -2490,7 +2490,7 @@ void ht_text_editor::insert_chars(UINT line, uint ofs, void *chars, uint len)
 	textfile->insert_chars(line, ofs, chars, len);
 }
 
-void ht_text_editor::insert_lines(UINT line, uint count)
+void ht_text_editor::insert_lines(uint line, uint count)
 {
 	if (sel_start.line+1>line) sel_start.line++;
 	if (sel_end.line>line) sel_end.line++;
@@ -2582,7 +2582,7 @@ void ht_text_editor::show_protocol()
 		od = "    ";
 	}
 	list->insert_str(0, od, "--- initial state ---");
-	for (UINT i=0; i<undo_list->count(); i++) {
+	for (uint i=0; i<undo_list->count(); i++) {
 		char buf[1024];
 		((ht_undo_data*)undo_list->get(i))->gettext(buf, 1024);
 		if (undo_list->is_clean(i+1)) {
@@ -2615,7 +2615,7 @@ void ht_text_editor::show_protocol()
 	delete dialog;
 }
 
-void ht_text_editor::split_line(UINT a, uint pos)
+void ht_text_editor::split_line(uint a, uint pos)
 {
 	uint l=textfile->getlinelength(a);
 	if (pos>l) pos=l;

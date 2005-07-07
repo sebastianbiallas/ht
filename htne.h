@@ -62,7 +62,7 @@ public:
 		uint ord;
 	};
 
-	ne_import_rec(UINT a, uint mod, bool b, uint i)
+	ne_import_rec(uint a, uint mod, bool b, uint i)
 	{
 		addr = a;
 		module = mod;
@@ -90,9 +90,9 @@ protected:
 
 			bool create_fake_segment();
 			bool relocate(ht_reloc_file *rf);
-			bool relocate_single(ht_reloc_file *rf, uint seg, FILEOFS ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
+			bool relocate_single(ht_reloc_file *rf, uint seg, FileOfs ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h);
+			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
 	virtual	void done();
 /* overwritten */
 	virtual   void loc_enum_start();
@@ -113,7 +113,7 @@ public:
 	uint flags;
 	char *name;
 
-		ht_ne_entrypoint(UINT ordinal, uint seg, uint offset, uint flags);
+		ht_ne_entrypoint(uint ordinal, uint seg, uint offset, uint flags);
 	virtual	~ht_ne_entrypoint();
 };
 
@@ -129,7 +129,7 @@ public:
 	uint16 seg;
 	uint16 ofs;
 
-	ht_ne_reloc_entry(UINT mode, bool add, uint16 seg, uint16 ofs);
+	ht_ne_reloc_entry(uint mode, bool add, uint16 seg, uint16 ofs);
 };
 
 /*
@@ -150,16 +150,16 @@ public:
  *
  */
 
-FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, uint i);
+FileOfs NE_get_seg_ofs(ht_ne_shared_data *NE_shared, uint i);
 uint32 NE_get_seg_addr(ht_ne_shared_data *NE_shared, uint i);
 uint NE_get_seg_psize(ht_ne_shared_data *NE_shared, uint i);
 uint NE_get_seg_vsize(ht_ne_shared_data *NE_shared, uint i);
 
 bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, uint32 Addr, int *segment);
 bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, uint32 Addr);
-bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, uint32 Addr, FILEOFS *ofs);
+bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, uint32 Addr, FileOfs *ofs);
 
-bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, uint32 *Addr);
+bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FileOfs ofs, uint32 *Addr);
 
 #define NEAddress uint32
 #define NE_MAKE_ADDR(seg, ofs) ((seg)*0x10000+(ofs))

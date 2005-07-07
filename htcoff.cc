@@ -36,7 +36,7 @@ format_viewer_if *htcoff_ifs[] = {
 	0
 };
 
-static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
+static bool is_coff(ht_streamfile *file, endianess &endian, FileOfs ofs)
 {
 	// unfortunately COFF has no magic (urgs). so we have to guess
 	// a little bit.
@@ -105,7 +105,7 @@ static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 
 static ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
-	FILEOFS h;
+	FileOfs h;
 	endianess end;
 	/* look for pure coff */
 	if (!is_coff(file, end, h = 0)) {
@@ -131,7 +131,7 @@ format_viewer_if htcoff_if = {
 /*
  *	CLASS ht_coff
  */
-void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h, endianess end)
+void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h, endianess end)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_COFF, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_coff");
@@ -171,7 +171,7 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 	if (coff_shared->sections.section_count) {
 		coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
 		file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
-		for (UINT i=0; i<coff_shared->sections.section_count; i++) {
+		for (uint i=0; i<coff_shared->sections.section_count; i++) {
 			create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
 		}
 	} /* CHECK - sufficient */
@@ -193,7 +193,7 @@ void ht_coff::done()
 int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((rva >= s->data_address) && (rva < s->data_address+s->data_size)) {
 			*section = i;
 			return 1;
@@ -206,7 +206,7 @@ int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *sec
 int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, uint32 *ofs)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if (s->data_offset && (rva >= s->data_address) &&
 		(rva < s->data_address+s->data_size)) {
 			*ofs = rva-s->data_address+s->data_offset+section_headers->hdr_ofs;
@@ -220,7 +220,7 @@ int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, uint32 *ofs)
 int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((rva >= s->data_address) && (rva < s->data_address+s->data_size)) {
 			return 1;
 		}
@@ -232,7 +232,7 @@ int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva)
 int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if (s->data_offset && (rva >= s->data_address) &&
 		(rva < s->data_address+s->data_size)) {
 			return 1;
@@ -249,7 +249,7 @@ int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
 int coff_ofs_to_rva(coff_section_headers *section_headers, uint32 ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
 		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
 			*rva=ofs-(s->data_offset+section_headers->hdr_ofs)+s->data_address;
@@ -263,7 +263,7 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, uint32 ofs, RVA *rva)
 int coff_ofs_to_section(coff_section_headers *section_headers, uint32 ofs, uint *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
 		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
 			*section=i;

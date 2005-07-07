@@ -70,7 +70,7 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 	/* new */
-			char *func(UINT i, bool execute);
+			char *func(uint i, bool execute);
 };
 
 #endif /* !__HTXBEIMP_H__ */

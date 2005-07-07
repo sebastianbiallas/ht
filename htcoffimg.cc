@@ -58,7 +58,7 @@ static ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group
 /* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=coff_shared->sections.sections;
-	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
+	for (uint i=0; i<coff_shared->sections.section_count; i++) {
 		if (s->data_address < l) l = s->data_address;
 		if ((s->data_address + s->data_size > h) && s->data_size) {
 			h = s->data_address + s->data_size - 1;

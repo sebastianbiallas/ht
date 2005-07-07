@@ -49,7 +49,7 @@ void ht_reloc_file::finalize()
 //	relocs->set_compare_keys(compare_keys_uint);
 }
 
-int ht_reloc_file::vcntl(UINT cmd, va_list vargs)
+int ht_reloc_file::vcntl(uint cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_GET_RELOC: {
@@ -72,7 +72,7 @@ void ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 
 uint ht_reloc_file::read(void *buf, uint size)
 {
-	FILEOFS o = tell();
+	FileOfs o = tell();
 	/* read fine data. */
 	uint ret = ht_layer_streamfile::read(buf, size), c = ret;
 	if (enabled) {
@@ -130,7 +130,7 @@ uint ht_reloc_file::read(void *buf, uint size)
 uint ht_reloc_file::write(const void *buf, uint size)
 {
 	/* documentation: see read(). */
-	FILEOFS o;
+	FileOfs o;
 	if (enabled) {
 		o = tell();
 		uint c = size;

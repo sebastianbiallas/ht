@@ -60,8 +60,8 @@ format_viewer_if hthex_if = {
 
 void ht_hex_viewer::get_pindicator_str(char *buf)
 {
-	FILEOFS o;
-	FILEOFS sel_start, sel_end;
+	FileOfs o;
+	FileOfs sel_start, sel_end;
 	pselect_get(&sel_start, &sel_end);
 	if (get_current_offset(&o)) {
 		char ttemp[1024];
@@ -130,7 +130,7 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 			}
 			break;*/
 		case cmd_hex_entropy: {
-			FILEOFS ofs;
+			FileOfs ofs;
 			if (get_current_offset(&ofs)) {
 				byte buf[64];
 				if (pread(ofs, buf, 64)==64) {
@@ -172,7 +172,7 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-bool ht_hex_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_hex_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	*ofs = p.u.line_id.id1 + p.u.tag_idx;
 	return true;
@@ -193,7 +193,7 @@ bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 {
 	int ll = h->get_line_length();
 	ht_linear_sub *s = (ht_linear_sub*)cursor.sub;
-	FILEOFS ofs = QWORD_GET_INT(q);
+	FileOfs ofs = QWORD_GET_INT(q);
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = ofs % ll;
@@ -203,7 +203,7 @@ bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;

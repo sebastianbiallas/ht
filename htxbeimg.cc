@@ -55,7 +55,7 @@ static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 	/* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	XBE_SECTION_HEADER *s=xbe_shared->sections.sections;
-	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
+	for (uint i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		if (s->virtual_address < l) l = s->virtual_address;
 		if ((s->virtual_address + s->virtual_size > h) && s->virtual_size) h = s->virtual_address + s->virtual_size - 1;
 		s++;
@@ -104,7 +104,7 @@ static int xbe_viewer_func_rva(eval_scalar *result, eval_int *i)
 	ht_xbe_aviewer *aviewer = (ht_xbe_aviewer*)eval_get_context();
 	RVA rva = QWORD_GET_INT(i->value);
 	viewer_pos p;
-	FILEOFS ofs;
+	FileOfs ofs;
 	if (xbe_rva_to_ofs(&aviewer->xbe_shared->sections, rva, &ofs)
 	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
@@ -127,7 +127,7 @@ static int xbe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
 	(i < aviewer->xbe_shared->sections.number_of_sections)) {
 		viewer_pos p;
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (xbe_rva_to_ofs(&aviewer->xbe_shared->sections,
 					    aviewer->xbe_shared->sections.sections[i].virtual_address,
 					   &ofs)

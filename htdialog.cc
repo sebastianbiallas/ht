@@ -455,7 +455,7 @@ void *ht_history_listbox::getLast()
 
 void *ht_history_listbox::getNext(void *entry)
 {
-	uint e=(UINT)entry;
+	uint e=(uint)entry;
 	if (!e) return NULL;
 	if (e < history->count()) {
 		return (void*)(e+1);
@@ -466,7 +466,7 @@ void *ht_history_listbox::getNext(void *entry)
 
 void *ht_history_listbox::getPrev(void *entry)
 {
-	uint e=(UINT)entry;
+	uint e=(uint)entry;
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -652,9 +652,9 @@ int ht_inputfield::insertbyte(byte *pos, byte b)
 	return 0;
 }
 
-void ht_inputfield::isetcursor(UINT pos)
+void ht_inputfield::isetcursor(uint pos)
 {
-	if (pos<(UINT)*textlen) *curchar=*text+pos;
+	if (pos<(uint)*textlen) *curchar=*text+pos;
 }
 
 void ht_inputfield::query(byte ***c, byte ***t, byte ***ss, byte ***se, int **tl, int **mtl)
@@ -1708,7 +1708,7 @@ void ht_listbox::gotoItemByEntry(void *entry, bool clear_quickfind)
 	stateChanged();
 }
 
-void ht_listbox::gotoItemByPosition(UINT pos)
+void ht_listbox::gotoItemByPosition(uint pos)
 {
 	void *entry = getFirst();
 	while (pos--) entry = getNext(entry);

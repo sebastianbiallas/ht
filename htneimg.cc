@@ -59,7 +59,7 @@ static ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 /* search for lowest/highest */
 	NEAddress l=(NEAddress)-1, h=0;
 	NE_SEGMENT *s = ne_shared->segments.segments;
-	for (UINT i=0; i<ne_shared->segments.segment_count; i++) {
+	for (uint i=0; i<ne_shared->segments.segment_count; i++) {
 		NEAddress base = NE_MAKE_ADDR(i+1, 0);
 		uint evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		if (base < l) l = base;
@@ -109,7 +109,7 @@ void ht_ne_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, h
 	file = File;
 }
 
-char *ht_ne_aviewer::func(UINT i, bool execute)
+char *ht_ne_aviewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 3: {

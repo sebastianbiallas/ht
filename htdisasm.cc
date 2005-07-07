@@ -113,7 +113,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			int best = 0;
 			while (ac2) {
 				char s[1024]="", *tmp = s;
-				for (UINT i=0; i<ac2->size; i++) {
+				for (uint i=0; i<ac2->size; i++) {
 					tmp += sprintf(tmp, "%02x ", ac2->data[i]);
 				}
 				if ((best == 0) && (want_length == ac2->size)) {
@@ -192,7 +192,7 @@ void ht_disasm_viewer::done()
 
 void ht_disasm_viewer::get_pindicator_str(char *buf)
 {
-	FILEOFS o;
+	FileOfs o;
 	if (get_current_offset(&o)) {
 		sprintf(buf, " %s %08x/%u ", edit() ? "edit" : "view", o, o);
 	} else {
@@ -322,7 +322,7 @@ bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	*ofs = p.u.line_id.id1;
 	return true;
@@ -336,7 +336,7 @@ int ht_disasm_viewer::ref_sel(LINE_ID *id)
 bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 {
 	ht_linear_sub *s = get_disasm_sub();
-	FILEOFS ofs = QWORD_GET_INT(q);
+	FileOfs ofs = QWORD_GET_INT(q);
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = 0;
@@ -346,7 +346,7 @@ bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;
@@ -354,7 +354,7 @@ int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 
-char *ht_disasm_viewer::func(UINT i, bool execute)
+char *ht_disasm_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 // FIXME: wrong implementation
@@ -369,7 +369,7 @@ char *ht_disasm_viewer::func(UINT i, bool execute)
  *	CLASS ht_disasm_sub
  */
 
-void ht_disasm_sub::init(ht_streamfile *f, FILEOFS ofs, int size, Disassembler *u, bool own_u, int ds)
+void ht_disasm_sub::init(ht_streamfile *f, FileOfs ofs, int size, Disassembler *u, bool own_u, int ds)
 {
 	ht_linear_sub::init(f, ofs, size);
 	disasm = u;
@@ -385,7 +385,7 @@ void ht_disasm_sub::done()
 	ht_linear_sub::done();
 }
 
-bool ht_disasm_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+bool ht_disasm_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	if ((offset >= fofs) && (offset < fofs+fsize)) {
 		line_id->id1=offset;
@@ -395,7 +395,7 @@ bool ht_disasm_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 	return false;
 }
 
-bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
+bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
 {
 	*offset = line_id.id1;
 	return true;
@@ -541,7 +541,7 @@ int ht_disasm_sub::next_line_id(LINE_ID *line_id, int n)
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = 0;
 	while (n--) {
-		z=MIN(15, (UINT)(fofs+fsize-*ofs));
+		z=MIN(15, (uint)(fofs+fsize-*ofs));
 		file->seek(*ofs);
 		z=file->read(buf, z);
 		if (z) {

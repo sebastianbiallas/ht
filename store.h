@@ -130,8 +130,8 @@ public:
 	virtual uint64	getQWordDec(int size, char *desc);
 	virtual uint64	getQWordHex(int size, char *desc);
 	virtual char	*getString(char *desc);
-	virtual uint	recordStart(UINT size);
-	virtual void	recordEnd(UINT);
+	virtual uint	recordStart(uint size);
+	virtual void	recordEnd(uint);
 	virtual void	putBinary(void *mem, int size, char *desc);
 	virtual void	putIntDec(int a, int size, char *desc);
 	virtual void	putIntHex(int a, int size, char *desc);

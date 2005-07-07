@@ -64,7 +64,7 @@ public:
 	uint data_size;
 	byte *data;
 	
-			ht_fxbin_search_request(UINT search_class, uint flags, uint data_size, byte *data);
+			ht_fxbin_search_request(uint search_class, uint flags, uint data_size, byte *data);
 	virtual	~ht_fxbin_search_request();
 	/* overwritten */
 	virtual	Object *clone();
@@ -86,7 +86,7 @@ public:
 	char *rx_str;
 	regex_t rx;
 
-			ht_regex_search_request(UINT search_class, uint flags, char *regex);
+			ht_regex_search_request(uint search_class, uint flags, char *regex);
 	virtual	~ht_regex_search_request();
 	/* overwritten */
 	virtual	Object *clone();
@@ -99,7 +99,7 @@ class ht_expr_search_request: public ht_search_request {
 public:
 	char *expr;
 
-			ht_expr_search_request(UINT search_class, uint flags, char *Expr);
+			ht_expr_search_request(uint search_class, uint flags, char *Expr);
 	virtual	~ht_expr_search_request();
 	/* overwritten */
 	virtual	Object *clone();
@@ -284,20 +284,20 @@ public:
 	bool file_end;
 	uint flags;
 	
-	FILEOFS ofs;
+	FileOfs ofs;
 	uint len;
 
 	byte *pat;
 	uint patlen;
 
-	FILEOFS o;
+	FileOfs o;
 	uint c;
 	
 	byte *buf;
 	byte *bufptr;
 
 	bool *return_success;
-	FILEOFS *return_ofs;
+	FileOfs *return_ofs;
 	
 	~ht_search_bin_context();
 };
@@ -305,13 +305,13 @@ public:
 // flags
 #define SFBIN_CASEINSENSITIVE	1
 
-ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success);
+ht_data* create_search_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success);
 bool search_bin_process(ht_data *context, ht_text *progress_indicator);
 
 ht_view* create_form_hexascii(bounds *b, HT_ATOM histid);
 void create_desc_hexascii(char *buf, int buflen, ht_view *f);
 
-ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, uint32 fsize);
+ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, ht_streamfile *file, FileOfs fofs, uint32 fsize);
 
 /*
  *
@@ -320,13 +320,13 @@ class ht_replace_bin_context: public ht_data {
 public:
 	ht_streamfile *file;
 
-	FILEOFS ofs;
+	FileOfs ofs;
 	uint len;
 	
 	uint repllen;
 	byte *repl;
 
-	FILEOFS o;
+	FileOfs o;
 	uint z;
 	byte *buf;
 	
@@ -335,7 +335,7 @@ public:
 	~ht_replace_bin_context();
 };
  
-ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, uint len, byte *repl, uint repllen, uint *return_repllen);
+ht_data* create_replace_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen);
 bool replace_bin_process(ht_data *context, ht_text *progress_indicator);
 
 #endif /* __HTSEARCH_H__ */

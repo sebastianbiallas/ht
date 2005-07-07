@@ -34,7 +34,7 @@ extern "C" {
 }
 
 union search_pos {
-	FILEOFS offset;
+	FileOfs offset;
 	viewer_pos pos;
 };
 
@@ -44,7 +44,7 @@ uint lastreplacemodeid=0;
 
 typedef ht_search_request* (*create_request_func)(search_pos *ret_start, search_pos *ret_end, ht_view *form, ht_format_viewer *format, uint search_class);
 
-typedef ht_data* (*create_replace_context_func)(ht_streamfile *file, FILEOFS ofs, uint len, ht_view *form, uint *return_repllen);
+typedef ht_data* (*create_replace_context_func)(ht_streamfile *file, FileOfs ofs, uint len, ht_view *form, uint *return_repllen);
 
 struct ht_search_method {
 	char *name;
@@ -247,7 +247,7 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_fxbin_search_request::ht_fxbin_search_request(UINT search_class, uint flags, uint ds, byte *d) :
+ht_fxbin_search_request::ht_fxbin_search_request(uint search_class, uint flags, uint ds, byte *d) :
 	ht_search_request(search_class, ST_FXBIN, flags)
 {
 	data_size = ds;
@@ -334,7 +334,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_regex_search_request::ht_regex_search_request(UINT search_class, uint flags, char *regex) :
+ht_regex_search_request::ht_regex_search_request(uint search_class, uint flags, char *regex) :
 	ht_search_request(search_class, ST_REGEX, flags)
 {
 	rx_str = ht_strdup(regex);
@@ -438,7 +438,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_expr_search_request::ht_expr_search_request(UINT search_class, uint flags, char *Expr) :
+ht_expr_search_request::ht_expr_search_request(uint search_class, uint flags, char *Expr) :
 	ht_search_request(search_class, ST_EXPR, flags)
 {
 	expr = ht_strdup(Expr);
@@ -474,7 +474,7 @@ ht_search_bin_context::~ht_search_bin_context()
 	free(pat);
 }
 
-ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success)
+ht_data* create_search_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success)
 {
 	if (patlen > SEARCH_BUF_SIZE) return NULL;
 	
@@ -876,7 +876,7 @@ ht_view* create_form_replace_hexascii(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_data* create_replace_hexascii_context(ht_streamfile *file, FILEOFS ofs, uint len, ht_view *form, uint *return_repllen)
+ht_data* create_replace_hexascii_context(ht_streamfile *file, FileOfs ofs, uint len, ht_view *form, uint *return_repllen)
 {
 	ht_replace_hexascii_search_form_data d;
 	form->databuf_get(&d, sizeof d);
@@ -1118,7 +1118,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 		}
 		
 		if (request) {
-			FILEOFS so = start.offset, eo = end.offset;
+			FileOfs so = start.offset, eo = end.offset;
 			ht_physical_search_result *result;
 
 			format->vstate_save();
@@ -1184,7 +1184,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
-ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, uint len, byte *repl, uint repllen, uint *return_repllen)
+ht_data* create_replace_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen)
 {
 	ht_replace_bin_context *ctx = new ht_replace_bin_context();
 	ctx->file = file;
@@ -1493,7 +1493,7 @@ void ht_replace_dialog::select_replace_mode_bymodeidx()
  *
  */
  
-ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, uint32 fsize)
+ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, ht_streamfile *file, FileOfs fofs, uint32 fsize)
 {
 	ht_fxbin_search_request *s=(ht_fxbin_search_request*)search;
 		
@@ -1503,7 +1503,7 @@ ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FI
 	if ((fsize) && (start<end)) {
 		/* create result */
 		bool search_success = false;
-		FILEOFS search_ofs;
+		FileOfs search_ofs;
 		ht_data *ctx = create_search_bin_context(file, start, end-start, s->data, s->data_size, fl, &search_ofs, &search_success);
 		if (execute_process(search_bin_process, ctx)) {
 			delete ctx;

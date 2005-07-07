@@ -61,7 +61,7 @@ sint64 to_sint64(int i)
 	return res;
 }
 
-uint64 to_uint64(UINT i)
+uint64 to_uint64(uint i)
 {
 	uint64 res;
 	res.lo = i;

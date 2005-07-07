@@ -470,7 +470,7 @@ char *AnalyInfoline::gettext()
 	}
 }
 
-void AnalyInfoline::update(Address *cursor_addr, FILEOFS ecursor_addr)
+void AnalyInfoline::update(Address *cursor_addr, FileOfs ecursor_addr)
 {
 	delete addr;
 	if (valid()) {
@@ -527,12 +527,12 @@ void ht_aviewer::attachInfoline(AnalyInfoline *V)
 	infoline = V;
 }
 
-bool ht_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	if (analy) {
 		Address *addr;
 		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FILEOFS o=analy->addressToFileofs(addr);
+		FileOfs o=analy->addressToFileofs(addr);
 		delete addr;
 		if (o!=INVALID_FILE_OFS) {
 			*ofs=o;
@@ -585,7 +585,7 @@ bool ht_aviewer::convertAddressToViewerPos(Address *a, viewer_pos *p)
 	}
 }
 
-char *ht_aviewer::func(UINT i, bool execute)
+char *ht_aviewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 8: {
@@ -614,7 +614,7 @@ static int aviewer_func_addr(eval_scalar *result, eval_str *str)
 		return 1;
 	} else {
 		char buffer[1024];
-		bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
+		bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
 		set_eval_error("invalid address '%s'", buffer);
 		return 0;
 	}
@@ -624,7 +624,7 @@ static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	char buffer[1024];
-	bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
+	bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
 	Symbol *l;
 	if ((l = aviewer->analy->getSymbolByName(buffer))) {
 		// FIXNEW
@@ -924,7 +924,7 @@ void ht_aviewer::dataStringDialog()
 		Location *a = analy->enumLocations(current_address);
 		int d = sizeof buffer;
 		if (a) a->addr->difference(d, current_address);
-		uint bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (UINT)d));
+		uint bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (uint)d));
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -1059,7 +1059,7 @@ void ht_aviewer::get_pindicator_str(char *buf)
 {
 	Address *addr;
 	if (analy && getCurrentAddress(&addr)) {
-		FILEOFS o;
+		FileOfs o;
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 		if (get_current_offset(&o)) {
 			ht_snprintf(buf, 1024, " %y/@%08x%s ", addr, o, (analy->isDirty())?" dirty":"");
@@ -1526,7 +1526,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 	case msg_draw:
 		if (infoline) {
-			FILEOFS a;
+			FileOfs a;
 			Address *addr;
 			if (!getCurrentAddress(&addr)) {
 				addr = new InvalidAddress();
@@ -1744,7 +1744,7 @@ void ht_aviewer::showComments(Address *Addr)
 			empty=(l==0);
 		}
 		if (!empty) {
-			for (UINT i=0; i<c; i++) {
+			for (uint i=0; i<c; i++) {
 				uint l;
 				if (text_file->getline(i, 0, buf, 1024, &l, NULL)) {
 					buf[l]=0;
@@ -2077,7 +2077,7 @@ bool ht_analy_sub::closest_line_id(LINE_ID *line_id)
 	return true;
 }
 
-bool ht_analy_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+bool ht_analy_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	viewer_pos a;
 	if (!uformat_viewer->offset_to_pos(offset, &a)) return false;
@@ -2137,7 +2137,7 @@ int	ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
 	return res;
 }
 
-ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
+ht_search_result *ht_analy_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
 {
 	// FIXME: viewer pos     
 	Address *st = NULL;
@@ -2148,7 +2148,7 @@ ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start,
 		area_s *s = analy->initialized->getArea(st);
 		if (!s) break;
 		st = (Address *)s->end;
-		FILEOFS fstart, fend;
+		FileOfs fstart, fend;
 		uint32 fsize;
 		viewer_pos vp_start, vp_end;
 		aviewer->convertAddressToViewerPos((Address *)s->start, &vp_start);

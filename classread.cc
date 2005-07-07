@@ -349,7 +349,7 @@ void class_unread(ht_class_shared_data *shared)
 	classfile *clazz = shared->file;
 
 	if (!clazz) return;
-	for (UINT i=1; i<clazz->cpool_count; i++) {
+	for (uint i=1; i<clazz->cpool_count; i++) {
 		tag = clazz->cpool[i]->tag;
 		free (clazz->cpool[i]);
 		if ((tag == CONSTANT_Long) || (tag == CONSTANT_Double)) {
@@ -358,23 +358,23 @@ void class_unread(ht_class_shared_data *shared)
 	}
 	if (clazz->cpool_count) free(clazz->cpool);
 	if (clazz->interfaces) free(clazz->interfaces);
-	for (UINT i=0; i<clazz->fields_count; i++) {
-		for (UINT j=0; j<clazz->fields[i]->attribs_count; j++) {
+	for (uint i=0; i<clazz->fields_count; i++) {
+		for (uint j=0; j<clazz->fields[i]->attribs_count; j++) {
 			free(clazz->fields[i]->attribs[j]);
 		}
 		if (clazz->fields[i]->attribs_count) free(clazz->fields[i]->attribs);
 		free(clazz->fields[i]);
 	}
 	if (clazz->fields_count) free(clazz->fields);
-	for (UINT i=0; i<clazz->methods_count; i++) {
-		for (UINT j=0; j<clazz->methods[i]->attribs_count; j++) {
+	for (uint i=0; i<clazz->methods_count; i++) {
+		for (uint j=0; j<clazz->methods[i]->attribs_count; j++) {
 			free (clazz->methods[i]->attribs[j]);
 		}
 		if (clazz->methods[i]->attribs_count) free(clazz->methods[i]->attribs);
 		free(clazz->methods[i]);
 	}
 	if (clazz->methods_count) free(clazz->methods);
-	for (UINT i=0; i<clazz->attribs_count; i++) {
+	for (uint i=0; i<clazz->attribs_count; i++) {
 		free(clazz->attribs[i]);
 	}
 	if (clazz->attribs_count) {

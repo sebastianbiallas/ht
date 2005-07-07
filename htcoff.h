@@ -74,7 +74,7 @@ class ht_coff: public ht_format_group {
 private:
 	ht_coff_shared_data *coff_shared;
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess end);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess end);
 	virtual	void done();
 };
 

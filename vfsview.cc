@@ -543,23 +543,23 @@ void VfsListbox::renderEntry(char *buf, int bufsize, int dfmt, const char *filen
 				char *line = buf;
 									   
 				char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-				if ((reltime) && ((UINT)ct-q<=60*60*24*28)) {
-					if ((UINT)ct-q<=60*60*24) {
+				if ((reltime) && ((uint)ct-q<=60*60*24*28)) {
+					if ((uint)ct-q<=60*60*24) {
 						line += ht_snprintf(line, bufsize-(line-buf), "now ");
-					} else if ((UINT)ct-q<=60*60*24*2) {
+					} else if ((uint)ct-q<=60*60*24*2) {
 						line += ht_snprintf(line, bufsize-(line-buf), "now ");
 					} else {
-						line += ht_snprintf(line, bufsize-(line-buf), "%s-%uday", ((UINT)(ct-q)/(60*60*24)>10) ? "" : " ", (UINT)(ct-q)/(60*60*24));
+						line += ht_snprintf(line, bufsize-(line-buf), "%s-%uday", ((uint)(ct-q)/(60*60*24)>10) ? "" : " ", (uint)(ct-q)/(60*60*24));
 					}
 				} else {
 					line += ht_snprintf(line, bufsize-(line-buf), "%s %02d", months[t.tm_mon], t.tm_mday);
 				}
 				if (t.tm_year==c.tm_year) {
-					if ((reltime) && ((UINT)ct-q<=60*60*24)) {
-						if ((UINT)ct-q<=60*60) {
-							line += ht_snprintf(line, bufsize-(line-buf), "-%umin", (UINT)(ct-q)/60);
+					if ((reltime) && ((uint)ct-q<=60*60*24)) {
+						if ((uint)ct-q<=60*60) {
+							line += ht_snprintf(line, bufsize-(line-buf), "-%umin", (uint)(ct-q)/60);
 						} else {
-							line += ht_snprintf(line, bufsize-(line-buf), "-%um:%u", (UINT)(ct-q)/60/60, (UINT)(ct-q)/60%60);
+							line += ht_snprintf(line, bufsize-(line-buf), "-%um:%u", (uint)(ct-q)/60/60, (uint)(ct-q)/60%60);
 						}
 					} else {
 						line += ht_snprintf(line, bufsize-(line-buf), " %02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);

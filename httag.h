@@ -54,7 +54,7 @@ struct ht_tag_sel {
 struct ht_tag_flags {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 	ID id HTPACKED;
 };
 
@@ -100,7 +100,7 @@ struct ht_tag_color {
 struct ht_tag_edit_byte {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT WORD */
@@ -108,7 +108,7 @@ struct ht_tag_edit_byte {
 struct ht_tag_edit_word_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT DWORD */
@@ -116,7 +116,7 @@ struct ht_tag_edit_word_generic {
 struct ht_tag_edit_dword_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT QWORD */
@@ -124,7 +124,7 @@ struct ht_tag_edit_dword_generic {
 struct ht_tag_edit_qword_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT-WORD-TAG (little-endian) */
@@ -220,7 +220,7 @@ struct ht_tag_edit_qword_generic {
 struct ht_tag_edit_time {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT-CHAR-TAG */
@@ -235,7 +235,7 @@ struct ht_tag_edit_time {
 struct ht_tag_edit_char {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* EDIT-BIT-TAG */
@@ -250,7 +250,7 @@ struct ht_tag_edit_char {
 struct ht_tag_edit_bit {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 	byte bitidx HTPACKED;
 };
 
@@ -265,7 +265,7 @@ struct ht_tag_edit_bit {
 struct ht_tag_edit_selvis {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 	char ch HTPACKED;
 };
 
@@ -280,7 +280,7 @@ struct ht_tag_desc_byte {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
 	ID id HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* DESC WORD */
@@ -288,7 +288,7 @@ struct ht_tag_desc_word_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
 	ID id HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* DESC DWORD */
@@ -296,7 +296,7 @@ struct ht_tag_desc_dword_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
 	ID id HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* DESC QWORD */
@@ -304,7 +304,7 @@ struct ht_tag_desc_qword_generic {
 	byte escape HTPACKED;
 	byte magic HTPACKED;
 	ID id HTPACKED;
-	FILEOFS offset HTPACKED;
+	FileOfs offset HTPACKED;
 };
 
 /* DESC-WORD-TAG (little-endian) */
@@ -467,18 +467,18 @@ TAGSTRING *tag_make_flags(TAGSTRING *buf, uint32 id, uint32 offset);
 TAGSTRING *tag_make_group(TAGSTRING *buf);
 TAGSTRING *tag_make_color(TAGSTRING *buf, uint32 color);
 TAGSTRING *tag_make_default_color(TAGSTRING *buf);
-TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FILEOFS ofs32);
-TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FILEOFS ofs32, tag_endian e);
-TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FILEOFS ofs32, tag_endian e);
-TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FILEOFS ofs32, tag_endian e);
-TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FILEOFS ofs32);
-TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FILEOFS ofs32);
-TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FILEOFS ofs32, int bitidx);
-TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FILEOFS offset, char ch);
-TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FILEOFS ofs32, uint32 id32);
-TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FILEOFS ofs32, uint32 id32, tag_endian e);
-TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FILEOFS ofs32, uint32 id32, tag_endian e);
-TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FILEOFS ofs32, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FileOfs ofs32);
+TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs32, tag_endian e);
+TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs32, tag_endian e);
+TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FileOfs ofs32, tag_endian e);
+TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FileOfs ofs32);
+TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FileOfs ofs32);
+TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs32, int bitidx);
+TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FileOfs offset, char ch);
+TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FileOfs ofs32, uint32 id32);
+TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e);
 char *tag_striptags(char *dest, const TAGSTRING *src);
 
 #endif /* !__HTTAG_H__ */

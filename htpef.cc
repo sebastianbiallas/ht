@@ -63,7 +63,7 @@ format_viewer_if htpef_if = {
 /*
  *	CLASS ht_pef
  */
-void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
+void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_PEF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_pef");
@@ -149,7 +149,7 @@ void ht_pef::done()
 	elf32_addr a=RELOC_BASE;
 	while (a<RELOC_LIMIT-s[si].sh_size) {
 		bool ok=true;
-		for (UINT i=0; i<scount; i++) {
+		for (uint i=0; i<scount; i++) {
 			if ((s[i].sh_type==ELF_SHT_PROGBITS) && (s[i].sh_addr) &&
 			((a>=s[i].sh_addr) && (a<s[i].sh_addr+s[i].sh_size))) {
 				ok=false;
@@ -179,7 +179,7 @@ bool pef_valid_section(PEF_SECTION_HEADER *s)
 bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, uint32 *ofs)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
-	for (UINT i=0; i < section_headers->count; i++) {
+	for (uint i=0; i < section_headers->count; i++) {
 		if ((pef_phys_and_mem_section(s)) &&
 		(addr.a32 >= s->defaultAddress) && (addr.a32 < s->defaultAddress+s->packedSize)) {
 			*ofs = addr.a32 - s->defaultAddress + s->containerOffset;
@@ -193,7 +193,7 @@ bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, uint
 bool pef_addr_to_section(pef_section_headers *section_headers, PEFAddress addr, int *section)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
-	for (UINT i = 0; i < section_headers->count; i++) {
+	for (uint i = 0; i < section_headers->count; i++) {
 		if ((pef_valid_section(s)) &&
 		(addr.a32 >= s->defaultAddress) && (addr.a32 < s->defaultAddress + s->totalSize)) {
 			*section = i;
@@ -207,7 +207,7 @@ bool pef_addr_to_section(pef_section_headers *section_headers, PEFAddress addr, 
 bool pef_addr_is_valid(pef_section_headers *section_headers, PEFAddress addr)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
-	for (UINT i=0; i<section_headers->count; i++) {
+	for (uint i=0; i<section_headers->count; i++) {
 		if ((pef_valid_section(s)) &&
 		(addr.a32 >= s->defaultAddress) && (addr.a32 < s->defaultAddress + s->totalSize)) {
 			return true;
@@ -224,7 +224,7 @@ bool pef_addr_is_valid(pef_section_headers *section_headers, PEFAddress addr)
 bool pef_ofs_to_addr(pef_section_headers *section_headers, uint32 ofs, PEFAddress *addr)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
-	for (UINT i = 0; i < section_headers->count; i++) {
+	for (uint i = 0; i < section_headers->count; i++) {
 		if ((pef_phys_and_mem_section(s)) &&
 		(ofs>=s->containerOffset) && (ofs<s->containerOffset+s->packedSize)) {
 			addr->a32 = ofs - s->containerOffset + s->defaultAddress;
@@ -238,7 +238,7 @@ bool pef_ofs_to_addr(pef_section_headers *section_headers, uint32 ofs, PEFAddres
 bool pef_ofs_to_section(pef_section_headers *section_headers, uint32 ofs, int *section)
 {
 	PEF_SECTION_HEADER *s=section_headers->sheaders;
-	for (UINT i=0; i<section_headers->count; i++) {
+	for (uint i=0; i<section_headers->count; i++) {
 		if ((pef_valid_section(s)) &&
 		(ofs >= s->containerOffset) && (ofs<s->containerOffset+s->packedSize)) {
 			*section = i;
@@ -256,7 +256,7 @@ bool pef_ofs_to_section(pef_section_headers *section_headers, uint32 ofs, int *s
 class ht_pef_reloc_entry: public ht_data {
 public:
 	
-//	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, uint type, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
+//	ht_elf32_reloc_entry(uint symtabidx, elf32_addr offset, uint type, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
 };
 
 /*

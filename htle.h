@@ -89,7 +89,7 @@ protected:
 			void read_pagemap();
 			void read_objects();
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h);
+			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
 	virtual	void done();
 /* overwritten */
 	virtual   void loc_enum_start();
@@ -107,18 +107,18 @@ protected:
 	ht_le_pagemap *pagemap;
 	uint32 pagemapsize;
 	uint32 page_size;
-	FILEOFS ofs;
+	FileOfs ofs;
 public:
 		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
 /* overwritten */
 	virtual bool isdirty(FILEOFS offset, uint range);
 	virtual uint read(void *buf, uint size);
 	virtual int seek(FILEOFS offset);
-	virtual FILEOFS tell();
-	virtual int vcntl(UINT cmd, va_list vargs);
+	virtual FileOfs tell();
+	virtual int vcntl(uint cmd, va_list vargs);
 	virtual uint write(const void *buf, uint size);
 /* new */
-		   bool map_ofs(UINT lofs, FILEOFS *pofs, uint *maxsize);
+		   bool map_ofs(uint lofs, FileOfs *pofs, uint *maxsize);
 		   bool unmap_ofs(FILEOFS pofs, uint *lofs);
 };
 
@@ -134,7 +134,7 @@ public:
 	uint8 address_type;
 	uint8 reloc_type;
 
-	ht_le_reloc_entry(UINT ofs, uint seg, LEAddress addr, uint8 address_type, uint8 reloc_type);
+	ht_le_reloc_entry(uint ofs, uint seg, LEAddress addr, uint8 address_type, uint8 reloc_type);
 };
 
 /*
@@ -151,16 +151,16 @@ public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_le_shared_data *data);
 };
 
-FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i);
+FileOfs LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i);
 LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, uint i);
 uint LE_get_seg_psize(ht_le_shared_data *LE_shared, uint i);
 uint LE_get_seg_vsize(ht_le_shared_data *LE_shared, uint i);
 
 bool LE_addr_to_segment(ht_le_shared_data *LE_shared, LEAddress Addr, int *segment);
 bool LE_addr_is_physical(ht_le_shared_data *LE_shared, LEAddress Addr);
-bool LE_addr_to_ofs(ht_le_shared_data *LE_shared, LEAddress Addr, FILEOFS *ofs);
+bool LE_addr_to_ofs(ht_le_shared_data *LE_shared, LEAddress Addr, FileOfs *ofs);
 
-bool LE_ofs_to_addr(ht_le_shared_data *LE_shared, FILEOFS ofs, LEAddress *Addr);
+bool LE_ofs_to_addr(ht_le_shared_data *LE_shared, FileOfs ofs, LEAddress *Addr);
 
 LEAddress LE_MAKE_ADDR(ht_le_shared_data *LE_shared, uint16 seg, uint32 ofs);
 uint16 LE_ADDR_SEG(ht_le_shared_data *LE_shared, LEAddress a);

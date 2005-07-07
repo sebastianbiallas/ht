@@ -91,7 +91,7 @@ static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 	m->add_staticmask_ptable(le_entry_bundle_header, h+le_shared->hdr.enttab, le_bigendian);
 	v->insertsub(m);
 
-	FILEOFS o=h+le_shared->hdr.enttab;
+	FileOfs o=h+le_shared->hdr.enttab;
 	while (1) {
 		char t[32];
 		LE_ENTRYPOINT_BUNDLE hdr;

@@ -60,7 +60,7 @@ static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 /* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+	for (uint i=0; i<pe_shared->sections.section_count; i++) {
 		if (s->data_address < l) l = s->data_address;
 		if ((s->data_address + s->data_size > h) && s->data_size) h = s->data_address + s->data_size - 1;
 		s++;
@@ -117,7 +117,7 @@ static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
 	RVA rva = QWORD_GET_INT(i->value);
 	viewer_pos p;
-	FILEOFS ofs;
+	FileOfs ofs;
 	if (pe_rva_to_ofs(&aviewer->pe_shared->sections, rva, &ofs)
 	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
@@ -140,7 +140,7 @@ static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
 	(i < aviewer->pe_shared->sections.section_count)) {
 		viewer_pos p;
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
 					    aviewer->pe_shared->sections.sections[i].data_address,
 					   &ofs)
