@@ -20,7 +20,6 @@
 
 #include "analy.h"
 #include "analy_names.h"
-#include "global.h"
 #include "log.h"
 #include "htanaly.h"
 #include "htctrl.h" // FIXME: globalerror
@@ -492,7 +491,7 @@ bool AnalyInfoline::valid()
 /*
  *
  */
-void ht_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy)
+void ht_aviewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy)
 {
 	analy = Analy;
 	if (Analy) {
@@ -1030,7 +1029,7 @@ bool ht_aviewer::getCurrentAddress(Address **a)
 	return convertViewerPosToAddress(vp, a);
 }
 
-bool ht_aviewer::get_current_offset(FILEOFS *ofs)
+bool ht_aviewer::get_current_offset(FileOfs *ofs)
 {
 	if (ht_uformat_viewer::get_current_offset(ofs)) {
 		return true;
@@ -1564,7 +1563,7 @@ bool ht_aviewer::idle()
 	return last_active && !pause;
 }
 
-bool ht_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	if (!analy) return false;
 	Address *a = analy->fileofsToAddress(ofs);
@@ -2047,7 +2046,7 @@ bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
  *	CLASS ht_analy_sub
  */
 
-void ht_analy_sub::init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
+void ht_analy_sub::init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
 {
 	ht_sub::init(file);
 	aviewer = A;

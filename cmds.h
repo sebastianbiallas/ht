@@ -21,7 +21,7 @@
 #ifndef __CMDS_H__
 #define __CMDS_H__
 
-#include "global.h"
+#include "io/types.h"
 
 #define CMD	uint32
 

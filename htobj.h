@@ -59,7 +59,7 @@ struct palette {
 #define msg_project_changed		HT_MESSAGE(20)
 #define msg_vstate_save			HT_MESSAGE(21)	// (Object *data, ht_view *)
 #define msg_vstate_restore		HT_MESSAGE(22) // (Object *data)
-#define msg_goto_offset			HT_MESSAGE(23) // (FILEOFS ofs)
+#define msg_goto_offset			HT_MESSAGE(23) // (FileOfs ofs)
 
 #define msg_filesize_changed		HT_MESSAGE(100)
 #define msg_log_changed			HT_MESSAGE(101)

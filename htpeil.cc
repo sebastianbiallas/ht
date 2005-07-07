@@ -59,7 +59,7 @@ static ht_mask_ptable metadata_section[] = {
 	{0, 0}
 };
 
-static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -185,7 +185,7 @@ format_viewer_if htpeil_if = {
  *	CLASS ht_pe_header_viewer
  */
 
-void ht_pe_il_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
+void ht_pe_il_viewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *group)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, group);
 	VIEW_DEBUG_NAME("ht_pe_il_viewer");

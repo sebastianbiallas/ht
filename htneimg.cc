@@ -31,7 +31,7 @@
 #include "htanaly.h"
 #include "ne_analy.h"
 
-static ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneimage_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
@@ -102,7 +102,7 @@ format_viewer_if htneimage_if = {
  *	CLASS ht_ne_aviewer
  */
 
-void ht_ne_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_ne_shared_data *NE_shared)
+void ht_ne_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_ne_shared_data *NE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	ne_shared = NE_shared;

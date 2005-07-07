@@ -32,11 +32,11 @@
 #include "htanaly.h"
 #include "le_analy.h"
 
-static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleimage_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
-	ht_streamfile *myfile = le_shared->reloc_file;
+	File *myfile = le_shared->reloc_file;
 
 	LOG("%s: LE: loading image (starting analyser)...", file->get_filename());
 	LEAnalyser *p = new LEAnalyser();
@@ -100,7 +100,7 @@ format_viewer_if htleimage_if = {
  *	CLASS ht_le_aviewer
  */
 
-void ht_le_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_le_shared_data *LE_shared)
+void ht_le_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_le_shared_data *LE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	le_shared = LE_shared;
@@ -124,7 +124,7 @@ char *ht_le_aviewer::func(uint i, bool execute)
 	return ht_aviewer::func(i, execute);
 }
 
-bool ht_le_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_le_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	if (!analy) return false;
 	Address *a = ((LEAnalyser*)analy)->realFileofsToAddress(ofs);
@@ -148,7 +148,7 @@ bool ht_le_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 	return false;
 }
 
-bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
+bool ht_le_aviewer::get_current_real_offset(FileOfs *ofs)
 {
 	FileOfs o;
 	if (!get_current_offset(&o)) return false;

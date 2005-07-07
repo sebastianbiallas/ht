@@ -27,7 +27,7 @@
 #include "pefstruc.h"
 #include "snprintf.h"
 
-ht_view *htpefimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htpefimage_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
 
@@ -177,7 +177,7 @@ static int pe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 /*
  *	CLASS ht_pef_aviewer
  */
-void ht_pef_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_pef_shared_data *PEF_shared)
+void ht_pef_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_pef_shared_data *PEF_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	pef_shared = PEF_shared;

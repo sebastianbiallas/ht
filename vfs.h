@@ -73,8 +73,8 @@ public:
 	virtual	int			open(const char *filename, bool edit) = 0;
 	virtual	int			pstat(pstat_t *s, const char *filename) = 0;
 	virtual	int			renameFile(const char *filename, const char *newname) = 0;
-	virtual	int			fileClose(ht_streamfile *f) = 0;
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, ht_streamfile **f) = 0;
+	virtual	int			fileClose(File *f) = 0;
+	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f) = 0;
 };
 
 /*
@@ -101,8 +101,8 @@ public:
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);
 	virtual	int			renameFile(const char *filename, const char *newname);
-	virtual	int			fileClose(ht_streamfile *f);
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, ht_streamfile **f);
+	virtual	int			fileClose(File *f);
+	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f);
 };
 
 /*
@@ -136,8 +136,8 @@ public:
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);
 	virtual	int			renameFile(const char *filename, const char *newname);
-	virtual	int			fileClose(ht_streamfile *f);
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, ht_streamfile **f);
+	virtual	int			fileClose(File *f);
+	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f);
 };
 
 #endif /* __VFS_H__ */

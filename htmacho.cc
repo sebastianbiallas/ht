@@ -37,7 +37,7 @@ static format_viewer_if *htmacho_ifs[] = {
 	0
 };
 
-static ht_view *htmacho_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htmacho_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte magic[4];
 	file->seek(0);
@@ -62,7 +62,7 @@ format_viewer_if htmacho_if = {
 /*
  *	CLASS ht_macho
  */
-void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess image_endianess)
+void ht_macho::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess image_endianess)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_MACHO, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_macho");

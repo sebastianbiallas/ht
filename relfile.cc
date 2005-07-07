@@ -28,7 +28,7 @@
 /*
  *	ht_reloc_file
  */
-void ht_reloc_file::init(ht_streamfile *s, bool os)
+void ht_reloc_file::init(File *s, bool os)
 {
 	ht_layer_streamfile::init(s, os);
 	relocs = new ht_stree();
@@ -65,7 +65,7 @@ int ht_reloc_file::vcntl(uint cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-void ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
+void ht_reloc_file::insert_reloc(FileOfs o, Object *reloc)
 {
 	relocs->insert(new ht_data_uint(o), reloc);
 }
@@ -77,7 +77,7 @@ uint ht_reloc_file::read(void *buf, uint size)
 	uint ret = ht_layer_streamfile::read(buf, size), c = ret;
 	if (enabled) {
 		ht_data_uint q;
-		ht_data *r;
+		Object *r;
 		ht_data_uint *k = &q;
 		if ((MAX_RELOC_ITEM_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_ITEM_LEN+1);
@@ -135,7 +135,7 @@ uint ht_reloc_file::write(const void *buf, uint size)
 		o = tell();
 		uint c = size;
 		ht_data_uint q;
-		ht_data *r;
+		Object *r;
 		ht_data_uint *k = &q;
 		if ((MAX_RELOC_ITEM_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_ITEM_LEN+1);

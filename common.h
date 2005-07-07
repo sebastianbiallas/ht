@@ -21,7 +21,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "global.h"
+#include "io/types.h"
 #include "htdebug.h"
 
 /**

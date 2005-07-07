@@ -143,7 +143,7 @@ struct ht_class_shared_data {
 	} classinfo;
 };
 
-extern ht_class_shared_data *class_read(ht_streamfile *);
+extern ht_class_shared_data *class_read(File *);
 extern void class_unread(ht_class_shared_data *);
 extern attrib_info *attribute_read(ht_stream *, classfile *);
 
@@ -153,14 +153,14 @@ char *java_demangle_flags(char *result, int flags);
 
 class cview : public ht_format_group {
 public:
-  void init(bounds *, ht_streamfile *, format_viewer_if **,
+  void init(bounds *, File *, format_viewer_if **,
 		  ht_format_group *, FILEOFS, void *shared);
   virtual void done();
 };
 
 #define ClassAddress uint32
 
-class ClassMethod: public ht_data {
+class ClassMethod: public Object {
 public:
 	char *name;
 	char *type;

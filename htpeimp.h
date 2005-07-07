@@ -29,7 +29,7 @@ extern format_viewer_if htpeimports_if;
  *	class ht_pe_import_library
  */
 
-class ht_pe_import_library: public ht_data {
+class ht_pe_import_library: public Object {
 public:
 	char *name;
 
@@ -41,7 +41,7 @@ public:
  *	class ht_pe_import_function
  */
 
-class ht_pe_import_function: public ht_data {
+class ht_pe_import_function: public Object {
 public:
 	uint libidx;
 	bool byname;
@@ -60,8 +60,8 @@ public:
 };
 
 struct ht_pe_import {
-	ht_clist *funcs;
-	ht_clist *libs;
+	Container *funcs;
+	Container *libs;
 };
 
 /*

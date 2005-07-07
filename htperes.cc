@@ -70,13 +70,13 @@ static int_hash languages[] = {
 	{ 0 }
 };
 
-class ht_pe_resource_leaf: public ht_data {
+class ht_pe_resource_leaf: public Object {
 public:
 	uint32 offset;
 	uint32 size;
 };
 
-static ht_streamfile *peresource_file;
+static File *peresource_file;
 static FileOfs peresource_dir_ofs;
 static ht_static_treeview *peresource_tree;
 static char peresource_string[128];
@@ -149,7 +149,7 @@ static void read_resource_dir(void *node, int ofs, int level)
 	}
 }
 
-static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htperesources_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -263,12 +263,12 @@ void ht_pe_resource_viewer::select_node(void *node)
 	}
 }
 
-class ht_pe_resource_viewer_vstate: public ht_data {
+class ht_pe_resource_viewer_vstate: public Object {
 public:
 	void *node;
 };
 
-ht_data *ht_pe_resource_viewer::vstate_create()
+Object *ht_pe_resource_viewer::vstate_create()
 {
 	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	v->node = get_cursor_node();
@@ -277,7 +277,7 @@ ht_data *ht_pe_resource_viewer::vstate_create()
 
 bool ht_pe_resource_viewer::vstate_save()
 {
-	ht_data *vs = vstate_create();
+	Object *vs = vstate_create();
 	if (vs) {
 		htmsg m;
 		m.msg = msg_vstate_save;

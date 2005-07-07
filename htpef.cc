@@ -37,7 +37,7 @@ format_viewer_if *htpef_ifs[] = {
 	0
 };
 
-static ht_view *htpef_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htpef_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte id[12];
 	file->seek(0);
@@ -63,7 +63,7 @@ format_viewer_if htpef_if = {
 /*
  *	CLASS ht_pef
  */
-void ht_pef::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_pef::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_PEF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_pef");
@@ -253,10 +253,10 @@ bool pef_ofs_to_section(pef_section_headers *section_headers, uint32 ofs, int *s
  *	ht_pef_reloc_entry
  */
 #include "relfile.h"
-class ht_pef_reloc_entry: public ht_data {
+class ht_pef_reloc_entry: public Object {
 public:
 	
-//	ht_elf32_reloc_entry(uint symtabidx, elf32_addr offset, uint type, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
+//	ht_elf32_reloc_entry(uint symtabidx, elf32_addr offset, uint type, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, File *file);
 };
 
 /*
@@ -271,7 +271,7 @@ protected:
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
 
-void init(ht_streamfile *s, bool own_s, ht_pef_shared_data *d)
+void init(File *s, bool own_s, ht_pef_shared_data *d)
 {
 	ht_reloc_file::init(s, own_s);
 	data = d;

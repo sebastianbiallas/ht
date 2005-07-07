@@ -173,7 +173,7 @@ static ht_mask_ptable macho_i386_thread_state[]=
 	{0, 0}
 };
 
-static ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmachoheader_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
 	

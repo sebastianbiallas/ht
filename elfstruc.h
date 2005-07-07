@@ -23,7 +23,7 @@
 #ifndef __ELFSTRUC_H__
 #define __ELFSTRUC_H__
 
-#include "global.h"
+#include "io/types.h"
 
 /* all architectures */
 typedef unsigned char elf_unsigned_char;

@@ -69,7 +69,6 @@
 #include <sys/types.h>
 
 #include "common.h"
-#include "global.h"
 #include "tools.h"
 
 #ifndef NO_CONFIG_H /* for some tests */

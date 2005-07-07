@@ -20,7 +20,7 @@
 #ifndef __CSTREAM_H__
 #define __CSTREAM_H__
 
-#include "global.h"
+#include "io/types.h"
 #include "stream.h"
 
 /*

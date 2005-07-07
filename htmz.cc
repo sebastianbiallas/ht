@@ -33,7 +33,7 @@ static format_viewer_if *htmz_ifs[] = {
 	0
 };
 
-static ht_view *htmz_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htmz_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte magic[2];
 	file->seek(0);
@@ -51,7 +51,7 @@ format_viewer_if htmz_if = {
 	0
 };
 
-void ht_mz::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group)
+void ht_mz::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_MZ, file, false, true, 0, format_group);
 	ht_mz_shared_data *mz_shared = (ht_mz_shared_data*)malloc(sizeof (ht_mz_shared_data));

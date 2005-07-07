@@ -130,7 +130,7 @@ static ht_mask_ptable pef_loader_info_header[]=
 	{0, 0}
 };*/
 
-ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htpefheader_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
 

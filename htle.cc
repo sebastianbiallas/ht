@@ -48,7 +48,7 @@ static format_viewer_if *htle_ifs[] = {
 	0
 };
 
-static ht_view *htle_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htle_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte lemagic[2];
 	FileOfs h=get_newexe_header_ofs(file);
@@ -66,7 +66,7 @@ format_viewer_if htle_if = {
 	0
 };
 
-void ht_le::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h)
+void ht_le::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_LE, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_le");
@@ -421,7 +421,7 @@ bool ht_le::loc_enum_next(ht_format_loc *loc)
  *	CLASS ht_le_page_file
  */
 
-void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm, uint32 pms, uint32 ps)
+void ht_le_page_file::init(File *file, bool own_file, ht_le_pagemap *pm, uint32 pms, uint32 ps)
 {
 	ht_layer_streamfile::init(file, own_file);
 	pagemap = pm;
@@ -430,7 +430,7 @@ void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm
 	ofs = 0;
 }
 
-bool ht_le_page_file::isdirty(FILEOFS offset, uint range)
+bool ht_le_page_file::isdirty(FileOfs offset, uint range)
 {
 	FileOfs mofs;
 	uint msize;
@@ -464,7 +464,7 @@ bool ht_le_page_file::map_ofs(uint lofs, FileOfs *pofs, uint *maxsize)
 	return false;
 }
 
-bool ht_le_page_file::unmap_ofs(FILEOFS pofs, uint *lofs)
+bool ht_le_page_file::unmap_ofs(FileOfs pofs, uint *lofs)
 {
 	for (uint i=0; i<pagemapsize; i++) {
 		if ((pofs >= pagemap->offset[i]) && (pofs < pagemap->offset[i]+pagemap->vsize[i])) {
@@ -496,7 +496,7 @@ uint ht_le_page_file::read(void *aBuf, uint size)
 	return c;
 }
 
-int ht_le_page_file::seek(FILEOFS offset)
+int ht_le_page_file::seek(FileOfs offset)
 {
 	ofs = offset;
 	return 0;
@@ -583,7 +583,7 @@ ht_le_reloc_entry::ht_le_reloc_entry(uint o, uint s, LEAddress a, uint8 at, uint
  *	CLASS ht_le_reloc_file
  */
 
-void ht_le_reloc_file::init(ht_streamfile *s, bool os, ht_le_shared_data *d)
+void ht_le_reloc_file::init(File *s, bool os, ht_le_shared_data *d)
 {
 	ht_reloc_file::init(s, os);
 	data = d;

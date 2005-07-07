@@ -99,7 +99,7 @@ public:
  *	CLASS ht_logviewer
  */
 
-class ht_log_msg: public ht_data {
+class ht_log_msg: public Object {
 public:
 	vcp color;
 	char *msg;
@@ -145,7 +145,7 @@ public:
  *	CLASS ht_vstate_history_entry
  */
 
-class ht_vstate_history_entry: public ht_data {
+class ht_vstate_history_entry: public Object {
 public:
 	Object *data;
 	ht_view *view;
@@ -165,9 +165,9 @@ protected:
 	
 			void add_vstate_history(ht_vstate_history_entry *e);
 public:
-	ht_streamfile	*file;
+	File	*file;
 
-			void	init(bounds *b, char *desc, uint framestyle, uint number, ht_streamfile *file);
+			void	init(bounds *b, char *desc, uint framestyle, uint number, File *file);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -195,7 +195,7 @@ public:
  *	CLASS ht_project_item
  */
 
-class ht_project_item: public ht_data {
+class ht_project_item: public Object {
 protected:
 	char *filename;
 	char *path;
@@ -269,7 +269,7 @@ public:
 #define AWT_PROJECT		5
 #define AWT_TERM		6
 
-class ht_app_window_entry: public ht_data {
+class ht_app_window_entry: public Object {
 public:
 	uint type;
 	ht_window *window;

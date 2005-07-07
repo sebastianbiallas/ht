@@ -54,7 +54,7 @@ class ht_text_editor;
 /*
  *	CLASS ht_undo_data
  */
-class ht_undo_data: public ht_data {
+class ht_undo_data: public Object {
 public:
 	ht_undo_data();
 	virtual bool combine(ht_undo_data *ud);

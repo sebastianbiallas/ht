@@ -21,7 +21,7 @@
 #ifndef __HTMENU_H__
 #define __HTMENU_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htdialog.h"
 #include "htobj.h"
 
@@ -35,7 +35,7 @@ class ht_context_menu;
 #define CME_SEPARATOR	1
 #define CME_SUBMENU		2
 
-class ht_context_menu_entry: public ht_data {
+class ht_context_menu_entry: public Object {
 public:
 	int type;
 	union {
@@ -57,7 +57,7 @@ public:
  *	CLASS ht_context_menu
  */
 
-class ht_context_menu: public ht_data {
+class ht_context_menu: public Object {
 private:
 	char *name;
 	char *shortcut;

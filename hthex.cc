@@ -35,7 +35,7 @@ extern "C" {
 #include "regex.h"
 }
 
-ht_view *hthex_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *hthex_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_hex_viewer *v=new ht_hex_viewer();
 	v->init(b, DESC_HEX, VC_EDIT | VC_GOTO | VC_SEARCH | VC_REPLACE | VC_RESIZE, file, group);
@@ -178,7 +178,7 @@ bool ht_hex_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 	return true;
 }
 
-bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_hex_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	int ll = h->get_line_length();
 	clear_viewer_pos(p);

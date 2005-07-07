@@ -22,8 +22,8 @@
 #define STORE_H
 
 #include "common.h"
-#include "global.h"
-#include "htdata.h"
+#include "io/types.h"
+#include "data.h"
 
 typedef Object *(*object_builder)();
 

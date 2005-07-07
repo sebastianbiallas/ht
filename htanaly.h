@@ -23,7 +23,7 @@
 
 #include "analy.h"
 #include "cmds.h"
-#include "global.h"
+#include "io/types.h"
 #include "htdialog.h"
 #include "htformat.h"
 #include "httree.h"
@@ -166,7 +166,7 @@ public:
 	AnalyserOutput *output;
 	ht_aviewer	*aviewer;
 	
-			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
+			void init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
 	virtual	bool convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
 	virtual	bool closest_line_id(LINE_ID *line_id);
@@ -192,7 +192,7 @@ public:
 	ht_analy_sub *analy_sub;
 	bool one_load_hack;
 	bool pause;
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy);
+			void init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy);
 	virtual	void	done();
 			bool convertAddressToViewerPos(Address *a, viewer_pos *p);
 			bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
@@ -204,13 +204,13 @@ public:
 	virtual	char *func(uint i, bool execute);
 			void generateOutputDialog();
 			bool getCurrentAddress(Address **a);
-	virtual	bool get_current_offset(FILEOFS *ofs);
+	virtual	bool get_current_offset(FileOfs *ofs);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
 			bool gotoAddress(Address *a, ht_view *source_object);
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	idle();
-	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
+	virtual	bool offset_to_pos(FileOfs ofs, viewer_pos *p);
 	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
 			bool pos_to_string(viewer_pos p, char *result, int maxlen);
 	virtual	int	ref_sel(LINE_ID *id);

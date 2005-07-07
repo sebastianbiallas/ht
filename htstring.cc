@@ -18,7 +18,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
 #include "htatom.h"
 #include "htdebug.h"
 #include "htstring.h"
@@ -588,18 +587,18 @@ void ht_string_list::insert_string(char *s)
 /*
  *	ht_sorted_string_list
  */
-void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, ht_data *key_b))
+void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, Object *key_b))
 {
 	ht_sorted_list::init(compare_keys_proc);
 }
 
 char *ht_sorted_string_list::get_string(char *s)
 {
-	ht_data *d = new ht_data_string(s);
+	Object *d = new ht_data_string(s);
 	uint i=find(d);
 	char *ret=NULL;
 	if (i!=LIST_UNDEFINED) {
-		ht_data *r=get(i);
+		Object *r=get(i);
 		if (r) ret=((ht_data_string *)r)->value;
 	}
 	delete d;
@@ -615,7 +614,7 @@ void ht_sorted_string_list::insert_string(char *s)
  *	compare_keys_string
  */
 
-int compare_keys_string(ht_data *key_a, ht_data *key_b)
+int compare_keys_string(ht_data *key_a, Object *key_b)
 {
 	// FIXME:
 	if (((ht_data_string*)key_a)->value && ((ht_data_string*)key_b)->value) {
@@ -627,7 +626,7 @@ int compare_keys_string(ht_data *key_a, ht_data *key_b)
  *	icompare_keys_string
  */
 
-int icompare_keys_string(ht_data *key_a, ht_data *key_b)
+int icompare_keys_string(ht_data *key_a, Object *key_b)
 {
 	return ht_stricmp(((ht_data_string*)key_a)->value, ((ht_data_string*)key_b)->value);
 }

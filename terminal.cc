@@ -33,7 +33,7 @@
  *	CLASS Terminal
  */
 
-void Terminal::init(ht_streamfile *_in, ht_streamfile *_out, ht_streamfile *_err, int _sys_ipc_handle)
+void Terminal::init(File *_in, File *_out, File *_err, int _sys_ipc_handle)
 {
 	ht_mem_file *m = new ht_mem_file();
 	m->init();
@@ -56,7 +56,7 @@ void Terminal::done()
 	ht_ltextfile::done();
 }
 
-bool Terminal::append(ht_streamfile *file)
+bool Terminal::append(File *file)
 {
 #define STREAM_COPYBUF_SIZE	(128)
 	const int bufsize=STREAM_COPYBUF_SIZE;

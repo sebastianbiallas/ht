@@ -21,7 +21,7 @@
 #ifndef __HTCLIPBOARD_H__
 #define __HTCLIPBOARD_H__
 
-#include "global.h"
+#include "io/types.h"
 #include "stream.h"
 #include "htformat.h"
 
@@ -58,8 +58,8 @@ public:
 /* overwritten */
 	virtual	void draw();
 	virtual 	void handlemsg(htmsg *msg);
-	virtual	void pselect_add(FILEOFS start, FileOfs end);
-	virtual	void pselect_set(FILEOFS start, FileOfs end);
+	virtual	void pselect_add(FileOfs start, FileOfs end);
+	virtual	void pselect_set(FileOfs start, FileOfs end);
 /* new */
 			void update_content();
 };
@@ -68,9 +68,9 @@ public:
 
 void clipboard_add_copy_history_entry(char *source, uint32 start, uint32 size, time_t time);
 int clipboard_copy(char *source_desc, void *buf, uint32 len);
-int clipboard_copy(char *source_desc, ht_streamfile *streamfile, uint32 offset, uint32 len);
+int clipboard_copy(char *source_desc, File *streamfile, uint32 offset, uint32 len);
 int clipboard_paste(void *buf, uint32 maxlen);
-int clipboard_paste(ht_streamfile *streamfile, uint32 offset);
+int clipboard_paste(File *streamfile, uint32 offset);
 int clipboard_clear();
 uint32 clipboard_getsize();
 

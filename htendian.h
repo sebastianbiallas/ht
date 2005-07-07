@@ -21,7 +21,7 @@
 #ifndef __HTENDIAN_H__
 #define __HTENDIAN_H__
 
-#include "global.h"
+#include "io/types.h"
 
 #define STRUCT_ENDIAN_BYTE  1
 #define STRUCT_ENDIAN_WORD  2

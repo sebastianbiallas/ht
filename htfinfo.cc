@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <string.h>
 
-ht_view *htfinfo_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htfinfo_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_finfo_text *v=new ht_finfo_text();
 	v->init(b, file);
@@ -39,7 +39,7 @@ format_viewer_if htfinfo_if = {
  *   ht_finfo_text
  */
  
-void	ht_finfo_text::init(bounds *b, ht_streamfile *f)
+void	ht_finfo_text::init(bounds *b, File *f)
 {
 	ht_statictext::init(b, 0, align_left, 1);
 	options|=VO_BROWSABLE;

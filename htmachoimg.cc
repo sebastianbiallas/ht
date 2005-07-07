@@ -29,7 +29,7 @@
 #include "machostruc.h"
 #include "macho_analy.h"
 
-static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmachoimage_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
 
@@ -151,7 +151,7 @@ format_viewer_if htmachoimage_if = {
 /*
  *	CLASS ht_macho_aviewer
  */
-void ht_macho_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_macho_shared_data *MACHO_shared)
+void ht_macho_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_macho_shared_data *MACHO_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	macho_shared = MACHO_shared;

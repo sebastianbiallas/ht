@@ -132,7 +132,7 @@ static ht_mask_ptable leheader[]=
 	{0, 0}
 };
 
-static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleheader_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 

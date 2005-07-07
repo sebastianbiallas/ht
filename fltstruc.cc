@@ -19,7 +19,6 @@
  */
 
 #include "fltstruc.h"
-#include "global.h"
 #include "htendian.h"
 
 byte FLAT_HEADER_struct[]= {

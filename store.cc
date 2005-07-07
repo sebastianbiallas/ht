@@ -619,14 +619,14 @@ char	*ht_object_stream_memmap::getString(char *desc)
 
 uint	ht_object_stream_memmap::recordStart(uint size)
 {
-	return ((ht_streamfile*)stream)->tell()+size;
+	return ((File*)stream)->tell()+size;
 }
 
 void	ht_object_stream_memmap::recordEnd(uint a)
 {
-	FileOfs o =((ht_streamfile*)stream)->tell();
+	FileOfs o =((File*)stream)->tell();
 	if (o>a) HT_ERROR("kput");
-	((ht_streamfile*)stream)->seek(a);
+	((File*)stream)->seek(a);
 }
 
 void	ht_object_stream_memmap::putBinary(void *mem, int size, char *desc)

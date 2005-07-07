@@ -21,14 +21,14 @@
 #ifndef __HTREG_H__
 #define __HTREG_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htstring.h"
 
 /*
  *	CLASS ht_registry_data
  */
 
-class ht_registry_data: public ht_data {
+class ht_registry_data: public Object {
 public:
 /* new */
 	virtual	bool editdialog(const char *keyname);
@@ -114,7 +114,7 @@ typedef ht_registry_data* (*create_empty_registry_data_func)();
 
 typedef uint ht_registry_node_type;
 
-class ht_registry_node_type_desc: public ht_data {
+class ht_registry_node_type_desc: public Object {
 public:
 	ht_registry_node_type type;
 	create_empty_registry_data_func create_empty_registry_data;
@@ -135,7 +135,7 @@ public:
 #define RNT_USER    	0x100
 // the rest may be allocated dynamically
 
-class ht_registry_node: public ht_data {
+class ht_registry_node: public Object {
 public:
 	ht_registry_node_type type;
 	ht_registry_data *data;
@@ -154,7 +154,7 @@ public:
 
 #define MAX_SYMLINK_REC_DEPTH 20
 
-class ht_registry: public ht_data {
+class ht_registry: public Object {
 protected:
 	ht_registry_node *root;
 	uint rec_depth;

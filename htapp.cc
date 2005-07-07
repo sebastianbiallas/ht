@@ -618,7 +618,7 @@ int app_out_of_memory_proc(int size)
  *	CLASS ht_project
  */
 
-static int compare_keys_project_item(ht_data *key_a, ht_data *key_b)
+static int compare_keys_project_item(ht_data *key_a, Object *key_b)
 {
 	ht_project_item *a=(ht_project_item *)key_a;
 	ht_project_item *b=(ht_project_item *)key_b;
@@ -1361,7 +1361,7 @@ ht_app_window_entry::~ht_app_window_entry()
 {
 }
 
-static int compare_keys_app_window_entry(ht_data *key_a, ht_data *key_b)
+static int compare_keys_app_window_entry(ht_data *key_a, Object *key_b)
 {
 	uint a=((ht_app_window_entry*)key_a)->number;
 	uint b=((ht_app_window_entry*)key_b)->number;
@@ -1641,7 +1641,7 @@ ht_window *ht_app::create_window_term(const char *cmd)
 
 		termwindow->setvscrollbar(hs);
 
-		ht_streamfile *in, *out, *err;
+		File *in, *out, *err;
 		int handle;
 		int e;
 		if ((e = sys_ipc_exec(&in, &out, &err, &handle, cmd, 0)) == 0) {
@@ -2371,7 +2371,7 @@ void ht_app::handlemsg(htmsg *msg)
 						e->layer->seek(0);
 						e->layer->copy_to(f);
 
-						ht_streamfile *old = e->layer->get_layered();
+						File *old = e->layer->get_layered();
 
 						if (f->set_access_mode(old->get_access_mode())) {
 							e->layer->set_layered(f);
@@ -2548,7 +2548,7 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_extend: {
-			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
+			File *f = (File *)msg->data1.ptr;
 			uint s = (uint)msg->data2.integer;
 			// don't ask. only for truncates
 //			if (confirmbox("really extend %s to offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
@@ -2562,12 +2562,12 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_truncate: {
-			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
+			File *f = (File *)msg->data1.ptr;
 			uint s = (uint)msg->data2.integer;
 /*               ht_app_window_entry *e;
 			if ((e=windows->enum_first())) {
 				do {
-					if ((e->type==AWT_FILE) && ((ht_streamfile*)e->data==f)) {
+					if ((e->type==AWT_FILE) && ((File*)e->data==f)) {
 						check_collide();
 					}
 				} while ((e=windows->enum_first()));
@@ -3044,7 +3044,7 @@ ht_vstate_history_entry::~ht_vstate_history_entry()
  *	CLASS ht_file_window
  */
 
-void ht_file_window::init(bounds *b, char *desc, uint framestyle, uint number, ht_streamfile *f)
+void ht_file_window::init(bounds *b, char *desc, uint framestyle, uint number, File *f)
 {
 	ht_window::init(b, desc, framestyle, number);
 	file = f;

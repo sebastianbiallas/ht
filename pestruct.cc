@@ -19,7 +19,6 @@
  */
 
 
-#include "global.h"
 #include "htendian.h"
 #include "pestruct.h"
 #include "coff_s.h"

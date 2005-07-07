@@ -21,7 +21,7 @@
 #ifndef __FLTSTRUC_H__
 #define __FLTSTRUC_H__
 
-#include "global.h"
+#include "io/types.h"
 
 #define FLTMAG0 'b'
 #define FLTMAG1 'F'

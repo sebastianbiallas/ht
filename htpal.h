@@ -21,7 +21,7 @@
 #ifndef __HTPAL_H__
 #define __HTPAL_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htobj.h"
 #include "htreg.h"
 

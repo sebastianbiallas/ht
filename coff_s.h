@@ -21,19 +21,19 @@
 #ifndef __COFF_S_H_
 #define __COFF_S_H_
 
-#include "global.h"
+#include "io/types.h"
 #include "tools.h"
 
 typedef unsigned int RVA;
 
-typedef struct	COFF_HEADER {
-	uint16 machine HTPACKED;
-	uint16 section_count HTPACKED;
-	uint32 timestamp HTPACKED;
-	uint32 symbol_table_offset HTPACKED;
-	uint32 symbol_count HTPACKED;
-	uint16 optional_header_size HTPACKED;
-	uint16 characteristics HTPACKED;
+typedef struct COFF_HEADER {
+	uint16 machine PACKED;
+	uint16 section_count PACKED;
+	uint32 timestamp PACKED;
+	uint32 symbol_table_offset PACKED;
+	uint32 symbol_count PACKED;
+	uint16 optional_header_size PACKED;
+	uint16 characteristics PACKED;
 };
 
 #define COFF_RELOCS_STRIPPED		   	0x0001  // Relocation info stripped from file.
@@ -97,29 +97,29 @@ typedef struct	COFF_HEADER {
 #define COFF_OPTMAGIC_PE64			0x20b
 
 typedef struct	COFF_OPTIONAL_HEADER32 {
-	uint16 magic HTPACKED;
-	byte major_linker_version HTPACKED;
-	byte minor_linker_version HTPACKED;
-	uint32 code_size HTPACKED;
-	uint32 data_size HTPACKED;
-	uint32 bss_size HTPACKED;
-	uint32 entrypoint_address HTPACKED;
-	uint32 code_base HTPACKED;
-	uint32 data_base HTPACKED;
+	uint16 magic PACKED;
+	byte major_linker_version PACKED;
+	byte minor_linker_version PACKED;
+	uint32 code_size PACKED;
+	uint32 data_size PACKED;
+	uint32 bss_size PACKED;
+	uint32 entrypoint_address PACKED;
+	uint32 code_base PACKED;
+	uint32 data_base PACKED;
 };
 
 /*
  *	same as COFF_OPTIONAL_HEADER32 but no data_base
  */
 typedef struct	COFF_OPTIONAL_HEADER64 {
-	uint16 magic HTPACKED;
-	byte major_linker_version HTPACKED;
-	byte minor_linker_version HTPACKED;
-	uint32 code_size HTPACKED;
-	uint32 data_size HTPACKED;
-	uint32 bss_size HTPACKED;
-	uint32 entrypoint_address HTPACKED;
-	uint32 code_base HTPACKED;
+	uint16 magic PACKED;
+	byte major_linker_version PACKED;
+	byte minor_linker_version PACKED;
+	uint32 code_size PACKED;
+	uint32 data_size PACKED;
+	uint32 bss_size PACKED;
+	uint32 entrypoint_address PACKED;
+	uint32 code_base PACKED;
 };
 
 /*
@@ -129,16 +129,16 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 #define COFF_SIZEOF_SHORT_NAME			8
 
 struct COFF_SECTION_HEADER {
-	byte name[COFF_SIZEOF_SHORT_NAME] HTPACKED;
-	uint32 data_vsize HTPACKED;	// or data_phys_address !
-	uint32 data_address HTPACKED;
-	uint32 data_size HTPACKED;
-	uint32 data_offset HTPACKED;
-	uint32 relocation_offset HTPACKED;
-	uint32 linenumber_offset HTPACKED;
-	uint16 relocation_count HTPACKED;
-	uint16 linenumber_count HTPACKED;
-	uint32 characteristics HTPACKED;
+	byte name[COFF_SIZEOF_SHORT_NAME] PACKED;
+	uint32 data_vsize PACKED;	// or data_phys_address !
+	uint32 data_address PACKED;
+	uint32 data_size PACKED;
+	uint32 data_offset PACKED;
+	uint32 relocation_offset PACKED;
+	uint32 linenumber_offset PACKED;
+	uint16 relocation_count PACKED;
+	uint16 linenumber_count PACKED;
+	uint32 characteristics PACKED;
 };
 
 #define COFF_SIZEOF_SECTION_HEADER		40

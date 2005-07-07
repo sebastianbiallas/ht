@@ -46,7 +46,7 @@ void ht_layer_textfile::init(ht_textfile *textfile, bool own_textfile)
 	ht_textfile::init(textfile, own_textfile);
 }
 
-bool ht_layer_textfile::convert_ofs2line(FILEOFS o, uint *line, uint *pofs)
+bool ht_layer_textfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs)
 {
 	return ((ht_textfile*)streamfile)->convert_ofs2line(o, line, pofs);
 }
@@ -101,9 +101,9 @@ uint ht_layer_textfile::linecount()
 	return ((ht_textfile*)streamfile)->linecount();
 }
 
-void ht_layer_textfile::set_layered_assume(ht_streamfile *s, bool changes_applied)
+void ht_layer_textfile::set_layered_assume(File *s, bool changes_applied)
 {
-/*	ht_streamfile *q = streamfile->get_layered();
+/*	File *q = streamfile->get_layered();
 	if (q)*/ ((ht_textfile*)streamfile)->set_layered_assume(s, changes_applied);
 /*     else
 		streamfile = s;*/
@@ -127,7 +127,7 @@ ht_ltextfile_line::~ht_ltextfile_line()
  *	CLASS ht_ltextfile
  */
  
-void	ht_ltextfile::init(ht_streamfile *streamfile, bool own_streamfile, ht_syntax_lexer *l)
+void	ht_ltextfile::init(File *streamfile, bool own_streamfile, ht_syntax_lexer *l)
 {
 	ht_textfile::init(streamfile, own_streamfile);
 	int e = get_error();
@@ -187,7 +187,7 @@ bool ht_ltextfile::convert_line2ofs(uint line, uint pofs, FileOfs *o)
 	return false;
 }
 
-bool ht_ltextfile::convert_ofs2line(FILEOFS o, uint *line, uint *pofs)
+bool ht_ltextfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs)
 {
 	uint l=0, r=linecount();
 	if (!r) return 0; else r--;
@@ -728,19 +728,19 @@ void ht_ltextfile::split_line(uint a, uint pos, void *line_end, int line_end_len
 	}
 }
 
-int	ht_ltextfile::seek(FILEOFS offset)
+int	ht_ltextfile::seek(FileOfs offset)
 {
 	ofs = offset;
 	return 0;
 }
 
-void ht_ltextfile::set_layered(ht_streamfile *streamfile)
+void ht_ltextfile::set_layered(File *streamfile)
 {
 	ht_layer_streamfile::set_layered(streamfile);
 	reread();
 }
 
-void ht_ltextfile::set_layered_assume(ht_streamfile *streamfile, bool changes_applied)
+void ht_ltextfile::set_layered_assume(File *streamfile, bool changes_applied)
 {
 	if (changes_applied) {
 		orig_lines->empty();

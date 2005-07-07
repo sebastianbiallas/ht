@@ -193,7 +193,7 @@ static ht_mask_ptable xbelibraryversion[] = {
 	{0, 0}
 };
 
-static ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeheader_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
@@ -293,7 +293,7 @@ format_viewer_if htxbeheader_if = {
  *	CLASS ht_pe_header_viewer
  */
 
-void ht_xbe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
+void ht_xbe_header_viewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *group)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, group);
 	VIEW_DEBUG_NAME("ht_xbe_header_viewer");

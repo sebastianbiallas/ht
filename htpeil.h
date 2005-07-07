@@ -21,14 +21,13 @@
 #ifndef __HTPEIL_H__
 #define __HTPEIL_H__
 
-#include "common.h"
+#include "data.h"
 #include "formats.h"
-#include "htdata.h"
 #include "ilstruct.h"
 
 extern format_viewer_if htpeil_if;
 
-class ht_il_metadata_entry: public ht_data {
+class ht_il_metadata_entry: public Object {
 public:
 	char *name;
 	uint32 offset;
@@ -41,7 +40,7 @@ class ht_pe_il: public Object {
 public:
 	PE_IL_DIRECTORY dir;
 	IL_METADATA_SECTION metadata;
-	ht_clist *entries;
+	Container *entries;
 	uint32 string_pool_size;
 	char *string_pool;
 };
@@ -52,8 +51,8 @@ public:
 
 class ht_pe_il_viewer: public ht_uformat_viewer {
 public:
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group);
-		virtual void done();
+		void init(bounds *b, char *desc, int caps, File *file, ht_format_group *group);
+	virtual void done();
 };
 
 int ILunpackDword(uint32 &result, const byte *buf, int len);

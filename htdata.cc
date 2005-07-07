@@ -29,12 +29,12 @@
 
 #define NEW_TREE_ENUM
 
-int (*qsort_compare_compare_keys)(ht_data *key_a, ht_data *key_b);
+int (*qsort_compare_compare_keys)(ht_data *key_a, Object *key_b);
 
 int qsort_compare(const void *e1, const void *e2)
 {
-	ht_data *d1=*(ht_data **)e1;
-	ht_data *d2=*(ht_data **)e2;
+	Object *d1=*(ht_data **)e1;
+	Object *d2=*(ht_data **)e2;
 	return qsort_compare_compare_keys(d1, d2);
 }
 
@@ -175,27 +175,27 @@ bool ht_tree::del(ht_data *key)
 	return false;
 }
 
-ht_data *ht_tree::enum_next(ht_data **value, ht_data *prevkey)
+Object *ht_tree::enum_next(ht_data **value, Object *prevkey)
 {
 	return NULL;
 }
 
-ht_data *ht_tree::enum_prev(ht_data **value, ht_data *nextkey)
+Object *ht_tree::enum_prev(ht_data **value, Object *nextkey)
 {
 	return NULL;
 }
 
-ht_data *ht_tree::get(ht_data *key)
+Object *ht_tree::get(ht_data *key)
 {
 	return NULL;
 }
 
-ht_data *ht_tree::get_insert(ht_data *key)
+Object *ht_tree::get_insert(ht_data *key)
 {
 	return NULL;
 }
 
-bool ht_tree::insert(ht_data *key, ht_data *data)
+bool ht_tree::insert(ht_data *key, Object *data)
 {
 	return false;
 }
@@ -301,7 +301,7 @@ void ht_stree::empty()
 	}
 }
 
-void ht_stree::enum_next_i(ht_tree_node *node, ht_data *prevkey, ht_tree_node **retv)
+void ht_stree::enum_next_i(ht_tree_node *node, Object *prevkey, ht_tree_node **retv)
 {
 	if ((prevkey == NULL) || (compare_keys(prevkey, node->key) < 0)) {
 		*retv = node;
@@ -311,7 +311,7 @@ void ht_stree::enum_next_i(ht_tree_node *node, ht_data *prevkey, ht_tree_node **
 	}
 }
 
-void ht_stree::enum_prev_i(ht_tree_node *node, ht_data *nextkey, ht_tree_node **retv)
+void ht_stree::enum_prev_i(ht_tree_node *node, Object *nextkey, ht_tree_node **retv)
 {
 	if ((nextkey == NULL) || (compare_keys(node->key, nextkey) < 0)) {
 		*retv = node;
@@ -321,7 +321,7 @@ void ht_stree::enum_prev_i(ht_tree_node *node, ht_data *nextkey, ht_tree_node **
 	}
 }
 
-ht_data *ht_stree::enum_next(ht_data **value, ht_data *prevkey)
+Object *ht_stree::enum_next(ht_data **value, Object *prevkey)
 {
 #ifdef NEW_TREE_ENUM
 	ht_tree_node *n = NULL, *next = NULL;
@@ -358,7 +358,7 @@ ht_data *ht_stree::enum_next(ht_data **value, ht_data *prevkey)
 #endif
 }
 
-ht_data *ht_stree::enum_prev(ht_data **value, ht_data *nextkey)
+Object *ht_stree::enum_prev(ht_data **value, Object *nextkey)
 {
 #ifdef NEW_TREE_ENUM
 	ht_tree_node *n = NULL, *prev = NULL;
@@ -419,7 +419,7 @@ void ht_stree::free_skeleton(ht_tree_node *node)
 	node_count--;
 }
 
-ht_data *ht_stree::get(ht_data *key)
+Object *ht_stree::get(ht_data *key)
 {
 	ht_tree_node *n=get_node_i(key);
 	if (n) return n->value;
@@ -474,7 +474,7 @@ ht_tree_node *ht_stree::get_rightmost_node(ht_tree_node *node)
 	return node;
 }
 
-bool ht_stree::insert(ht_data *key, ht_data *value)
+bool ht_stree::insert(ht_data *key, Object *value)
 {
 //	if ((!key) || (!value)) return false;
 	if (!key) return false;
@@ -535,8 +535,8 @@ int ht_stree::load(ObjectStream &s)
 	node_count=0;
 	
 	for (uint i=0; i<c; i++) {
-		ht_data *key=s->get_object(NULL);
-		ht_data *value=s->get_object(NULL);
+		Object *key=s->get_object(NULL);
+		Object *value=s->get_object(NULL);
 		if (!key) return 1;
 		if (!value) return 1;
 		insert(key, value);
@@ -559,8 +559,8 @@ void ht_stree::store(ObjectStream &s)
 	
 	s->putIntDec(count(), 4, NULL);
 	
-	ht_data *key=NULL;
-	ht_data *value;
+	Object *key=NULL;
+	Object *value;
 	while ((key=enum_next(&value, key))) {
 		if (value) {
 			s->putObject(key, NULL);
@@ -679,7 +679,7 @@ bool ht_dtree::del(ht_data *key)
 	return false;
 }
 
-ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
+Object *ht_dtree::enum_next(ht_data **value, Object *prevkey)
 {
 #ifdef NEW_TREE_ENUM
 	ht_tree_node *n, *next;
@@ -712,7 +712,7 @@ ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
 	return NULL;
 #else
 	ht_tree_node *n;
-	ht_data *k = prevkey;
+	Object *k = prevkey;
 	while (1) {
 		n = NULL;
 		if (root) enum_next_i(root, k, &n);
@@ -727,7 +727,7 @@ ht_data *ht_dtree::enum_next(ht_data **value, ht_data *prevkey)
 #endif
 }
 
-ht_data *ht_dtree::enum_prev(ht_data **value, ht_data *nextkey)
+Object *ht_dtree::enum_prev(ht_data **value, Object *nextkey)
 {
 #ifdef NEW_TREE_ENUM
 	ht_tree_node *n, *prev;
@@ -760,7 +760,7 @@ ht_data *ht_dtree::enum_prev(ht_data **value, ht_data *nextkey)
 	return NULL;
 #else
 	ht_tree_node *n;
-	ht_data *k = nextkey;
+	Object *k = nextkey;
 	while (1) {
 		n = NULL;
 		if (root) enum_prev_i(root, k, &n);
@@ -775,7 +775,7 @@ ht_data *ht_dtree::enum_prev(ht_data **value, ht_data *nextkey)
 #endif
 }
 
-bool ht_dtree::insert(ht_data *key, ht_data *value)
+bool ht_dtree::insert(ht_data *key, Object *value)
 {
 	if ((!key) || (!value)) return false;
 	ht_tree_node **n=&root;
@@ -839,7 +839,7 @@ void ht_list::copy_to(uint i, uint count, ht_list *destlist)
 {
 	uint j=0;
 	while (count--) {
-		ht_data *w=get(i+j);
+		Object *w=get(i+j);
 		if (j) {
 			destlist->insert_after(w, j-1);
 		} else {
@@ -877,7 +877,7 @@ uint ht_list::find(ht_data *data)
 	return LIST_UNDEFINED;
 }
 
-ht_data *ht_list::get(uint i)
+Object *ht_list::get(uint i)
 {
 	return NULL;
 }
@@ -906,7 +906,7 @@ void ht_list::prepend(ht_data *data)
 {
 }
 
-ht_data *ht_list::remove(uint i)
+Object *ht_list::remove(uint i)
 {
 	return NULL;
 }
@@ -920,7 +920,7 @@ bool ht_list::remove_multiple(uint i, uint count)
 	return b;
 }
 
-bool ht_list::set(uint i, ht_data *data)
+bool ht_list::set(uint i, Object *data)
 {
 	return false;
 }
@@ -1027,7 +1027,7 @@ void ht_clist::extend_list()
 {
 	c_size *= HT_CLIST_ENTRY_COUNT_EXT_NUM;
 	c_size /= HT_CLIST_ENTRY_COUNT_EXT_DEN;
-	ht_data **new_items=(ht_data**)malloc(c_size * sizeof (ht_data*));
+	Object **new_items=(ht_data**)malloc(c_size * sizeof (ht_data*));
 	memmove(new_items, items, c_entry_count * sizeof (ht_data*));
 	free(items);
 	items=new_items;
@@ -1043,7 +1043,7 @@ uint ht_clist::find(ht_data *data)
 	return LIST_UNDEFINED;
 }
 
-ht_data *ht_clist::get(uint i)
+Object *ht_clist::get(uint i)
 {
 	if (i<c_entry_count) return items[i];
 	return NULL;
@@ -1084,7 +1084,7 @@ int  ht_clist::load(ObjectStream &s)
 	
 	int c=s->getIntDec(4, "item_count");
 	for (int i=0; i<c; i++) {
-		ht_data *d=s->getObject("item");
+		Object *d=s->getObject("item");
 		if (s->get_error()) break;
 		prepend(d);
 	}
@@ -1094,7 +1094,7 @@ int  ht_clist::load(ObjectStream &s)
 void ht_clist::move(uint source, uint dest)
 {
 	if (dest<=c_entry_count) {
-		ht_data *src=get(source);
+		Object *src=get(source);
 		memmove(items+source, items+source+1, sizeof items[0] * (c_entry_count-source-1));
 		memmove(items+dest+1, items+dest, sizeof items[0] * (c_entry_count-dest-1));
 		items[dest]=src;
@@ -1120,17 +1120,17 @@ void ht_clist::prepend(ht_data *data)
 	insert_before(data, 0);
 }
 
-ht_data *ht_clist::remove(uint i)
+Object *ht_clist::remove(uint i)
 {
 	if (i<c_entry_count) {
-		ht_data *d=items[i];
+		Object *d=items[i];
 		do_remove(i);
 		return d;
 	}
 	return NULL;
 }
 
-bool ht_clist::set(uint i, ht_data *data)
+bool ht_clist::set(uint i, Object *data)
 {
 	while (i>=c_entry_count) append(NULL);
 	do_free(i);
@@ -1168,13 +1168,13 @@ bool ht_clist::qsort_i(uint _l, uint _r)
 	int m=(l+r) / 2;
 	int origl=l;
 	int origr=r;
-	ht_data *c;
+	Object *c;
 	c=items[m];
 	do {
 		while ((l<m) && compare_keys(items[l], c) < 0) l++;
 		while ((r>m) && compare_keys(items[r], c) > 0) r--;
 		if (l < r) {
-			ht_data *t;
+			Object *t;
 			t=items[l];
 			items[l]=items[r];
 			items[r]=t;
@@ -1268,7 +1268,7 @@ void ht_sorted_list::prepend(ht_data *data)
 	insert(data);
 }
 
-bool ht_sorted_list::set(uint i, ht_data *data)
+bool ht_sorted_list::set(uint i, Object *data)
 {
 	insert(data);
 	return true;
@@ -1278,10 +1278,10 @@ bool ht_sorted_list::set(uint i, ht_data *data)
  *	CLASS ht_stack
  */
 
-ht_data *ht_stack::pop()
+Object *ht_stack::pop()
 {
 	if (c_entry_count) {
-		ht_data *d=get(c_entry_count-1);
+		Object *d=get(c_entry_count-1);
 		do_remove(c_entry_count-1);
 		return d;
 	}
@@ -1302,17 +1302,17 @@ void	ht_queue::enqueue(ht_data *data)
 	append(data);
 }
 
-ht_data *ht_queue::dequeue()
+Object *ht_queue::dequeue()
 {
 	if (c_entry_count) {
-		ht_data *d=get(0);
+		Object *d=get(0);
 		do_remove(0);
 		return d;
 	}
 	return NULL;
 }
 
-ht_data *ht_queue::pop()
+Object *ht_queue::pop()
 {
 	return dequeue();
 }
@@ -1341,12 +1341,12 @@ char *matchhash(int value, int_hash *hash_table)
  *	compare procedures
  */
 
-int compare_keys_ht_data(ht_data *key_a, ht_data *key_b)
+int compare_keys_ht_data(ht_data *key_a, Object *key_b)
 {
 	return key_a->compareTo(key_b);
 }
 
-int compare_keys_int(ht_data *key_a, ht_data *key_b)
+int compare_keys_int(ht_data *key_a, Object *key_b)
 {
 	int a=((ht_data_uint*)key_a)->value;
 	int b=((ht_data_uint*)key_b)->value;
@@ -1354,7 +1354,7 @@ int compare_keys_int(ht_data *key_a, ht_data *key_b)
 	return 0;
 }
 
-int compare_keys_uint(ht_data *key_a, ht_data *key_b)
+int compare_keys_uint(ht_data *key_a, Object *key_b)
 {
 	uint a=((ht_data_uint*)key_a)->value;
 	uint b=((ht_data_uint*)key_b)->value;

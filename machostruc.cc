@@ -19,7 +19,6 @@
  */
 
 #include "machostruc.h"
-#include "global.h"
 #include "htendian.h"
 
 byte MACHO_HEADER_struct[]= {

@@ -34,7 +34,7 @@ extern format_viewer_if htelfimage_if;
 class ht_elf_aviewer: public ht_aviewer {
 public:
 	ht_elf_shared_data *elf_shared;
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_elf_shared_data *elf_shared);
+		   void init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analyser, ht_elf_shared_data *elf_shared);
 	virtual void setAnalyser(Analyser *a);
 };
 

@@ -1422,7 +1422,7 @@ void ht_listbox_title::update()
  *	CLASS ht_listbox
  */
 
-class ht_listbox_vstate: public ht_data {
+class ht_listbox_vstate: public Object {
 public:
 	void *e_top;
 	void *e_cursor;
@@ -1901,14 +1901,14 @@ void ht_listbox::setdata(ObjectStream &s)
 	update();
 }
 
-ht_data *ht_listbox::vstate_create()
+Object *ht_listbox::vstate_create()
 {
 	return new ht_listbox_vstate(e_top, e_cursor);
 }
 
 void ht_listbox::vstate_save()
 {
-	ht_data *vs = vstate_create();
+	Object *vs = vstate_create();
 	if (vs) {
 		htmsg m;
 		m.msg = msg_vstate_save;

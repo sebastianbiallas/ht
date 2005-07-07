@@ -21,7 +21,7 @@
 #ifndef __RELFILE_H__
 #define __RELFILE_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "stream.h"
 
 /*
@@ -37,11 +37,11 @@ protected:
 	virtual void	reloc_apply(ht_data *reloc, byte *data) = 0;
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data) = 0;
 public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile);
+		   void	init(File *streamfile, bool own_streamfile);
 	virtual void	done();
 /* overwritten */
 		   void	finalize();
-		   void	insert_reloc(FILEOFS o, ht_data *reloc);
+		   void	insert_reloc(FileOfs o, Object *reloc);
 	virtual uint	read(void *buf, uint size);
 	virtual int	vcntl(uint cmd, va_list vargs);
 	virtual uint	write(const void *buf, uint size);

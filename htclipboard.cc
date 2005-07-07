@@ -30,7 +30,7 @@
 
 ht_clipboard *clipboard;
 
-class ht_clipboard_copy_history: public ht_data {
+class ht_clipboard_copy_history: public Object {
 public:
 	virtual ~ht_clipboard_copy_history() {
 		if (source) free(source);
@@ -118,13 +118,13 @@ void ht_clipboard_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-void ht_clipboard_viewer::pselect_add(FILEOFS start, FileOfs end)
+void ht_clipboard_viewer::pselect_add(FileOfs start, FileOfs end)
 {
 	ht_uformat_viewer::pselect_add(start, end);
 	selection_changed();
 }
 
-void ht_clipboard_viewer::pselect_set(FILEOFS start, FileOfs end)
+void ht_clipboard_viewer::pselect_set(FileOfs start, FileOfs end)
 {
 	ht_uformat_viewer::pselect_set(start, end);
 	selection_changed();
@@ -215,7 +215,7 @@ int clipboard_copy(char *source_desc, void *buf, uint32 len)
 	return r;
 }
 
-int clipboard_copy(char *source_desc, ht_streamfile *file, uint32 offset, uint32 len)
+int clipboard_copy(char *source_desc, File *file, uint32 offset, uint32 len)
 {
 	if (!len) return 0;
 
@@ -252,7 +252,7 @@ int clipboard_paste(void *buf, uint32 maxlen)
 	return clipboard->read(buf, MIN(clipboard->select_len, maxlen));
 }
 
-int clipboard_paste(ht_streamfile *file, uint32 offset)
+int clipboard_paste(File *file, uint32 offset)
 {
 	uint32 len=clipboard->select_len;
 	uint32 temp=file->tell();

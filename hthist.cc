@@ -132,7 +132,7 @@ ObjectID ht_history_entry::getObjectID() const
 	return ATOM_HT_HISTORY_ENTRY;
 }
 
-int compare_keys_history_entry(ht_data *key_a, ht_data *key_b)
+int compare_keys_history_entry(ht_data *key_a, Object *key_b)
 {
     return strcmp(((ht_history_entry*)key_a)->desc, ((ht_history_entry*)key_b)->desc);
 }

@@ -89,7 +89,7 @@ protected:
 			void read_pagemap();
 			void read_objects();
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
+			void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
 	virtual	void done();
 /* overwritten */
 	virtual   void loc_enum_start();
@@ -109,24 +109,24 @@ protected:
 	uint32 page_size;
 	FileOfs ofs;
 public:
-		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
+		   void init(File *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
 /* overwritten */
-	virtual bool isdirty(FILEOFS offset, uint range);
+	virtual bool isdirty(FileOfs offset, uint range);
 	virtual uint read(void *buf, uint size);
-	virtual int seek(FILEOFS offset);
+	virtual int seek(FileOfs offset);
 	virtual FileOfs tell();
 	virtual int vcntl(uint cmd, va_list vargs);
 	virtual uint write(const void *buf, uint size);
 /* new */
 		   bool map_ofs(uint lofs, FileOfs *pofs, uint *maxsize);
-		   bool unmap_ofs(FILEOFS pofs, uint *lofs);
+		   bool unmap_ofs(FileOfs pofs, uint *lofs);
 };
 
 /*
  *	CLASS ht_le_reloc_entry
  */
 
-class ht_le_reloc_entry: public ht_data {
+class ht_le_reloc_entry: public Object {
 public:
 	uint ofs;	// FIXME: hack
 	uint seg;
@@ -148,7 +148,7 @@ protected:
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_le_shared_data *data);
+		   void	init(File *streamfile, bool own_streamfile, ht_le_shared_data *data);
 };
 
 FileOfs LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i);

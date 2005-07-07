@@ -23,7 +23,7 @@
 #include "mzstruct.h"
 #include "htendian.h"
 
-FileOfs get_newexe_header_ofs(ht_streamfile *file)
+FileOfs get_newexe_header_ofs(File *file)
 {
 	/* look for mz magic */
 	byte mzmagic[2];

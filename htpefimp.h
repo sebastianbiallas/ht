@@ -30,7 +30,7 @@ extern format_viewer_if htpefimports_if;
  *	class ht_pef_import_library
  */
 
-class ht_pef_import_library: public ht_data {
+class ht_pef_import_library: public Object {
 public:
 	char *name;
 
@@ -42,7 +42,7 @@ public:
  *	class ht_pef_import_function
  */
 
-class ht_pef_import_function: public ht_data {
+class ht_pef_import_function: public Object {
 public:
 	uint libidx;
 	int num;

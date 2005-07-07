@@ -52,7 +52,7 @@ struct ne_segment_headers {
 	NE_SEGMENT *segments;
 };
 
-class ne_import_rec: public ht_data {
+class ne_import_rec: public Object {
 public:
 	uint addr;
 	uint module;
@@ -92,7 +92,7 @@ protected:
 			bool relocate(ht_reloc_file *rf);
 			bool relocate_single(ht_reloc_file *rf, uint seg, FileOfs ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
 public:
-			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
+			void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h);
 	virtual	void done();
 /* overwritten */
 	virtual   void loc_enum_start();
@@ -105,7 +105,7 @@ extern format_viewer_if htne_if;
  *	CLASS ht_ne_entrypoint
  */
 
-class ht_ne_entrypoint: public ht_data {
+class ht_ne_entrypoint: public Object {
 public:
 	uint ordinal;
 	uint seg;
@@ -121,7 +121,7 @@ public:
  *	CLASS ht_ne_reloc_entry
  */
 
-class ht_ne_reloc_entry: public ht_data {
+class ht_ne_reloc_entry: public Object {
 public:
 	uint mode;
 	bool add;
@@ -143,7 +143,7 @@ protected:
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_ne_shared_data *data);
+		   void	init(File *streamfile, bool own_streamfile, ht_ne_shared_data *data);
 };
 
 /*

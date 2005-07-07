@@ -409,7 +409,7 @@ static const char *xbox_exports[] = {
 	"HalWriteSMCScratchRegister"                     // 366  8000016E
 };
 
-static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeimports_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 

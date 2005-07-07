@@ -87,7 +87,7 @@ public:
 	}
 };
 
-static void dialog_fhelp(ht_streamfile *f)
+static void dialog_fhelp(File *f)
 {
 	ht_help_lexer *l = new ht_help_lexer();
 	l->init();

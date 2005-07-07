@@ -47,7 +47,7 @@ static int_hash elf_st_type[] =
 	{0, 0}
 };
 
-static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfsymboltable_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 

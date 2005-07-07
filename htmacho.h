@@ -129,7 +129,7 @@ struct ht_macho_shared_data {
 
 class ht_macho: public ht_format_group {
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess image_endianess);
+		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, endianess image_endianess);
 	virtual	void done();
 };
 

@@ -73,7 +73,7 @@
 
 extern format_viewer_if htelf_if;
 
-class sectionAndIdx: public ht_data {
+class sectionAndIdx: public Object {
 public:
 	uint secidx;
 	uint symidx;
@@ -143,7 +143,7 @@ protected:
 		uint find_reloc_section_for(uint si);
 		void relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a);
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
+		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 	/* extends ? */
 	virtual	void loc_enum_start();
@@ -154,7 +154,7 @@ public:
  *	ht_elf32_reloc_entry
  */
 
-class ht_elf32_reloc_entry: public ht_data {
+class ht_elf32_reloc_entry: public Object {
 public:
 	uint	type;
 	union {
@@ -176,7 +176,7 @@ protected:
 	virtual void	reloc_apply(ht_data *reloc, byte *data);
 	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
+		   void	init(File *streamfile, bool own_streamfile, ht_elf_shared_data *data);
 };
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);

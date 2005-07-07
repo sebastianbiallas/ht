@@ -21,7 +21,7 @@
 #ifndef __TEXTFILE_H__
 #define __TEXTFILE_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "stream.h"
 #include "syntax.h"
 
@@ -32,7 +32,7 @@
 class ht_textfile: public ht_layer_streamfile {
 public:
 /* new */
-	virtual	bool convert_ofs2line(FILEOFS o, uint *line, uint *pofs)=0;
+	virtual	bool convert_ofs2line(FileOfs o, uint *line, uint *pofs)=0;
 	virtual	bool convert_line2ofs(uint line, uint pofs, FileOfs *o)=0;
 	virtual	void delete_lines(uint line, uint count)=0;
 	virtual	void delete_chars(uint line, uint ofs, uint count)=0;
@@ -43,7 +43,7 @@ public:
 	virtual	void insert_chars(uint line, uint ofs, void *chars, uint len)=0;
 	virtual	bool has_line(uint line)=0;
 	virtual	uint linecount()=0;
-	virtual	void set_layered_assume(ht_streamfile *streamfile, bool changes_applied)=0;
+	virtual	void set_layered_assume(File *streamfile, bool changes_applied)=0;
 	virtual	void set_lexer(ht_syntax_lexer *lexer)=0;
 };
 
@@ -55,7 +55,7 @@ class ht_layer_textfile: public ht_textfile {
 public:
 			void init(ht_textfile *textfile, bool own_textfile);
 /* overwritten */
-	virtual	bool convert_ofs2line(FILEOFS o, uint *line, uint *pofs);
+	virtual	bool convert_ofs2line(FileOfs o, uint *line, uint *pofs);
 	virtual	bool convert_line2ofs(uint line, uint pofs, FileOfs *o);
 	virtual	void delete_lines(uint line, uint count);
 	virtual	void delete_chars(uint line, uint ofs, uint count);
@@ -66,7 +66,7 @@ public:
 	virtual	void insert_chars(uint line, uint ofs, void *chars, uint len);
 	virtual	bool has_line(uint line);
 	virtual	uint linecount();
-	virtual	void set_layered_assume(ht_streamfile *streamfile, bool changes_applied);
+	virtual	void set_layered_assume(File *streamfile, bool changes_applied);
 	virtual	void set_lexer(ht_syntax_lexer *lexer);
 };
 
@@ -74,7 +74,7 @@ public:
  *	CLASS ht_ltextfile_line
  */
 
-class ht_ltextfile_line: public ht_data {
+class ht_ltextfile_line: public Object {
 public:
 	virtual ~ht_ltextfile_line();
 
@@ -126,7 +126,7 @@ protected:
 			void update_parse(uint line);
 			void reread();
 public:
-			void	init(ht_streamfile *streamfile, bool own_streamfile, ht_syntax_lexer *lexer);
+			void	init(File *streamfile, bool own_streamfile, ht_syntax_lexer *lexer);
 	virtual	void done();
 /* overwritten (streamfile) */
 	virtual	void	copy_to(ht_stream *stream);
@@ -134,14 +134,14 @@ public:
 	virtual	uint	get_size();
 	virtual	void	pstat(pstat_t *s);
 	virtual	uint	read(void *buf, uint size);
-	virtual	void set_layered(ht_streamfile *streamfile);
-	virtual	int	seek(FILEOFS offset);
+	virtual	void set_layered(File *streamfile);
+	virtual	int	seek(FileOfs offset);
 	virtual	FileOfs tell();
 	virtual	int	truncate(uint newsize);
 	virtual	int	vcntl(uint cmd, va_list vargs);
 	virtual	uint	write(const void *buf, uint size);
 /* overwritten (textfile) */
-	virtual	bool convert_ofs2line(FILEOFS o, uint *line, uint *pofs);
+	virtual	bool convert_ofs2line(FileOfs o, uint *line, uint *pofs);
 	virtual	bool convert_line2ofs(uint line, uint pofs, FileOfs *o);
 	virtual	void delete_lines(uint line, uint count);
 	virtual	void delete_chars(uint line, uint ofs, uint count);
@@ -152,7 +152,7 @@ public:
 	virtual	void insert_chars(uint line, uint ofs, void *chars, uint len);
 	virtual	bool has_line(uint line);
 	virtual	uint linecount();
-	virtual	void set_layered_assume(ht_streamfile *streamfile, bool changes_applied);
+	virtual	void set_layered_assume(File *streamfile, bool changes_applied);
 	virtual	void set_lexer(ht_syntax_lexer *lexer);
 };
 

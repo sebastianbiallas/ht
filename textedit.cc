@@ -2513,7 +2513,7 @@ bool ht_text_editor::save()
 		return false;
 	}
 
-	ht_streamfile *old = textfile->get_layered();
+	File *old = textfile->get_layered();
 	char *oldname = strdup(textfile->get_filename());
 
 	old->seek(0);

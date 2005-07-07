@@ -21,7 +21,7 @@
 #ifndef __HTPEEXP_H__
 #define __HTPEEXP_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htdialog.h"
 #include "formats.h"
 
@@ -48,7 +48,7 @@ public:
  *	CLASS ht_pe_export_function
  */
 
-class ht_pe_export_function: public ht_data {
+class ht_pe_export_function: public Object {
 public:
 	uint ordinal;
 
@@ -62,7 +62,7 @@ public:
 };
 
 struct ht_pe_export {
-	ht_clist *funcs;
+	Container *funcs;
 };
 
 #endif /* !__HTPEEXP_H__ */

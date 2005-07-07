@@ -198,7 +198,7 @@ ht_mask_ptable coff_section[] = {
 	{0, 0}
 };
 
-static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htcoffheader_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 	bool coff_bigendian = coff_shared->endian == big_endian;

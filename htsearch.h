@@ -278,9 +278,9 @@ public:
 ht_search_request *search_dialog(ht_format_viewer *format, uint searchmodes, viewer_pos *start, viewer_pos *end);
 uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled);
 
-class ht_search_bin_context: public ht_data {
+class ht_search_bin_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 	bool file_end;
 	uint flags;
 	
@@ -305,20 +305,20 @@ public:
 // flags
 #define SFBIN_CASEINSENSITIVE	1
 
-ht_data* create_search_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success);
+ht_data* create_search_bin_context(File *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success);
 bool search_bin_process(ht_data *context, ht_text *progress_indicator);
 
 ht_view* create_form_hexascii(bounds *b, HT_ATOM histid);
 void create_desc_hexascii(char *buf, int buflen, ht_view *f);
 
-ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, ht_streamfile *file, FileOfs fofs, uint32 fsize);
+ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, File *file, FileOfs fofs, uint32 fsize);
 
 /*
  *
  */
-class ht_replace_bin_context: public ht_data {
+class ht_replace_bin_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 
 	FileOfs ofs;
 	uint len;
@@ -335,7 +335,7 @@ public:
 	~ht_replace_bin_context();
 };
  
-ht_data* create_replace_bin_context(ht_streamfile *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen);
+ht_data* create_replace_bin_context(File *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen);
 bool replace_bin_process(ht_data *context, ht_text *progress_indicator);
 
 #endif /* __HTSEARCH_H__ */

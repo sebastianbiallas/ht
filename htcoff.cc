@@ -36,7 +36,7 @@ format_viewer_if *htcoff_ifs[] = {
 	0
 };
 
-static bool is_coff(ht_streamfile *file, endianess &endian, FileOfs ofs)
+static bool is_coff(File *file, endianess &endian, FileOfs ofs)
 {
 	// unfortunately COFF has no magic (urgs). so we have to guess
 	// a little bit.
@@ -103,7 +103,7 @@ static bool is_coff(ht_streamfile *file, endianess &endian, FileOfs ofs)
 	return true;
 }
 
-static ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htcoff_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	FileOfs h;
 	endianess end;
@@ -131,7 +131,7 @@ format_viewer_if htcoff_if = {
 /*
  *	CLASS ht_coff
  */
-void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h, endianess end)
+void ht_coff::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h, endianess end)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_COFF, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_coff");

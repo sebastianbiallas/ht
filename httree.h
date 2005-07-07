@@ -21,9 +21,9 @@
 #ifndef HT_TREE
 #define HT_TREE
 
-#include "htdata.h"
+#include "data.h"
 #include "htobj.h"
-#include "global.h"
+#include "io/types.h"
 
 struct ht_treeview_data {
 	DDECL_PTR(void *, selected);
@@ -73,7 +73,7 @@ struct static_node {
 	static_node	*next, *prev, *child;
 	char			*text;
 	bool			expanded;
-	ht_data		*data;
+	Object		*data;
 };
 
 class ht_static_treeview: public ht_treeview {
@@ -81,10 +81,10 @@ public:
 		static_node	*root;
 			   void	init(bounds *b, char *desc);
 		virtual void	done();
-			   void	*add_child(void *node, char *text, ht_data *Data=NULL);
-			   void	*add_node(static_node **node, char *text, ht_data *Data=NULL);
+			   void	*add_child(void *node, char *text, Object *Data=NULL);
+			   void	*add_node(static_node **node, char *text, Object *Data=NULL);
 		virtual void	adjust(void *node, bool expand);
-		static_node 	*create_node(char *text, static_node *prev, ht_data *Data=NULL);
+		static_node 	*create_node(char *text, static_node *prev, Object *Data=NULL);
 		virtual void   *get_child(void *node, int i);
 		virtual void	*get_next_node(void *node);
 		virtual void	*get_prev_node(void *node);

@@ -23,6 +23,6 @@
 
 #include "stream.h"
 
-FileOfs get_newexe_header_ofs(ht_streamfile *file);
+FileOfs get_newexe_header_ofs(File *file);
 
 #endif /* !__HTNEWEXE_H__ */

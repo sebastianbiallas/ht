@@ -43,7 +43,7 @@
  *	CLASS ht_history_entry
  */
 
-class ht_history_entry: public ht_data {
+class ht_history_entry: public Object {
 public:
 	char *desc;
 	ht_object_stream_bin *data;

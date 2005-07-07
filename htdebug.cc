@@ -18,7 +18,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
 #include "htdebug.h"
 
 #include <signal.h>

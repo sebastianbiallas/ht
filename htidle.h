@@ -21,7 +21,7 @@
 #ifndef HTIDLE_H
 #define HTIDLE_H
 
-#include "common.h"
+#include "data.h"
 void register_idle_object(Object *o);
 void unregister_idle_object(Object *o);
 void do_idle();

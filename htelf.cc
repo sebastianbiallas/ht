@@ -45,7 +45,7 @@ static format_viewer_if *htelf_ifs[] = {
 	0
 };
 
-static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htelf_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	FileOfs header_ofs = 0;
 	ELF_HEADER header;
@@ -93,7 +93,7 @@ format_viewer_if htelf_if = {
 };
 
 /**/
-static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
+static int compare_keys_sectionAndIdx(ht_data *key_a, Object *key_b)
 {
 	sectionAndIdx *a = (sectionAndIdx*)key_a;
 	sectionAndIdx *b = (sectionAndIdx*)key_b;
@@ -109,7 +109,7 @@ bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
 /*
  *	CLASS ht_elf
  */
-void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_elf::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_ELF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_elf");
@@ -348,7 +348,7 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 			// FIXME: nyi
 			continue;
 		}
-		ht_data *z = new ht_elf32_reloc_entry(
+		Object *z = new ht_elf32_reloc_entry(
 			ELF32_R_TYPE(r.r_info), A, P, S);
 		f->insert_reloc(r.r_offset+s[si].sh_offset, z);
 	}
@@ -683,7 +683,7 @@ bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfc
 /*
  *	ht_elf32_reloc_entry
  */
-//ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
+//ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, File *file)
 ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
 {
 	type = t;
@@ -701,7 +701,7 @@ ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
  *	ht_elf32_reloc_file
  */
 
-void	ht_elf32_reloc_file::init(ht_streamfile *s, bool os, ht_elf_shared_data *d)
+void	ht_elf32_reloc_file::init(File *s, bool os, ht_elf_shared_data *d)
 {
 	ht_reloc_file::init(s, os);
 	data = d;

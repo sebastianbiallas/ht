@@ -30,7 +30,7 @@ extern format_viewer_if htxbeimports_if;
 /*
  *	ht_xbe_import_function
  */
-class ht_xbe_import_function: public ht_data {
+class ht_xbe_import_function: public Object {
 public:
 	uint libidx;
 	bool byname;

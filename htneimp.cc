@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 
-static ht_view *htneimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneimports_init(bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data *)group->get_shared_data();
 

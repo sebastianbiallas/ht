@@ -50,7 +50,7 @@ protected:
 	virtual	byte *match_lineend_forwd(byte *buf, uint buflen, int *le_len);
 	virtual	byte *match_lineend_backwd(byte *buf, uint buflen, int *le_len);
 public:
-			void init(ht_streamfile *file, FileOfs offset, int size);
+			void init(File *file, FileOfs offset, int size);
 	virtual	void done();
 /* overwritten */
 	virtual	bool convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);

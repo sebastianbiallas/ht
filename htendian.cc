@@ -20,7 +20,6 @@
 
 #include "htdebug.h"
 #include "htendian.h"
-#include "global.h"
 #include <string.h>
 
 void create_foreign_int(void *buf, int i, int size, endianess to_endianess)

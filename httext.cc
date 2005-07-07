@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-ht_view *httext_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *httext_init(bounds *b, File *file, ht_format_group *group)
 {
 	/* no httext for file > 5 MiB */
 	if (file->get_size() > 5*1024*1024) {
@@ -51,7 +51,7 @@ format_viewer_if httext_if = {
  *	CLASS ht_text_viewer2
  */
 
-/*bool ht_text_viewer2::offset_to_pos(FILEOFS ofs, viewer_pos *pos)
+/*bool ht_text_viewer2::offset_to_pos(FileOfs ofs, viewer_pos *pos)
 {
 	pos->u.sub = first_sub;
 	pos->u.line_id.id1 = ofs;
@@ -121,7 +121,7 @@ void *memrchr(const void *string, int ch, size_t num)
 
 byte ht_text_sub_line[TEXT_SUB_MAX_LINELEN];
 
-void ht_text_sub::init(ht_streamfile *file, FileOfs offset, int size)
+void ht_text_sub::init(File *file, FileOfs offset, int size)
 {
 	ht_linear_sub::init(file, offset, size);
 }

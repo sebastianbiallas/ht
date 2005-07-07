@@ -21,7 +21,7 @@
 #ifndef __HTTAG_H__
 #define __HTTAG_H__
 
-#include "global.h"
+#include "io/types.h"
 #include "htio.h"
 #include "stream.h"
 
@@ -34,13 +34,13 @@
 #define HT_STATICTAG_SEL_CH			"\e\x81"
 
 struct ht_tag_sel {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	ID id128_1 HTPACKED;
-	ID id128_2 HTPACKED;
-	ID id128_3 HTPACKED;
-	ID id128_4 HTPACKED;
-	byte strlen HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	ID id128_1 PACKED;
+	ID id128_2 PACKED;
+	ID id128_3 PACKED;
+	ID id128_4 PACKED;
+	byte strlen PACKED;
 };
 
 /* FLAGS-TAG */
@@ -52,15 +52,15 @@ struct ht_tag_sel {
 #define HT_STATICTAG_FLAGS_CH			"\e\x82"
 
 struct ht_tag_flags {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
-	ID id HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
+	ID id PACKED;
 };
 
 struct ht_tag_flags_s {
-	char bitidx HTPACKED;
-	char *desc HTPACKED;
+	char bitidx PACKED;
+	char *desc PACKED;
 };
 
 /* GROUP-TAG */
@@ -71,8 +71,8 @@ struct ht_tag_flags_s {
 #define HT_STATICTAG_GROUP_CH			"\e\x83"
 
 struct ht_tag_group {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
 };
 
 /* COLOR-TAG */
@@ -83,9 +83,9 @@ struct ht_tag_group {
 #define HT_STATICTAG_COLOR_CH			"\e\x84"
 
 struct ht_tag_color {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	uint32 color HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	uint32 color PACKED;
 };
 
 /* EDIT-BYTE-TAG */
@@ -98,33 +98,33 @@ struct ht_tag_color {
 #define HT_STATICTAG_EDIT_BYTE_CH		"\e\x90"
 
 struct ht_tag_edit_byte {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT WORD */
 
 struct ht_tag_edit_word_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT DWORD */
 
 struct ht_tag_edit_dword_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT QWORD */
 
 struct ht_tag_edit_qword_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT-WORD-TAG (little-endian) */
@@ -218,9 +218,9 @@ struct ht_tag_edit_qword_generic {
 #define HT_STATICTAG_EDIT_TIME_CH		"\e\x9a"
 
 struct ht_tag_edit_time {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT-CHAR-TAG */
@@ -233,9 +233,9 @@ struct ht_tag_edit_time {
 #define HT_STATICTAG_EDIT_CHAR_CH		"\e\x9b"
 
 struct ht_tag_edit_char {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
 };
 
 /* EDIT-BIT-TAG */
@@ -248,10 +248,10 @@ struct ht_tag_edit_char {
 #define HT_STATICTAG_EDIT_BIT_CH		"\e\x9c"
 
 struct ht_tag_edit_bit {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
-	byte bitidx HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
+	byte bitidx PACKED;
 };
 
 /* EDIT-SELVIS-TAG */
@@ -263,10 +263,10 @@ struct ht_tag_edit_bit {
 #define HT_STATICTAG_EDIT_SELVIS_CH	"\e\x9d"
 
 struct ht_tag_edit_selvis {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	FileOfs offset HTPACKED;
-	char ch HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	FileOfs offset PACKED;
+	char ch PACKED;
 };
 
 /* DESC-BYTE-TAG */
@@ -277,34 +277,34 @@ struct ht_tag_edit_selvis {
 #define HT_STATICTAG_DESC_BYTE_CH		"\e\xa0"
 
 struct ht_tag_desc_byte {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	ID id HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	ID id PACKED;
+	FileOfs offset PACKED;
 };
 
 /* DESC WORD */
 struct ht_tag_desc_word_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	ID id HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	ID id PACKED;
+	FileOfs offset PACKED;
 };
 
 /* DESC DWORD */
 struct ht_tag_desc_dword_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	ID id HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	ID id PACKED;
+	FileOfs offset PACKED;
 };
 
 /* DESC QWORD */
 struct ht_tag_desc_qword_generic {
-	byte escape HTPACKED;
-	byte magic HTPACKED;
-	ID id HTPACKED;
-	FileOfs offset HTPACKED;
+	byte escape PACKED;
+	byte magic PACKED;
+	ID id PACKED;
+	FileOfs offset PACKED;
 };
 
 /* DESC-WORD-TAG (little-endian) */

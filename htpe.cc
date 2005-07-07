@@ -46,7 +46,7 @@ static format_viewer_if *htpe_ifs[] = {
 	0
 };
 
-static ht_view *htpe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htpe_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte pemagic[4];
 	FileOfs h = get_newexe_header_ofs(file);
@@ -68,7 +68,7 @@ format_viewer_if htpe_if = {
 /*
  *	CLASS ht_pe
  */
-void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_pe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_PE, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_pe");

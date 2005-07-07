@@ -37,12 +37,12 @@ typedef Object ht_data;
 #define ATOM_COMPARE_KEYS_INT		MAGICD("DAT\x21")
 #define ATOM_COMPARE_KEYS_UINT		MAGICD("DAT\x22")
 
-typedef int (*compare_keys_func_ptr)(ht_data *key_a, ht_data *key_b);
+typedef int (*compare_keys_func_ptr)(ht_data *key_a, Object *key_b);
 
 /*
  *	ht_data_uint
  */
-class ht_data_uint: public ht_data {
+class ht_data_uint: public Object {
 public:
 	uint value;
 
@@ -56,7 +56,7 @@ public:
 /*
  *	ht_data_uint32
  */
-class ht_data_uint32: public ht_data {
+class ht_data_uint32: public Object {
 public:
 	uint32 value;
 
@@ -70,7 +70,7 @@ public:
 /*
  *	ht_data_ptr
  */
-class ht_data_ptr: public ht_data {
+class ht_data_ptr: public Object {
 public:
 	const void *value;
 
@@ -80,7 +80,7 @@ public:
 /*
  *	ht_data_mem
  */
-class ht_data_mem: public ht_data {
+class ht_data_mem: public Object {
 public:
 	void *value;
 	uint size;
@@ -97,12 +97,12 @@ public:
  *	ht_tree
  */
 struct ht_tree_node {
-	ht_data *key;
-	ht_data *value;
+	Object *key;
+	Object *value;
 	ht_tree_node *left, *right;
 };
 
-class ht_tree: public ht_data {
+class ht_tree: public Object {
 public:
 	compare_keys_func_ptr compare_keys;
 
@@ -113,11 +113,11 @@ public:
 	virtual	void balance();
 	virtual	uint count();
 	virtual	bool del(ht_data *key);
-	virtual ht_data *enum_next(ht_data **value, ht_data *prevkey);
-	virtual ht_data *enum_prev(ht_data **value, ht_data *nextkey);
-	virtual	ht_data *get(ht_data *key);
-	virtual	ht_data *get_insert(ht_data *key);
-	virtual	bool insert(ht_data *key, ht_data *value);
+	virtual Object *enum_next(ht_data **value, Object *prevkey);
+	virtual Object *enum_prev(ht_data **value, Object *nextkey);
+	virtual	Object *get(ht_data *key);
+	virtual	Object *get_insert(ht_data *key);
+	virtual	bool insert(ht_data *key, Object *value);
 	virtual void set_compare_keys(compare_keys_func_ptr new_compare_keys);
 };
 
@@ -129,8 +129,8 @@ public:
 	ht_tree_node *root;
 	uint node_count;
 
-		void enum_next_i(ht_tree_node *node, ht_data *prevkey, ht_tree_node **retv);
-		void enum_prev_i(ht_tree_node *node, ht_data *nextkey, ht_tree_node **retv);
+		void enum_next_i(ht_tree_node *node, Object *prevkey, ht_tree_node **retv);
+		void enum_prev_i(ht_tree_node *node, Object *nextkey, ht_tree_node **retv);
 		void free_all(ht_tree_node *node);
 		void free_skeleton(ht_tree_node *node);
 		ht_tree_node *get_leftmost_node(ht_tree_node *node);
@@ -148,10 +148,10 @@ public:
 	virtual	uint count();
 	virtual	bool del(ht_data *key);
 	virtual	void empty();
-	virtual ht_data *enum_next(ht_data **value, ht_data *prevkey);
-	virtual ht_data *enum_prev(ht_data **value, ht_data *nextkey);
-	virtual	ht_data *get(ht_data *key);
-	virtual	bool insert(ht_data *key, ht_data *value);
+	virtual Object *enum_next(ht_data **value, Object *prevkey);
+	virtual Object *enum_prev(ht_data **value, Object *nextkey);
+	virtual	Object *get(ht_data *key);
+	virtual	bool insert(ht_data *key, Object *value);
 	virtual	int load(ObjectStream &s);
 	virtual	ObjectID getObjectID() const;
 	virtual	void store(ObjectStream &s);
@@ -180,9 +180,9 @@ public:
 	/* overwritten */
 	virtual	uint count();
 	virtual	bool del(ht_data *key);
-	virtual ht_data *enum_next(ht_data **value, ht_data *prevkey);
-	virtual ht_data *enum_prev(ht_data **value, ht_data *nextkey);
-	virtual	bool insert(ht_data *key, ht_data *value);
+	virtual Object *enum_next(ht_data **value, Object *prevkey);
+	virtual Object *enum_prev(ht_data **value, Object *nextkey);
+	virtual	bool insert(ht_data *key, Object *value);
 	virtual void set_compare_keys(compare_keys_func_ptr new_compare_keys);
 };
 
@@ -191,7 +191,7 @@ public:
  */
 #define LIST_UNDEFINED 0xffffffff
 
-class ht_list: public ht_data {
+class ht_list: public Object {
 protected:
 	compare_keys_func_ptr compare_keys;
 public:
@@ -207,16 +207,16 @@ public:
 		bool del_multiple(uint i, uint count);
 	virtual	void empty();
 	virtual	uint find(ht_data *data);
-	virtual	ht_data *get(uint i);
+	virtual	Object *get(uint i);
 	virtual	void insert(ht_data *data);
 	virtual	void insert_after(ht_data *data, uint i);
 	virtual	void insert_before(ht_data *data, uint i);
 	virtual	void move(uint source, uint dest);
 	virtual	void move_multiple(uint source, uint dest, uint count);
 	virtual	void prepend(ht_data *data);
-	virtual	ht_data *remove(uint i);
+	virtual	Object *remove(uint i);
 		bool remove_multiple(uint i, uint count);
-	virtual	bool set(uint i, ht_data *data);
+	virtual	bool set(uint i, Object *data);
 	virtual	bool sort();
 };
 
@@ -226,7 +226,7 @@ public:
 
 class ht_clist: public ht_list {
 protected:
-	ht_data **items;
+	Object **items;
 	uint c_size, c_entry_count;
 	uint enum_pos;
 
@@ -246,7 +246,7 @@ public:
 	virtual	Object *clone();
 	virtual void empty();
 	virtual	uint find(ht_data *data);
-	virtual	ht_data *get(uint i);
+	virtual	Object *get(uint i);
 	virtual	void insert(ht_data *data);
 	virtual	void insert_after(ht_data *data, uint i);
 	virtual	void insert_before(ht_data *data, uint i);
@@ -255,8 +255,8 @@ public:
 	virtual	void move_multiple(uint source, uint dest, uint count);
 	virtual	ObjectID getObjectID() const;
 	virtual	void prepend(ht_data *data);
-	virtual	ht_data *remove(uint i);
-	virtual	bool set(uint i, ht_data *data);
+	virtual	Object *remove(uint i);
+	virtual	bool set(uint i, Object *data);
 	virtual	bool sort();
 	virtual	void store(ObjectStream &s);
 };
@@ -277,7 +277,7 @@ public:
 	virtual	void move(uint source, uint dest);
 	virtual	void move_multiple(uint source, uint dest, uint count);
 	virtual	void prepend(ht_data *data);
-	virtual	bool set(uint i, ht_data *data);
+	virtual	bool set(uint i, Object *data);
 };
 
 /*
@@ -286,7 +286,7 @@ public:
 class ht_stack: public ht_clist {
 public:
 	/* new */
-		ht_data *pop();
+		Object *pop();
 		void	push(ht_data *data);
 };
 
@@ -297,15 +297,15 @@ class ht_queue: public ht_clist {
 public:
 	/* new */
 		void	enqueue(ht_data *data);
-		ht_data *dequeue();
+		Object *dequeue();
 	/* sepp-wrap */
-		ht_data *pop();
+		Object *pop();
 		void	push(ht_data *data);
 };
 
-int compare_keys_ht_data(ht_data *key_a, ht_data *key_b);
-int compare_keys_int(ht_data *key_a, ht_data *key_b);
-int compare_keys_uint(ht_data *key_a, ht_data *key_b);
+int compare_keys_ht_data(ht_data *key_a, Object *key_b);
+int compare_keys_int(ht_data *key_a, Object *key_b);
+int compare_keys_uint(ht_data *key_a, Object *key_b);
 
 /*
  *	char_set

@@ -36,7 +36,7 @@ static format_viewer_if *htflt_ifs[] = {
 	0
 };
 
-static ht_view *htflt_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htflt_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte ident[4];
 	file->seek(0);
@@ -57,7 +57,7 @@ format_viewer_if htflt_if = {
 /*
  *	CLASS ht_flt
  */
-void ht_flt::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_flt::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_FLT, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_flt");

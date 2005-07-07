@@ -205,7 +205,7 @@ static mf_info *read_fieldmethod (ht_stream *htio, ht_class_shared_data *shared)
 }
 
 /* read and return classfile */
-ht_class_shared_data *class_read(ht_streamfile *htio)
+ht_class_shared_data *class_read(File *htio)
 {
 	ht_class_shared_data *shared;
 	classfile *clazz;

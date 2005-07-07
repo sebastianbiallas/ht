@@ -36,7 +36,7 @@ static format_viewer_if *htxbe_ifs[] = {
 	0
 };
 
-static ht_view *htxbe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htxbe_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte xbemagic[4];
 
@@ -58,7 +58,7 @@ format_viewer_if htxbe_if = {
 /*
  *	CLASS ht_xbe
  */
-void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_xbe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_XBE, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_xbe");

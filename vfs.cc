@@ -142,7 +142,7 @@ int LocalFs::renameFile(const char *filename, const char *newname)
 	return rename(filename, newname);
 }
 
-int LocalFs::fileClose(ht_streamfile *f)
+int LocalFs::fileClose(File *f)
 {
 	f->done();
 	int e=f->get_error();
@@ -150,7 +150,7 @@ int LocalFs::fileClose(ht_streamfile *f)
 	return e;
 }
 
-int LocalFs::fileOpen(const char *filename, uint access_mode, uint open_mode, ht_streamfile **f)
+int LocalFs::fileOpen(const char *filename, uint access_mode, uint open_mode, File **f)
 {
 	ht_file *file=new ht_file();
 	file->init(filename, access_mode, open_mode);
@@ -480,7 +480,7 @@ int RegistryFs::renameFile(const char *filename, const char *newname)
 	return EXDEV;
 }
 
-int RegistryFs::fileClose(ht_streamfile *f)
+int RegistryFs::fileClose(File *f)
 {
 	f->done();
 	int e=f->get_error();
@@ -488,7 +488,7 @@ int RegistryFs::fileClose(ht_streamfile *f)
 	return e;
 }
 
-int RegistryFs::fileOpen(const char *filename, uint access_mode, uint open_mode, ht_streamfile **f)
+int RegistryFs::fileOpen(const char *filename, uint access_mode, uint open_mode, File **f)
 {
 	RegNodeFile *file=new RegNodeFile();
 	file->init(filename, access_mode, open_mode);

@@ -21,7 +21,7 @@
 #ifndef __MFILE_H__
 #define __MFILE_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "stream.h"
 
 typedef FileOfs PAGEOFS;
@@ -31,7 +31,7 @@ typedef FileOfs PAGEOFS;
  */
 #define DEFAULT_MOD_PAGE_SIZE 8*1024	/* MUST BE 2^n */
 
-class ht_mod_page: public ht_data {
+class ht_mod_page: public Object {
 public:
 	uint size;
 	byte *data;
@@ -66,27 +66,27 @@ protected:
 		   void	mod_pages_flush();
 		   void	mod_pages_invd();
 			 
-	virtual ht_mod_page *mod_page_create(FILEOFS offset);
-	virtual void	mod_page_destroy(FILEOFS offset);
-	virtual ht_mod_page *mod_page_find(FILEOFS offset);
-	virtual void	mod_page_flush(FILEOFS offset);
+	virtual ht_mod_page *mod_page_create(FileOfs offset);
+	virtual void	mod_page_destroy(FileOfs offset);
+	virtual ht_mod_page *mod_page_find(FileOfs offset);
+	virtual void	mod_page_flush(FileOfs offset);
 
-		   void	cleardirtybyte(FILEOFS offset);
+		   void	cleardirtybyte(FileOfs offset);
 		   
-		   bool	isdirty(FILEOFS offset, uint range);
+		   bool	isdirty(FileOfs offset, uint range);
 
-		   bool	isdirtybit(FILEOFS offset, uint bit);
-		   bool	isdirtybyte(FILEOFS offset);
-		   bool	readbyte(FILEOFS offset, byte *b);
-		   bool	writebyte(FILEOFS offset, byte b);
+		   bool	isdirtybit(FileOfs offset, uint bit);
+		   bool	isdirtybyte(FileOfs offset);
+		   bool	readbyte(FileOfs offset, byte *b);
+		   bool	writebyte(FileOfs offset, byte b);
 public:
-		   void	init(ht_streamfile *streamfile, int own_streamfile, uint page_granularity = DEFAULT_MOD_PAGE_SIZE);
+		   void	init(File *streamfile, int own_streamfile, uint page_granularity = DEFAULT_MOD_PAGE_SIZE);
 	virtual void	done();
 	/* overwritten */
 	virtual int	extend(uint newsize);
 	virtual uint	get_size();
 	virtual uint	read(void *buf, uint size);
-	virtual int	seek(FILEOFS offset);
+	virtual int	seek(FileOfs offset);
 	virtual bool	set_access_mode(uint access_mode);
 	virtual FileOfs tell();
 	virtual int	truncate(uint newsize);

@@ -82,7 +82,7 @@ class ht_xbe: public ht_format_group {
 protected:
 	bool loc_enum;
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
+		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 	/* overwritten */
 	virtual   void loc_enum_start();

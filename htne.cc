@@ -45,7 +45,7 @@ static format_viewer_if *htne_ifs[] = {
 	0
 };
 
-static int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
+static int compare_keys_ne_import_rec(ht_data *key_a, Object *key_b)
 {
 	ne_import_rec *a=(ne_import_rec*)key_a;
 	ne_import_rec *b=(ne_import_rec*)key_b;
@@ -62,7 +62,7 @@ static int compare_keys_ne_import_rec(ht_data *key_a, ht_data *key_b)
 	return a->module - b->module;
 }
 
-static ht_view *htne_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htne_init(bounds *b, File *file, ht_format_group *format_group)
 {
 	byte nemagic[2];
 	FileOfs h = get_newexe_header_ofs(file);
@@ -81,7 +81,7 @@ format_viewer_if htne_if = {
 	0
 };
 
-void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h)
+void ht_ne::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_NE, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_ne");
@@ -408,7 +408,7 @@ ht_ne_reloc_entry::ht_ne_reloc_entry(uint Mode, bool Add, uint16 Seg, uint16 Ofs
  *	CLASS ht_ne_reloc_file
  */
 
-void ht_ne_reloc_file::init(ht_streamfile *s, bool os, ht_ne_shared_data *d)
+void ht_ne_reloc_file::init(File *s, bool os, ht_ne_shared_data *d)
 {
 	ht_reloc_file::init(s, os);
 	data = d;

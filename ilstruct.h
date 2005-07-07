@@ -21,7 +21,7 @@
 #ifndef __ILSTRUCT_H_
 #define __ILSTRUCT_H_
 
-#include "global.h"
+#include "io/types.h"
 
 #define IL_MAGIC0_0	'B'
 #define IL_MAGIC0_1	'S'
@@ -34,12 +34,12 @@
 #define IL_MAGIC1_3	'+'
 
 struct IL_METADATA_SECTION {
-	uint32 magic HTPACKED;
-	uint16 major_version HTPACKED;
-	uint16 minor_version HTPACKED;
+	uint32 magic PACKED;
+	uint16 major_version PACKED;
+	uint16 minor_version PACKED;
 	// if (minor_version==1) {
-	//    uint32 unkown HTPACKED;
-	//    uint32 version_string_length HTPACKED;	
+	//    uint32 unkown PACKED;
+	//    uint32 version_string_length PACKED;	
 	//    char version_string[align(version_string_length, 4)];
 	// }
 	// byte zero1, zero2; 
@@ -47,8 +47,8 @@ struct IL_METADATA_SECTION {
 };
 
 struct IL_METADATA_SECTION_ENTRY {
-	uint32 offset HTPACKED;
-	uint32 size HTPACKED;
+	uint32 offset PACKED;
+	uint32 size PACKED;
 	//char name[]; // zero_terminated
 	// align(4)
 	// uint32 ref ?;
