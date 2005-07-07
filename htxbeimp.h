@@ -32,19 +32,19 @@ extern format_viewer_if htxbeimports_if;
  */
 class ht_xbe_import_function: public ht_data {
 public:
-	UINT libidx;
+	uint libidx;
 	bool byname;
 	union {
-		UINT ordinal;
+		uint ordinal;
 		struct {
 			char *name;
-			UINT hint;
+			uint hint;
 		} name;
 	};
 	RVA address;
 
-	ht_xbe_import_function(RVA address, UINT ordinal);
-	ht_xbe_import_function(RVA address, char *name, UINT hint);
+	ht_xbe_import_function(RVA address, uint ordinal);
+	ht_xbe_import_function(RVA address, char *name, uint hint);
 	~ht_xbe_import_function();
 };
 
@@ -60,7 +60,7 @@ class ht_xbe_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	UINT sortby;
+	uint sortby;
 	/* new */
 			void dosort();
 public:

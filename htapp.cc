@@ -355,7 +355,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 }
 /**/
 
-bool file_open_dialog(char **name, UINT *mode)
+bool file_open_dialog(char **name, uint *mode)
 {
 	bounds b, c;
 	
@@ -447,18 +447,18 @@ bool file_open_dialog(char **name, UINT *mode)
 	return false;
 }
 
-UINT autodetect_file_open_mode(char *filename)
+uint autodetect_file_open_mode(char *filename)
 {
 #define AUTODETECT_SIZE	128
 	FILE *f=fopen(filename, "rb");
-	UINT r=FOM_BIN;
+	uint r=FOM_BIN;
 	if (f) {
 		byte buf[AUTODETECT_SIZE];
 		int c=fread(buf, 1, AUTODETECT_SIZE, f);
 		/* empty files are text files */
 		if (!c) return FOM_TEXT;
 		bool is_bin=false;
-		UINT prob_bin_chars=0;
+		uint prob_bin_chars=0;
 		for (int i=0; i<c; i++) {
 			if (buf[i]==0) {
 				is_bin=true;
@@ -479,16 +479,16 @@ UINT autodetect_file_open_mode(char *filename)
 	return FOM_BIN;
 }
 
-int file_window_load_fcfg_func(ht_object_stream *f, void *context)
+int file_window_load_fcfg_func(ObjectStream &f, void *context)
 {
 	ht_file_window *w=(ht_file_window*)context;
 
 	pstat_t p;
-	dword oldsize = f->getIntDec(4, "filesize");
-	dword oldtime = f->getIntDec(4, "filetime");
-	dword newsize = w->file->get_size();
+	uint32 oldsize = f->getIntDec(4, "filesize");
+	uint32 oldtime = f->getIntDec(4, "filetime");
+	uint32 newsize = w->file->get_size();
 	w->file->pstat(&p);
-	dword newtime = (p.caps & pstat_mtime) ? p.mtime : 0;
+	uint32 newtime = (p.caps & pstat_mtime) ? p.mtime : 0;
 	
 	if (f->get_error()) return f->get_error();
 	
@@ -520,7 +520,7 @@ int file_window_load_fcfg_func(ht_object_stream *f, void *context)
 	return f->get_error();
 }
 
-void file_window_store_fcfg_func(ht_object_stream *f, void *context)
+void file_window_store_fcfg_func(ObjectStream &f, void *context)
 {
 	ht_file_window *w=(ht_file_window*)context;
 	htmsg m;
@@ -531,7 +531,7 @@ void file_window_store_fcfg_func(ht_object_stream *f, void *context)
 	if ((m.msg==msg_retval) && (m.data1.ptr)) {
 		pstat_t s;
 		w->file->pstat(&s);
-		dword t = (s.caps & pstat_mtime) ? s.mtime : 0;;
+		uint32 t = (s.caps & pstat_mtime) ? s.mtime : 0;;
 		f->putIntDec(w->file->get_size(), 4, "filesize");
 		f->putIntDec(t, 4, "filetime");
 		
@@ -540,12 +540,12 @@ void file_window_store_fcfg_func(ht_object_stream *f, void *context)
 	}
 }
 
-void file_project_store_fcfg_func(ht_object_stream *f, void *context)
+void file_project_store_fcfg_func(ObjectStream &f, void *context)
 {
 	f->putObject((ht_project*)project, NULL);
 }
 
-int file_project_load_fcfg_func(ht_object_stream *f, void *context)
+int file_project_load_fcfg_func(ObjectStream &f, void *context)
 {
 	project = f->getObject(NULL);
 	return f->get_error();
@@ -643,19 +643,19 @@ char *ht_project::get_filename()
 	return filename;
 }
 
-int ht_project::load(ht_object_stream *s)
+int ht_project::load(ObjectStream &s)
 {
 // FIXME: probably not The Right Thing
 	filename = strdup(s->get_desc());
 	return ht_sorted_list::load(s);
 }
 
-OBJECT_ID ht_project::object_id() const
+ObjectID ht_project::getObjectID() const
 {
 	return ATOM_HT_PROJECT;
 }
 
-void ht_project::store(ht_object_stream *s)
+void ht_project::store(ObjectStream &s)
 {
 	return ht_sorted_list::store(s);
 }
@@ -686,19 +686,19 @@ const char *ht_project_item::get_path()
 	return path;
 }
 
-int ht_project_item::load(ht_object_stream *s)
+int ht_project_item::load(ObjectStream &s)
 {
 	filename = s->getString(NULL);
 	path = s->getString(NULL);
 	return s->get_error();
 }
 
-OBJECT_ID ht_project_item::object_id() const
+ObjectID ht_project_item::getObjectID() const
 {
 	return ATOM_HT_PROJECT_ITEM;
 }
 
-void ht_project_item::store(ht_object_stream *s)
+void ht_project_item::store(ObjectStream &s)
 {
 	s->putString(filename, NULL);
 	s->putString(path, NULL);
@@ -760,7 +760,7 @@ void *ht_project_listbox::getLast()
 
 void *ht_project_listbox::getNext(void *entry)
 {
-	UINT e=(UINT)entry;
+	uint e=(UINT)entry;
 	if (!e) return NULL;
 	if (project && (e < project->count())) {
 		return (void*)(e+1);
@@ -771,7 +771,7 @@ void *ht_project_listbox::getNext(void *entry)
 
 void *ht_project_listbox::getPrev(void *entry)
 {
-	UINT e=(UINT)entry;
+	uint e=(UINT)entry;
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -902,7 +902,7 @@ void ht_project_listbox::set_project(ht_project *p)
  *	CLASS ht_project_window
  */
 
-void	ht_project_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **p)
+void	ht_project_window::init(bounds *b, char *desc, uint framestyle, uint number, ht_project **p)
 {
 	ht_window::init(b, desc, framestyle, number);
 	project = p;
@@ -1347,7 +1347,7 @@ void ht_logviewer::update()
  *	CLASS ht_app_window_entry
  */
 
-ht_app_window_entry::ht_app_window_entry(ht_window *w, UINT n, UINT t, bool m, bool isf, ht_layer_streamfile *l)
+ht_app_window_entry::ht_app_window_entry(ht_window *w, uint n, uint t, bool m, bool isf, ht_layer_streamfile *l)
 {
 	window=w;
 	number=n;
@@ -1363,8 +1363,8 @@ ht_app_window_entry::~ht_app_window_entry()
 
 static int compare_keys_app_window_entry(ht_data *key_a, ht_data *key_b)
 {
-	UINT a=((ht_app_window_entry*)key_a)->number;
-	UINT b=((ht_app_window_entry*)key_b)->number;
+	uint a=((ht_app_window_entry*)key_a)->number;
+	uint b=((ht_app_window_entry*)key_b)->number;
 	if (a>b) return 1; else if (a<b) return -1;
 	return 0;
 }
@@ -1556,7 +1556,7 @@ void ht_app::done()
 
 bool ht_app::accept_close_all_windows()
 {
-	UINT wc=windows->count();
+	uint wc=windows->count();
 	ht_app_window_entry *e;
 	for (UINT i=0; i<wc; i++) {
 		e=(ht_app_window_entry*)windows->get(i);
@@ -1717,7 +1717,7 @@ ht_window *ht_app::create_window_clipboard()
 	return NULL;
 }
 
-ht_window *ht_app::create_window_file(char *filename, UINT mode, bool allow_duplicates)
+ht_window *ht_app::create_window_file(char *filename, uint mode, bool allow_duplicates)
 {
 	if (mode==FOM_AUTO) mode=autodetect_file_open_mode(filename);
 	switch (mode) {
@@ -2185,7 +2185,7 @@ void ht_app::draw()
 
 void ht_app::delete_window(ht_window *window)
 {
-	UINT i=get_window_listindex(window);
+	uint i=get_window_listindex(window);
 	if (i!=LIST_UNDEFINED) {
 		battlefield->remove(window);
 
@@ -2196,10 +2196,10 @@ void ht_app::delete_window(ht_window *window)
 	}
 }
 
-UINT ht_app::find_free_window_number()
+uint ht_app::find_free_window_number()
 {
-	UINT c=windows->count();
-	UINT k=0;
+	uint c=windows->count();
+	uint k=0;
 repeat:
 	k++;
 	for (UINT i=0; i<c; i++) {
@@ -2257,7 +2257,7 @@ void ht_app::get_stdbounds_file(bounds *b)
 
 void ht_app::get_stdbounds_tool(bounds *b)
 {
-	UINT h = MAX(size.h/4, 3);
+	uint h = MAX(size.h/4, 3);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = b->h - h;
@@ -2266,7 +2266,7 @@ void ht_app::get_stdbounds_tool(bounds *b)
 
 ht_window *ht_app::get_window_by_filename(char *filename)
 {
-	UINT c=windows->count();
+	uint c=windows->count();
 	for (UINT i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 // FIXME: filename_compare (taking into account slash/backslash, and case)
@@ -2277,7 +2277,7 @@ ht_window *ht_app::get_window_by_filename(char *filename)
 
 ht_window *ht_app::get_window_by_number(UINT number)
 {
-	UINT c=windows->count();
+	uint c=windows->count();
 	for (UINT i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->number==number) return e->window;
@@ -2287,7 +2287,7 @@ ht_window *ht_app::get_window_by_number(UINT number)
 
 ht_window *ht_app::get_window_by_type(UINT type)
 {
-	UINT c=windows->count();
+	uint c=windows->count();
 	for (UINT i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->type==type) return e->window;
@@ -2295,15 +2295,15 @@ ht_window *ht_app::get_window_by_type(UINT type)
 	return NULL;
 }
 
-UINT ht_app::get_window_number(ht_window *window)
+uint ht_app::get_window_number(ht_window *window)
 {
 	ht_app_window_entry *e=(ht_app_window_entry*)windows->get(get_window_listindex(window));
 	if (e) return e->number; else return 0;
 }
 
-UINT ht_app::get_window_listindex(ht_window *window)
+uint ht_app::get_window_listindex(ht_window *window)
 {
-	UINT c=windows->count();
+	uint c=windows->count();
 	for (UINT i=0; i<c; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		if (e->window==window) return i;
@@ -2338,12 +2338,12 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 #endif
 		case cmd_file_save: {
-			UINT i = get_window_listindex((ht_window*)battlefield->current);
+			uint i = get_window_listindex((ht_window*)battlefield->current);
 			ht_app_window_entry *e = (ht_app_window_entry*)windows->get(i);
 			if ((e) && (e->layer) && (e->isfile)) break;
 		}
 		case cmd_file_saveas: {
-			UINT i=get_window_listindex((ht_window*)battlefield->current);
+			uint i=get_window_listindex((ht_window*)battlefield->current);
 			ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 			if ((e) && (e->layer)) {
 				char fn[HT_NAME_MAX];
@@ -2549,7 +2549,7 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_file_extend: {
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			UINT s = (UINT)msg->data2.integer;
+			uint s = (UINT)msg->data2.integer;
 			// don't ask. only for truncates
 //			if (confirmbox("really extend %s to offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
 				int oam = f->get_access_mode();
@@ -2563,7 +2563,7 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_file_truncate: {
 			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			UINT s = (UINT)msg->data2.integer;
+			uint s = (UINT)msg->data2.integer;
 /*               ht_app_window_entry *e;
 			if ((e=windows->enum_first())) {
 				do {
@@ -2588,7 +2588,7 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		case cmd_file_open: {
 			char *name;
-			UINT mode;
+			uint mode;
 			if (file_open_dialog(&name, &mode)) {
 				if (name[0]) create_window_file(name, mode, true);
 				free(name);
@@ -2600,7 +2600,7 @@ void ht_app::handlemsg(htmsg *msg)
 			bounds b;
 			get_stdbounds_file(&b);
 			
-			UINT mode;
+			uint mode;
 			
 			if (file_new_dialog(&mode)) {
 				ht_mem_file *mfile=new ht_mem_file();
@@ -2767,9 +2767,9 @@ void ht_app::handlemsg(htmsg *msg)
 	}
 }
 
-void	ht_app::insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer)
+void	ht_app::insert_window(ht_window *window, uint type, bool minimized, bool isfile, ht_layer_streamfile *layer)
 {
-	UINT n=find_free_window_number();
+	uint n=find_free_window_number();
 	ht_app_window_entry *e=new ht_app_window_entry(window, n, type, minimized, isfile, layer);
 	windows->insert(e);
 	window->setnumber(n);
@@ -2777,7 +2777,7 @@ void	ht_app::insert_window(ht_window *window, UINT type, bool minimized, bool is
 	focus(window);
 }
 
-int ht_app::load(ht_object_stream *f)
+int ht_app::load(ObjectStream &f)
 {
 	ht_registry *temp;
 	
@@ -2798,7 +2798,7 @@ int ht_app::load(ht_object_stream *f)
 	return f->get_error();
 }
 
-OBJECT_ID ht_app::object_id() const
+ObjectID ht_app::getObjectID() const
 {
 	return ATOM_HT_APP;
 }
@@ -2922,7 +2922,7 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	ht_text_listbox *listbox=new ht_itext_listbox();
 	listbox->init(&c, 2, 1);
 
-	UINT vc=windows->count();
+	uint vc=windows->count();
 	for (UINT i=0; i<vc; i++) {
 		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
 		char l[16];	/* secure */
@@ -3017,7 +3017,7 @@ int ht_app::run(bool modal)
 	return 0;
 }
 
-void ht_app::store(ht_object_stream *f)
+void ht_app::store(ObjectStream &f)
 {
 	f->putObject(registry, NULL);
 
@@ -3044,7 +3044,7 @@ ht_vstate_history_entry::~ht_vstate_history_entry()
  *	CLASS ht_file_window
  */
 
-void ht_file_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *f)
+void ht_file_window::init(bounds *b, char *desc, uint framestyle, uint number, ht_streamfile *f)
 {
 	ht_window::init(b, desc, framestyle, number);
 	file = f;

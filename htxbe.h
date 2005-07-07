@@ -50,8 +50,8 @@
 extern format_viewer_if htxbe_if;
 
 struct xbe_section_headers {
-	dword	number_of_sections;
-	dword	base_address;
+	uint32	number_of_sections;
+	uint32	base_address;
 	XBE_SECTION_HEADER *sections;
 };
 

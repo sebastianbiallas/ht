@@ -111,7 +111,7 @@ typedef unsigned int LogColor;
 
 class ht_log: public ht_clist {
 protected:
-	UINT maxlinecount;
+	uint maxlinecount;
 
 	void deletefirstline();
 	void	insertline(LogColor c, char *line);
@@ -167,7 +167,7 @@ protected:
 public:
 	ht_streamfile	*file;
 
-			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *file);
+			void	init(bounds *b, char *desc, uint framestyle, uint number, ht_streamfile *file);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -184,9 +184,9 @@ public:
 		   void init(char *filename);
 	virtual void done();
 /* overwritten */
-	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
-	virtual void	store(ht_object_stream *s);
+	virtual int	load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
+	virtual void	store(ObjectStream &s);
 /* new */
 		   char *get_filename();
 };
@@ -203,9 +203,9 @@ public:
 		   void init(char *filename, char *path);
 	virtual void done();
 /* overwritten */
-	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
-	virtual void	store(ht_object_stream *s);
+	virtual int	load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
+	virtual void	store(ObjectStream &s);
 /* new */
 	const char *get_filename();
 	const char *get_path();
@@ -218,7 +218,7 @@ public:
 class ht_project_listbox: public ht_listbox {
 protected:
 	ht_project *project;
-	UINT colwidths[4];
+	uint colwidths[4];
 	
 public:
 			void		init(bounds *b, ht_project *project);
@@ -251,7 +251,7 @@ protected:
 	char wtitle[128];
 public:
 
-			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **project);
+			void	init(bounds *b, char *desc, uint framestyle, uint number, ht_project **project);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -271,14 +271,14 @@ public:
 
 class ht_app_window_entry: public ht_data {
 public:
-	UINT type;
+	uint type;
 	ht_window *window;
 	bool minimized;
-	UINT number;
+	uint number;
 	bool isfile;
 	ht_layer_streamfile *layer;
 
-	ht_app_window_entry(ht_window *window, UINT number, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
+	ht_app_window_entry(ht_window *window, uint number, uint type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 	~ht_app_window_entry();
 };
 
@@ -304,10 +304,10 @@ protected:
 			ht_window *create_window_file_text(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);
 			
 			bool accept_close_all_windows();
-			UINT find_free_window_number();
+			uint find_free_window_number();
 			
-			UINT get_window_number(ht_window *window);
-			UINT get_window_listindex(ht_window *window);
+			uint get_window_number(ht_window *window);
+			uint get_window_listindex(ht_window *window);
 
 			void get_stdbounds_file(bounds *b);
 			void get_stdbounds_tool(bounds *b);
@@ -318,7 +318,7 @@ protected:
 	virtual	char *defaultpaletteclass();
 public:
 	ht_view *menu;
-		void insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
+		void insert_window(ht_window *window, uint type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 
 		void init(bounds *b);
 	virtual	void done();
@@ -327,13 +327,13 @@ public:
 	virtual	int focus(ht_view *view);
 	virtual	char *func(UINT i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	int load(ht_object_stream *f);
-	virtual OBJECT_ID object_id() const;
+	virtual	int load(ObjectStream &f);
+	virtual ObjectID getObjectID() const;
 	virtual	int run(bool modal);
-	virtual	void store(ht_object_stream *f);
+	virtual	void store(ObjectStream &f);
 /* new */
 			ht_window *create_window_clipboard();
-			ht_window *create_window_file(char *filename, UINT mode, bool allow_duplicates);
+			ht_window *create_window_file(char *filename, uint mode, bool allow_duplicates);
 			ht_window *create_window_file_bin(char *filename, bool allow_duplicates);
 			ht_window *create_window_file_text(char *filename, bool allow_duplicates);
 			ht_window *create_window_help(char *file, char *node);

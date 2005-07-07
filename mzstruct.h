@@ -28,25 +28,25 @@
 #define IMAGE_MZ_MAGIC1 'Z'
 
 struct IMAGE_MZ_HEADER {
-	word magic HTPACKED;
-	word sizelp HTPACKED;
-	word sizep HTPACKED;
-	word reloc_count HTPACKED;
-	word header_size HTPACKED;
-	word minalloc HTPACKED;
-	word maxalloc HTPACKED;
-	word ss HTPACKED;
-	word sp HTPACKED;
-	word checksum HTPACKED;
-	word ip HTPACKED;
-	word cs HTPACKED;
-	word reloc_ofs HTPACKED;
-	word overlay_num HTPACKED;
-	word res[4] HTPACKED;
-	word oemid HTPACKED;
-	word oeminfo HTPACKED;
-	word res2[10] HTPACKED;
-	dword newexe_ofs HTPACKED;
+	uint16 magic HTPACKED;
+	uint16 sizelp HTPACKED;
+	uint16 sizep HTPACKED;
+	uint16 reloc_count HTPACKED;
+	uint16 header_size HTPACKED;
+	uint16 minalloc HTPACKED;
+	uint16 maxalloc HTPACKED;
+	uint16 ss HTPACKED;
+	uint16 sp HTPACKED;
+	uint16 checksum HTPACKED;
+	uint16 ip HTPACKED;
+	uint16 cs HTPACKED;
+	uint16 reloc_ofs HTPACKED;
+	uint16 overlay_num HTPACKED;
+	uint16 res[4] HTPACKED;
+	uint16 oemid HTPACKED;
+	uint16 oeminfo HTPACKED;
+	uint16 res2[10] HTPACKED;
+	uint32 newexe_ofs HTPACKED;
 };
 
 extern byte MZ_HEADER_struct[];

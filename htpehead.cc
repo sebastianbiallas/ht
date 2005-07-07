@@ -201,7 +201,7 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	/* optional header */
 	s=new ht_mask_sub();
 	s->init(file, 2);
-	word opt;
+	uint16 opt;
 	file->seek(h+24);
 	file->read(&opt, 2);
 	opt = create_host_int(&opt, 2, little_endian);
@@ -300,8 +300,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		case 0: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				UINT rva;
-				UINT size;
+				uint rva;
+				uint size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					rva = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;
@@ -340,8 +340,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		case 4: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				UINT ofs;
-				UINT size;
+				uint ofs;
+				uint size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					ofs = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;

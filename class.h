@@ -147,7 +147,7 @@ extern ht_class_shared_data *class_read(ht_streamfile *);
 extern void class_unread(ht_class_shared_data *);
 extern attrib_info *attribute_read(ht_stream *, classfile *);
 
-int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
+int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared);
 void java_demangle(char *result, char *classname, char *name, char *type, int flags);
 char *java_demangle_flags(char *result, int flags);
 
@@ -158,16 +158,16 @@ public:
   virtual void done();
 };
 
-#define ClassAddress dword
+#define ClassAddress uint32
 
 class ClassMethod: public ht_data {
 public:
 	char *name;
 	char *type;
 	ClassAddress start;
-	UINT length;
+	uint length;
 	int flags;
-				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
+				ClassMethod(char *name, char *type, ClassAddress start, uint length, int flags);
 	virtual		~ClassMethod();
 	virtual int	compareTo(const Object *obj) const;
 };

@@ -61,7 +61,7 @@ static ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 	NE_SEGMENT *s = ne_shared->segments.segments;
 	for (UINT i=0; i<ne_shared->segments.segment_count; i++) {
 		NEAddress base = NE_MAKE_ADDR(i+1, 0);
-		UINT evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
+		uint evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		if (base < l) l = base;
 		if ((base + evsize > h) && (evsize)) h = base + evsize - 1;
 		s++;

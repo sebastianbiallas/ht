@@ -27,13 +27,13 @@
 typedef unsigned int RVA;
 
 typedef struct	COFF_HEADER {
-	word machine HTPACKED;
-	word section_count HTPACKED;
-	dword timestamp HTPACKED;
-	dword symbol_table_offset HTPACKED;
-	dword symbol_count HTPACKED;
-	word optional_header_size HTPACKED;
-	word characteristics HTPACKED;
+	uint16 machine HTPACKED;
+	uint16 section_count HTPACKED;
+	uint32 timestamp HTPACKED;
+	uint32 symbol_table_offset HTPACKED;
+	uint32 symbol_count HTPACKED;
+	uint16 optional_header_size HTPACKED;
+	uint16 characteristics HTPACKED;
 };
 
 #define COFF_RELOCS_STRIPPED		   	0x0001  // Relocation info stripped from file.
@@ -41,15 +41,15 @@ typedef struct	COFF_HEADER {
 #define COFF_LINE_NUMS_STRIPPED			0x0004  // Line nunbers stripped from file.
 #define COFF_LOCAL_SYMS_STRIPPED	   	0x0008  // Local symbols stripped from file.
 #define COFF_AGGRESIVE_WS_TRIM	  		0x0010  // Agressively trim working set
-#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine word are reversed.
-#define COFF_32BIT_MACHINE			0x0100  // 32 bit word machine.
+#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine uint16 are reversed.
+#define COFF_32BIT_MACHINE			0x0100  // 32 bit uint16 machine.
 #define COFF_DEBUG_STRIPPED		   	0x0200  // Debugging info stripped from file in .DBG file
 #define COFF_REMOVABLE_RUN_FROM_SWAP   		0x0400  // If Image is on removable media, copy and run from the swap file.
 #define COFF_NET_RUN_FROM_SWAP	   		0x0800  // If Image is on Net, copy and run from the swap file.
 #define COFF_SYSTEM				0x1000  // System File.
 #define COFF_DLL				0x2000  // File is a DLL.
 #define COFF_UP_SYSTEM_ONLY		   	0x4000  // File should only be run on a UP machine
-#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine word are reversed.
+#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine uint16 are reversed.
 
 #define COFF_MACHINE_UNKNOWN		   	0
 #define COFF_MACHINE_I386		   	0x14c   // Intel 386
@@ -97,29 +97,29 @@ typedef struct	COFF_HEADER {
 #define COFF_OPTMAGIC_PE64			0x20b
 
 typedef struct	COFF_OPTIONAL_HEADER32 {
-	word magic HTPACKED;
+	uint16 magic HTPACKED;
 	byte major_linker_version HTPACKED;
 	byte minor_linker_version HTPACKED;
-	dword code_size HTPACKED;
-	dword data_size HTPACKED;
-	dword bss_size HTPACKED;
-	dword entrypoint_address HTPACKED;
-	dword code_base HTPACKED;
-	dword data_base HTPACKED;
+	uint32 code_size HTPACKED;
+	uint32 data_size HTPACKED;
+	uint32 bss_size HTPACKED;
+	uint32 entrypoint_address HTPACKED;
+	uint32 code_base HTPACKED;
+	uint32 data_base HTPACKED;
 };
 
 /*
  *	same as COFF_OPTIONAL_HEADER32 but no data_base
  */
 typedef struct	COFF_OPTIONAL_HEADER64 {
-	word magic HTPACKED;
+	uint16 magic HTPACKED;
 	byte major_linker_version HTPACKED;
 	byte minor_linker_version HTPACKED;
-	dword code_size HTPACKED;
-	dword data_size HTPACKED;
-	dword bss_size HTPACKED;
-	dword entrypoint_address HTPACKED;
-	dword code_base HTPACKED;
+	uint32 code_size HTPACKED;
+	uint32 data_size HTPACKED;
+	uint32 bss_size HTPACKED;
+	uint32 entrypoint_address HTPACKED;
+	uint32 code_base HTPACKED;
 };
 
 /*
@@ -130,15 +130,15 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 
 struct COFF_SECTION_HEADER {
 	byte name[COFF_SIZEOF_SHORT_NAME] HTPACKED;
-	dword data_vsize HTPACKED;	// or data_phys_address !
-	dword data_address HTPACKED;
-	dword data_size HTPACKED;
-	dword data_offset HTPACKED;
-	dword relocation_offset HTPACKED;
-	dword linenumber_offset HTPACKED;
-	word relocation_count HTPACKED;
-	word linenumber_count HTPACKED;
-	dword characteristics HTPACKED;
+	uint32 data_vsize HTPACKED;	// or data_phys_address !
+	uint32 data_address HTPACKED;
+	uint32 data_size HTPACKED;
+	uint32 data_offset HTPACKED;
+	uint32 relocation_offset HTPACKED;
+	uint32 linenumber_offset HTPACKED;
+	uint16 relocation_count HTPACKED;
+	uint16 linenumber_count HTPACKED;
+	uint32 characteristics HTPACKED;
 };
 
 #define COFF_SIZEOF_SECTION_HEADER		40

@@ -218,7 +218,7 @@ int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 void ht_hex_file_sub::handlemsg(htmsg *msg)
 {
 	if (msg->msg == msg_filesize_changed) {
-		UINT s = file->get_size();
+		uint s = file->get_size();
 		fsize = s;
 		return;
 	}

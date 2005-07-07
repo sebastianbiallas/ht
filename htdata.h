@@ -48,9 +48,9 @@ public:
 
 	ht_data_uint(uint v = 0);
 	/* overwritten */
-	virtual	int load(ht_object_stream *s);
-	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
+	virtual	int load(ObjectStream &s);
+	virtual	void store(ObjectStream &s);
+	virtual	ObjectID getObjectID() const;
 };
 
 /*
@@ -62,9 +62,9 @@ public:
 
 		ht_data_uint32(uint32 v = 0);
 	/* overwritten */
-	virtual	int load(ht_object_stream *s);
-	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
+	virtual	int load(ObjectStream &s);
+	virtual	void store(ObjectStream &s);
+	virtual	ObjectID getObjectID() const;
 };
 
 /*
@@ -88,9 +88,9 @@ public:
 		ht_data_mem(const void *v = 0, uint size = 0);
 	virtual	~ht_data_mem();
 	/* overwritten */
-	virtual	int load(ht_object_stream *s);
-	virtual	void store(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
+	virtual	int load(ObjectStream &s);
+	virtual	void store(ObjectStream &s);
+	virtual	ObjectID getObjectID() const;
 };
 
 /*
@@ -152,9 +152,9 @@ public:
 	virtual ht_data *enum_prev(ht_data **value, ht_data *nextkey);
 	virtual	ht_data *get(ht_data *key);
 	virtual	bool insert(ht_data *key, ht_data *value);
-	virtual	int load(ht_object_stream *s);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *s);
+	virtual	int load(ObjectStream &s);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &s);
 	virtual void set_compare_keys(compare_keys_func_ptr new_compare_keys);
 };
 
@@ -243,22 +243,22 @@ public:
 	virtual	uint count();
 	virtual	ht_list *cut(uint i, uint count);
 	virtual	bool del(uint i);
-	virtual	Object *duplicate();
+	virtual	Object *clone();
 	virtual void empty();
 	virtual	uint find(ht_data *data);
 	virtual	ht_data *get(uint i);
 	virtual	void insert(ht_data *data);
 	virtual	void insert_after(ht_data *data, uint i);
 	virtual	void insert_before(ht_data *data, uint i);
-	virtual	int  load(ht_object_stream *s);
+	virtual	int  load(ObjectStream &s);
 	virtual	void move(uint source, uint dest);
 	virtual	void move_multiple(uint source, uint dest, uint count);
-	virtual	OBJECT_ID object_id() const;
+	virtual	ObjectID getObjectID() const;
 	virtual	void prepend(ht_data *data);
 	virtual	ht_data *remove(uint i);
 	virtual	bool set(uint i, ht_data *data);
 	virtual	bool sort();
-	virtual	void store(ht_object_stream *s);
+	virtual	void store(ObjectStream &s);
 };
 
 /*

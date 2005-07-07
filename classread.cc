@@ -48,7 +48,7 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
 
-ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, UINT l, int f)
+ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, uint l, int f)
 {
 	name = ht_strdup(n);
 	start = s;
@@ -72,19 +72,19 @@ int ClassMethod::compareTo(const Object *obj) const
 
 
 /* extract name from a utf8 constant pool entry */
-static char *get_string(ht_stream *htio, classfile *clazz, UINT index)
+static char *get_string(ht_stream *htio, classfile *clazz, uint index)
 {
 	return (index < clazz->cpool_count) ? clazz->cpool[index]->value.string : (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static char *get_class_name(ht_stream *htio, classfile *clazz, UINT index)
+static char *get_class_name(ht_stream *htio, classfile *clazz, uint index)
 {
 	return (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]): (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static void get_name_and_type(ht_stream *htio, classfile *clazz, UINT index, char *name, char *type)
+static void get_name_and_type(ht_stream *htio, classfile *clazz, uint index, char *name, char *type)
 {
 	strcpy(name, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]) : "?");
 	strcpy(type, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[1]) : "?");
@@ -491,7 +491,7 @@ void java_demangle(char *result, char *classname, char *name, char *type, int fl
 	result += sprintf(result, ")");
 }
 
-int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared)
+int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared)
 {
 	classfile *clazz = shared->file;
 	char tag[20];

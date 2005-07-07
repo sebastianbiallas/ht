@@ -288,7 +288,7 @@ CallChainNode *CallChain::createNode(Address *A)
 	n->prev = NULL;
 	n->child = NULL;
 	n->examined = false;
-	n->xa = (Address *)A->duplicate();
+	n->xa = (Address *)A->clone();
 	n->faddr = analy->getFunctionByAddress(A);
 	assert(n->faddr);
 	n->fa = n->faddr->addr;
@@ -475,7 +475,7 @@ void AnalyInfoline::update(Address *cursor_addr, FILEOFS ecursor_addr)
 	delete addr;
 	if (valid()) {
 		fofs = ecursor_addr;
-		addr = (Address *)cursor_addr->duplicate();
+		addr = (Address *)cursor_addr->clone();
 	} else {
 		fofs = INVALID_FILE_OFS;
 		addr = new InvalidAddress();
@@ -661,7 +661,7 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 /*
  *	for assembler
  */
-static int ht_aviewer_symbol_to_addr(void *Aviewer, char **s, dword *v)
+static int ht_aviewer_symbol_to_addr(void *Aviewer, char **s, uint32 *v)
 {
 	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)Aviewer;
@@ -823,7 +823,7 @@ void ht_aviewer::generateOutputDialog()
 			errorbox(globalerror);
 			continue;
 		}
-		UINT end_by_lines;
+		uint end_by_lines;
 		if ((by_lines = end_str[0]=='#')) {
 			char *pend = &end_str[1];
 			bnstr(&pend, &end_by_lines, 10);
@@ -924,7 +924,7 @@ void ht_aviewer::dataStringDialog()
 		Location *a = analy->enumLocations(current_address);
 		int d = sizeof buffer;
 		if (a) a->addr->difference(d, current_address);
-		UINT bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (UINT)d));
+		uint bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (UINT)d));
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -1227,7 +1227,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		viewer_pos current_pos;
 		Address *current_address;
 		if (get_current_pos(&current_pos) && getCurrentAddress(&current_address)) {
-			a->set_imm_eval_proc((int(*)(void *context, char **s, dword *v))ht_aviewer_symbol_to_addr, (void*)this);
+			a->set_imm_eval_proc((int(*)(void *context, char **s, uint32 *v))ht_aviewer_symbol_to_addr, (void*)this);
 			int want_length;
 			analy->getDisasmStr(current_address, want_length);
 			dialog_assemble(this, current_pos, analy->mapAddr(current_address), a, analy->disasm, analy->getDisasmStrFormatted(current_address), want_length);
@@ -1361,7 +1361,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		Address *c, *b;
 		if (!getCurrentAddress(&c)) break;
 		b = analy->createAddress();
-		UINT bz = b->byteSize();
+		uint bz = b->byteSize();
 		if (!bz) break;
 		byte *buf = (byte*)smalloc(bz);
 		if (analy->bufPtr(c, buf, bz) != bz) break;
@@ -1735,17 +1735,17 @@ void ht_aviewer::showComments(Address *Addr)
 	if (dialog->run(false)==button_ok) {
 		Location *a=analy->getLocationByAddress(Addr);
 		if (a) analy->freeComments(a);
-		UINT c=text_file->linecount();
+		uint c=text_file->linecount();
 		char buf[1024];
 		bool empty=false;
 		if (c==1) {
-			UINT l = 0;
+			uint l = 0;
 			text_file->getline(0, 0, buf, 1024, &l, NULL);
 			empty=(l==0);
 		}
 		if (!empty) {
 			for (UINT i=0; i<c; i++) {
-				UINT l;
+				uint l;
 				if (text_file->getline(i, 0, buf, 1024, &l, NULL)) {
 					buf[l]=0;
 					analy->addComment(Addr, 0, buf);
@@ -1845,8 +1845,8 @@ restart2:
 		b.h = c.h*5/6;
 		center_bounds(&b);
 restart:
-		UINT bw = b.w;
-		UINT bh = b.h;
+		uint bw = b.w;
+		uint bh = b.h;
 		char str[256];
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
@@ -2028,7 +2028,7 @@ bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 	if (a->byteSize()==8) {
 		a->getFromArray((byte*)&q);
 	} else {
-		dword ii = QWORD_GET_INT(q);
+		uint32 ii = QWORD_GET_INT(q);
 		a->getFromArray((byte*)&ii);
 	}
 	if (analy->validAddress(a, scvalid)) {
@@ -2054,8 +2054,8 @@ void ht_analy_sub::init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, 
 	analy = analyser;
 	output = new AnalyserHTOutput();
 	((AnalyserHTOutput*)output)->init(analy);
-	lowestaddress = (Address *)Lowestaddress->duplicate();
-	highestaddress = (Address *)Highestaddress->duplicate();
+	lowestaddress = (Address *)Lowestaddress->clone();
+	highestaddress = (Address *)Highestaddress->clone();
 }
 
 void ht_analy_sub::done()
@@ -2149,11 +2149,11 @@ ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start,
 		if (!s) break;
 		st = (Address *)s->end;
 		FILEOFS fstart, fend;
-		dword fsize;
+		uint32 fsize;
 		viewer_pos vp_start, vp_end;
 		aviewer->convertAddressToViewerPos((Address *)s->start, &vp_start);
 		if (!aviewer->pos_to_offset(vp_start, &fstart)) assert(0);
-		Address *send = (Address *)s->end->duplicate();
+		Address *send = (Address *)s->end->clone();
 		send->add(-1);
 		aviewer->convertAddressToViewerPos(send, &vp_end);
 		delete send;

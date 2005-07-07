@@ -354,7 +354,7 @@ bool waitforchar(char **str, char b)
 }
 
 /*
-static bool bnstr2bin(char *str, char *p, int base, dword *v)
+static bool bnstr2bin(char *str, char *p, int base, uint32 *v)
 {
 	*v=0;
 	do {
@@ -433,7 +433,7 @@ bool bnstr(char **str, qword *q, int defaultbase)
 	return false;
 }
 
-bool bnstr(char **str, dword *v, int defaultbase)
+bool bnstr(char **str, uint32 *v, int defaultbase)
 {
 	qword q;
 	bool res = bnstr(str, &q, defaultbase);
@@ -488,7 +488,7 @@ char *mkhexb(char *buf, byte d)
 	return buf;
 }
 
-char *mkhexw(char *buf, word d)
+char *mkhexw(char *buf, uint16 d)
 {
 	*buf++=hexchars[(d>>12)&0xf];
 	*buf++=hexchars[(d>>8)&0xf];
@@ -497,7 +497,7 @@ char *mkhexw(char *buf, word d)
 	return buf;
 }
 
-char *mkhexd(char *buf, dword d)
+char *mkhexd(char *buf, uint32 d)
 {
 	*buf++=hexchars[(d>>28)&0xf];
 	*buf++=hexchars[(d>>24)&0xf];
@@ -544,13 +544,13 @@ ht_data_string::~ht_data_string()
 	if (value) free(value);
 }
 
-int ht_data_string::load(ht_object_stream *f)
+int ht_data_string::load(ObjectStream &f)
 {
 	value = f->getString(NULL);
 	return f->get_error();
 }
 
-void ht_data_string::store(ht_object_stream *f)
+void ht_data_string::store(ObjectStream &f)
 {
 	f->putString(value, NULL);
 }
@@ -560,7 +560,7 @@ int ht_data_string::toString(char *s, int maxlen)
 	return ht_snprintf(s, maxlen, "%s", value);
 }
 
-OBJECT_ID ht_data_string::object_id() const
+ObjectID ht_data_string::getObjectID() const
 {
 	return ATOM_HT_DATA_STRING;
 }
@@ -596,7 +596,7 @@ void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, ht_dat
 char *ht_sorted_string_list::get_string(char *s)
 {
 	ht_data *d = new ht_data_string(s);
-	UINT i=find(d);
+	uint i=find(d);
 	char *ret=NULL;
 	if (i!=LIST_UNDEFINED) {
 		ht_data *r=get(i);

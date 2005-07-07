@@ -58,14 +58,14 @@
 extern format_viewer_if htpe_if;
 
 struct pe_section_headers {
-	UINT section_count;
+	uint section_count;
 	COFF_SECTION_HEADER *sections;
 };
 
 struct ht_pe_shared_data {
 	FILEOFS header_ofs;
 	COFF_HEADER coffheader;
-	word opt_magic;
+	uint16 opt_magic;
 	union {
 		struct {
 			COFF_OPTIONAL_HEADER32 header;

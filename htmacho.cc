@@ -90,7 +90,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	create_host_struct(&macho_shared->header, MACHO_HEADER_struct, image_endianess);
 
 	/* read commands */
-	UINT nsections = 0;
+	uint nsections = 0;
 	ofs = header_ofs+sizeof macho_shared->header;
 	macho_shared->cmds.cmds = (MACHO_COMMAND_U**)malloc(sizeof (MACHO_COMMAND_U*) * macho_shared->header.ncmds);
 	macho_shared->cmds.count = 0;
@@ -150,7 +150,7 @@ void ht_macho::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_form
 	ofs = header_ofs+sizeof macho_shared->header;
 	macho_shared->sections.count = nsections;
 	macho_shared->sections.sections = (MACHO_SECTION*)malloc(sizeof (MACHO_SECTION) * macho_shared->sections.count);
-	UINT sec = 0;
+	uint sec = 0;
 	for (UINT i=0; i<macho_shared->cmds.count; i++) {
 		if (macho_shared->cmds.cmds[i]->cmd.cmd == LC_SEGMENT) {
 			FILEOFS sofs = ofs+sizeof (MACHO_SEGMENT_COMMAND);
@@ -177,17 +177,17 @@ void ht_macho::done()
  *	address conversion routines
  */
 
-bool macho_phys_and_mem_section(MACHO_SECTION *s, UINT machoclass)
+bool macho_phys_and_mem_section(MACHO_SECTION *s, uint machoclass)
 {
 	return true;
 }
 
-bool macho_valid_section(MACHO_SECTION *s, UINT machoclass)
+bool macho_valid_section(MACHO_SECTION *s, uint machoclass)
 {
 	return true;
 }
 
-bool macho_addr_to_ofs(macho_sections *sections, UINT machoclass, MACHOAddress addr, dword *ofs)
+bool macho_addr_to_ofs(macho_sections *sections, uint machoclass, MACHOAddress addr, uint32 *ofs)
 {
 	MACHO_SECTION *s = sections->sections;
 	for (UINT i=0; i < sections->count; i++) {
@@ -201,7 +201,7 @@ bool macho_addr_to_ofs(macho_sections *sections, UINT machoclass, MACHOAddress a
 	return false;
 }
 
-bool macho_addr_to_section(macho_sections *sections, UINT machoclass, MACHOAddress addr, int *section)
+bool macho_addr_to_section(macho_sections *sections, uint machoclass, MACHOAddress addr, int *section)
 {
 	MACHO_SECTION *s = sections->sections;
 	for (UINT i=0; i < sections->count; i++) {
@@ -214,7 +214,7 @@ bool macho_addr_to_section(macho_sections *sections, UINT machoclass, MACHOAddre
 	return false;
 }
 
-bool macho_addr_is_valid(macho_sections *sections, UINT machoclass, MACHOAddress addr)
+bool macho_addr_is_valid(macho_sections *sections, uint machoclass, MACHOAddress addr)
 {
 	MACHO_SECTION *s = sections->sections;
 	for (UINT i=0; i < sections->count; i++) {
@@ -226,7 +226,7 @@ bool macho_addr_is_valid(macho_sections *sections, UINT machoclass, MACHOAddress
 	return false;
 }
 
-/*bool macho_addr_is_physical(macho_sections *sections, UINT machoclass, ELFAddress addr)
+/*bool macho_addr_is_physical(macho_sections *sections, uint machoclass, ELFAddress addr)
 {
 	return false;
 }*/
@@ -235,7 +235,7 @@ bool macho_addr_is_valid(macho_sections *sections, UINT machoclass, MACHOAddress
  *	offset conversion routines
  */
 
-bool macho_ofs_to_addr(macho_sections *sections, UINT machoclass, dword ofs, MACHOAddress *addr)
+bool macho_ofs_to_addr(macho_sections *sections, uint machoclass, uint32 ofs, MACHOAddress *addr)
 {
 	MACHO_SECTION *s = sections->sections;
 	for (UINT i=0; i < sections->count; i++) {
@@ -248,7 +248,7 @@ bool macho_ofs_to_addr(macho_sections *sections, UINT machoclass, dword ofs, MAC
 	return false;
 }
 
-bool macho_ofs_to_section(macho_sections *sections, UINT machoclass, dword ofs, dword *section)
+bool macho_ofs_to_section(macho_sections *sections, uint machoclass, uint32 ofs, uint32 *section)
 {
 	MACHO_SECTION *s = sections->sections;
 	for (UINT i=0; i < sections->count; i++) {
@@ -261,7 +261,7 @@ bool macho_ofs_to_section(macho_sections *sections, UINT machoclass, dword ofs, 
 	return false;
 }
 
-/*bool macho_ofs_to_addr_and_section(macho_sections *sections, UINT machoclass, dword ofs, ELFAddress *addr, int *section)
+/*bool macho_ofs_to_addr_and_section(macho_sections *sections, uint machoclass, uint32 ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }*/

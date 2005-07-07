@@ -77,10 +77,10 @@ bool Terminal::connected()
 	return sys_ipc_is_valid(sys_ipc_handle);
 }
 
-UINT Terminal::write(const void *buf, UINT size)
+uint Terminal::write(const void *buf, uint size)
 {
 	if (connected()) {
-		UINT r = ht_ltextfile::write(buf, size);
+		uint r = ht_ltextfile::write(buf, size);
 		in->write(buf, size);
 		return r;
 	}
@@ -135,7 +135,7 @@ void TerminalViewer::done()
 
 void TerminalViewer::do_update()
 {
-	UINT l = term->linecount();
+	uint l = term->linecount();
 	if (l) {
 		goto_line(l-1);
 		cursor_end();

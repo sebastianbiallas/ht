@@ -163,12 +163,12 @@ void ht_le::do_fixups()
 
 	le_shared->reloc_file = rfile;
 
-	UINT error_count = 0;
+	uint error_count = 0;
 
 	for (UINT i=0; i<le_shared->hdr.pagecnt; i++) {
 		// size of fixup record table for segment
 		uint32 size = page_fixup_size[i];
-		UINT obj_ofs = i * le_shared->hdr.pagesize;
+		uint obj_ofs = i * le_shared->hdr.pagesize;
 
 		file->seek(h+le_shared->hdr.frectab+page_fixup_ofs[i]);
 		bool error = false;
@@ -201,7 +201,7 @@ void ht_le::do_fixups()
 			}
 			if (error) break;
 
-			UINT multi_count = 0;
+			uint multi_count = 0;
 			uint16 src_ofs;
 			bool multi_ofs = (f.address_type & LE_FIXUP_ADDR_MULTIPLE);
 			if (multi_ofs) {
@@ -322,19 +322,19 @@ void ht_le::read_pagemap()
 	FILEOFS h = le_shared->hdr_ofs;
 
 	le_shared->pagemap.count=le_shared->hdr.pagecnt;
-	le_shared->pagemap.offset=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.offset);
-	le_shared->pagemap.psize=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.psize);
-	le_shared->pagemap.vsize=(dword*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.vsize);
+	le_shared->pagemap.offset=(uint32*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.offset);
+	le_shared->pagemap.psize=(uint32*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.psize);
+	le_shared->pagemap.vsize=(uint32*)malloc(le_shared->pagemap.count*sizeof *le_shared->pagemap.vsize);
 
-	dword last_page_offset=0, last_page=0;
-	for (dword i=0; i<le_shared->hdr.pagecnt; i++) {
+	uint32 last_page_offset=0, last_page=0;
+	for (uint32 i=0; i<le_shared->hdr.pagecnt; i++) {
 		LE_PAGE_MAP_ENTRY e;
 		file->seek(h+le_shared->hdr.pagemap+i*4);
 		file->read(&e, sizeof e);
 		create_host_struct(&e, LE_PAGE_MAP_ENTRY_struct, le_shared->byteorder);
 		
 		/* FIXME: is this formula correct ? it comes straight from my docs... */
-		dword eofs=(e.high+e.low-1)*le_shared->hdr.pagesize+le_shared->hdr.datapage;
+		uint32 eofs=(e.high+e.low-1)*le_shared->hdr.pagesize+le_shared->hdr.datapage;
 		le_shared->pagemap.offset[i] = eofs;
 
 		if (le_shared->pagemap.offset[i]>last_page_offset) {
@@ -343,7 +343,7 @@ void ht_le::read_pagemap()
 		}
 	}
 
-	for (dword i=0; i<le_shared->hdr.pagecnt; i++) {
+	for (uint32 i=0; i<le_shared->hdr.pagecnt; i++) {
 		le_shared->pagemap.vsize[i]=0;	/* filled by read_objects() */
 		if (i==last_page)
 			le_shared->pagemap.psize[i]=le_shared->hdr.lastpagesize;
@@ -368,7 +368,7 @@ void ht_le::read_objects()
 		create_host_struct(&le_shared->objmap.header[i], LE_OBJECT_HEADER_struct, le_shared->byteorder);
 
 		/* sum up page sizes to find object's physical size */
-		UINT psize = 0;
+		uint psize = 0;
 		for (UINT j=0; j<le_shared->objmap.header[i].page_map_count; j++) {
 			psize += le_shared->pagemap.psize[j+le_shared->objmap.header[i].page_map_index-1];
 			/* FIXME: security hole: array-index uncontrolled */
@@ -389,7 +389,7 @@ void ht_le::read_objects()
 
 /* create temporary address space for LEAddress's */
 /*	le_shared->le_addr = (LEAddress*)malloc(sizeof *le_shared->le_addr * le_shared->objmap.count);
-	UINT a = 0;
+	uint a = 0;
 	for (UINT i = 0; i<le_shared->objmap.count; i++) {
 		le_shared->le_addr[i] = a;
 		a += le_shared->objmap.header[i].page_map_count * le_shared->hdr.pagesize;
@@ -421,7 +421,7 @@ bool ht_le::loc_enum_next(ht_format_loc *loc)
  *	CLASS ht_le_page_file
  */
 
-void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm, dword pms, dword ps)
+void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm, uint32 pms, uint32 ps)
 {
 	ht_layer_streamfile::init(file, own_file);
 	pagemap = pm;
@@ -430,12 +430,12 @@ void ht_le_page_file::init(ht_streamfile *file, bool own_file, ht_le_pagemap *pm
 	ofs = 0;
 }
 
-bool ht_le_page_file::isdirty(FILEOFS offset, UINT range)
+bool ht_le_page_file::isdirty(FILEOFS offset, uint range)
 {
 	FILEOFS mofs;
-	UINT msize;
+	uint msize;
 	while (range) {
-		dword s=range;
+		uint32 s=range;
 		if (!map_ofs(offset, &mofs, &msize)) break;
 		if (s>msize) s=msize;
 		bool isdirty;
@@ -451,9 +451,9 @@ bool ht_le_page_file::isdirty(FILEOFS offset, UINT range)
  *	Map a paged and linearized LE offset to its corresponding
  *	physical file offset
  */
-bool ht_le_page_file::map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize)
+bool ht_le_page_file::map_ofs(UINT lofs, FILEOFS *pofs, uint *maxsize)
 {
-	UINT i = lofs/page_size, j = lofs % page_size;
+	uint i = lofs/page_size, j = lofs % page_size;
 	if (i < pagemapsize) {
 		if (j < pagemap->vsize[i]) {
 			*pofs = pagemap->offset[i]+j;
@@ -464,7 +464,7 @@ bool ht_le_page_file::map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize)
 	return false;
 }
 
-bool ht_le_page_file::unmap_ofs(FILEOFS pofs, UINT *lofs)
+bool ht_le_page_file::unmap_ofs(FILEOFS pofs, uint *lofs)
 {
 	for (UINT i=0; i<pagemapsize; i++) {
 		if ((pofs >= pagemap->offset[i]) && (pofs < pagemap->offset[i]+pagemap->vsize[i])) {
@@ -475,14 +475,14 @@ bool ht_le_page_file::unmap_ofs(FILEOFS pofs, UINT *lofs)
 	return false;
 }
 
-UINT ht_le_page_file::read(void *aBuf, UINT size)
+uint ht_le_page_file::read(void *aBuf, uint size)
 {
 	FILEOFS mofs;
-	UINT msize;
+	uint msize;
 	int c = 0;
 	byte *buf = (byte *)aBuf;
 	while (size) {
-		UINT s = size;
+		uint s = size;
 		if (!map_ofs(ofs, &mofs, &msize)) break;
 		if (s>msize) s = msize;
 		streamfile->seek(mofs);
@@ -512,8 +512,8 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 	switch (cmd) {
 		case FCNTL_MODS_CLEAR_DIRTY_RANGE: {
 			FILEOFS o = va_arg(vargs, FILEOFS);
-			UINT s = va_arg(vargs, UINT);
-			UINT ts, ms;
+			uint s = va_arg(vargs, UINT);
+			uint ts, ms;
 			int e;
 
 			do {
@@ -527,9 +527,9 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 		}
 		case FCNTL_MODS_IS_DIRTY: {
 			FILEOFS o = va_arg(vargs, FILEOFS);
-			UINT s = va_arg(vargs, UINT);
+			uint s = va_arg(vargs, UINT);
 			bool *b = va_arg(vargs, bool*);
-			UINT ts, ms;
+			uint ts, ms;
 			int e;
 
 			*b = false;
@@ -547,14 +547,14 @@ int ht_le_page_file::vcntl(UINT cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-UINT ht_le_page_file::write(const void *aBuf, UINT size)
+uint ht_le_page_file::write(const void *aBuf, uint size)
 {
 	FILEOFS mofs;
-	UINT msize;
+	uint msize;
 	int c = 0;
 	const byte *buf = (const byte *)aBuf;
 	while (size) {
-		UINT s = size;
+		uint s = size;
 		if (!map_ofs(ofs, &mofs, &msize)) break;
 		if (s>msize) s = msize;
 		streamfile->seek(mofs);
@@ -570,7 +570,7 @@ UINT ht_le_page_file::write(const void *aBuf, UINT size)
  *	CLASS ht_le_reloc_entry
  */
 
-ht_le_reloc_entry::ht_le_reloc_entry(UINT o, UINT s, LEAddress a, uint8 at, uint8 rt)
+ht_le_reloc_entry::ht_le_reloc_entry(UINT o, uint s, LEAddress a, uint8 at, uint8 rt)
 {
 	ofs = o;
 	seg = s;
@@ -629,25 +629,25 @@ bool ht_le_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
  *
  */
 
-FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, UINT i)
+FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i)
 {
 	assert(i<LE_shared->objmap.count);
 	return LE_SEG_ADDR(i) - LE_BASE_ADDR;
 }
 
-LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, UINT i)
+LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, uint i)
 {
 	assert(i<LE_shared->objmap.count);
 	return LE_SEG_ADDR(i);
 }
 
-UINT LE_get_seg_psize(ht_le_shared_data *LE_shared, UINT i)
+uint LE_get_seg_psize(ht_le_shared_data *LE_shared, uint i)
 {
 	assert(i<LE_shared->objmap.count);
 	return LE_shared->objmap.psize[i];
 }
 
-UINT LE_get_seg_vsize(ht_le_shared_data *LE_shared, UINT i)
+uint LE_get_seg_vsize(ht_le_shared_data *LE_shared, uint i)
 {
 	assert(i<LE_shared->objmap.count);
 	return LE_shared->objmap.vsize[i];
@@ -657,7 +657,7 @@ bool LE_addr_to_segment(ht_le_shared_data *LE_shared, LEAddress Addr, int *segme
 {
 	for (UINT i = 0; i < LE_shared->objmap.count; i++) {
 		LEAddress base = LE_get_seg_addr(LE_shared, i);
-		UINT evsize = MAX(LE_get_seg_vsize(LE_shared, i), LE_get_seg_psize(LE_shared, i));
+		uint evsize = MAX(LE_get_seg_vsize(LE_shared, i), LE_get_seg_psize(LE_shared, i));
 		if ((Addr >= base) && (Addr < base + evsize)) {
 			*segment = i;
 			return true;
@@ -670,7 +670,7 @@ bool LE_addr_is_physical(ht_le_shared_data *LE_shared, LEAddress Addr)
 {
 	for (UINT i = 0; i < LE_shared->objmap.count; i++) {
 		LEAddress base = LE_get_seg_addr(LE_shared, i);
-		UINT psize = LE_get_seg_psize(LE_shared, i);
+		uint psize = LE_get_seg_psize(LE_shared, i);
 		if ((Addr >= base) && (Addr < base + psize)) return true;
 	}
 	return false;
@@ -680,7 +680,7 @@ bool LE_addr_to_ofs(ht_le_shared_data *LE_shared, LEAddress Addr, FILEOFS *ofs)
 {
 	for (UINT i = 0; i < LE_shared->objmap.count; i++) {
 		LEAddress base = LE_get_seg_addr(LE_shared, i);
-		UINT psize = LE_get_seg_psize(LE_shared, i);
+		uint psize = LE_get_seg_psize(LE_shared, i);
 		if ((Addr >= base) && (Addr < base + psize)) {
 			*ofs = Addr - LE_BASE_ADDR;
 			return true;

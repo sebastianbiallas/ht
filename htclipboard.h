@@ -32,12 +32,12 @@
 class ht_clipboard: public ht_mem_file {
 public:
 	ht_list *copy_history;
-	dword select_start, select_len;
+	uint32 select_start, select_len;
 
 			void init();
 	virtual	void done();
 /* overwritten */
-	virtual	UINT	write(const void *buf, UINT size);
+	virtual	uint	write(const void *buf, uint size);
 /* new */
 			void clear();
 };
@@ -48,8 +48,8 @@ public:
 
 class ht_clipboard_viewer: public ht_uformat_viewer {
 protected:
-	UINT lastwritecount;
-	UINT lastentrycount;
+	uint lastwritecount;
+	uint lastentrycount;
 
 			void get_pindicator_str(char *buf);
 			void selection_changed();
@@ -66,13 +66,13 @@ public:
 
 /* clipboard functions */
 
-void clipboard_add_copy_history_entry(char *source, dword start, dword size, time_t time);
-int clipboard_copy(char *source_desc, void *buf, dword len);
-int clipboard_copy(char *source_desc, ht_streamfile *streamfile, dword offset, dword len);
-int clipboard_paste(void *buf, dword maxlen);
-int clipboard_paste(ht_streamfile *streamfile, dword offset);
+void clipboard_add_copy_history_entry(char *source, uint32 start, uint32 size, time_t time);
+int clipboard_copy(char *source_desc, void *buf, uint32 len);
+int clipboard_copy(char *source_desc, ht_streamfile *streamfile, uint32 offset, uint32 len);
+int clipboard_paste(void *buf, uint32 maxlen);
+int clipboard_paste(ht_streamfile *streamfile, uint32 offset);
 int clipboard_clear();
-dword clipboard_getsize();
+uint32 clipboard_getsize();
 
 /*
  *	INIT

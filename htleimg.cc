@@ -65,7 +65,7 @@ static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 	LE_OBJECT *s = le_shared->objmap.header;
 	for (UINT i=0; i<le_shared->objmap.count; i++) {
 		LEAddress base = LE_MAKE_ADDR(le_shared, i, 0);
-		UINT evsize = MAX(LE_get_seg_vsize(le_shared, i), LE_get_seg_psize(le_shared, i));
+		uint evsize = MAX(LE_get_seg_vsize(le_shared, i), LE_get_seg_psize(le_shared, i));
 		if (base < l) l = base;
 		if ((base + evsize > h) && (evsize)) h = base + evsize - 1;
 		s++;
@@ -152,7 +152,7 @@ bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
 {
 	FILEOFS o;
 	if (!get_current_offset(&o)) return false;
-	UINT m;
+	uint m;
 	if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;
 	return true;
 }

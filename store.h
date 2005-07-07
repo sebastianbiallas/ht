@@ -130,7 +130,7 @@ public:
 	virtual qword	getQWordDec(int size, char *desc);
 	virtual qword	getQWordHex(int size, char *desc);
 	virtual char	*getString(char *desc);
-	virtual UINT	recordStart(UINT size);
+	virtual uint	recordStart(UINT size);
 	virtual void	recordEnd(UINT);
 	virtual void	putBinary(void *mem, int size, char *desc);
 	virtual void	putIntDec(int a, int size, char *desc);

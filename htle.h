@@ -63,7 +63,7 @@ class ht_le_page_file;
 
 struct ht_le_shared_data {
 	endianess byteorder;
-	dword hdr_ofs;
+	uint32 hdr_ofs;
 	LE_HEADER hdr;
 	ht_viewer *v_header;
 	ht_viewer *v_objects;
@@ -73,7 +73,7 @@ struct ht_le_shared_data {
 	ht_le_objmap objmap;
 	ht_le_pagemap pagemap;
 	bool is_vxd;
-	UINT vxd_desc_linear_ofs;
+	uint vxd_desc_linear_ofs;
 	LE_VXD_DESCRIPTOR vxd_desc;
 	ht_le_page_file *linear_file;
 	ht_reloc_file *reloc_file;
@@ -105,21 +105,21 @@ extern format_viewer_if htle_if;
 class ht_le_page_file: public ht_layer_streamfile {
 protected:
 	ht_le_pagemap *pagemap;
-	dword pagemapsize;
-	dword page_size;
+	uint32 pagemapsize;
+	uint32 page_size;
 	FILEOFS ofs;
 public:
-		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, dword pagemapsize, dword page_size);
+		   void init(ht_streamfile *file, bool own_file, ht_le_pagemap *pagemap, uint32 pagemapsize, uint32 page_size);
 /* overwritten */
-	virtual bool isdirty(FILEOFS offset, UINT range);
-	virtual UINT read(void *buf, UINT size);
+	virtual bool isdirty(FILEOFS offset, uint range);
+	virtual uint read(void *buf, uint size);
 	virtual int seek(FILEOFS offset);
 	virtual FILEOFS tell();
 	virtual int vcntl(UINT cmd, va_list vargs);
-	virtual UINT write(const void *buf, UINT size);
+	virtual uint write(const void *buf, uint size);
 /* new */
-		   bool map_ofs(UINT lofs, FILEOFS *pofs, UINT *maxsize);
-		   bool unmap_ofs(FILEOFS pofs, UINT *lofs);
+		   bool map_ofs(UINT lofs, FILEOFS *pofs, uint *maxsize);
+		   bool unmap_ofs(FILEOFS pofs, uint *lofs);
 };
 
 /*
@@ -128,13 +128,13 @@ public:
 
 class ht_le_reloc_entry: public ht_data {
 public:
-	UINT ofs;	// FIXME: hack
-	UINT seg;
+	uint ofs;	// FIXME: hack
+	uint seg;
 	LEAddress addr;
 	uint8 address_type;
 	uint8 reloc_type;
 
-	ht_le_reloc_entry(UINT ofs, UINT seg, LEAddress addr, uint8 address_type, uint8 reloc_type);
+	ht_le_reloc_entry(UINT ofs, uint seg, LEAddress addr, uint8 address_type, uint8 reloc_type);
 };
 
 /*
@@ -151,10 +151,10 @@ public:
 		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_le_shared_data *data);
 };
 
-FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, UINT i);
-LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, UINT i);
-UINT LE_get_seg_psize(ht_le_shared_data *LE_shared, UINT i);
-UINT LE_get_seg_vsize(ht_le_shared_data *LE_shared, UINT i);
+FILEOFS LE_get_seg_ofs(ht_le_shared_data *LE_shared, uint i);
+LEAddress LE_get_seg_addr(ht_le_shared_data *LE_shared, uint i);
+uint LE_get_seg_psize(ht_le_shared_data *LE_shared, uint i);
+uint LE_get_seg_vsize(ht_le_shared_data *LE_shared, uint i);
 
 bool LE_addr_to_segment(ht_le_shared_data *LE_shared, LEAddress Addr, int *segment);
 bool LE_addr_is_physical(ht_le_shared_data *LE_shared, LEAddress Addr);

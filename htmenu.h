@@ -153,8 +153,8 @@ public:
 /* overwritten */
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 };
 
 /*
@@ -175,9 +175,9 @@ public:
 			void init(bounds *b, ht_context_menu *menu);
 	virtual	void done();
 /* overwritten */
-	virtual	void getdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void setdata(ObjectStream &s);
 };
 
 /*
@@ -205,7 +205,7 @@ protected:
 	virtual	char *defaultpalette();
 	virtual	char *defaultpaletteclass();
 public:
-			void init(bounds *b, char *desc, UINT style, UINT number=0);
+			void init(bounds *b, char *desc, uint style, uint number=0);
 	virtual 	void done();
 };
 

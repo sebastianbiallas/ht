@@ -46,9 +46,9 @@ public:
 			ht_registry_data_stree(ht_stree *tree=0);
 			~ht_registry_data_stree();
 /* overwritten */
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 	virtual	void strvalue(char *buf32bytes);
 };
 
@@ -58,14 +58,14 @@ public:
 
 class ht_registry_data_dword: public ht_registry_data {
 public:
-	dword value;
+	uint32 value;
 
-			ht_registry_data_dword(dword value=0);
+			ht_registry_data_dword(uint32 value=0);
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 	virtual	void strvalue(char *buf32bytes);
 };
 
@@ -76,15 +76,15 @@ public:
 class ht_registry_data_raw: public ht_registry_data {
 public:
 	void *value;
-	UINT size;
+	uint size;
 
-			ht_registry_data_raw(const void *value = 0, UINT size = 0);
+			ht_registry_data_raw(const void *value = 0, uint size = 0);
 			~ht_registry_data_raw();
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 	virtual	void strvalue(char *buf32bytes);
 };
 
@@ -100,9 +100,9 @@ public:
 			~ht_registry_data_string();
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 	virtual	void strvalue(char *buf32bytes);
 };
 
@@ -112,16 +112,16 @@ public:
 
 typedef ht_registry_data* (*create_empty_registry_data_func)();
 
-typedef UINT ht_registry_node_type;
+typedef uint ht_registry_node_type;
 
 class ht_registry_node_type_desc: public ht_data {
 public:
 	ht_registry_node_type type;
 	create_empty_registry_data_func create_empty_registry_data;
 	
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 };
 
 #define RNT_INVALID		0	/* returned by some functions */
@@ -143,9 +143,9 @@ public:
 			void init(ht_registry_node_type type);
 	virtual	void done();
 /* overwritten */
-	virtual	int  load(ht_object_stream *f);
-	virtual	void store(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
+	virtual	int  load(ObjectStream &f);
+	virtual	void store(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
 };
 
 /*
@@ -157,7 +157,7 @@ public:
 class ht_registry: public ht_data {
 protected:
 	ht_registry_node *root;
-	UINT rec_depth;
+	uint rec_depth;
 
 			ht_registry_node *find_entry_i(ht_tree **dir, const char *key, bool follow_symlinks);
 			ht_registry_node *find_entry_get_node(ht_tree *dir, const char *nodename);
@@ -184,22 +184,22 @@ public:
 			ht_registry_node_type have_node_type(const char *identifier, create_empty_registry_data_func create_empty_registry_data);
 			ht_registry_node_type register_node_type(const char *identifier, create_empty_registry_data_func create_empty_registry_data);
 			/**/
-			int set_dword(const char *key, dword d);
-			int set_raw(const char *key, const void *data, UINT size);
+			int set_dword(const char *key, uint32 d);
+			int set_raw(const char *key, const void *data, uint size);
 			int set_node(const char *key, ht_registry_node_type type, ht_registry_data *data);
 			int set_string(const char *key, const char *string);
 			int set_symlink(const char *key, const char *dest);
 			bool valid_nodename(const char *nodename);
 /* overwritten */
-	virtual	int  load(ht_object_stream *f);
-	virtual	void store(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
+	virtual	int  load(ObjectStream &f);
+	virtual	void store(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
 /* debug */
 			void debug_dump();
 			void debug_dump_i(FILE *f, ht_tree *t, int ident);
 };
 
-dword get_config_dword(char *ident);
+uint32 get_config_dword(char *ident);
 char *get_config_string(char *ident);
 
 extern ht_registry *registry;

@@ -258,7 +258,7 @@ static ht_view *htxbeheader_init(bounds *b, ht_streamfile *file, ht_format_group
 	
 	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		char *name;
-//		UINT ofs;
+//		uint ofs;
 	
 		s=new ht_mask_sub();
 		s->init(file, 100+i);

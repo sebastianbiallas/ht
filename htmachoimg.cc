@@ -61,7 +61,7 @@ static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_grou
 	Address *high = NULL;
 
 	MACHOAddress l, h;
-	l = (dword)-1;
+	l = (uint32)-1;
 	h = 0;
 	MACHO_SECTION *s = macho_shared->sections.sections;
 	for (UINT i=0; i < macho_shared->sections.count; i++) {

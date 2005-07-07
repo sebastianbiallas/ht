@@ -47,36 +47,36 @@
 #define NE_FLAGS_SOLO		0x0001	  /* Solo data */
 
 struct NE_HEADER {
-	word   magic;                    // Magic number
+	uint16   magic;                    // Magic number
 	byte   ver;                      // Version number
 	byte   rev;                      // Revision number
-	word   enttab;                   // Offset of Entry Table
-	word   cbenttab;                 // Number of bytes in Entry Table
-	dword  crc;                      // Checksum of whole file
-	word   flags;                    // Flag word
-	word   autodata;                 // Automatic data segment number
-	word   heap;                     // Initial heap allocation
-	word   stack;                    // Initial stack allocation
-	dword  csip;                     // Initial CS:IP setting
-	dword  sssp;                     // Initial SS:SP setting
-	word   cseg;                     // Count of file segments
-	word   cmod;                     // Entries in Module Reference Table
-	word   cbnrestab;                // Size of non-resident name table
-	word   segtab;                   // Offset of Segment Table
-	word   rsrctab;                  // Offset of Resource Table
-	word   restab;                   // Offset of resident name table
-	word   modtab;                   // Offset of Module Reference Table
-	word   imptab;                   // Offset of Imported Names Table
-	dword  nrestab;                  // Offset of Non-resident Names Table
-	word   cmovent;                  // Count of movable entries
-	word   align;                    // Segment alignment shift count
-	word   cres;                     // Count of resource segments
+	uint16   enttab;                   // Offset of Entry Table
+	uint16   cbenttab;                 // Number of bytes in Entry Table
+	uint32  crc;                      // Checksum of whole file
+	uint16   flags;                    // Flag uint16
+	uint16   autodata;                 // Automatic data segment number
+	uint16   heap;                     // Initial heap allocation
+	uint16   stack;                    // Initial stack allocation
+	uint32  csip;                     // Initial CS:IP setting
+	uint32  sssp;                     // Initial SS:SP setting
+	uint16   cseg;                     // Count of file segments
+	uint16   cmod;                     // Entries in Module Reference Table
+	uint16   cbnrestab;                // Size of non-resident name table
+	uint16   segtab;                   // Offset of Segment Table
+	uint16   rsrctab;                  // Offset of Resource Table
+	uint16   restab;                   // Offset of resident name table
+	uint16   modtab;                   // Offset of Module Reference Table
+	uint16   imptab;                   // Offset of Imported Names Table
+	uint32  nrestab;                  // Offset of Non-resident Names Table
+	uint16   cmovent;                  // Count of movable entries
+	uint16   align;                    // Segment alignment shift count
+	uint16   cres;                     // Count of resource segments
 	byte   os;                       // Target Operating system
 	byte   flagsothers;              // Other .EXE flags
-	word   pretthunks;               // offset to return thunks
-	word   psegrefbytes;             // offset to segment ref. bytes
-	word   swaparea;                 // Minimum code swap area size
-	word   expver;                   // Expected Windows version number
+	uint16   pretthunks;               // offset to return thunks
+	uint16   psegrefbytes;             // offset to segment ref. bytes
+	uint16   swaparea;                 // Minimum code swap area size
+	uint16   expver;                   // Expected Windows version number
 };
 
 /*
@@ -84,10 +84,10 @@ struct NE_HEADER {
  */
 
 struct NE_SEGMENT {
-	word offset HTPACKED;
-	word size HTPACKED;
-	word flags HTPACKED;
-	word minalloc HTPACKED;
+	uint16 offset HTPACKED;
+	uint16 size HTPACKED;
+	uint16 flags HTPACKED;
+	uint16 minalloc HTPACKED;
 };
 
 #define NE_DATA		0x0001
@@ -133,9 +133,9 @@ struct NE_ENTRYPOINT_HEADER {
 
 struct NE_ENTRYPOINT_MOVABLE {
 	byte flags HTPACKED;
-	word int3f HTPACKED;
+	uint16 int3f HTPACKED;
 	byte seg HTPACKED;
-	word offset HTPACKED;
+	uint16 offset HTPACKED;
 };
 
 /*  00H	     1	       Entry point flags (See above)
@@ -143,7 +143,7 @@ struct NE_ENTRYPOINT_MOVABLE {
 
 struct NE_ENTRYPOINT_FIXED {
 	byte flags HTPACKED;
-	word offset HTPACKED;
+	uint16 offset HTPACKED;
 };
 
 /* relocations */
@@ -151,7 +151,7 @@ struct NE_ENTRYPOINT_FIXED {
 struct NE_RELOC_HEADER {
 	byte type HTPACKED;
 	byte flags HTPACKED;
-	word src_ofs HTPACKED;
+	uint16 src_ofs HTPACKED;
 };
 
 #define NE_RF_ADD			0x04		  /* Additive fixup */
@@ -174,20 +174,20 @@ struct NE_RELOC_HEADER {
 struct NE_RELOC_INTERNAL {
 	byte seg;
 	byte reserved;
-	word ofs;
+	uint16 ofs;
 };
 
 struct NE_RELOC_IMPORT {
-	word module;
+	uint16 module;
 	union {
-		word ord;
-		word name_ofs;
+		uint16 ord;
+		uint16 name_ofs;
 	};
 };
 
 struct NE_RELOC_FIXUP {
-	word type;
-	word reserved;
+	uint16 type;
+	uint16 reserved;
 };
 
 extern byte NE_HEADER_struct[];

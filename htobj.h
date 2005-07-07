@@ -151,7 +151,7 @@ public:
 	virtual	void		done();
 /* new */
 		void		*allocdatabuf(void *handle);
-	virtual	int		alone();
+	virtual	int		aclone();
 		int		buf_lprint(int x, int y, int c, int l, char *text);
 		int		buf_lprintw(int x, int y, int c, int l, int *text);
 		int		buf_print(int x, int y, int c, char *text);
@@ -190,7 +190,7 @@ public:
 	virtual void		handlemsg(htmsg *msg);
 		void		hidecursor();
 		int		isviewdirty();
-	virtual	int		isalone(ht_view *view);
+	virtual	int		isaclone(ht_view *view);
 	virtual	void		load(ObjectStream &s);
 	virtual	void		move(int rx, int ry);
 	virtual	ObjectID	getObjectID() const;
@@ -244,7 +244,7 @@ public:
 	virtual	ht_view *getselected();
 	virtual 	ht_view *getfirstchild();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	int isalone(ht_view *view);
+	virtual	int isaclone(ht_view *view);
 			int isviewdirty();
 	virtual	void		load(ObjectStream &s);
 	virtual	void move(int x, int y);
@@ -279,7 +279,7 @@ public:
 /* overwritten */
 	virtual	int		countselectables();
 	virtual	void		handlemsg(htmsg *msg);
-	virtual	int		isalone(ht_view *view);
+	virtual	int		isaclone(ht_view *view);
 	virtual	void		load(ObjectStream &s);
 	virtual	ObjectID	getObjectID() const;
 	virtual	void		redraw();

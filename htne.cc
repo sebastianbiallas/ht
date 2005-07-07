@@ -108,7 +108,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 	bool reloc_needed = false;
 	NE_SEGMENT *s = ne_shared->segments.segments;
 	file->seek(h+ne_shared->hdr.segtab);
-	for (dword i = 0; i < ne_shared->segments.segment_count; i++) {
+	for (uint32 i = 0; i < ne_shared->segments.segment_count; i++) {
 		file->read(s, sizeof *s);
 		create_host_struct(s, NE_SEGMENT_struct, little_endian);
 		if (s->flags & NE_HASRELOC) reloc_needed = true;
@@ -125,7 +125,7 @@ void ht_ne::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_
 	ht_clist *ep = new ht_clist();
 	ep->init();
 
-	dword index = 1;
+	uint32 index = 1;
 	while (o<h+ne_shared->hdr.enttab+ne_shared->hdr.cbenttab) {
 		for (int i=0; i<e.entry_count; i++) {
 			if (e.seg_index==0) {
@@ -245,7 +245,7 @@ bool ht_ne::loc_enum_next(ht_format_loc *loc)
 bool ht_ne::create_fake_segment()
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data*)shared_data;
-	UINT i = ne_shared->hdr.cseg;
+	uint i = ne_shared->hdr.cseg;
 	NE_SEGMENT *newsegs = (NE_SEGMENT*)malloc(sizeof *newsegs * (ne_shared->segments.segment_count+1));
 	memcpy(newsegs, ne_shared->segments.segments, sizeof *newsegs * ne_shared->segments.segment_count);
 	ne_shared->segments.segment_count++;
@@ -270,8 +270,8 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 	int fake_entry_count = 0;
 	/* if selfload only relocate first segment. Is this "The Right Thing" ? */
 	/* Works for me though. */
-	UINT c = (ne_shared->hdr.flags & NE_FLAGS_SELFLOAD) ? 1 : ne_shared->segments.segment_count;
-	for (dword i = 0; i < c; i++) {
+	uint c = (ne_shared->hdr.flags & NE_FLAGS_SELFLOAD) ? 1 : ne_shared->segments.segment_count;
+	for (uint32 i = 0; i < c; i++) {
 		if (ne_shared->segments.segments[i].flags & NE_HASRELOC) {
 			FILEOFS seg_ofs = NE_get_seg_ofs(ne_shared, i);
 			FILEOFS f = seg_ofs + NE_get_seg_psize(ne_shared, i);
@@ -340,7 +340,7 @@ bool ht_ne::relocate(ht_reloc_file *rf)
 	return true;
 }
 
-bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type, UINT flags, word value_seg, word value_ofs)
+bool ht_ne::relocate_single(ht_reloc_file *rf, uint seg, FILEOFS ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data*)shared_data;
 	while (1) {
@@ -353,7 +353,7 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 			case NE_RT_OFS32:
 				break;
 			case NE_RT_OFS8:
-			/* FIXME: we want to read a word (offset) out of the file,
+			/* FIXME: we want to read a uint16 (offset) out of the file,
 			   but we can't because there's only one relocated
 			   byte. Maybe I dont understand NE relocs completely. */
 			default:
@@ -364,7 +364,7 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
 		char buf[2];
 		file->seek(ofs);
 		file->read(buf, 2);
-		word r = create_host_int(buf, 2, little_endian);
+		uint16 r = create_host_int(buf, 2, little_endian);
 		if (r == 0xffff) break;
 		NEAddress a = NE_MAKE_ADDR(seg+1, r);
 		if (!NE_addr_to_ofs(ne_shared, a, &ofs)) {
@@ -378,7 +378,7 @@ bool ht_ne::relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type,
  *	CLASS ht_ne_entrypoint
  */
 
-ht_ne_entrypoint::ht_ne_entrypoint(UINT Ordinal, UINT Seg, UINT Offset, UINT Flags)
+ht_ne_entrypoint::ht_ne_entrypoint(UINT Ordinal, uint Seg, uint Offset, uint Flags)
 {
 	ordinal = Ordinal;
 	seg = Seg;
@@ -396,7 +396,7 @@ ht_ne_entrypoint::~ht_ne_entrypoint()
  *	CLASS ht_ne_reloc_entry
  */
 
-ht_ne_reloc_entry::ht_ne_reloc_entry(UINT Mode, bool Add, word Seg, word Ofs)
+ht_ne_reloc_entry::ht_ne_reloc_entry(UINT Mode, bool Add, uint16 Seg, uint16 Ofs)
 {
 	mode = Mode;
 	add = Add;
@@ -452,24 +452,24 @@ bool ht_ne_reloc_file::reloc_unapply(ht_data *reloc, byte *data)
  *
  */
 
-FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, UINT i)
+FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, uint i)
 {
 		return (NE_shared->segments.segments[i].offset << NE_shared->hdr.align);
 }
 
-NEAddress NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i)
+NEAddress NE_get_seg_addr(ht_ne_shared_data *NE_shared, uint i)
 {
 		return NE_MAKE_ADDR(i+1, 0);
 }
 
-UINT NE_get_seg_psize(ht_ne_shared_data *NE_shared, UINT i)
+uint NE_get_seg_psize(ht_ne_shared_data *NE_shared, uint i)
 {
 		return (NE_shared->segments.segments[i].size || !NE_shared->segments.segments[i].offset)
 			   ? NE_shared->segments.segments[i].size : 0x10000;
 //		return NE_shared->segments.segments[i].size;
 }
 
-UINT NE_get_seg_vsize(ht_ne_shared_data *NE_shared, UINT i)
+uint NE_get_seg_vsize(ht_ne_shared_data *NE_shared, uint i)
 {
 		return NE_shared->segments.segments[i].minalloc ? NE_shared->segments.segments[i].minalloc : 0x10000;
 //		return NE_shared->segments.segments[i].minalloc;
@@ -479,7 +479,7 @@ bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, NEAddress Addr, int *segme
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
 		NEAddress base = NE_get_seg_addr(NE_shared, i);
-		UINT evsize = MAX(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
+		uint evsize = MAX(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + evsize)) {
 			*segment = i;
 			return true;
@@ -492,7 +492,7 @@ bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, NEAddress Addr)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
 		NEAddress base = NE_get_seg_addr(NE_shared, i);
-		UINT epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
+		uint epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + epsize)) return true;
 	}
 	return false;
@@ -502,7 +502,7 @@ bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, NEAddress Addr, FILEOFS *ofs)
 {
 	for (UINT i = 0; i < NE_shared->segments.segment_count; i++) {
 		NEAddress base = NE_get_seg_addr(NE_shared, i);
-		UINT epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
+		uint epsize = MIN(NE_get_seg_vsize(NE_shared, i), NE_get_seg_psize(NE_shared, i));
 		if ((Addr >= base) && (Addr < base + epsize)) {
 			*ofs = NE_get_seg_ofs(NE_shared, i) + (Addr - base);
 			return true;

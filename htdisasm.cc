@@ -75,7 +75,7 @@ static int opcode_compare(const char *a, const char *b)
 	if (al > bl) return 1; else if (al < bl) return -1; else return strcmp(a, b);
 }
 
-void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, UINT want_length)
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, uint want_length)
 {
 	char instr[257] = "";
 	if (default_str) strcpy(instr, default_str);
@@ -109,7 +109,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			list->init(&b, 2, 0);
 			list->attachTitle(text);
 			asm_code *ac2 = ac;
-			UINT aci = 0;
+			uint aci = 0;
 			int best = 0;
 			while (ac2) {
 				char s[1024]="", *tmp = s;
@@ -424,7 +424,7 @@ static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (line_id.id2) return false;
-	dword ofs = line_id.id1;
+	uint32 ofs = line_id.id1;
 	byte buf[15];
 	int c = MIN(16, (int)(fofs+fsize-ofs));
 	if (c <= 0) return false;
@@ -476,7 +476,7 @@ void ht_disasm_sub::last_line_id(LINE_ID *line_id)
 int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	dword *ofs=&line_id->id1;
+	uint32 *ofs=&line_id->id1;
 	int min_length;
 	int max_length;
 	int min_look_ahead;
@@ -489,7 +489,7 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 	int *of=offsets;
 	int r=n<6 ? 6*avg_look_ahead : n*avg_look_ahead;
 	if (r > (int)sizeof buf) r = sizeof buf;
-	dword o=*ofs-r;
+	uint32 o=*ofs-r;
 	int c=r, d;
 	int s;
 	if (*ofs<fofs+r) {
@@ -533,10 +533,10 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 int ht_disasm_sub::next_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	dword *ofs = &line_id->id1;
+	uint32 *ofs = &line_id->id1;
 	unsigned char buf[15];
 	int c=0, s;
-	UINT z;
+	uint z;
 	CPU_ADDR caddr;
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = 0;

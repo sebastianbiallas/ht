@@ -22,18 +22,18 @@
 #ifndef __QWORD_H__
 #define __QWORD_H__
 
-#include "global.h"		// for types dword and UINT
+#include "global.h"		// for types uint32 and uint
 
 typedef struct {
-	dword lo;
-	dword hi;
+	uint32 lo;
+	uint32 hi;
 } uint64;
 
 #define qword uint64
 
 typedef struct {
-	dword lo;
-	dword hi;
+	uint32 lo;
+	uint32 hi;
 } sint64;
 
 // FIXME: dont work for >32 bit systems

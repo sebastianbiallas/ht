@@ -53,8 +53,8 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 
 	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) return 0;
 
-	UINT skip = elf_shared->symtables;
-	UINT symtab_shidx = ELF_SHN_UNDEF;
+	uint skip = elf_shared->symtables;
+	uint symtab_shidx = ELF_SHN_UNDEF;
 	for (UINT i=1; i<elf_shared->sheaders.count; i++) {
 		if ((elf_shared->sheaders.sheaders32[i].sh_type == ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM)) {
 			if (!skip--) {
@@ -96,7 +96,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 	m->add_mask("idx  binding  type     value    size     section     name");
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
-	UINT symnum = elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32);
+	uint symnum = elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32);
 	for (UINT i=0; i<symnum; i++) {
 		ELF_SYMBOL32 sym;
 		file->seek(h+i*sizeof (ELF_SYMBOL32));

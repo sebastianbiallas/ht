@@ -33,7 +33,7 @@ sint64 int_to_sint64(int i)
 {
 	sint64 res;
 	res.lo = i;
-	res.hi = (i<0) ? ((dword)-1) : 0;
+	res.hi = (i<0) ? ((uint32)-1) : 0;
 	return res;
 }
 
@@ -57,7 +57,7 @@ sint64 to_sint64(int i)
 {
 	sint64 res;
 	res.lo = i;
-	res.hi = (i<0) ? ((dword)-1) : 0;
+	res.hi = (i<0) ? ((uint32)-1) : 0;
 	return res;
 }
 

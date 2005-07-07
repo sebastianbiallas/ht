@@ -52,9 +52,9 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 	(elf_shared->ident.e_ident[ELF_EI_DATA]!=ELFDATA2LSB) ||
 	(elf_shared->header32.e_machine!=ELF_EM_386)) return NULL;
 	
-	UINT skip = elf_shared->reloctables;
-	UINT reloctab_shidx = ELF_SHN_UNDEF;
-	UINT reloctab_sh_type = ELF_SHT_NULL;
+	uint skip = elf_shared->reloctables;
+	uint reloctab_shidx = ELF_SHN_UNDEF;
+	uint reloctab_sh_type = ELF_SHT_NULL;
 	for (UINT i=1; i<elf_shared->sheaders.count; i++) {
 		if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_REL) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_RELA)) {
 			if (!skip--) {
@@ -102,7 +102,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 	switch (reloctab_sh_type) {
 		case ELF_SHT_REL: {
 			m->add_mask("destofs  symidx type");
-			UINT relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_REL32);
+			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_REL32);
 			for (UINT i=0; i<relnum; i++) {
 				char *tt=t;
 				/* dest offset */
@@ -126,7 +126,7 @@ static ht_view *htelfreloctable_init(bounds *b, ht_streamfile *file, ht_format_g
 		}
 		case ELF_SHT_RELA: {
 			m->add_mask("destofs  symidx addend   type");
-			UINT relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_RELA32);
+			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_RELA32);
 			for (UINT i=0; i<relnum; i++) {
 				char *tt=t;
 				/* dest offset */

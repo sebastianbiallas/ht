@@ -23,7 +23,7 @@
 
 #include "global.h"
 
-#define CMD	dword
+#define CMD	uint32
 
 #define msg_command					0x80000000
 #define HT_COMMAND(c)				(msg_command+(c))

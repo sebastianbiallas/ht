@@ -501,7 +501,7 @@ bool ht_menu::set_local_menu(ht_context_menu *m)
  *	CLASS ht_menu_frame
  */
 
-void ht_menu_frame::init(bounds *b, char *desc, UINT style, UINT number)
+void ht_menu_frame::init(bounds *b, char *desc, uint style, uint number)
 {
 	ht_frame::init(b, desc, style, number);
 	VIEW_DEBUG_NAME("ht_menu_frame");
@@ -704,12 +704,12 @@ int ht_context_menu_window_body::prev_selectable(int to)
 	return to;
 }
 
-void ht_context_menu_window_body::getdata(ht_object_stream *s)
+void ht_context_menu_window_body::getdata(ObjectStream &s)
 {
 	s->putIntDec(selected, 4, NULL);
 }
 
-void ht_context_menu_window_body::setdata(ht_object_stream *s)
+void ht_context_menu_window_body::setdata(ObjectStream &s)
 {
 	selected=s->getIntDec(4, NULL);
 }
@@ -739,7 +739,7 @@ void ht_menu_window::done()
 	ht_dialog::done();
 }
 
-void ht_menu_window::getdata(ht_object_stream *s)
+void ht_menu_window::getdata(ObjectStream &s)
 {
 	body->getdata(s);
 }
@@ -773,7 +773,7 @@ void ht_menu_window::handlemsg(htmsg *msg)
 	ht_dialog::handlemsg(msg);
 }
 
-void ht_menu_window::setdata(ht_object_stream *s)
+void ht_menu_window::setdata(ObjectStream &s)
 {
 	body->setdata(s);
 }

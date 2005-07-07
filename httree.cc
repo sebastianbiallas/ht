@@ -106,7 +106,7 @@ void ht_treeview::collapse_all(void *node)
 	}
 }
 
-void ht_treeview::draw_r(void *node, int level, int *pos, dword lines)
+void ht_treeview::draw_r(void *node, int level, int *pos, uint32 lines)
 {
 	int normal_color, sel_color, foc_color, color;
 	normal_color = getcolor(palidx_generic_list_unfocused_unselected);
@@ -156,7 +156,7 @@ void ht_treeview::expand_all(void *node)
 /*
  *	stub
  */
-void ht_treeview::getdata(ht_object_stream *s)
+void ht_treeview::getdata(ObjectStream &s)
 {
 	s->putIntHex((int)selected, 4, NULL);
 }
@@ -305,7 +305,7 @@ void	ht_treeview::scroll_to(int x, int y)
 /*
  *	stub
  */
-void ht_treeview::setdata(ht_object_stream *s)
+void ht_treeview::setdata(ObjectStream &s)
 {
 }
 

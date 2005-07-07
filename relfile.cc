@@ -70,11 +70,11 @@ void ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 	relocs->insert(new ht_data_uint(o), reloc);
 }
 
-UINT ht_reloc_file::read(void *buf, UINT size)
+uint ht_reloc_file::read(void *buf, uint size)
 {
 	FILEOFS o = tell();
 	/* read fine data. */
-	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
+	uint ret = ht_layer_streamfile::read(buf, size), c = ret;
 	if (enabled) {
 		ht_data_uint q;
 		ht_data *r;
@@ -97,16 +97,16 @@ UINT ht_reloc_file::read(void *buf, UINT size)
 
 			/* if relocation item intersects with the beginning of
 			 * this read, copy buf to b+s */
-			UINT s = (k->value < o) ? o - k->value : 0;
+			uint s = (k->value < o) ? o - k->value : 0;
 			/* if relocation item intersects with the end of
 			 * this read, copy buf+e to b */
-			UINT e = (k->value > o) ? k->value - o : 0;
+			uint e = (k->value > o) ? k->value - o : 0;
 
 			/* complicated calculation to get the size of the
 			 * intended intersection (=: mm) of the read and b. */
-			UINT l = (k->value + sizeof b > o+c) ?
+			uint l = (k->value + sizeof b > o+c) ?
 				k->value + sizeof b - o - c : 0;
-			UINT mm = MIN(sizeof b - l, sizeof b - s);
+			uint mm = MIN(sizeof b - l, sizeof b - s);
 
 			/* probably cleaner to clear it all before we start
 			 * because if the read is smaller then the reloc item
@@ -127,13 +127,13 @@ UINT ht_reloc_file::read(void *buf, UINT size)
 	return ret;
 }
 
-UINT ht_reloc_file::write(const void *buf, UINT size)
+uint ht_reloc_file::write(const void *buf, uint size)
 {
 	/* documentation: see read(). */
 	FILEOFS o;
 	if (enabled) {
 		o = tell();
-		UINT c = size;
+		uint c = size;
 		ht_data_uint q;
 		ht_data *r;
 		ht_data_uint *k = &q;
@@ -146,14 +146,14 @@ UINT ht_reloc_file::write(const void *buf, UINT size)
 			byte b[MAX_RELOC_ITEM_LEN];
 			if (k->value >= o+c) break;
 
-			UINT s = (k->value < o) ? o - k->value : 0;
-			UINT e = (k->value > o) ? k->value - o : 0;
+			uint s = (k->value < o) ? o - k->value : 0;
+			uint e = (k->value > o) ? k->value - o : 0;
 
-			UINT l = (k->value+sizeof b > o+c) ?
+			uint l = (k->value+sizeof b > o+c) ?
 				k->value + sizeof b - o - c : 0;
 
 			memset(b, 0, sizeof b);
-			UINT mm = MIN(sizeof b - l, sizeof b - s);
+			uint mm = MIN(sizeof b - l, sizeof b - s);
 
 			assert(mm+s <= sizeof b);
 			memmove(b+s, ((byte*)buf)+e, mm);

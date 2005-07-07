@@ -32,7 +32,7 @@ FILEOFS get_newexe_header_ofs(ht_streamfile *file)
 	if ((mzmagic[0] != IMAGE_MZ_MAGIC0) || (mzmagic[1] != IMAGE_MZ_MAGIC1))
 		return 0;
 	/* test if reloc_ofs >= 0x40 */
-	word reloc_ofs;
+	uint16 reloc_ofs;
 	file->seek(24);
 	file->read(&reloc_ofs, 2);
 	reloc_ofs = create_host_int(&reloc_ofs, 2, little_endian);

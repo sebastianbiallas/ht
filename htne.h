@@ -48,21 +48,21 @@
 #define ATOM_NE_ENTFLAGS_STR		 "4e450003"
 
 struct ne_segment_headers {
-	UINT segment_count;
+	uint segment_count;
 	NE_SEGMENT *segments;
 };
 
 class ne_import_rec: public ht_data {
 public:
-	UINT addr;
-	UINT module;
+	uint addr;
+	uint module;
 	bool byname;
 	union {
-		UINT name_ofs;
-		UINT ord;
+		uint name_ofs;
+		uint ord;
 	};
 
-	ne_import_rec(UINT a, UINT mod, bool b, UINT i)
+	ne_import_rec(UINT a, uint mod, bool b, uint i)
 	{
 		addr = a;
 		module = mod;
@@ -73,12 +73,12 @@ public:
 
 class ht_aviewer;
 struct ht_ne_shared_data {
-	dword hdr_ofs;
+	uint32 hdr_ofs;
 	NE_HEADER hdr;
 	ne_segment_headers segments;
-	UINT modnames_count;
+	uint modnames_count;
 	char **modnames;
-	UINT fake_segment;
+	uint fake_segment;
 	ht_list *entrypoints;
 	ht_tree *imports;
 	ht_aviewer *v_image;
@@ -90,7 +90,7 @@ protected:
 
 			bool create_fake_segment();
 			bool relocate(ht_reloc_file *rf);
-			bool relocate_single(ht_reloc_file *rf, UINT seg, FILEOFS ofs, UINT type, UINT flags, word value_seg, word value_ofs);
+			bool relocate_single(ht_reloc_file *rf, uint seg, FILEOFS ofs, uint type, uint flags, uint16 value_seg, uint16 value_ofs);
 public:
 			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h);
 	virtual	void done();
@@ -107,13 +107,13 @@ extern format_viewer_if htne_if;
 
 class ht_ne_entrypoint: public ht_data {
 public:
-	UINT ordinal;
-	UINT seg;
-	UINT offset;
-	UINT flags;
+	uint ordinal;
+	uint seg;
+	uint offset;
+	uint flags;
 	char *name;
 
-		ht_ne_entrypoint(UINT ordinal, UINT seg, UINT offset, UINT flags);
+		ht_ne_entrypoint(UINT ordinal, uint seg, uint offset, uint flags);
 	virtual	~ht_ne_entrypoint();
 };
 
@@ -123,13 +123,13 @@ public:
 
 class ht_ne_reloc_entry: public ht_data {
 public:
-	UINT mode;
+	uint mode;
 	bool add;
 
-	word seg;
-	word ofs;
+	uint16 seg;
+	uint16 ofs;
 
-	ht_ne_reloc_entry(UINT mode, bool add, word seg, word ofs);
+	ht_ne_reloc_entry(UINT mode, bool add, uint16 seg, uint16 ofs);
 };
 
 /*
@@ -150,18 +150,18 @@ public:
  *
  */
 
-FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, UINT i);
-dword NE_get_seg_addr(ht_ne_shared_data *NE_shared, UINT i);
-UINT NE_get_seg_psize(ht_ne_shared_data *NE_shared, UINT i);
-UINT NE_get_seg_vsize(ht_ne_shared_data *NE_shared, UINT i);
+FILEOFS NE_get_seg_ofs(ht_ne_shared_data *NE_shared, uint i);
+uint32 NE_get_seg_addr(ht_ne_shared_data *NE_shared, uint i);
+uint NE_get_seg_psize(ht_ne_shared_data *NE_shared, uint i);
+uint NE_get_seg_vsize(ht_ne_shared_data *NE_shared, uint i);
 
-bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, dword Addr, int *segment);
-bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, dword Addr);
-bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, dword Addr, FILEOFS *ofs);
+bool NE_addr_to_segment(ht_ne_shared_data *NE_shared, uint32 Addr, int *segment);
+bool NE_addr_is_physical(ht_ne_shared_data *NE_shared, uint32 Addr);
+bool NE_addr_to_ofs(ht_ne_shared_data *NE_shared, uint32 Addr, FILEOFS *ofs);
 
-bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, dword *Addr);
+bool NE_ofs_to_addr(ht_ne_shared_data *NE_shared, FILEOFS ofs, uint32 *Addr);
 
-#define NEAddress dword
+#define NEAddress uint32
 #define NE_MAKE_ADDR(seg, ofs) ((seg)*0x10000+(ofs))
 #define NE_ADDR_SEG(a) ((a)>>16)
 #define NE_ADDR_OFS(a) ((a)&0xffff)

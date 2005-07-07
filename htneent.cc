@@ -56,7 +56,7 @@ static ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 	FILEOFS o = h + ne_shared->hdr.enttab;
 	NE_ENTRYPOINT_HEADER e;
 
-	dword index = 1;
+	uint32 index = 1;
 	while (o + sizeof e < h+ne_shared->hdr.enttab+ne_shared->hdr.cbenttab) {
 		file->seek(o);
 		file->read(&e, sizeof e);
@@ -126,7 +126,7 @@ format_viewer_if htneentrypoints_if = {
 int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 {
 /*   FIXNEW
-	UINT seg = id_high;
+	uint seg = id_high;
 	FILEOFS o = id_low;
 	ADDR a;
 	if (seg == 0xff) {

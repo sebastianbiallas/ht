@@ -42,9 +42,9 @@ public:
 /* overwritten */
 		   void	finalize();
 		   void	insert_reloc(FILEOFS o, ht_data *reloc);
-	virtual UINT	read(void *buf, UINT size);
+	virtual uint	read(void *buf, uint size);
 	virtual int	vcntl(UINT cmd, va_list vargs);
-	virtual UINT	write(const void *buf, UINT size);
+	virtual uint	write(const void *buf, uint size);
 };
 
 #endif /* __RELFILE_H__ */

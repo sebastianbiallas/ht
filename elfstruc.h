@@ -29,19 +29,19 @@
 typedef unsigned char elf_unsigned_char;
 
 /* 32bit architectures */
-typedef dword elf32_addr;
-typedef word elf32_half;
-typedef dword elf32_off;
-typedef dword elf32_sword;
-typedef dword elf32_word;
+typedef uint32 elf32_addr;
+typedef uint16 elf32_half;
+typedef uint32 elf32_off;
+typedef uint32 elf32_sword;
+typedef uint32 elf32_word;
 
 /* 64bit architectures */
 typedef qword elf64_addr;
 typedef qword elf64_off;
 typedef qword elf64_sword;
 typedef qword elf64_word;
-typedef dword elf64_half;
-typedef word elf64_quarter;
+typedef uint32 elf64_half;
+typedef uint16 elf64_quarter;
 
 /*
  *	ELF header

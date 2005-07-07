@@ -176,7 +176,7 @@ bool pef_valid_section(PEF_SECTION_HEADER *s)
 	return (s->sectionKind <= 3) || (s->sectionKind == 6);
 }
 
-bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, dword *ofs)
+bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, uint32 *ofs)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
 	for (UINT i=0; i < section_headers->count; i++) {
@@ -221,7 +221,7 @@ bool pef_addr_is_valid(pef_section_headers *section_headers, PEFAddress addr)
  *	offset conversion routines
  */
 
-bool pef_ofs_to_addr(pef_section_headers *section_headers, dword ofs, PEFAddress *addr)
+bool pef_ofs_to_addr(pef_section_headers *section_headers, uint32 ofs, PEFAddress *addr)
 {
 	PEF_SECTION_HEADER *s = section_headers->sheaders;
 	for (UINT i = 0; i < section_headers->count; i++) {
@@ -235,7 +235,7 @@ bool pef_ofs_to_addr(pef_section_headers *section_headers, dword ofs, PEFAddress
 	return false;
 }
 
-bool pef_ofs_to_section(pef_section_headers *section_headers, dword ofs, int *section)
+bool pef_ofs_to_section(pef_section_headers *section_headers, uint32 ofs, int *section)
 {
 	PEF_SECTION_HEADER *s=section_headers->sheaders;
 	for (UINT i=0; i<section_headers->count; i++) {
@@ -256,7 +256,7 @@ bool pef_ofs_to_section(pef_section_headers *section_headers, dword ofs, int *se
 class ht_pef_reloc_entry: public ht_data {
 public:
 	
-//	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, UINT type, UINT symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
+//	ht_elf32_reloc_entry(UINT symtabidx, elf32_addr offset, uint type, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file);
 };
 
 /*

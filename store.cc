@@ -45,7 +45,7 @@ Object *ht_object_stream_inter::getObject(char *name)
 
 void ht_object_stream_inter::getObject(Object *&o, char *name)
 {
-	OBJECT_ID id=getIntHex(4, "id");
+	ObjectID id=getIntHex(4, "id");
 	if (id) {
 		object_builder b=(object_builder)find_atom(id);
 		if (b) {
@@ -68,7 +68,7 @@ void ht_object_stream_inter::getObject(Object *&o, char *name)
 void ht_object_stream_inter::putObject(Object *obj, char *name)
 {
 	if (obj) {
-		OBJECT_ID o=obj->object_id();
+		ObjectID o=obj->getObjectID();
 		object_builder b=(object_builder)find_atom(o);;
 		if (b) {
 			putIntHex(o, 4, "id");
@@ -196,7 +196,7 @@ void ht_object_stream_bin::putSeparator()
 
 void ht_object_stream_bin::putString(char *string, char *desc)
 {
-	UINT len = strlen(string)+1;
+	uint len = strlen(string)+1;
 	if (stream->write(string, len) != len) set_error(EIO | STERR_SYSTEM);
 }
 
@@ -534,7 +534,7 @@ void ht_object_stream_txt::putChar(char c)
 
 void ht_object_stream_txt::putS(char *s)
 {
-	UINT len=strlen(s);
+	uint len=strlen(s);
 	if (stream->write(s, len) != len) setSyntaxError();
 }
 
@@ -617,7 +617,7 @@ char	*ht_object_stream_memmap::getString(char *desc)
 	return pp;
 }
 
-UINT	ht_object_stream_memmap::recordStart(UINT size)
+uint	ht_object_stream_memmap::recordStart(UINT size)
 {
 	return ((ht_streamfile*)stream)->tell()+size;
 }

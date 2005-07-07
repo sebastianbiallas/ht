@@ -44,12 +44,12 @@ public:
 
 class ht_pef_import_function: public ht_data {
 public:
-	UINT libidx;
+	uint libidx;
 	int num;
 	char *name;
-	UINT sym_class;
+	uint sym_class;
 
-	ht_pef_import_function(UINT libidx, int num, const char *name, UINT sym_class);
+	ht_pef_import_function(UINT libidx, int num, const char *name, uint sym_class);
 	~ht_pef_import_function();
 };
 
@@ -66,7 +66,7 @@ class ht_pef_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	UINT sortby;
+	uint sortby;
 	/* new */
     
 		void	dosort();

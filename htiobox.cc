@@ -181,7 +181,7 @@ int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statict
 	return imsgbox(b, buttonmask, title, modal, align, buf);
 }
 
-bool inputbox(const char *title, const char *label, char *result, int limit, dword histid)
+bool inputbox(const char *title, const char *label, char *result, int limit, uint32 histid)
 {
 	bounds b;
 	app->getbounds(&b);
@@ -192,7 +192,7 @@ bool inputbox(const char *title, const char *label, char *result, int limit, dwo
 	return inputboxrect(&b, title, label, result, limit, histid);
 }
 
-bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid)
+bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, uint32 histid)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);

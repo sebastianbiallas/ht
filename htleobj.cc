@@ -68,7 +68,7 @@ static ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
-	dword h=le_shared->hdr_ofs;
+	uint32 h=le_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_LE_OBJECTS, VC_EDIT, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
@@ -85,7 +85,7 @@ static ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group
 
 	v->insertsub(m);
 
-	for (dword i=0; i<le_shared->hdr.objcnt; i++) {
+	for (uint32 i=0; i<le_shared->hdr.objcnt; i++) {
 		m=new ht_mask_sub();
 		m->init(file, i);
 

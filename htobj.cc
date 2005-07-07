@@ -63,7 +63,7 @@ void bounds_and(bounds *a, bounds *b)
 	if (a->h<0) a->h=0;
 }
 
-void put_bounds(ht_object_stream *s, bounds *b)
+void put_bounds(ObjectStream &s, bounds *b)
 {
 	s->putIntDec(b->x, 4, NULL);
 	s->putIntDec(b->y, 4, NULL);
@@ -140,9 +140,9 @@ void ht_view::done()
 	Object::done();
 }
 
-int ht_view::alone()
+int ht_view::aclone()
 {
-	return (group && group->isalone(this));
+	return (group && group->isaclone(this));
 }
 
 int ht_view::buf_lprint(int x, int y, int c, int l, char *text)
@@ -484,7 +484,7 @@ void ht_view::databuf_set(void *buf, int bufsize)
 	delete f;
 }
 
-void ht_view::getdata(ht_object_stream *s)
+void ht_view::getdata(ObjectStream &s)
 {
 }
 
@@ -493,7 +493,7 @@ ht_view *ht_view::getfirstchild()
 	return 0;
 }
 
-UINT ht_view::getnumber()
+uint ht_view::getnumber()
 {
 	return 0;
 }
@@ -530,7 +530,7 @@ void ht_view::hidecursor()
 	screen->hidecursor();
 }
 
-int ht_view::isalone(ht_view *view)
+int ht_view::isaclone(ht_view *view)
 {
 	return (view==this) && (countselectables()==1);
 }
@@ -540,7 +540,7 @@ int ht_view::isviewdirty()
 	return view_is_dirty;
 }
 
-int ht_view::load(ht_object_stream *s)
+int ht_view::load(ObjectStream &s)
 {
 /*     s->get_bool(enabled, NULL);
 	s->get_bool(focused, NULL);
@@ -565,7 +565,7 @@ void ht_view::move(int rx, int ry)
 	app->clipbounds(&vsize);
 }
 
-OBJECT_ID ht_view::object_id() const
+ObjectID ht_view::getObjectID() const
 {
 	return ATOM_HT_VIEW;
 }
@@ -716,7 +716,7 @@ void ht_view::setcursor(int x, int y, cursor_mode c)
 	}
 }
 
-void ht_view::setdata(ht_object_stream *s)
+void ht_view::setdata(ObjectStream &s)
 {
 }
 
@@ -746,7 +746,7 @@ void ht_view::setpalettefull(char *_pal_name, char *_pal_class)
 	setpalette(pal_name);
 }
 
-void	ht_view::store(ht_object_stream *s)
+void	ht_view::store(ObjectStream &s)
 {
 /*	s->putBool(enabled, NULL);
 	s->putBool(focused, NULL);
@@ -817,7 +817,7 @@ int ht_group::countselectables()
 
 int ht_group::datasize()
 {
-	UINT size=0;
+	uint size=0;
 	ht_view *v=first;
 	while (v) {
 		size+=v->datasize();
@@ -879,7 +879,7 @@ int ht_group::focusnext()
 			break;
 		}
 	}
-	if ((i < current->browse_idx) && !alone() && !r) {
+	if ((i < current->browse_idx) && !aclone() && !r) {
 		return 0;
 	}
 	if (x) {
@@ -894,7 +894,7 @@ int ht_group::focusprev()
 {
 	int i=current->browse_idx;
 	int r=(options & VO_SELBOUND);
-	if (!i && !alone() && !r) {
+	if (!i && !aclone() && !r) {
 		return 0;
 	}
 	while (1) {
@@ -921,7 +921,7 @@ ht_view *ht_group::get_by_browse_idx(int i)
 	return 0;
 }
 
-void ht_group::getdata(ht_object_stream *s)
+void ht_group::getdata(ObjectStream &s)
 {
 	ht_view *v;
 	int h=enum_start();
@@ -1056,7 +1056,7 @@ void ht_group::insert(ht_view *view)
 	}
 }
 
-int ht_group::isalone(ht_view *view)
+int ht_group::isaclone(ht_view *view)
 {
 	ht_view *v=first;
 	while (v) {
@@ -1076,7 +1076,7 @@ int ht_group::isviewdirty()
 	return 0;
 }
 
-int ht_group::load(ht_object_stream *f)
+int ht_group::load(ObjectStream &f)
 {
 	return 1;
 }
@@ -1091,7 +1091,7 @@ void ht_group::move(int rx, int ry)
 	}
 }
 
-OBJECT_ID ht_group::object_id() const
+ObjectID ht_group::getObjectID() const
 {
 	return ATOM_HT_GROUP;
 }
@@ -1227,7 +1227,7 @@ void ht_group::selectlast()
 	}
 }
 
-void ht_group::setdata(ht_object_stream *s)
+void ht_group::setdata(ObjectStream &s)
 {
 	ht_view *v;
 	int h=enum_start();
@@ -1246,7 +1246,7 @@ void ht_group::setpalette(char *pal_name)
 	ht_view::setpalette(pal_name);
 }
 
-void ht_group::store(ht_object_stream *s)
+void ht_group::store(ObjectStream &s)
 {
 	ht_view::store(s);
 	s->putIntDec(childcount(), 4, NULL);
@@ -1291,18 +1291,18 @@ void ht_xgroup::handlemsg(htmsg *msg)
 	}
 }
 
-int ht_xgroup::isalone(ht_view *view)
+int ht_xgroup::isaclone(ht_view *view)
 {
-	if (group) return group->isalone(this);
+	if (group) return group->isaclone(this);
 	return 0;
 }
 
-int ht_xgroup::load(ht_object_stream *s)
+int ht_xgroup::load(ObjectStream &s)
 {
 	return ht_group::load(s);
 }
 
-OBJECT_ID ht_xgroup::object_id() const
+ObjectID ht_xgroup::getObjectID() const
 {
 	return ATOM_HT_XGROUP;
 }
@@ -1324,7 +1324,7 @@ void ht_xgroup::selectlast()
 	current->selectlast();
 }
 
-void	ht_xgroup::store(ht_object_stream *s)
+void	ht_xgroup::store(ObjectStream &s)
 {
 	ht_group::store(s);
 }
@@ -1413,12 +1413,12 @@ void ht_scrollbar::draw()
 	}
 }
 
-int ht_scrollbar::load(ht_object_stream *s)
+int ht_scrollbar::load(ObjectStream &s)
 {
 	return 1;
 }
 
-OBJECT_ID ht_scrollbar::object_id() const
+ObjectID ht_scrollbar::getObjectID() const
 {
 	return ATOM_HT_SCROLLBAR;
 }
@@ -1430,7 +1430,7 @@ void ht_scrollbar::setpos(int ps, int pz)
 	dirtyview();
 }
 
-void	ht_scrollbar::store(ht_object_stream *s)
+void	ht_scrollbar::store(ObjectStream &s)
 {
 }
 
@@ -1438,7 +1438,7 @@ void	ht_scrollbar::store(ht_object_stream *s)
  *	CLASS ht_frame
  */
 
-void ht_frame::init(bounds *b, const char *desc, UINT s, UINT n)
+void ht_frame::init(bounds *b, const char *desc, uint s, uint n)
 {
 	ht_view::init(b, VO_RESIZE, desc);
 	VIEW_DEBUG_NAME("ht_frame");
@@ -1561,22 +1561,22 @@ vcp ht_frame::getcurcol_killer()
 	return getcolor(palidx_generic_frame_killer);
 }
 
-UINT ht_frame::getnumber()
+uint ht_frame::getnumber()
 {
 	return number;
 }
 
-UINT ht_frame::getstyle()
+uint ht_frame::getstyle()
 {
 	return style;
 }
 
-int ht_frame::load(ht_object_stream *s)
+int ht_frame::load(ObjectStream &s)
 {
 	return ht_view::load(s);
 }
 
-OBJECT_ID ht_frame::object_id() const
+ObjectID ht_frame::getObjectID() const
 {
 	return ATOM_HT_FRAME;
 }
@@ -1605,7 +1605,7 @@ void ht_frame::settext(const char *text)
 	dirtyview();
 }
 
-void ht_frame::store(ht_object_stream *s)
+void ht_frame::store(ObjectStream &s)
 {
 	ht_view::store(s);
 }
@@ -1614,7 +1614,7 @@ void ht_frame::store(ht_object_stream *s)
  *	CLASS ht_window
  */
 
-void	ht_window::init(bounds *b, const char *desc, UINT framestyle, UINT num)
+void	ht_window::init(bounds *b, const char *desc, uint framestyle, uint num)
 {
 	ht_group::init(b, VO_SELECTABLE | VO_SELBOUND | VO_BROWSABLE, desc);
 	VIEW_DEBUG_NAME("ht_window");
@@ -1657,7 +1657,7 @@ void ht_window::getclientarea(bounds *b)
 	}
 }
 
-UINT ht_window::getnumber()
+uint ht_window::getnumber()
 {
 	return number;
 }
@@ -1769,7 +1769,7 @@ void ht_window::insert(ht_view *view)
 	ht_group::insert(view);
 }
 
-int ht_window::load(ht_object_stream *s)
+int ht_window::load(ObjectStream &s)
 {
 	if (ht_group::load(s)!=0) return 1;
 	return s->get_error();
@@ -1802,7 +1802,7 @@ bool ht_window::next_action_state()
 	return false;
 }
 
-OBJECT_ID ht_window::object_id() const
+ObjectID ht_window::getObjectID() const
 {
 	return ATOM_HT_WINDOW;
 }
@@ -1912,7 +1912,7 @@ void ht_window::setframe(ht_frame *newframe)
 		frame=NULL;
 	}
 	if (newframe) {
-		UINT style=newframe->getstyle();
+		uint style=newframe->getstyle();
 		if (style & FS_MOVE) options|=VO_MOVE; else options&=~VO_MOVE;
 		if (style & FS_RESIZE) options|=VO_RESIZE; else options&=~VO_RESIZE;
 		insert(newframe);
@@ -1961,7 +1961,7 @@ void ht_window::setvscrollbar(ht_scrollbar *s)
 	putontop(vscrollbar);
 }
 
-void	ht_window::store(ht_object_stream *s)
+void	ht_window::store(ObjectStream &s)
 {
 	ht_group::store(s);
 }

@@ -87,16 +87,16 @@ char *ht_finfo_text::gettext()
 		if (s.caps & pstat_fsid) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "fsid", s.fsid);
 	
 	if (s.caps & pstat_mode_all) {
-		dword am[3][3]={
+		uint32 am[3][3]={
 			{HT_S_IRUSR, HT_S_IWUSR, HT_S_IXUSR},
 			{HT_S_IRGRP, HT_S_IWGRP, HT_S_IXGRP},
 			{HT_S_IROTH, HT_S_IWOTH, HT_S_IXOTH}
 		};
 	
-		dword ulm[3]={pstat_mode_usr, pstat_mode_grp, pstat_mode_oth};
+		uint32 ulm[3]={pstat_mode_usr, pstat_mode_grp, pstat_mode_oth};
 		char *uls[3]={"user", "group", "world"};
 	
-		dword alm[3]={pstat_mode_r, pstat_mode_w, pstat_mode_x};
+		uint32 alm[3]={pstat_mode_r, pstat_mode_w, pstat_mode_x};
 		char *als[3]={"read", "write", "execute"};
 		
 		*(t++)='\n';

@@ -43,9 +43,9 @@
 #define object_stream_txt			1
 #define object_stream_bin_compressed	2
 
-ht_object_stream *create_object_stream(ht_stream *f, int object_stream_type)
+ObjectStream &create_object_stream(ht_stream *f, int object_stream_type)
 {
-	ht_object_stream *s;
+	ObjectStream &s;
 	switch (object_stream_type) {
 		case object_stream_bin: {
 			s=new ht_object_stream_bin();
@@ -114,7 +114,7 @@ loadstore_result save_systemconfig()
 	f->write(&h, sizeof h);
 	
 	/* write object stream type */
-	ht_object_stream *d = create_object_stream(f, system_ostream_type);
+	ObjectStream &d = create_object_stream(f, system_ostream_type);
 	   
 	switch (system_ostream_type) {
 		case object_stream_bin:
@@ -188,7 +188,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		return false;
 	}
 
-	ht_object_stream *d = create_object_stream(f, object_stream_type);
+	ObjectStream &d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		*result = LS_ERROR_FORMAT;
 		f->done();
@@ -221,7 +221,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 
 /**/
 
-loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT version, store_fcfg_func store_func, void *context)
+loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, uint version, store_fcfg_func store_func, void *context)
 {
 	ht_file *f=new ht_file();
 	f->init(fileconfig_file, FAM_WRITE, FOM_CREATE);
@@ -249,7 +249,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	f->write(&h, sizeof h);
 
 	/* object stream type */
-	ht_object_stream *d = create_object_stream(f, file_ostream_type);
+	ObjectStream &d = create_object_stream(f, file_ostream_type);
 	   
 	switch (file_ostream_type) {
 		case object_stream_bin:
@@ -270,7 +270,7 @@ loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	return LS_OK;
 }
 
-loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT version, load_fcfg_func load_func, void *context, int *error_info)
+loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, uint version, load_fcfg_func load_func, void *context, int *error_info)
 {
 	ht_file *f=new ht_file();
 	f->init(fileconfig_file, FAM_READ, FOM_EXISTS);
@@ -312,7 +312,7 @@ loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT 
 	}
 
 	/* object stream type */
-	ht_object_stream *d = create_object_stream(f, object_stream_type);
+	ObjectStream &d = create_object_stream(f, object_stream_type);
 	if (!d) {
 		f->done();
 		delete f;

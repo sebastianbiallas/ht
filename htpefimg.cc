@@ -123,7 +123,7 @@ format_viewer_if htpefimage_if = {
 static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-	UINT i = QWORD_GET_INT(q->value)-1;
+	uint i = QWORD_GET_INT(q->value)-1;
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
 	(i < aviewer->pef_shared->sections.section_count)) {
 		viewer_pos p;

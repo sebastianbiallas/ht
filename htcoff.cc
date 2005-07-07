@@ -203,7 +203,7 @@ int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *sec
 	return 0;
 }
 
-int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs)
+int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, uint32 *ofs)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -246,7 +246,7 @@ int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
  *	ofs conversion routines
  */
 
-int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
+int coff_ofs_to_rva(coff_section_headers *section_headers, uint32 ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -260,7 +260,7 @@ int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
 	return 0;
 }
 
-int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section)
+int coff_ofs_to_section(coff_section_headers *section_headers, uint32 ofs, uint *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
 	for (UINT i=0; i<section_headers->section_count; i++) {
@@ -274,7 +274,7 @@ int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *
 	return 0;
 }
 
-int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section)
+int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, uint32 ofs, RVA *rva, uint *section)
 {
 	int r=coff_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
@@ -283,7 +283,7 @@ int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs
 	return r;
 }
 
-int coff_ofs_is_valid(coff_section_headers *section_headers, dword ofs)
+int coff_ofs_is_valid(coff_section_headers *section_headers, uint32 ofs)
 {
 	RVA rva;
 	return coff_ofs_to_rva(section_headers, ofs, &rva);

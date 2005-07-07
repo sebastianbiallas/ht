@@ -37,8 +37,8 @@ public:
 	}
 
 	char *source;
-	dword start;
-	dword size;
+	uint32 start;
+	uint32 size;
 	time_t time;
 };
 
@@ -76,7 +76,7 @@ void ht_clipboard::clear()
 	app->sendmsg(&m);
 }
 
-UINT	ht_clipboard::write(const void *buf, UINT size)
+uint	ht_clipboard::write(const void *buf, uint size)
 {
 	htmsg m;
 	m.msg=msg_file_changed;
@@ -188,7 +188,7 @@ void ht_clipboard_viewer::get_pindicator_str(char *buf)
 
 /* clipboard functions */
 
-void clipboard_add_copy_history_entry(char *source, dword start, dword size, time_t time)
+void clipboard_add_copy_history_entry(char *source, uint32 start, uint32 size, time_t time)
 {
 	ht_clipboard_copy_history *h=new ht_clipboard_copy_history();
 	h->source=ht_strdup(source);
@@ -201,11 +201,11 @@ void clipboard_add_copy_history_entry(char *source, dword start, dword size, tim
 #define CLIPBOARD_TRANSFER_BUF_SIZE	32*1024
 //#define CLIPBOARD_TRANSFER_BUF_SIZE	2
 
-int clipboard_copy(char *source_desc, void *buf, dword len)
+int clipboard_copy(char *source_desc, void *buf, uint32 len)
 {
 	int r=0;
 	if (len) {
-		dword size=clipboard->get_size();
+		uint32 size=clipboard->get_size();
 		clipboard->seek(size);
 		r=clipboard->write(buf, len);
 		clipboard->select_start=size;
@@ -215,15 +215,15 @@ int clipboard_copy(char *source_desc, void *buf, dword len)
 	return r;
 }
 
-int clipboard_copy(char *source_desc, ht_streamfile *file, dword offset, dword len)
+int clipboard_copy(char *source_desc, ht_streamfile *file, uint32 offset, uint32 len)
 {
 	if (!len) return 0;
 
-	dword size=clipboard->get_size();
-	dword temp=file->tell();
-	dword cpos=size, spos=offset;
+	uint32 size=clipboard->get_size();
+	uint32 temp=file->tell();
+	uint32 cpos=size, spos=offset;
 	byte *buf=(byte*)malloc(CLIPBOARD_TRANSFER_BUF_SIZE);
-	dword l=len, r=0;
+	uint32 l=len, r=0;
 
 	while ((len) && (l)) {
 		l=len;
@@ -246,19 +246,19 @@ int clipboard_copy(char *source_desc, ht_streamfile *file, dword offset, dword l
 	return r;
 }
 
-int clipboard_paste(void *buf, dword maxlen)
+int clipboard_paste(void *buf, uint32 maxlen)
 {
 	clipboard->seek(clipboard->select_start);
 	return clipboard->read(buf, MIN(clipboard->select_len, maxlen));
 }
 
-int clipboard_paste(ht_streamfile *file, dword offset)
+int clipboard_paste(ht_streamfile *file, uint32 offset)
 {
-	dword len=clipboard->select_len;
-	dword temp=file->tell();
-	dword cpos=clipboard->select_start, spos=offset;
+	uint32 len=clipboard->select_len;
+	uint32 temp=file->tell();
+	uint32 cpos=clipboard->select_start, spos=offset;
 	byte *buf=(byte*)malloc(CLIPBOARD_TRANSFER_BUF_SIZE);
-	dword l=len, r=0;
+	uint32 l=len, r=0;
 	while ((len) && (l)) {
 		l=len;
 		if (l>CLIPBOARD_TRANSFER_BUF_SIZE) l=CLIPBOARD_TRANSFER_BUF_SIZE;
@@ -282,7 +282,7 @@ int clipboard_clear()
 	return 1;
 }
 
-dword clipboard_getsize()
+uint32 clipboard_getsize()
 {
 	return clipboard->select_len;
 }

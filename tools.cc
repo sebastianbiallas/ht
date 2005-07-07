@@ -26,7 +26,7 @@
 #include <string.h>
 #include <math.h>
 
-dword delinearize(dword d)
+uint32 delinearize(uint32 d)
 {
 	return d*0x8088405+1;	/* there's magic in here... */
 }
@@ -41,8 +41,8 @@ int compare_keys_int_delinear(ht_data *key_a, ht_data *key_b)
 
 int compare_keys_uint_delinear(ht_data *key_a, ht_data *key_b)
 {
-	UINT a = delinearize(((ht_data_uint*)key_a)->value);
-	UINT b = delinearize(((ht_data_uint*)key_b)->value);
+	uint a = delinearize(((ht_data_uint*)key_a)->value);
+	uint b = delinearize(((ht_data_uint*)key_b)->value);
 	if (a>b) return 1; else if (a<b) return -1;
 	return 0;
 }

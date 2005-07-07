@@ -28,13 +28,13 @@
 #define HT_HTML_SYNTAX_LEXER
 
 struct text_pos {
-	UINT line;
-	UINT pofs;
+	uint line;
+	uint pofs;
 };
 
-typedef UINT lexer_state;
-typedef UINT lexer_state_set;
-typedef UINT lexer_token;
+typedef uint lexer_state;
+typedef uint lexer_state_set;
+typedef uint lexer_token;
 
 enum lexer_rule_string_type {
 	LRST_EMPTY,
@@ -71,7 +71,7 @@ public:
 	virtual	lexer_state getinitstate()=0;
 	virtual	lexer_token geterrortoken()=0;
 	virtual	char *getname()=0;
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)=0;
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)=0;
 	virtual	vcp gettoken_color(lexer_token t)=0;
 };
 
@@ -92,7 +92,7 @@ public:
 			void init(syntax_lexer_rule *lexer_rules);
 	virtual	void done();
 /* overwritten */
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len);
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len);
 };
 
 /*
@@ -102,7 +102,7 @@ public:
 class ht_c_syntax_lexer: public ht_lang_syntax_lexer {
 protected:
 	char **c_reserved_sorted;
-	UINT c_reserved_count;
+	uint c_reserved_count;
 
 	palette c_pal;
 	
@@ -116,7 +116,7 @@ public:
 	virtual	lexer_state getinitstate();
 	virtual	lexer_token geterrortoken();
 	virtual	char *getname();
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len);
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len);
 	virtual	vcp gettoken_color(lexer_token t);
 };
 
@@ -128,7 +128,7 @@ public:
 class ht_html_syntax_lexer: public ht_lang_syntax_lexer {
 protected:
 	char **html_reserved_sorted;
-	UINT html_reserved_count;
+	uint html_reserved_count;
 
 	palette html_pal;
 	
@@ -142,7 +142,7 @@ public:
 	virtual	lexer_state getinitstate();
 	virtual	lexer_token geterrortoken();
 	virtual	char *getname();
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len);
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len);
 	virtual	vcp gettoken_color(lexer_token t);
 };
 #endif

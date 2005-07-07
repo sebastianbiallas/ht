@@ -123,7 +123,7 @@ static int xbe_viewer_func_rva(eval_scalar *result, eval_int *i)
 static int xbe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_xbe_aviewer *aviewer = (ht_xbe_aviewer*)eval_get_context();
-	UINT i = QWORD_GET_INT(q->value)-1;
+	uint i = QWORD_GET_INT(q->value)-1;
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
 	(i < aviewer->xbe_shared->sections.number_of_sections)) {
 		viewer_pos p;

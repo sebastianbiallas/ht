@@ -213,18 +213,18 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
 		loc->name="pe";
 		loc->start=sh->header_ofs;
 		// calc pe size
-		UINT l=sizeof (COFF_HEADER) + sh->coffheader.optional_header_size;
+		uint l=sizeof (COFF_HEADER) + sh->coffheader.optional_header_size;
 		// go through directories
 		for (UINT i=0; i<16; i++) {
 			FILEOFS o;
 			if (pe_rva_to_ofs(&sh->sections, sh->pe32.header_nt.directory[i].address, &o)) {
-				UINT k=o+sh->pe32.header_nt.directory[i].size-sh->header_ofs;
+				uint k=o+sh->pe32.header_nt.directory[i].size-sh->header_ofs;
 				l=MAX(k, l);
 			}
 		}
 		// go through sections
 		for (UINT i=0; i<sh->sections.section_count; i++) {
-			UINT k=sh->sections.sections[i].data_offset+sh->sections.sections[i].data_size-sh->header_ofs;
+			uint k=sh->sections.sections[i].data_offset+sh->sections.sections[i].data_size-sh->header_ofs;
 			l=MAX(k, l);
 		}
 		loc->length=l;

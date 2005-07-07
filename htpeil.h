@@ -31,9 +31,9 @@ extern format_viewer_if htpeil_if;
 class ht_il_metadata_entry: public ht_data {
 public:
 	char *name;
-	dword offset;
-	dword size;
-	ht_il_metadata_entry(char *name, dword offset, dword size);
+	uint32 offset;
+	uint32 size;
+	ht_il_metadata_entry(char *name, uint32 offset, uint32 size);
 	~ht_il_metadata_entry();
 };
 
@@ -42,7 +42,7 @@ public:
 	PE_IL_DIRECTORY dir;
 	IL_METADATA_SECTION metadata;
 	ht_clist *entries;
-	dword string_pool_size;
+	uint32 string_pool_size;
 	char *string_pool;
 };
 
@@ -56,7 +56,7 @@ public:
 		virtual void done();
 };
 
-int ILunpackDword(dword &result, const byte *buf, int len);
-int ILunpackToken(dword &result, const byte *buf, int len);
+int ILunpackDword(uint32 &result, const byte *buf, int len);
+int ILunpackToken(uint32 &result, const byte *buf, int len);
 
 #endif /* !__HTPEIL_H__ */

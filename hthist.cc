@@ -47,7 +47,7 @@ bool insert_history_entry(ht_list *history, char *name, ht_view *view)
 		}
 
 		ht_history_entry *e=new ht_history_entry(name, os, file);
-		UINT li=history->find(e);
+		uint li=history->find(e);
 		int r=0;
 		if (li==LIST_UNDEFINED) {
 			history->prepend(e);
@@ -89,11 +89,11 @@ ht_history_entry::~ht_history_entry()
 	}
 }
 
-int ht_history_entry::load(ht_object_stream *s)
+int ht_history_entry::load(ObjectStream &s)
 {
 	desc=s->getString(NULL);
 
-	UINT size=s->getInt(4, NULL);
+	uint size=s->getInt(4, NULL);
 
 	if (size) {
 		datafile=new ht_mem_file();
@@ -113,12 +113,12 @@ int ht_history_entry::load(ht_object_stream *s)
 	return 0;
 }
 
-void ht_history_entry::store(ht_object_stream *s)
+void ht_history_entry::store(ObjectStream &s)
 {
 	s->putString(desc, NULL);
 
 	if (datafile) {
-		UINT size=datafile->get_size();
+		uint size=datafile->get_size();
 	
 		s->putInt(size, 4, NULL);
 		s->putBinary(datafile->bufptr(), size, NULL);
@@ -127,7 +127,7 @@ void ht_history_entry::store(ht_object_stream *s)
 	}
 }
 
-OBJECT_ID ht_history_entry::object_id() const
+ObjectID ht_history_entry::getObjectID() const
 {
 	return ATOM_HT_HISTORY_ENTRY;
 }
@@ -170,9 +170,9 @@ void destroy_hist_atom(UINT atom)
 	}
 }
 
-void store_history(ht_object_stream *s)
+void store_history(ObjectStream &s)
 {
-	UINT count=sizeof hist_atoms / sizeof hist_atoms[0];
+	uint count=sizeof hist_atoms / sizeof hist_atoms[0];
 	s->putIntDec(count, 4, NULL);
 	for (UINT i=0; i<count; i++) {
 		s->putIntHex(hist_atoms[i], 4, NULL);
@@ -181,9 +181,9 @@ void store_history(ht_object_stream *s)
 	}
 }
 
-bool load_history(ht_object_stream *s)
+bool load_history(ObjectStream &s)
 {
-	UINT count=s->getIntDec(4, NULL);
+	uint count=s->getIntDec(4, NULL);
 	for (UINT i=0; i<count; i++) {
 		int atom=s->getIntHex(4, NULL);
 		destroy_hist_atom(atom);

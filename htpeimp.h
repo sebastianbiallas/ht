@@ -43,19 +43,19 @@ public:
 
 class ht_pe_import_function: public ht_data {
 public:
-	UINT libidx;
+	uint libidx;
 	bool byname;
 	union {
-		UINT ordinal;
+		uint ordinal;
 		struct {
 			char *name;
-			UINT hint;
+			uint hint;
 		} name;
 	};
 	RVA address;
 
-	ht_pe_import_function(UINT libidx, RVA address, UINT ordinal);
-	ht_pe_import_function(UINT libidx, RVA address, char *name, UINT hint);
+	ht_pe_import_function(UINT libidx, RVA address, uint ordinal);
+	ht_pe_import_function(UINT libidx, RVA address, char *name, uint hint);
 	~ht_pe_import_function();
 };
 
@@ -72,7 +72,7 @@ class ht_pe_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	UINT sortby;
+	uint sortby;
 /* new */
 			void dosort();
 public:

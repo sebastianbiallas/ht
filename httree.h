@@ -43,10 +43,10 @@ public:
 			   void   collapse_all(void *node);
 		virtual int	count_children(void *node);
 		virtual void	draw();
-			   void	draw_r(void *node, int level, int *pos, dword lines);
+			   void	draw_r(void *node, int level, int *pos, uint32 lines);
 			   void   expand_all(void *node);
 		virtual void   *get_child(void *node, int i) = 0;
-		virtual void	getdata(ht_object_stream *s);
+		virtual void	getdata(ObjectStream &s);
 		virtual int 	get_graph(int *s, void *node, int level, int lines);
 		virtual void	*get_next_node(void *node) = 0;
 			   void   *get_node(int i);
@@ -61,7 +61,7 @@ public:
 		virtual bool	is_selected(int i);
 			   void	scroll_to(int x, int y);
 		virtual void	select_node(void *node); // stub
-		virtual void	setdata(ht_object_stream *s);
+		virtual void	setdata(ObjectStream &s);
 			   void	set_limit(int x, int y);
 			   void	update();
 			   void	update_r(void *node, int level, int *pos, int *x);

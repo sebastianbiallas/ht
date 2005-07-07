@@ -145,7 +145,7 @@ pal_class pal_layouts[] =
  *   reg/pal management
  */
 
-vcp getcolorv(palette *pal, UINT index)
+vcp getcolorv(palette *pal, uint index)
 {
 	if ((index<pal->size) && (pal->data)) return pal->data[index];
 	return VCP(VC_WHITE, VC_RED);
@@ -269,19 +269,19 @@ bool palette_entry::editdialog(const char *keyname)
 	return r;
 }
 
-int palette_entry::load(ht_object_stream *f)
+int palette_entry::load(ObjectStream &f)
 {
 	idx=f->getIntHex(4, 0);
 	color=f->getIntHex(4, 0);
 	return f->get_error();
 }
 
-OBJECT_ID palette_entry::object_id() const
+ObjectID palette_entry::getObjectID() const
 {
 	return ATOM_PALETTE_ENTRY;
 }
 
-void palette_entry::store(ht_object_stream *f)
+void palette_entry::store(ObjectStream &f)
 {
 	f->putIntHex(idx, 4, 0);
 	f->putIntHex(color, 4, 0);

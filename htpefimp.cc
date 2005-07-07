@@ -168,7 +168,7 @@ ht_pef_import_library::~ht_pef_import_library()
  *	class ht_pe_import_function
  */
 
-ht_pef_import_function::ht_pef_import_function(UINT aLibidx, int aNum, const char *aName, UINT aSym_class)
+ht_pef_import_function::ht_pef_import_function(UINT aLibidx, int aNum, const char *aName, uint aSym_class)
 {
 	libidx = aLibidx;
 	name = ht_strdup(aName);
@@ -204,7 +204,7 @@ void	ht_pef_import_viewer::done()
 void ht_pef_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	UINT l, s;
+	uint l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;

@@ -67,7 +67,7 @@ public:
 		return "bla";
 	}
 
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
 	{
 		*ret_len = buflen;
 		int ps = *ret_state;
@@ -157,7 +157,7 @@ void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol
 /*
  *
  */
-static int sprint_base2(char *x, dword value, bool leading_zeros)
+static int sprint_base2(char *x, uint32 value, bool leading_zeros)
 {
 	char *ix = x;
 	bool draw = leading_zeros;
@@ -170,11 +170,11 @@ static int sprint_base2(char *x, dword value, bool leading_zeros)
 	return x-ix;
 }
 
-static int sprint_base2_0(char *x, dword value, int zeros)
+static int sprint_base2_0(char *x, uint32 value, int zeros)
 {
 	char *ix = x;
 	char vi = 0;
-	dword m = 0x80000000;
+	uint32 m = 0x80000000;
 	while (zeros < 32) {m >>= 1; zeros++;}
 	do {
 		if (value & m) {
@@ -221,8 +221,8 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				char buf1[1024];
 				char buf2[1024];
 				// FIXME
-				dword lo = QWORD_GET_LO(r.scalar.integer.value);
-				dword hi = QWORD_GET_HI(r.scalar.integer.value);
+				uint32 lo = QWORD_GET_LO(r.scalar.integer.value);
+				uint32 hi = QWORD_GET_HI(r.scalar.integer.value);
 				x += sprintf(x, "64bit integer:\n");
 				ht_snprintf(buf1, sizeof buf1, "%qx", &r.scalar.integer.value);
 				nicify(buf2, buf1, 4);
@@ -288,7 +288,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				x+=sprintf(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
 				// FIXME: endianess/hardware format
 				float ff = ((float)r.scalar.floatnum.value);
-				dword f = *(dword*)&ff;
+				uint32 f = *(uint32*)&ff;
 				x += sprintf(x, "\n-- IEEE-754, 32 bit --");
 				x += sprintf(x, "\nhex   %08x\nbin   ", f);
 				x += sprint_base2(x, f, true);

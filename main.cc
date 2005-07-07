@@ -105,7 +105,7 @@ static void done()
 	}
 }
 
-static void load_file(char *fn, UINT mode)
+static void load_file(char *fn, uint mode)
 {
 	char cfn[HT_NAME_MAX];
 	char cwd[HT_NAME_MAX];

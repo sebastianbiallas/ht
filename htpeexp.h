@@ -50,14 +50,14 @@ public:
 
 class ht_pe_export_function: public ht_data {
 public:
-	UINT ordinal;
+	uint ordinal;
 
 	bool byname;
 	char *name;
 	RVA address;
 
-	ht_pe_export_function(RVA address, UINT ordinal);
-	ht_pe_export_function(RVA address, UINT ordinal, char *name);
+	ht_pe_export_function(RVA address, uint ordinal);
+	ht_pe_export_function(RVA address, uint ordinal, char *name);
 	~ht_pe_export_function();
 };
 

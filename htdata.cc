@@ -54,18 +54,18 @@ ht_data_uint::ht_data_uint(uint v)
 	value=v;
 }
 
-int ht_data_uint::load(ht_object_stream *s)
+int ht_data_uint::load(ObjectStream &s)
 {
 	value=s->getIntHex(4, NULL);
 	return s->get_error();
 }
 
-void ht_data_uint::store(ht_object_stream *s)
+void ht_data_uint::store(ObjectStream &s)
 {
 	s->putIntHex(value, 4, NULL);
 }
 
-OBJECT_ID ht_data_uint::object_id() const
+ObjectID ht_data_uint::getObjectID() const
 {
 	return ATOM_HT_DATA_UINT;
 }
@@ -79,18 +79,18 @@ ht_data_uint32::ht_data_uint32(uint32 v)
 	value = v;
 }
 
-int ht_data_uint32::load(ht_object_stream *s)
+int ht_data_uint32::load(ObjectStream &s)
 {
 	value = s->getIntHex(4, NULL);
 	return s->get_error();
 }
 
-void ht_data_uint32::store(ht_object_stream *s)
+void ht_data_uint32::store(ObjectStream &s)
 {
 	s->putIntHex(value, 4, NULL);
 }
 
-OBJECT_ID ht_data_uint32::object_id() const
+ObjectID ht_data_uint32::getObjectID() const
 {
 	return ATOM_HT_DATA_UINT32;
 }
@@ -124,18 +124,18 @@ ht_data_mem::~ht_data_mem()
 	if (value) free(value);
 }
 
-int ht_data_mem::load(ht_object_stream *s)
+int ht_data_mem::load(ObjectStream &s)
 {
 	value=s->getBinary(size, NULL);
 	return s->get_error();
 }
 
-void ht_data_mem::store(ht_object_stream *s)
+void ht_data_mem::store(ObjectStream &s)
 {
 	s->putBinary(value, size, NULL);
 }
 
-OBJECT_ID ht_data_mem::object_id() const
+ObjectID ht_data_mem::getObjectID() const
 {
 	return ATOM_HT_DATA_MEM;
 }
@@ -506,7 +506,7 @@ void ht_stree::insert_ltable(ht_tree_node **node, ht_tree_node **start, ht_tree_
 	}
 }
 
-void stree_load(ht_object_stream *s, ht_tree_node **n, uint *node_count, int l, int r)
+void stree_load(ObjectStream &s, ht_tree_node **n, uint *node_count, int l, int r)
 {
 	if (l>r) {
 		*n = NULL;
@@ -523,7 +523,7 @@ void stree_load(ht_object_stream *s, ht_tree_node **n, uint *node_count, int l, 
 	stree_load(s, &(*n)->right, node_count, m+1, r);
 }
 
-int ht_stree::load(ht_object_stream *s)
+int ht_stree::load(ObjectStream &s)
 {
 	void *d=find_atom(s->getIntHex(4, NULL));
 	if (!d) return 1;
@@ -553,7 +553,7 @@ int ht_stree::load(ht_object_stream *s)
 	return s->get_error();
 }
 
-void ht_stree::store(ht_object_stream *s)
+void ht_stree::store(ObjectStream &s)
 {
 	s->putIntHex(find_atom_rev((void*)compare_keys), 4, NULL);
 	
@@ -569,7 +569,7 @@ void ht_stree::store(ht_object_stream *s)
 	}
 }
 
-OBJECT_ID ht_stree::object_id() const
+ObjectID ht_stree::getObjectID() const
 {
 	return ATOM_HT_STREE;
 }
@@ -1005,12 +1005,12 @@ void ht_clist::do_remove(uint i)
 	c_entry_count--;
 }
 
-Object *ht_clist::duplicate()
+Object *ht_clist::clone()
 {
 	ht_clist *d=new ht_clist();
 	d->init(compare_keys);
 	for (uint i=0; i<c_entry_count; i++) {
-		d->insert(items[i]->duplicate());
+		d->insert(items[i]->clone());
 	}
 	return d;
 }
@@ -1072,7 +1072,7 @@ void ht_clist::insert_before(ht_data *data, uint i)
 	items[i]=data;
 }
 
-int  ht_clist::load(ht_object_stream *s)
+int  ht_clist::load(ObjectStream &s)
 {
 	c_size=HT_CLIST_ENTRY_COUNT_START;
 	items=(ht_data**)malloc(c_size * sizeof (ht_data*));
@@ -1110,7 +1110,7 @@ void ht_clist::move_multiple(uint source, uint dest, uint count)
 	}
 }
 
-OBJECT_ID ht_clist::object_id() const
+ObjectID ht_clist::getObjectID() const
 {
 	return ATOM_HT_CLIST;
 }
@@ -1147,7 +1147,7 @@ bool ht_clist::sort()
 	return false;
 }
 
-void ht_clist::store(ht_object_stream *s)
+void ht_clist::store(ObjectStream &s)
 {
 	s->putIntHex(find_atom_rev((void*)compare_keys), 4, NULL);
 	s->putIntDec(c_entry_count, 4, "item_count");

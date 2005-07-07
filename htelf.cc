@@ -518,7 +518,7 @@ bool elf_valid_section(elf_section_header *sh, uint elfclass)
 	return false;
 }
 
-bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, dword *ofs)
+bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, uint32 *ofs)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -614,7 +614,7 @@ bool elf_addr_is_physical(elf_section_headers *section_headers, uint elfclass, E
  *	offset conversion routines
  */
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr)
+bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32 ofs, ELFAddress *addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -644,7 +644,7 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, dword 
 	return false;
 }
 
-bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, dword ofs, int *section)
+bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uint32 ofs, int *section)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -675,7 +675,7 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, dwo
 	return false;
 }
 
-bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr, int *section)
+bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfclass, uint32 ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }

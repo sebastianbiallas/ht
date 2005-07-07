@@ -39,7 +39,7 @@ public:
 			void init(ht_streamfile *in, ht_streamfile *out, ht_streamfile *err, int sys_ipc_handle);
 	virtual	void done();
 /* oerwritten */	
-	virtual	UINT write(const void *buf, UINT size);
+	virtual	uint write(const void *buf, uint size);
 /* new */
 			bool connected();
 			bool update();

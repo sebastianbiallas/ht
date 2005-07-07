@@ -45,10 +45,10 @@ public:
 class ht_text_sub: public ht_linear_sub {
 protected:
 /* new */
-			UINT find_linelen_backwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int *le_len);
-			UINT find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int *le_len);
-	virtual	byte *match_lineend_forwd(byte *buf, UINT buflen, int *le_len);
-	virtual	byte *match_lineend_backwd(byte *buf, UINT buflen, int *le_len);
+			uint find_linelen_backwd(byte *buf, uint maxbuflen, FILEOFS ofs, int *le_len);
+			uint find_linelen_forwd(byte *buf, uint maxbuflen, FILEOFS ofs, int *le_len);
+	virtual	byte *match_lineend_forwd(byte *buf, uint buflen, int *le_len);
+	virtual	byte *match_lineend_backwd(byte *buf, uint buflen, int *le_len);
 public:
 			void init(ht_streamfile *file, FILEOFS offset, int size);
 	virtual	void done();

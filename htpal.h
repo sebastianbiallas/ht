@@ -39,16 +39,16 @@ struct defpal {
 
 class palette_entry: public ht_registry_data {
 public:
-	UINT idx;
+	uint idx;
 	vcp color;
 
 			palette_entry(UINT idx=0, vcp color=0);
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
 	virtual   void strvalue(char *buf32bytes);
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual	int  load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f);
 };
 
 /*
@@ -114,7 +114,7 @@ public:
  *   reg/pal management
  */
 
-vcp getcolorv(palette *pal, UINT index);
+vcp getcolorv(palette *pal, uint index);
 bool load_pal(char *pal_class, char *pal_flavour, palette *p);
 
 /*

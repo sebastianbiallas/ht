@@ -44,7 +44,7 @@
 extern format_viewer_if htpef_if;
 
 struct pef_section_headers {
-	UINT count;
+	uint count;
 	PEF_SECTION_HEADER *sheaders;
 };
 
@@ -81,11 +81,11 @@ bool pef_phys_and_mem_section(PEF_SECTION_HEADER *s);
 bool pef_valid_section(PEF_SECTION_HEADER *s);
 
 bool pef_addr_to_section(pef_section_headers *section_headers, PEFAddress addr, int *section);
-bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, dword *ofs);
+bool pef_addr_to_ofs(pef_section_headers *section_headers, PEFAddress addr, uint32 *ofs);
 bool pef_addr_is_valid(pef_section_headers *section_headers, PEFAddress addr);
 
-bool pef_ofs_to_addr(pef_section_headers *section_headers, dword ofs, PEFAddress *addr);
-bool pef_ofs_to_section(pef_section_headers *section_headers, dword ofs, dword *section);
+bool pef_ofs_to_addr(pef_section_headers *section_headers, uint32 ofs, PEFAddress *addr);
+bool pef_ofs_to_section(pef_section_headers *section_headers, uint32 ofs, uint32 *section);
 
 #endif /* !__HTPEF_H__ */
 
