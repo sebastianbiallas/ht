@@ -34,15 +34,15 @@ extern format_viewer_if htleimage_if;
 class ht_le_aviewer: public ht_aviewer {
 public:
 	ht_le_shared_data *le_shared;
-	File *file;
+	ht_streamfile *file;
 	
-		   void init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analyser, ht_le_shared_data *le_shared);
+		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_le_shared_data *le_shared);
 /* overwritten */
-	virtual char *func(uint i, bool execute);
+	virtual char *func(UINT i, bool execute);
 	virtual void setAnalyser(Analyser *a);
-	virtual bool get_current_real_offset(FileOfs *ofs);
-	virtual bool offset_to_pos(FileOfs ofs, viewer_pos *p);
-	virtual bool pos_to_offset(viewer_pos p, FileOfs *ofs);
+	virtual bool get_current_real_offset(FILEOFS *ofs);
+	virtual bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
+	virtual bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
 };
 
 #endif /* !__HTLEIMG_H__ */

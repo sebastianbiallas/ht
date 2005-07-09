@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "global.h"
 #include "htdebug.h"
 
 #include <signal.h>
@@ -107,7 +108,7 @@ timer_handle new_timer()
 void start_timer(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return;
-	uint32 s0, s1;
+	dword s0, s1;
 	asm("rdtsc" : "=a" (s0), "=d" (s1));
 	timer_start[h].hi=s1;
 	timer_start[h].lo=s0;
@@ -116,7 +117,7 @@ void start_timer(timer_handle h)
 void stop_timer(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return;
-	uint32 e0, e1;
+	dword e0, e1;
 	asm("rdtsc" : "=a" (e0), "=d" (e1));
 	timer_end[h].hi=e1;
 	timer_end[h].lo=e0;
@@ -137,7 +138,7 @@ void get_timer_tick_internal(timer_handle h, timepoint *p)
 	*p = timer_end[h] - timer_start[h];
 }
 
-uint32 get_timer_sec(timer_handle h)
+dword get_timer_sec(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
@@ -146,7 +147,7 @@ uint32 get_timer_sec(timer_handle h)
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 
-uint32 get_timer_msec(timer_handle h)
+dword get_timer_msec(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
@@ -155,7 +156,7 @@ uint32 get_timer_msec(timer_handle h)
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 
-uint32 get_timer_tick(timer_handle h)
+dword get_timer_tick(timer_handle h)
 {
 	timepoint t;
 	get_timer_tick_internal(h, &t);
@@ -181,17 +182,17 @@ void delete_timer(timer_handle handle)
 {
 }
 
-uint32 get_timer_sec(timer_handle handle)
+dword get_timer_sec(timer_handle handle)
 {
 	return 0;
 }
 
-uint32 get_timer_msec(timer_handle handle)
+dword get_timer_msec(timer_handle handle)
 {
 	return 0;
 }
 
-uint32 get_timer_tick(timer_handle h)
+dword get_timer_tick(timer_handle h)
 {
 	return 0;
 }

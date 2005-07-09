@@ -21,9 +21,9 @@
 #ifndef __CMDS_H__
 #define __CMDS_H__
 
-#include "io/types.h"
+#include "global.h"
 
-#define CMD	uint32
+#define CMD	dword
 
 #define msg_command					0x80000000
 #define HT_COMMAND(c)				(msg_command+(c))

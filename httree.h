@@ -21,9 +21,9 @@
 #ifndef HT_TREE
 #define HT_TREE
 
-#include "data.h"
+#include "htdata.h"
 #include "htobj.h"
-#include "io/types.h"
+#include "global.h"
 
 struct ht_treeview_data {
 	DDECL_PTR(void *, selected);
@@ -43,10 +43,10 @@ public:
 			   void   collapse_all(void *node);
 		virtual int	count_children(void *node);
 		virtual void	draw();
-			   void	draw_r(void *node, int level, int *pos, uint32 lines);
+			   void	draw_r(void *node, int level, int *pos, dword lines);
 			   void   expand_all(void *node);
 		virtual void   *get_child(void *node, int i) = 0;
-		virtual void	getdata(ObjectStream &s);
+		virtual void	getdata(ht_object_stream *s);
 		virtual int 	get_graph(int *s, void *node, int level, int lines);
 		virtual void	*get_next_node(void *node) = 0;
 			   void   *get_node(int i);
@@ -61,7 +61,7 @@ public:
 		virtual bool	is_selected(int i);
 			   void	scroll_to(int x, int y);
 		virtual void	select_node(void *node); // stub
-		virtual void	setdata(ObjectStream &s);
+		virtual void	setdata(ht_object_stream *s);
 			   void	set_limit(int x, int y);
 			   void	update();
 			   void	update_r(void *node, int level, int *pos, int *x);
@@ -73,7 +73,7 @@ struct static_node {
 	static_node	*next, *prev, *child;
 	char			*text;
 	bool			expanded;
-	Object		*data;
+	ht_data		*data;
 };
 
 class ht_static_treeview: public ht_treeview {
@@ -81,10 +81,10 @@ public:
 		static_node	*root;
 			   void	init(bounds *b, char *desc);
 		virtual void	done();
-			   void	*add_child(void *node, char *text, Object *Data=NULL);
-			   void	*add_node(static_node **node, char *text, Object *Data=NULL);
+			   void	*add_child(void *node, char *text, ht_data *Data=NULL);
+			   void	*add_node(static_node **node, char *text, ht_data *Data=NULL);
 		virtual void	adjust(void *node, bool expand);
-		static_node 	*create_node(char *text, static_node *prev, Object *Data=NULL);
+		static_node 	*create_node(char *text, static_node *prev, ht_data *Data=NULL);
 		virtual void   *get_child(void *node, int i);
 		virtual void	*get_next_node(void *node);
 		virtual void	*get_prev_node(void *node);

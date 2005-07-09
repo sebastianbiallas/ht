@@ -21,11 +21,12 @@
 #ifndef __PROCESS_H__
 #define __PROCESS_H__
 
-#include "data.h"
+#include "common.h"
+#include "htdata.h"
 #include "htobj.h"
 
 typedef bool (*process_func)(ht_data *context, ht_text *progress_indicator);
 
-bool execute_process(process_func pp, Object *context);
+bool execute_process(process_func pp, ht_data *context);
 
 #endif /* __PROCESS_H__ */

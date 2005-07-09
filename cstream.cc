@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-void	ht_compressed_stream::init(ht_stream *stream, bool own_stream, uint granularity)
+void	ht_compressed_stream::init(ht_stream *stream, bool own_stream, UINT granularity)
 {
 	ht_layer_stream::init(stream, own_stream);
 	if ((get_access_mode() & (FAM_READ | FAM_WRITE)) == (FAM_READ | FAM_WRITE)) {
@@ -87,8 +87,8 @@ bool ht_compressed_stream::flush_uncompressed()
 		free(buffer);
 		buffer = NULL;
 
-		uint cbuf_len;
-		uint uncompressed_len;
+		UINT cbuf_len;
+		UINT uncompressed_len;
 		byte n[4];
 
 		if (stream->read(n, 4)!=4) return false;
@@ -115,9 +115,9 @@ bool ht_compressed_stream::flush_uncompressed()
 	return true;
 }
 
-uint	ht_compressed_stream::read(void *aBuf, uint size)
+UINT	ht_compressed_stream::read(void *aBuf, UINT size)
 {
-	uint ssize = size;
+	UINT ssize = size;
 	byte *buf = (byte *)aBuf;
 	while (size >= bufferpos) {
 		memcpy(buf, buffer+buffersize-bufferpos, bufferpos);
@@ -135,9 +135,9 @@ uint	ht_compressed_stream::read(void *aBuf, uint size)
 	return ssize;
 }
 
-uint	ht_compressed_stream::write(const void *aBuf, uint size)
+UINT	ht_compressed_stream::write(const void *aBuf, UINT size)
 {
-	uint ssize = size;
+	UINT ssize = size;
 	const byte *buf = (const byte *)aBuf;
 	while (bufferpos+size >= buffersize) {
 		memcpy(buffer+bufferpos, buf, buffersize-bufferpos);

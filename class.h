@@ -131,7 +131,7 @@ typedef struct _classfile {
 } classfile;
 
 struct ht_class_shared_data {
-	Container	*methods;
+	ht_stree	*methods;
 	classfile	*file;
 	Area *valid;
 	Area *initialized;
@@ -139,35 +139,35 @@ struct ht_class_shared_data {
 	struct {
 		char *thisclass;
 		char *superclass;
-		Container *interfaces;
+		ht_list *interfaces;
 	} classinfo;
 };
 
-extern ht_class_shared_data *class_read(File *);
+extern ht_class_shared_data *class_read(ht_streamfile *);
 extern void class_unread(ht_class_shared_data *);
-extern attrib_info *attribute_read(Stream *, classfile *);
+extern attrib_info *attribute_read(ht_stream *, classfile *);
 
-int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared);
+int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
 void java_demangle(char *result, char *classname, char *name, char *type, int flags);
 char *java_demangle_flags(char *result, int flags);
 
 class cview : public ht_format_group {
 public:
-  void init(bounds *, File *, format_viewer_if **,
-		  ht_format_group *, FileOfs, void *shared);
+  void init(bounds *, ht_streamfile *, format_viewer_if **,
+		  ht_format_group *, FILEOFS, void *shared);
   virtual void done();
 };
 
-#define ClassAddress uint32
+#define ClassAddress dword
 
-class ClassMethod: public Object {
+class ClassMethod: public ht_data {
 public:
 	char *name;
 	char *type;
 	ClassAddress start;
-	uint length;
+	UINT length;
 	int flags;
-				ClassMethod(char *name, char *type, ClassAddress start, uint length, int flags);
+				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
 	virtual		~ClassMethod();
 	virtual int	compareTo(const Object *obj) const;
 };

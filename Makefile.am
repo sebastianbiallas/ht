@@ -21,12 +21,11 @@ ht_LDADD	= $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo
 ht_LDFLAGS	= @HT_LDFLAGS@
 ht_LIBS		= @HT_LIBS@
 
-ht_SOURCES	= atom.cc atom.h data.cc data.h str.cc str.h \
-htdoc.c htdoc.h blockop.cc blockop.h coff_s.h \
+ht_SOURCES	= htdoc.c htdoc.h blockop.cc blockop.h coff_s.h common.cc common.h \
 config.h cstream.cc cstream.h demangle.h elfstruc.h htendian.cc \
 htendian.h formats.cc formats.h global.h htanaly.cc htanaly.h htapp.cc \
-htapp.h htcfg.cc htcfg.h htclipboard.cc htclipboard.h \
-htcoff.cc htcoff.h htcoffhd.cc htcoffhd.h htctrl.cc htctrl.h \
+htapp.h htatom.cc htatom.h htcfg.cc htcfg.h htclipboard.cc htclipboard.h \
+htcoff.cc htcoff.h htcoffhd.cc htcoffhd.h htctrl.cc htctrl.h htdata.cc htdata.h \
 htdebug.cc htdebug.h htdialog.cc htdialog.h htelf.cc htelf.h htelfhd.cc \
 htelfhd.h htelfimg.cc htelfimg.h htelfphs.cc htelfphs.h htelfshs.cc htelfshs.h \
 htelfsym.cc htelfsym.h htelfrel.cc htelfrel.h htfinfo.cc htfinfo.h htformat.cc \

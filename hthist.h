@@ -43,7 +43,7 @@
  *	CLASS ht_history_entry
  */
 
-class ht_history_entry: public Object {
+class ht_history_entry: public ht_data {
 public:
 	char *desc;
 	ht_object_stream_bin *data;
@@ -52,15 +52,15 @@ public:
 	ht_history_entry(char *str=0, ht_object_stream_bin *data=0, ht_mem_file *datafile=0);
 	~ht_history_entry();
 /* overwritten */
-	virtual int	load(ObjectStream &s);
-	virtual void	store(ObjectStream &s);
-	virtual ObjectID getObjectID() const;
+	virtual int	load(ht_object_stream *s);
+	virtual void	store(ht_object_stream *s);
+	virtual OBJECT_ID object_id() const;
 };
 
 bool insert_history_entry(ht_list *history, char *name, ht_view *view);
 
-void store_history(ObjectStream &s);
-bool load_history(ObjectStream &s);
+void store_history(ht_object_stream *s);
+bool load_history(ht_object_stream *s);
 
 /*
  *	INIT

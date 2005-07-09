@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <string.h>
 
-ht_view *htfinfo_init(bounds *b, File *file, ht_format_group *group)
+ht_view *htfinfo_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_finfo_text *v=new ht_finfo_text();
 	v->init(b, file);
@@ -39,7 +39,7 @@ format_viewer_if htfinfo_if = {
  *   ht_finfo_text
  */
  
-void	ht_finfo_text::init(bounds *b, File *f)
+void	ht_finfo_text::init(bounds *b, ht_streamfile *f)
 {
 	ht_statictext::init(b, 0, align_left, 1);
 	options|=VO_BROWSABLE;
@@ -87,16 +87,16 @@ char *ht_finfo_text::gettext()
 		if (s.caps & pstat_fsid) t+=sprintf(t, "%-"FINFO_IDENTIFIER_WIDTH_STR"s%d\n", "fsid", s.fsid);
 	
 	if (s.caps & pstat_mode_all) {
-		uint32 am[3][3]={
+		dword am[3][3]={
 			{HT_S_IRUSR, HT_S_IWUSR, HT_S_IXUSR},
 			{HT_S_IRGRP, HT_S_IWGRP, HT_S_IXGRP},
 			{HT_S_IROTH, HT_S_IWOTH, HT_S_IXOTH}
 		};
 	
-		uint32 ulm[3]={pstat_mode_usr, pstat_mode_grp, pstat_mode_oth};
+		dword ulm[3]={pstat_mode_usr, pstat_mode_grp, pstat_mode_oth};
 		char *uls[3]={"user", "group", "world"};
 	
-		uint32 alm[3]={pstat_mode_r, pstat_mode_w, pstat_mode_x};
+		dword alm[3]={pstat_mode_r, pstat_mode_w, pstat_mode_x};
 		char *als[3]={"read", "write", "execute"};
 		
 		*(t++)='\n';

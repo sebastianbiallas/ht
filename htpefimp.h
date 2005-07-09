@@ -30,7 +30,7 @@ extern format_viewer_if htpefimports_if;
  *	class ht_pef_import_library
  */
 
-class ht_pef_import_library: public Object {
+class ht_pef_import_library: public ht_data {
 public:
 	char *name;
 
@@ -42,20 +42,20 @@ public:
  *	class ht_pef_import_function
  */
 
-class ht_pef_import_function: public Object {
+class ht_pef_import_function: public ht_data {
 public:
-	uint libidx;
+	UINT libidx;
 	int num;
 	char *name;
-	uint sym_class;
+	UINT sym_class;
 
-	ht_pef_import_function(uint libidx, int num, const char *name, uint sym_class);
+	ht_pef_import_function(UINT libidx, int num, const char *name, UINT sym_class);
 	~ht_pef_import_function();
 };
 
 struct ht_pef_import {
-	Container *funcs;
-	Container *libs;
+	ht_clist *funcs;
+	ht_clist *libs;
 };
 
 /*
@@ -66,7 +66,7 @@ class ht_pef_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	uint sortby;
+	UINT sortby;
 	/* new */
     
 		void	dosort();
@@ -77,7 +77,7 @@ public:
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	select_entry(void *entry);
 	/* new */
-		char *	func(uint i, bool execute);
+		char *	func(UINT i, bool execute);
 };
 
 #endif /* !__HTPEFIMP_H__ */

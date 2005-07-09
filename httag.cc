@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "global.h"
 #include "htdebug.h"
 #include "htstring.h"
 #include "httag.h"
@@ -30,7 +31,7 @@
 
 // these 3 functions are evil. but they are only used in statictag_to_tag().
 // they should go sometime...
-static uint32 hexb(char *s)
+static dword hexb(char *s)
 {
 	byte b=*(byte*)s;
 	b-='0';
@@ -41,12 +42,12 @@ static uint32 hexb(char *s)
 	return (b<<4)+c;
 }
 
-static uint32 hexw(char *s)
+static dword hexw(char *s)
 {
 	return (hexb(s)<<8) | hexb(s+2);
 }
 
-static uint32 hexd(char *s)
+static dword hexd(char *s)
 {
 	return (hexw(s)<<16) | hexw(s+4);
 }
@@ -57,7 +58,7 @@ TAGSTRING *tag_make_sel(TAGSTRING *buf, char *string)
 	return tag_make_ref(buf, 0, 0, 0, 0, string);
 }
 
-TAGSTRING *tag_make_ref_len(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, char *string, int strlen)
+TAGSTRING *tag_make_ref_len(TAGSTRING *buf, dword id128_1, dword id128_2, dword id128_3, dword id128_4, char *string, int strlen)
 {
 	ht_tag_sel *tag=(ht_tag_sel*)buf;
 	tag->escape = '\e';
@@ -73,12 +74,12 @@ TAGSTRING *tag_make_ref_len(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint
 	return buf+sizeof (ht_tag_sel)+strlen;
 }
 
-TAGSTRING *tag_make_ref(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, char *string)
+TAGSTRING *tag_make_ref(TAGSTRING *buf, dword id128_1, dword id128_2, dword id128_3, dword id128_4, char *string)
 {
 	return tag_make_ref_len(buf, id128_1, id128_2, id128_3, id128_4, string, strlen(string));
 }
 
-TAGSTRING *tag_make_flags(TAGSTRING *buf, uint32 ofs32, uint32 id)
+TAGSTRING *tag_make_flags(TAGSTRING *buf, dword ofs32, dword id)
 {
 	ht_tag_flags *tag=(ht_tag_flags*)buf;
 	tag->escape = '\e';
@@ -96,7 +97,7 @@ TAGSTRING *tag_make_group(TAGSTRING *buf)
 	return buf+sizeof (ht_tag_group);
 }
 
-TAGSTRING *tag_make_color(TAGSTRING *buf, uint32 color)
+TAGSTRING *tag_make_color(TAGSTRING *buf, dword color)
 {
 	ht_tag_color *tag=(ht_tag_color*)buf;
 	tag->escape='\e';
@@ -114,7 +115,7 @@ TAGSTRING *tag_make_default_color(TAGSTRING *buf)
 	return buf+sizeof (ht_tag_color);
 }
 
-TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FileOfs ofs32)
+TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FILEOFS ofs32)
 {
 	ht_tag_edit_byte *tag=(ht_tag_edit_byte*)buf;
 	tag->escape='\e';
@@ -123,7 +124,7 @@ TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FileOfs ofs32)
 	return buf+sizeof (ht_tag_edit_byte);
 }
 
-TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
+TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FILEOFS ofs32, tag_endian e)
 {
 	ht_tag_edit_word_generic *tag=(ht_tag_edit_word_generic*)buf;
 	tag->escape='\e';
@@ -144,7 +145,7 @@ TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
 	return buf+sizeof (ht_tag_edit_word_generic);
 }
 
-TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
+TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FILEOFS ofs32, tag_endian e)
 {
 	ht_tag_edit_dword_generic *tag=(ht_tag_edit_dword_generic*)buf;
 	tag->escape='\e';
@@ -165,7 +166,7 @@ TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
 	return buf+sizeof (ht_tag_edit_dword_generic);
 }
 
-TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
+TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FILEOFS ofs32, tag_endian e)
 {
 	ht_tag_edit_qword_generic *tag=(ht_tag_edit_qword_generic*)buf;
 	tag->escape='\e';
@@ -186,7 +187,7 @@ TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FileOfs ofs32, tag_endian e)
 	return buf+sizeof (ht_tag_edit_qword_generic);
 }
 
-TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FileOfs ofs32)
+TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FILEOFS ofs32)
 {
 	ht_tag_edit_time *tag=(ht_tag_edit_time*)buf;
 	tag->escape='\e';
@@ -195,7 +196,7 @@ TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FileOfs ofs32)
 	return buf+sizeof (ht_tag_edit_time);
 }
 
-TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FileOfs ofs32)
+TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FILEOFS ofs32)
 {
 	ht_tag_edit_char *tag=(ht_tag_edit_char*)buf;
 	tag->escape='\e';
@@ -204,7 +205,7 @@ TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FileOfs ofs32)
 	return buf+sizeof (ht_tag_edit_char);
 }
 
-TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs32, int bitidx)
+TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FILEOFS ofs32, int bitidx)
 {
 	ht_tag_edit_bit *tag=(ht_tag_edit_bit*)buf;
 	tag->escape='\e';
@@ -214,7 +215,7 @@ TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs32, int bitidx)
 	return buf+sizeof (ht_tag_edit_bit);
 }
 
-TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FileOfs offset, char ch)
+TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FILEOFS offset, char ch)
 {
 	ht_tag_edit_selvis *tag=(ht_tag_edit_selvis*)buf;
 	tag->escape='\e';
@@ -224,7 +225,7 @@ TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FileOfs offset, char ch)
 	return buf+sizeof (ht_tag_edit_selvis);
 }
 
-TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FileOfs ofs32, uint32 id32)
+TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FILEOFS ofs32, dword id32)
 {
 	ht_tag_desc_byte *tag=(ht_tag_desc_byte*)buf;
 	tag->escape='\e';
@@ -234,7 +235,7 @@ TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FileOfs ofs32, uint32 id32)
 	return buf+sizeof (ht_tag_desc_byte);
 }
 
-TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
+TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e)
 {
 	ht_tag_desc_word_generic *tag=(ht_tag_desc_word_generic*)buf;
 	tag->escape='\e';
@@ -256,7 +257,7 @@ TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_en
 	return buf+sizeof (ht_tag_desc_word_generic);
 }
 
-TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
+TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e)
 {
 	ht_tag_desc_dword_generic *tag=(ht_tag_desc_dword_generic*)buf;
 	tag->escape='\e';
@@ -278,7 +279,7 @@ TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_e
 	return buf+sizeof (ht_tag_desc_dword_generic);
 }
 
-TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
+TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FILEOFS ofs32, dword id32, tag_endian e)
 {
 	ht_tag_desc_qword_generic *tag=(ht_tag_desc_qword_generic*)buf;
 	tag->escape='\e';
@@ -302,9 +303,9 @@ TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_e
 
 /**/
 
-void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, uint32 relocation, bool std_bigendian)
+void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, dword relocation, bool std_bigendian)
 {
-	FileOfs ofs=0;
+	FILEOFS ofs=0;
 	ID id;
 	while (*statictag_str) {
 		if (*statictag_str=='\e') {
@@ -444,10 +445,10 @@ void statictag_to_tag(char *statictag_str, TAGSTRING *tag_str, uint32 relocation
 					statictag_str+=2+8+8;
 					break;
 				case HT_STATICTAG_SEL: {
-					uint32 id_1=hexd(statictag_str+2);
-					uint32 id_2=hexd(statictag_str+2+8);
-					uint32 id_3=hexd(statictag_str+2+16);
-					uint32 id_4=hexd(statictag_str+2+24);
+					dword id_1=hexd(statictag_str+2);
+					dword id_2=hexd(statictag_str+2+8);
+					dword id_3=hexd(statictag_str+2+16);
+					dword id_4=hexd(statictag_str+2+24);
 					byte len=hexb(statictag_str+2+8+8+8+8);
 					tag_str=tag_make_ref_len(tag_str, id_1, id_2, id_3, id_4, statictag_str+2+8+8+8+8+2, len);
 					statictag_str+=2+8+8+8+8+2+len;
@@ -681,9 +682,9 @@ int tag_get_size(const TAGSTRING *tagstring)
 	}
 }
 
-uint32 tag_get_offset(const TAGSTRING *tagstring)
+dword tag_get_offset(const TAGSTRING *tagstring)
 {
-	FileOfs f;
+	FILEOFS f;
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE: {
 			UNALIGNED_MOVE(f, ((ht_tag_edit_byte*)tagstring)->offset);
@@ -754,7 +755,7 @@ uint32 tag_get_offset(const TAGSTRING *tagstring)
 	return 0;
 }
 
-void tag_get_id(const TAGSTRING *tagstring, uint32 *id128_1, uint32 *id128_2, uint32 *id128_3, uint32 *id128_4)
+void tag_get_id(const TAGSTRING *tagstring, dword *id128_1, dword *id128_2, dword *id128_3, dword *id128_4)
 {
 	if (tagstring[1]==HT_TAG_SEL) {
 		UNALIGNED_MOVE(*id128_1, ((ht_tag_sel*)tagstring)->id128_1);
@@ -784,7 +785,7 @@ vcp tag_get_color(const TAGSTRING *tagstring)
 	return c;
 }
 
-bool tag_get_desc_id(const TAGSTRING *tagstring, uint32 *id)
+bool tag_get_desc_id(const TAGSTRING *tagstring, dword *id)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_DESC_BYTE:
@@ -809,7 +810,7 @@ bool tag_get_desc_id(const TAGSTRING *tagstring, uint32 *id)
 	return false;
 }
 
-void tag_set_offset(const TAGSTRING *tagstring, uint32 offset)
+void tag_set_offset(const TAGSTRING *tagstring, dword offset)
 {
 	switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:

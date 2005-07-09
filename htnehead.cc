@@ -90,7 +90,7 @@ static ht_tag_flags_s ne_flags[] =
 	{0, 0}
 };
 
-static ht_view *htneheader_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 

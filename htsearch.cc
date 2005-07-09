@@ -34,22 +34,22 @@ extern "C" {
 }
 
 union search_pos {
-	FileOfs offset;
+	FILEOFS offset;
 	viewer_pos pos;
 };
 
 /* FIXME: get rid of global vars */
-uint lastsearchmodeid=0;
-uint lastreplacemodeid=0;
+UINT lastsearchmodeid=0;
+UINT lastreplacemodeid=0;
 
-typedef ht_search_request* (*create_request_func)(search_pos *ret_start, search_pos *ret_end, ht_view *form, ht_format_viewer *format, uint search_class);
+typedef ht_search_request* (*create_request_func)(search_pos *ret_start, search_pos *ret_end, ht_view *form, ht_format_viewer *format, UINT search_class);
 
-typedef ht_data* (*create_replace_context_func)(File *file, FileOfs ofs, uint len, ht_view *form, uint *return_repllen);
+typedef ht_data* (*create_replace_context_func)(ht_streamfile *file, FILEOFS ofs, UINT len, ht_view *form, UINT *return_repllen);
 
 struct ht_search_method {
 	char *name;
-	uint search_class;			// SC_*
-	uint search_mode_mask;		// SEARCHMODE_*
+	UINT search_class;			// SC_*
+	UINT search_mode_mask;		// SEARCHMODE_*
 	HT_ATOM histid;
 	create_form_func create_form;
 	create_request_func create_request;
@@ -67,7 +67,7 @@ struct ht_replace_method {
 #include <stdlib.h>
 #include <string.h>
 
-bool test_str_to_ofs(FileOfs *ofs, byte *str, uint strlen, ht_format_viewer *format, char *desc)
+bool test_str_to_ofs(FILEOFS *ofs, byte *str, UINT strlen, ht_format_viewer *format, char *desc)
 {
 #define TEST_STR_TO_OFS_MAXSTRLEN       128
 	if (strlen>TEST_STR_TO_OFS_MAXSTRLEN) {
@@ -85,7 +85,7 @@ bool test_str_to_ofs(FileOfs *ofs, byte *str, uint strlen, ht_format_viewer *for
 	return true;
 }
 
-bool test_str_to_pos(viewer_pos *pos, byte *str, uint strlen, ht_format_viewer *format, char *desc)
+bool test_str_to_pos(viewer_pos *pos, byte *str, UINT strlen, ht_format_viewer *format, char *desc)
 {
 #define TEST_STR_TO_POS_MAXSTRLEN      128
 	if (strlen>TEST_STR_TO_POS_MAXSTRLEN) {
@@ -114,7 +114,7 @@ ht_view* create_form_hexascii(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
+ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
 {
 	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
@@ -176,7 +176,7 @@ ht_view* create_form_evalstr(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
+ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
 {
 #define EVALSTR_MAXSTRLEN		256
 	ht_evalstr_search_form *form=(ht_evalstr_search_form*)f;
@@ -247,7 +247,7 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_fxbin_search_request::ht_fxbin_search_request(uint search_class, uint flags, uint ds, byte *d) :
+ht_fxbin_search_request::ht_fxbin_search_request(UINT search_class, UINT flags, UINT ds, byte *d) :
 	ht_search_request(search_class, ST_FXBIN, flags)
 {
 	data_size = ds;
@@ -260,7 +260,7 @@ ht_fxbin_search_request::~ht_fxbin_search_request()
 	free(data);
 }
 
-Object *ht_fxbin_search_request::clone()
+Object *ht_fxbin_search_request::duplicate()
 {
 	return new ht_fxbin_search_request(search_class, flags, data_size, data);
 }
@@ -276,7 +276,7 @@ ht_view* create_form_vregex(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
+ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
 {
 #define VREGEX_MAXSTRLEN		256
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
@@ -334,7 +334,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_regex_search_request::ht_regex_search_request(uint search_class, uint flags, char *regex) :
+ht_regex_search_request::ht_regex_search_request(UINT search_class, UINT flags, char *regex) :
 	ht_search_request(search_class, ST_REGEX, flags)
 {
 	rx_str = ht_strdup(regex);
@@ -348,7 +348,7 @@ ht_regex_search_request::~ht_regex_search_request()
 	free(rx_str);
 }
 
-Object *ht_regex_search_request::clone()
+Object *ht_regex_search_request::duplicate()
 {
 	return new ht_regex_search_request(search_class, flags, rx_str);
 }
@@ -380,7 +380,7 @@ ht_view* create_form_expr(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
+ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
 {
 #define EXPR_MAXSTRLEN		256
 	ht_expr_search_form *form=(ht_expr_search_form*)f;
@@ -438,7 +438,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_expr_search_request::ht_expr_search_request(uint search_class, uint flags, char *Expr) :
+ht_expr_search_request::ht_expr_search_request(UINT search_class, UINT flags, char *Expr) :
 	ht_search_request(search_class, ST_EXPR, flags)
 {
 	expr = ht_strdup(Expr);
@@ -449,7 +449,7 @@ ht_expr_search_request::~ht_expr_search_request()
 	if (expr) delete expr;
 }
 
-Object *ht_expr_search_request::clone()
+Object *ht_expr_search_request::duplicate()
 {
 	return new ht_expr_search_request(search_class, flags, expr);
 }
@@ -459,9 +459,9 @@ Object *ht_expr_search_request::clone()
  */
 
 /* FIXME: put somewhere else */
-void bufdowncase(byte *buf, uint32 len)
+void bufdowncase(byte *buf, dword len)
 {
-	for (uint32 i=0; i<len; i++) {
+	for (dword i=0; i<len; i++) {
 		if ((buf[i]>='A') && (buf[i]<='Z')) buf[i]+=32;
 	}
 }
@@ -474,7 +474,7 @@ ht_search_bin_context::~ht_search_bin_context()
 	free(pat);
 }
 
-ht_data* create_search_bin_context(File *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success)
+ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *pat, UINT patlen, UINT flags, UINT *return_ofs, bool *return_success)
 {
 	if (patlen > SEARCH_BUF_SIZE) return NULL;
 	
@@ -876,7 +876,7 @@ ht_view* create_form_replace_hexascii(bounds *b, HT_ATOM histid)
 	return form;
 }
 
-ht_data* create_replace_hexascii_context(File *file, FileOfs ofs, uint len, ht_view *form, uint *return_repllen)
+ht_data* create_replace_hexascii_context(ht_streamfile *file, FILEOFS ofs, UINT len, ht_view *form, UINT *return_repllen)
 {
 	ht_replace_hexascii_search_form_data d;
 	form->databuf_get(&d, sizeof d);
@@ -944,7 +944,7 @@ static ht_search_method search_methods[] =
 	{ NULL }
 };
 
-ht_search_request *search_dialog(ht_format_viewer *format, uint searchmodes, viewer_pos *start, viewer_pos *end)
+ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, viewer_pos *start, viewer_pos *end)
 {
 	ht_search_request *result = NULL;
 	bounds b;
@@ -1035,7 +1035,7 @@ static ht_replace_method replace_methods[] =
 	{ NULL }
 };
 
-uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
+UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 {
 	*cancelled = false;
 	bounds b;
@@ -1084,7 +1084,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 	dialog->select_search_mode(lastsearchmodeid);
 	dialog->select_replace_mode(lastreplacemodeid);
 
-	uint repl_count = 0;
+	UINT repl_count = 0;
 	if (dialog->run(false)) {
 		int smodeid = dialog->get_search_modeid();
 		int rmodeid = dialog->get_replace_modeid();
@@ -1118,7 +1118,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 		}
 		
 		if (request) {
-			FileOfs so = start.offset, eo = end.offset;
+			FILEOFS so = start.offset, eo = end.offset;
 			ht_physical_search_result *result;
 
 			format->vstate_save();
@@ -1126,7 +1126,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 			try {
 				bool replace_all = false;
 				while ((result = (ht_physical_search_result*)format->psearch(request, so, eo))) {
-					uint irepllen = 0;
+					UINT irepllen = 0;
 					bool do_replace = false;
 
 					if (!replace_all) {
@@ -1151,7 +1151,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 					}
 
 					if (replace_all || do_replace) {
-						Object *rctx = r->create_replace_context(format->get_file(), result->offset, result->size, rform, &irepllen);
+						ht_data *rctx = r->create_replace_context(format->get_file(), result->offset, result->size, rform, &irepllen);
 						bool p = execute_process(r->replace_process, rctx);
 						delete rctx;
 						if (!p) {
@@ -1184,7 +1184,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
-ht_data* create_replace_bin_context(File *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen)
+ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *repl, UINT repllen, UINT *return_repllen)
 {
 	ht_replace_bin_context *ctx = new ht_replace_bin_context();
 	ctx->file = file;
@@ -1212,7 +1212,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 	ht_replace_bin_context *c = (ht_replace_bin_context*)context;
 	if (c->repllen > c->len) {
 		/* grow */
-		uint size = c->file->get_size();
+		UINT size = c->file->get_size();
 		c->file->extend(size + c->repllen - c->len);
 		
 		if (c->o > c->z) {
@@ -1240,7 +1240,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		free(c->buf);
 	} else if (c->repllen < c->len) {
 		/* shrink */
-		uint size = c->file->get_size();
+		UINT size = c->file->get_size();
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
 			if (c->file->write(c->repl, c->repllen) != c->repllen)
@@ -1493,7 +1493,7 @@ void ht_replace_dialog::select_replace_mode_bymodeidx()
  *
  */
  
-ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, File *file, FileOfs fofs, uint32 fsize)
+ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize)
 {
 	ht_fxbin_search_request *s=(ht_fxbin_search_request*)search;
 		
@@ -1503,8 +1503,8 @@ ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, Fi
 	if ((fsize) && (start<end)) {
 		/* create result */
 		bool search_success = false;
-		FileOfs search_ofs;
-		Object *ctx = create_search_bin_context(file, start, end-start, s->data, s->data_size, fl, &search_ofs, &search_success);
+		FILEOFS search_ofs;
+		ht_data *ctx = create_search_bin_context(file, start, end-start, s->data, s->data_size, fl, &search_ofs, &search_success);
 		if (execute_process(search_bin_process, ctx)) {
 			delete ctx;
 			if (search_success) {

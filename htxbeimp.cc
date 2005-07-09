@@ -409,7 +409,7 @@ static const char *xbox_exports[] = {
 	"HalWriteSMCScratchRegister"                     // 366  8000016E
 };
 
-static ht_view *htxbeimports_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
@@ -434,9 +434,9 @@ static ht_view *htxbeimports_init(bounds *b, File *file, ht_format_group *group)
 	c.y--;
 	c.h=1;
 
-	FileOfs ofs;
-	uint thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
-	uint *thunktable = (uint *)malloc(sizeof(xbox_exports));
+	FILEOFS ofs;
+	UINT thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
+	UINT *thunktable = (UINT *)malloc(sizeof(xbox_exports));
 	if (!thunktable) goto xbe_read_error;
 	memset(thunktable, 0, sizeof(xbox_exports));
 
@@ -448,7 +448,7 @@ static ht_view *htxbeimports_init(bounds *b, File *file, ht_format_group *group)
 		goto xbe_read_error;
 
 	for (; *thunktable; thunktable++, thunktablerva+=4) {
-		uint ordinal;
+		UINT ordinal;
 
 		ordinal = create_host_int(thunktable, 4, little_endian);
 		ht_xbe_import_function *func = new ht_xbe_import_function(thunktablerva, (char *)xbox_exports[ordinal & 0xfff], ordinal);
@@ -469,7 +469,7 @@ static ht_view *htxbeimports_init(bounds *b, File *file, ht_format_group *group)
 	g->insert(head);
 	g->insert(v);
 	//
-	for (uint i=0; i<xbe_shared->imports.funcs->count(); i++) {
+	for (UINT i=0; i<xbe_shared->imports.funcs->count(); i++) {
 		ht_xbe_import_function *func = (ht_xbe_import_function*)xbe_shared->imports.funcs->get(i);
 		assert(func);
 		char addr[32], name[256];
@@ -506,14 +506,14 @@ format_viewer_if htxbeimports_if = {
 /*
  *	ht_xbe_import_function
  */
-ht_xbe_import_function::ht_xbe_import_function(RVA a, uint o)
+ht_xbe_import_function::ht_xbe_import_function(RVA a, UINT o)
 {
 	ordinal = o;
 	address = a;
 	byname = false;
 }
 
-ht_xbe_import_function::ht_xbe_import_function(RVA a, char *n, uint h)
+ht_xbe_import_function::ht_xbe_import_function(RVA a, char *n, UINT h)
 {
 	name.name = ht_strdup(n);
 	name.hint = h;
@@ -548,7 +548,7 @@ void ht_xbe_import_viewer::done()
 void ht_xbe_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	uint l, s;
+	UINT l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -563,7 +563,7 @@ void ht_xbe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_xbe_import_viewer::func(uint i, bool execute)
+char *ht_xbe_import_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 2:

@@ -21,18 +21,19 @@
 #ifndef __HTPEIL_H__
 #define __HTPEIL_H__
 
-#include "data.h"
+#include "common.h"
 #include "formats.h"
+#include "htdata.h"
 #include "ilstruct.h"
 
 extern format_viewer_if htpeil_if;
 
-class ht_il_metadata_entry: public Object {
+class ht_il_metadata_entry: public ht_data {
 public:
 	char *name;
-	uint32 offset;
-	uint32 size;
-	ht_il_metadata_entry(char *name, uint32 offset, uint32 size);
+	dword offset;
+	dword size;
+	ht_il_metadata_entry(char *name, dword offset, dword size);
 	~ht_il_metadata_entry();
 };
 
@@ -40,8 +41,8 @@ class ht_pe_il: public Object {
 public:
 	PE_IL_DIRECTORY dir;
 	IL_METADATA_SECTION metadata;
-	Container *entries;
-	uint32 string_pool_size;
+	ht_clist *entries;
+	dword string_pool_size;
 	char *string_pool;
 };
 
@@ -51,11 +52,11 @@ public:
 
 class ht_pe_il_viewer: public ht_uformat_viewer {
 public:
-		void init(bounds *b, char *desc, int caps, File *file, ht_format_group *group);
-	virtual void done();
+			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group);
+		virtual void done();
 };
 
-int ILunpackDword(uint32 &result, const byte *buf, int len);
-int ILunpackToken(uint32 &result, const byte *buf, int len);
+int ILunpackDword(dword &result, const byte *buf, int len);
+int ILunpackToken(dword &result, const byte *buf, int len);
 
 #endif /* !__HTPEIL_H__ */

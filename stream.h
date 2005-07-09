@@ -2,7 +2,7 @@
  *	HT Editor
  *	stream.h
  *
- *	Copyright (C) 1999-2002 Stefan Weyergraf (stefan@weyergraf.de)
+ *	Copyright (C) 1999-2002 Stefan Weyergraf
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -21,456 +21,400 @@
 #ifndef __STREAM_H__
 #define __STREAM_H__
 
+#include "common.h"
+#include "global.h"
+#include "htio.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "data.h"
-#include "str.h"
-#include "io/file.h"
+#ifndef HAVE_FILEOFS
+#define HAVE_FILEOFS
+typedef UINT FILEOFS;
+#endif
 
-class String;
-
-/**
- *	A stream.
+/*
+ *	CLASS ht_stream
  */
-class Stream {
-private:
-	IOAccessMode mAccessMode;
+
+/* stream_error_func return values */
+#define SERR_FAIL		0
+#define SERR_RETRY		1
+
+/* ht_stream.error */
+#define STERR_SYSTEM		0x80000000
+
+class ht_stream;
+
+typedef int (*stream_error_func_ptr)(ht_stream *stream);
+
+class ht_stream {
 protected:
-		void			checkAccess(IOAccessMode mask);
+	stream_error_func_ptr stream_error_func;
+	int	error;
+	UINT	access_mode;
+
+		   int		call_error_func();
 public:
-					Stream();
-	virtual				~Stream();
-	/* new */
-	virtual	uint			copyAllTo(Stream *stream);
-	virtual	uint			copyTo(Stream *stream, uint count);
-	virtual	IOAccessMode		getAccessMode() const;
-	virtual	String &		getDesc(String &result) const;
-	virtual	uint			read(void *buf, uint size);
-		void			readx(void *buf, uint size);
-	virtual	int			setAccessMode(IOAccessMode mode);
-	virtual	uint			write(const void *buf, uint size);
-		void			writex(const void *buf, uint size);
+	virtual 			~ht_stream();
+
+		   void		init();
+	virtual void		done();
+/* new */
+	virtual void		copy_to(ht_stream *stream);
+	virtual UINT		get_access_mode();
+	virtual int		get_error();
+	virtual const char *get_desc();
+	virtual UINT		read(void *buf, UINT size);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual void		set_error(int error);
+	virtual void		set_error_func(stream_error_func_ptr stream_error_func);
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-/**
- *	A stream, layering a stream.
+/*
+ *	CLASS ht_layer_stream
  */
-class StreamLayer: public Stream {
+
+class ht_layer_stream: public ht_stream {
 protected:
-	Stream *mStream;
-	bool mOwnStream;
-
+	ht_stream *stream;
+	bool own_stream;
+	
 public:
-
-					StreamLayer(Stream *stream, bool own_stream);
-	virtual				~StreamLayer();
-	/* extends Stream */
-	virtual IOAccessMode		getAccessMode() const;
-	virtual String &		getDesc(String &result) const;
-	virtual uint			read(void *buf, uint size);
-	virtual int			setAccessMode(IOAccessMode mode);
-	virtual uint			write(const void *buf, uint size);
-	/* new */
-		Stream *		getLayered() const;
-		void			setLayered(Stream *newLayered, bool ownNewLayered);
+	
+		   void		init(ht_stream *stream, bool own_stream);
+	virtual void		done();
+/* overwritten */
+	virtual void		copy_to(ht_stream *stream);
+	virtual UINT		get_access_mode();
+	virtual int		get_error();
+	virtual const char *get_desc();
+	virtual UINT		read(void *buf, UINT size);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual void		set_error(int error);
+	virtual void		set_error_func(stream_error_func_ptr stream_error_func);
+		   void		set_stream_ownership(bool own);
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-#define	OS_FMT_DEC		0
-#define	OS_FMT_HEX		1
-
-/**
- *	A stream-layer, storing/loading |Object|s.
+/*
+ *	CLASS ht_object_stream
  */
-class ObjectStream: public StreamLayer {
-public:
-				ObjectStream(Stream *stream, bool own_stream);
-	/* new */
-	virtual void		getBinary(void *buf, uint size, const char *desc) = 0;
-	virtual bool		getBool(const char *desc) = 0;
-	virtual uint64		getInt(uint size, const char *desc) = 0;
-	virtual void		getObject(Object *& object, const char *name, ObjectID id = OBJID_INVALID) = 0;
-	virtual char *		getString(const char *desc) = 0;
-	virtual byte *		getLenString(int &length, const char *desc) = 0;
 
-	virtual void		putBinary(const void *mem, uint size, const char *desc) = 0;
-	virtual void		putBool(bool b, const char *desc) = 0;
-	virtual void		putComment(const char *comment) = 0;
-	virtual void		putCommentf(const char *comment_format, ...);
-	virtual void		putInt(uint64 i, uint size, const char *desc, uint int_fmt_hint = OS_FMT_DEC) = 0;
-	virtual void		putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID) = 0;
-	virtual void		putSeparator() = 0;
-	virtual void		putString(const char *string, const char *desc) = 0;
-	virtual void		putLenString(const byte *string, int length, const char *desc) = 0;
+class ht_object_stream: public ht_layer_stream {
+public:
+			void		init(ht_stream *s);
+	virtual	void		done();
+	
+/* new */
+	virtual	void *	getBinary(int size, char *desc) = 0;
+	virtual	void		getBinary(void *p, int size, char *desc) = 0;
+	virtual	bool		getBool(char *desc) = 0;
+			int		getInt(int size, char *desc);
+	virtual	int		getIntDec(int size, char *desc) = 0;
+	virtual	int		getIntHex(int size, char *desc) = 0;
+	virtual	qword	getQWordDec(int size, char *desc) = 0;
+	virtual	qword	getQWordHex(int size, char *desc) = 0;
+	virtual	Object *	getObject(char *name) = 0;
+	virtual	void		getObject(Object *&o, char *name) = 0;
+	virtual	void		getSeparator() = 0;
+	virtual	char *	getString(char *desc) = 0;
+	virtual	UINT		recordStart(UINT size);
+	virtual	void		recordEnd(UINT);
+	virtual	void		putBinary(void *mem, int size, char *desc) = 0;
+	virtual	void		putBool(bool b, char *desc) = 0;
+	virtual	void		putInfo(char *info) = 0;
+			void		putInt(int a, int size, char *desc);
+	virtual	void		putIntDec(int a, int size, char *desc) = 0;
+	virtual	void		putIntHex(int a, int size, char *desc) = 0;
+	virtual	void		putQWordDec(qword a, int size, char *desc) = 0;
+	virtual	void		putQWordHex(qword a, int size, char *desc) = 0;
+	virtual	void		putObject(Object *obj, char *name) = 0;
+	virtual	void		putSeparator() = 0;
+	virtual	void		putString(char *string, char *desc) = 0;
 };
 
-#define PUTX_BINARY(st, d, size, dstr)	(st).putBinary(d, size, dstr)
-#define PUTX_BOOL(st, d, dstr)		(st).putBool(d, dstr)
-#define PUTX_INT(st, d, size, dstr)	(st).putInt(d, size, dstr)
-#define PUTX_INTD(st, d, size, dstr)	(st).putInt(d, size, dstr, OS_FMT_DEC)
-#define PUTX_INTX(st, d, size, dstr)	(st).putInt(d, size, dstr, OS_FMT_HEX)
-#define PUTX_INT16(st, d, dstr)		(st).putInt(d, 2, dstr)
-#define PUTX_INT16D(st, d, dstr)	(st).putInt(d, 2, dstr, OS_FMT_DEC)
-#define PUTX_INT16X(st, d, dstr)	(st).putInt(d, 2, dstr, OS_FMT_HEX)
-#define PUTX_INT32(st, d, dstr)		(st).putInt(d, 4, dstr)
-#define PUTX_INT32D(st, d, dstr)	(st).putInt(d, 4, dstr, OS_FMT_DEC)
-#define PUTX_INT32X(st, d, dstr)	(st).putInt(d, 4, dstr, OS_FMT_HEX)
-#define PUTX_INT64(st, d, dstr)		(st).putInt(d, 8, dstr)
-#define PUTX_INT64D(st, d, dstr)	(st).putInt(d, 8, dstr, OS_FMT_DEC)
-#define PUTX_INT64X(st, d, dstr)	(st).putInt(d, 8, dstr, OS_FMT_HEX)
-#define PUTX_OBJECT(st, d, dstr)	(st).putObject(d, dstr)
-#define PUTX_STRING(st, d, dstr)	(st).putString(d, dstr)
-#define PUTX_LSTRING(st, d, len, dstr)	(st).putLenString(d, len, dstr)
+#define PUT_BINARY(st, d, size) st->putBinary(d, size, #d)
+#define PUT_BOOL(st, d) st->putBool(d, #d)
+#define PUT_INT(st, d) st->putInt(d, 4, #d)
+#define PUT_INT_DEC(st, d) st->putIntDec(d, 4, #d)
+#define PUT_INT_HEX(st, d) st->putIntHex(d, 4, #d)
+#define PUT_QWORD_DEC(st, d) st->putQWordDec(d, 8, #d)
+#define PUT_QWORD_HEX(st, d) st->putQWordHex(d, 8, #d)
+#define PUT_OBJECT(st, o) st->putObject(o, #o)
+#define PUT_STRING(st, d) st->putString(d, #d)
 
-#define PUT_BINARY(st, d, size)		PUTX_BINARY(st, d, size, #d)
-#define PUT_BOOL(st, d)			PUTX_BOOL(st, d, #d)
-#define PUT_INT(st, d, size)		PUTX_INT(st, d, size, #d)
-#define PUT_INTD(st, d, size)		PUTX_INTD(st, d, size, #d)
-#define PUT_INTX(st, d, size)		PUTX_INTX(st, d, size, #d)
-#define PUT_INT16(st, d)		PUTX_INT16(st, d, #d)
-#define PUT_INT16D(st, d)		PUTX_INT16D(st, d, #d)
-#define PUT_INT16X(st, d)		PUTX_INT16X(st, d, #d)
-#define PUT_INT32(st, d)		PUTX_INT32(st, d, #d)
-#define PUT_INT32D(st, d)		PUTX_INT32D(st, d, #d)
-#define PUT_INT32X(st, d)		PUTX_INT32X(st, d, #d)
-#define PUT_INT64(st, d)		PUTX_INT64(st, d, #d)
-#define PUT_INT64D(st, d)		PUTX_INT64D(st, d, #d)
-#define PUT_INT64X(st, d)		PUTX_INT64X(st, d, #d)
-#define PUT_OBJECT(st, d)		PUTX_OBJECT(st, d, #d)
-#define PUT_STRING(st, d)		PUTX_STRING(st, d, #d)
-#define PUT_LSTRING(st, d, len)		PUTX_LSTRING(st, d, len, #d)
+#define GET_BOOL(st, d) d=st->getBool(#d)
+#define GET_INT(st, d) d=st->getInt(4, #d)
+#define GET_INT_DEC(st, d) d=st->getIntDec(4, #d)
+#define GET_INT_HEX(st, d) d=st->getIntHex(4, #d)
+#define GET_QWORD_DEC(st, d) d=st->getQWordDec(8, #d)
+#define GET_QWORD_HEX(st, d) d=st->getQwordHex(8, #d)
+#define GET_OBJECT(st, o) st->getObject(*(Object**)&o, #o)
+#define GET_STRING(st, d) d=st->getString(#d)
 
-#define GETX_BINARY(st, d, size, dstr)	(st).getBinary(d, size, dstr)
-#define GETX_BOOL(st, dstr)		(st).getBool(dstr)
-#define GETX_INT(st, size, dstr)	(st).getInt(size, dstr)
-#define GETX_INTD(st, size, dstr)       GETX_INT(st, size, dstr)
-#define GETX_INTX(st, size, dstr)       GETX_INT(st, size, dstr)
-#define GETX_INT16(st, dstr)		(st).getInt(2, dstr)
-#define GETX_INT16D(st, dstr)		GETX_INT16(st, dstr)
-#define GETX_INT16X(st, dstr)		GETX_INT16(st, dstr)
-#define GETX_INT32(st, dstr)		(st).getInt(4, dstr)
-#define GETX_INT32D(st, dstr)		GETX_INT32(st, dstr)
-#define GETX_INT32X(st, dstr)		GETX_INT32(st, dstr)
-#define GETX_INT64(st, dstr)		(st).getInt(8, dstr)
-#define GETX_INT64D(st, dstr)		GETX_INT64(st, dstr)
-#define GETX_INT64X(st, dstr)		GETX_INT64(st, dstr)
-#define GETX_STRING(st, dstr)		(st).getString(dstr)
-#define GETX_LSTRING(st, size, dstr)	(st).getLenString(size, dstr)
-#define GETX_OBJECT(st, d, dstr)	(st).getObject((Object*&)(d), dstr)
-
-#define GET_BINARY(st, d, size)		GETX_BINARY(st, d, size, #d)
-#define GET_BOOL(st, d)			d=GETX_BOOL(st, #d)
-#define GET_INT(st, d, size)		d=GETX_INT(st, size, #d)
-#define GET_INTD(st, d, size)		d=GET_INT(st, d, size)
-#define GET_INTX(st, d, size)		d=GET_INT(st, d, size)
-#define GET_INT16(st, d)		d=GETX_INT16(st, #d)
-#define GET_INT16D(st, d)		d=GETX_INT16D(st, #d)
-#define GET_INT16X(st, d)		d=GETX_INT16X(st, #d)
-#define GET_INT32(st, d)		d=GETX_INT32(st, #d)
-#define GET_INT32D(st, d)		d=GETX_INT32D(st, #d)
-#define GET_INT32X(st, d)		d=GETX_INT32X(st, #d)
-#define GET_INT64(st, d)		d=GETX_INT64(st, #d)
-#define GET_INT64D(st, d)		d=GETX_INT64D(st, #d)
-#define GET_INT64X(st, d)		d=GETX_INT64X(st, #d)
-#define GET_STRING(st, d)		d=GETX_STRING(st, #d)
-#define GET_LSTRING(st, d, size)	d=GETX_LSTRING(st, size, #d)
-#define GET_OBJECT(st, d)		GETX_OBJECT(st, d, #d)
-
-/**
- *	A object-stream-layer.
+/*
+ *	CLASS ht_streamfile
  */
-class ObjectStreamLayer: public ObjectStream {
-protected:
-	ObjectStream	*mObjStream;
-public:
-				ObjectStreamLayer(ObjectStream *aObjStream, bool own_ostream);
-	/* extends ObjectStream */
-	virtual void		getBinary(void *buf, uint size, const char *desc);
-	virtual bool		getBool(const char *desc);
-	virtual uint64		getInt(uint size, const char *desc);
-	virtual void		getObject(Object *& object, const char *name, ObjectID id = OBJID_INVALID);
-	virtual char *		getString(const char *desc);
-	virtual byte *		getLenString(int &length, const char *desc);
-
-	virtual void		putBinary(const void *mem, uint size, const char *desc);
-	virtual void		putBool(bool b, const char *desc);
-	virtual void		putComment(const char *comment);
-	virtual void		putInt(uint64 i, uint size, const char *desc, uint int_fmt_hint = OS_FMT_DEC);
-	virtual void		putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID);
-	virtual void		putSeparator();
-	virtual void		putString(const char *string, const char *desc);
-	virtual void		putLenString(const byte *string, int length, const char *desc);
-};
 
 /* cntl cmd */
-#define FCNTL_MODS_INVD			0x00000001
-#define FCNTL_MODS_FLUSH		0x00000002
-#define FCNTL_MODS_IS_DIRTY		0x00000003	// const FileOfs &offset, const FileOfs &range, bool &isdirty
-#define FCNTL_CACHE_INVD		0x00000004
-#define FCNTL_FLUSH_STAT		0x00000005
-#define FCNTL_GET_RELOC			0x00000006	// bool &enabled
-#define FCNTL_SET_RELOC			0x00000007	// bool enable
-#define FCNTL_GET_FD			0x00000008	// int &fd
+#define FCNTL_MODS_INVD				0x00000001
+#define FCNTL_MODS_FLUSH				0x00000002
+#define FCNTL_MODS_IS_DIRTY			0x00000003	// FILEOFS offset, UINT range, bool *isdirty
+#define FCNTL_MODS_CLEAR_DIRTY		0x00000004
+#define FCNTL_MODS_CLEAR_DIRTY_RANGE	0x00000005	// FILEOFS offset, UINT range
+#define FCNTL_FLUSH_STAT				0x00000006
+#define FCNTL_GET_RELOC				0x00000007	// bool *enabled
+#define FCNTL_SET_RELOC				0x00000008	// bool enable
 
-// Return a "modification count" that changes, every time the file state
-// ( content, size, pstat ) changes.
-// While identical mod-counts imply identical file states,
-// different mod-counts do not necessarily imply different file states !
-#define FCNTL_GET_MOD_COUNT		0x00000009	// int &mcount
+#define IS_DIRTY_SINGLEBIT			0x80000000
 
-#define IS_DIRTY_SINGLEBIT		0x80000000
+/* ht_file.access_mode */
+#define FAM_NULL		0
+#define FAM_READ		1
+#define FAM_WRITE		2
 
-/**
- *	A file.
- */
-class File: public Stream {
-protected:
-	int mcount;
+/* ht_file open mode */
+#define FOM_EXISTS		0
+#define FOM_CREATE		1
+#define FOM_APPEND		2
+
+class ht_streamfile: public ht_stream {
 public:
-		File();
-	/* new */
-		int			cntl(uint cmd, ...);
-	virtual void			cut(uint size);
-	virtual void			extend(FileOfs newsize);
-	virtual String &		getFilename(String &result) const;
-	virtual FileOfs			getSize() const;
-	virtual void			insert(const void *buf, uint size);
-	virtual void			pstat(pstat_t &s) const;
-	virtual void			seek(FileOfs offset);
-	virtual FileOfs			tell() const;
-	virtual void			truncate(FileOfs newsize);
-	virtual int			vcntl(uint cmd, va_list vargs);
+/* new */
+		   int			cntl(UINT cmd, ...);
+	virtual int			extend(UINT newsize);
+	virtual const char *	get_filename();
+	virtual ht_streamfile *	get_layered();
+	virtual UINT			get_size();
+	virtual void			pstat(pstat_t *s);
+	virtual int			seek(FILEOFS offset);
+	virtual void			set_layered(ht_streamfile *streamfile);
+	virtual FILEOFS		tell();
+	virtual int			truncate(UINT newsize);
+	virtual int			vcntl(UINT cmd, va_list vargs);
 };
 
-/**
- *	A file, layering a file.
+/*
+ *	CLASS ht_layer_streamfile
  */
-class FileLayer: public File {
+
+class ht_layer_streamfile: public ht_streamfile {
 protected:
-	File *mFile;
-	bool mOwnFile;
+	ht_streamfile *streamfile;
+	bool own_streamfile;
 public:
-					FileLayer(File *file, bool own_file);
-	virtual 			~FileLayer();
-	/* extends File */
-	virtual void			cut(uint size);
-	virtual void			extend(FileOfs newsize);
-	virtual IOAccessMode		getAccessMode() const;
-	virtual String &		getDesc(String &result) const;
-	virtual String &		getFilename(String &result) const;
-	virtual FileOfs			getSize() const;
-	virtual void			insert(const void *buf, uint size);
-	virtual void			pstat(pstat_t &s) const;
-	virtual uint			read(void *buf, uint size);
-	virtual void			seek(FileOfs offset);
-	virtual int			setAccessMode(IOAccessMode mode);
-	virtual FileOfs			tell() const;
-	virtual void			truncate(FileOfs newsize);
-	virtual int			vcntl(uint cmd, va_list vargs);
-	virtual uint			write(const void *buf, uint size);
-	/* new */
-		File *			getLayered() const;
-		void			setLayered(File *newLayered, bool ownNewLayered);
+		   void	init(ht_streamfile *streamfile, bool own_streamfile);
+	virtual void	done();
+/* overwritten */
+	virtual void			copy_to(ht_stream *stream);
+	virtual int			extend(UINT newsize);
+	virtual UINT			get_access_mode();
+	virtual int			get_error();
+	virtual const char *	get_desc();
+	virtual const char *	get_filename();
+	virtual ht_streamfile *	get_layered();
+	virtual UINT			get_size();
+	virtual void			pstat(pstat_t *s);
+	virtual UINT			read(void *buf, UINT size);
+	virtual int			seek(FILEOFS offset);
+	virtual bool			set_access_mode(UINT access_mode);
+	virtual void			set_error(int error);
+	virtual void			set_error_func(stream_error_func_ptr stream_error_func);
+	virtual void			set_layered(ht_streamfile *streamfile);
+		   void			set_streamfile_ownership(bool own);
+	virtual FILEOFS		tell();
+	virtual int			truncate(UINT newsize);
+	virtual int			vcntl(UINT cmd, va_list vargs);
+	virtual UINT			write(const void *buf, UINT size);
 };
 
-/**
- *	A local file (file descriptor [fd]).
+/*
+ *	CLASS ht_sys_file
  */
-class LocalFileFD: public File {
-protected:
-	String		mFilename;
-	FileOpenMode	mOpenMode;
 
+class ht_sys_file: public ht_streamfile {
+protected:
 	int fd;
 	bool own_fd;
 
-	FileOfs offset;
-
-		int		setAccessModeInternal(IOAccessMode mode);
+	FILEOFS offset;
 public:
 
-				LocalFileFD(const String &aFilename, IOAccessMode mode, FileOpenMode aOpenMode);
-				LocalFileFD(int fd, bool own_fd, IOAccessMode mode);
-	virtual 		~LocalFileFD();
-	/* extends File */
-	virtual String &	getDesc(String &result) const;
-	virtual String &	getFilename(String &result) const;
-	virtual FileOfs		getSize() const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual int		setAccessMode(IOAccessMode mode);
-	virtual FileOfs 	tell() const;
-	virtual void		truncate(FileOfs newsize);
-	virtual int		vcntl(uint cmd, va_list vargs);
-	virtual uint		write(const void *buf, uint size);
+		   void		init(int fd, bool own_fd, UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-/**
- *	A local file (file stream [FILE*]).
+/*
+ *	CLASS ht_stdio_file
  */
-class LocalFile: public File {
+
+class ht_stdio_file: public ht_streamfile {
 protected:
-	String		mFilename;
-	FileOpenMode	mOpenMode;
+	FILE *file;
+	bool own_file;
 
-	SYS_FILE *	file;
-	bool		own_file;
-
-	FileOfs		offset;
-
-		int		setAccessModeInternal(IOAccessMode mode);
+	FILEOFS offset;
 public:
-				LocalFile(const String &aFilename, IOAccessMode mode, FileOpenMode aOpenMode);
-				LocalFile(FILE *file, bool own_file, IOAccessMode mode);
-	virtual			~LocalFile();
-	/* extends File */
-	virtual String &	getDesc(String &result) const;
-	virtual String &	getFilename(String &result) const;
-	virtual FileOfs		getSize() const;
-	virtual void		pstat(pstat_t &s) const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual int		setAccessMode(IOAccessMode mode);
-	virtual FileOfs 	tell() const;
-	virtual void		truncate(FileOfs newsize);
-	virtual int		vcntl(uint cmd, va_list vargs);
-	virtual uint		write(const void *buf, uint size);
+
+		   void		init(FILE *file, bool own_file, UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-/**
- *	A temporary file.
+/*
+ *	CLASS ht_file
  */
-class TempFile: public LocalFile {
-public:
-				TempFile(IOAccessMode mode);
-	/* extends File */
-	virtual String &	getDesc(String &result) const;
-	virtual void		pstat(pstat_t &s) const;
-};
 
-/**
- *	A fixed-size, read-only file, mapping a area of memory.
- */
-class ConstMemMapFile: public File {
+class ht_file: public ht_stdio_file {
 protected:
-	FileOfs pos;
-	uint size;
-	const void *buf;
+	char *filename;
+	UINT open_mode;
+
+	FILEOFS offset;
+
+	bool	set_access_mode_internal(UINT access_mode);
 public:
-				ConstMemMapFile(const void *buf, uint size);
-	/* extends File */
-	virtual String &	getDesc(String &result) const;
-	virtual FileOfs	getSize() const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual FileOfs 	tell() const;
+
+		   void		init(const char *filename, UINT access_mode, UINT open_mode);
+	virtual void		done();
+/* overwritten */
+	virtual const char *get_desc();
+	virtual const char *get_filename();
+	virtual void		pstat(pstat_t *s);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual int		truncate(UINT newsize);
+	virtual int		vcntl(UINT cmd, va_list vargs);
 };
 
-/**
- *	A fixed-size file, mapping a area of memory.
+/*
+ *	CLASS ht_temp_file
  */
-class MemMapFile: public ConstMemMapFile {
+
+class ht_temp_file: public ht_stdio_file {
 public:
-				MemMapFile(void *buf, uint size);
-	/* extends Stream */
-	virtual uint		write(const void *buf, uint size);
+		   void		init(UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual const char *get_desc();
+	virtual void		pstat(pstat_t *s);
 };
 
-/**
- *	A (read-only) file with zero-content.
+/*
+ *	CLASS ht_memmap_file
  */
-class NullFile: public File {
-public:
-				NullFile();
-	/* extends File */
-	virtual void		extend(FileOfs newsize);
-	virtual String &	getDesc(String &result) const;
-	virtual FileOfs	getSize() const;
-	virtual void		pstat(pstat_t &s) const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual int		setAccessMode(IOAccessMode mode);
-	virtual FileOfs 	tell() const;
-	virtual void		truncate(FileOfs newsize);
-	virtual uint		write(const void *buf, uint size);
-};
 
-/**
- *	A file, existing only in memory.
- */
-class MemoryFile: public File {
+class ht_memmap_file: public ht_streamfile {
 protected:
-	FileOfs ofs;
-	FileOfs pos;
-	uint bufsize, dsize, ibufsize;
+	FILEOFS pos;
+	UINT size;
 	byte *buf;
 
-	virtual	uint		extendBufSize(uint bufsize);
-	virtual	uint		shrinkBufSize(uint bufsize);
-		void		extendBuf();
-		void		shrinkBuf();
-		void		resizeBuf(uint newsize);
 public:
-				MemoryFile(FileOfs ofs = 0, uint size = 0, IOAccessMode mode = IOAM_READ | IOAM_WRITE);
-	virtual 		~MemoryFile();
-	/* extends File */
-	virtual void		extend(FileOfs newsize);
-	virtual IOAccessMode	getAccessMode() const;
-	virtual String &	getDesc(String &result) const;
-	virtual FileOfs		getSize() const;
-	virtual void		pstat(pstat_t &s) const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual int		setAccessMode(IOAccessMode mode);
-	virtual FileOfs 	tell() const;
-	virtual void		truncate(FileOfs newsize);
-	virtual uint		write(const void *buf, uint size);
-	/* new */
-		byte *		getBufPtr() const;
+		   void		init(byte *buf, UINT size);
+	virtual void		done();
+/* overwritten */
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual FILEOFS 	tell();
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-/**
- *	A file layer, representing a cropped version of a file
+/*
+ *	CLASS ht_null_file
  */
-class CroppedFile: public FileLayer {
+
+class ht_null_file: public ht_streamfile {
 protected:
-	FileOfs mCropStart;
-	bool	mHasCropSize;
-	FileOfs mCropSize;
 public:
-				// crop [start; start+size-1]
-				CroppedFile(File *file, bool own_file, FileOfs aCropStart, FileOfs aCropSize);
-				// no size, just start
-				CroppedFile(File *file, bool own_file, FileOfs aCropStart);
-	/* extends FileLayer */
-	virtual void		extend(FileOfs newsize);
-	virtual String &	getDesc(String &result) const;
-	virtual FileOfs		getSize() const;
-	virtual void		pstat(pstat_t &s) const;
-	virtual uint		read(void *buf, uint size);
-	virtual void		seek(FileOfs offset);
-	virtual FileOfs 	tell() const;
-	virtual void		truncate(FileOfs newsize);
-	virtual uint		write(const void *buf, uint size);
+		   void		init();
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual UINT		get_access_mode();
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual void		pstat(pstat_t *s);
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual FILEOFS 	tell();
+	virtual int		truncate(UINT newsize);
+	virtual UINT		write(const void *buf, UINT size);
 };
 
-void fileMove(File *file, FileOfs src, FileOfs dest, FileOfs size);
+/*
+ *	CLASS ht_mem_file
+ */
 
-/** read string from file (zero-terminated, 8-bit chars) */
-char *fgetstrz(File *file);
-/** read string from stream (zero-terminated, 8-bit chars) */
-char *getstrz(Stream *stream);
-/** write string into stream (zero-terminated, 8-bit chars) */
-void putstrz(Stream *stream, const char *str);
+class ht_mem_file: public ht_streamfile {
+protected:
+	FILEOFS ofs;
+	FILEOFS pos;
+	UINT bufsize, dsize, ibufsize;
+	byte *buf;
 
-/** read string from stream (8-bit length followed by content aka. Pascal-style) */
-char *getstrp(Stream *stream);
-/** write string into stream (8-bit length followed by content aka. Pascal-style) */
-void putstrp(Stream *stream, const char *str);
+	virtual UINT		extendbufsize(UINT bufsize);
+	virtual UINT		shrinkbufsize(UINT bufsize);
+		   void		extendbuf();
+		   void		shrinkbuf();
+		   void		resizebuf(UINT newsize);
+public:
+		   void		init();
+		   void		init(FILEOFS ofs, UINT size, UINT access_mode);
+	virtual void		done();
+/* overwritten */
+	virtual int		extend(UINT newsize);
+	virtual UINT		get_access_mode();
+	virtual const char *get_desc();
+	virtual UINT		get_size();
+	virtual void		pstat(pstat_t *s);
+	virtual UINT		read(void *buf, UINT size);
+	virtual int		seek(FILEOFS offset);
+	virtual bool		set_access_mode(UINT access_mode);
+	virtual FILEOFS 	tell();
+	virtual int		truncate(UINT newsize);
+	virtual UINT		write(const void *buf, UINT size);
+/* new */
+		   void*		bufptr();
+};
 
-/** read string from stream (zero-terminated, 16-bit chars) */
-char *getstrw(Stream *stream);
-/** write string into stream (zero-terminated, 16-bit chars) */
-void putstrw(Stream *stream, const char *str);
+/*
+ *	string stream functions
+ */
+
+/* 0-terminated ASCII */
+char *fgetstrz(ht_streamfile *file);
+char *getstrz(ht_stream *stream);
+void putstrz(ht_stream *stream, const char *str);
+
+/* pascal-style ASCII */
+char *getstrp(ht_stream *stream);
+void putstrp(ht_stream *stream, const char *str);
+
+/* 0-terminated wide/unicode */
+char *getstrw(ht_stream *stream);
+void putstrw(ht_stream *stream, const char *str);
+
+char *ht_strerror(int error);
 
 #endif /* __STREAM_H__ */
+

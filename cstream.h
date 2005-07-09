@@ -20,7 +20,7 @@
 #ifndef __CSTREAM_H__
 #define __CSTREAM_H__
 
-#include "io/types.h"
+#include "global.h"
 #include "stream.h"
 
 /*
@@ -32,14 +32,14 @@
 class ht_compressed_stream: public ht_layer_stream {
 protected:
 	byte *buffer;
-	uint buffersize;
-	uint bufferpos;
+	UINT buffersize;
+	UINT bufferpos;
 public:
-			void	init(ht_stream *stream, bool own_stream, uint granularity=COMPRESSED_STREAM_DEFAULT_GRANULARITY);
+			void	init(ht_stream *stream, bool own_stream, UINT granularity=COMPRESSED_STREAM_DEFAULT_GRANULARITY);
 	virtual	void	done();
 /* overwritten */
-	virtual	uint	read(void *buf, uint size);
-	virtual	uint	write(const void *buf, uint size);
+	virtual	UINT	read(void *buf, UINT size);
+	virtual	UINT	write(const void *buf, UINT size);
 protected:
 			bool flush_compressed();
 			bool flush_uncompressed();

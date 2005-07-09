@@ -23,7 +23,7 @@
 
 #include "analy.h"
 #include "cmds.h"
-#include "io/types.h"
+#include "global.h"
 #include "htdialog.h"
 #include "htformat.h"
 #include "httree.h"
@@ -144,13 +144,13 @@ class AnalyInfoline: public ht_statictext {
 public:
 	ht_aviewer	*analy;
 	char			*s;
-	FileOfs		fofs;
+	FILEOFS		fofs;
 	Address		*addr;
 	char			*displayformat;
 			void	init(bounds *b, ht_aviewer *A, char *Format);
 	virtual	void done();
 	virtual	char *gettext();
-			void update(Address *cursor_addr, FileOfs ecursor_addr);
+			void update(Address *cursor_addr, FILEOFS ecursor_addr);
 			bool valid();
 };
 
@@ -166,9 +166,9 @@ public:
 	AnalyserOutput *output;
 	ht_aviewer	*aviewer;
 	
-			void init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
+			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
-	virtual	bool convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
+	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
 	virtual	bool closest_line_id(LINE_ID *line_id);
 	virtual	void	first_line_id(LINE_ID *line_id);
 	virtual	bool	getline(char *line, const LINE_ID line_id);
@@ -176,7 +176,7 @@ public:
 	virtual	int	next_line_id(LINE_ID *line_id, int n);
 	virtual	int	prev_line_id(LINE_ID *line_id, int n);
 			void	setAnalyser(Analyser *Analy);
-	virtual	ht_search_result *search(ht_search_request *search, FileOfs start, FileOfs end);
+	virtual	ht_search_result *search(ht_search_request *search, FILEOFS start, FILEOFS end);
 };
 
 /*
@@ -192,7 +192,7 @@ public:
 	ht_analy_sub *analy_sub;
 	bool one_load_hack;
 	bool pause;
-			void init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy);
+			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy);
 	virtual	void	done();
 			bool convertAddressToViewerPos(Address *a, viewer_pos *p);
 			bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
@@ -201,17 +201,17 @@ public:
 			void dataStringDialog();
 			void dataIntDialog(taddr_int_subtype subtype, int length);
 			void exportFileDialog();
-	virtual	char *func(uint i, bool execute);
+	virtual	char *func(UINT i, bool execute);
 			void generateOutputDialog();
 			bool getCurrentAddress(Address **a);
-	virtual	bool get_current_offset(FileOfs *ofs);
+	virtual	bool get_current_offset(FILEOFS *ofs);
 	virtual	void get_pindicator_str(char *buf);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
 			bool gotoAddress(Address *a, ht_view *source_object);
 	virtual	void	handlemsg(htmsg *msg);
 	virtual	bool	idle();
-	virtual	bool offset_to_pos(FileOfs ofs, viewer_pos *p);
-	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
+	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
+	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
 			bool pos_to_string(viewer_pos p, char *result, int maxlen);
 	virtual	int	ref_sel(LINE_ID *id);
 	virtual	void reloadpalette();
@@ -222,7 +222,7 @@ public:
 			void showSymbols(Address *addr);
 			void showXRefs(Address *addr);
 			void searchForXRefs(Address *addr);
-	virtual	bool qword_to_pos(uint64 q, viewer_pos *p);
+	virtual	bool qword_to_pos(qword q, viewer_pos *p);
 	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual	int symbol_handler(eval_scalar *result, char *name);
 };

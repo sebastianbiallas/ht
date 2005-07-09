@@ -32,12 +32,12 @@
 #define TEXTEDITOPT_UNDO			2
 
 struct text_viewer_pos {
-	uint line;
-	uint pofs;
+	UINT line;
+	UINT pofs;
 };
 
 union text_search_pos {
-	FileOfs offset;
+	FILEOFS offset;
 };
 
 class ht_text_editor;
@@ -54,12 +54,12 @@ class ht_text_editor;
 /*
  *	CLASS ht_undo_data
  */
-class ht_undo_data: public Object {
+class ht_undo_data: public ht_data {
 public:
 	ht_undo_data();
 	virtual bool combine(ht_undo_data *ud);
-	virtual uint getsize()=0;
-	virtual void gettext(char *text, uint maxlen)=0;
+	virtual UINT getsize()=0;
+	virtual void gettext(char *text, UINT maxlen)=0;
 	virtual void apply(ht_text_editor *te)=0;
 	virtual void unapply(ht_text_editor *te, bool *goto_only)=0;
 };
@@ -71,14 +71,14 @@ class ht_undo_data_delete_string: public ht_undo_data {
 	text_viewer_pos apos;           /* cursor before */
 	text_viewer_pos bpos;           /* cursor after */
 	void *string;
-	uint len;
+	UINT len;
 public:
-	ht_undo_data_delete_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, uint len);
+	ht_undo_data_delete_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, UINT len);
 	~ht_undo_data_delete_string();
 	virtual bool combine(ht_undo_data *ud);
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -90,14 +90,14 @@ class ht_undo_data_delete_string2: public ht_undo_data {
 	text_viewer_pos apos;           /* cursor before */
 	text_viewer_pos bpos;           /* cursor after */
 	void *string;
-	uint len;
+	UINT len;
 public:
-	ht_undo_data_delete_string2(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, uint len);
+	ht_undo_data_delete_string2(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, UINT len);
 	~ht_undo_data_delete_string2();
 	virtual bool combine(ht_undo_data *ud);
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -110,14 +110,14 @@ class ht_undo_data_insert_string: public ht_undo_data {
 	text_viewer_pos bpos;
 	text_viewer_pos cpos;
 	void *string;
-	uint len;
+	UINT len;
 public:
-	ht_undo_data_insert_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, uint len);
+	ht_undo_data_insert_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, UINT len);
 	~ht_undo_data_insert_string();
 	virtual bool combine(ht_undo_data *ud);
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -130,16 +130,16 @@ class ht_undo_data_overwrite_string: public ht_undo_data {
 	text_viewer_pos bpos;
 	text_viewer_pos cpos;
 	void *string;
-	uint len;
+	UINT len;
 	void *string2;
-	uint len2;
+	UINT len2;
 public:
-	ht_undo_data_overwrite_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, uint len, void *string2, uint len2);
+	ht_undo_data_overwrite_string(text_viewer_pos *apos, text_viewer_pos *bpos, void *string, UINT len, void *string2, UINT len2);
 	~ht_undo_data_overwrite_string();
 	virtual bool combine(ht_undo_data *ud);
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -151,13 +151,13 @@ public:
 class ht_undo_data_split_line: public ht_undo_data {
 	text_viewer_pos apos;
 	text_viewer_pos bpos;
-	uint indent;
+	UINT indent;
 public:
-	ht_undo_data_split_line(text_viewer_pos *apos, text_viewer_pos *bpos, uint Indent);
+	ht_undo_data_split_line(text_viewer_pos *apos, text_viewer_pos *bpos, UINT Indent);
 	~ht_undo_data_split_line();
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -172,9 +172,9 @@ class ht_undo_data_join_line: public ht_undo_data {
 public:
 	ht_undo_data_join_line(text_viewer_pos *apos, text_viewer_pos *bpos);
 	~ht_undo_data_join_line();
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -190,13 +190,13 @@ class ht_undo_data_insert_block: public ht_undo_data {
 	text_viewer_pos sel_start;
 	text_viewer_pos sel_end;
 	void *block;
-	uint size;
+	UINT size;
 public:
-	ht_undo_data_insert_block(text_viewer_pos *apos, text_viewer_pos *bpos, void *block, uint size);
+	ht_undo_data_insert_block(text_viewer_pos *apos, text_viewer_pos *bpos, void *block, UINT size);
 	~ht_undo_data_insert_block();
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -212,13 +212,13 @@ class ht_undo_data_delete_block: public ht_undo_data {
 	text_viewer_pos sel_start;
 	text_viewer_pos sel_end;
 	void *block;
-	uint size;
+	UINT size;
 public:
 	ht_undo_data_delete_block(text_viewer_pos *apos, text_viewer_pos *bpos, text_viewer_pos *Sel_start, text_viewer_pos *Sel_end);
 	~ht_undo_data_delete_block();
-	virtual uint getsize();
-	virtual void gettext(char *text, uint maxlen);
-	virtual ObjectID getObjectID() const;
+	virtual UINT getsize();
+	virtual void gettext(char *text, UINT maxlen);
+	virtual OBJECT_ID object_id() const;
 	virtual void apply(ht_text_editor *te);
 	virtual void unapply(ht_text_editor *te, bool *goto_only);
 };
@@ -229,12 +229,12 @@ public:
  
 class ht_text_editor_undo: public ht_clist {
 public:
-	uint size, max_size;
+	UINT size, max_size;
 	int clean_state;
 	int current_position;
 	bool goto_state;
 public:
-	void init(uint max_undo_size);
+	void init(UINT max_undo_size);
 	void insert_undo(ht_text_editor *te, ht_undo_data *undo);
 	bool is_clean();
 	bool	is_clean(int i);
@@ -275,11 +275,11 @@ protected:
 	ht_syntax_lexer *lexer;
 	bool own_lexer;
 
-	uint cursorx, cursory;
+	UINT cursorx, cursory;
 	text_viewer_pos sel_start, sel_end;
 
-	uint top_line;
-	uint xofs;
+	UINT top_line;
+	UINT xofs;
 
 	bool selectcursor;
 	bool selectmode;
@@ -290,23 +290,23 @@ protected:
 	bool show_EOL;
 	bool show_EOF;
 	bool highlight_wrap;
-	uint	tab_size;
+	UINT	tab_size;
 
 	ht_search_request *last_search_request;
-	FileOfs last_search_end_ofs;
+	FILEOFS last_search_end_ofs;
 
 /* new */
 			int buf_lprint0(int x, int y, int c, int l, char *text);
-			uint char_vsize(char c, uint x);
+			UINT char_vsize(char c, UINT x);
 			void clipboard_copy_cmd();
 			bool continue_search();
 	virtual	vcp  get_bgcolor();
 			void make_pos_physical(text_viewer_pos *p);
 			void normalize_selection();
-			uint physical_cursorx();
+			UINT physical_cursorx();
 			void popup_change_highlight();
-			void render_meta(uint x, uint y, text_viewer_pos *pos, vcp color);
-			void render_str(int x, int y, vcp color, text_viewer_pos *pos, uint len, char *str, bool multi);
+			void render_meta(UINT x, UINT y, text_viewer_pos *pos, vcp color);
+			void render_str(int x, int y, vcp color, text_viewer_pos *pos, UINT len, char *str, bool multi);
 			void render_str_color(vcp *color, text_viewer_pos *pos);
 			ht_search_result *search(ht_search_request *request, text_search_pos *start, text_search_pos *end);
 			bool show_search_result(ht_search_result *result);
@@ -319,12 +319,12 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void resize(int rw, int rh);
 /* new */
-	virtual	char *func(uint i, bool execute);
-			uint get_line_length(uint line);
-			uint get_line_vlength(uint line);
-			uint get_line_indent(uint line);
+	virtual	char *func(UINT i, bool execute);
+			UINT get_line_length(UINT line);
+			UINT get_line_vlength(UINT line);
+			UINT get_line_indent(UINT line);
 			void get_selection(text_viewer_pos *start, text_viewer_pos *end);
-			bool goto_line(uint line);
+			bool goto_line(UINT line);
 	/* position indicator string */
 	virtual	void get_pindicator_str(char *buf);
 	/* scrollbar pos */
@@ -334,27 +334,27 @@ public:
 	virtual	cursor_mode get_cursor_mode();
 	virtual	void get_cursor_pos(text_viewer_pos *cursor);
 	/* conversions */
-	virtual	bool pos_to_offset(text_viewer_pos *pos, FileOfs *ofs);
+	virtual	bool pos_to_offset(text_viewer_pos *pos, FILEOFS *ofs);
 	/**/
 			ht_syntax_lexer *get_lexer();
-			int ppos_str(char *buf, uint bufsize, text_viewer_pos *ppos);
+			int ppos_str(char *buf, UINT bufsize, text_viewer_pos *ppos);
 			void set_lexer(ht_syntax_lexer *l, bool own_l);
 			void set_textfile(ht_textfile *t, bool own_t);
 			ht_textfile *get_textfile();
 /**/
-			uint cursor_up(uint n);
-			uint cursor_down(uint n);
-			uint cursor_left(uint n);
-			uint cursor_right(uint n);
+			UINT cursor_up(UINT n);
+			UINT cursor_down(UINT n);
+			UINT cursor_left(UINT n);
+			UINT cursor_right(UINT n);
 			void cursor_home();
 			void cursor_end();
-			void cursor_vput(uint vx);
-			void cursor_pput(uint px);
+			void cursor_vput(UINT vx);
+			void cursor_pput(UINT px);
 			void cursor_set(text_viewer_pos *pos);
-			uint scroll_up(uint n);
-			uint scroll_down(uint n);
-			uint scroll_left(uint n);
-			uint scroll_right(uint n);
+			UINT scroll_up(UINT n);
+			UINT scroll_down(UINT n);
+			UINT scroll_left(UINT n);
+			UINT scroll_right(UINT n);
 			void select_add(text_viewer_pos *from, text_viewer_pos *to);
 			void select_clear();
 			void select_end();
@@ -368,7 +368,7 @@ public:
 
 class ht_text_editor: public ht_text_viewer {
 protected:
-	uint edit_options;
+	UINT edit_options;
 	ht_text_editor_undo *undo_list;
 	bool	auto_indent;
 	bool overwrite_mode;
@@ -380,25 +380,25 @@ protected:
 	virtual	vcp  get_bgcolor();
 			bool save();
 public:
-			void init(bounds *b, bool own_textfile, ht_textfile *textfile, ht_list *lexers, uint edit_options);
+			void init(bounds *b, bool own_textfile, ht_textfile *textfile, ht_list *lexers, UINT edit_options);
 	virtual	void done();
 /* overwritten */
 	virtual	void config_changed();
-	virtual	char *func(uint i, bool execute);
+	virtual	char *func(UINT i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
 	/* position indicator string */
 	virtual	void get_pindicator_str(char *buf);
 	/* cursor mode */
 	virtual	cursor_mode get_cursor_mode();
 /* new */
-			bool concat_lines(uint a);
-			void delete_chars(uint line, uint ofs, uint count);
-			void delete_lines(uint line, uint count);
-			void indent(uint line, uint start, uint size);
-			void insert_chars(uint line, uint ofs, void *chars, uint len);
-			void insert_lines(uint line, uint count);
-			void split_line(uint a, uint pos);
-			void unindent(uint line, uint start, uint size);
+			bool concat_lines(UINT a);
+			void delete_chars(UINT line, UINT ofs, UINT count);
+			void delete_lines(UINT line, UINT count);
+			void indent(UINT line, UINT start, UINT size);
+			void insert_chars(UINT line, UINT ofs, void *chars, UINT len);
+			void insert_lines(UINT line, UINT count);
+			void split_line(UINT a, UINT pos);
+			void unindent(UINT line, UINT start, UINT size);
 	/* undo/redo */
 			void textoperation_apply(ht_undo_data *ud);
 			void redo();

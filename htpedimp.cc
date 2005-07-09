@@ -37,21 +37,21 @@
 
 #include <stdlib.h>
 
-static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htpedelayimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
 	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
 	RVA sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].address;
-	uint sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size;
+	UINT sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size;
 	if (!sec_rva || !sec_size) return NULL;
 
 	int h0=new_timer();
 	start_timer(h0);
 
-	uint dll_count=0;
-	uint function_count=0;
+	UINT dll_count=0;
+	UINT function_count=0;
 
 	ht_group *g;
 	bounds c;
@@ -67,16 +67,16 @@ static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *gr
 	v->init(&c, DESC_PE_DIMPORTS, group);
 
 	PE_DELAY_IMPORT_DESCRIPTOR dimport;
-	uint dll_index;
+	UINT dll_index;
 	char iline[256];
 
 	c.y--;
 	c.h=1;
 /* get delay import directory offset */
 	/* 1. get import directory rva */
-	FileOfs iofs;
+	FILEOFS iofs;
 	RVA irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].address;
-//	uint isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size;
+//	UINT isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size;
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 	LOG("%s: PE: reading delay-import directory at offset %08x, rva %08x, size %08x...", file->get_filename(), iofs, irva, pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_DELAY_IMPORT].size);
@@ -89,9 +89,9 @@ static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *gr
 		file->read(&dimport, sizeof dimport);
 		create_host_struct(&dimport, PE_DELAY_IMPORT_DESCRIPTOR_struct, little_endian);
 		if (!dimport.name) break;
-		uint32 base = dimport.attributes & 1 ? 0 : pe_shared->pe32.header_nt.image_base;
+		dword base = dimport.attributes & 1 ? 0 : pe_shared->pe32.header_nt.image_base;
 
-		FileOfs dllname_ofs;
+		FILEOFS dllname_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.name-base, &dllname_ofs)) goto pe_read_error;
 		file->seek(dllname_ofs);
 		char *dllname=fgetstrz(file);
@@ -99,8 +99,8 @@ static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *gr
 		pe_shared->dimports.libs->insert(lib);
 		dll_count++;
 
-		FileOfs ntofs, atofs;
-		uint nva, ava;
+		FILEOFS ntofs, atofs;
+		UINT nva, ava;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.delay_int-base, &ntofs)) goto pe_read_error;
 		if (!pe_rva_to_ofs(&pe_shared->sections, dimport.delay_iat-base, &atofs)) goto pe_read_error;
 		while (1) {
@@ -117,10 +117,10 @@ static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *gr
 /* import by ordinal */
 				func=new ht_pe_import_function(dll_index, ava, nva&0xffff);
 			} else {
-				FileOfs nofs;
+				FILEOFS nofs;
 /* import by name */
 				if (!pe_rva_to_ofs(&pe_shared->sections, nva-base, &nofs)) goto pe_read_error;
-				uint16 hint=0;
+				word hint=0;
 				file->seek(nofs);
 				file->read(&hint, 2);
 				hint = create_host_int(&hint, 2, little_endian);
@@ -150,7 +150,7 @@ static ht_view *htpedelayimports_init(bounds *b, File *file, ht_format_group *gr
 	g->insert(head);
 	g->insert(v);
 //
-	for (uint i=0; i<pe_shared->dimports.funcs->count(); i++) {
+	for (UINT i=0; i<pe_shared->dimports.funcs->count(); i++) {
 		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->dimports.funcs->get(i);
 		assert(func);
 		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->dimports.libs->get(func->libidx);

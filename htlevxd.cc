@@ -55,11 +55,11 @@ static ht_mask_ptable le_vxd_header[]=
 	{ NULL, NULL }
 };
 
-static ht_view *htlevxd_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 	if (!le_shared->is_vxd) return NULL;
-	File *myfile = le_shared->reloc_file;
+	ht_streamfile *myfile = le_shared->reloc_file;
 
 	/* FIXME: */
 	bool le_bigendian = false;

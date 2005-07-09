@@ -132,14 +132,14 @@ static ht_mask_ptable leheader[]=
 	{0, 0}
 };
 
-static ht_view *htleheader_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
 	/* FIXME: */
 	bool le_bigendian = false;
 
-	FileOfs h = le_shared->hdr_ofs;
+	FILEOFS h = le_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_LE_HEADER, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();

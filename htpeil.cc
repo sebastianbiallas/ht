@@ -59,14 +59,14 @@ static ht_mask_ptable metadata_section[] = {
 	{0, 0}
 };
 
-static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htpeil_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
 	if (pe_shared->opt_magic!=COFF_OPTMAGIC_PE32) return NULL;
 
-	uint32 sec_rva, sec_size;
-	FileOfs sec_ofs;
+	dword sec_rva, sec_size;
+	FILEOFS sec_ofs;
 	sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IL].address;
 	sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IL].size;
 	if (!sec_rva || !sec_size) return NULL;
@@ -107,7 +107,7 @@ static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
 	s->add_staticmask_ptable(il_directory, sec_ofs, pe_bigendian);
 	v->insertsub(s);
 	
-	FileOfs metadata_ofs;
+	FILEOFS metadata_ofs;
 	if (pe_rva_to_ofs(&pe_shared->sections, dir.metadata_section_rva, &metadata_ofs)) {
 		/* read metadata section*/
 		IL_METADATA_SECTION metadata;
@@ -115,23 +115,23 @@ static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
 		if (file->read(&metadata, sizeof metadata) == sizeof metadata) {
 			create_host_struct(&metadata, IL_METADATA_SECTION_struct, little_endian);
 			pe_shared->il->metadata = metadata;
-			uint32 add = 2;
+			dword add = 2;
 			if (metadata.minor_version == 1) {
 				// FIXME: align metadata.version_string_length
-				uint32 version_string_length;
+				dword version_string_length;
 				file->read(&version_string_length, 4); // dummy
 				file->read(&version_string_length, 4);
 				version_string_length = create_host_int(&version_string_length, 4, little_endian);
 				add += version_string_length + 8;
 			}
-			FileOfs ofs = metadata_ofs + sizeof metadata + add;
+			FILEOFS ofs = metadata_ofs + sizeof metadata + add;
 			file->seek(ofs);
-			uint16 count;
+			word count;
 			file->read(&count, 2);
 			count = create_host_int(&count, 2, little_endian);
 			pe_shared->il->entries = new ht_clist();
 			pe_shared->il->entries->init();
-			for (uint i=0; i<count; i++) {
+			for (UINT i=0; i<count; i++) {
 				IL_METADATA_SECTION_ENTRY sec_entry;
 				ht_il_metadata_entry *entry;
 				// FIXME: error handling
@@ -139,7 +139,7 @@ static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
 				create_host_struct(&sec_entry, IL_METADATA_SECTION_ENTRY_struct, little_endian);
 				char *name = fgetstrz(file);
 				int nlen = strlen(name)+1;
-				uint32 dummy;
+				dword dummy;
 				if (nlen % 4) {
 					// align properly
 					file->read(&dummy, 4 - nlen % 4);
@@ -150,12 +150,12 @@ static ht_view *htpeil_init(bounds *b, File *file, ht_format_group *group)
 
 				free(name);
 			}
-			for (uint i=0; i<count; i++) {
+			for (UINT i=0; i<count; i++) {
 				ht_il_metadata_entry *entry = (ht_il_metadata_entry *)pe_shared->il->entries->get(i);
 				if (strcmp(entry->name, "#~") == 0) {
 					// token index
 					char dummy[8];
-					uint64 types;
+					qword types;
 					file->seek(entry->offset);
 					file->read(&dummy, 8);
 					file->read(&types, 8);
@@ -185,7 +185,7 @@ format_viewer_if htpeil_if = {
  *	CLASS ht_pe_header_viewer
  */
 
-void ht_pe_il_viewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *group)
+void ht_pe_il_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, group);
 	VIEW_DEBUG_NAME("ht_pe_il_viewer");
@@ -205,7 +205,7 @@ void ht_pe_il_viewer::done()
 	ht_uformat_viewer::done();
 }
 
-ht_il_metadata_entry::ht_il_metadata_entry(char *n, uint32 o, uint32 s)
+ht_il_metadata_entry::ht_il_metadata_entry(char *n, dword o, dword s)
 {
 	name = ht_strdup(n);
 	offset = o;
@@ -220,7 +220,7 @@ ht_il_metadata_entry::~ht_il_metadata_entry()
 /*
  *	NOTE: ILunpack returns result in host-endianess
  */
-int ILunpackDword(uint32 &result, const byte *buf, int len)
+int ILunpackDword(dword &result, const byte *buf, int len)
 {
 	if (len) {
 		result = *(buf++);
@@ -235,28 +235,28 @@ int ILunpackDword(uint32 &result, const byte *buf, int len)
 			// four byte form
 			if (len < 2) return 0;
 			result = ((result & 0x1F) << 24) |
-				    (((uint32)buf[0]) << 16) |
-				    (((uint32)buf[1]) << 8) |
-					 (uint32)buf[2];
+				    (((dword)buf[0]) << 16) |
+				    (((dword)buf[1]) << 8) |
+					 (dword)buf[2];
 			return 4;
 		} else if ((result & 0xf0) == 0xe0) {
 			// five byte form
 			if (len < 3) return 0;
-			result = (((uint32)buf[0]) << 24) |
-				    (((uint32)buf[1]) << 16) |
-				    (((uint32)buf[2]) << 8) |
-					 (uint32)buf[3];
+			result = (((dword)buf[0]) << 24) |
+				    (((dword)buf[1]) << 16) |
+				    (((dword)buf[2]) << 8) |
+					 (dword)buf[3];
 			return 5;
 		}
 	}
 	return 0;
 }
 
-int ILunpackToken(uint32 &result, const byte *buf, int len)
+int ILunpackToken(dword &result, const byte *buf, int len)
 {
 	int read = ILunpackDword(result, buf, len);
 	if (!read) return 0;
-	uint32 type;
+	dword type;
 	switch (result & 0x03) {
 		case 0x00:
 			type = IL_META_TOKEN_TYPE_DEF;

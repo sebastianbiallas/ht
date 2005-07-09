@@ -23,25 +23,25 @@
 #ifndef __ELFSTRUC_H__
 #define __ELFSTRUC_H__
 
-#include "io/types.h"
+#include "global.h"
 
 /* all architectures */
 typedef unsigned char elf_unsigned_char;
 
 /* 32bit architectures */
-typedef uint32 elf32_addr;
-typedef uint16 elf32_half;
-typedef uint32 elf32_off;
-typedef uint32 elf32_sword;
-typedef uint32 elf32_word;
+typedef dword elf32_addr;
+typedef word elf32_half;
+typedef dword elf32_off;
+typedef dword elf32_sword;
+typedef dword elf32_word;
 
 /* 64bit architectures */
-typedef uint64 elf64_addr;
-typedef uint64 elf64_off;
-typedef uint64 elf64_sword;
-typedef uint64 elf64_word;
-typedef uint32 elf64_half;
-typedef uint16 elf64_quarter;
+typedef qword elf64_addr;
+typedef qword elf64_off;
+typedef qword elf64_sword;
+typedef qword elf64_word;
+typedef dword elf64_half;
+typedef word elf64_quarter;
 
 /*
  *	ELF header
@@ -403,7 +403,7 @@ extern byte ELF_RELA64_struct[];
 struct ELFAddress {
 	union {
 		uint32 a32;
-		uint64 a64;
+		qword a64;
 	};
 };
 

@@ -21,7 +21,7 @@
 #ifndef __HTPEEXP_H__
 #define __HTPEEXP_H__
 
-#include "data.h"
+#include "htdata.h"
 #include "htdialog.h"
 #include "formats.h"
 
@@ -41,28 +41,28 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 /* new */
-			char *func(uint i, bool execute);
+			char *func(UINT i, bool execute);
 };
 
 /*
  *	CLASS ht_pe_export_function
  */
 
-class ht_pe_export_function: public Object {
+class ht_pe_export_function: public ht_data {
 public:
-	uint ordinal;
+	UINT ordinal;
 
 	bool byname;
 	char *name;
 	RVA address;
 
-	ht_pe_export_function(RVA address, uint ordinal);
-	ht_pe_export_function(RVA address, uint ordinal, char *name);
+	ht_pe_export_function(RVA address, UINT ordinal);
+	ht_pe_export_function(RVA address, UINT ordinal, char *name);
 	~ht_pe_export_function();
 };
 
 struct ht_pe_export {
-	Container *funcs;
+	ht_clist *funcs;
 };
 
 #endif /* !__HTPEEXP_H__ */

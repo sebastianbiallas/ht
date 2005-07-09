@@ -48,7 +48,7 @@ static ht_mask_ptable mzheader[]=
 	{0, 0}
 };
 
-static ht_view *htmzheader_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htmzheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_MZ_HEADER, VC_EDIT | VC_SEARCH, file, group);

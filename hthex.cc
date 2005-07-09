@@ -35,7 +35,7 @@ extern "C" {
 #include "regex.h"
 }
 
-ht_view *hthex_init(bounds *b, File *file, ht_format_group *group)
+ht_view *hthex_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_hex_viewer *v=new ht_hex_viewer();
 	v->init(b, DESC_HEX, VC_EDIT | VC_GOTO | VC_SEARCH | VC_REPLACE | VC_RESIZE, file, group);
@@ -60,8 +60,8 @@ format_viewer_if hthex_if = {
 
 void ht_hex_viewer::get_pindicator_str(char *buf)
 {
-	FileOfs o;
-	FileOfs sel_start, sel_end;
+	FILEOFS o;
+	FILEOFS sel_start, sel_end;
 	pselect_get(&sel_start, &sel_end);
 	if (get_current_offset(&o)) {
 		char ttemp[1024];
@@ -130,7 +130,7 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 			}
 			break;*/
 		case cmd_hex_entropy: {
-			FileOfs ofs;
+			FILEOFS ofs;
 			if (get_current_offset(&ofs)) {
 				byte buf[64];
 				if (pread(ofs, buf, 64)==64) {
@@ -172,13 +172,13 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-bool ht_hex_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
+bool ht_hex_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 {
 	*ofs = p.u.line_id.id1 + p.u.tag_idx;
 	return true;
 }
 
-bool ht_hex_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
+bool ht_hex_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
 	int ll = h->get_line_length();
 	clear_viewer_pos(p);
@@ -189,11 +189,11 @@ bool ht_hex_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
+bool ht_hex_viewer::qword_to_pos(qword q, viewer_pos *p)
 {
 	int ll = h->get_line_length();
 	ht_linear_sub *s = (ht_linear_sub*)cursor.sub;
-	FileOfs ofs = QWORD_GET_INT(q);
+	FILEOFS ofs = QWORD_GET_INT(q);
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = ofs % ll;
@@ -203,7 +203,7 @@ bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-		FileOfs ofs;
+		FILEOFS ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;
@@ -218,7 +218,7 @@ int ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 void ht_hex_file_sub::handlemsg(htmsg *msg)
 {
 	if (msg->msg == msg_filesize_changed) {
-		uint s = file->get_size();
+		UINT s = file->get_size();
 		fsize = s;
 		return;
 	}

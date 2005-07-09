@@ -50,8 +50,8 @@
 extern format_viewer_if htxbe_if;
 
 struct xbe_section_headers {
-	uint32	number_of_sections;
-	uint32	base_address;
+	dword	number_of_sections;
+	dword	base_address;
 	XBE_SECTION_HEADER *sections;
 };
 
@@ -82,7 +82,7 @@ class ht_xbe: public ht_format_group {
 protected:
 	bool loc_enum;
 public:
-		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
 	/* overwritten */
 	virtual   void loc_enum_start();
@@ -90,13 +90,13 @@ public:
 };
 
 bool xbe_rva_to_section(xbe_section_headers *section_headers, RVA rva, int *section);
-bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FileOfs *ofs);
+bool xbe_rva_to_ofs(xbe_section_headers *section_headers, RVA rva, FILEOFS *ofs);
 bool xbe_rva_is_valid(xbe_section_headers *section_headers, RVA rva);
 bool xbe_rva_is_physical(xbe_section_headers *section_headers, RVA rva);
 
-bool xbe_ofs_to_rva(xbe_section_headers *section_headers, FileOfs ofs, RVA *rva);
-bool xbe_ofs_to_section(xbe_section_headers *section_headers, FileOfs ofs, int *section);
-bool xbe_ofs_to_rva_and_section(xbe_section_headers *section_headers, FileOfs ofs, RVA *rva, int *section);
+bool xbe_ofs_to_rva(xbe_section_headers *section_headers, FILEOFS ofs, RVA *rva);
+bool xbe_ofs_to_section(xbe_section_headers *section_headers, FILEOFS ofs, int *section);
+bool xbe_ofs_to_rva_and_section(xbe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section);
 
 bool xbe_section_name_to_section(xbe_section_headers *section_headers, const char *name, int *section);
 

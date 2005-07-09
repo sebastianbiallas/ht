@@ -42,13 +42,13 @@ bool regmatch(char *str, regex_t *preg, int *len)
 	return false;
 }
 
-bool match_sorted_stringtable(char *s, uint slen, char **strings, uint strings_count)
+bool match_sorted_stringtable(char *s, UINT slen, char **strings, UINT strings_count)
 {
 	int a=0, b=strings_count-1;
 	int m;
 	while (a<=b) {
 		m=(a+b)>>1;
-		uint x=strlen(strings[m]);
+		UINT x=strlen(strings[m]);
 		if (slen>x) x=slen;
 		int d=strncmp(s, strings[m], x);
 		if (d<0) b=m-1; else
@@ -104,7 +104,7 @@ void ht_lang_syntax_lexer::free_lexer_rules()
 }
 
 
-lexer_token ht_lang_syntax_lexer::gettoken(void *b, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
+lexer_token ht_lang_syntax_lexer::gettoken(void *b, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
 {
 	syntax_lexer_rule *lr=lexer_rules;
 	char *buf = (char*)b;
@@ -126,7 +126,7 @@ lexer_token ht_lang_syntax_lexer::gettoken(void *b, uint buflen, text_pos p, boo
 					break;
 				}
 				case LRST_STRING: {
-					uint sl = strlen(lr->string);
+					UINT sl = strlen(lr->string);
 					if ((buflen >= sl) && (memcmp(buf, lr->string, sl)==0)) {
 						l = sl;
 					}
@@ -370,7 +370,7 @@ void ht_c_syntax_lexer::config_changed()
 	reloadpalette();
 }
 
-vcp ht_c_syntax_lexer::getcolor_syntax(uint pal_index)
+vcp ht_c_syntax_lexer::getcolor_syntax(UINT pal_index)
 {
 	return getcolorv(&c_pal, pal_index);
 }
@@ -390,7 +390,7 @@ char *ht_c_syntax_lexer::getname()
 	return "C/C++";
 }
 
-lexer_token ht_c_syntax_lexer::gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
+lexer_token ht_c_syntax_lexer::gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
 {
 	lexer_token t=ht_lang_syntax_lexer::gettoken(buf, buflen, p, start_of_line, ret_state, ret_len);
 	if (t==LEX_CTOK_IDENTIFIER) {
@@ -580,7 +580,7 @@ void ht_html_syntax_lexer::config_changed()
 	reloadpalette();
 }
 
-vcp ht_html_syntax_lexer::getcolor_syntax(uint pal_index)
+vcp ht_html_syntax_lexer::getcolor_syntax(UINT pal_index)
 {
 //	return getcolorv(&c_pal, pal_index);
 	return VCP(VC_LIGHT(VC_BLUE), VC_TRANSPARENT);
@@ -601,7 +601,7 @@ char *ht_html_syntax_lexer::getname()
 	return "HTML";
 }
 
-lexer_token ht_html_syntax_lexer::gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
+lexer_token ht_html_syntax_lexer::gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
 {
 	lexer_token t=ht_lang_syntax_lexer::gettoken(buf, buflen, p, start_of_line, ret_state, ret_len);
 /*	if (t==LEX_CTOK_IDENTIFIER) {

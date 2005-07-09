@@ -28,7 +28,7 @@
 #include "elfstruc.h"
 #include "elf_analy.h"
 
-static ht_view *htelfimage_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
@@ -61,10 +61,10 @@ static ht_view *htelfimage_init(bounds *b, File *file, ht_format_group *group)
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
 		case ELFCLASS32: {
 			ELFAddress l, h;
-			l.a32 = (uint32)-1;
+			l.a32 = (dword)-1;
 			h.a32 = 0;
 			ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
-			for (uint i=0; i<elf_shared->sheaders.count; i++) {
+			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 					if (s->sh_addr < l.a32) l.a32=s->sh_addr;
 					if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
@@ -80,7 +80,7 @@ static ht_view *htelfimage_init(bounds *b, File *file, ht_format_group *group)
 			l.a64 = to_uint64(to_sint64(-1));
 			h.a64 = to_uint64(0);
 			ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
-			for (uint i=0; i<elf_shared->sheaders.count; i++) {
+			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 					if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
 					if ((s->sh_addr + s->sh_size > h.a64)
@@ -152,7 +152,7 @@ format_viewer_if htelfimage_if = {
 /*
  *	CLASS ht_elf_aviewer
  */
-void ht_elf_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_elf_shared_data *ELF_shared)
+void ht_elf_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_elf_shared_data *ELF_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	elf_shared = ELF_shared;

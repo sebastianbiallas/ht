@@ -46,10 +46,10 @@ static format_viewer_if *htpe_ifs[] = {
 	0
 };
 
-static ht_view *htpe_init(bounds *b, File *file, ht_format_group *format_group)
+static ht_view *htpe_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
 	byte pemagic[4];
-	FileOfs h = get_newexe_header_ofs(file);
+	FILEOFS h = get_newexe_header_ofs(file);
 	file->seek(h);
 	file->read(pemagic, 4);
 	if ((pemagic[0]!=PE_MAGIC0) || (pemagic[1]!=PE_MAGIC1) ||
@@ -68,7 +68,7 @@ format_viewer_if htpe_if = {
 /*
  *	CLASS ht_pe
  */
-void ht_pe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_pe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_PE, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_pe");
@@ -115,7 +115,7 @@ void ht_pe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group 
 			create_host_struct(&pe_shared->pe32.header, COFF_OPTIONAL_HEADER32_struct, little_endian);
 			file->read(&pe_shared->pe32.header_nt, sizeof pe_shared->pe32.header_nt);
 			create_host_struct(&pe_shared->pe32.header_nt, PE_OPTIONAL_HEADER32_NT_struct, little_endian);
-			for (uint i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
+			for (UINT i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
 				create_host_struct(&pe_shared->pe32.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
 			}
 			break;
@@ -125,7 +125,7 @@ void ht_pe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group 
 			create_host_struct(&pe_shared->pe64.header, COFF_OPTIONAL_HEADER64_struct, little_endian);
 			file->read(&pe_shared->pe64.header_nt, sizeof pe_shared->pe64.header_nt);
 			create_host_struct(&pe_shared->pe64.header_nt, PE_OPTIONAL_HEADER64_NT_struct, little_endian);
-			for (uint i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
+			for (UINT i=0; i<PE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
 				create_host_struct(&pe_shared->pe64.header_nt.directory[i], PE_DATA_DIRECTORY_struct, little_endian);
 			}
 			break;
@@ -140,7 +140,7 @@ void ht_pe::init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group 
 	pe_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(pe_shared->sections.section_count * sizeof *pe_shared->sections.sections);
 	file->read(pe_shared->sections.sections, pe_shared->sections.section_count*sizeof *pe_shared->sections.sections);
 
-	for (uint i=0; i<pe_shared->sections.section_count; i++) {
+	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		create_host_struct(&pe_shared->sections.sections[i], COFF_SECTION_HEADER_struct, little_endian);
 		/*
 		 *	To make those uninitialized/initialized flags
@@ -213,18 +213,18 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
 		loc->name="pe";
 		loc->start=sh->header_ofs;
 		// calc pe size
-		uint l=sizeof (COFF_HEADER) + sh->coffheader.optional_header_size;
+		UINT l=sizeof (COFF_HEADER) + sh->coffheader.optional_header_size;
 		// go through directories
-		for (uint i=0; i<16; i++) {
-			FileOfs o;
+		for (UINT i=0; i<16; i++) {
+			FILEOFS o;
 			if (pe_rva_to_ofs(&sh->sections, sh->pe32.header_nt.directory[i].address, &o)) {
-				uint k=o+sh->pe32.header_nt.directory[i].size-sh->header_ofs;
+				UINT k=o+sh->pe32.header_nt.directory[i].size-sh->header_ofs;
 				l=MAX(k, l);
 			}
 		}
 		// go through sections
-		for (uint i=0; i<sh->sections.section_count; i++) {
-			uint k=sh->sections.sections[i].data_offset+sh->sections.sections[i].data_size-sh->header_ofs;
+		for (UINT i=0; i<sh->sections.section_count; i++) {
+			UINT k=sh->sections.sections[i].data_offset+sh->sections.sections[i].data_size-sh->header_ofs;
 			l=MAX(k, l);
 		}
 		loc->length=l;
@@ -241,10 +241,10 @@ bool ht_pe::loc_enum_next(ht_format_loc *loc)
  *	rva conversion routines
  */
 
-bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FileOfs *ofs)
+bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FILEOFS *ofs)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+s->data_size)) {
 			*ofs=rva-s->data_address+s->data_offset;
@@ -258,7 +258,7 @@ bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FileOfs *ofs)
 bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
 			*section=i;
@@ -272,7 +272,7 @@ bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *sectio
 bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+MAX(s->data_size, s->data_vsize))) {
 			return true;
@@ -285,7 +285,7 @@ bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva)
 bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((rva>=s->data_address) &&
 		(rva<s->data_address+s->data_size)) {
 			return true;
@@ -299,10 +299,10 @@ bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva)
  *	ofs conversion routines
  */
 
-bool pe_ofs_to_rva(pe_section_headers *section_headers, FileOfs ofs, RVA *rva)
+bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset) &&
 		(ofs<s->data_offset+s->data_size)) {
 			*rva=ofs-s->data_offset+s->data_address;
@@ -313,10 +313,10 @@ bool pe_ofs_to_rva(pe_section_headers *section_headers, FileOfs ofs, RVA *rva)
 	return false;
 }
 
-bool pe_ofs_to_section(pe_section_headers *section_headers, FileOfs ofs, int *section)
+bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (uint i=0; i<section_headers->section_count; i++) {
+	for (UINT i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset) &&
 		(ofs<s->data_offset+s->data_size)) {
 			*section=i;
@@ -327,7 +327,7 @@ bool pe_ofs_to_section(pe_section_headers *section_headers, FileOfs ofs, int *se
 	return false;
 }
 
-bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FileOfs ofs, RVA *rva, int *section)
+bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section)
 {
 	bool r = pe_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
@@ -336,7 +336,7 @@ bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FileOfs ofs,
 	return r;
 }
 
-bool pe_ofs_is_valid(pe_section_headers *section_headers, FileOfs ofs)
+bool pe_ofs_is_valid(pe_section_headers *section_headers, FILEOFS ofs)
 {
 	RVA rva;
 	return pe_ofs_to_rva(section_headers, ofs, &rva);
@@ -351,7 +351,7 @@ bool pe_section_name_to_section(pe_section_headers *section_headers, const char 
 	COFF_SECTION_HEADER *s = section_headers->sections;
 	int slen = strlen(name);
 	slen = MIN(slen, COFF_SIZEOF_SHORT_NAME);
-	for (uint i=0; i < section_headers->section_count; i++) {
+	for (UINT i=0; i < section_headers->section_count; i++) {
 		if (strncmp(name, (char*)&s->name, slen) == 0) {
 			*section = i;
 			return true;

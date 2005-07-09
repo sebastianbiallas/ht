@@ -19,6 +19,7 @@
  */
 
 #include "elfstruc.h"
+#include "global.h"
 #include "htendian.h"
 
 byte ELF_HEADER32_struct[]= {

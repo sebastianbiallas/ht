@@ -19,6 +19,7 @@
  */
 
 
+#include "global.h"
 #include "htendian.h"
 #include "mzstruct.h"
 #include "coff_s.h"

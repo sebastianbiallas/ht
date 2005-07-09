@@ -36,7 +36,7 @@
  *	CLASS ht_dialog
  */
 
-void ht_dialog::init(bounds *b, const char *desc, uint framestyle)
+void ht_dialog::init(bounds *b, const char *desc, UINT framestyle)
 {
 	ht_window::init(b, desc, framestyle);
 	VIEW_DEBUG_NAME("ht_dialog");
@@ -52,7 +52,7 @@ void ht_dialog::done()
 	ht_window::done();
 }
 
-int ht_dialog::aclone()
+int ht_dialog::alone()
 {
 	return 1;
 }
@@ -260,7 +260,7 @@ void ht_checkboxes::draw()
 	}
 }
 
-void ht_checkboxes::getdata(ObjectStream &s)
+void ht_checkboxes::getdata(ht_object_stream *s)
 {
 	s->putIntDec(state, 4, NULL);
 }
@@ -318,7 +318,7 @@ void ht_checkboxes::handlemsg(htmsg *msg)
 	ht_cluster::handlemsg(msg);
 }
 
-void ht_checkboxes::setdata(ObjectStream &s)
+void ht_checkboxes::setdata(ht_object_stream *s)
 {
 	state=s->getIntDec(4, NULL);
 	dirtyview();
@@ -372,7 +372,7 @@ void ht_radioboxes::draw()
 	}
 }
 
-void ht_radioboxes::getdata(ObjectStream &s)
+void ht_radioboxes::getdata(ht_object_stream *s)
 {
 	s->putIntDec(sel, 4, NULL);
 }
@@ -415,7 +415,7 @@ void ht_radioboxes::handlemsg(htmsg *msg)
 	ht_cluster::handlemsg(msg);
 }
 
-void ht_radioboxes::setdata(ObjectStream &s)
+void ht_radioboxes::setdata(ht_object_stream *s)
 {
 	sel=s->getIntDec(4, NULL);
 }
@@ -455,7 +455,7 @@ void *ht_history_listbox::getLast()
 
 void *ht_history_listbox::getNext(void *entry)
 {
-	uint e=(uint)entry;
+	UINT e=(UINT)entry;
 	if (!e) return NULL;
 	if (e < history->count()) {
 		return (void*)(e+1);
@@ -466,7 +466,7 @@ void *ht_history_listbox::getNext(void *entry)
 
 void *ht_history_listbox::getPrev(void *entry)
 {
-	uint e=(uint)entry;
+	UINT e=(UINT)entry;
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -540,7 +540,7 @@ void ht_history_popup_dialog::init(bounds *b, ht_list *hist)
 	ht_listpopup_dialog::init(b, "history");
 }
 
-void ht_history_popup_dialog::getdata(ObjectStream &s)
+void ht_history_popup_dialog::getdata(ht_object_stream *s)
 {
 	// FIXME: public member needed:
 	s->putIntDec(listbox->pos, 4, NULL);
@@ -558,7 +558,7 @@ void ht_history_popup_dialog::init_text_listbox(bounds *b)
 	insert(listbox);
 }
 
-void ht_history_popup_dialog::setdata(ObjectStream &s)
+void ht_history_popup_dialog::setdata(ht_object_stream *s)
 {
 }
 
@@ -622,9 +622,9 @@ void ht_inputfield::freebuf()
 	if (!attachedto && (text) && (*text)) free(*text);
 }
 
-void ht_inputfield::getdata(ObjectStream &s)
+void ht_inputfield::getdata(ht_object_stream *s)
 {
-	uint h=s->recordStart(datasize());
+	UINT h=s->recordStart(datasize());
 	if (!attachedto) {
 		s->putIntDec(*textlen, 4, NULL);
 		s->putBinary(*text, *textlen, NULL);
@@ -652,9 +652,9 @@ int ht_inputfield::insertbyte(byte *pos, byte b)
 	return 0;
 }
 
-void ht_inputfield::isetcursor(uint pos)
+void ht_inputfield::isetcursor(UINT pos)
 {
-	if (pos<(uint)*textlen) *curchar=*text+pos;
+	if (pos<(UINT)*textlen) *curchar=*text+pos;
 }
 
 void ht_inputfield::query(byte ***c, byte ***t, byte ***ss, byte ***se, int **tl, int **mtl)
@@ -693,9 +693,9 @@ void ht_inputfield::select_add(byte *start, byte *end)
 	}
 }
 
-void ht_inputfield::setdata(ObjectStream &s)
+void ht_inputfield::setdata(ht_object_stream *s)
 {
-	uint h=s->recordStart(datasize());
+	UINT h=s->recordStart(datasize());
 	if (!attachedto) {
 		textlen=&textlenv;
 		*textlen=s->getIntDec(4, NULL);
@@ -1422,7 +1422,7 @@ void ht_listbox_title::update()
  *	CLASS ht_listbox
  */
 
-class ht_listbox_vstate: public Object {
+class ht_listbox_vstate: public ht_data {
 public:
 	void *e_top;
 	void *e_cursor;
@@ -1434,7 +1434,7 @@ public:
 	}
 };
 
-void ht_listbox::init(bounds *b, uint Listboxcaps)
+void ht_listbox::init(bounds *b, UINT Listboxcaps)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_OWNBUFFER | VO_RESIZE, 0);
 	cached_count = 0;
@@ -1668,7 +1668,7 @@ int  ht_listbox::estimateEntryPos(void *entry)
 	return (tmp==entry) ? res : -1;
 }
 
-void ht_listbox::getdata(ObjectStream &s)
+void ht_listbox::getdata(ht_object_stream *s)
 {
 	ht_listbox_data d;
 	d.top_ptr = e_top;
@@ -1708,7 +1708,7 @@ void ht_listbox::gotoItemByEntry(void *entry, bool clear_quickfind)
 	stateChanged();
 }
 
-void ht_listbox::gotoItemByPosition(uint pos)
+void ht_listbox::gotoItemByPosition(UINT pos)
 {
 	void *entry = getFirst();
 	while (pos--) entry = getNext(entry);
@@ -1892,7 +1892,7 @@ bool ht_listbox::selectEntry(void *entry)
 	return true;
 }
 
-void ht_listbox::setdata(ObjectStream &s)
+void ht_listbox::setdata(ht_object_stream *s)
 {
 	ht_listbox_data d;
 	s->read(&d, sizeof d);
@@ -1901,14 +1901,14 @@ void ht_listbox::setdata(ObjectStream &s)
 	update();
 }
 
-Object *ht_listbox::vstate_create()
+ht_data *ht_listbox::vstate_create()
 {
 	return new ht_listbox_vstate(e_top, e_cursor);
 }
 
 void ht_listbox::vstate_save()
 {
-	Object *vs = vstate_create();
+	ht_data *vs = vstate_create();
 	if (vs) {
 		htmsg m;
 		m.msg = msg_vstate_save;
@@ -1977,7 +1977,7 @@ void ht_listbox::updateCursor()
  *	ht_text_listbox
  */
 
-void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, uint aListboxcaps)
+void	ht_text_listbox::init(bounds *b, int aCols, int aKeycol, UINT aListboxcaps)
 {
 	first = last = NULL;
 	count = 0;
@@ -2048,7 +2048,7 @@ void *ht_text_listbox::getFirst()
 	return first;
 }
 
-uint ht_text_listbox::getID(void *entry)
+UINT ht_text_listbox::getID(void *entry)
 {
 	if (entry) {
 		return ((ht_text_listbox_item *)entry)->id;
@@ -2502,7 +2502,7 @@ char *ht_listpopup_dialog::defaultpalette()
 	return palkey_generic_blue;
 }
 
-void ht_listpopup_dialog::getdata(ObjectStream &s)
+void ht_listpopup_dialog::getdata(ht_object_stream *s)
 {
 	ht_listbox_data d;
 	listbox->databuf_get(&d, sizeof d);
@@ -2540,7 +2540,7 @@ void ht_listpopup_dialog::select_prev()
 	listbox->cursorUp(1);
 }
 
-void ht_listpopup_dialog::setdata(ObjectStream &s)
+void ht_listpopup_dialog::setdata(ht_object_stream *s)
 {
 	int cursor_id=s->getIntDec(4, NULL);
 	s->getString(NULL);	/* ignored */
@@ -2592,7 +2592,7 @@ vcp ht_listpopup::gettextcolor()
 		getcolor(palidx_generic_input_focused);
 }
 
-void ht_listpopup::getdata(ObjectStream &s)
+void ht_listpopup::getdata(ht_object_stream *s)
 {
 	listpopup->getdata(s);
 }
@@ -2647,7 +2647,7 @@ void ht_listpopup::insertstring(char *string)
 	listpopup->insertstring(string);
 }
 
-void ht_listpopup::setdata(ObjectStream &s)
+void ht_listpopup::setdata(ht_object_stream *s)
 {
 	listpopup->setdata(s);
 }
@@ -2793,7 +2793,7 @@ char *ht_color_block::defaultpalette()
 void ht_color_block::draw()
 {
 	clear(getcolor(palidx_generic_body));
-	uint32 cursor=VCP(focused ? VC_LIGHT(VC_WHITE) : VC_BLACK, VC_TRANSPARENT);
+	dword cursor=VCP(focused ? VC_LIGHT(VC_WHITE) : VC_BLACK, VC_TRANSPARENT);
 	for (int i=0; i<colors; i++) {
 		buf_printchar((i%4)*3+1, i/4, VCP(vcs[i], VC_TRANSPARENT), CHAR_FILLED_F);
 		buf_printchar((i%4)*3+2, i/4, VCP(vcs[i], VC_BLACK), CHAR_FILLED_M);
@@ -2811,7 +2811,7 @@ void ht_color_block::draw()
 	}
 }
 
-void ht_color_block::getdata(ObjectStream &s)
+void ht_color_block::getdata(ht_object_stream *s)
 {
 	s->putIntDec((color==-1) ? VC_TRANSPARENT : vcs[color], 4, NULL);
 }
@@ -2849,7 +2849,7 @@ void ht_color_block::handlemsg(htmsg *msg)
 	ht_view::handlemsg(msg);
 }
 
-void ht_color_block::setdata(ObjectStream &s)
+void ht_color_block::setdata(ht_object_stream *s)
 {
 	int c=s->getIntDec(4, NULL);
 	if (c==VC_TRANSPARENT) color=-1; else {

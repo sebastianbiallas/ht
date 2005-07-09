@@ -24,7 +24,7 @@
 #include "htiobox.h"
 #include "htkeyb.h"
 
-bool execute_process(process_func pp, Object *context)
+bool execute_process(process_func pp, ht_data *context)
 {
 	bounds b;
 	get_std_progress_indicator_metrics(&b);
@@ -53,7 +53,7 @@ bool execute_process(process_func pp, Object *context)
 	return !cancelled;
 }
 
-void execute_process_bg(process_func pp, Object *context)
+void execute_process_bg(process_func pp, ht_data *context)
 {
 	/* FIXME: nyi */
 }

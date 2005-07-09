@@ -29,7 +29,7 @@ extern format_viewer_if htpeimports_if;
  *	class ht_pe_import_library
  */
 
-class ht_pe_import_library: public Object {
+class ht_pe_import_library: public ht_data {
 public:
 	char *name;
 
@@ -41,27 +41,27 @@ public:
  *	class ht_pe_import_function
  */
 
-class ht_pe_import_function: public Object {
+class ht_pe_import_function: public ht_data {
 public:
-	uint libidx;
+	UINT libidx;
 	bool byname;
 	union {
-		uint ordinal;
+		UINT ordinal;
 		struct {
 			char *name;
-			uint hint;
+			UINT hint;
 		} name;
 	};
 	RVA address;
 
-	ht_pe_import_function(uint libidx, RVA address, uint ordinal);
-	ht_pe_import_function(uint libidx, RVA address, char *name, uint hint);
+	ht_pe_import_function(UINT libidx, RVA address, UINT ordinal);
+	ht_pe_import_function(UINT libidx, RVA address, char *name, UINT hint);
 	~ht_pe_import_function();
 };
 
 struct ht_pe_import {
-	Container *funcs;
-	Container *libs;
+	ht_clist *funcs;
+	ht_clist *libs;
 };
 
 /*
@@ -72,7 +72,7 @@ class ht_pe_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	uint sortby;
+	UINT sortby;
 /* new */
 			void dosort();
 public:
@@ -82,7 +82,7 @@ public:
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 /* new */
-			char *func(uint i, bool execute);
+			char *func(UINT i, bool execute);
 };
 
 #endif /* !__HTPEIMP_H__ */

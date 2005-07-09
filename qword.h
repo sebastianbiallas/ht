@@ -22,18 +22,18 @@
 #ifndef __QWORD_H__
 #define __QWORD_H__
 
-#include "global.h"		// for types uint32 and uint
+#include "global.h"		// for types dword and UINT
 
 typedef struct {
-	uint32 lo;
-	uint32 hi;
+	dword lo;
+	dword hi;
 } uint64;
 
-#define uint64 uint64
+#define qword uint64
 
 typedef struct {
-	uint32 lo;
-	uint32 hi;
+	dword lo;
+	dword hi;
 } sint64;
 
 // FIXME: dont work for >32 bit systems
@@ -67,7 +67,7 @@ sint64 sint64_mul(sint64 a, sint64 b);
 
 #ifdef __cplusplus
 sint64 to_sint64(int i);
-uint64 to_uint64(uint i);
+uint64 to_uint64(UINT i);
 sint64 to_sint64(const uint64 &u);
 uint64 to_uint64(const sint64 &s);
 #define to_qword to_uint64

@@ -43,7 +43,7 @@
 #define button_all			3
 #define button_none			4
 
-class ht_queued_msg: public Object {
+class ht_queued_msg: public ht_data {
 public:
 	ht_view *target;
 	htmsg msg;
@@ -54,16 +54,16 @@ protected:
 	int state;
 	int return_val;
 
-	Queue *msgqueue;
+	ht_queue *msgqueue;
 
 /* overwritten */
 	virtual	char *defaultpalette();
 			ht_queued_msg *dequeuemsg();
 public:
-			void	init(bounds *b, const char *desc, uint framestyle);
+			void	init(bounds *b, const char *desc, UINT framestyle);
 	virtual	void	done();
 /* overwritten */
-	virtual	int aclone();
+	virtual	int alone();
 	virtual 	void draw();
 	virtual	void handlemsg(htmsg *msg);
 			void queuemsg(ht_view *target, htmsg *msg);
@@ -100,7 +100,7 @@ struct ht_checkboxes_data {
 
 class ht_checkboxes: public ht_cluster {
 protected:
-			uint32 state;
+			dword state;
 public:
 			void	init(bounds *b, ht_string_list *strings);
 	virtual	void	done();
@@ -108,8 +108,8 @@ public:
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void getdata(ObjectStream &s);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
+	virtual	void setdata(ht_object_stream *s);
 };
 
 /*
@@ -128,8 +128,8 @@ public:
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void getdata(ObjectStream &s);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
+	virtual	void setdata(ht_object_stream *s);
 };
 
 /*
@@ -154,7 +154,7 @@ protected:
 			int insert;
 			int ofs;
 			ht_inputfield *attachedto;
-			List *history;
+			ht_list *history;
 
 			void freebuf();
 			int insertbyte(byte *pos, byte b);
@@ -162,16 +162,16 @@ protected:
 /* overwritten */
 	virtual	char *defaultpalette();
 public:
-		void	init(bounds *b, int maxtextlen, List *history = NULL);
+			void	init(bounds *b, int maxtextlen, ht_list *history=0);
 	virtual	void	done();
 /* overwritten */
 	virtual	int datasize();
-	virtual	void getdata(ObjectStream &s);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
+	virtual	void setdata(ht_object_stream *s);
 /* new */
 			void attach(ht_inputfield *inputfield);
 			void query(byte ***curchar, byte ***text, byte ***selstart, byte ***selend, int **textlen, int **maxtextlen);
-			void isetcursor(uint pos);
+			void isetcursor(UINT pos);
 };
 
 /*
@@ -191,7 +191,7 @@ protected:
 			bool inputbyte(byte a);
 			bool setbyte(byte a);
 public:
-		void	init(bounds *b, int maxtextlen, List *history = NULL);
+			void	init(bounds *b, int maxtextlen, ht_list *history=0);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();
@@ -295,7 +295,7 @@ public:
 	int		x;
 	char		quickfinder[100];
 	char		*qpos;
-	uint		listboxcaps;
+	UINT		listboxcaps;
 
 	int		cols;
 	int		*widths;
@@ -305,7 +305,7 @@ public:
 	ht_listbox_title *title;
 
 public:
-			void		init(bounds *b, uint Listboxcaps=LISTBOX_QUICKFIND);
+			void		init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
 			void		attachTitle(ht_listbox_title *title);
 			void		adjustPosHack();
@@ -319,14 +319,14 @@ public:
 	virtual	char *	defaultpalette();
 	virtual	void		draw();
 	virtual	int		estimateEntryPos(void *entry);
-	virtual	void		getdata(ObjectStream &s);
+	virtual	void		getdata(ht_object_stream *s);
 	virtual	void *	getFirst() = 0;
 	virtual	void *	getLast() = 0;
 	virtual	void *	getNext(void *entry) = 0;
 	virtual	void *	getPrev(void *entry) = 0;
 	virtual	char *	getStr(int col, void *entry) = 0;
 			void		gotoItemByEntry(void *entry, bool clear_quickfind = true);
-	virtual	void		gotoItemByPosition(uint pos);
+	virtual	void		gotoItemByPosition(UINT pos);
 	virtual	void		handlemsg(htmsg *msg);
 	virtual	int		numColumns();
 	virtual	void *	quickfind(char *s) = 0;
@@ -334,11 +334,11 @@ public:
 	virtual	void		redraw();
 	virtual	void		resize(int rw, int rh);
 	virtual	bool		selectEntry(void *entry);
-	virtual	void		setdata(ObjectStream &s);
+	virtual	void		setdata(ht_object_stream *s);
 	virtual	void		stateChanged();
 	virtual	void		update();
 			void		updateCursor();
-	virtual	Object *	vstate_create();
+	virtual	ht_data *	vstate_create();
 			void		vstate_save();
 protected:
 			void		rearrangeColumns();
@@ -369,16 +369,16 @@ protected:
 	int					Cursor_adjust;
 
 public:
-			void		init(bounds *b, int Cols=1, int Keycol=0, uint Listboxcaps=LISTBOX_QUICKFIND);
+			void		init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
 	virtual   int		calcCount();
 	virtual	int		compare_strn(char *s1, char *s2, int l);
 	virtual	int		compare_ccomm(char *s1, char *s2);
 	virtual   int		cursorAdjust();
-			void *	getEntryByID(uint id);
+			void *	getEntryByID(UINT id);
 	virtual   void *	getFirst();
 	virtual   void *	getLast();
-			uint		getID(void *entry);
+			UINT		getID(void *entry);
 	virtual   void *	getNext(void *entry);
 	virtual   void *	getPrev(void *entry);
 	virtual   char *	getStr(int col, void *entry);
@@ -467,9 +467,9 @@ public:
 /* overwritten */
 	virtual	char *defaultpalette();
 	virtual	int	datasize();
-	virtual	void getdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
 			void	insertstring(char *string);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void setdata(ht_object_stream *s);
 /* new */
 			void select_next();
 			void select_prev();
@@ -493,10 +493,10 @@ public:
 	virtual	int  datasize();
 	virtual 	void draw();
 	virtual	vcp  gettextcolor();
-	virtual	void getdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
 	virtual	char *gettext();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void setdata(ht_object_stream *s);
 /* new */
 			void	insertstring(char *string);
 };
@@ -506,18 +506,18 @@ public:
  */
 
 class ht_history_listbox: public ht_listbox {
-	List	*history;
+	ht_list	*history;
 public:
-		void init(bounds *b, List *hist);
-	virtual int  calcCount();
-	virtual void *getFirst();
-	virtual void *getLast();
-	virtual void *getNext(void *entry);
-	virtual void *getPrev(void *entry);
-	virtual char *getStr(int col, void *entry);
+			void init(bounds *b, ht_list *hist);
+	virtual   int  calcCount();
+	virtual   void *getFirst();
+	virtual   void *getLast();
+	virtual   void *getNext(void *entry);
+	virtual   void *getPrev(void *entry);
+	virtual   char *getStr(int col, void *entry);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void *quickfind(char *s);
-	virtual	char *quickfindCompletition(char *s);
+	virtual	char	*quickfindCompletition(char *s);
 };
 
 /*
@@ -526,12 +526,12 @@ public:
 
 class ht_history_popup_dialog: public ht_listpopup_dialog {
 protected:
-	List	*history;
+	ht_list	*history;
 	virtual	void init_text_listbox(bounds *b);
 public:
-		void init(bounds *b, List *hist);
-	virtual	void getdata(ObjectStream &s);
-	virtual	void setdata(ObjectStream &s);
+			void init(bounds *b, ht_list *hist);
+	virtual	void getdata(ht_object_stream *s);
+	virtual	void setdata(ht_object_stream *s);
 };
 
 /*
@@ -596,8 +596,8 @@ public:
 /* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
-	virtual	void getdata(ObjectStream &s);
-	virtual	void setdata(ObjectStream &s);
+	virtual	void getdata(ht_object_stream *s);
+	virtual	void setdata(ht_object_stream *s);
 	virtual	void handlemsg(htmsg *msg);
 };
 
@@ -605,7 +605,7 @@ public:
  *	CLASS ht_listbox_ptr
  */
 
-class ht_listbox_ptr: public Object {
+class ht_listbox_ptr: public ht_data {
 public:
 	ht_listbox *listbox;
 

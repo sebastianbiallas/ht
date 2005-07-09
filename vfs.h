@@ -36,17 +36,17 @@
 class RegNodeFile: public ht_mem_file {
 protected:
 	char *nodename;
-	uint access_mode0;
-	uint open_mode;
+	UINT access_mode0;
+	UINT open_mode;
 
 /* overwritten */
-		   int		load_node(ObjectStream &s, ht_registry_node_type *type, ht_registry_data **data);
-		   void		store_node(ObjectStream &s, ht_registry_node_type type, ht_registry_data *data);
+		   int		load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data);
+		   void		store_node(ht_object_stream *s, ht_registry_node_type type, ht_registry_data *data);
 public:
-		   void		init(const char *nodename, uint am, uint om);
+		   void		init(const char *nodename, UINT am, UINT om);
 	virtual void		done();
 /* overwritten */
-	virtual bool		set_access_mode(uint access_mode);
+	virtual bool		set_access_mode(UINT access_mode);
 };
 
 /*
@@ -59,9 +59,9 @@ class Vfs: public Object {
 public:
 /* new */
 	virtual	int			canonicalize(char *result, const char *filename, const char *cwd) = 0;
-	virtual	int			createFile(const char *filename, uint createtype) = 0;
+	virtual	int			createFile(const char *filename, UINT createtype) = 0;
 	virtual	int			deleteFile(const char *filename) = 0;
-	virtual	void *		enumFiletype(uint *type, char **name, void *handle) = 0;
+	virtual	void *		enumFiletype(UINT *type, char **name, void *handle) = 0;
 	virtual	int			compareFilenames(const char *a, const char *b) = 0;
 	virtual	bool			findFirst(const char *dirname, pfind_t *f) = 0;
 	virtual	bool			findNext(pfind_t *f) = 0;
@@ -73,8 +73,8 @@ public:
 	virtual	int			open(const char *filename, bool edit) = 0;
 	virtual	int			pstat(pstat_t *s, const char *filename) = 0;
 	virtual	int			renameFile(const char *filename, const char *newname) = 0;
-	virtual	int			fileClose(File *f) = 0;
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f) = 0;
+	virtual	int			fileClose(ht_streamfile *f) = 0;
+	virtual	int			fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f) = 0;
 };
 
 /*
@@ -88,9 +88,9 @@ public:
 /* overwritten */
 	virtual	int			canonicalize(char *result, const char *filename, const char *cwd);
 	virtual	int			compareFilenames(const char *a, const char *b);
-	virtual	int			createFile(const char *filename, uint createtype);
+	virtual	int			createFile(const char *filename, UINT createtype);
 	virtual	int			deleteFile(const char *filename);
-	virtual	void *		enumFiletype(uint *type, char **name, void *handle);
+	virtual	void *		enumFiletype(UINT *type, char **name, void *handle);
 	virtual	bool			findFirst(const char *dirname, pfind_t *f);
 	virtual	bool			findNext(pfind_t *f);
 	virtual	bool			findClose(pfind_t *f);
@@ -101,8 +101,8 @@ public:
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);
 	virtual	int			renameFile(const char *filename, const char *newname);
-	virtual	int			fileClose(File *f);
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f);
+	virtual	int			fileClose(ht_streamfile *f);
+	virtual	int			fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f);
 };
 
 /*
@@ -122,9 +122,9 @@ public:
 	virtual	void		done();
 /* overwritten */
 	virtual	int			canonicalize(char *result, const char *filename, const char *cwd);
-	virtual	int			createFile(const char *filename, uint createtype);
+	virtual	int			createFile(const char *filename, UINT createtype);
 	virtual	int			deleteFile(const char *filename);
-	virtual	void *		enumFiletype(uint *type, char **name, void *handle);
+	virtual	void *		enumFiletype(UINT *type, char **name, void *handle);
 	virtual	int			compareFilenames(const char *a, const char *b);
 	virtual	bool			findFirst(const char *dirname, pfind_t *f);
 	virtual	bool			findNext(pfind_t *f);
@@ -136,8 +136,8 @@ public:
 	virtual	int			open(const char *filename, bool edit);
 	virtual	int			pstat(pstat_t *s, const char *filename);
 	virtual	int			renameFile(const char *filename, const char *newname);
-	virtual	int			fileClose(File *f);
-	virtual	int			fileOpen(const char *filename, uint access_mode, uint open_mode, File **f);
+	virtual	int			fileClose(ht_streamfile *f);
+	virtual	int			fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f);
 };
 
 #endif /* __VFS_H__ */

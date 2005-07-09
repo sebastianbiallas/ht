@@ -28,15 +28,18 @@
 /*
  *	ht_reloc_file
  */
-ht_reloc_file::ht_reloc_file(File *s, bool os)
-	: FileLayer(s, os)
+void ht_reloc_file::init(ht_streamfile *s, bool os)
 {
-	relocs = new AVLTree(true);
+	ht_layer_streamfile::init(s, os);
+	relocs = new ht_stree();
+//	((ht_stree*)relocs)->init(compare_keys_uint_delinear);
+	((ht_stree*)relocs)->init(compare_keys_uint);
 	enabled = true;
 }
 
-ht_reloc_file::~ht_reloc_file()
+void ht_reloc_file::done()
 {
+	relocs->destroy();
 	delete relocs;
 	ht_layer_streamfile::done();
 }
@@ -46,7 +49,7 @@ void ht_reloc_file::finalize()
 //	relocs->set_compare_keys(compare_keys_uint);
 }
 
-int ht_reloc_file::vcntl(uint cmd, va_list vargs)
+int ht_reloc_file::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_GET_RELOC: {
@@ -62,19 +65,19 @@ int ht_reloc_file::vcntl(uint cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-void ht_reloc_file::insert_reloc(FileOfs o, Object *reloc)
+void ht_reloc_file::insert_reloc(FILEOFS o, ht_data *reloc)
 {
 	relocs->insert(new ht_data_uint(o), reloc);
 }
 
-uint ht_reloc_file::read(void *buf, uint size)
+UINT ht_reloc_file::read(void *buf, UINT size)
 {
-	FileOfs o = tell();
+	FILEOFS o = tell();
 	/* read fine data. */
-	uint ret = ht_layer_streamfile::read(buf, size), c = ret;
+	UINT ret = ht_layer_streamfile::read(buf, size), c = ret;
 	if (enabled) {
 		ht_data_uint q;
-		Object *r;
+		ht_data *r;
 		ht_data_uint *k = &q;
 		if ((MAX_RELOC_ITEM_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_ITEM_LEN+1);
@@ -94,16 +97,16 @@ uint ht_reloc_file::read(void *buf, uint size)
 
 			/* if relocation item intersects with the beginning of
 			 * this read, copy buf to b+s */
-			uint s = (k->value < o) ? o - k->value : 0;
+			UINT s = (k->value < o) ? o - k->value : 0;
 			/* if relocation item intersects with the end of
 			 * this read, copy buf+e to b */
-			uint e = (k->value > o) ? k->value - o : 0;
+			UINT e = (k->value > o) ? k->value - o : 0;
 
 			/* complicated calculation to get the size of the
 			 * intended intersection (=: mm) of the read and b. */
-			uint l = (k->value + sizeof b > o+c) ?
+			UINT l = (k->value + sizeof b > o+c) ?
 				k->value + sizeof b - o - c : 0;
-			uint mm = MIN(sizeof b - l, sizeof b - s);
+			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
 			/* probably cleaner to clear it all before we start
 			 * because if the read is smaller then the reloc item
@@ -124,15 +127,15 @@ uint ht_reloc_file::read(void *buf, uint size)
 	return ret;
 }
 
-uint ht_reloc_file::write(const void *buf, uint size)
+UINT ht_reloc_file::write(const void *buf, UINT size)
 {
 	/* documentation: see read(). */
-	FileOfs o;
+	FILEOFS o;
 	if (enabled) {
 		o = tell();
-		uint c = size;
+		UINT c = size;
 		ht_data_uint q;
-		Object *r;
+		ht_data *r;
 		ht_data_uint *k = &q;
 		if ((MAX_RELOC_ITEM_LEN+1) <= o)
 			k->value = o - (MAX_RELOC_ITEM_LEN+1);
@@ -143,14 +146,14 @@ uint ht_reloc_file::write(const void *buf, uint size)
 			byte b[MAX_RELOC_ITEM_LEN];
 			if (k->value >= o+c) break;
 
-			uint s = (k->value < o) ? o - k->value : 0;
-			uint e = (k->value > o) ? k->value - o : 0;
+			UINT s = (k->value < o) ? o - k->value : 0;
+			UINT e = (k->value > o) ? k->value - o : 0;
 
-			uint l = (k->value+sizeof b > o+c) ?
+			UINT l = (k->value+sizeof b > o+c) ?
 				k->value + sizeof b - o - c : 0;
 
 			memset(b, 0, sizeof b);
-			uint mm = MIN(sizeof b - l, sizeof b - s);
+			UINT mm = MIN(sizeof b - l, sizeof b - s);
 
 			assert(mm+s <= sizeof b);
 			memmove(b+s, ((byte*)buf)+e, mm);

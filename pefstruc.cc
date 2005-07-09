@@ -19,6 +19,7 @@
  */
 
 #include "pefstruc.h"
+#include "global.h"
 #include "htendian.h"
 
 byte PEF_CONTAINER_HEADER_struct[]= {

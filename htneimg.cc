@@ -31,7 +31,7 @@
 #include "htanaly.h"
 #include "ne_analy.h"
 
-static ht_view *htneimage_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htneimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
@@ -59,9 +59,9 @@ static ht_view *htneimage_init(bounds *b, File *file, ht_format_group *group)
 /* search for lowest/highest */
 	NEAddress l=(NEAddress)-1, h=0;
 	NE_SEGMENT *s = ne_shared->segments.segments;
-	for (uint i=0; i<ne_shared->segments.segment_count; i++) {
+	for (UINT i=0; i<ne_shared->segments.segment_count; i++) {
 		NEAddress base = NE_MAKE_ADDR(i+1, 0);
-		uint evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
+		UINT evsize = MAX(NE_get_seg_vsize(ne_shared, i), NE_get_seg_psize(ne_shared, i));
 		if (base < l) l = base;
 		if ((base + evsize > h) && (evsize)) h = base + evsize - 1;
 		s++;
@@ -102,14 +102,14 @@ format_viewer_if htneimage_if = {
  *	CLASS ht_ne_aviewer
  */
 
-void ht_ne_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_ne_shared_data *NE_shared)
+void ht_ne_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_ne_shared_data *NE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	ne_shared = NE_shared;
 	file = File;
 }
 
-char *ht_ne_aviewer::func(uint i, bool execute)
+char *ht_ne_aviewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 3: {

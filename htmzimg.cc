@@ -29,14 +29,14 @@
 #include "x86asm.h"
 #include "x86dis.h"
 
-static ht_view *htmzimage_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htmzimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_mz_shared_data *mz_shared=(ht_mz_shared_data *)group->get_shared_data();
 
 	x86asm *assembler=new x86asm(X86_OPSIZE16, X86_ADDRSIZE16);
 	x86dis *disassembler=new x86dis(X86_OPSIZE16, X86_ADDRSIZE16);
 
-	uint32 o=mz_shared->header.header_size*16;
+	dword o=mz_shared->header.header_size*16;
 	ht_disasm_viewer *v=new ht_disasm_viewer();
 	v->init(b, DESC_MZ_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler, 1);
 	ht_mask_sub *m=new ht_mask_sub();

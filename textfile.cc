@@ -46,64 +46,64 @@ void ht_layer_textfile::init(ht_textfile *textfile, bool own_textfile)
 	ht_textfile::init(textfile, own_textfile);
 }
 
-bool ht_layer_textfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs)
+bool ht_layer_textfile::convert_ofs2line(FILEOFS o, UINT *line, UINT *pofs)
 {
 	return ((ht_textfile*)streamfile)->convert_ofs2line(o, line, pofs);
 }
 
-bool ht_layer_textfile::convert_line2ofs(uint line, uint pofs, FileOfs *o)
+bool ht_layer_textfile::convert_line2ofs(UINT line, UINT pofs, FILEOFS *o)
 {
 	return ((ht_textfile*)streamfile)->convert_line2ofs(line, pofs, o);
 }
 
-void ht_layer_textfile::delete_lines(uint line, uint count)
+void ht_layer_textfile::delete_lines(UINT line, UINT count)
 {
 	((ht_textfile*)streamfile)->delete_lines(line, count);
 }
 
-void ht_layer_textfile::delete_chars(uint line, uint ofs, uint count)
+void ht_layer_textfile::delete_chars(UINT line, UINT ofs, UINT count)
 {
 	((ht_textfile*)streamfile)->delete_chars(line, ofs, count);
 }
 
-bool ht_layer_textfile::get_char(uint line, char *ch, uint pos)
+bool ht_layer_textfile::get_char(UINT line, char *ch, UINT pos)
 {
 	return ((ht_textfile*)streamfile)->get_char(line, ch, pos);
 }
 
-bool ht_layer_textfile::getline(uint line, uint pofs, void *buf, uint buflen, uint *retlen, lexer_state *state)
+bool ht_layer_textfile::getline(UINT line, UINT pofs, void *buf, UINT buflen, UINT *retlen, lexer_state *state)
 {
 	return ((ht_textfile*)streamfile)->getline(line, pofs, buf, buflen, retlen, state);
 }
 
-uint ht_layer_textfile::getlinelength(uint line)
+UINT ht_layer_textfile::getlinelength(UINT line)
 {
 	return ((ht_textfile*)streamfile)->getlinelength(line);
 }
 
-void ht_layer_textfile::insert_lines(uint before, uint count, void **line_ends, int *line_end_lens)
+void ht_layer_textfile::insert_lines(UINT before, UINT count, void **line_ends, int *line_end_lens)
 {
 	((ht_textfile*)streamfile)->insert_lines(before, count, line_ends, line_end_lens);
 }
 
-void ht_layer_textfile::insert_chars(uint line, uint ofs, void *chars, uint len)
+void ht_layer_textfile::insert_chars(UINT line, UINT ofs, void *chars, UINT len)
 {
 	((ht_textfile*)streamfile)->insert_chars(line, ofs, chars, len);
 }
 
-bool ht_layer_textfile::has_line(uint line)
+bool ht_layer_textfile::has_line(UINT line)
 {
 	return ((ht_textfile*)streamfile)->has_line(line);
 }
 
-uint ht_layer_textfile::linecount()
+UINT ht_layer_textfile::linecount()
 {
 	return ((ht_textfile*)streamfile)->linecount();
 }
 
-void ht_layer_textfile::set_layered_assume(File *s, bool changes_applied)
+void ht_layer_textfile::set_layered_assume(ht_streamfile *s, bool changes_applied)
 {
-/*	File *q = streamfile->get_layered();
+/*	ht_streamfile *q = streamfile->get_layered();
 	if (q)*/ ((ht_textfile*)streamfile)->set_layered_assume(s, changes_applied);
 /*     else
 		streamfile = s;*/
@@ -127,7 +127,7 @@ ht_ltextfile_line::~ht_ltextfile_line()
  *	CLASS ht_ltextfile
  */
  
-void	ht_ltextfile::init(File *streamfile, bool own_streamfile, ht_syntax_lexer *l)
+void	ht_ltextfile::init(ht_streamfile *streamfile, bool own_streamfile, ht_syntax_lexer *l)
 {
 	ht_textfile::init(streamfile, own_streamfile);
 	int e = get_error();
@@ -156,8 +156,8 @@ void ht_ltextfile::done()
 void ht_ltextfile::cache_invd()
 {
 	lines->empty();
-	uint c=orig_lines->count();
-	for (uint i=0; i<c; i++) {
+	UINT c=orig_lines->count();
+	for (UINT i=0; i<c; i++) {
 		ht_ltextfile_line *l = new ht_ltextfile_line();
 		*l = *((ht_ltextfile_line*)orig_lines->get(i));
 		lines->append(l);
@@ -171,12 +171,12 @@ void ht_ltextfile::cache_flush()
 {
 }
 
-bool ht_ltextfile::convert_line2ofs(uint line, uint pofs, FileOfs *o)
+bool ht_ltextfile::convert_line2ofs(UINT line, UINT pofs, FILEOFS *o)
 {
 	ht_ltextfile_line *x;
 	x=fetch_line_nofs_ok(line);
 	if (x) {
-		uint m=getlinelength_i(x);
+		UINT m=getlinelength_i(x);
 		if (pofs<m) {
 			*o=x->nofs+pofs;
 		} else {
@@ -187,11 +187,11 @@ bool ht_ltextfile::convert_line2ofs(uint line, uint pofs, FileOfs *o)
 	return false;
 }
 
-bool ht_ltextfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs)
+bool ht_ltextfile::convert_ofs2line(FILEOFS o, UINT *line, UINT *pofs)
 {
-	uint l=0, r=linecount();
+	UINT l=0, r=linecount();
 	if (!r) return 0; else r--;
-	uint m=0;
+	UINT m=0;
 	ht_ltextfile_line *x, *y;
 	while (l<=r) {
 		m=(l+r) / 2;
@@ -217,21 +217,21 @@ bool ht_ltextfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs)
 
 void	ht_ltextfile::copy_to(ht_stream *stream)
 {
-/*	uint c=linecount();
+/*	UINT c=linecount();
 	char buf[TEXTFILE_MAX_LINELEN+1];
-	for (uint i=0; i<c; i++) {
+	for (UINT i=0; i<c; i++) {
 		ht_ltextfile_line *e=fetch_line(i);
 		if (e) {
-			uint s;
+			UINT s;
 			getline(i, 0, buf, TEXTFILE_MAX_LINELEN+1, &s, NULL);
 			stream->write(buf, s);
 			stream->write(e->lineend, e->lineendlen);
 		}
 	}*/
 #define STREAM_COPYBUF_SIZE (64*1024)
-	const uint bufsize=STREAM_COPYBUF_SIZE;
+	const UINT bufsize=STREAM_COPYBUF_SIZE;
 	byte *buf=(byte*)malloc(bufsize);
-	uint r;
+	UINT r;
 	do {
 		r=read(buf, bufsize);
 		stream->write(buf, r);
@@ -239,12 +239,12 @@ void	ht_ltextfile::copy_to(ht_stream *stream)
 	free(buf);
 }
 
-void ht_ltextfile::delete_chars(uint line, uint ofs, uint count)
+void ht_ltextfile::delete_chars(UINT line, UINT ofs, UINT count)
 {
 	ht_ltextfile_line *e=fetch_line_into_memory(line);
 	if (e) {
 		char *ostr=e->in_memory.data;
-		uint olen=e->in_memory.len;
+		UINT olen=e->in_memory.len;
 		
 		if (ofs<olen) {
 			if (ofs+count>olen) count=olen-ofs;
@@ -261,7 +261,7 @@ void ht_ltextfile::delete_chars(uint line, uint ofs, uint count)
 	}
 }
 
-void ht_ltextfile::delete_lines(uint line, uint count)
+void ht_ltextfile::delete_lines(UINT line, UINT count)
 {
 	lines->del_multiple(line, count);
 	dirty_parse(line);
@@ -269,39 +269,39 @@ void ht_ltextfile::delete_lines(uint line, uint count)
 	dirty=true;
 }
 
-void ht_ltextfile::dirty_parse(uint line)
+void ht_ltextfile::dirty_parse(UINT line)
 {
 	if (line<first_parse_dirty_line) first_parse_dirty_line=line;
 }
 
-void ht_ltextfile::dirty_nofs(uint line)
+void ht_ltextfile::dirty_nofs(UINT line)
 {
 	if (line<first_nofs_dirty_line) first_nofs_dirty_line=line;
 }
 
-int	ht_ltextfile::extend(uint newsize)
+int	ht_ltextfile::extend(UINT newsize)
 {
 	/* FIXME: nyi */
 	return ENOSYS;
 }
 
-ht_ltextfile_line *ht_ltextfile::fetch_line(uint line)
+ht_ltextfile_line *ht_ltextfile::fetch_line(UINT line)
 {
 	return (ht_ltextfile_line*)lines->get(line);
 }
 
-ht_ltextfile_line *ht_ltextfile::fetch_line_nofs_ok(uint line)
+ht_ltextfile_line *ht_ltextfile::fetch_line_nofs_ok(UINT line)
 {
 	if (is_dirty_nofs(line)) update_nofs(line);
 	return fetch_line(line);
 }
 			
-uint ht_ltextfile::find_linelen_forwd(byte *buf, uint maxbuflen, FileOfs ofs, int *le_len)
+UINT ht_ltextfile::find_linelen_forwd(byte *buf, UINT maxbuflen, FILEOFS ofs, int *le_len)
 {
-	uint readlen=(maxbuflen>TEXTFILE_READSIZE) ? TEXTFILE_READSIZE : maxbuflen;
+	UINT readlen=(maxbuflen>TEXTFILE_READSIZE) ? TEXTFILE_READSIZE : maxbuflen;
 	byte *bufp;
-	uint s;
-	uint len = 0;
+	UINT s;
+	UINT len = 0;
 	
 	if (le_len) *le_len = 0;
 	do {
@@ -332,14 +332,14 @@ uint ht_ltextfile::find_linelen_forwd(byte *buf, uint maxbuflen, FileOfs ofs, in
 	return len;
 }
 
-ht_ltextfile_line *ht_ltextfile::fetch_line_into_memory(uint line)
+ht_ltextfile_line *ht_ltextfile::fetch_line_into_memory(UINT line)
 {
 	ht_ltextfile_line *e=fetch_line(line);
 	if (e) {
 		if (!e->is_in_memory) {
 			char *data=(char*)malloc(e->on_disk.len);
 			streamfile->seek(e->on_disk.ofs);
-			uint x=streamfile->read(data, e->on_disk.len);
+			UINT x=streamfile->read(data, e->on_disk.len);
 
 			e->is_in_memory=true;
 			e->in_memory.data=data;
@@ -349,15 +349,15 @@ ht_ltextfile_line *ht_ltextfile::fetch_line_into_memory(uint line)
 	return e;
 }
 
-uint	ht_ltextfile::get_size()
+UINT	ht_ltextfile::get_size()
 {
 	int line = linecount()-1;
-	FileOfs o = 0;
+	FILEOFS o = 0;
 	convert_line2ofs(line, getlinelength(line), &o);
 	return o;
 }
 
-bool ht_ltextfile::get_char(uint line, char *ch, uint pos)
+bool ht_ltextfile::get_char(UINT line, char *ch, UINT pos)
 {
 	ht_ltextfile_line *e=fetch_line(line);
 	if (e) {
@@ -378,7 +378,7 @@ bool ht_ltextfile::get_char(uint line, char *ch, uint pos)
 }
 
 
-bool ht_ltextfile::getline(uint line, uint pofs, void *buf, uint buflen, uint *retlen, lexer_state *state)
+bool ht_ltextfile::getline(UINT line, UINT pofs, void *buf, UINT buflen, UINT *retlen, lexer_state *state)
 {
 /* <debug> */
 /*	bool debug=false;
@@ -402,15 +402,15 @@ bool ht_ltextfile::getline(uint line, uint pofs, void *buf, uint buflen, uint *r
 
 /* </debug> */
 
-		uint ret;
+		UINT ret;
 		if (e->is_in_memory) {
-			uint l=e->in_memory.len;
+			UINT l=e->in_memory.len;
 			if (l>buflen-1) l=buflen-1;
 			if (pofs>l) l=0; else l-=pofs;
 			memmove(buf, e->in_memory.data+pofs, l);
 			ret=l;
 		} else {
-			uint l=e->on_disk.len;
+			UINT l=e->on_disk.len;
 			if (l>buflen-1) l=buflen-1;
 			if (pofs>l) l=0; else l-=pofs;
 			streamfile->seek(e->on_disk.ofs+pofs);
@@ -424,13 +424,13 @@ bool ht_ltextfile::getline(uint line, uint pofs, void *buf, uint buflen, uint *r
 	return false;
 }
 
-uint ht_ltextfile::getlinelength(uint line)
+UINT ht_ltextfile::getlinelength(UINT line)
 {
 	ht_ltextfile_line *e=fetch_line(line);
 	return getlinelength_i(e);
 }
 
-uint ht_ltextfile::getlinelength_i(ht_ltextfile_line *e)
+UINT ht_ltextfile::getlinelength_i(ht_ltextfile_line *e)
 {
 	if (e) {
 		if (e->is_in_memory) {
@@ -442,7 +442,7 @@ uint ht_ltextfile::getlinelength_i(ht_ltextfile_line *e)
 	return 0;
 }
 
-void ht_ltextfile::insert_lines(uint before, uint count, void **line_ends, int *line_end_lens)
+void ht_ltextfile::insert_lines(UINT before, UINT count, void **line_ends, int *line_end_lens)
 {
 	ht_ltextfile_line *e = fetch_line(before);
 	int instate = e->instate;
@@ -469,19 +469,19 @@ void ht_ltextfile::insert_lines(uint before, uint count, void **line_ends, int *
 	dirty = true;
 }
 
-void ht_ltextfile::insert_chars(uint line, uint ofs, void *chars, uint len)
+void ht_ltextfile::insert_chars(UINT line, UINT ofs, void *chars, UINT len)
 {
 	ht_ltextfile_line *e=fetch_line(line);
 	if (e) {
-		uint olen=e->is_in_memory ? e->in_memory.len : e->on_disk.len;
+		UINT olen=e->is_in_memory ? e->in_memory.len : e->on_disk.len;
 		if (ofs<=olen) {
 			e=fetch_line_into_memory(line);
 			char *ostr=e->in_memory.data;
 
 			char *nstr;
-			uint nlen=olen;
+			UINT nlen=olen;
 
-			uint clen=len;
+			UINT clen=len;
 
 			if (ofs>nlen) nlen=ofs;
 			nlen+=clen;
@@ -501,27 +501,27 @@ void ht_ltextfile::insert_chars(uint line, uint ofs, void *chars, uint len)
 	}
 }
 
-bool ht_ltextfile::has_line(uint line)
+bool ht_ltextfile::has_line(UINT line)
 {
 	return (fetch_line(line)!=NULL);
 }
 
-bool ht_ltextfile::is_dirty_nofs(uint line)
+bool ht_ltextfile::is_dirty_nofs(UINT line)
 {
 	return (line>=first_nofs_dirty_line);
 }
 
-bool ht_ltextfile::is_dirty_parse(uint line)
+bool ht_ltextfile::is_dirty_parse(UINT line)
 {
 	return (line>=first_parse_dirty_line);
 }
 
-uint ht_ltextfile::linecount()
+UINT ht_ltextfile::linecount()
 {
 	return lines->count();
 }
 
-byte *ht_ltextfile::match_lineend_forwd(byte *buf, uint buflen, int *le_len)
+byte *ht_ltextfile::match_lineend_forwd(byte *buf, UINT buflen, int *le_len)
 {
 	byte *result=NULL;
 	
@@ -538,19 +538,19 @@ byte *ht_ltextfile::match_lineend_forwd(byte *buf, uint buflen, int *le_len)
 	return result;
 }
 
-lexer_state ht_ltextfile::next_instate(uint line)
+lexer_state ht_ltextfile::next_instate(UINT line)
 {
 	byte buf[TEXTFILE_MAX_LINELEN+1];
 	lexer_state state = 0;
 
-	uint buflen;
+	UINT buflen;
 	if (!getline(line, 0, buf, TEXTFILE_MAX_LINELEN, &buflen, &state)) return state;
 	buf[buflen] = 0;
 	
 	if (lexer) {
 		text_pos p;
 		char *bufp = (char*)buf;
-		uint toklen;
+		UINT toklen;
 		bool start_of_line = true;
 		p.line = line;
 		p.pofs = 0;
@@ -568,7 +568,7 @@ lexer_state ht_ltextfile::next_instate(uint line)
 	return state;
 }
 
-FileOfs ht_ltextfile::next_nofs(ht_ltextfile_line *l)
+FILEOFS ht_ltextfile::next_nofs(ht_ltextfile_line *l)
 {
 	if (l) {
 		if (l->is_in_memory) return l->nofs+l->in_memory.len+l->lineendlen; else
@@ -584,22 +584,22 @@ void	ht_ltextfile::pstat(pstat_t *s)
 	s->size_high=0;
 }
 
-uint	ht_ltextfile::read(void *buf, uint size)
+UINT	ht_ltextfile::read(void *buf, UINT size)
 {
-	FileOfs o=tell();
-	uint line;
-	uint pofs;
-	uint c=0;
+	FILEOFS o=tell();
+	UINT line;
+	UINT pofs;
+	UINT c=0;
 	byte *b=(byte*)buf;
 	
 	if (convert_ofs2line(o, &line, &pofs)) while (size) {
 		ht_ltextfile_line *l=fetch_line(line);
 		if (!l)
 			break;
-		uint q;
+		UINT q;
 		if (l->is_in_memory) {
 			q=l->in_memory.len;
-			uint s=q;
+			UINT s=q;
 			if (s>pofs) {
 				s-=pofs;
 				s=MIN(size, s);
@@ -610,8 +610,8 @@ uint	ht_ltextfile::read(void *buf, uint size)
 			}
 		} else {
 			q=l->on_disk.len;
-			uint r;
-			uint s=q;
+			UINT r;
+			UINT s=q;
 			if (s>pofs) {
 				s-=pofs;
 				s=MIN(size, s);
@@ -623,7 +623,7 @@ uint	ht_ltextfile::read(void *buf, uint size)
 				pofs+=s;
 			}
 		}
-		uint s=l->lineendlen;
+		UINT s=l->lineendlen;
 		if ((q+s>pofs) && (pofs >= q)) {
 			s-=pofs-q;
 			s=MIN(size, s);
@@ -643,7 +643,7 @@ void ht_ltextfile::reread()
 	lines->empty();
 	orig_lines->empty();
 	dirty=false;
-	FileOfs ofs=0;
+	FILEOFS ofs=0;
 	int ll, pll=-1, ln=0;
 	bool firstline=true;
 	byte buf[TEXTFILE_MAX_LINELEN+1];
@@ -653,10 +653,10 @@ void ht_ltextfile::reread()
 
 	if (lexer) state=lexer->getinitstate();
 
-	uint l=0;
+	UINT l=0;
 	while ((l=find_linelen_forwd(buf, sizeof buf, ofs, &ll))) {
 		if (streamfile->seek(ofs) != 0) break;
-		uint x=streamfile->read(buf, l-ll);
+		UINT x=streamfile->read(buf, l-ll);
 		buf[x]=0;
 
 		e=new ht_ltextfile_line();
@@ -666,7 +666,7 @@ void ht_ltextfile::reread()
 		e->on_disk.len=l-ll;
 		e->nofs=ofs;
 		e->lineendlen=ll;
-		assert( (uint)ll <= sizeof e->lineend);
+		assert( (UINT)ll <= sizeof e->lineend);
 		streamfile->read(e->lineend, ll);
 		lines->append(e);
 		ce=new ht_ltextfile_line();
@@ -676,7 +676,7 @@ void ht_ltextfile::reread()
 		if (lexer) {
 			text_pos p;
 			char *bufp=(char*)buf;
-			uint toklen;
+			UINT toklen;
 			bool start_of_line=true;
 			p.line=ln;
 			p.pofs=0;
@@ -709,15 +709,15 @@ void ht_ltextfile::reread()
 	}
 }
 
-void ht_ltextfile::split_line(uint a, uint pos, void *line_end, int line_end_len)
+void ht_ltextfile::split_line(UINT a, UINT pos, void *line_end, int line_end_len)
 {
 	if (pos == 0) {
 		insert_lines(a, 1, &line_end, &line_end_len);
 	} else {
-		uint l=getlinelength(a);
+		UINT l=getlinelength(a);
 		if (pos>l) pos=l;
 		char *aline=(char*)malloc(pos+1);
-		uint alinelen;
+		UINT alinelen;
 		getline(a, 0, aline, pos+1, &alinelen, NULL);
 	
 		insert_lines(a, 1, &line_end, &line_end_len);
@@ -728,24 +728,24 @@ void ht_ltextfile::split_line(uint a, uint pos, void *line_end, int line_end_len
 	}
 }
 
-int	ht_ltextfile::seek(FileOfs offset)
+int	ht_ltextfile::seek(FILEOFS offset)
 {
 	ofs = offset;
 	return 0;
 }
 
-void ht_ltextfile::set_layered(File *streamfile)
+void ht_ltextfile::set_layered(ht_streamfile *streamfile)
 {
 	ht_layer_streamfile::set_layered(streamfile);
 	reread();
 }
 
-void ht_ltextfile::set_layered_assume(File *streamfile, bool changes_applied)
+void ht_ltextfile::set_layered_assume(ht_streamfile *streamfile, bool changes_applied)
 {
 	if (changes_applied) {
 		orig_lines->empty();
-		uint c = lines->count();
-		for (uint i=0; i<c; i++) {
+		UINT c = lines->count();
+		for (UINT i=0; i<c; i++) {
 			ht_ltextfile_line *l = fetch_line_nofs_ok(i);
 			ht_ltextfile_line *m = new ht_ltextfile_line();
 			l->on_disk.ofs = l->nofs;
@@ -770,21 +770,21 @@ void ht_ltextfile::set_lexer(ht_syntax_lexer *l)
 	}
 }
 
-FileOfs ht_ltextfile::tell()
+FILEOFS ht_ltextfile::tell()
 {
 	return ofs;
 }
 
-int	ht_ltextfile::truncate(uint newsize)
+int	ht_ltextfile::truncate(UINT newsize)
 {
 	/* FIXME: nyi */
 	return ENOSYS;
 }
 
-void ht_ltextfile::update_parse(uint target)
+void ht_ltextfile::update_parse(UINT target)
 {
 	ht_ltextfile_line *e;
-	uint line = first_parse_dirty_line;
+	UINT line = first_parse_dirty_line;
 
 	lexer_state instate=0;
 	if (line) {
@@ -809,12 +809,12 @@ void ht_ltextfile::update_parse(uint target)
 	if (e) e->instate = instate;
 }
 
-void ht_ltextfile::update_nofs(uint target)
+void ht_ltextfile::update_nofs(UINT target)
 {
 	ht_ltextfile_line *e;
-	uint line=first_nofs_dirty_line;
+	UINT line=first_nofs_dirty_line;
 
-	FileOfs nofs;
+	FILEOFS nofs;
 	if (line) {
 		e=fetch_line(line-1);
 		nofs=next_nofs(e);
@@ -832,7 +832,7 @@ void ht_ltextfile::update_nofs(uint target)
 	}
 }
 
-int ht_ltextfile::vcntl(uint cmd, va_list vargs)
+int ht_ltextfile::vcntl(UINT cmd, va_list vargs)
 {
 	switch (cmd) {
 		case FCNTL_MODS_INVD:
@@ -842,8 +842,8 @@ int ht_ltextfile::vcntl(uint cmd, va_list vargs)
 				cache_flush();
 				return 0;
 		case FCNTL_MODS_IS_DIRTY: {
-				FileOfs o=va_arg(vargs, FILEOFS);
-				uint s=va_arg(vargs, UINT);
+				FILEOFS o=va_arg(vargs, FILEOFS);
+				UINT s=va_arg(vargs, UINT);
 				bool *b=va_arg(vargs, bool*);
 				*b = dirty;
 				o = 0;	// gcc warns otherwise
@@ -858,18 +858,18 @@ int ht_ltextfile::vcntl(uint cmd, va_list vargs)
 	return ht_textfile::vcntl(cmd, vargs);
 }
 
-uint	ht_ltextfile::write(const void *buf, uint size)
+UINT	ht_ltextfile::write(const void *buf, UINT size)
 {
-	FileOfs o = tell();
-	uint line;
-	uint pofs;
+	FILEOFS o = tell();
+	UINT line;
+	UINT pofs;
 	byte *b = (byte*)buf;
-	uint r = 0;
+	UINT r = 0;
 	if (convert_ofs2line(o, &line, &pofs)) {
 		r = size;
 		while (size) {
 			int lelen;
-			uint s;
+			UINT s;
 			byte *c = match_lineend_forwd(b, size, &lelen);
 			if (c) {
 				s = c-b;

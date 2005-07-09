@@ -90,7 +90,7 @@ static ht_tag_flags_s elf_sh_flags[] =
 	{0, 0}
 };
 
-static ht_view *htelfsectionheaders_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htelfsectionheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
@@ -103,7 +103,7 @@ static ht_view *htelfsectionheaders_init(bounds *b, File *file, ht_format_group 
 		register_atom(ATOM_ELF_SH_TYPE, elf_sh_type);
 		register_atom(ATOM_ELF_SH_FLAGS, elf_sh_flags);
 
-		FileOfs h=elf_shared->header32.e_shoff;
+		FILEOFS h=elf_shared->header32.e_shoff;
 
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -116,8 +116,8 @@ static ht_view *htelfsectionheaders_init(bounds *b, File *file, ht_format_group 
 		v->insertsub(m);
 
 		elf_shared->shnames = (char**)malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
-		FileOfs so=elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
-		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		FILEOFS so=elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+		for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 			char *s;
 			if (file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name)
 			|| !((s = fgetstrz(file)))) s = "?";
@@ -143,7 +143,7 @@ static ht_view *htelfsectionheaders_init(bounds *b, File *file, ht_format_group 
 		register_atom(ATOM_ELF_SH_FLAGS, elf_sh_flags);
 
 		/* FIXME: 64-bit */
-		FileOfs h = elf_shared->header64.e_shoff.lo;
+		FILEOFS h = elf_shared->header64.e_shoff.lo;
 
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -157,8 +157,8 @@ static ht_view *htelfsectionheaders_init(bounds *b, File *file, ht_format_group 
 
 		elf_shared->shnames=(char**)malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
 		/* FIXME: 64-bit */
-		FileOfs so=elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset.lo;
-		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		FILEOFS so=elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset.lo;
+		for (UINT i=0; i<elf_shared->sheaders.count; i++) {
 			char *s;
 			if (file->seek(so+elf_shared->sheaders.sheaders64[i].sh_name)
 			|| !((s=fgetstrz(file)))) s = "?";

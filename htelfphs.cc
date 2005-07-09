@@ -72,7 +72,7 @@ static ht_tag_flags_s elf_ph_flags[] =
 	{0, 0}
 };
 
-static ht_view *htelfprogramheaders_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
@@ -85,7 +85,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, File *file, ht_format_group 
 		register_atom(ATOM_ELF_PH_TYPE, elf_ph_type);
 		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 	
-		FileOfs h=elf_shared->header32.e_phoff;
+		FILEOFS h=elf_shared->header32.e_phoff;
 	
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -96,7 +96,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, File *file, ht_format_group 
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (uint i=0; i<elf_shared->pheaders.count; i++) {
+		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
 		
 			ht_mask_sub *n=new ht_mask_sub();
 			n->init(file, i);
@@ -121,7 +121,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, File *file, ht_format_group 
 		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 
 /* FIXME: 64-bit */
-		FileOfs h=elf_shared->header64.e_phoff.lo;
+		FILEOFS h=elf_shared->header64.e_phoff.lo;
 	
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
@@ -132,7 +132,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, File *file, ht_format_group 
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (uint i=0; i<elf_shared->pheaders.count; i++) {
+		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
 		
 			ht_mask_sub *n=new ht_mask_sub();
 			n->init(file, i);

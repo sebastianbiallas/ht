@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -47,7 +47,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 
 	bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
-	uint32 sec_rva, sec_size;
+	dword sec_rva, sec_size;
 	if (pe32) {
 		sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
 		sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
@@ -80,15 +80,15 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 	c.h=1;
 
 	PE_IMPORT_DESCRIPTOR import;
-	FileOfs dofs;
-	uint dll_index;
+	FILEOFS dofs;
+	UINT dll_index;
 	char iline[256];
 	
 	/* get import directory offset */
 	/* 1. get import directory rva */
-	FileOfs iofs;
+	FILEOFS iofs;
 	RVA irva;
-	uint isize;
+	UINT isize;
 	if (pe32) {
 		irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
 		isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
@@ -116,7 +116,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 		if ((!import.characteristics) && (!import.name)) break;
 		dofs = file->tell();
 		/* get name of dll */
-		FileOfs iname_ofs;
+		FILEOFS iname_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)
 			|| file->seek(iname_ofs)) {
 			/* ? try as ofs?*/
@@ -134,7 +134,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 		 *	as if it contained just imported addresses.
 		 */
 		RVA fthunk_rva = import.first_thunk;
-		FileOfs fthunk_ofs;
+		FILEOFS fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
 		/*
 		 *	...and Original First Thunk (OFT)
@@ -143,7 +143,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 		 *	the original one (bound executables).
 		 */
 		RVA thunk_rva;
-		FileOfs thunk_ofs;
+		FILEOFS thunk_ofs;
 		if (import.original_first_thunk) {
 			thunk_rva = import.original_first_thunk;
 			if (!pe_rva_to_ofs(&pe_shared->sections, thunk_rva, &thunk_ofs)) goto pe_read_error;
@@ -156,7 +156,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 
 		PE_THUNK_DATA thunk;
 		PE_THUNK_DATA_64 thunk64;
-		uint thunk_count = 0;
+		UINT thunk_count = 0;
 		file->seek(thunk_ofs);
 		while (1) {
 			if (pe32) {
@@ -179,19 +179,19 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 				thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
 				file->read(thunk_table, sizeof *thunk_table * thunk_count);
 				// FIXME: ?
-				for (uint i=0; i<thunk_count; i++) {
+				for (UINT i=0; i<thunk_count; i++) {
 					create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
 				}
 			} else {
 				thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
 				file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
 				// FIXME: ?
-				for (uint i=0; i<thunk_count; i++) {
+				for (UINT i=0; i<thunk_count; i++) {
 					create_host_struct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
 				}
 			}
 		}
-		for (uint32 i=0; i<thunk_count; i++) {
+		for (dword i=0; i<thunk_count; i++) {
 			function_count++;
 			ht_pe_import_function *func;
 			/* follow (original) first thunk */
@@ -203,8 +203,8 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 					func = new ht_pe_import_function(dll_index, fthunk_rva, thunk.ordinal&0xffff);
 				} else {
 					/* by name */
-					FileOfs function_desc_ofs;
-					uint16 hint = 0;
+					FILEOFS function_desc_ofs;
+					word hint = 0;
 					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)
 						|| file->seek(function_desc_ofs)) {
 						if (file->seek(thunk.function_desc_address)) goto pe_read_error;
@@ -224,8 +224,8 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 					func = new ht_pe_import_function(dll_index, fthunk_rva, QWORD_GET_LO(thunk64.ordinal)&0xffff);
 				} else {
 					/* by name */
-					FileOfs function_desc_ofs;
-					uint16 hint = 0;
+					FILEOFS function_desc_ofs;
+					word hint = 0;
 					if (!pe_rva_to_ofs(&pe_shared->sections, QWORD_GET_LO(thunk64.function_desc_address), &function_desc_ofs)) goto pe_read_error;
 					file->seek(function_desc_ofs);
 					file->read(&hint, 2);
@@ -272,7 +272,7 @@ static ht_view *htpeimports_init(bounds *b, File *file, ht_format_group *group)
 	g->insert(head);
 	g->insert(v);
 	//
-	for (uint i=0; i<pe_shared->imports.funcs->count(); i++) {
+	for (UINT i=0; i<pe_shared->imports.funcs->count(); i++) {
 		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->imports.funcs->get(i);
 		assert(func);
 		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->imports.libs->get(func->libidx);
@@ -326,7 +326,7 @@ ht_pe_import_library::~ht_pe_import_library()
  *	class ht_pe_import_function
  */
 
-ht_pe_import_function::ht_pe_import_function(uint li, RVA a, uint o)
+ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, UINT o)
 {
 	libidx = li;
 	ordinal = o;
@@ -334,7 +334,7 @@ ht_pe_import_function::ht_pe_import_function(uint li, RVA a, uint o)
 	byname = false;
 }
 
-ht_pe_import_function::ht_pe_import_function(uint li, RVA a, char *n, uint h)
+ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, char *n, UINT h)
 {
 	libidx= li;
 	name.name = ht_strdup(n);
@@ -371,7 +371,7 @@ void	ht_pe_import_viewer::done()
 void ht_pe_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	uint l, s;
+	UINT l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -386,7 +386,7 @@ void ht_pe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_pe_import_viewer::func(uint i, bool execute)
+char *ht_pe_import_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 2:

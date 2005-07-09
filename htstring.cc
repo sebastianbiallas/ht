@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "global.h"
 #include "htatom.h"
 #include "htdebug.h"
 #include "htstring.h"
@@ -353,7 +354,7 @@ bool waitforchar(char **str, char b)
 }
 
 /*
-static bool bnstr2bin(char *str, char *p, int base, uint32 *v)
+static bool bnstr2bin(char *str, char *p, int base, dword *v)
 {
 	*v=0;
 	do {
@@ -367,10 +368,10 @@ static bool bnstr2bin(char *str, char *p, int base, uint32 *v)
 }
 */
 
-static bool bnstr2bin(char *str, char *p, int base, uint64 *q)
+static bool bnstr2bin(char *str, char *p, int base, qword *q)
 {
 	*q = to_qword(0);
-	uint64 qbase = to_qword(base);
+	qword qbase = to_qword(base);
 	do {
 		int c = hexdigit(*str);
 		if ((c == -1) || (c >= base)) return false;
@@ -381,7 +382,7 @@ static bool bnstr2bin(char *str, char *p, int base, uint64 *q)
 	return true;
 }
 
-bool bnstr(char **str, uint64 *q, int defaultbase)
+bool bnstr(char **str, qword *q, int defaultbase)
 {
 	int base=defaultbase;
 	int t=0;
@@ -432,9 +433,9 @@ bool bnstr(char **str, uint64 *q, int defaultbase)
 	return false;
 }
 
-bool bnstr(char **str, uint32 *v, int defaultbase)
+bool bnstr(char **str, dword *v, int defaultbase)
 {
-	uint64 q;
+	qword q;
 	bool res = bnstr(str, &q, defaultbase);
 	*v = QWORD_GET_LO(q);
 	return res;
@@ -487,7 +488,7 @@ char *mkhexb(char *buf, byte d)
 	return buf;
 }
 
-char *mkhexw(char *buf, uint16 d)
+char *mkhexw(char *buf, word d)
 {
 	*buf++=hexchars[(d>>12)&0xf];
 	*buf++=hexchars[(d>>8)&0xf];
@@ -496,7 +497,7 @@ char *mkhexw(char *buf, uint16 d)
 	return buf;
 }
 
-char *mkhexd(char *buf, uint32 d)
+char *mkhexd(char *buf, dword d)
 {
 	*buf++=hexchars[(d>>28)&0xf];
 	*buf++=hexchars[(d>>24)&0xf];
@@ -509,7 +510,7 @@ char *mkhexd(char *buf, uint32 d)
 	return buf;
 }
 
-char *mkhexq(char *buf, uint64 q)
+char *mkhexq(char *buf, qword q)
 {
 	*buf++=hexchars[(q.hi>>28)&0xf];
 	*buf++=hexchars[(q.hi>>24)&0xf];
@@ -543,13 +544,13 @@ ht_data_string::~ht_data_string()
 	if (value) free(value);
 }
 
-int ht_data_string::load(ObjectStream &f)
+int ht_data_string::load(ht_object_stream *f)
 {
 	value = f->getString(NULL);
 	return f->get_error();
 }
 
-void ht_data_string::store(ObjectStream &f)
+void ht_data_string::store(ht_object_stream *f)
 {
 	f->putString(value, NULL);
 }
@@ -559,7 +560,7 @@ int ht_data_string::toString(char *s, int maxlen)
 	return ht_snprintf(s, maxlen, "%s", value);
 }
 
-ObjectID ht_data_string::getObjectID() const
+OBJECT_ID ht_data_string::object_id() const
 {
 	return ATOM_HT_DATA_STRING;
 }
@@ -572,7 +573,7 @@ void ht_string_list::init()
 	ht_clist::init(compare_keys_string);
 }
 
-char *ht_string_list::get_string(uint i)
+char *ht_string_list::get_string(UINT i)
 {
 	ht_data_string *s=(ht_data_string*)get(i);
 	if (s) return s->value;
@@ -587,18 +588,18 @@ void ht_string_list::insert_string(char *s)
 /*
  *	ht_sorted_string_list
  */
-void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, Object *key_b))
+void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, ht_data *key_b))
 {
 	ht_sorted_list::init(compare_keys_proc);
 }
 
 char *ht_sorted_string_list::get_string(char *s)
 {
-	Object *d = new ht_data_string(s);
-	uint i=find(d);
+	ht_data *d = new ht_data_string(s);
+	UINT i=find(d);
 	char *ret=NULL;
 	if (i!=LIST_UNDEFINED) {
-		Object *r=get(i);
+		ht_data *r=get(i);
 		if (r) ret=((ht_data_string *)r)->value;
 	}
 	delete d;
@@ -614,7 +615,7 @@ void ht_sorted_string_list::insert_string(char *s)
  *	compare_keys_string
  */
 
-int compare_keys_string(ht_data *key_a, Object *key_b)
+int compare_keys_string(ht_data *key_a, ht_data *key_b)
 {
 	// FIXME:
 	if (((ht_data_string*)key_a)->value && ((ht_data_string*)key_b)->value) {
@@ -626,7 +627,7 @@ int compare_keys_string(ht_data *key_a, Object *key_b)
  *	icompare_keys_string
  */
 
-int icompare_keys_string(ht_data *key_a, Object *key_b)
+int icompare_keys_string(ht_data *key_a, ht_data *key_b)
 {
 	return ht_stricmp(((ht_data_string*)key_a)->value, ((ht_data_string*)key_b)->value);
 }

@@ -74,7 +74,7 @@ bool compeq_line_id(const LINE_ID &a, const LINE_ID &b)
  *	CLASS ht_search_request
  */
 
-ht_search_request::ht_search_request(uint _search_class, uint _type, uint _flags)
+ht_search_request::ht_search_request(UINT _search_class, UINT _type, UINT _flags)
 {
 	search_class=_search_class;
 	type=_type;
@@ -85,7 +85,7 @@ ht_search_request::ht_search_request(uint _search_class, uint _type, uint _flags
  *	CLASS ht_search_result
  */
  
-ht_search_result::ht_search_result(uint _search_class)
+ht_search_result::ht_search_result(UINT _search_class)
 {
 	search_class=_search_class;
 }
@@ -114,7 +114,7 @@ ht_visual_search_result::ht_visual_search_result() :
  *	CLASS ht_format_group
  */
 
-void ht_format_group::init(bounds *b, int options, const char *desc, File *f, bool own_f, bool editable_f, format_viewer_if **i, ht_format_group *format_group)
+void ht_format_group::init(bounds *b, int options, const char *desc, ht_streamfile *f, bool own_f, bool editable_f, format_viewer_if **i, ht_format_group *format_group)
 {
 	ht_format_viewer::init(b, desc, 0, f, format_group);
 	VIEW_DEBUG_NAME("ht_format_group");
@@ -187,7 +187,7 @@ int ht_format_group::focus(ht_view *view)
 	return r;
 }
 
-char *ht_format_group::func(uint i, bool execute)
+char *ht_format_group::func(UINT i, bool execute)
 {
 	return ht_format_viewer::func(i, execute);
 }
@@ -380,7 +380,7 @@ void ht_format_group::setgroup(ht_group *_group)
  *	CLASS ht_viewer
  */
 
-void ht_viewer::init(bounds *b, const char *desc, uint c)
+void ht_viewer::init(bounds *b, const char *desc, UINT c)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_BROWSABLE | VO_SELECTABLE | VO_MOVE | VO_RESIZE, desc);
 	caps = c;
@@ -393,7 +393,7 @@ void ht_viewer::done()
 	ht_view::done();
 }
 
-char *ht_viewer::func(uint i, bool execute)
+char *ht_viewer::func(UINT i, bool execute)
 {
 	return 0;
 }
@@ -454,7 +454,7 @@ void ht_viewer::handlemsg(htmsg *msg)
  *	CLASS ht_format_viewer
  */
 
-void ht_format_viewer::init(bounds *b, const char *desc, uint caps, File *f, ht_format_group *fg)
+void ht_format_viewer::init(bounds *b, const char *desc, UINT caps, ht_streamfile *f, ht_format_group *fg)
 {
 	ht_viewer::init(b, desc, caps);
 	options |= VO_FORMAT_VIEW;
@@ -475,7 +475,7 @@ void ht_format_viewer::done()
 	ht_view::done();
 }
 
-bool ht_format_viewer::pos_to_offset(viewer_pos pos, FileOfs *ofs)
+bool ht_format_viewer::pos_to_offset(viewer_pos pos, FILEOFS *ofs)
 {
 	return false;
 }
@@ -494,7 +494,7 @@ bool ht_format_viewer::continue_search()
 	if (last_search_request) {
 		ht_search_result *r = NULL;
 		if (last_search_physical) {
-			FileOfs o, no;
+			FILEOFS o, no;
 			if (get_current_offset(&o)) {
 				try {
 					if (last_search_request->search_class==SC_PHYSICAL) {
@@ -536,7 +536,7 @@ int ht_format_viewer::symbol_handler(eval_scalar *result, char *name)
 	return 0;
 }
 
-bool ht_format_viewer::get_current_offset(FileOfs *ofs)
+bool ht_format_viewer::get_current_offset(FILEOFS *ofs)
 {
 	return false;
 }
@@ -546,12 +546,12 @@ bool ht_format_viewer::get_current_pos(viewer_pos *pos)
 	return false;
 }
 
-bool ht_format_viewer::get_current_real_offset(FileOfs *ofs)
+bool ht_format_viewer::get_current_real_offset(FILEOFS *ofs)
 {
 	return get_current_offset(ofs);
 }
 
-File *ht_format_viewer::get_file()
+ht_streamfile *ht_format_viewer::get_file()
 {
 	return file;
 }
@@ -571,7 +571,7 @@ bool ht_format_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 	return false;
 }
 
-bool ht_format_viewer::goto_offset(FileOfs ofs, bool save_vstate)
+bool ht_format_viewer::goto_offset(FILEOFS ofs, bool save_vstate)
 {
 	return false;
 }
@@ -585,7 +585,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_goto_offset: {
-			FileOfs o = (FileOfs)msg->data1.integer;	// FIXME: int != FileOfs
+			FILEOFS o = (FILEOFS)msg->data1.integer;	// FIXME: int != FILEOFS
 			if (goto_offset(o, false)) {
 				clearmsg(msg);
 				return;
@@ -597,8 +597,8 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		case cmd_file_truncate: {
-			File *f = (File*)msg->data1.ptr;
-			FileOfs o = (FileOfs)msg->data2.integer;
+			ht_streamfile *f = (ht_streamfile*)msg->data1.ptr;
+			FILEOFS o = (FILEOFS)msg->data2.integer;
 			if (file == f) {
 				ht_format_loc loc;
 				loc_enum_start();
@@ -628,7 +628,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 		}
 		case cmd_view_mode_i:
 			if (file /*&& (file==msg->data1.ptr)*/) {
-				uint size = file->get_size();
+				UINT size = file->get_size();
 				file->cntl(FCNTL_MODS_INVD);
 				if (file->set_access_mode(FAM_READ)) {
 					htmsg m;
@@ -663,19 +663,19 @@ bool ht_format_viewer::next_logical_pos(viewer_pos pos, viewer_pos *npos)
 	return false;
 }
 
-bool ht_format_viewer::next_logical_offset(FileOfs ofs, FileOfs *nofs)
+bool ht_format_viewer::next_logical_offset(FILEOFS ofs, FILEOFS *nofs)
 {
 	return false;
 }
 
-bool ht_format_viewer::offset_to_pos(FileOfs ofs, viewer_pos *pos)
+bool ht_format_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *pos)
 {
 	return false;
 }
 
 bool ht_format_viewer::vstate_save()
 {
-	Object *vs = vstate_create();
+	ht_data *vs = vstate_create();
 	if (vs) {
 		htmsg m;
 		m.msg = msg_vstate_save;
@@ -688,7 +688,7 @@ bool ht_format_viewer::vstate_save()
 	return false;
 }
 
-uint ht_format_viewer::pread(FileOfs ofs, void *buf, uint size)
+UINT ht_format_viewer::pread(FILEOFS ofs, void *buf, UINT size)
 {
 	if (file->seek(ofs)==0) {
 		return file->read(buf, size);
@@ -696,24 +696,24 @@ uint ht_format_viewer::pread(FileOfs ofs, void *buf, uint size)
 	return 0;
 }
 
-ht_search_result *ht_format_viewer::psearch(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_format_viewer::psearch(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	return 0;
 }
 
-void ht_format_viewer::pselect_add(FileOfs start, FileOfs end)
+void ht_format_viewer::pselect_add(FILEOFS start, FILEOFS end)
 {
 }
 
-void ht_format_viewer::pselect_get(FileOfs *start, FileOfs *end)
+void ht_format_viewer::pselect_get(FILEOFS *start, FILEOFS *end)
 {
 }
 
-void ht_format_viewer::pselect_set(FileOfs start, FileOfs end)
+void ht_format_viewer::pselect_set(FILEOFS start, FILEOFS end)
 {
 }
 
-uint ht_format_viewer::pwrite(FileOfs ofs, void *buf, uint size)
+UINT ht_format_viewer::pwrite(FILEOFS ofs, void *buf, UINT size)
 {
 	if (file->seek(ofs)==0) {
 		sendmsg(msg_file_changed);
@@ -722,12 +722,12 @@ uint ht_format_viewer::pwrite(FileOfs ofs, void *buf, uint size)
 	return 0;
 }
 
-bool ht_format_viewer::qword_to_offset(uint64 q, FileOfs *ofs)
+bool ht_format_viewer::qword_to_offset(qword q, FILEOFS *ofs)
 {
 	return false;
 }
 
-bool ht_format_viewer::qword_to_pos(uint64 q, viewer_pos *pos)
+bool ht_format_viewer::qword_to_pos(qword q, viewer_pos *pos)
 {
 	return false;
 }
@@ -761,7 +761,7 @@ static int format_viewer_symbol_handler(eval_scalar *result, char *name)
 	return viewer->symbol_handler(result, name);
 }
 
-bool ht_format_viewer::string_to_qword(char *string, uint64 *q)
+bool ht_format_viewer::string_to_qword(char *string, qword *q)
 {
 	eval_scalar r;
 	if (eval(&r, string, format_viewer_func_handler, format_viewer_symbol_handler, this)) {
@@ -781,19 +781,19 @@ bool ht_format_viewer::string_to_qword(char *string, uint64 *q)
 
 bool ht_format_viewer::string_to_pos(char *string, viewer_pos *pos)
 {
-	uint64 q;
+	qword q;
 	if (!string_to_qword(string, &q)) return false;
 	return qword_to_pos(q, pos);
 }
 
-bool ht_format_viewer::string_to_offset(char *string, FileOfs *ofs)
+bool ht_format_viewer::string_to_offset(char *string, FILEOFS *ofs)
 {
-	uint64 q;
+	qword q;
 	if (!string_to_qword(string, &q)) return false;
 	return qword_to_offset(q, ofs);
 }
 
-Object *ht_format_viewer::vstate_create()
+ht_data *ht_format_viewer::vstate_create()
 {
 	return NULL;
 }
@@ -802,9 +802,9 @@ void ht_format_viewer::vstate_restore(ht_data *view_state)
 {
 }
 
-uint ht_format_viewer::vread(viewer_pos pos, void *buf, uint size)
+UINT ht_format_viewer::vread(viewer_pos pos, void *buf, UINT size)
 {
-	FileOfs o;
+	FILEOFS o;
 	if (pos_to_offset(pos, &o)) {
 		return pread(o, buf, size);
 	}
@@ -818,7 +818,7 @@ ht_search_result *ht_format_viewer::vsearch(ht_search_request *search, viewer_po
 
 void ht_format_viewer::vselect_add(viewer_pos start, viewer_pos end)
 {
-	FileOfs so, eo;
+	FILEOFS so, eo;
 	if (pos_to_offset(start, &so) && pos_to_offset(end, &eo)) {
 		return pselect_add(so, eo);
 	}
@@ -831,15 +831,15 @@ void ht_format_viewer::vselect_get(viewer_pos *start, viewer_pos *end)
 
 void ht_format_viewer::vselect_set(viewer_pos start, viewer_pos end)
 {
-	FileOfs so, eo;
+	FILEOFS so, eo;
 	if (pos_to_offset(start, &so) && pos_to_offset(end, &eo)) {
 		return pselect_set(so, eo);
 	}
 }
 
-uint ht_format_viewer::vwrite(viewer_pos pos, void *buf, uint size)
+UINT ht_format_viewer::vwrite(viewer_pos pos, void *buf, UINT size)
 {
-	FileOfs o;
+	FILEOFS o;
 	if (pos_to_offset(pos, &o)) {
 		return pwrite(o, buf, size);
 	}
@@ -850,7 +850,7 @@ uint ht_format_viewer::vwrite(viewer_pos pos, void *buf, uint size)
  *	CLASS ht_uformat_view
  */
 
-class ht_uformat_viewer_vstate: public Object {
+class ht_uformat_viewer_vstate: public ht_data {
 public:
 	int edit;
 	ht_sub *first_sub, *last_sub;
@@ -861,11 +861,11 @@ public:
 	int cursor_state;
 	int cursor_ypos;
 /* selection*/
-	FileOfs sel_start;
-	FileOfs sel_end;
+	FILEOFS sel_start;
+	FILEOFS sel_end;
 };
 
-void ht_uformat_viewer::init(bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group)
+void ht_uformat_viewer::init(bounds *b, const char *desc, int caps, ht_streamfile *file, ht_format_group *format_group)
 {
 	tagpal.data=NULL;
 	tagpal.size=0;
@@ -898,7 +898,7 @@ void ht_uformat_viewer::done()
 	ht_format_viewer::done();
 }
 
-int ht_uformat_viewer::address_input(const char *title, char *result, int limit, uint32 histid)
+int ht_uformat_viewer::address_input(const char *title, char *result, int limit, dword histid)
 {
 	bounds b;
 	app->getbounds(&b);
@@ -1402,7 +1402,7 @@ int ht_uformat_viewer::cursormicroedit_forward()
 	uformat_viewer_pos p;
 	p = top;
 	p.tag_group = cursor.tag_group;
-	uint cursor_tag_bitidx = 0;
+	UINT cursor_tag_bitidx = 0;
 
 	cursorline_get();
 	char *e=tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
@@ -1654,7 +1654,7 @@ bool ht_uformat_viewer::edit_input(byte b)
 				cursorline_get();
 				char *t=tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
 				int shift=((ht_tag_edit_bit*)t)->bitidx;
-				uint32 mask=1 << (shift%8);
+				dword mask=1 << (shift%8);
 				int op=shift/8;
 				pread(cursor_tag_offset+op, &d, 1);
 				switch (b) {
@@ -1675,7 +1675,7 @@ bool ht_uformat_viewer::edit_input(byte b)
 			break;
 		}
 		case HT_TAG_EDIT_TIME: {
-			uint32 d;
+			dword d;
 			int h = edit_input_c2d(b);
 					
 			byte buf[4];
@@ -1787,15 +1787,15 @@ bool ht_uformat_viewer::edit_input(byte b)
 						break;
 				}
 				/* FIXME: big bad hack... */
-				if (sizeof(uint32) == sizeof(time_t))
+				if (sizeof(dword) == sizeof(time_t))
 				if (worked) {
 				/* FIXME: !!! */
-					uint32 tz;
+					dword tz;
 					time_t l = time(NULL);
 					time_t g = l;
 					struct tm *gtm = gmtime(&g);
 					g = mktime(gtm);
-					tz = (uint32)difftime(g, l);
+					tz = (dword)difftime(g, l);
 					*(time_t*)&d = mktime(&q);
 					d -= tz;
 					buf[0] = d>>0;
@@ -1915,7 +1915,7 @@ bool ht_uformat_viewer::find_first_tag(uformat_viewer_pos *p, int limit)
 	return false;
 }
 
-bool ht_uformat_viewer::find_first_edit_tag_with_offset(uformat_viewer_pos *p, int limit, FileOfs offset)
+bool ht_uformat_viewer::find_first_edit_tag_with_offset(uformat_viewer_pos *p, int limit, FILEOFS offset)
 {
 	char line[1024];	/* FIXME: possible buffer overflow ! */
 	int i=0;
@@ -1956,7 +1956,7 @@ void ht_uformat_viewer::focus_cursor()
 	}
 }
 
-char *ht_uformat_viewer::func(uint i, bool execute)
+char *ht_uformat_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 2:
@@ -1984,7 +1984,7 @@ char *ht_uformat_viewer::func(uint i, bool execute)
 			if (caps & VC_EDIT) {
 				if (edit()) {
 					if (execute) {
-						uint size = file->get_size();
+						UINT size = file->get_size();
 						bool isdirty = false;
 						file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &isdirty);
 						char q[1024];
@@ -2040,7 +2040,7 @@ char *ht_uformat_viewer::func(uint i, bool execute)
 			break;
 		case 9: {
 			if (execute) {
-				FileOfs o;
+				FILEOFS o;
 				if (get_current_real_offset(&o)) {
 					char title[128];
 					ht_snprintf(title, sizeof title, "view offset %08x in...", o);
@@ -2049,7 +2049,7 @@ char *ht_uformat_viewer::func(uint i, bool execute)
 						htmsg m;
 						m.msg = msg_goto_offset;
 						m.type = mt_empty;
-						m.data1.integer = o;	// FIXME: int = FileOfs
+						m.data1.integer = o;	// FIXME: int = FILEOFS
 						v->sendmsg(&m);
 						if (m.msg == msg_empty) {
 							vstate_save();
@@ -2066,12 +2066,12 @@ char *ht_uformat_viewer::func(uint i, bool execute)
 	return ht_format_viewer::func(i, execute);
 }
 
-vcp ht_uformat_viewer::getcolor_tag(uint pal_index)
+vcp ht_uformat_viewer::getcolor_tag(UINT pal_index)
 {
 	return getcolorv(&tagpal, pal_index);
 }
 
-bool ht_uformat_viewer::get_current_offset(FileOfs *offset)
+bool ht_uformat_viewer::get_current_offset(FILEOFS *offset)
 {
 	if ((cursor_state!=cursor_state_disabled) && (cursor_tag_class==tag_class_edit)) {
 		*offset=cursor_tag_offset;
@@ -2098,7 +2098,7 @@ int ht_uformat_viewer::get_current_tag(char **tag)
 	return 0;
 }
 
-int ht_uformat_viewer::get_current_tag_size(uint32 *size)
+int ht_uformat_viewer::get_current_tag_size(dword *size)
 {
 	if (cursor_tag_class==tag_class_edit) {
 		cursorline_get();
@@ -2222,7 +2222,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 				case K_Backspace: {
-					FileOfs f;
+					FILEOFS f;
 					if (edit() && (cursor_tag_class == tag_class_edit)
 					&& get_current_offset(&f)) {
 						file->cntl(FCNTL_MODS_CLEAR_DIRTY_RANGE, f, 1);
@@ -2330,8 +2330,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_Up: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2351,8 +2351,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_Down: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2372,8 +2372,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_Left: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2394,8 +2394,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_Right: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2422,8 +2422,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_PageUp: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2443,8 +2443,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_PageDown: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2464,8 +2464,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_Home: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2485,8 +2485,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				}
 				case K_Shift_End: {
 					focus_cursor();
-					FileOfs s, e;
-					uint32 ts;
+					FILEOFS s, e;
+					dword ts;
 					if (cursor_tag_class==tag_class_edit)
 						s=cursor_tag_offset;
 					else
@@ -2546,7 +2546,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					}						
 					break;
 				default: {
-					if (((uint32)msg->data1.integer<=255) && (edit())) {
+					if (((dword)msg->data1.integer<=255) && (edit())) {
 						if (cursor_tag_class==tag_class_edit) {
 							focus_cursor();
 							if (edit_input(msg->data1.integer)) {
@@ -2568,11 +2568,11 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		case cmd_edit_paste:
-			FileOfs ofs;
+			FILEOFS ofs;
 			if (get_current_offset(&ofs)) {
 				baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 				if (file->get_access_mode() & FAM_WRITE) {
-					uint32 s=clipboard_paste(file, ofs);
+					dword s=clipboard_paste(file, ofs);
 					if (s) {
 						pselect_set(ofs, ofs+s);
 						sendmsg(cmd_edit_mode_i);
@@ -2625,7 +2625,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 				switch (request->search_class) {
 					case SC_PHYSICAL: {
 						try {
-							FileOfs start, end;
+							FILEOFS start, end;
 							if (pos_to_offset(start_pos, &start)
 							&& pos_to_offset(end_pos, &end)) {
 								result = psearch(request, start, end);
@@ -2659,8 +2659,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			sendmsg(cmd_edit_mode_i);
 			if (edit()) {
 				bool cancel;
-				uint s = get_file()->get_size();
-				uint repls = replace_dialog(this, search_caps, &cancel);
+				UINT s = get_file()->get_size();
+				UINT repls = replace_dialog(this, search_caps, &cancel);
 				if (repls) {
 					if (s != get_file()->get_size()) {
 						sendmsg(msg_filesize_changed);
@@ -2685,14 +2685,14 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_resize: {
-			FileOfs o=0;
+			FILEOFS o=0;
 			if (get_current_offset(&o)) {
-				uint32 s;
+				dword s;
 				get_current_tag_size(&s);
 				o+=s;
 			}
 			
-			uint s=file->get_size();
+			UINT s=file->get_size();
 
 			char buf[32];
 			sprintf(buf, "%d", o);
@@ -2749,7 +2749,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			if (sel_end>sel_start) {
 				blockop_dialog(this, sel_start, sel_end);
 			} else {
-				FileOfs o=0;
+				FILEOFS o=0;
 				get_current_offset(&o);
 				blockop_dialog(this, o, file->get_size());
 			}
@@ -2770,7 +2770,7 @@ void ht_uformat_viewer::insertsub(ht_sub *sub)
 	if (!first_sub) first_sub=sub;
 }
 
-bool ht_uformat_viewer::goto_offset(FileOfs offset, bool save_vstate)
+bool ht_uformat_viewer::goto_offset(FILEOFS offset, bool save_vstate)
 {
 	uformat_viewer_pos p;
 	p.sub = first_sub;
@@ -2821,7 +2821,7 @@ bool ht_uformat_viewer::next_logical_pos(viewer_pos pos, viewer_pos *npos)
 	return false;
 }
 
-bool ht_uformat_viewer::next_logical_offset(FileOfs ofs, FileOfs *nofs)
+bool ht_uformat_viewer::next_logical_offset(FILEOFS ofs, FILEOFS *nofs)
 {
 	*nofs = ofs + 1;
 	return true;
@@ -2857,7 +2857,7 @@ int ht_uformat_viewer::prev_line(uformat_viewer_pos *p, int n)
 	return n0 - n;
 }
 
-vcp ht_uformat_viewer::get_tag_color_edit(FileOfs tag_offset, uint size, bool atcursoroffset, bool iscursor)
+vcp ht_uformat_viewer::get_tag_color_edit(FILEOFS tag_offset, UINT size, bool atcursoroffset, bool iscursor)
 {
 	vcp tag_color = getcolor_tag(palidx_tags_edit_tag);
 	bool isdirty = false;
@@ -2880,7 +2880,7 @@ vcp ht_uformat_viewer::get_tag_color_edit(FileOfs tag_offset, uint size, bool at
 	return tag_color;
 }
 
-void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *tc, char *tag, uint size, bool bigendian, bool is_cursor)
+void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *tc, char *tag, UINT size, bool bigendian, bool is_cursor)
 {
 	ID id;
 	vcp tag_color=getcolor_tag(palidx_tags_sel_tag);
@@ -2892,10 +2892,10 @@ void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *t
 		int_hash *tbl;
 		if ((tbl=(int_hash*)find_atom(id))) {
 			char *str;
-			uint64 q;
+			qword q;
 			q.hi = 0;
 			q.lo = 0;
-			FileOfs tag_offset=tag_get_offset(tag);
+			FILEOFS tag_offset=tag_get_offset(tag);
 			byte buf[4];
 			
 			if (pread(tag_offset, buf, size)==size) {
@@ -2930,7 +2930,7 @@ void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *t
 						}
 						break;
 				}
-/* FIXME: uint64 ? */
+/* FIXME: qword ? */
 				if ((str=matchhash(q.lo, tbl))) {
 					*string=str;
 					*length=strlen(*string);
@@ -2953,10 +2953,10 @@ void ht_uformat_viewer::reloadpalette()
 	load_pal(palclasskey_tags, palkey_tags_default, &tagpal);
 }
 
-uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, char *tagstring, bool cursor_in_line)
+UINT ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, UINT maxlen, char *tagstring, bool cursor_in_line)
 {
 	char *n=tagstring;
-	uint c=0;
+	UINT c=0;
 	int i=0, g=0;
 	bool is_cursor;
 	vcp color_normal=getcolor(palidx_generic_body);
@@ -2968,7 +2968,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 		n+=l;
 		is_cursor=cursor_in_line && (i==cursor.tag_idx);
 		if (*n=='\e') {
-			FileOfs tag_offset;
+			FILEOFS tag_offset;
 			vcp tag_color;
 			char str[64];
 			switch (n[1]) {
@@ -2990,7 +2990,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_WORD_LE: {
-					uint16 d;
+					word d;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
@@ -3009,7 +3009,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_DWORD_LE: {
-					uint32 d;
+					dword d;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
@@ -3028,7 +3028,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_QWORD_LE: {
-					uint64 q;
+					qword q;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
@@ -3048,7 +3048,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_WORD_BE: {
-					uint16 d;
+					word d;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
@@ -3067,7 +3067,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_DWORD_BE: {
-					uint32 d;
+					dword d;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
@@ -3085,7 +3085,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_QWORD_BE: {
-					uint64 q;
+					qword q;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
@@ -3104,7 +3104,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 					break;
 				}
 				case HT_TAG_EDIT_TIME: {
-					uint32 d;
+					dword d;
 					
 					tag_offset=tag_get_offset(n);
 					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
@@ -3270,12 +3270,12 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 	return c;
 }
 
-uint ht_uformat_viewer::render_tagstring_single(char *chars, vcp *colors, uint maxlen, uint offset, char *text, uint len, vcp color)
+UINT ht_uformat_viewer::render_tagstring_single(char *chars, vcp *colors, UINT maxlen, UINT offset, char *text, UINT len, vcp color)
 {
 	if (chars) chars+=offset;
 	if (colors) colors+=offset;
 	maxlen-=offset;
-	uint l=(len<maxlen) ? len : maxlen, r=0;
+	UINT l=(len<maxlen) ? len : maxlen, r=0;
 	while (l--) {
 		if (chars) *(chars++)=*(text++);
 		if (colors) *(colors++)=color;
@@ -3340,7 +3340,7 @@ void ht_uformat_viewer::select_mode_post(bool lastpos)
 		if (cursor_select_start!=0xffffffff) {
 			if (cursor_tag_class==tag_class_edit) {
 				if ((lastpos) && (cursor_select_cursor_length!=0xffffffff)) {
-					FileOfs s, e;
+					FILEOFS s, e;
 					pselect_get(&s, &e);
 					if (e != cursor_tag_offset+cursor_select_cursor_length) {
 						pselect_add(cursor_select_start, cursor_tag_offset+cursor_select_cursor_length);
@@ -3355,7 +3355,7 @@ void ht_uformat_viewer::select_mode_post(bool lastpos)
 	}
 }
 
-uint ht_uformat_viewer::pwrite(FileOfs ofs, void *buf, uint size)
+UINT ht_uformat_viewer::pwrite(FILEOFS ofs, void *buf, UINT size)
 {
 	cursorline_dirty();
 	return ht_format_viewer::pwrite(ofs, buf, size);
@@ -3393,7 +3393,7 @@ int ht_uformat_viewer::ref()
 	return 0;
 }
 
-int ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendian)
+int ht_uformat_viewer::ref_desc(ID id, FILEOFS offset, UINT size, bool bigendian)
 {
 	endianess end = bigendian ? big_endian : little_endian;
 	int_hash *desc=(int_hash*)find_atom(id);
@@ -3488,7 +3488,7 @@ int ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendian
 	return 0;
 }
 
-int ht_uformat_viewer::ref_flags(ID id, FileOfs offset)
+int ht_uformat_viewer::ref_flags(ID id, FILEOFS offset)
 {
 	ht_tag_flags_s *flags=(ht_tag_flags_s*)find_atom(id), *fl;
 	if (flags) {
@@ -3544,7 +3544,7 @@ int ht_uformat_viewer::ref_flags(ID id, FileOfs offset)
 
 		d->setpalette(palkey_generic_window_default);
 
-		uint pmode=file->get_access_mode() & FAM_WRITE;
+		UINT pmode=file->get_access_mode() & FAM_WRITE;
 
 		if (d->run(false)==button_ok) u->edit_update();
 
@@ -3568,11 +3568,11 @@ int ht_uformat_viewer::ref_sel(LINE_ID *id)
 	return 0;
 }
 
-ht_search_result *ht_uformat_viewer::psearch(ht_search_request *request, FileOfs start, FileOfs end)
+ht_search_result *ht_uformat_viewer::psearch(ht_search_request *request, FILEOFS start, FILEOFS end)
 {
 	if (request != last_search_request) {
 		if (last_search_request) delete last_search_request;
-		last_search_request = (ht_search_request*)request->clone();
+		last_search_request = (ht_search_request*)request->duplicate();
 	}
 	last_search_physical = true;
 	last_search_end_ofs = end;
@@ -3590,7 +3590,7 @@ ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_
 {
 	if (request != last_search_request) {
 		if (last_search_request) delete last_search_request;
-		last_search_request = (ht_search_request*)request->clone();
+		last_search_request = (ht_search_request*)request->duplicate();
 	}
 	last_search_physical = false;
 	last_search_end_pos = end;
@@ -3603,7 +3603,7 @@ ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_
 		get_std_progress_indicator_metrics(&b);
 		ht_progress_indicator *progress_indicator=new ht_progress_indicator();
 		progress_indicator->init(&b, "ESC to cancel");
-		uint lines=0;
+		UINT lines=0;
 
 		uformat_viewer_pos p = start.u;
 		while (p.sub) {
@@ -3652,11 +3652,11 @@ leave:
 	return NULL;
 }
 
-void ht_uformat_viewer::pselect_add(FileOfs start, FileOfs end)
+void ht_uformat_viewer::pselect_add(FILEOFS start, FILEOFS end)
 {
 	bool downward = (start<end);
 	if (end<start) {
-		FileOfs temp=start;
+		FILEOFS temp=start;
 		start=end;
 		end=temp;
 	}
@@ -3673,19 +3673,19 @@ void ht_uformat_viewer::pselect_add(FileOfs start, FileOfs end)
 		sel_end=end;
 	}
 	if (sel_start>sel_end) {
-		FileOfs temp=sel_start;
+		FILEOFS temp=sel_start;
 		sel_start=sel_end;
 		sel_end=temp;
 	}
 }
 
-void ht_uformat_viewer::pselect_get(FileOfs *start, FileOfs *end)
+void ht_uformat_viewer::pselect_get(FILEOFS *start, FILEOFS *end)
 {
 	*start=sel_start;
 	*end=sel_end;
 }
 
-void ht_uformat_viewer::pselect_set(FileOfs start, FileOfs end)
+void ht_uformat_viewer::pselect_set(FILEOFS start, FILEOFS end)
 {
 	sel_start=start;
 	sel_end=end;
@@ -3817,7 +3817,7 @@ void ht_uformat_viewer::scroll_down(int n)
 	check_cursor_visibility();
 }
 
-bool ht_uformat_viewer::qword_to_offset(uint64 q, FileOfs *ofs)
+bool ht_uformat_viewer::qword_to_offset(qword q, FILEOFS *ofs)
 {
 // FIXME: not "The Right Thing(tm)"
 	*ofs = QWORD_GET_INT(q);
@@ -3910,7 +3910,7 @@ void ht_uformat_viewer::vstate_restore(ht_data *data)
 	update_visual_info();
 }
 
-Object *ht_uformat_viewer::vstate_create()
+ht_data *ht_uformat_viewer::vstate_create()
 {
 	ht_uformat_viewer_vstate *vs = new ht_uformat_viewer_vstate();
 	vs->first_sub = first_sub;
@@ -3932,7 +3932,7 @@ Object *ht_uformat_viewer::vstate_create()
  *	CLASS ht_sub
  */
 
-void ht_sub::init(File *f)
+void ht_sub::init(ht_streamfile *f)
 {
 	Object::init();
 	uformat_viewer=NULL;
@@ -3952,12 +3952,12 @@ bool ht_sub::closest_line_id(LINE_ID *line_id)
 	return true;
 }
 
-bool ht_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	return false;
 }
 
-bool ht_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
+bool ht_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 {
 	return false;
 }
@@ -3994,7 +3994,7 @@ bool ht_sub::ref(LINE_ID *id)
 	return false;
 }
 
-ht_search_result *ht_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	return NULL;
 }
@@ -4003,7 +4003,7 @@ ht_search_result *ht_sub::search(ht_search_request *search, FileOfs start, FileO
  *	CLASS ht_linear_sub
  */
 
-void ht_linear_sub::init(File *f, FileOfs ofs, int size)
+void ht_linear_sub::init(ht_streamfile *f, FILEOFS ofs, int size)
 {
 	ht_sub::init(f);
 	fofs=ofs;
@@ -4018,7 +4018,7 @@ void ht_linear_sub::done()
 void ht_linear_sub::handlemsg(htmsg *msg)
 {
 	if (msg->msg==msg_filesize_changed) {
-		uint s=file->get_size();
+		UINT s=file->get_size();
 		if (fofs>s) {
 			fsize=0;
 		} else if (fofs+fsize>s) {
@@ -4054,12 +4054,12 @@ int ht_linear_func_readstring(eval_scalar *result, eval_int *offset, eval_int *l
 	};
 	ht_format_viewer *f=((context_t*)eval_get_context())->fv;
 
-	uint l=QWORD_GET_INT(len->value);
+	UINT l=QWORD_GET_INT(len->value);
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		eval_str s;
-		uint c=f->pread(QWORD_GET_INT(offset->value), buf, l);
+		UINT c=f->pread(QWORD_GET_INT(offset->value), buf, l);
 		if (c!=l) {
 			free(buf);
 			set_eval_error("i/o error (requested %d, read %d from ofs %08x)", l, c, offset->value);
@@ -4118,16 +4118,16 @@ int ht_linear_sub_symbol_handler(eval_scalar *result, char *name)
 	} else return 0;
 }
 
-class ht_expr_search_pcontext: public Object {
+class ht_expr_search_pcontext: public ht_data {
 public:
 /* in */
 	ht_search_request *request;
 	ht_sub *sub;
 	ht_format_viewer *fv;
-	FileOfs start;
-	FileOfs end;
+	FILEOFS start;
+	FILEOFS end;
 	int i;
-	FileOfs o;
+	FILEOFS o;
 /* out */
 	ht_search_result **result;
 };
@@ -4180,7 +4180,7 @@ bool process_search_expr(ht_data *ctx, ht_text *progress_indicator)
 	return false;
 }
 
-ht_search_result *linear_expr_search(ht_search_request *search, FileOfs start, FileOfs end, ht_sub *sub, ht_uformat_viewer *ufv, FileOfs fofs, uint32 fsize)
+ht_search_result *linear_expr_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_sub *sub, ht_uformat_viewer *ufv, FILEOFS fofs, dword fsize)
 {
 	if (start<fofs) start=fofs;
 	if (end>fofs+fsize) end=fofs+fsize;
@@ -4200,7 +4200,7 @@ ht_search_result *linear_expr_search(ht_search_request *search, FileOfs start, F
 	return NULL;
 }
 
-ht_search_result *ht_linear_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_linear_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	ht_search_result *r = NULL;
 	if ((search->search_class==SC_PHYSICAL) && (search->type==ST_EXPR)) {
@@ -4215,7 +4215,7 @@ ht_search_result *ht_linear_sub::search(ht_search_request *search, FileOfs start
  *	CLASS ht_hex_sub
  */
 
-void ht_hex_sub::init(File *f, FileOfs ofs, uint32 size, uint Line_length, uint u, uint32 vinc)
+void ht_hex_sub::init(ht_streamfile *f, FILEOFS ofs, dword size, UINT Line_length, UINT u, dword vinc)
 {
 	line_length = Line_length;
 	ht_linear_sub::init(f, ofs, size);
@@ -4244,7 +4244,7 @@ void	ht_hex_sub::set_line_length(int Line_length)
 }
 
 
-bool ht_hex_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_hex_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	if ((offset>=fofs) && (offset<fofs+fsize)) {
 		clear_line_id(line_id);
@@ -4255,7 +4255,7 @@ bool ht_hex_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 	return false;
 }
 
-bool ht_hex_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *ofs)
+bool ht_hex_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *ofs)
 {
 	*ofs = line_id.id1;
 	return true;
@@ -4272,7 +4272,7 @@ bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
 	l=mkhexd(l, ofs+vaddrinc);
 	*l++=' ';
 	if (ofs % line_length) ofs -= ofs % line_length;
-	for (uint32 i=0; i<line_length; i++) {
+	for (dword i=0; i<line_length; i++) {
 		if (i<c && ofs+i>=fofs) {
 			l=tag_make_edit_byte(l, ofs+i);
 		} else {
@@ -4289,7 +4289,7 @@ bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
 	}
 	l=tag_make_group(l);
 	*l++='|';
-	for (uint32 i=0; i<line_length; i++) {
+	for (dword i=0; i<line_length; i++) {
 		if (i<c && ofs+i>=fofs) {
 			l=tag_make_edit_char(l, ofs+i);
 		} else {
@@ -4366,7 +4366,7 @@ int ht_hex_sub::next_line_id(LINE_ID *line_id, int n)
  *	CLASS ht_mask
  */
 
-void ht_mask_sub::init(File *f, uint u)
+void ht_mask_sub::init(ht_streamfile *f, UINT u)
 {
 	ht_sub::init(f);
 	masks = new ht_string_list();
@@ -4426,7 +4426,7 @@ int ht_mask_sub::prev_line_id(LINE_ID *line_id, int n)
 	int r;
 	if (line_id->id2!=uid) return 0;
 	ID i1=line_id->id1;
-	if (i1<(uint32)n) {
+	if (i1<(dword)n) {
 		r=i1;
 		i1=0;
 	} else {
@@ -4447,21 +4447,21 @@ void ht_mask_sub::add_mask_table(char **tagstr)
 	while (*tagstr) add_mask(*(tagstr++));
 }
 
-void ht_mask_sub::add_staticmask(char *statictag_str, FileOfs reloc, bool std_bigendian)
+void ht_mask_sub::add_staticmask(char *statictag_str, FILEOFS reloc, bool std_bigendian)
 {
 	char tag_str[1024];	/* FIXME: possible buffer overflow */
 	statictag_to_tag(statictag_str, tag_str, reloc, std_bigendian);
 	masks->insert(new ht_data_tagstring(tag_str));
 }
 
-void ht_mask_sub::add_staticmask_table(char **statictag_table, FileOfs reloc, bool std_bigendian)
+void ht_mask_sub::add_staticmask_table(char **statictag_table, FILEOFS reloc, bool std_bigendian)
 {
 	while (*statictag_table) add_staticmask(*(statictag_table++), reloc, std_bigendian);
 }
 
 #define ht_MASK_STD_INDENT	50
 
-void ht_mask_sub::add_staticmask_ptable(ht_mask_ptable *statictag_ptable, FileOfs reloc, bool std_bigendian)
+void ht_mask_sub::add_staticmask_ptable(ht_mask_ptable *statictag_ptable, FILEOFS reloc, bool std_bigendian)
 {
 	char s[1024]; /* FIXME: possible buffer overflow */
 	while (statictag_ptable->desc || statictag_ptable->fields) {
@@ -4485,7 +4485,7 @@ void ht_mask_sub::add_staticmask_ptable(ht_mask_ptable *statictag_ptable, FileOf
  *	CLASS ht_layer_sub
  */
 
-void ht_layer_sub::init(File *file, ht_sub *s, bool own_s=1)
+void ht_layer_sub::init(ht_streamfile *file, ht_sub *s, bool own_s=1)
 {
 	ht_sub::init(file);
 	sub=s;
@@ -4506,12 +4506,12 @@ bool ht_layer_sub::closest_line_id(LINE_ID *line_id)
 	return sub->closest_line_id(line_id);
 }
 
-bool ht_layer_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_layer_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	return sub->convert_ofs_to_id(offset, line_id);
 }
 
-bool ht_layer_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
+bool ht_layer_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 {
 	return sub->convert_id_to_ofs(line_id, offset);
 }
@@ -4551,7 +4551,7 @@ bool ht_layer_sub::ref(LINE_ID *id)
 	return sub->ref(id);
 }
 
-ht_search_result *ht_layer_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_layer_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	return sub->search(search, start, end);
 }
@@ -4562,7 +4562,7 @@ ht_search_result *ht_layer_sub::search(ht_search_request *search, FileOfs start,
 
 ID ht_collapsable_sub_globalfaddr=0xffffffff;
 
-void ht_collapsable_sub::init(File *file, ht_sub *sub, bool own_sub, char *ns, bool c)
+void ht_collapsable_sub::init(ht_streamfile *file, ht_sub *sub, bool own_sub, char *ns, bool c)
 {
 	ht_layer_sub::init(file, sub, own_sub);
 	nodestring = ht_strdup(ns);
@@ -4581,7 +4581,7 @@ void ht_collapsable_sub::done()
 	ht_layer_sub::done();
 }
 
-bool ht_collapsable_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_collapsable_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 /*	if (offset==myfaddr) {
 		first_line_id(id1, id2);
@@ -4594,7 +4594,7 @@ bool ht_collapsable_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_i
 	return false;
 }
 
-bool ht_collapsable_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
+bool ht_collapsable_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 {
 	return ht_layer_sub::convert_id_to_ofs(line_id, offset);
 }
@@ -4669,7 +4669,7 @@ bool ht_collapsable_sub::ref(LINE_ID *id)
 	return false;
 }
 
-ht_search_result *ht_collapsable_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_collapsable_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	if (collapsed) return NULL;
 	return ht_layer_sub::search(search, start, end);
@@ -4679,7 +4679,7 @@ ht_search_result *ht_collapsable_sub::search(ht_search_request *search, FileOfs 
  *	CLASS ht_group_sub
  */
 
-void ht_group_sub::init(File *file)
+void ht_group_sub::init(ht_streamfile *file)
 {
 	ht_sub::init(file);
 	subs=new ht_clist();
@@ -4693,12 +4693,12 @@ void ht_group_sub::done()
 	ht_sub::done();
 }
 
-bool ht_group_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_group_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	return false;
 }
 
-bool ht_group_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
+bool ht_group_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 {
 	return false;
 }
@@ -4712,8 +4712,8 @@ void ht_group_sub::first_line_id(LINE_ID *line_id)
 bool ht_group_sub::getline(char *line, const LINE_ID line_id)
 {
 	ht_sub *s;
-	uint c=subs->count();
-	for (uint i=0; i<c; i++) {
+	UINT c=subs->count();
+	for (UINT i=0; i<c; i++) {
 		s=(ht_sub*)subs->get(i);
 		if (s->getline(line, line_id)) return true;
 	}
@@ -4734,9 +4734,9 @@ void ht_group_sub::last_line_id(LINE_ID *line_id)
 int ht_group_sub::next_line_id(LINE_ID *line_id, int n)
 {
 	ht_sub *s;
-	uint c=subs->count();
+	UINT c=subs->count();
 	int on=n;
-	for (uint i=0; i<c; i++) {
+	for (UINT i=0; i<c; i++) {
 		s=(ht_sub*)subs->get(i);
 		LINE_ID t;
 		s->last_line_id(&t);
@@ -4757,9 +4757,9 @@ int ht_group_sub::next_line_id(LINE_ID *line_id, int n)
 int ht_group_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	ht_sub *s;
-	uint c=subs->count();
+	UINT c=subs->count();
 	int on=n;
-	for (uint i=0; i<c; i++) {
+	for (UINT i=0; i<c; i++) {
 		s=(ht_sub*)subs->get(i);
 		LINE_ID t;
 		s->first_line_id(&t);
@@ -4780,15 +4780,15 @@ int ht_group_sub::prev_line_id(LINE_ID *line_id, int n)
 bool ht_group_sub::ref(LINE_ID *id)
 {
 	ht_sub *s;
-	uint c=subs->count();
-	for (uint i=0; i<c; i++) {
+	UINT c=subs->count();
+	for (UINT i=0; i<c; i++) {
 		s=(ht_sub*)subs->get(i);
 		if (s->ref(id)) return true;
 	}
 	return false;
 }
 
-ht_search_result *ht_group_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_group_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	return NULL;
 }

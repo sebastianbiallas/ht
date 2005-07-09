@@ -73,7 +73,7 @@
 
 extern format_viewer_if htelf_if;
 
-class sectionAndIdx: public Object {
+class sectionAndIdx: public ht_data {
 public:
 	uint secidx;
 	uint symidx;
@@ -112,7 +112,7 @@ struct ht_elf_reloc_section32 {
 };
 
 struct ht_elf_shared_data {
-	FileOfs header_ofs;
+	FILEOFS header_ofs;
 	ELF_HEADER ident;
 	endianess byte_order;
 	union {
@@ -128,7 +128,7 @@ struct ht_elf_shared_data {
 	ht_format_viewer *v_image;
 	int fake_undefined_shidx;
 	uint fake_undefined_size;
-	Container *undefined2fakeaddr;
+	ht_tree *undefined2fakeaddr;
 };
 
 /*
@@ -140,10 +140,10 @@ protected:
 	/* new */
 		void auto_relocate32();
 		void fake_undefined_symbols32();
-		uint find_reloc_section_for(uint si);
+		uint find_reloc_section_for(UINT si);
 		void relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a);
 public:
-		void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
+		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
 	/* extends ? */
 	virtual	void loc_enum_start();
@@ -154,7 +154,7 @@ public:
  *	ht_elf32_reloc_entry
  */
 
-class ht_elf32_reloc_entry: public Object {
+class ht_elf32_reloc_entry: public ht_data {
 public:
 	uint	type;
 	union {
@@ -173,22 +173,22 @@ class ht_elf32_reloc_file: public ht_reloc_file {
 protected:
 	ht_elf_shared_data *data;
 	/* extends ht_reloc_file */
-	virtual void	reloc_apply(Object *reloc, byte *data);
-	virtual bool	reloc_unapply(Object *reloc, byte *data);
+	virtual void	reloc_apply(ht_data *reloc, byte *data);
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
 public:
-		   	ht_elf32_reloc_file(File *File, bool own_streamfile, ht_elf_shared_data *data);
+		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
 };
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);
 
-bool elf_phys_and_mem_section(elf_section_header *s, uint elfclass);
-bool elf_valid_section(elf_section_header *s, uint elfclass);
+bool elf_phys_and_mem_section(elf_section_header *s, UINT elfclass);
+bool elf_valid_section(elf_section_header *s, UINT elfclass);
 
-bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section);
-bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, uint32 *ofs);
-bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFAddress addr);
+bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section);
+bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs);
+bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr);
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32 ofs, ELFAddress *addr);
-bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uint32 ofs, uint32 *section);
+bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr);
+bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, dword *section);
 
 #endif /* !__HTELF_H__ */

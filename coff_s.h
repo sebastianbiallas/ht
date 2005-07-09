@@ -21,19 +21,19 @@
 #ifndef __COFF_S_H_
 #define __COFF_S_H_
 
-#include "io/types.h"
+#include "global.h"
 #include "tools.h"
 
 typedef unsigned int RVA;
 
-typedef struct COFF_HEADER {
-	uint16 machine PACKED;
-	uint16 section_count PACKED;
-	uint32 timestamp PACKED;
-	uint32 symbol_table_offset PACKED;
-	uint32 symbol_count PACKED;
-	uint16 optional_header_size PACKED;
-	uint16 characteristics PACKED;
+typedef struct	COFF_HEADER {
+	word machine HTPACKED;
+	word section_count HTPACKED;
+	dword timestamp HTPACKED;
+	dword symbol_table_offset HTPACKED;
+	dword symbol_count HTPACKED;
+	word optional_header_size HTPACKED;
+	word characteristics HTPACKED;
 };
 
 #define COFF_RELOCS_STRIPPED		   	0x0001  // Relocation info stripped from file.
@@ -41,15 +41,15 @@ typedef struct COFF_HEADER {
 #define COFF_LINE_NUMS_STRIPPED			0x0004  // Line nunbers stripped from file.
 #define COFF_LOCAL_SYMS_STRIPPED	   	0x0008  // Local symbols stripped from file.
 #define COFF_AGGRESIVE_WS_TRIM	  		0x0010  // Agressively trim working set
-#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine uint16 are reversed.
-#define COFF_32BIT_MACHINE			0x0100  // 32 bit uint16 machine.
+#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine word are reversed.
+#define COFF_32BIT_MACHINE			0x0100  // 32 bit word machine.
 #define COFF_DEBUG_STRIPPED		   	0x0200  // Debugging info stripped from file in .DBG file
 #define COFF_REMOVABLE_RUN_FROM_SWAP   		0x0400  // If Image is on removable media, copy and run from the swap file.
 #define COFF_NET_RUN_FROM_SWAP	   		0x0800  // If Image is on Net, copy and run from the swap file.
 #define COFF_SYSTEM				0x1000  // System File.
 #define COFF_DLL				0x2000  // File is a DLL.
 #define COFF_UP_SYSTEM_ONLY		   	0x4000  // File should only be run on a UP machine
-#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine uint16 are reversed.
+#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine word are reversed.
 
 #define COFF_MACHINE_UNKNOWN		   	0
 #define COFF_MACHINE_I386		   	0x14c   // Intel 386
@@ -97,29 +97,29 @@ typedef struct COFF_HEADER {
 #define COFF_OPTMAGIC_PE64			0x20b
 
 typedef struct	COFF_OPTIONAL_HEADER32 {
-	uint16 magic PACKED;
-	byte major_linker_version PACKED;
-	byte minor_linker_version PACKED;
-	uint32 code_size PACKED;
-	uint32 data_size PACKED;
-	uint32 bss_size PACKED;
-	uint32 entrypoint_address PACKED;
-	uint32 code_base PACKED;
-	uint32 data_base PACKED;
+	word magic HTPACKED;
+	byte major_linker_version HTPACKED;
+	byte minor_linker_version HTPACKED;
+	dword code_size HTPACKED;
+	dword data_size HTPACKED;
+	dword bss_size HTPACKED;
+	dword entrypoint_address HTPACKED;
+	dword code_base HTPACKED;
+	dword data_base HTPACKED;
 };
 
 /*
  *	same as COFF_OPTIONAL_HEADER32 but no data_base
  */
 typedef struct	COFF_OPTIONAL_HEADER64 {
-	uint16 magic PACKED;
-	byte major_linker_version PACKED;
-	byte minor_linker_version PACKED;
-	uint32 code_size PACKED;
-	uint32 data_size PACKED;
-	uint32 bss_size PACKED;
-	uint32 entrypoint_address PACKED;
-	uint32 code_base PACKED;
+	word magic HTPACKED;
+	byte major_linker_version HTPACKED;
+	byte minor_linker_version HTPACKED;
+	dword code_size HTPACKED;
+	dword data_size HTPACKED;
+	dword bss_size HTPACKED;
+	dword entrypoint_address HTPACKED;
+	dword code_base HTPACKED;
 };
 
 /*
@@ -129,16 +129,16 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 #define COFF_SIZEOF_SHORT_NAME			8
 
 struct COFF_SECTION_HEADER {
-	byte name[COFF_SIZEOF_SHORT_NAME] PACKED;
-	uint32 data_vsize PACKED;	// or data_phys_address !
-	uint32 data_address PACKED;
-	uint32 data_size PACKED;
-	uint32 data_offset PACKED;
-	uint32 relocation_offset PACKED;
-	uint32 linenumber_offset PACKED;
-	uint16 relocation_count PACKED;
-	uint16 linenumber_count PACKED;
-	uint32 characteristics PACKED;
+	byte name[COFF_SIZEOF_SHORT_NAME] HTPACKED;
+	dword data_vsize HTPACKED;	// or data_phys_address !
+	dword data_address HTPACKED;
+	dword data_size HTPACKED;
+	dword data_offset HTPACKED;
+	dword relocation_offset HTPACKED;
+	dword linenumber_offset HTPACKED;
+	word relocation_count HTPACKED;
+	word linenumber_count HTPACKED;
+	dword characteristics HTPACKED;
 };
 
 #define COFF_SIZEOF_SECTION_HEADER		40

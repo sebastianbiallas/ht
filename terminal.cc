@@ -33,7 +33,7 @@
  *	CLASS Terminal
  */
 
-void Terminal::init(File *_in, File *_out, File *_err, int _sys_ipc_handle)
+void Terminal::init(ht_streamfile *_in, ht_streamfile *_out, ht_streamfile *_err, int _sys_ipc_handle)
 {
 	ht_mem_file *m = new ht_mem_file();
 	m->init();
@@ -56,7 +56,7 @@ void Terminal::done()
 	ht_ltextfile::done();
 }
 
-bool Terminal::append(File *file)
+bool Terminal::append(ht_streamfile *file)
 {
 #define STREAM_COPYBUF_SIZE	(128)
 	const int bufsize=STREAM_COPYBUF_SIZE;
@@ -77,10 +77,10 @@ bool Terminal::connected()
 	return sys_ipc_is_valid(sys_ipc_handle);
 }
 
-uint Terminal::write(const void *buf, uint size)
+UINT Terminal::write(const void *buf, UINT size)
 {
 	if (connected()) {
-		uint r = ht_ltextfile::write(buf, size);
+		UINT r = ht_ltextfile::write(buf, size);
 		in->write(buf, size);
 		return r;
 	}
@@ -135,7 +135,7 @@ void TerminalViewer::done()
 
 void TerminalViewer::do_update()
 {
-	uint l = term->linecount();
+	UINT l = term->linecount();
 	if (l) {
 		goto_line(l-1);
 		cursor_end();

@@ -63,11 +63,11 @@ static ht_tag_flags_s ne_segflags[] =
 	{0, 0}
 };
 
-static ht_view *htnesegments_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
-	uint32 h=ne_shared->hdr_ofs;
+	dword h=ne_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_NE_SEGMENTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
@@ -82,7 +82,7 @@ static ht_view *htnesegments_init(bounds *b, File *file, ht_format_group *group)
 	m->add_mask("note: 0 means 65536 for segment size and minalloc");
 
 	file->seek(h+ne_shared->hdr.segtab);
-	for (uint32 i=0; i<ne_shared->hdr.cseg; i++) {
+	for (dword i=0; i<ne_shared->hdr.cseg; i++) {
 		NE_SEGMENT s;
 		file->read(&s, sizeof s);
 		create_host_struct(&s, NE_SEGMENT_struct, little_endian);

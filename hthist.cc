@@ -47,7 +47,7 @@ bool insert_history_entry(ht_list *history, char *name, ht_view *view)
 		}
 
 		ht_history_entry *e=new ht_history_entry(name, os, file);
-		uint li=history->find(e);
+		UINT li=history->find(e);
 		int r=0;
 		if (li==LIST_UNDEFINED) {
 			history->prepend(e);
@@ -89,11 +89,11 @@ ht_history_entry::~ht_history_entry()
 	}
 }
 
-int ht_history_entry::load(ObjectStream &s)
+int ht_history_entry::load(ht_object_stream *s)
 {
 	desc=s->getString(NULL);
 
-	uint size=s->getInt(4, NULL);
+	UINT size=s->getInt(4, NULL);
 
 	if (size) {
 		datafile=new ht_mem_file();
@@ -113,12 +113,12 @@ int ht_history_entry::load(ObjectStream &s)
 	return 0;
 }
 
-void ht_history_entry::store(ObjectStream &s)
+void ht_history_entry::store(ht_object_stream *s)
 {
 	s->putString(desc, NULL);
 
 	if (datafile) {
-		uint size=datafile->get_size();
+		UINT size=datafile->get_size();
 	
 		s->putInt(size, 4, NULL);
 		s->putBinary(datafile->bufptr(), size, NULL);
@@ -127,12 +127,12 @@ void ht_history_entry::store(ObjectStream &s)
 	}
 }
 
-ObjectID ht_history_entry::getObjectID() const
+OBJECT_ID ht_history_entry::object_id() const
 {
 	return ATOM_HT_HISTORY_ENTRY;
 }
 
-int compare_keys_history_entry(ht_data *key_a, Object *key_b)
+int compare_keys_history_entry(ht_data *key_a, ht_data *key_b)
 {
     return strcmp(((ht_history_entry*)key_a)->desc, ((ht_history_entry*)key_b)->desc);
 }
@@ -153,14 +153,14 @@ int hist_atoms[]={
 	HISTATOM_EVAL_EXPR
 };
 
-void create_hist_atom(uint atom)
+void create_hist_atom(UINT atom)
 {
 	ht_clist *c=new ht_clist();
 	c->init(compare_keys_history_entry);
 	register_atom(atom, c);
 }
 
-void destroy_hist_atom(uint atom)
+void destroy_hist_atom(UINT atom)
 {
 	ht_clist *c=(ht_clist*)find_atom(atom);
 	if (c) {
@@ -170,21 +170,21 @@ void destroy_hist_atom(uint atom)
 	}
 }
 
-void store_history(ObjectStream &s)
+void store_history(ht_object_stream *s)
 {
-	uint count=sizeof hist_atoms / sizeof hist_atoms[0];
+	UINT count=sizeof hist_atoms / sizeof hist_atoms[0];
 	s->putIntDec(count, 4, NULL);
-	for (uint i=0; i<count; i++) {
+	for (UINT i=0; i<count; i++) {
 		s->putIntHex(hist_atoms[i], 4, NULL);
 		ht_clist *c=(ht_clist*)find_atom(hist_atoms[i]);
 		s->putObject(c, NULL);
 	}
 }
 
-bool load_history(ObjectStream &s)
+bool load_history(ht_object_stream *s)
 {
-	uint count=s->getIntDec(4, NULL);
-	for (uint i=0; i<count; i++) {
+	UINT count=s->getIntDec(4, NULL);
+	for (UINT i=0; i<count; i++) {
 		int atom=s->getIntHex(4, NULL);
 		destroy_hist_atom(atom);
 		ht_clist *c=(ht_clist*)s->getObject(NULL);
@@ -201,7 +201,7 @@ BUILDER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
 
 bool init_hist()
 {
-	for (uint i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		create_hist_atom(hist_atoms[i]);
 	}
 	
@@ -223,7 +223,7 @@ void done_hist()
 	
 	UNREGISTER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
 
-	for (uint i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		destroy_hist_atom(hist_atoms[i]);
 	}
 }

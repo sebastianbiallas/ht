@@ -45,9 +45,9 @@ static format_viewer_if *htelf_ifs[] = {
 	0
 };
 
-static ht_view *htelf_init(bounds *b, File *file, ht_format_group *format_group)
+static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
 {
-	FileOfs header_ofs = 0;
+	FILEOFS header_ofs = 0;
 	ELF_HEADER header;
 	// read header
 	if (file->seek(header_ofs) != 0) return NULL;
@@ -93,7 +93,7 @@ format_viewer_if htelf_if = {
 };
 
 /**/
-static int compare_keys_sectionAndIdx(ht_data *key_a, Object *key_b)
+static int compare_keys_sectionAndIdx(ht_data *key_a, ht_data *key_b)
 {
 	sectionAndIdx *a = (sectionAndIdx*)key_a;
 	sectionAndIdx *b = (sectionAndIdx*)key_b;
@@ -109,7 +109,7 @@ bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx)
 /*
  *	CLASS ht_elf
  */
-void ht_elf::init(bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
+void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_ELF, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_elf");
@@ -304,11 +304,11 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	ELF_SECTION_HEADER32 *s=elf_shared->sheaders.sheaders32;
 
-	FileOfs relh = s[rsi].sh_offset;
+	FILEOFS relh = s[rsi].sh_offset;
 
 	uint symtabidx = s[rsi].sh_link;
 	if (!isValidELFSectionIdx(elf_shared, symtabidx)) throw ht_msg_exception("invalid symbol table index %d", symtabidx);
-	FileOfs symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
+	FILEOFS symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
 
 	if (s[rsi].sh_type != ELF_SHT_REL) throw ht_msg_exception(
 		"invalid section type for section %d (expeecting %d)",
@@ -348,7 +348,7 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 			// FIXME: nyi
 			continue;
 		}
-		Object *z = new ht_elf32_reloc_entry(
+		ht_data *z = new ht_elf32_reloc_entry(
 			ELF32_R_TYPE(r.r_info), A, P, S);
 		f->insert_reloc(r.r_offset+s[si].sh_offset, z);
 	}
@@ -386,7 +386,7 @@ void ht_elf::fake_undefined_symbols32()
 	uint32 nextFakeAddr = FAKE_SECTION_BASEADDR;
 	for (uint secidx = 0; secidx < elf_shared->sheaders.count; secidx++) {
 		if (elf_shared->sheaders.sheaders32[secidx].sh_type == ELF_SHT_SYMTAB) {
-			FileOfs symh = elf_shared->sheaders.sheaders32[secidx].sh_offset;
+			FILEOFS symh = elf_shared->sheaders.sheaders32[secidx].sh_offset;
 			uint symnum = elf_shared->sheaders.sheaders32[secidx].sh_size / sizeof (ELF_SYMBOL32);
 			for (uint symidx = 1; symidx < symnum; symidx++) {
 				ELF_SYMBOL32 sym;
@@ -518,7 +518,7 @@ bool elf_valid_section(elf_section_header *sh, uint elfclass)
 	return false;
 }
 
-bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, uint32 *ofs)
+bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, dword *ofs)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -535,8 +535,8 @@ bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAdd
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
-					uint64 qofs = addr.a64 - s->sh_addr + s->sh_offset;
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+					qword qofs = addr.a64 - s->sh_addr + s->sh_offset;
 					*ofs = qofs.lo;
 					return true;
 				}
@@ -565,7 +565,7 @@ bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, EL
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i = 0; i < section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					*section = i;
 					return true;
 				}
@@ -593,7 +593,7 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFA
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
 			for (uint i=0; i<section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(addr.a64, s->sh_addr) >= 0) && (addr.a64 < s->sh_addr + s->sh_size)) {
 					return true;
 				}
 				s++;
@@ -614,7 +614,7 @@ bool elf_addr_is_physical(elf_section_headers *section_headers, uint elfclass, E
  *	offset conversion routines
  */
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32 ofs, ELFAddress *addr)
+bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -630,9 +630,9 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			uint64 qofs = to_qword(ofs);
+			qword qofs = to_qword(ofs);
 			for (uint i = 0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (uint64_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					addr->a64 = qofs - s->sh_offset + s->sh_addr;
 					return true;
 				}
@@ -644,7 +644,7 @@ bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, uint32
 	return false;
 }
 
-bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uint32 ofs, int *section)
+bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, dword ofs, int *section)
 {
 	switch (elfclass) {
 		case ELFCLASS32: {
@@ -660,10 +660,10 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uin
 		}
 		case ELFCLASS64: {
 			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			uint64 qofs;
+			qword qofs;
 			qofs.hi = 0; qofs.lo = ofs;
 			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (uint64_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
+				if ((elf_valid_section((elf_section_header*)s, elfclass)) && (qword_cmp(qofs, s->sh_offset)>=0) && (qofs < s->sh_offset + s->sh_size)) {
 					*section = i;
 					return true;
 				}
@@ -675,7 +675,7 @@ bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, uin
 	return false;
 }
 
-bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfclass, uint32 ofs, ELFAddress *addr, int *section)
+bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfclass, dword ofs, ELFAddress *addr, int *section)
 {
 	return false;
 }
@@ -683,7 +683,7 @@ bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfc
 /*
  *	ht_elf32_reloc_entry
  */
-//ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, File *file)
+//ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint symtabidx, elf32_addr addr, uint t, uint symbolidx, elf32_addr addend, ht_elf_shared_data *data, ht_streamfile *file)
 ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
 {
 	type = t;
@@ -701,7 +701,7 @@ ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
  *	ht_elf32_reloc_file
  */
 
-void	ht_elf32_reloc_file::init(File *s, bool os, ht_elf_shared_data *d)
+void	ht_elf32_reloc_file::init(ht_streamfile *s, bool os, ht_elf_shared_data *d)
 {
 	ht_reloc_file::init(s, os);
 	data = d;

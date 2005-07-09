@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "global.h"
 #include "htatom.h"
 #include "htcurses.h"
 #include "htctrl.h"
@@ -144,7 +145,7 @@ pal_class pal_layouts[] =
  *   reg/pal management
  */
 
-vcp getcolorv(palette *pal, uint index)
+vcp getcolorv(palette *pal, UINT index)
 {
 	if ((index<pal->size) && (pal->data)) return pal->data[index];
 	return VCP(VC_WHITE, VC_RED);
@@ -214,7 +215,7 @@ bool load_pal(char *pal_class, char *pal_flavour, palette *p)
  *	CLASS palette_entry
  */
  
-palette_entry::palette_entry(uint _idx, vcp _color)
+palette_entry::palette_entry(UINT _idx, vcp _color)
 {
 	idx=_idx;
 	color=_color;
@@ -268,19 +269,19 @@ bool palette_entry::editdialog(const char *keyname)
 	return r;
 }
 
-int palette_entry::load(ObjectStream &f)
+int palette_entry::load(ht_object_stream *f)
 {
 	idx=f->getIntHex(4, 0);
 	color=f->getIntHex(4, 0);
 	return f->get_error();
 }
 
-ObjectID palette_entry::getObjectID() const
+OBJECT_ID palette_entry::object_id() const
 {
 	return ATOM_PALETTE_ENTRY;
 }
 
-void palette_entry::store(ObjectStream &f)
+void palette_entry::store(ht_object_stream *f)
 {
 	f->putIntHex(idx, 4, 0);
 	f->putIntHex(color, 4, 0);

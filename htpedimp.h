@@ -21,7 +21,7 @@
 #ifndef __HTPEDIMP_H__
 #define __HTPEDIMP_H__
 
-#include "data.h"
+#include "htdata.h"
 #include "formats.h"
 
 extern format_viewer_if htpedelayimports_if;

@@ -21,7 +21,7 @@
 #ifndef __MACHOSTRUC_H__
 #define __MACHOSTRUC_H__
 
-#include "io/types.h"
+#include "global.h"
 
 struct MACHO_HEADER {
 	byte	magic[4];

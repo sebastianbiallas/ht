@@ -41,7 +41,7 @@
  *	CLASS ht_blockop_dialog
  */
 
-void ht_blockop_dialog::init(bounds *b, FileOfs pstart, FileOfs pend, ht_list *history)
+void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history)
 {
 	ht_dialog::init(b, "operate on block", FS_TITLE | FS_KILLER | FS_MOVE);
 	bounds c;
@@ -195,8 +195,8 @@ struct ht_blockop_dialog_data {
  *   blockop_dialog
  */
 
-static uint32 blockop_i;
-static uint32 blockop_o;
+static dword blockop_i;
+static dword blockop_o;
 static bool blockop_expr_is_const;
 
 static int blockop_symbol_eval(eval_scalar *r, char *symbol)
@@ -219,7 +219,7 @@ static int blockop_symbol_eval(eval_scalar *r, char *symbol)
 
 static int func_readint(eval_scalar *result, eval_int *offset, int size, endianess e)
 {
-	File *f=(File*)eval_get_context();
+	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 	byte buf[4];
 	int read = 0;
 	if ((f->seek(QWORD_GET_INT(offset->value))!=0) ||
@@ -258,14 +258,14 @@ static int func_read32be(eval_scalar *result, eval_int *offset)
 
 static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
-	File *f=(File*)eval_get_context();
+	ht_streamfile *f=(ht_streamfile*)eval_get_context();
 
-	uint l=QWORD_GET_INT(len->value);
+	UINT l=QWORD_GET_INT(len->value);
 	void *buf=malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		eval_str s;
-		uint c = 0;
+		UINT c = 0;
 		if ((f->seek(QWORD_GET_INT(offset->value))!=0) || ( (c=f->read(buf, l)) !=l)) {
 			free(buf);
 			set_eval_error("i/o error (requested %d, read %d from ofs %08x)", l, c, offset->value);
@@ -304,20 +304,20 @@ static int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *p
  *	BLOCKOP STRING
  */
 
-class ht_blockop_str_context: public Object {
+class ht_blockop_str_context: public ht_data {
 public:
-	File *file;
+	ht_streamfile *file;
 
-	FileOfs ofs;
-	uint len;
+	FILEOFS ofs;
+	UINT len;
 
-	uint size;
+	UINT size;
 	bool netendian;
 
 	char *action;
 
-	uint i;
-	FileOfs o;
+	UINT i;
+	FILEOFS o;
 
 	bool expr_const;
 	eval_str v;
@@ -329,7 +329,7 @@ public:
 	}
 };
 
-Object *create_blockop_str_context(File *file, FileOfs ofs, uint len, uint size, bool netendian, char *action)
+ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, UINT size, bool netendian, char *action)
 {
 	ht_blockop_str_context *ctx = new ht_blockop_str_context();
 	ctx->file = file;
@@ -372,9 +372,9 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 	if (ctx->expr_const) {
 		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", (int)(((double)(ctx->o-ctx->ofs)) * 100 / ctx->len));
 		progress_indicator->settext(status);
-		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
-			uint s = ctx->v.len;
+			UINT s = ctx->v.len;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
 			
 			ctx->file->seek(ctx->o);
@@ -390,7 +390,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_str sr;
-		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_i = ctx->i;
 			blockop_o = ctx->o;
@@ -403,7 +403,7 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 			scalar_context_str(&r, &sr);
 			scalar_destroy(&r);
 
-			uint s = sr.len;
+			UINT s = sr.len;
 			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;
 
 			ctx->file->seek(ctx->o);
@@ -424,23 +424,23 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
  *	BLOCKOP INTEGER
  */
 
-class ht_blockop_int_context: public Object {
+class ht_blockop_int_context: public ht_data {
 public:
-	File *file;
+	ht_streamfile *file;
 
-	FileOfs ofs;
-	uint len;
+	FILEOFS ofs;
+	UINT len;
 
-	uint size;
+	UINT size;
 	endianess endian;
 
 	char *action;
 
-	uint i;
-	FileOfs o;
+	UINT i;
+	FILEOFS o;
 
 	bool expr_const;
-	uint v;
+	UINT v;
 
 	~ht_blockop_int_context()
 	{
@@ -448,7 +448,7 @@ public:
 	}
 };
 
-Object *create_blockop_int_context(File *file, FileOfs ofs, uint len, uint size, endianess endian, char *action)
+ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, UINT size, endianess endian, char *action)
 {
 	ht_blockop_int_context *ctx = new ht_blockop_int_context();
 	ctx->file = file;
@@ -496,9 +496,9 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 		byte ibuf[4];
 		create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
 		ctx->file->seek(ctx->o);
-		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
+		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
-			uint s = ctx->size;
+			UINT s = ctx->size;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
 			if (ctx->file->write(ibuf, s)!=s) {
 				throw ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
@@ -512,7 +512,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_int ir;
-		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
+		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_o = ctx->o;
 			blockop_i = ctx->i;
@@ -526,7 +526,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
 			scalar_destroy(&r);
 			ctx->v=QWORD_GET_INT(ir.value);
 
-			uint s = ctx->size;
+			UINT s = ctx->size;
 			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;
 
 			byte ibuf[4];
@@ -547,7 +547,7 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
  *
  */
 
-bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FileOfs *ofs)
+bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FILEOFS *ofs)
 {
 	if (string && *string && stringlen<64) {
 		char str[64];
@@ -563,7 +563,7 @@ bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, in
 }
 		
 		
-void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
+void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
 {
 	bounds b;
 	b.w=65;
@@ -585,12 +585,12 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 		ht_blockop_dialog_data t;
 		d->databuf_get(&t, sizeof t);
 		
-		File *file=format->get_file();
+		ht_streamfile *file=format->get_file();
 
 		baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 		
 		if (file->get_access_mode() & FAM_WRITE) {
-			FileOfs start=pstart, end=pend;
+			FILEOFS start=pstart, end=pend;
 
 			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start) &&
 			format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
@@ -600,9 +600,9 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 					switch (t.mode.cursor_pos) {
 						/* element type: byte */
 						case 0: esize++;
-						/* element type: uint16 */
+						/* element type: word */
 						case 1: esize++;
-						/* element type: uint32 */
+						/* element type: dword */
 						case 2: {
 							char a[4096];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
@@ -615,7 +615,7 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
 						
 							esize = esizes[esize];
-							Object *ctx = NULL;
+							ht_data *ctx = NULL;
 							try {
 								ctx = create_blockop_int_context(file, start, end-start, esize, little_endian, a);
 								if (ctx) {
@@ -639,7 +639,7 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 							bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
 							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
 
-							Object *ctx = NULL;
+							ht_data *ctx = NULL;
 							try {
 								ctx = create_blockop_str_context(file, start, end-start, esize, little_endian, a);
 								if (ctx) {

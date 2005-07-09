@@ -30,15 +30,15 @@
 
 ht_clipboard *clipboard;
 
-class ht_clipboard_copy_history: public Object {
+class ht_clipboard_copy_history: public ht_data {
 public:
 	virtual ~ht_clipboard_copy_history() {
 		if (source) free(source);
 	}
 
 	char *source;
-	uint32 start;
-	uint32 size;
+	dword start;
+	dword size;
 	time_t time;
 };
 
@@ -76,7 +76,7 @@ void ht_clipboard::clear()
 	app->sendmsg(&m);
 }
 
-uint	ht_clipboard::write(const void *buf, uint size)
+UINT	ht_clipboard::write(const void *buf, UINT size)
 {
 	htmsg m;
 	m.msg=msg_file_changed;
@@ -118,13 +118,13 @@ void ht_clipboard_viewer::handlemsg(htmsg *msg)
 	ht_uformat_viewer::handlemsg(msg);
 }
 
-void ht_clipboard_viewer::pselect_add(FileOfs start, FileOfs end)
+void ht_clipboard_viewer::pselect_add(FILEOFS start, FILEOFS end)
 {
 	ht_uformat_viewer::pselect_add(start, end);
 	selection_changed();
 }
 
-void ht_clipboard_viewer::pselect_set(FileOfs start, FileOfs end)
+void ht_clipboard_viewer::pselect_set(FILEOFS start, FILEOFS end)
 {
 	ht_uformat_viewer::pselect_set(start, end);
 	selection_changed();
@@ -132,7 +132,7 @@ void ht_clipboard_viewer::pselect_set(FileOfs start, FileOfs end)
 
 void ht_clipboard_viewer::selection_changed()
 {
-	FileOfs s, e;
+	FILEOFS s, e;
 	pselect_get(&s, &e);
 	clipboard->select_start=s;
 	clipboard->select_len=e-s;
@@ -169,8 +169,8 @@ void ht_clipboard_viewer::update_content()
 
 void ht_clipboard_viewer::get_pindicator_str(char *buf)
 {
-	FileOfs o;
-	FileOfs sel_start, sel_end;
+	FILEOFS o;
+	FILEOFS sel_start, sel_end;
 	pselect_get(&sel_start, &sel_end);
 	if (get_current_offset(&o)) {
 		char ttemp[1024];
@@ -188,7 +188,7 @@ void ht_clipboard_viewer::get_pindicator_str(char *buf)
 
 /* clipboard functions */
 
-void clipboard_add_copy_history_entry(char *source, uint32 start, uint32 size, time_t time)
+void clipboard_add_copy_history_entry(char *source, dword start, dword size, time_t time)
 {
 	ht_clipboard_copy_history *h=new ht_clipboard_copy_history();
 	h->source=ht_strdup(source);
@@ -201,11 +201,11 @@ void clipboard_add_copy_history_entry(char *source, uint32 start, uint32 size, t
 #define CLIPBOARD_TRANSFER_BUF_SIZE	32*1024
 //#define CLIPBOARD_TRANSFER_BUF_SIZE	2
 
-int clipboard_copy(char *source_desc, void *buf, uint32 len)
+int clipboard_copy(char *source_desc, void *buf, dword len)
 {
 	int r=0;
 	if (len) {
-		uint32 size=clipboard->get_size();
+		dword size=clipboard->get_size();
 		clipboard->seek(size);
 		r=clipboard->write(buf, len);
 		clipboard->select_start=size;
@@ -215,15 +215,15 @@ int clipboard_copy(char *source_desc, void *buf, uint32 len)
 	return r;
 }
 
-int clipboard_copy(char *source_desc, File *file, uint32 offset, uint32 len)
+int clipboard_copy(char *source_desc, ht_streamfile *file, dword offset, dword len)
 {
 	if (!len) return 0;
 
-	uint32 size=clipboard->get_size();
-	uint32 temp=file->tell();
-	uint32 cpos=size, spos=offset;
+	dword size=clipboard->get_size();
+	dword temp=file->tell();
+	dword cpos=size, spos=offset;
 	byte *buf=(byte*)malloc(CLIPBOARD_TRANSFER_BUF_SIZE);
-	uint32 l=len, r=0;
+	dword l=len, r=0;
 
 	while ((len) && (l)) {
 		l=len;
@@ -246,19 +246,19 @@ int clipboard_copy(char *source_desc, File *file, uint32 offset, uint32 len)
 	return r;
 }
 
-int clipboard_paste(void *buf, uint32 maxlen)
+int clipboard_paste(void *buf, dword maxlen)
 {
 	clipboard->seek(clipboard->select_start);
 	return clipboard->read(buf, MIN(clipboard->select_len, maxlen));
 }
 
-int clipboard_paste(File *file, uint32 offset)
+int clipboard_paste(ht_streamfile *file, dword offset)
 {
-	uint32 len=clipboard->select_len;
-	uint32 temp=file->tell();
-	uint32 cpos=clipboard->select_start, spos=offset;
+	dword len=clipboard->select_len;
+	dword temp=file->tell();
+	dword cpos=clipboard->select_start, spos=offset;
 	byte *buf=(byte*)malloc(CLIPBOARD_TRANSFER_BUF_SIZE);
-	uint32 l=len, r=0;
+	dword l=len, r=0;
 	while ((len) && (l)) {
 		l=len;
 		if (l>CLIPBOARD_TRANSFER_BUF_SIZE) l=CLIPBOARD_TRANSFER_BUF_SIZE;
@@ -282,7 +282,7 @@ int clipboard_clear()
 	return 1;
 }
 
-uint32 clipboard_getsize()
+dword clipboard_getsize()
 {
 	return clipboard->select_len;
 }

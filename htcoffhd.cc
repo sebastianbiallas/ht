@@ -79,7 +79,7 @@ ht_tag_flags_s coff_characteristics[] =
 	{4,  "[04] aggressively trim working set"},
 	{5,  "[05] * reserved"},
 	{6,  "[06] * reserved"},
-	{7,  "[07] low bytes of machine uint16 are reversed"},
+	{7,  "[07] low bytes of machine word are reversed"},
 	{8,  "[08] 32 bit machine"},
 	{9,  "[09] debugging information stripped"},
 	{10, "[10] run from swap if image on removable media"},
@@ -87,7 +87,7 @@ ht_tag_flags_s coff_characteristics[] =
 	{12, "[12] system file"},
 	{13, "[13] file is dynamic link library (dll)"},
 	{14, "[14] single processor (UP) only"},
-	{15, "[15] high bytes of machine uint16 are reversed"},
+	{15, "[15] high bytes of machine word are reversed"},
 	{0, 0}
 };
 
@@ -198,12 +198,12 @@ ht_mask_ptable coff_section[] = {
 	{0, 0}
 };
 
-static ht_view *htcoffheader_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 	bool coff_bigendian = coff_shared->endian == big_endian;
 
-	uint32 h = coff_shared->hdr_ofs;
+	dword h = coff_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_COFF_HEADER, VC_EDIT, file, group);
 
@@ -224,7 +224,7 @@ static ht_view *htcoffheader_init(bounds *b, File *file, ht_format_group *group)
 	/* optional header */
 	if (coff_shared->coffheader.optional_header_size >= 2) {
 		m->add_mask("--- optional header ---");
-		uint16 opt = coff_shared->opt_magic;
+		word opt = coff_shared->opt_magic;
 /*		file->seek(h+20);
 		file->read(&opt, 2);*/
 		switch (opt) {

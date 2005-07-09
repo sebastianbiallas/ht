@@ -161,11 +161,11 @@ static ht_mask_ptable pe32header_nt_dirs[] = {
 	{0, 0}
 };
 
-static ht_view *htpeheader_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	FileOfs h=pe_shared->header_ofs;
+	FILEOFS h=pe_shared->header_ofs;
 	ht_pe_header_viewer *v=new ht_pe_header_viewer();
 	v->init(b, DESC_PE_HEADER, VC_EDIT | VC_SEARCH, file, group);
 	register_atom(ATOM_COFF_MACHINES, coff_machines);
@@ -201,7 +201,7 @@ static ht_view *htpeheader_init(bounds *b, File *file, ht_format_group *group)
 	/* optional header */
 	s=new ht_mask_sub();
 	s->init(file, 2);
-	uint16 opt;
+	word opt;
 	file->seek(h+24);
 	file->read(&opt, 2);
 	opt = create_host_int(&opt, 2, little_endian);
@@ -242,7 +242,7 @@ static ht_view *htpeheader_init(bounds *b, File *file, ht_format_group *group)
 	
 	/* section headers */
 	
-	for (uint i=0; i<pe_shared->sections.section_count; i++) {
+	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
 		s=new ht_mask_sub();
 		s->init(file, 100+i);
 
@@ -272,7 +272,7 @@ format_viewer_if htpeheader_if = {
  *	CLASS ht_pe_header_viewer
  */
 
-void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *group)
+void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, group);
 	VIEW_DEBUG_NAME("ht_pe_header_viewer");
@@ -300,8 +300,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		case 0: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				uint rva;
-				uint size;
+				UINT rva;
+				UINT size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					rva = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;
@@ -309,7 +309,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					rva = pe_shared->pe64.header_nt.directory[id->id2].address;
 					size = pe_shared->pe64.header_nt.directory[id->id2].size;
 				}
-				FileOfs ofs = 0;
+				FILEOFS ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save();
 					hexv->goto_offset(ofs, false);
@@ -340,8 +340,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		case 4: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				uint ofs;
-				uint size;
+				UINT ofs;
+				UINT size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					ofs = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;

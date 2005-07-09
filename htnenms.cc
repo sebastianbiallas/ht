@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, uint i, char *name)
+static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
 {
 	if (ne_shared->entrypoints) {
 		ht_ne_entrypoint *e = (ht_ne_entrypoint*)ne_shared->entrypoints->get(i);
@@ -39,11 +39,11 @@ static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, uint i, char *n
 	} /* else trouble :-) */
 }
 
-static ht_view *htnenames_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
-	uint32 h=ne_shared->hdr_ofs;
+	dword h=ne_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_NE_NAMES, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
@@ -61,7 +61,7 @@ static ht_view *htnenames_init(bounds *b, File *file, ht_format_group *group)
 	while (*(n=getstrp(file))) {
 		char buf[2];
 		file->read(buf, 2);
-		uint16 ent = create_host_int(buf, 2, little_endian);
+		word ent = create_host_int(buf, 2, little_endian);
 		if (!i) {
 			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {
@@ -83,7 +83,7 @@ static ht_view *htnenames_init(bounds *b, File *file, ht_format_group *group)
 	while (*(n=getstrp(file))) {
 		char buf[2];
 		file->read(buf, 2);
-		uint16 ent = create_host_int(buf, 2, little_endian);
+		word ent = create_host_int(buf, 2, little_endian);
 		if (!i) {
 			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {

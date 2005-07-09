@@ -69,7 +69,7 @@ int LocalFs::compareFilenames(const char *a, const char *b)
 	return ht_stricmp(a, b);
 }
 
-int LocalFs::createFile(const char *filename, uint createtype)
+int LocalFs::createFile(const char *filename, UINT createtype)
 {
 	// FIXME
 	return ENOSYS;
@@ -84,7 +84,7 @@ int LocalFs::deleteFile(const char *filename)
 	return remove(filename);
 }
 
-void *LocalFs::enumFiletype(uint *type, char **name, void *handle)
+void *LocalFs::enumFiletype(UINT *type, char **name, void *handle)
 {
 	*type = 0;
 	*name = "file";
@@ -142,7 +142,7 @@ int LocalFs::renameFile(const char *filename, const char *newname)
 	return rename(filename, newname);
 }
 
-int LocalFs::fileClose(File *f)
+int LocalFs::fileClose(ht_streamfile *f)
 {
 	f->done();
 	int e=f->get_error();
@@ -150,7 +150,7 @@ int LocalFs::fileClose(File *f)
 	return e;
 }
 
-int LocalFs::fileOpen(const char *filename, uint access_mode, uint open_mode, File **f)
+int LocalFs::fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
 {
 	ht_file *file=new ht_file();
 	file->init(filename, access_mode, open_mode);
@@ -170,7 +170,7 @@ int LocalFs::fileOpen(const char *filename, uint access_mode, uint open_mode, Fi
 
 #define REGNODE_FILE_MAGIC	"HTRG"
 
-void RegNodeFile::init(const char *nn, uint am, uint om)
+void RegNodeFile::init(const char *nn, UINT am, UINT om)
 {
 	access_mode0 = am;
 	ht_mem_file::init(0, 1024, am);
@@ -240,7 +240,7 @@ void RegNodeFile::done()
 	ht_mem_file::done();
 }
 
-int RegNodeFile::load_node(ObjectStream &s, ht_registry_node_type *type, ht_registry_data **data)
+int RegNodeFile::load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data)
 {
 	byte magic[4];
 	int n = s->read(magic, sizeof magic);
@@ -263,7 +263,7 @@ int RegNodeFile::load_node(ObjectStream &s, ht_registry_node_type *type, ht_regi
 	return s->get_error();
 }
 
-void	RegNodeFile::store_node(ObjectStream &s, ht_registry_node_type type, ht_registry_data *data)
+void	RegNodeFile::store_node(ht_object_stream *s, ht_registry_node_type type, ht_registry_data *data)
 {
 	if (type==RNT_RAW) {
 		ht_registry_data_raw *d=(ht_registry_data_raw*)data;
@@ -275,7 +275,7 @@ void	RegNodeFile::store_node(ObjectStream &s, ht_registry_node_type type, ht_reg
 	}
 }
 
-bool	RegNodeFile::set_access_mode(uint am)
+bool	RegNodeFile::set_access_mode(UINT am)
 {
 	access_mode = access_mode0;
 	return (am == access_mode0);
@@ -333,7 +333,7 @@ void RegistryFs::create_pstat_t(pstat_t *s, ht_registry_data *data, ht_registry_
 	}
 }
 
-int RegistryFs::createFile(const char *filename, uint createtype)
+int RegistryFs::createFile(const char *filename, UINT createtype)
 {
 	int e=registry->create_node(filename, createtype);
 	htmsg m;
@@ -353,7 +353,7 @@ int RegistryFs::deleteFile(const char *filename)
 	return e;
 }
 
-void *RegistryFs::enumFiletype(uint *type, char **name, void *handle)
+void *RegistryFs::enumFiletype(UINT *type, char **name, void *handle)
 {
 	ht_data_string *key = (ht_data_string*)handle;
 	ht_registry_node_type_desc *value;
@@ -480,7 +480,7 @@ int RegistryFs::renameFile(const char *filename, const char *newname)
 	return EXDEV;
 }
 
-int RegistryFs::fileClose(File *f)
+int RegistryFs::fileClose(ht_streamfile *f)
 {
 	f->done();
 	int e=f->get_error();
@@ -488,7 +488,7 @@ int RegistryFs::fileClose(File *f)
 	return e;
 }
 
-int RegistryFs::fileOpen(const char *filename, uint access_mode, uint open_mode, File **f)
+int RegistryFs::fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
 {
 	RegNodeFile *file=new RegNodeFile();
 	file->init(filename, access_mode, open_mode);

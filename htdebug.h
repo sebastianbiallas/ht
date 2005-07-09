@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 
-#include "io/types.h"
+#include "global.h"
 
 /****************************************************************************/
 #define HTDEBUG
@@ -34,7 +34,7 @@ void ht_error(char *file, int line, char *format,...);
 void ht_trace(char *file, int line, char *format,...);
 void ht_warn(char *file, int line, char *format,...);
 
-typedef uint64 timepoint;
+typedef qword timepoint;
 
 typedef int timer_handle;
 
@@ -43,9 +43,9 @@ void start_timer(timer_handle handle);
 void stop_timer(timer_handle handle);
 void delete_timer(timer_handle handle);
 
-uint get_timer_sec(timer_handle handle);
-uint get_timer_msec(timer_handle handle);
-uint get_timer_tick(timer_handle h);
+dword get_timer_sec(timer_handle handle);
+dword get_timer_msec(timer_handle handle);
+dword get_timer_tick(timer_handle h);
 
 #define HT_ERROR(a...) ht_error(__FILE__, __LINE__, a)
 #define HT_WARN(a...) ht_warn(__FILE__, __LINE__, a)

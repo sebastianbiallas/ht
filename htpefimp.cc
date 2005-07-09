@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-ht_view *htpefimports_init(bounds *b, File *file, ht_format_group *group)
+ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
 
@@ -46,8 +46,8 @@ ht_view *htpefimports_init(bounds *b, File *file, ht_format_group *group)
 	|| !pef_shared->loader_info_header.importedLibraryCount 
 	|| !pef_shared->loader_info_header.totalImportedSymbolCount) return NULL;
 	
-	FileOfs nametable = pef_shared->loader_info_header_ofs + pef_shared->loader_info_header.loaderStringsOffset;
-	FileOfs functions_offset = pef_shared->loader_info_header_ofs 
+	FILEOFS nametable = pef_shared->loader_info_header_ofs + pef_shared->loader_info_header.loaderStringsOffset;
+	FILEOFS functions_offset = pef_shared->loader_info_header_ofs 
 			+ sizeof pef_shared->loader_info_header
 			+ pef_shared->loader_info_header.importedLibraryCount
 				* sizeof(PEF_ImportedLibrary);
@@ -119,7 +119,7 @@ ht_view *htpefimports_init(bounds *b, File *file, ht_format_group *group)
 	g->insert(head);
 	g->insert(v);
 	//
-	for (uint i=0; i < pef_shared->imports.funcs->count(); i++) {
+	for (UINT i=0; i < pef_shared->imports.funcs->count(); i++) {
 		ht_pef_import_function *func = (ht_pef_import_function*)pef_shared->imports.funcs->get(i);
 		assert(func);
 		ht_pef_import_library *lib = (ht_pef_import_library*)pef_shared->imports.libs->get(func->libidx);
@@ -168,7 +168,7 @@ ht_pef_import_library::~ht_pef_import_library()
  *	class ht_pe_import_function
  */
 
-ht_pef_import_function::ht_pef_import_function(uint aLibidx, int aNum, const char *aName, uint aSym_class)
+ht_pef_import_function::ht_pef_import_function(UINT aLibidx, int aNum, const char *aName, UINT aSym_class)
 {
 	libidx = aLibidx;
 	name = ht_strdup(aName);
@@ -204,7 +204,7 @@ void	ht_pef_import_viewer::done()
 void ht_pef_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	uint l, s;
+	UINT l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -219,7 +219,7 @@ void ht_pef_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_pef_import_viewer::func(uint i, bool execute)
+char *ht_pef_import_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 2:

@@ -61,13 +61,13 @@ typedef void (*create_desc_func)(char *buf, int buflen, ht_view *form);
  */
 class ht_fxbin_search_request: public ht_search_request {
 public:
-	uint data_size;
+	UINT data_size;
 	byte *data;
 	
-			ht_fxbin_search_request(uint search_class, uint flags, uint data_size, byte *data);
+			ht_fxbin_search_request(UINT search_class, UINT flags, UINT data_size, byte *data);
 	virtual	~ht_fxbin_search_request();
 	/* overwritten */
-	virtual	Object *clone();
+	virtual	Object *duplicate();
 };
 
 /*
@@ -86,10 +86,10 @@ public:
 	char *rx_str;
 	regex_t rx;
 
-			ht_regex_search_request(uint search_class, uint flags, char *regex);
+			ht_regex_search_request(UINT search_class, UINT flags, char *regex);
 	virtual	~ht_regex_search_request();
 	/* overwritten */
-	virtual	Object *clone();
+	virtual	Object *duplicate();
 };
 
 /*
@@ -99,10 +99,10 @@ class ht_expr_search_request: public ht_search_request {
 public:
 	char *expr;
 
-			ht_expr_search_request(uint search_class, uint flags, char *Expr);
+			ht_expr_search_request(UINT search_class, UINT flags, char *Expr);
 	virtual	~ht_expr_search_request();
 	/* overwritten */
-	virtual	Object *clone();
+	virtual	Object *duplicate();
 };
 
 /* binary search function */
@@ -275,29 +275,29 @@ public:
 #define SEARCHMODE_VREGEX	4
 #define SEARCHMODE_EXPR		8
 
-ht_search_request *search_dialog(ht_format_viewer *format, uint searchmodes, viewer_pos *start, viewer_pos *end);
-uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled);
+ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, viewer_pos *start, viewer_pos *end);
+UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled);
 
-class ht_search_bin_context: public Object {
+class ht_search_bin_context: public ht_data {
 public:
-	File *file;
+	ht_streamfile *file;
 	bool file_end;
-	uint flags;
+	UINT flags;
 	
-	FileOfs ofs;
-	uint len;
+	FILEOFS ofs;
+	UINT len;
 
 	byte *pat;
-	uint patlen;
+	UINT patlen;
 
-	FileOfs o;
-	uint c;
+	FILEOFS o;
+	UINT c;
 	
 	byte *buf;
 	byte *bufptr;
 
 	bool *return_success;
-	FileOfs *return_ofs;
+	FILEOFS *return_ofs;
 	
 	~ht_search_bin_context();
 };
@@ -305,37 +305,37 @@ public:
 // flags
 #define SFBIN_CASEINSENSITIVE	1
 
-ht_data* create_search_bin_context(File *file, FileOfs ofs, uint len, byte *pat, uint patlen, uint flags, uint *return_ofs, bool *return_success);
+ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *pat, UINT patlen, UINT flags, UINT *return_ofs, bool *return_success);
 bool search_bin_process(ht_data *context, ht_text *progress_indicator);
 
 ht_view* create_form_hexascii(bounds *b, HT_ATOM histid);
 void create_desc_hexascii(char *buf, int buflen, ht_view *f);
 
-ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, File *file, FileOfs fofs, uint32 fsize);
+ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize);
 
 /*
  *
  */
-class ht_replace_bin_context: public Object {
+class ht_replace_bin_context: public ht_data {
 public:
-	File *file;
+	ht_streamfile *file;
 
-	FileOfs ofs;
-	uint len;
+	FILEOFS ofs;
+	UINT len;
 	
-	uint repllen;
+	UINT repllen;
 	byte *repl;
 
-	FileOfs o;
-	uint z;
+	FILEOFS o;
+	UINT z;
 	byte *buf;
 	
-	uint *return_repllen;
+	UINT *return_repllen;
 
 	~ht_replace_bin_context();
 };
  
-ht_data* create_replace_bin_context(File *file, FileOfs ofs, uint len, byte *repl, uint repllen, uint *return_repllen);
+ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *repl, UINT repllen, UINT *return_repllen);
 bool replace_bin_process(ht_data *context, ht_text *progress_indicator);
 
 #endif /* __HTSEARCH_H__ */

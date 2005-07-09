@@ -21,26 +21,26 @@
 #ifndef __MFILE_H__
 #define __MFILE_H__
 
-#include "data.h"
+#include "htdata.h"
 #include "stream.h"
 
-typedef FileOfs PAGEOFS;
+typedef FILEOFS PAGEOFS;
 
 /*
  *	ht_mod_page
  */
 #define DEFAULT_MOD_PAGE_SIZE 8*1024	/* MUST BE 2^n */
 
-class ht_mod_page: public Object {
+class ht_mod_page: public ht_data {
 public:
-	uint size;
+	UINT size;
 	byte *data;
 
-			ht_mod_page(uint size);
+			ht_mod_page(UINT size);
 			~ht_mod_page();
 	/* new */
-	virtual uint	read(PAGEOFS pofs, byte *buf, uint len);
-	virtual uint	write(PAGEOFS pofs, const byte *buf, uint len);
+	virtual UINT	read(PAGEOFS pofs, byte *buf, UINT len);
+	virtual UINT	write(PAGEOFS pofs, const byte *buf, UINT len);
 };
 
 /*
@@ -52,11 +52,11 @@ protected:
 
 	bool modified;
 
-	FileOfs offset;
-	uint size;
+	FILEOFS offset;
+	UINT size;
 
-	uint page_granularity;
-	uint page_mask;
+	UINT page_granularity;
+	UINT page_mask;
 
 	bool active;
 	/* new */
@@ -66,32 +66,32 @@ protected:
 		   void	mod_pages_flush();
 		   void	mod_pages_invd();
 			 
-	virtual ht_mod_page *mod_page_create(FileOfs offset);
-	virtual void	mod_page_destroy(FileOfs offset);
-	virtual ht_mod_page *mod_page_find(FileOfs offset);
-	virtual void	mod_page_flush(FileOfs offset);
+	virtual ht_mod_page *mod_page_create(FILEOFS offset);
+	virtual void	mod_page_destroy(FILEOFS offset);
+	virtual ht_mod_page *mod_page_find(FILEOFS offset);
+	virtual void	mod_page_flush(FILEOFS offset);
 
-		   void	cleardirtybyte(FileOfs offset);
+		   void	cleardirtybyte(FILEOFS offset);
 		   
-		   bool	isdirty(FileOfs offset, uint range);
+		   bool	isdirty(FILEOFS offset, UINT range);
 
-		   bool	isdirtybit(FileOfs offset, uint bit);
-		   bool	isdirtybyte(FileOfs offset);
-		   bool	readbyte(FileOfs offset, byte *b);
-		   bool	writebyte(FileOfs offset, byte b);
+		   bool	isdirtybit(FILEOFS offset, UINT bit);
+		   bool	isdirtybyte(FILEOFS offset);
+		   bool	readbyte(FILEOFS offset, byte *b);
+		   bool	writebyte(FILEOFS offset, byte b);
 public:
-		   void	init(File *streamfile, int own_streamfile, uint page_granularity = DEFAULT_MOD_PAGE_SIZE);
+		   void	init(ht_streamfile *streamfile, int own_streamfile, UINT page_granularity = DEFAULT_MOD_PAGE_SIZE);
 	virtual void	done();
 	/* overwritten */
-	virtual int	extend(uint newsize);
-	virtual uint	get_size();
-	virtual uint	read(void *buf, uint size);
-	virtual int	seek(FileOfs offset);
-	virtual bool	set_access_mode(uint access_mode);
-	virtual FileOfs tell();
-	virtual int	truncate(uint newsize);
-	virtual int	vcntl(uint cmd, va_list vargs);
-	virtual uint	write(const void *buf, uint size);
+	virtual int	extend(UINT newsize);
+	virtual UINT	get_size();
+	virtual UINT	read(void *buf, UINT size);
+	virtual int	seek(FILEOFS offset);
+	virtual bool	set_access_mode(UINT access_mode);
+	virtual FILEOFS tell();
+	virtual int	truncate(UINT newsize);
+	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 #endif /* __MFILE_H__ */

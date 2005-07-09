@@ -28,11 +28,11 @@
 
 #include <stdlib.h>
 
-static ht_view *htneimports_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htneimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data *)group->get_shared_data();
 
-	FileOfs h = ne_shared->hdr_ofs;
+	FILEOFS h = ne_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_NE_IMPORTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();
@@ -42,7 +42,7 @@ static ht_view *htneimports_init(bounds *b, File *file, ht_format_group *group)
 	ht_snprintf(line, sizeof line, "* NE imported names and module reference table at offset %08x / %08x", h+ne_shared->hdr.imptab, h+ne_shared->hdr.modtab);
 	m->add_mask(line);
 
-	for (uint i=0; i<ne_shared->modnames_count; i++) {
+	for (UINT i=0; i<ne_shared->modnames_count; i++) {
 		ht_snprintf(line, sizeof line, "%0d: %s", i+1, ne_shared->modnames[i]);
 		m->add_mask(line);
 	}

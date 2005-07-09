@@ -20,6 +20,7 @@
 
 #include "analy.h"
 #include "analy_names.h"
+#include "global.h"
 #include "log.h"
 #include "htanaly.h"
 #include "htctrl.h" // FIXME: globalerror
@@ -287,7 +288,7 @@ CallChainNode *CallChain::createNode(Address *A)
 	n->prev = NULL;
 	n->child = NULL;
 	n->examined = false;
-	n->xa = (Address *)A->clone();
+	n->xa = (Address *)A->duplicate();
 	n->faddr = analy->getFunctionByAddress(A);
 	assert(n->faddr);
 	n->fa = n->faddr->addr;
@@ -469,12 +470,12 @@ char *AnalyInfoline::gettext()
 	}
 }
 
-void AnalyInfoline::update(Address *cursor_addr, FileOfs ecursor_addr)
+void AnalyInfoline::update(Address *cursor_addr, FILEOFS ecursor_addr)
 {
 	delete addr;
 	if (valid()) {
 		fofs = ecursor_addr;
-		addr = (Address *)cursor_addr->clone();
+		addr = (Address *)cursor_addr->duplicate();
 	} else {
 		fofs = INVALID_FILE_OFS;
 		addr = new InvalidAddress();
@@ -491,7 +492,7 @@ bool AnalyInfoline::valid()
 /*
  *
  */
-void ht_aviewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy)
+void ht_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy)
 {
 	analy = Analy;
 	if (Analy) {
@@ -526,12 +527,12 @@ void ht_aviewer::attachInfoline(AnalyInfoline *V)
 	infoline = V;
 }
 
-bool ht_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
+bool ht_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 {
 	if (analy) {
 		Address *addr;
 		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FileOfs o=analy->addressToFileofs(addr);
+		FILEOFS o=analy->addressToFileofs(addr);
 		delete addr;
 		if (o!=INVALID_FILE_OFS) {
 			*ofs=o;
@@ -584,7 +585,7 @@ bool ht_aviewer::convertAddressToViewerPos(Address *a, viewer_pos *p)
 	}
 }
 
-char *ht_aviewer::func(uint i, bool execute)
+char *ht_aviewer::func(UINT i, bool execute)
 {
 	switch (i) {
 		case 8: {
@@ -607,13 +608,13 @@ static int aviewer_func_addr(eval_scalar *result, eval_str *str)
 	int l = addr->parseString(str->value, str->len, aviewer->analy);
 	if (l) {
 		// FIXNEW
-		uint64 q = to_qword(0);          
+		qword q = to_qword(0);          
 		addr->putIntoArray((byte*)&q);
 		scalar_create_int_q(result, q);
 		return 1;
 	} else {
 		char buffer[1024];
-		bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
+		bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
 		set_eval_error("invalid address '%s'", buffer);
 		return 0;
 	}
@@ -623,11 +624,11 @@ static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	char buffer[1024];
-	bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
+	bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
 	Symbol *l;
 	if ((l = aviewer->analy->getSymbolByName(buffer))) {
 		// FIXNEW
-		uint64 q = to_qword(0);
+		qword q = to_qword(0);
 		l->location->addr->putIntoArray((byte*)&q);
 		scalar_create_int_q(result, q);
 		return 1;
@@ -644,7 +645,7 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 	viewer_pos p;
 	if (aviewer->offset_to_pos(QWORD_GET_INT(i->value), &p)) {
 		Address *a;
-		uint64 q = to_qword(0);
+		qword q = to_qword(0);
 		aviewer->convertViewerPosToAddress(p, &a);
 		a->putIntoArray((byte*)&q);
 		delete a;
@@ -660,7 +661,7 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 /*
  *	for assembler
  */
-static int ht_aviewer_symbol_to_addr(void *Aviewer, char **s, uint32 *v)
+static int ht_aviewer_symbol_to_addr(void *Aviewer, char **s, dword *v)
 {
 	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)Aviewer;
@@ -822,7 +823,7 @@ void ht_aviewer::generateOutputDialog()
 			errorbox(globalerror);
 			continue;
 		}
-		uint end_by_lines;
+		UINT end_by_lines;
 		if ((by_lines = end_str[0]=='#')) {
 			char *pend = &end_str[1];
 			bnstr(&pend, &end_by_lines, 10);
@@ -923,7 +924,7 @@ void ht_aviewer::dataStringDialog()
 		Location *a = analy->enumLocations(current_address);
 		int d = sizeof buffer;
 		if (a) a->addr->difference(d, current_address);
-		uint bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (uint)d));
+		UINT bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (UINT)d));
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -1029,7 +1030,7 @@ bool ht_aviewer::getCurrentAddress(Address **a)
 	return convertViewerPosToAddress(vp, a);
 }
 
-bool ht_aviewer::get_current_offset(FileOfs *ofs)
+bool ht_aviewer::get_current_offset(FILEOFS *ofs)
 {
 	if (ht_uformat_viewer::get_current_offset(ofs)) {
 		return true;
@@ -1058,7 +1059,7 @@ void ht_aviewer::get_pindicator_str(char *buf)
 {
 	Address *addr;
 	if (analy && getCurrentAddress(&addr)) {
-		FileOfs o;
+		FILEOFS o;
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 		if (get_current_offset(&o)) {
 			ht_snprintf(buf, 1024, " %y/@%08x%s ", addr, o, (analy->isDirty())?" dirty":"");
@@ -1226,7 +1227,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		viewer_pos current_pos;
 		Address *current_address;
 		if (get_current_pos(&current_pos) && getCurrentAddress(&current_address)) {
-			a->set_imm_eval_proc((int(*)(void *context, char **s, uint32 *v))ht_aviewer_symbol_to_addr, (void*)this);
+			a->set_imm_eval_proc((int(*)(void *context, char **s, dword *v))ht_aviewer_symbol_to_addr, (void*)this);
 			int want_length;
 			analy->getDisasmStr(current_address, want_length);
 			dialog_assemble(this, current_pos, analy->mapAddr(current_address), a, analy->disasm, analy->getDisasmStrFormatted(current_address), want_length);
@@ -1360,7 +1361,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		Address *c, *b;
 		if (!getCurrentAddress(&c)) break;
 		b = analy->createAddress();
-		uint bz = b->byteSize();
+		UINT bz = b->byteSize();
 		if (!bz) break;
 		byte *buf = (byte*)smalloc(bz);
 		if (analy->bufPtr(c, buf, bz) != bz) break;
@@ -1525,7 +1526,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 	case msg_draw:
 		if (infoline) {
-			FileOfs a;
+			FILEOFS a;
 			Address *addr;
 			if (!getCurrentAddress(&addr)) {
 				addr = new InvalidAddress();
@@ -1563,7 +1564,7 @@ bool ht_aviewer::idle()
 	return last_active && !pause;
 }
 
-bool ht_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
+bool ht_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
 	if (!analy) return false;
 	Address *a = analy->fileofsToAddress(ofs);
@@ -1734,17 +1735,17 @@ void ht_aviewer::showComments(Address *Addr)
 	if (dialog->run(false)==button_ok) {
 		Location *a=analy->getLocationByAddress(Addr);
 		if (a) analy->freeComments(a);
-		uint c=text_file->linecount();
+		UINT c=text_file->linecount();
 		char buf[1024];
 		bool empty=false;
 		if (c==1) {
-			uint l = 0;
+			UINT l = 0;
 			text_file->getline(0, 0, buf, 1024, &l, NULL);
 			empty=(l==0);
 		}
 		if (!empty) {
-			for (uint i=0; i<c; i++) {
-				uint l;
+			for (UINT i=0; i<c; i++) {
+				UINT l;
 				if (text_file->getline(i, 0, buf, 1024, &l, NULL)) {
 					buf[l]=0;
 					analy->addComment(Addr, 0, buf);
@@ -1844,8 +1845,8 @@ restart2:
 		b.h = c.h*5/6;
 		center_bounds(&b);
 restart:
-		uint bw = b.w;
-		uint bh = b.h;
+		UINT bw = b.w;
+		UINT bh = b.h;
 		char str[256];
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
@@ -1974,7 +1975,7 @@ int ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *p
 
 int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 {
-	uint64 v;
+	qword v;
 	viewer_pos vp;
 	Address *w;
 	if (*name == '@') {
@@ -1987,7 +1988,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 				return 0;
 			}
 			convertViewerPosToAddress(vp, &w);
-			uint64 b = to_qword(0);
+			qword b = to_qword(0);
 			w->putIntoArray((byte*)&b);
 			delete w;
 			scalar_create_int_q(result, b);
@@ -1997,7 +1998,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 	} else {
 		if (strcmp(name, "$")==0) {
 			if (getCurrentAddress(&w)) {
-				uint64 b = to_qword(0);
+				qword b = to_qword(0);
 				w->putIntoArray((byte*)&b);
 				scalar_create_int_q(result, b);
 				delete w;
@@ -2010,7 +2011,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 		Symbol *l = analy->getSymbolByName(name);
 		if (l) {
 			w=l->location->addr;
-			uint64 b;
+			qword b;
 			w->putIntoArray((byte*)&b);
 			scalar_create_int_q(result, b);
 			return 1;
@@ -2019,7 +2020,7 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 	
-bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
+bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 {
 	if (!analy) return false;
 	Address *a=analy->createAddress();
@@ -2027,7 +2028,7 @@ bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
 	if (a->byteSize()==8) {
 		a->getFromArray((byte*)&q);
 	} else {
-		uint32 ii = QWORD_GET_INT(q);
+		dword ii = QWORD_GET_INT(q);
 		a->getFromArray((byte*)&ii);
 	}
 	if (analy->validAddress(a, scvalid)) {
@@ -2046,15 +2047,15 @@ bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
  *	CLASS ht_analy_sub
  */
 
-void ht_analy_sub::init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
+void ht_analy_sub::init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
 {
 	ht_sub::init(file);
 	aviewer = A;
 	analy = analyser;
 	output = new AnalyserHTOutput();
 	((AnalyserHTOutput*)output)->init(analy);
-	lowestaddress = (Address *)Lowestaddress->clone();
-	highestaddress = (Address *)Highestaddress->clone();
+	lowestaddress = (Address *)Lowestaddress->duplicate();
+	highestaddress = (Address *)Highestaddress->duplicate();
 }
 
 void ht_analy_sub::done()
@@ -2076,7 +2077,7 @@ bool ht_analy_sub::closest_line_id(LINE_ID *line_id)
 	return true;
 }
 
-bool ht_analy_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_analy_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	viewer_pos a;
 	if (!uformat_viewer->offset_to_pos(offset, &a)) return false;
@@ -2136,7 +2137,7 @@ int	ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
 	return res;
 }
 
-ht_search_result *ht_analy_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
+ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
 {
 	// FIXME: viewer pos     
 	Address *st = NULL;
@@ -2147,12 +2148,12 @@ ht_search_result *ht_analy_sub::search(ht_search_request *search, FileOfs start,
 		area_s *s = analy->initialized->getArea(st);
 		if (!s) break;
 		st = (Address *)s->end;
-		FileOfs fstart, fend;
-		uint32 fsize;
+		FILEOFS fstart, fend;
+		dword fsize;
 		viewer_pos vp_start, vp_end;
 		aviewer->convertAddressToViewerPos((Address *)s->start, &vp_start);
 		if (!aviewer->pos_to_offset(vp_start, &fstart)) assert(0);
-		Address *send = (Address *)s->end->clone();
+		Address *send = (Address *)s->end->duplicate();
 		send->add(-1);
 		aviewer->convertAddressToViewerPos(send, &vp_end);
 		delete send;

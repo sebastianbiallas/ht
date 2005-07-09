@@ -36,7 +36,7 @@ extern "C" {
 #include "regex.h"
 }
 
-ht_view *htdisasm_init(bounds *b, File *file, ht_format_group *group)
+ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	int t1632;
 #if 1
@@ -75,7 +75,7 @@ static int opcode_compare(const char *a, const char *b)
 	if (al > bl) return 1; else if (al < bl) return -1; else return strcmp(a, b);
 }
 
-void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, uint want_length)
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, UINT want_length)
 {
 	char instr[257] = "";
 	if (default_str) strcpy(instr, default_str);
@@ -109,11 +109,11 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			list->init(&b, 2, 0);
 			list->attachTitle(text);
 			asm_code *ac2 = ac;
-			uint aci = 0;
+			UINT aci = 0;
 			int best = 0;
 			while (ac2) {
 				char s[1024]="", *tmp = s;
-				for (uint i=0; i<ac2->size; i++) {
+				for (UINT i=0; i<ac2->size; i++) {
 					tmp += sprintf(tmp, "%02x ", ac2->data[i]);
 				}
 				if ((best == 0) && (want_length == ac2->size)) {
@@ -175,7 +175,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
  *	CLASS ht_disasm_viewer
  */
 
-void ht_disasm_viewer::init(bounds *b, char *desc, int caps, File *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t)
+void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, format_group);
 	assem = a;
@@ -192,7 +192,7 @@ void ht_disasm_viewer::done()
 
 void ht_disasm_viewer::get_pindicator_str(char *buf)
 {
-	FileOfs o;
+	FILEOFS o;
 	if (get_current_offset(&o)) {
 		sprintf(buf, " %s %08x/%u ", edit() ? "edit" : "view", o, o);
 	} else {
@@ -313,7 +313,7 @@ ht_disasm_sub *ht_disasm_viewer::get_disasm_sub()
 	return (ht_disasm_sub*)cursor.sub;
 }
 
-bool ht_disasm_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
+bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 {
 	p->u.sub = get_disasm_sub();
 	p->u.line_id.id1 = ofs;
@@ -322,7 +322,7 @@ bool ht_disasm_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
+bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 {
 	*ofs = p.u.line_id.id1;
 	return true;
@@ -333,10 +333,10 @@ int ht_disasm_viewer::ref_sel(LINE_ID *id)
 	return goto_offset(id->id1, true);
 }
 
-bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
+bool ht_disasm_viewer::qword_to_pos(qword q, viewer_pos *p)
 {
 	ht_linear_sub *s = get_disasm_sub();
-	FileOfs ofs = QWORD_GET_INT(q);
+	FILEOFS ofs = QWORD_GET_INT(q);
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = 0;
@@ -346,7 +346,7 @@ bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-		FileOfs ofs;
+		FILEOFS ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
 		scalar_create_int_c(result, ofs);
 		return 1;
@@ -354,7 +354,7 @@ int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 
-char *ht_disasm_viewer::func(uint i, bool execute)
+char *ht_disasm_viewer::func(UINT i, bool execute)
 {
 	switch (i) {
 // FIXME: wrong implementation
@@ -369,7 +369,7 @@ char *ht_disasm_viewer::func(uint i, bool execute)
  *	CLASS ht_disasm_sub
  */
 
-void ht_disasm_sub::init(File *f, FileOfs ofs, int size, Disassembler *u, bool own_u, int ds)
+void ht_disasm_sub::init(ht_streamfile *f, FILEOFS ofs, int size, Disassembler *u, bool own_u, int ds)
 {
 	ht_linear_sub::init(f, ofs, size);
 	disasm = u;
@@ -385,7 +385,7 @@ void ht_disasm_sub::done()
 	ht_linear_sub::done();
 }
 
-bool ht_disasm_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
+bool ht_disasm_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 {
 	if ((offset >= fofs) && (offset < fofs+fsize)) {
 		line_id->id1=offset;
@@ -395,7 +395,7 @@ bool ht_disasm_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 	return false;
 }
 
-bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
+bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
 {
 	*offset = line_id.id1;
 	return true;
@@ -424,7 +424,7 @@ static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (line_id.id2) return false;
-	uint32 ofs = line_id.id1;
+	dword ofs = line_id.id1;
 	byte buf[15];
 	int c = MIN(16, (int)(fofs+fsize-ofs));
 	if (c <= 0) return false;
@@ -476,7 +476,7 @@ void ht_disasm_sub::last_line_id(LINE_ID *line_id)
 int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	uint32 *ofs=&line_id->id1;
+	dword *ofs=&line_id->id1;
 	int min_length;
 	int max_length;
 	int min_look_ahead;
@@ -489,7 +489,7 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 	int *of=offsets;
 	int r=n<6 ? 6*avg_look_ahead : n*avg_look_ahead;
 	if (r > (int)sizeof buf) r = sizeof buf;
-	uint32 o=*ofs-r;
+	dword o=*ofs-r;
 	int c=r, d;
 	int s;
 	if (*ofs<fofs+r) {
@@ -533,15 +533,15 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 int ht_disasm_sub::next_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	uint32 *ofs = &line_id->id1;
+	dword *ofs = &line_id->id1;
 	unsigned char buf[15];
 	int c=0, s;
-	uint z;
+	UINT z;
 	CPU_ADDR caddr;
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = 0;
 	while (n--) {
-		z=MIN(15, (uint)(fofs+fsize-*ofs));
+		z=MIN(15, (UINT)(fofs+fsize-*ofs));
 		file->seek(*ofs);
 		z=file->read(buf, z);
 		if (z) {

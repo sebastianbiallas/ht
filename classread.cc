@@ -48,7 +48,7 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
 
-ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, uint l, int f)
+ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, UINT l, int f)
 {
 	name = ht_strdup(n);
 	start = s;
@@ -72,19 +72,19 @@ int ClassMethod::compareTo(const Object *obj) const
 
 
 /* extract name from a utf8 constant pool entry */
-static char *get_string(ht_stream *htio, classfile *clazz, uint index)
+static char *get_string(ht_stream *htio, classfile *clazz, UINT index)
 {
 	return (index < clazz->cpool_count) ? clazz->cpool[index]->value.string : (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static char *get_class_name(ht_stream *htio, classfile *clazz, uint index)
+static char *get_class_name(ht_stream *htio, classfile *clazz, UINT index)
 {
 	return (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]): (char*)"?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static void get_name_and_type(ht_stream *htio, classfile *clazz, uint index, char *name, char *type)
+static void get_name_and_type(ht_stream *htio, classfile *clazz, UINT index, char *name, char *type)
 {
 	strcpy(name, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]) : "?");
 	strcpy(type, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[1]) : "?");
@@ -205,7 +205,7 @@ static mf_info *read_fieldmethod (ht_stream *htio, ht_class_shared_data *shared)
 }
 
 /* read and return classfile */
-ht_class_shared_data *class_read(File *htio)
+ht_class_shared_data *class_read(ht_streamfile *htio)
 {
 	ht_class_shared_data *shared;
 	classfile *clazz;
@@ -349,7 +349,7 @@ void class_unread(ht_class_shared_data *shared)
 	classfile *clazz = shared->file;
 
 	if (!clazz) return;
-	for (uint i=1; i<clazz->cpool_count; i++) {
+	for (UINT i=1; i<clazz->cpool_count; i++) {
 		tag = clazz->cpool[i]->tag;
 		free (clazz->cpool[i]);
 		if ((tag == CONSTANT_Long) || (tag == CONSTANT_Double)) {
@@ -358,23 +358,23 @@ void class_unread(ht_class_shared_data *shared)
 	}
 	if (clazz->cpool_count) free(clazz->cpool);
 	if (clazz->interfaces) free(clazz->interfaces);
-	for (uint i=0; i<clazz->fields_count; i++) {
-		for (uint j=0; j<clazz->fields[i]->attribs_count; j++) {
+	for (UINT i=0; i<clazz->fields_count; i++) {
+		for (UINT j=0; j<clazz->fields[i]->attribs_count; j++) {
 			free(clazz->fields[i]->attribs[j]);
 		}
 		if (clazz->fields[i]->attribs_count) free(clazz->fields[i]->attribs);
 		free(clazz->fields[i]);
 	}
 	if (clazz->fields_count) free(clazz->fields);
-	for (uint i=0; i<clazz->methods_count; i++) {
-		for (uint j=0; j<clazz->methods[i]->attribs_count; j++) {
+	for (UINT i=0; i<clazz->methods_count; i++) {
+		for (UINT j=0; j<clazz->methods[i]->attribs_count; j++) {
 			free (clazz->methods[i]->attribs[j]);
 		}
 		if (clazz->methods[i]->attribs_count) free(clazz->methods[i]->attribs);
 		free(clazz->methods[i]);
 	}
 	if (clazz->methods_count) free(clazz->methods);
-	for (uint i=0; i<clazz->attribs_count; i++) {
+	for (UINT i=0; i<clazz->attribs_count; i++) {
 		free(clazz->attribs[i]);
 	}
 	if (clazz->attribs_count) {
@@ -491,7 +491,7 @@ void java_demangle(char *result, char *classname, char *name, char *type, int fl
 	result += sprintf(result, ")");
 }
 
-int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared)
+int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared)
 {
 	classfile *clazz = shared->file;
 	char tag[20];

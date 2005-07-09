@@ -241,7 +241,7 @@ ht_mask_ptable aloc_hdr[] =
 	{0, 0}
 };
 
-static void attrib_view(ht_group_sub *g, File *f,
+static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		  unsigned *idx, classfile *c, attrib_info *a)
 {
   ht_group_sub *g2, *g3;
@@ -454,7 +454,7 @@ static void attrib_view(ht_group_sub *g, File *f,
   }
 }
 
-static void mf_view(ht_group_sub *g, File *f,
+static void mf_view(ht_group_sub *g, ht_streamfile *f,
 	   unsigned *idx, classfile *c, mf_info *mf)
 {
 	ht_group_sub *g2, *g3;
@@ -475,7 +475,7 @@ static void mf_view(ht_group_sub *g, File *f,
 		s->add_mask("<none>");
 		g2->insertsub (s);
 	}
-	for (uint i=0; i<mf->attribs_count; i++) {
+	for (UINT i=0; i<mf->attribs_count; i++) {
 		g3 = new ht_group_sub();
 		g3->init(f);
 		attrib_view(g3, f, idx, c, mf->attribs[i]);
@@ -489,7 +489,7 @@ static void mf_view(ht_group_sub *g, File *f,
 	g->insertsub (cs2);
 }
 
-static ht_view *class_view(bounds *b, File *file, ht_format_group *group)
+static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
   ht_mask_sub *s;
   ht_collapsable_sub *cs, *cs2;
@@ -673,8 +673,8 @@ static ht_view *class_view(bounds *b, File *file, ht_format_group *group)
   }
 }
 
-void cview::init(bounds *b, File *f, format_viewer_if **ifs,
-		  ht_format_group *g, FileOfs header_ofs, void *shared)
+void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
+		  ht_format_group *g, FILEOFS header_ofs, void *shared)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_JAVA, f, false, true, 0, g);
 
@@ -702,7 +702,7 @@ static format_viewer_if *htcls_ifs[] = {
 	0
 };
 
-static ht_view *class_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *class_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	u1 magic[4];
 

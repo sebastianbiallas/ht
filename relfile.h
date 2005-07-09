@@ -21,30 +21,30 @@
 #ifndef __RELFILE_H__
 #define __RELFILE_H__
 
-#include "data.h"
+#include "htdata.h"
 #include "stream.h"
 
 /*
  *	CLASS ht_reloc_file
  */
 
-class ht_reloc_file: public FileLayer {
+class ht_reloc_file: public ht_layer_streamfile {
 protected:
-	Container *relocs;
+	ht_tree *relocs;
 	bool enabled;
 
 /* new */
-	virtual void	reloc_apply(Object *reloc, byte *data) = 0;
-	virtual bool	reloc_unapply(Object *reloc, byte *data) = 0;
+	virtual void	reloc_apply(ht_data *reloc, byte *data) = 0;
+	virtual bool	reloc_unapply(ht_data *reloc, byte *data) = 0;
 public:
-			ht_reloc_file(File *File, bool own_streamfile);
-	virtual		~ht_reloc_file();
+		   void	init(ht_streamfile *streamfile, bool own_streamfile);
+	virtual void	done();
 /* overwritten */
 		   void	finalize();
-		   void	insert_reloc(FileOfs o, Object *reloc);
-	virtual uint	read(void *buf, uint size);
-	virtual int	vcntl(uint cmd, va_list vargs);
-	virtual uint	write(const void *buf, uint size);
+		   void	insert_reloc(FILEOFS o, ht_data *reloc);
+	virtual UINT	read(void *buf, UINT size);
+	virtual int	vcntl(UINT cmd, va_list vargs);
+	virtual UINT	write(const void *buf, UINT size);
 };
 
 #endif /* __RELFILE_H__ */

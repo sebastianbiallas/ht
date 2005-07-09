@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(data.h)
+AC_INIT(common.h)
 
 PACKAGE=ht
 VERSION=0.9trunk
@@ -20,7 +20,7 @@ AC_ARG_ENABLE(profiling,
 if test "x$enable_release" = "xyes"; then
     FLAGS_ALL="-O2 -fomit-frame-pointer -Wall -fsigned-char"
 else
-    FLAGS_ALL="-ggdb -g3 -O0 -Wall -Woverloaded-virtual -fsigned-char"
+    FLAGS_ALL="-ggdb -g3 -O0 -Wall -fsigned-char"
 fi
 
 if test "x$enable_profiling" = "xyes"; then
@@ -93,8 +93,6 @@ fi
 CXXFLAGS="$FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
 CFLAGS="$FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
 
-AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
-
 AM_CONDITIONAL(USE_POSIX_DIR, test x$IO_DIR = xposix)
 AM_CONDITIONAL(USE_DJGPP_DIR, test x$IO_DIR = xdjgpp)
 AM_CONDITIONAL(USE_WIN32_DIR, test x$IO_DIR = xwin32)
@@ -134,7 +132,6 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
-AC_CHECK_HEADERS([stdint.h])
 
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=

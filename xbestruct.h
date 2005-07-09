@@ -21,7 +21,7 @@
 #ifndef __XBESTRUCT_H_
 #define __XBESTRUCT_H_
 
-#include "io/types.h"
+#include "global.h"
 #include "tools.h"
 
 typedef unsigned int RVA;
@@ -35,37 +35,37 @@ typedef unsigned int RVA;
 #define XBE_SIZE_OF_SIGNATURE	256
 
 typedef struct XBE_IMAGE_HEADER {
-    byte	magic_id[XBE_MAGIC_LENGTH] PACKED;
-    byte	signature[XBE_SIZE_OF_SIGNATURE] PACKED;
-    uint32	base_address PACKED;
-    uint32	size_of_headers PACKED;
-    uint32	size_of_image PACKED;
-    uint32	size_of_imageheader PACKED;
-    uint32	timedate PACKED;
-    uint32	certificate_address PACKED;
-    uint32	number_of_sections PACKED;
-    uint32	section_header_address PACKED;
-    uint32	initialisation_flags PACKED;
-    uint32	entry_point PACKED;
-    uint32	tls_address PACKED;
-    uint32	pe_stack_commit PACKED;
-    uint32	pe_heap_reserve PACKED;
-    uint32	pe_heap_commit PACKED;
-    uint32	pe_base_address PACKED;
-    uint32	pe_size_of_image PACKED;
-    uint32	pe_checksum PACKED;
-    uint32	pe_timedate PACKED;
-    uint32	debug_pathname_address PACKED;
-    uint32	debug_filename_address PACKED;
-    uint32	debug_unicode_filename_address PACKED;
-    uint32	kernel_image_thunk_address PACKED;
-    uint32	non_kernel_import_directory_address PACKED;
-    uint32	number_of_library_versions PACKED;
-    uint32	library_versions_address PACKED;
-    uint32	kernel_library_version_address PACKED;
-    uint32	xapi_library_version_address PACKED;
-    uint32	logo_bitmap_address PACKED;
-    uint32	logo_bitmap_size PACKED;
+    byte	magic_id[XBE_MAGIC_LENGTH] HTPACKED;
+    byte	signature[XBE_SIZE_OF_SIGNATURE] HTPACKED;
+    dword	base_address HTPACKED;
+    dword	size_of_headers HTPACKED;
+    dword	size_of_image HTPACKED;
+    dword	size_of_imageheader HTPACKED;
+    dword	timedate HTPACKED;
+    dword	certificate_address HTPACKED;
+    dword	number_of_sections HTPACKED;
+    dword	section_header_address HTPACKED;
+    dword	initialisation_flags HTPACKED;
+    dword	entry_point HTPACKED;
+    dword	tls_address HTPACKED;
+    dword	pe_stack_commit HTPACKED;
+    dword	pe_heap_reserve HTPACKED;
+    dword	pe_heap_commit HTPACKED;
+    dword	pe_base_address HTPACKED;
+    dword	pe_size_of_image HTPACKED;
+    dword	pe_checksum HTPACKED;
+    dword	pe_timedate HTPACKED;
+    dword	debug_pathname_address HTPACKED;
+    dword	debug_filename_address HTPACKED;
+    dword	debug_unicode_filename_address HTPACKED;
+    dword	kernel_image_thunk_address HTPACKED;
+    dword	non_kernel_import_directory_address HTPACKED;
+    dword	number_of_library_versions HTPACKED;
+    dword	library_versions_address HTPACKED;
+    dword	kernel_library_version_address HTPACKED;
+    dword	xapi_library_version_address HTPACKED;
+    dword	logo_bitmap_address HTPACKED;
+    dword	logo_bitmap_size HTPACKED;
 };
 
 
@@ -94,19 +94,19 @@ typedef struct XBE_IMAGE_HEADER {
 #define XBE_GAME_REGION_MANUFACTURING		0x80000000
 
 typedef struct XBE_CERTIFICATE {
-    uint32	size_of_certificate PACKED;
-    uint32	timedate PACKED;
-    uint32	title_id PACKED;
-    uint16	title_name[XBE_TITLE_NAME_LENGTH] PACKED;
-    uint32	alternate_title_ids[XBE_NUM_ALTERNATE] PACKED;
-    uint32	allowed_media PACKED;
-    uint32	game_region PACKED;
-    uint32	game_ratings PACKED;
-    uint32	disk_number PACKED;
-    uint32	version PACKED;
-    byte	lan_key[XBE_LAN_KEY_LENGTH] PACKED;
-    byte	signature_key[XBE_SIGNATURE_KEY_LENGTH] PACKED;
-    byte	alternate_signature_keys[XBE_NUM_ALTERNATE][XBE_SIGNATURE_KEY_LENGTH] PACKED;    
+    dword	size_of_certificate HTPACKED;
+    dword	timedate HTPACKED;
+    dword	title_id HTPACKED;
+    word	title_name[XBE_TITLE_NAME_LENGTH] HTPACKED;
+    dword	alternate_title_ids[XBE_NUM_ALTERNATE] HTPACKED;
+    dword	allowed_media HTPACKED;
+    dword	game_region HTPACKED;
+    dword	game_ratings HTPACKED;
+    dword	disk_number HTPACKED;
+    dword	version HTPACKED;
+    byte	lan_key[XBE_LAN_KEY_LENGTH] HTPACKED;
+    byte	signature_key[XBE_SIGNATURE_KEY_LENGTH] HTPACKED;
+    byte	alternate_signature_keys[XBE_NUM_ALTERNATE][XBE_SIGNATURE_KEY_LENGTH] HTPACKED;    
 };
 
 
@@ -120,36 +120,36 @@ typedef struct XBE_CERTIFICATE {
 #define XBE_SECTION_DIGEST_LENGTH	20
 
 typedef struct XBE_SECTION_HEADER {
-    uint32	section_flags PACKED;
-    uint32	virtual_address PACKED;
-    uint32	virtual_size PACKED;
-    uint32	raw_address PACKED;
-    uint32	raw_size PACKED;
-    uint32	section_name_address PACKED;
-    uint32	section_name_ref_count PACKED;
-    uint32	head_shared_page_ref_count_address PACKED;
-    uint32	tail_shared_page_ref_count_address PACKED;
-    byte	section_digest[XBE_SECTION_DIGEST_LENGTH] PACKED;
+    dword	section_flags HTPACKED;
+    dword	virtual_address HTPACKED;
+    dword	virtual_size HTPACKED;
+    dword	raw_address HTPACKED;
+    dword	raw_size HTPACKED;
+    dword	section_name_address HTPACKED;
+    dword	section_name_ref_count HTPACKED;
+    dword	head_shared_page_ref_count_address HTPACKED;
+    dword	tail_shared_page_ref_count_address HTPACKED;
+    byte	section_digest[XBE_SECTION_DIGEST_LENGTH] HTPACKED;
 };
 
 #define XBE_LIBRARY_NAME_LENGTH		8
 
 typedef struct XBE_LIBRARY_VERSION {
-    byte	library_name[XBE_LIBRARY_NAME_LENGTH] PACKED;
-    uint16	major_version PACKED;
-    uint16	minor_version PACKED;
-    uint16	build_version PACKED;
-    uint16	library_flags PACKED;
+    byte	library_name[XBE_LIBRARY_NAME_LENGTH] HTPACKED;
+    word	major_version HTPACKED;
+    word	minor_version HTPACKED;
+    word	build_version HTPACKED;
+    word	library_flags HTPACKED;
 };
 
 
 typedef struct XBE_TLS_DIRECTORY {
-    uint32	data_start_address PACKED;
-    uint32	data_end_address PACKED;
-    uint32	tls_index_address PACKED;
-    uint32	tls_callback_address PACKED;
-    uint32	size_of_zero_fill PACKED;
-    uint32	characteristics PACKED;
+    dword	data_start_address HTPACKED;
+    dword	data_end_address HTPACKED;
+    dword	tls_index_address HTPACKED;
+    dword	tls_callback_address HTPACKED;
+    dword	size_of_zero_fill HTPACKED;
+    dword	characteristics HTPACKED;
 };
 
 extern byte XBE_IMAGE_HEADER_struct[];

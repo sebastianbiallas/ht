@@ -30,7 +30,7 @@
 class ht_pe_resource_viewer: public ht_static_treeview {
 private:
 /* new */
-	virtual	Object *vstate_create();
+	virtual	ht_data *vstate_create();
 			bool vstate_save();
 	virtual	void vstate_restore(ht_data *d);
 public:

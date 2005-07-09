@@ -27,7 +27,7 @@
 #include "pefstruc.h"
 #include "snprintf.h"
 
-ht_view *htpefimage_init(bounds *b, File *file, ht_format_group *group)
+ht_view *htpefimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
 
@@ -55,7 +55,7 @@ ht_view *htpefimage_init(bounds *b, File *file, ht_format_group *group)
 	/* search for lowest/highest */
 	uint32 l=0xffffffff, h=0;
 	PEF_SECTION_HEADER *s=pef_shared->sheaders.sheaders;
-	for (uint i=0; i<pef_shared->sheaders.count; i++) {
+	for (UINT i=0; i<pef_shared->sheaders.count; i++) {
 		if (s->defaultAddress < l) l = s->defaultAddress;
 		if ((s->defaultAddress + s->totalSize > h) &&
 		s->totalSize && pef_phys_and_mem_section(s))
@@ -104,7 +104,7 @@ format_viewer_if htpefimage_if = {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
 	RVA rva = QWORD_GET_INT(i->value);
 	viewer_pos p;
-	FileOfs ofs;
+	FILEOFS ofs;
 	if (pe_rva_to_ofs(&aviewer->pef_shared->sections, rva, &ofs)
 	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
@@ -123,11 +123,11 @@ format_viewer_if htpefimage_if = {
 static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-	uint i = QWORD_GET_INT(q->value)-1;
+	UINT i = QWORD_GET_INT(q->value)-1;
 	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
 	(i < aviewer->pef_shared->sections.section_count)) {
 		viewer_pos p;
-		FileOfs ofs;
+		FILEOFS ofs;
 		if (pe_rva_to_ofs(&aviewer->pef_shared->sections,
 					    aviewer->pef_shared->sections.sections[i].data_address,
 					   &ofs)
@@ -177,7 +177,7 @@ static int pe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 /*
  *	CLASS ht_pef_aviewer
  */
-void ht_pef_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_pef_shared_data *PEF_shared)
+void ht_pef_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_pef_shared_data *PEF_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	pef_shared = PEF_shared;

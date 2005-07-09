@@ -27,7 +27,7 @@
 #include "log.h"
 #include "snprintf.h"
 
-ht_view *htclassimage_init(bounds *b, File *file, ht_format_group *group)
+ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_class_shared_data *class_shared=(ht_class_shared_data *)group->get_shared_data();
 
@@ -59,7 +59,7 @@ ht_view *htclassimage_init(bounds *b, File *file, ht_format_group *group)
 	if (!high) {
 		high = a->createAddress32(0);
 	} else {
-		high = (Address *)high->clone();
+		high = (Address *)high->duplicate();
 		high->add(-1);
 	}
 	analy->init(file, v, a, low, high);
@@ -92,7 +92,7 @@ format_viewer_if htclassimage_if = {
 /*
  *	CLASS ht_class_aviewer
  */
-void ht_class_aviewer::init(bounds *b, char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_class_shared_data *Class_shared)
+void ht_class_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_class_shared_data *Class_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	class_shared = Class_shared;
@@ -109,7 +109,7 @@ void ht_class_aviewer::setAnalyser(Analyser *a)
 
 #if 0
 static ht_view *
-class_image(bounds *b, File *file, ht_format_group *group)
+class_image(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
   classfile *clazz;
 

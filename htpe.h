@@ -58,14 +58,14 @@
 extern format_viewer_if htpe_if;
 
 struct pe_section_headers {
-	uint section_count;
+	UINT section_count;
 	COFF_SECTION_HEADER *sections;
 };
 
 struct ht_pe_shared_data {
-	FileOfs header_ofs;
+	FILEOFS header_ofs;
 	COFF_HEADER coffheader;
-	uint16 opt_magic;
+	word opt_magic;
 	union {
 		struct {
 			COFF_OPTIONAL_HEADER32 header;
@@ -98,7 +98,7 @@ class ht_pe: public ht_format_group {
 protected:
 	bool loc_enum;
 public:
-			void init(bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
+			void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
 	virtual	void done();
 /* overwritten */
 	virtual   void loc_enum_start();
@@ -106,13 +106,13 @@ public:
 };
 
 bool pe_rva_to_section(pe_section_headers *section_headers, RVA rva, int *section);
-bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FileOfs *ofs);
+bool pe_rva_to_ofs(pe_section_headers *section_headers, RVA rva, FILEOFS *ofs);
 bool pe_rva_is_valid(pe_section_headers *section_headers, RVA rva);
 bool pe_rva_is_physical(pe_section_headers *section_headers, RVA rva);
 
-bool pe_ofs_to_rva(pe_section_headers *section_headers, FileOfs ofs, RVA *rva);
-bool pe_ofs_to_section(pe_section_headers *section_headers, FileOfs ofs, int *section);
-bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FileOfs ofs, RVA *rva, int *section);
+bool pe_ofs_to_rva(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva);
+bool pe_ofs_to_section(pe_section_headers *section_headers, FILEOFS ofs, int *section);
+bool pe_ofs_to_rva_and_section(pe_section_headers *section_headers, FILEOFS ofs, RVA *rva, int *section);
 
 bool pe_section_name_to_section(pe_section_headers *section_headers, const char *name, int *section);
 

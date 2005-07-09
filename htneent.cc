@@ -37,11 +37,11 @@ static ht_tag_flags_s ne_entflags[] =
 	{0, 0}
 };
 
-static ht_view *htneentrypoints_init(bounds *b, File *file, ht_format_group *group)
+static ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data *)group->get_shared_data();
 
-	FileOfs h = ne_shared->hdr_ofs;
+	FILEOFS h = ne_shared->hdr_ofs;
 	ht_ne_entrypoint_viewer *v = new ht_ne_entrypoint_viewer();
 	v->init(b, DESC_NE_ENTRYPOINTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();
@@ -53,10 +53,10 @@ static ht_view *htneentrypoints_init(bounds *b, File *file, ht_format_group *gro
 	ht_snprintf(line, sizeof line, "* NE entrypoint table at offset %08x", h+ne_shared->hdr.enttab);
 	m->add_mask(line);
 
-	FileOfs o = h + ne_shared->hdr.enttab;
+	FILEOFS o = h + ne_shared->hdr.enttab;
 	NE_ENTRYPOINT_HEADER e;
 
-	uint32 index = 1;
+	dword index = 1;
 	while (o + sizeof e < h+ne_shared->hdr.enttab+ne_shared->hdr.cbenttab) {
 		file->seek(o);
 		file->read(&e, sizeof e);
@@ -126,8 +126,8 @@ format_viewer_if htneentrypoints_if = {
 int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 {
 /*   FIXNEW
-	uint seg = id_high;
-	FileOfs o = id_low;
+	UINT seg = id_high;
+	FILEOFS o = id_low;
 	ADDR a;
 	if (seg == 0xff) {
 		NE_ENTRYPOINT_MOVABLE e;

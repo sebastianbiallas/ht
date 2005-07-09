@@ -45,7 +45,7 @@ Object *ht_object_stream_inter::getObject(char *name)
 
 void ht_object_stream_inter::getObject(Object *&o, char *name)
 {
-	ObjectID id=getIntHex(4, "id");
+	OBJECT_ID id=getIntHex(4, "id");
 	if (id) {
 		object_builder b=(object_builder)find_atom(id);
 		if (b) {
@@ -68,7 +68,7 @@ void ht_object_stream_inter::getObject(Object *&o, char *name)
 void ht_object_stream_inter::putObject(Object *obj, char *name)
 {
 	if (obj) {
-		ObjectID o=obj->getObjectID();
+		OBJECT_ID o=obj->object_id();
 		object_builder b=(object_builder)find_atom(o);;
 		if (b) {
 			putIntHex(o, 4, "id");
@@ -95,13 +95,13 @@ void	ht_object_stream_bin::init(ht_stream *s)
 void *ht_object_stream_bin::getBinary(int size, char *desc)
 {
 	void *p = smalloc(size);
-	if (stream->read(p, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 	return p;
 }
 
 void	ht_object_stream_bin::getBinary(void *p, int size, char *desc)
 {
-	if (stream->read(p, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(p, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
 bool ht_object_stream_bin::getBool(char *desc)
@@ -120,20 +120,20 @@ int  ht_object_stream_bin::getIntHex(int size, char *desc)
 {
 	assert(size <= 8);
 	byte neta[8];
-	if (stream->read(&neta, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
 	return create_host_int(neta, size, big_endian);
 }
 
-uint64  ht_object_stream_bin::getQWordDec(int size, char *desc)
+qword  ht_object_stream_bin::getQWordDec(int size, char *desc)
 {
 	return getQWordHex(size, desc);
 }
 
-uint64  ht_object_stream_bin::getQWordHex(int size, char *desc)
+qword  ht_object_stream_bin::getQWordHex(int size, char *desc)
 {
 	assert(size == 8);
 	byte neta[8];
-	if (stream->read(&neta, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&neta, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
 	return create_host_int64(neta, big_endian);
 }
 
@@ -149,7 +149,7 @@ char *ht_object_stream_bin::getString(char *desc)
 
 void ht_object_stream_bin::putBinary(void *mem, int size, char *desc)
 {
-	if (stream->write(mem, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(mem, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void ht_object_stream_bin::putBool(bool b, char *desc)
@@ -173,20 +173,20 @@ void ht_object_stream_bin::putIntHex(int a, int size, char *desc)
 	assert(size <= 8);
 	byte neta[8];
 	create_foreign_int(neta, a, size, big_endian);
-	if (stream->write(&neta, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-void ht_object_stream_bin::putQWordDec(uint64 a, int size, char *desc)
+void ht_object_stream_bin::putQWordDec(qword a, int size, char *desc)
 {
 	putQWordHex(a, size, desc);
 }
 
-void ht_object_stream_bin::putQWordHex(uint64 a, int size, char *desc)
+void ht_object_stream_bin::putQWordHex(qword a, int size, char *desc)
 {
 	assert(size == 8);
 	byte neta[8];
 	create_foreign_int64(neta, a, size, big_endian);
-	if (stream->write(&neta, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&neta, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void ht_object_stream_bin::putSeparator()
@@ -196,7 +196,7 @@ void ht_object_stream_bin::putSeparator()
 
 void ht_object_stream_bin::putString(char *string, char *desc)
 {
-	uint len = strlen(string)+1;
+	UINT len = strlen(string)+1;
 	if (stream->write(string, len) != len) set_error(EIO | STERR_SYSTEM);
 }
 
@@ -268,12 +268,12 @@ int  ht_object_stream_txt::getIntHex(int size, char *desc)
 	return QWORD_GET_LO(getQWordHex(size, desc));
 }
 
-uint64 ht_object_stream_txt::getQWordDec(int size, char *desc)
+qword ht_object_stream_txt::getQWordDec(int size, char *desc)
 {
 	return getQWordHex(size, desc);
 }
 
-uint64 ht_object_stream_txt::getQWordHex(int size, char *desc)
+qword ht_object_stream_txt::getQWordHex(int size, char *desc)
 {
 	readDesc(desc);
 	expect('=');
@@ -288,7 +288,7 @@ uint64 ht_object_stream_txt::getQWordHex(int size, char *desc)
 		if (get_error()) return to_qword(0);
 	} while (mapchar[cur]=='0' || mapchar[cur]=='A');
 	*s=0; s=str;
-	uint64 a;
+	qword a;
 	if (!bnstr(&s, &a, 10)) setSyntaxError();
 	return a;
 }
@@ -407,7 +407,7 @@ void ht_object_stream_txt::putIntHex(int a, int size, char *desc)
 	putS(number2);
 }
 
-void ht_object_stream_txt::putQWordDec(uint64 a, int size, char *desc)
+void ht_object_stream_txt::putQWordDec(qword a, int size, char *desc)
 {
 	putDesc(desc);
 	char number[40];
@@ -415,7 +415,7 @@ void ht_object_stream_txt::putQWordDec(uint64 a, int size, char *desc)
 	putS(number);
 }
 
-void ht_object_stream_txt::putQWordHex(uint64 a, int size, char *desc)
+void ht_object_stream_txt::putQWordHex(qword a, int size, char *desc)
 {
 	putDesc(desc);
 	char number2[40];
@@ -534,7 +534,7 @@ void ht_object_stream_txt::putChar(char c)
 
 void ht_object_stream_txt::putS(char *s)
 {
-	uint len=strlen(s);
+	UINT len=strlen(s);
 	if (stream->write(s, len) != len) setSyntaxError();
 }
 
@@ -593,20 +593,20 @@ int  ht_object_stream_memmap::getIntHex(int size, char *desc)
 {
 	assert(size <= 8);
 	int a;
-	if (stream->read(&a, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->read(&a, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
 	return a;
 }
 
-uint64 ht_object_stream_memmap::getQWordDec(int size, char *desc)
+qword ht_object_stream_memmap::getQWordDec(int size, char *desc)
 {
 	return getQWordHex(size, desc);
 }
 
-uint64 ht_object_stream_memmap::getQWordHex(int size, char *desc)
+qword ht_object_stream_memmap::getQWordHex(int size, char *desc)
 {
 	assert(size==8);
-	uint64 a;
-	if (stream->read(&a, size)!=(uint)size) set_error(EIO | STERR_SYSTEM);
+	qword a;
+	if (stream->read(&a, size)!=(UINT)size) set_error(EIO | STERR_SYSTEM);
 	return a;
 }
 
@@ -617,16 +617,16 @@ char	*ht_object_stream_memmap::getString(char *desc)
 	return pp;
 }
 
-uint	ht_object_stream_memmap::recordStart(uint size)
+UINT	ht_object_stream_memmap::recordStart(UINT size)
 {
-	return ((File*)stream)->tell()+size;
+	return ((ht_streamfile*)stream)->tell()+size;
 }
 
-void	ht_object_stream_memmap::recordEnd(uint a)
+void	ht_object_stream_memmap::recordEnd(UINT a)
 {
-	FileOfs o =((File*)stream)->tell();
+	FILEOFS o =((ht_streamfile*)stream)->tell();
 	if (o>a) HT_ERROR("kput");
-	((File*)stream)->seek(a);
+	((ht_streamfile*)stream)->seek(a);
 }
 
 void	ht_object_stream_memmap::putBinary(void *mem, int size, char *desc)
@@ -643,18 +643,18 @@ void	ht_object_stream_memmap::putIntDec(int a, int size, char *desc)
 void	ht_object_stream_memmap::putIntHex(int a, int size, char *desc)
 {
 	assert(size <= 8);
-	if (stream->write(&a, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&a, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
-void	ht_object_stream_memmap::putQWordDec(uint64 a, int size, char *desc)
+void	ht_object_stream_memmap::putQWordDec(qword a, int size, char *desc)
 {
 	putQWordHex(a, size, desc);
 }
 
-void	ht_object_stream_memmap::putQWordHex(uint64 a, int size, char *desc)
+void	ht_object_stream_memmap::putQWordHex(qword a, int size, char *desc)
 {
 	assert(size <= 8);
-	if (stream->write(&a, size) != (uint)size) set_error(EIO | STERR_SYSTEM);
+	if (stream->write(&a, size) != (UINT)size) set_error(EIO | STERR_SYSTEM);
 }
 
 void	ht_object_stream_memmap::putString(char *string, char *desc)

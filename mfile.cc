@@ -29,7 +29,7 @@
  *	CLASS ht_mod_page
  */
 
-ht_mod_page::ht_mod_page(uint s)
+ht_mod_page::ht_mod_page(UINT s)
 {
 	size = s;
 	data = (byte*)malloc(size);
@@ -40,17 +40,17 @@ ht_mod_page::~ht_mod_page()
 	free(data);
 }
 
-uint ht_mod_page::read(PAGEOFS pofs, byte *buf, uint len)
+UINT ht_mod_page::read(PAGEOFS pofs, byte *buf, UINT len)
 {
-	uint s = len;
+	UINT s = len;
 	if (pofs+s > size) s = size-pofs;
 	memmove(buf, data+pofs, s);
 	return s;
 }
 
-uint ht_mod_page::write(PAGEOFS pofs, const byte *buf, uint len)
+UINT ht_mod_page::write(PAGEOFS pofs, const byte *buf, UINT len)
 {
-	uint s = len;
+	UINT s = len;
 	if (pofs+s > size) s = size-pofs;
 	memmove(data+pofs, buf, s);
 	return s;
@@ -60,14 +60,14 @@ uint ht_mod_page::write(PAGEOFS pofs, const byte *buf, uint len)
  *	CLASS ht_streamfile_modifier
  */
 
-int compare_keys_file_delinear(ht_data *key_a, Object *key_b)
+int compare_keys_file_delinear(ht_data *key_a, ht_data *key_b)
 {
-	FileOfs a = (FileOfs)delinearize((uint32)((ht_data_uint*)key_a)->value);
-	FileOfs b = (FileOfs)delinearize((uint32)((ht_data_uint*)key_b)->value);
+	FILEOFS a = (FILEOFS)delinearize((dword)((ht_data_uint*)key_a)->value);
+	FILEOFS b = (FILEOFS)delinearize((dword)((ht_data_uint*)key_b)->value);
 	return a-b;
 }
 
-void	ht_streamfile_modifier::init(File *s, int own_s, uint pgran)
+void	ht_streamfile_modifier::init(ht_streamfile *s, int own_s, UINT pgran)
 {
 	ht_layer_streamfile::init(s, own_s);
 	
@@ -88,7 +88,7 @@ void	ht_streamfile_modifier::done()
 	ht_layer_streamfile::done();
 }
 
-bool	ht_streamfile_modifier::isdirty(FileOfs offset, uint range)
+bool	ht_streamfile_modifier::isdirty(FILEOFS offset, UINT range)
 {
 	if (range & IS_DIRTY_SINGLEBIT) {
 		return isdirtybit(offset, range & 7);
@@ -98,7 +98,7 @@ bool	ht_streamfile_modifier::isdirty(FileOfs offset, uint range)
 	return false;
 }
 
-bool	ht_streamfile_modifier::isdirtybit(FileOfs offset, uint bit)
+bool	ht_streamfile_modifier::isdirtybit(FILEOFS offset, UINT bit)
 {
 	ht_mod_page *m = mod_page_find(offset);
 	if (m) {
@@ -111,7 +111,7 @@ bool	ht_streamfile_modifier::isdirtybit(FileOfs offset, uint bit)
 	return false;
 }
 
-bool	ht_streamfile_modifier::isdirtybyte(FileOfs offset)
+bool	ht_streamfile_modifier::isdirtybyte(FILEOFS offset)
 {
 	ht_mod_page *m = mod_page_find(offset);
 	if (m) {
@@ -124,7 +124,7 @@ bool	ht_streamfile_modifier::isdirtybyte(FileOfs offset)
 	return false;
 }
 
-void	ht_streamfile_modifier::cleardirtybyte(FileOfs offset)
+void	ht_streamfile_modifier::cleardirtybyte(FILEOFS offset)
 {
 	ht_mod_page *m = mod_page_find(offset);
 	if (m) {
@@ -159,13 +159,13 @@ void ht_streamfile_modifier::mod_pages_destroy()
 void ht_streamfile_modifier::mod_pages_flush()
 {
 	ht_data_uint *key=NULL;
-	Object *value;
+	ht_data *value;
 
 	while ((key=(ht_data_uint*)mod_pages->enum_next(&value, key))) {
 		mod_page_flush(key->value);
 	}
 
-	uint lsize = ht_layer_streamfile::get_size();
+	UINT lsize = ht_layer_streamfile::get_size();
 	if (size > lsize) {
 		ht_layer_streamfile::extend(size);
 	} else if (size < lsize) {
@@ -181,17 +181,17 @@ void ht_streamfile_modifier::mod_pages_invd()
 	mod_pages_create();
 }
 
-ht_mod_page *ht_streamfile_modifier::mod_page_create(FileOfs offset)
+ht_mod_page *ht_streamfile_modifier::mod_page_create(FILEOFS offset)
 {
 	offset &= page_mask;
 	if (offset > size) return NULL;
 	
-	uint s = size - offset;
+	UINT s = size - offset;
 	if (s > page_granularity) s = page_granularity;
 	
 	ht_mod_page *m = new ht_mod_page(page_granularity);
-	uint lsize = ht_layer_streamfile::get_size();
-	uint rsize = s;
+	UINT lsize = ht_layer_streamfile::get_size();
+	UINT rsize = s;
 	if (offset > lsize) rsize = 0; else
 		if (rsize > lsize - offset) rsize = lsize - offset;
 	ht_layer_streamfile::seek(offset);
@@ -201,36 +201,36 @@ ht_mod_page *ht_streamfile_modifier::mod_page_create(FileOfs offset)
 	return m;
 }
 
-void ht_streamfile_modifier::mod_page_destroy(FileOfs offset)
+void ht_streamfile_modifier::mod_page_destroy(FILEOFS offset)
 {
 	ht_data_uint o(offset);
 	mod_pages->del(&o);
 }
 
-ht_mod_page *ht_streamfile_modifier::mod_page_find(FileOfs offset)
+ht_mod_page *ht_streamfile_modifier::mod_page_find(FILEOFS offset)
 {
 	ht_data_uint o(offset & page_mask);
 	return (ht_mod_page*)mod_pages->get(&o);
 }
 
-void ht_streamfile_modifier::mod_page_flush(FileOfs offset)
+void ht_streamfile_modifier::mod_page_flush(FILEOFS offset)
 {
 	ht_mod_page *m = mod_page_find(offset);
-	uint s = m->size;
+	UINT s = m->size;
 	if (offset+s > size) s = size-offset;
 	ht_layer_streamfile::seek(offset);
 	ht_layer_streamfile::write(m->data, s);
 }
 
-int ht_streamfile_modifier::extend(uint newsize)
+int ht_streamfile_modifier::extend(UINT newsize)
 {
 	// must be opened writable to extend
 	if (!active) return EIO;
-	uint osize = size;
+	UINT osize = size;
 
 	if (size != newsize) modified = true;
 	size = newsize;
-	for (FileOfs o = osize & page_mask; o < size; o += page_granularity) {
+	for (FILEOFS o = osize & page_mask; o < size; o += page_granularity) {
 		if (!mod_page_find(o)) mod_page_create(o);
 	}
 /**/
@@ -238,18 +238,18 @@ int ht_streamfile_modifier::extend(uint newsize)
 //	return ht_layer_streamfile::extend(newsize);
 }
 
-uint ht_streamfile_modifier::get_size()
+UINT ht_streamfile_modifier::get_size()
 {
 	if (!active) return ht_layer_streamfile::get_size();
 	return size;
 }
 
-uint ht_streamfile_modifier::read(void *buf, uint s)
+UINT ht_streamfile_modifier::read(void *buf, UINT s)
 {
 	if (!active) return ht_layer_streamfile::read(buf, s);
-	uint c = 0;
+	UINT c = 0;
 	byte *b = (byte*)buf;
-	FileOfs o = tell();
+	FILEOFS o = tell();
 #if 0
 	while (s--) {
 		if (o+c >= size) break;
@@ -264,12 +264,12 @@ uint ht_streamfile_modifier::read(void *buf, uint s)
 		ht_mod_page *m;
 		while (s) {
 			m = mod_page_find(o);
-			uint lc = page_granularity - (o & (~page_mask));
+			UINT lc = page_granularity - (o & (~page_mask));
 			if (lc > s) lc = s;
 			if (o + lc > size) lc = size - o;
 			if (!lc) break;
 
-			uint k;
+			UINT k;
 			if (m) {
 				k = m->read(o & (~page_mask), b, lc);
 			} else {
@@ -297,7 +297,7 @@ uint ht_streamfile_modifier::read(void *buf, uint s)
 	return c;
 }
 
-bool ht_streamfile_modifier::readbyte(FileOfs offset, byte *b)
+bool ht_streamfile_modifier::readbyte(FILEOFS offset, byte *b)
 {
 	ht_mod_page *m = mod_page_find(offset);
 	if (m) {
@@ -307,7 +307,7 @@ bool ht_streamfile_modifier::readbyte(FileOfs offset, byte *b)
 	return (ht_layer_streamfile::read(b, 1)==1);
 }
 
-int ht_streamfile_modifier::seek(FileOfs o)
+int ht_streamfile_modifier::seek(FILEOFS o)
 {
 	if (!active) return ht_layer_streamfile::seek(o);
 	offset = o;
@@ -315,7 +315,7 @@ int ht_streamfile_modifier::seek(FileOfs o)
 	return 0;
 }
 
-bool	ht_streamfile_modifier::set_access_mode(uint access_mode)
+bool	ht_streamfile_modifier::set_access_mode(UINT access_mode)
 {
 	bool b=ht_layer_streamfile::set_access_mode(access_mode);
 	if (get_access_mode() & FAM_WRITE) {
@@ -327,17 +327,17 @@ bool	ht_streamfile_modifier::set_access_mode(uint access_mode)
 	return b;
 }
 
-FileOfs ht_streamfile_modifier::tell()
+FILEOFS ht_streamfile_modifier::tell()
 {
 	if (!active) return ht_layer_streamfile::tell();
 	return offset;
 }
 
-int ht_streamfile_modifier::truncate(uint newsize)
+int ht_streamfile_modifier::truncate(UINT newsize)
 {
 	// must be opened writable to truncate
 	if (!active) return EIO;
-	for (FileOfs o = (newsize+page_granularity-1) & page_mask; o < size;
+	for (FILEOFS o = (newsize+page_granularity-1) & page_mask; o < size;
 	o += page_granularity) {
 		mod_page_destroy(o);
 	}
@@ -347,7 +347,7 @@ int ht_streamfile_modifier::truncate(uint newsize)
 	return 0;
 }
 
-int ht_streamfile_modifier::vcntl(uint cmd, va_list vargs)
+int ht_streamfile_modifier::vcntl(UINT cmd, va_list vargs)
 {
 	if (active) switch (cmd) {
 		case FCNTL_MODS_INVD:
@@ -357,9 +357,9 @@ int ht_streamfile_modifier::vcntl(uint cmd, va_list vargs)
 			mod_pages_flush();
 			return 0;
 		case FCNTL_MODS_CLEAR_DIRTY_RANGE: {
-			FileOfs o=va_arg(vargs, FILEOFS);
-			uint s=va_arg(vargs, UINT);
-			uint i=0;
+			FILEOFS o=va_arg(vargs, FILEOFS);
+			UINT s=va_arg(vargs, UINT);
+			UINT i=0;
 			while (s--) {
 				cleardirtybyte(o+i);
 				i++;
@@ -367,8 +367,8 @@ int ht_streamfile_modifier::vcntl(uint cmd, va_list vargs)
 			return 0;
 		}
 		case FCNTL_MODS_IS_DIRTY: {
-			FileOfs o=va_arg(vargs, FILEOFS);
-			uint s=va_arg(vargs, UINT);
+			FILEOFS o=va_arg(vargs, FILEOFS);
+			UINT s=va_arg(vargs, UINT);
 			bool *b=va_arg(vargs, bool*);
 			if ((o==0) && (s==size)) {
 				*b = modified;
@@ -381,12 +381,12 @@ int ht_streamfile_modifier::vcntl(uint cmd, va_list vargs)
 	return ht_layer_streamfile::vcntl(cmd, vargs);
 }
 
-uint ht_streamfile_modifier::write(const void *buf, uint s)
+UINT ht_streamfile_modifier::write(const void *buf, UINT s)
 {
 	if (!active) return ht_layer_streamfile::write(buf, s);
-	FileOfs o = tell();
+	FILEOFS o = tell();
 	byte *b = (byte*)buf;
-	uint c = 0;
+	UINT c = 0;
 
 #if 0
 	while (s--) {
@@ -403,10 +403,10 @@ uint ht_streamfile_modifier::write(const void *buf, uint s)
 		while (s) {
 			m = mod_page_find(o);
 			if (!m) m = mod_page_create(o);
-			uint lc = page_granularity - (o & (~page_mask));
+			UINT lc = page_granularity - (o & (~page_mask));
 			if (lc > s) lc = s;
 
-			uint k;
+			UINT k;
 			// FIXME: not the right thing
 			modified = true;
 			k = m->write(o & (~page_mask), b, lc);
@@ -431,7 +431,7 @@ uint ht_streamfile_modifier::write(const void *buf, uint s)
 	return c;
 }
 
-bool ht_streamfile_modifier::writebyte(FileOfs offset, byte b)
+bool ht_streamfile_modifier::writebyte(FILEOFS offset, byte b)
 {
 	ht_mod_page *m = mod_page_find(offset);
 	if (!m) m = mod_page_create(offset);
