@@ -20,4 +20,4 @@ README: ht.texi
 	cp README ..
 
 clean:
-	rm README hthelp.info
+	rm -f README hthelp.info
