@@ -42,17 +42,18 @@ class Analyser;
 #define ADDRESS_STRING_FORMAT_ADD_0X		    8
 #define ADDRESS_STRING_FORMAT_ADD_H		   16
 
-#define DUP_ADDR(a) ((Address*)(a)->duplicate())
+#define DUP_ADDR(a) ((a)->duplicate())
 class Address: public ht_data {
 public:
 	virtual	bool		add(int offset) = 0;
 	virtual	int		byteSize() = 0;
 	virtual	int		compareTo(const Object *obj) const = 0;
 	virtual	int		compareDelinear(Address *to);
-	virtual	bool 	difference(int &result, Address *to) = 0;
-	virtual	void 	getFromArray(const byte *array) = 0;
-	virtual	void 	getFromCPUAddress(CPU_ADDR *ca) = 0;
-	virtual	bool 	isValid();
+	virtual	bool 		difference(int &result, Address *to) = 0;
+	virtual	Address *	duplicate() = 0;
+	virtual	void 		getFromArray(const byte *array) = 0;
+	virtual	void 		getFromCPUAddress(CPU_ADDR *ca) = 0;
+	virtual	bool 		isValid();
 	virtual	int		parseString(const char *s, int length, Analyser *a) = 0;
 	virtual	void		putIntoArray(byte *array) = 0;
 	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) = 0;
@@ -63,19 +64,19 @@ public:
 
 class InvalidAddress: public Address {
 public:
-					InvalidAddress();
+				InvalidAddress() {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	bool		difference(int &result, Address *to);
-	virtual	Object *	duplicate();
-	virtual	void 	getFromArray(const byte *array);
+	virtual	InvalidAddress *duplicate();
+	virtual	void 		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
 	virtual	bool		isValid();
-	virtual	OBJECT_ID object_id() const;
+	virtual	OBJECT_ID 	object_id() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
-	virtual	void 	putIntoArray(byte *array);
-	virtual	void 	putIntoCPUAddress(CPU_ADDR *ca);
+	virtual	void 		putIntoArray(byte *array);
+	virtual	void 		putIntoCPUAddress(CPU_ADDR *ca);
 	virtual	int		stringify(char *s, int max_length, int format);
 	virtual	int		stringSize();
 };
@@ -86,8 +87,7 @@ public:
 class AddressFlat32: public Address {
 public:
 	dword addr;
-					AddressFlat32();
-					AddressFlat32(dword a);
+				AddressFlat32(dword a = 0) : addr(a) {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
 	virtual	int		compareTo(const Object *obj) const;
@@ -95,7 +95,7 @@ public:
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
 	virtual	bool		difference(int &result, Address *to);
-	virtual	Object *	duplicate();
+	virtual	AddressFlat32 *	duplicate();
 	virtual	int		load(ht_object_stream *s);
 	virtual	OBJECT_ID	object_id() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
@@ -109,8 +109,8 @@ public:
 class AddressFlat64: public Address {
 public:
 	qword addr;
-					AddressFlat64();
-					AddressFlat64(qword a);
+				AddressFlat64() {}
+				AddressFlat64(qword a) : addr(a) {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
 	virtual	int		compareTo(const Object *obj) const;
@@ -118,7 +118,7 @@ public:
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
 	virtual	bool		difference(int &result, Address *to);
-	virtual	Object *	duplicate();
+	virtual	AddressFlat64 *	duplicate();
 	virtual	int		load(ht_object_stream *s);
 	virtual	OBJECT_ID	object_id() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
@@ -138,9 +138,9 @@ class Segment: public ht_data {
 	char *name;
 	int caps;
 	
-						Segment(const char *n, Address *s, Address *e, int c, int address_size);
+					Segment(const char *n, Address *s, Address *e, int c, int address_size);
 	virtual	bool			containsAddress(Address *addr) = 0;
-	virtual	const char *	getName();
+	virtual	const char *		getName();
 	virtual	int			getAddressSize();
 	virtual	int			getCapability(int cap);
 };

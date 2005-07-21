@@ -49,11 +49,6 @@ int qsort_compare_keys_tree_node(const void *e1, const void *e2)
  *	CLASS ht_data_uint
  */
 
-ht_data_uint::ht_data_uint(uint v)
-{
-	value=v;
-}
-
 int ht_data_uint::load(ht_object_stream *s)
 {
 	value=s->getIntHex(4, NULL);
@@ -74,11 +69,6 @@ OBJECT_ID ht_data_uint::object_id() const
  *	ht_data_uint32
  */
 
-ht_data_uint32::ht_data_uint32(uint32 v)
-{
-	value = v;
-}
-
 int ht_data_uint32::load(ht_object_stream *s)
 {
 	value = s->getIntHex(4, NULL);
@@ -93,15 +83,6 @@ void ht_data_uint32::store(ht_object_stream *s)
 OBJECT_ID ht_data_uint32::object_id() const
 {
 	return ATOM_HT_DATA_UINT32;
-}
-
-/*
- *	CLASS ht_data_ptr
- */
-
-ht_data_ptr::ht_data_ptr(const void *v)
-{
-	value=v;
 }
 
 /*

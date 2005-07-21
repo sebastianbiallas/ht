@@ -26,15 +26,6 @@
 #include "snprintf.h"
 #include "x86dis.h"
 
-AddressX86Flat32::AddressX86Flat32()
-{
-}
-
-AddressX86Flat32::AddressX86Flat32(dword Addr)
-{
-	addr = Addr;
-}
-
 bool AddressX86Flat32::add(int offset)
 {
 	// check for overflow
@@ -83,7 +74,7 @@ bool AddressX86Flat32::difference(int &result, Address *to)
 	}
 }
 
-Object *AddressX86Flat32::duplicate()
+AddressX86Flat32 *AddressX86Flat32::duplicate()
 {
 	return new AddressX86Flat32(addr);
 }
@@ -150,16 +141,6 @@ int AddressX86Flat32::stringSize()
 }
 
 
-AddressX86_1632::AddressX86_1632()
-{
-}
-
-AddressX86_1632::AddressX86_1632(word Seg, dword Addr)
-{
-	seg = Seg;
-	addr = Addr;
-}
-
 bool AddressX86_1632::add(int offset)
 {
 	// check for overflow
@@ -211,7 +192,7 @@ bool AddressX86_1632::difference(int &result, Address *to)
 	}
 }
 
-Object *AddressX86_1632::duplicate()
+AddressX86_1632 *AddressX86_1632::duplicate()
 {
 	return new AddressX86_1632(seg, addr);
 }
@@ -288,16 +269,6 @@ int AddressX86_1632::stringSize()
 /*
  *
  */
-AddressX86_1616::AddressX86_1616()
-{
-}
-
-AddressX86_1616::AddressX86_1616(word Seg, word Addr)
-{
-	seg = Seg;
-	addr = Addr;
-}
-
 bool AddressX86_1616::add(int offset)
 {
 	// check for overflow
@@ -349,7 +320,7 @@ bool AddressX86_1616::difference(int &result, Address *to)
 	}
 }
 
-Object *AddressX86_1616::duplicate()
+AddressX86_1616 *AddressX86_1616::duplicate()
 {
 	return new AddressX86_1616(seg, addr);
 }

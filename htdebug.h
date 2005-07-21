@@ -26,7 +26,7 @@
 #include "global.h"
 
 /****************************************************************************/
-#define HTDEBUG
+//#define HTDEBUG
 /****************************************************************************/
 
 void ht_assert_failed(char *file, int line, char *assertion);

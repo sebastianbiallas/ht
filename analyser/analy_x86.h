@@ -26,14 +26,14 @@
 class AddressX86Flat32: public Address {
 public:
 	dword addr;
-	AddressX86Flat32();
-	AddressX86Flat32(dword addr);
+	AddressX86Flat32() {};
+	AddressX86Flat32(dword a) : addr(a) {};
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
+	virtual AddressX86Flat32 *duplicate();
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
 	virtual int load(ht_object_stream *s);
@@ -51,14 +51,14 @@ public:
 	word seg;
 	word addr;
 public:
-	AddressX86_1616();
-	AddressX86_1616(word seg, word addr);
+	AddressX86_1616() {};
+	AddressX86_1616(word s, word a) : seg(s), addr(a) {};
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
+	virtual AddressX86_1616 *duplicate();
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
 	virtual int load(ht_object_stream *s);
@@ -76,14 +76,14 @@ public:
 	word seg;
 	dword addr;
 public:
-	AddressX86_1632();
-	AddressX86_1632(word seg, dword addr);
+	AddressX86_1632() {};
+	AddressX86_1632(word s, dword a) : seg(s), addr(a) {};
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *obj);
 	virtual bool difference(int &result, Address *to);
-	virtual Object *duplicate();
+	virtual AddressX86_1632 *duplicate();
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
 	virtual int load(ht_object_stream *s);

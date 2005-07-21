@@ -97,7 +97,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
 	UINT symnum = elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32);
-	for (UINT i=0; i<symnum; i++) {
+	for (UINT i=0; i < symnum; i++) {
 		ELF_SYMBOL32 sym;
 		file->seek(h+i*sizeof (ELF_SYMBOL32));
 		file->read(&sym, sizeof sym);
@@ -133,13 +133,13 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 		*tt = 0;
 		switch (sym.st_shndx) {
 			case ELF_SHN_UNDEF:
-				tt += ht_snprintf(tt, sizeof t - (tt-t), "*undefined  ");
+				tt += ht_strncpy(tt, sizeof t - (tt-t), "*undefined  ");
 				break;
 			case ELF_SHN_ABS:
-				tt += ht_snprintf(tt, sizeof t - (tt-t), "*absolute   ");
+				tt += ht_strncpy(tt, sizeof t - (tt-t), "*absolute   ");
 				break;
 			case ELF_SHN_COMMON:
-				tt += ht_snprintf(tt, sizeof t - (tt-t), "*common     ");
+				tt += ht_strncpy(tt, sizeof t - (tt-t), "*common     ");
 				break;
 			default: {
 				char *s;
@@ -155,7 +155,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 				break;
 			}
 		}
-		tt += ht_snprintf(tt, sizeof t - (tt-t), "%s", name);
+		tt += ht_strncpy(tt, sizeof t - (tt-t), name);
 		free(name);
 		m->add_mask(t);
 	}

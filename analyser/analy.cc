@@ -57,10 +57,6 @@ int Address::toString(char *s, int maxlen)
 	return stringify(s, maxlen, global_analyser_address_string_format);
 }
 
-InvalidAddress::InvalidAddress()
-{
-}
-
 bool InvalidAddress::add(int offset)
 {
 	return false;
@@ -85,7 +81,7 @@ bool InvalidAddress::difference(int &result, Address *to)
 	return false;
 }
 
-Object *InvalidAddress::duplicate()
+InvalidAddress *InvalidAddress::duplicate()
 {
 	return new InvalidAddress();
 }
@@ -130,14 +126,6 @@ int InvalidAddress::stringSize()
 /*
  *
  */
-AddressFlat32::AddressFlat32()
-{
-}
-
-AddressFlat32::AddressFlat32(dword a)
-{
-	addr = a;
-}
 
 bool AddressFlat32::add(int offset)
 {
@@ -184,7 +172,7 @@ bool AddressFlat32::difference(int &result, Address *to)
 	}
 }
 
-Object *AddressFlat32::duplicate()
+AddressFlat32 *AddressFlat32::duplicate()
 {
 	return new AddressFlat32(addr);
 }
@@ -253,15 +241,6 @@ int AddressFlat32::stringSize()
 /*
  *
  */
-AddressFlat64::AddressFlat64()
-{
-}
-
-AddressFlat64::AddressFlat64(qword a)
-{
-	addr = a;
-}
-
 bool AddressFlat64::add(int offset)
 {
 	// check for overflow
@@ -315,7 +294,7 @@ bool AddressFlat64::difference(int &result, Address *to)
 	return false;
 }
 
-Object *AddressFlat64::duplicate()
+AddressFlat64 *AddressFlat64::duplicate()
 {
 	return new AddressFlat64(addr);
 }

@@ -46,7 +46,7 @@ class ht_data_uint: public ht_data {
 public:
 	uint value;
 
-	ht_data_uint(uint v = 0);
+	ht_data_uint(uint v = 0) : value(v) {};
 	/* overwritten */
 	virtual	int load(ht_object_stream *s);
 	virtual	void store(ht_object_stream *s);
@@ -60,7 +60,7 @@ class ht_data_uint32: public ht_data {
 public:
 	uint32 value;
 
-		ht_data_uint32(uint32 v = 0);
+		ht_data_uint32(uint32 v = 0) : value(v) {};
 	/* overwritten */
 	virtual	int load(ht_object_stream *s);
 	virtual	void store(ht_object_stream *s);
@@ -74,7 +74,7 @@ class ht_data_ptr: public ht_data {
 public:
 	const void *value;
 
-	ht_data_ptr(const void *v=0);
+	ht_data_ptr(const void *v=0): value(v) {};
 };
 
 /*

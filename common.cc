@@ -24,38 +24,33 @@
 #include "common.h"
 #include "snprintf.h"
 
+#ifdef HTDEBUG
 Object::Object()
 {
-#ifdef HTDEBUG
 	initialized = false;
 	destroyed = false;
-#endif
 }
 
 Object::~Object()
 {
-#ifdef HTDEBUG
 	if (initialized && !destroyed) {
 		printf("shit !!! object not destroyed\n");
 		exit(66);
 //		int exit=1;
 	}
-#endif
+
 }
 
 void	Object::init()
 {
-#ifdef HTDEBUG
 	initialized = true;
-#endif
 }
 
 void Object::done()
 {
-#ifdef HTDEBUG
 	destroyed = true;
-#endif
 }
+#endif
 
 /**
  *	Standard Object comparator.
@@ -97,33 +92,12 @@ bool Object::instanceOf(OBJECT_ID id)
 	return id == object_id();
 }
 
-bool Object::instanceOf(Object *o)
-{
-	return instanceOf(o->object_id());
-}
-
-/**
- *	loads object from object stream.
- *	@returns ht_stream errorcode
- */
-int Object::load(ht_object_stream *s)
-{
-	return 0;
-}
-
 /**
  *	@returns unique object id.
  */
 OBJECT_ID Object::object_id() const
 {
 	return ATOM_OBJECT;
-}
-
-/**
- *	stores object.
- */
-void Object::store(ht_object_stream *s)
-{
 }
 
 /**

@@ -74,14 +74,12 @@ char *ht_strndup(const char *str, int maxlen)
  *	is always written if maxlen is > 0.
  *	@returns number of characters copied (without trailing zero)
  */
-int ht_strncpy(char *s1, const char *s2, int maxlen)
+int ht_strncpy(char *s1, int maxlen, const char *s2)
 {
 	if (maxlen <= 0) return 0;
 	char *os1 = s1;
-	while (maxlen && *s2) {
-		*s1 = *s2;
-		maxlen--;
-		s1++;
+	while (maxlen-- && *s2) {
+		*s1++ = *s2++;
 	}
 	s1[-1] = 0;
 	return s1-os1-1;

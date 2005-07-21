@@ -110,7 +110,7 @@ void ElfAnalyser::beginAnalysis()
 			if (validAddress(secaddr, scinitialized)) {
 				ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_size);
 			} else {
-				ht_snprintf(blub, sizeof blub, ";  section is not in file");
+				ht_strncpy(blub, sizeof blub, ";  section is not in file");
 			}
 			addComment(secaddr, 0, blub);
 			addComment(secaddr, 0, ";******************************************************************");

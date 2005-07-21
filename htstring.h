@@ -27,7 +27,7 @@
 
 char *ht_strdup(const char *str);
 char *ht_strndup(const char *str, int maxlen);
-int ht_strncpy(char *s1, const char *s2, int maxlen);
+int ht_strncpy(char *s1, int maxlen, const char *s2);
 int ht_strncmp(const char *s1, const char *s2, size_t max);
 int ht_strnicmp(const char *s1, const char *s2, size_t max);
 int ht_stricmp(const char *s1, const char *s2);
