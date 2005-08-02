@@ -151,7 +151,7 @@ void MachoAnalyser::beginAnalysis()
 				MACHO_SYMTAB_NLIST nlist;
 				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
 				create_host_struct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
-				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE == MACHO_SYMBOL_TYPE_N_SECT)) {
+				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
 					char macho_buffer[1024];
 					file->seek(s->stroff+nlist.strx);
 					char *label = fgetstrz(file);
@@ -469,9 +469,9 @@ bool MachoAnalyser::validAddress(Address *Addr, tsectype action)
 					return writable;
 				}
 				case sccode:
-					return ((s->flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR);
+					return s->flags & MACHO_S_ATTR_SOME_INSTRUCTIONS;
 				case scinitialized:
-					return ((s->flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL);
+					return (s->flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL;
 			}
 			return false;
 /*		}
