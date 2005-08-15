@@ -2,7 +2,13 @@
 ==============
 
 version 0.9-trunk:
-	- updated cp-demangle.c
+	- updated ELF program header types
+	- small bug fixes
+
+version 0.9.1:
+	- updated cp-demangle.c from gcc: 
+	  This fixes two bugs in the symbol name demangler which could
+	  crash HT.
 
 version 0.9.0:
 	- analyser: support for int, half and byte data-types.

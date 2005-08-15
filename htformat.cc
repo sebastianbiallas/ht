@@ -2896,7 +2896,7 @@ void ht_uformat_viewer::render_tagstring_desc(char **string, int *length, vcp *t
 			q.hi = 0;
 			q.lo = 0;
 			FILEOFS tag_offset=tag_get_offset(tag);
-			byte buf[4];
+			byte buf[8];
 			
 			if (pread(tag_offset, buf, size)==size) {
 				switch (size) {
@@ -3548,7 +3548,7 @@ int ht_uformat_viewer::ref_flags(ID id, FILEOFS offset)
 
 		if (d->run(false)==button_ok) u->edit_update();
 
-		if (pmode != file->get_access_mode() & FAM_WRITE) {
+		if (pmode != (file->get_access_mode() & FAM_WRITE)) {
 			if (pmode) {
 				baseview->sendmsg(cmd_view_mode_i, file, NULL);
 			} else {

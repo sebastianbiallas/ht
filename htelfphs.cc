@@ -61,6 +61,12 @@ static int_hash elf_ph_type[] =
 	{ELF_PT_NOTE,		"note"},
 	{ELF_PT_SHLIB,		"shlib"},
 	{ELF_PT_PHDR,		"phdr"},
+	{ELF_PT_TLS,		"tls"},
+	{ELF_PT_NUM,		"num"},
+	{ELF_PT_GNU_EH_FRAME,	"gnu eh frame"},
+	{ELF_PT_GNU_STACK,	"gnu stack"},
+	{ELF_PT_GNU_RELRO,	"gnu relro"},
+	{ELF_PT_PAX_FLAGS,	"pax flags"},
 	{0, 0}
 };
 
@@ -102,7 +108,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 			n->init(file, i);
 		
 			char t[32];
-			char *etype=matchhash(elf_shared->pheaders.pheaders32[i].p_type, elf_ph_type);
+			char *etype = matchhash(elf_shared->pheaders.pheaders32[i].p_type, elf_ph_type);
 			if (!etype) etype="?";
 			ht_snprintf(t, sizeof t, "entry %d (%s)", i, etype);
 		
@@ -120,7 +126,7 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		register_atom(ATOM_ELF_PH_TYPE, elf_ph_type);
 		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 
-/* FIXME: 64-bit */
+		/* FIXME: 64-bit */
 		FILEOFS h=elf_shared->header64.e_phoff.lo;
 	
 		ht_mask_sub *m=new ht_mask_sub();
