@@ -372,8 +372,8 @@ public:
 			void		init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
 	virtual   int		calcCount();
-	virtual	int		compare_strn(char *s1, char *s2, int l);
-	virtual	int		compare_ccomm(char *s1, char *s2);
+	virtual	int		compare_strn(const char *s1, const char *s2, size_t l);
+	virtual	int		compare_ccomm(const char *s1, const char *s2);
 	virtual   int		cursorAdjust();
 			void *	getEntryByID(UINT id);
 	virtual   void *	getFirst();
@@ -402,8 +402,8 @@ class ht_itext_listbox: public ht_text_listbox {
 public:
 			void	init(bounds *b, int Cols=1, int Keycol=0);
 	virtual	void	done();
-	virtual	int	compare_strn(char *s1, char *s2, int l);
-	virtual	int	compare_ccomm(char *s1, char *s2);
+	virtual	int	compare_strn(const char *s1, const char *s2, size_t l);
+	virtual	int	compare_ccomm(const char *s1, const char *s2);
 };
 
 /*

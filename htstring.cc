@@ -53,7 +53,7 @@ char *ht_strdup(const char *str)
  *	Like ht_strdup but dups a maximum of |maxlen| characters of |str|.
  *	@returns new string
  */
-char *ht_strndup(const char *str, int maxlen)
+char *ht_strndup(const char *str, size_t maxlen)
 {
 	maxlen ++;
 	if (str) {
@@ -74,7 +74,7 @@ char *ht_strndup(const char *str, int maxlen)
  *	is always written if maxlen is > 0.
  *	@returns number of characters copied (without trailing zero)
  */
-int ht_strncpy(char *s1, int maxlen, const char *s2)
+int ht_strncpy(char *s1, const char *s2, size_t maxlen)
 {
 	if (maxlen <= 0) return 0;
 	char *os1 = s1;
@@ -139,19 +139,19 @@ int ht_stricmp(const char *s1, const char *s2)
 	return 0;
 }
 
-int strccomm(const char *s1, const char *s2)
+int ht_strccomm(const char *s1, const char *s2)
 {
 	if (!s1 || !s2) return 0;
 	int r=0;
-	while (*s1 && *s2 && (*s1==*s2)) { s1++; s2++; r++; }
+	while (*s1 && *s2 && *s1 == *s2) { s1++; s2++; r++; }
 	return r;
 }
 
-int strcicomm(const char *s1, const char *s2)
+int ht_strcicomm(const char *s1, const char *s2)
 {
 	if (!s1 || !s2) return 0;
 	int r=0;
-	while (*s1 && *s2 && (tolower(*s1)==tolower(*s2))) { s1++; s2++; r++; }
+	while (*s1 && *s2 && tolower(*s1) == tolower(*s2)) { s1++; s2++; r++; }
 	return r;
 }
 

@@ -133,13 +133,13 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 		*tt = 0;
 		switch (sym.st_shndx) {
 			case ELF_SHN_UNDEF:
-				tt += ht_strncpy(tt, sizeof t - (tt-t), "*undefined  ");
+				tt += ht_strncpy(tt, "*undefined  ", sizeof t - (tt-t));
 				break;
 			case ELF_SHN_ABS:
-				tt += ht_strncpy(tt, sizeof t - (tt-t), "*absolute   ");
+				tt += ht_strncpy(tt, "*absolute   ", sizeof t - (tt-t));
 				break;
 			case ELF_SHN_COMMON:
-				tt += ht_strncpy(tt, sizeof t - (tt-t), "*common     ");
+				tt += ht_strncpy(tt, "*common     ", sizeof t - (tt-t));
 				break;
 			default: {
 				char *s;
@@ -155,7 +155,7 @@ static ht_view *htelfsymboltable_init(bounds *b, ht_streamfile *file, ht_format_
 				break;
 			}
 		}
-		tt += ht_strncpy(tt, sizeof t - (tt-t), name);
+		tt += ht_strncpy(tt, name, sizeof t - (tt-t));
 		free(name);
 		m->add_mask(t);
 	}

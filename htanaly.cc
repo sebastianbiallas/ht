@@ -241,7 +241,7 @@ char	*SymbolBox::quickfindCompletition(char *s)
 	strcpy(res, tmp->name);
 	while (tmp2 && (ht_strncmp(tmp2->name, s, slen)==0)) {
 //		fprintf(stdout, "while(%s, %s, %d)\n", tmp2->name, s, slen);
-		int a = strccomm(res, tmp2->name);
+		int a = ht_strccomm(res, tmp2->name);
 		res[a] = 0;
 		tmp2 = analy->enumSymbols(tmp2);
 	}

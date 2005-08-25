@@ -153,7 +153,7 @@ static int parse_pstring(eval_scalar *s, char *cstr, int len)
 	
 	s->type=SCALAR_STR;
 	s->scalar.str.value=(char*)malloc(alloclen);
-	memmove(s->scalar.str.value, cstr, len);
+	memcpy(s->scalar.str.value, cstr, len);
 	s->scalar.str.len=len;
 	return 1;
 }
@@ -192,7 +192,7 @@ void *lex_scan_string_buffer(const char *str)
 %%
 
 [ \t]+				/* nop */
-\"(\\\"|[^"])*\"			if (parse_cstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
+\"(\\\"|[^"])*\"		if (parse_cstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
 '[^']*'				if (parse_pstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
 lt				return EVAL_STR_LT;
 le				return EVAL_STR_LE;

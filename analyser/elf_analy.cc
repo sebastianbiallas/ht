@@ -110,7 +110,7 @@ void ElfAnalyser::beginAnalysis()
 			if (validAddress(secaddr, scinitialized)) {
 				ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s32->sh_offset, s32->sh_size);
 			} else {
-				ht_strncpy(blub, sizeof blub, ";  section is not in file");
+				ht_strncpy(blub, ";  section is not in file", sizeof blub);
 			}
 			addComment(secaddr, 0, blub);
 			addComment(secaddr, 0, ";******************************************************************");
@@ -557,8 +557,7 @@ const char *ElfAnalyser::getSegmentNameByAddress(Address *Addr)
 	if (i == elf_shared->fake_undefined_shidx) {
 		strcpy(elf_sectionname, "$$HT_FAKE$$");
 	} else {
-		strncpy(elf_sectionname, elf_shared->shnames[i], 32);
-		elf_sectionname[32] = 0;
+		ht_strncpy(elf_sectionname, elf_shared->shnames[i], 32);
 	}
 	return elf_sectionname;
 }

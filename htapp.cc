@@ -872,7 +872,7 @@ char	*ht_project_listbox::quickfindCompletition(char *s)
 			if (!res) {
 				res = ht_strdup(getStr(0, item));
 			} else {
-				int a = strccomm(res, getStr(0, item));
+				int a = ht_strccomm(res, getStr(0, item));
 				res[a] = 0;
 			}
 		}

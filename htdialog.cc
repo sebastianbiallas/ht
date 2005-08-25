@@ -520,7 +520,7 @@ char	*ht_history_listbox::quickfindCompletition(char *s)
 			if (!res) {
 				res = ht_strdup(getStr(0, item));
 			} else {
-				int a = strccomm(res, getStr(0, item));
+				int a = ht_strccomm(res, getStr(0, item));
 				res[a] = 0;
 			}
 		}
@@ -2024,14 +2024,14 @@ int	ht_text_listbox::calcCount()
 	return count;
 }
 
-int	ht_text_listbox::compare_strn(char *s1, char *s2, int l)
+int	ht_text_listbox::compare_strn(const char *s1, const char *s2, size_t l)
 {
 	return ht_strncmp(s1, s2, l);
 }
 
-int	ht_text_listbox::compare_ccomm(char *s1, char *s2)
+int	ht_text_listbox::compare_ccomm(const char *s1, const char *s2)
 {
-	return strccomm(s1, s2);
+	return ht_strccomm(s1, s2);
 }
 
 int  ht_text_listbox::cursorAdjust()
@@ -2305,14 +2305,14 @@ void	ht_itext_listbox::done()
 	ht_text_listbox::done();
 }
 
-int	ht_itext_listbox::compare_strn(char *s1, char *s2, int l)
+int	ht_itext_listbox::compare_strn(const char *s1, const char *s2, size_t l)
 {
 	return ht_strnicmp(s1, s2, l);
 }
 
-int	ht_itext_listbox::compare_ccomm(char *s1, char *s2)
+int	ht_itext_listbox::compare_ccomm(const char *s1, const char *s2)
 {
-	return strcicomm(s1, s2);
+	return ht_strcicomm(s1, s2);
 }
 
 /*

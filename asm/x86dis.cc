@@ -1275,7 +1275,7 @@ x86dis_vxd::~x86dis_vxd()
 {
 }
 
-dis_insn *x86dis_vxd::decode(byte *code, byte maxlen, CPU_ADDR addr)
+dis_insn *x86dis_vxd::decode(byte *code, int maxlen, CPU_ADDR addr)
 {
 	if ((maxlen >= 6) && (code[0] == 0xcd) && (code[1] == 0x20)) {
 		insn.name = "VxDCall";

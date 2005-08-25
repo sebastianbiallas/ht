@@ -123,7 +123,7 @@ public:
 				x86dis_vxd(int opsize, int addrsize);
 	virtual			~x86dis_vxd();
 
-	virtual dis_insn *	decode(byte *code, byte maxlen, CPU_ADDR addr);
+	virtual dis_insn *	decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual OBJECT_ID	object_id() const;
 };
 
