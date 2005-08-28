@@ -24,6 +24,7 @@
 #include "htio.h"
 #include "common.h"
 
+#if 0
 #define CHAR_LINEV (unsigned char)'\xb3'
 #define CHAR_LINEH (unsigned char)'\xc4'
 #define CHAR_LINEV_DBL (unsigned char)'\xba'
@@ -56,6 +57,38 @@
 #define CHAR_ARROWBIG_RIGHT '>'
 #define CHAR_ARROWBIG_LEFT '<'
 #define CHAR_RADIO	(unsigned char)'\x7'
+#endif
+
+#define CHAR_LINEV		0x2502
+#define CHAR_LINEH		0x2500
+#define CHAR_LINEV_DBL		0x2551
+#define CHAR_LINEH_DBL		0x2550
+#define CHAR_BORDERTL 		0x251c
+#define CHAR_BORDERTR		0x2524
+#define CHAR_BORDERTU		0x252c
+#define CHAR_BORDERTD		0x2534
+#define CHAR_CORNERUL		0x250c
+#define CHAR_CORNERLL		0x2514
+#define CHAR_CORNERUR		0x2510
+#define CHAR_CORNERLR		0x2518
+#define CHAR_CORNERUL_DBL	0x2554
+#define CHAR_CORNERLL_DBL	0x255a
+#define CHAR_CORNERUR_DBL	0x2557
+#define CHAR_CORNERLR_DBL	0x255c
+#define CHAR_FILLED_L		0x2591	/* FILLED, low density */
+#define CHAR_FILLED_M		0x2592	/* FILLED, medium density */
+#define CHAR_FILLED_H		0x2593  /* FILLED, high density */
+#define CHAR_FILLED_F		0x2588  /* FILLED, filled entirely */
+#define CHAR_FILLED_HU		0x2580 /* FILLED, upper half - filled entirely */
+#define CHAR_FILLED_HL		0x2584 /* FILLED, lower half - filled entirely */
+#define CHAR_QUAD_SMALL		0x25a0
+#define CHAR_ARROW_UP		0x2191
+#define CHAR_ARROW_DOWN		0x2193
+#define CHAR_ARROWBIG_UP	0x25b2
+#define CHAR_ARROWBIG_DOWN	0x25bc
+#define CHAR_ARROWBIG_RIGHT	0x25b6
+#define CHAR_ARROWBIG_LEFT	0x25c0
+#define CHAR_RADIO		0x25cf
 
 class screendrawbuf: public genericdrawbuf {
 protected:
@@ -82,7 +115,7 @@ public:
 	void showcursor();
 	void setcursor(int x, int y);
 	void setcursormode(bool override);
-	void put_vc(int dest, char ch, int vc);
+	void put_vc(int dest, int ch, int vc);
 };
 
 #endif /* !__HTCURSES_H__ */

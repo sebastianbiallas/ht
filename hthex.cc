@@ -149,7 +149,7 @@ void ht_hex_viewer::handlemsg(htmsg *msg)
 				int ll = strtoul(result, &p, 10);
 				if (ll>0 && ll<=32) {
 					h->set_line_length(ll);
-                    } else {
+				} else {
 					errorbox("Line length must be > 0 and <= 32!");
 				}
 			}

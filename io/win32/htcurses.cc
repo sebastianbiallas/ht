@@ -100,17 +100,18 @@ bool screendrawbuf::init_console()
 
 void screendrawbuf::drawbuffer(drawbuf *b, int x, int y, bounds *clipping)
 {
-	drawbufch *ch=b->buf;
-	for (int iy=0; iy<b->size.h; iy++) {
+	drawbufch *ch = b->buf;
+	for (int iy=0; iy < b->size.h; iy++) {
 		int dest = x+(iy+y)*size.w;
-		if (y+iy>=clipping->y+clipping->h) break;
-		if (y+iy>=clipping->y)
-		for (int ix=0; ix<b->size.w; ix++) {
-			if ((x+ix<clipping->x+clipping->w) && (x+ix>=clipping->x)) {
-				put_vc(dest, ch->ch, ch->c);
+		if (y+iy >= clipping->y+clipping->h) break;
+		if (y+iy >= clipping->y) {
+			for (int ix=0; ix  <b->size.w; ix++) {
+				if (x+ix < clipping->x+clipping->w && x+ix >= clipping->x) {
+					put_vc(dest, ch->ch, ch->c);
+				}
+				dest++;
+				ch++;
 			}
-			dest++;
-			ch++;
 		}
 	}
 }
@@ -119,11 +120,11 @@ void screendrawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
 {
 	for (int i=0; i<h; i++) {
 		int dest = x+(i+y)*size.w;
-		if (y+i>=size.h) break;
-		if (y+i>=0)
-		for (int j=0; j<w; j++) {
-			if (x+j>=0) put_vc(dest, ch, c);
-			if (x+j>=size.w-1) break;
+		if (y+i >= size.h) break;
+		if (y+i >= 0)
+		for (int j=0; j < w; j++) {
+			if (x+j >= 0) put_vc(dest, ch, c);
+			if (x+j >= size.w-1) break;
 			dest++;
 		}
 	}
@@ -139,8 +140,8 @@ int screendrawbuf::b_lprint(int x, int y, int c, int l, char *text)
 {
 	int n=0;
 	int dest = x+y*size.w;
-	while ((*text) && (n<l)) {
-		put_vc(dest, (unsigned char)*text, c);
+	while (*text && n < l) {
+		put_vc(dest, *text, c);
 		dest++;
 		text++;
 		n++;
@@ -152,8 +153,8 @@ int screendrawbuf::b_lprintw(int x, int y, int c, int l, int *text)
 {
 	int n=0;
 	int dest = x+y*size.w;
-	while ((*text) && (n<l)) {
-		put_vc(dest, (unsigned char)*text, c);
+	while (*text && n < l) {
+		put_vc(dest, *text, c);
 		dest++;
 		text++;
 		n++;
@@ -175,7 +176,7 @@ void screendrawbuf::b_setbounds(bounds *b)
 {
 	genericdrawbuf::b_setbounds(b);
 	if (buf) free(buf);
-	buf = (CHAR_INFO *)malloc(size.w * size.h * sizeof(CHAR_INFO));
+	buf = (CHAR_INFO *)malloc(size.w * size.h * sizeof (CHAR_INFO));
 	b_fill(size.x, size.y, size.w, size.h, VCP(VC_WHITE, VC_BLACK), ' ');
 }
 
@@ -183,8 +184,8 @@ void screendrawbuf::show()
 {
 	COORD xy, xy2;
 	if (cursor_redraw) {
-		xy.X=cursorx;
-		xy.Y=cursory;
+		xy.X = cursorx;
+		xy.Y = cursory;
 		SetConsoleCursorPosition(output, xy);
 		cursor_redraw = false;
 	}
@@ -197,7 +198,7 @@ void screendrawbuf::show()
 	sr.Top = 0;
 	sr.Right = size.w-1;
 	sr.Bottom = size.h-1;
-	WriteConsoleOutput(output, (CHAR_INFO *)buf, xy2, xy, &sr);
+	WriteConsoleOutputW(output, (CHAR_INFO *)buf, xy2, xy, &sr);
 }
 
 void screendrawbuf::getcursor(int *x, int *y)
@@ -247,23 +248,24 @@ void screendrawbuf::showcursor()
 
 /* virtual color pairs (fg/bg) */
 
-void screendrawbuf::put_vc(int dest, char ch, int vc)
+void screendrawbuf::put_vc(int dest, int ch, int vc)
 {
 	int fg, bg;
 	if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc))==VC_TRANSPARENT) {
-		bg=((byte)((CHAR_INFO *)buf)[dest].Attributes)>>4;
+		bg = ((byte)((CHAR_INFO *)buf)[dest].Attributes)>>4;
 	} else if (VC_GET_LIGHT(VCP_BACKGROUND(vc))) {
-		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc))+8;
+		bg = VC_GET_BASECOLOR(VCP_BACKGROUND(vc))+8;
 	} else {
-		bg=VC_GET_BASECOLOR(VCP_BACKGROUND(vc));
+		bg = VC_GET_BASECOLOR(VCP_BACKGROUND(vc));
 	}
 	if (VC_GET_BASECOLOR(VCP_FOREGROUND(vc))==VC_TRANSPARENT) {
-		fg=(byte)(((CHAR_INFO *)buf)[dest].Attributes&0xf);
+		fg = (byte)(((CHAR_INFO *)buf)[dest].Attributes&0xf);
 	} else if (VC_GET_LIGHT(VCP_FOREGROUND(vc))) {
-		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc))+8;
+		fg = VC_GET_BASECOLOR(VCP_FOREGROUND(vc)) + 8;
 	} else {
-		fg=VC_GET_BASECOLOR(VCP_FOREGROUND(vc));
+		fg = VC_GET_BASECOLOR(VCP_FOREGROUND(vc));
 	}
-	if (ch) ((CHAR_INFO *)buf)[dest].Char.AsciiChar = ch;
+	((CHAR_INFO *)buf)[dest].Char.UnicodeChar = ch ? ch : ' ';
+	//((CHAR_INFO *)buf)[dest].Char.UnicodeChar = 0x2550;
         ((CHAR_INFO *)buf)[dest].Attributes = (unsigned char)((bg<<4)|fg);
 }

@@ -416,12 +416,12 @@ void drawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
 {
 	x-=size.x;
 	y-=size.y;
-	for (int iy=y; iy<y+h; iy++) {
-		if (iy<size.h) {
+	for (int iy=y; iy < y+h; iy++) {
+		if (iy < size.h) {
 			drawbufch *b=buf+x+iy*size.w;
-			for (int ix=x; ix<x+w; ix++) {
-				b->ch=ch;
-				b->c=vcp_mix(b->c, c);
+			for (int ix=x; ix < x+w; ix++) {
+				b->ch = ch;
+				b->c = vcp_mix(b->c, c);
 				b++;
 			}
 		}
@@ -430,9 +430,9 @@ void drawbuf::b_fill(int x, int y, int w, int h, int c, int ch)
 
 void drawbuf::b_printchar(int x, int y, int c, int ch)
 {
-	drawbufch *b=buf+(x-size.x)+(y-size.y)*size.w;
-	b->ch=ch;
-	b->c=vcp_mix(b->c, c);
+	drawbufch *b = buf+(x-size.x)+(y-size.y)*size.w;
+	b->ch = ch;
+	b->c = vcp_mix(b->c, c);
 }
 
 int drawbuf::b_lprint(int x, int y, int c, int l, char *text)
@@ -441,10 +441,10 @@ int drawbuf::b_lprint(int x, int y, int c, int l, char *text)
 	x-=size.x;
 	y-=size.y;
 	drawbufch *b=buf+x+y*size.w;
-	if (y<size.h) {
-		while ((ox<size.w) && (*text) && (ox<l)) {
-			b->ch=(byte)*text;
-			b->c=vcp_mix(b->c, c);
+	if (y < size.h) {
+		while (ox < size.w && *text && ox < l) {
+			b->ch = (byte)*text;
+			b->c = vcp_mix(b->c, c);
 			text++;
 			ox++;
 			b++;
@@ -459,10 +459,10 @@ int drawbuf::b_lprintw(int x, int y, int c, int l, int *text)
 	x-=size.x;
 	y-=size.y;
 	drawbufch *b=buf+x+y*size.w;
-	if (y<size.h) {
-		while ((ox<size.w) && (*text) && (ox<l)) {
-			b->ch=(byte)*text;
-			b->c=vcp_mix(b->c, c);
+	if (y < size.h) {
+		while (ox < size.w && *text && ox < l) {
+			b->ch = *text;
+			b->c = vcp_mix(b->c, c);
 			text++;
 			ox++;
 			b++;

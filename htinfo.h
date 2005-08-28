@@ -27,7 +27,7 @@
 #define ht_version "0.9trunk"
 
 #define ht_author1 "Stefan Weyergraf"
-#define ht_copyright1 "(c) 1999-2005 "ht_author1
+#define ht_copyright1 "(c) 1999-2004 "ht_author1
 
 #define ht_author2 "Sebastian Biallas"
 #define ht_mail2 "sb@biallas.net"

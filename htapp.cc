@@ -2608,13 +2608,13 @@ void ht_app::handlemsg(htmsg *msg)
 				switch (mode) {
 					case FOM_TEXT: {
 						ht_syntax_lexer *lexer = NULL;
-			
+
 						ht_ltextfile *tfile = new ht_ltextfile();
 						tfile->init(mfile, true, lexer);
-			
+
 						ht_layer_textfile *file = new ht_layer_textfile();
 						file->init(tfile, true);
-				
+
 						create_window_file_text(&b, file, "Untitled", false/* because mem_file is underlying, not ht_file, etc.*/);
 						break;
 					}
