@@ -265,7 +265,11 @@ void screendrawbuf::put_vc(int dest, int ch, int vc)
 	} else {
 		fg = VC_GET_BASECOLOR(VCP_FOREGROUND(vc));
 	}
+	if (ch > 127 && ch < 256) {
+		WCHAR o;		
+		MultiByteToWideChar(CP_OEMCP, 0, (char*)&ch, 1, &o, 1);
+		ch = o;
+	}
 	((CHAR_INFO *)buf)[dest].Char.UnicodeChar = ch ? ch : ' ';
-	//((CHAR_INFO *)buf)[dest].Char.UnicodeChar = 0x2550;
         ((CHAR_INFO *)buf)[dest].Attributes = (unsigned char)((bg<<4)|fg);
 }
