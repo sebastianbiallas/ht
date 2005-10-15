@@ -4,6 +4,8 @@
 version 0.9-trunk:
 	- updated ELF program header types
 	- better Mach-O executable sections detection
+	- allow ':' key for changing comments in analyser
+	- [Win] use unicode output
 	- small bug fixes
 
 version 0.9.1:

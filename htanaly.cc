@@ -1155,6 +1155,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			}
 			break;
 		case '#':
+		case ':':
 			sendmsg(cmd_analyser_comments);
 			clearmsg(msg);
 			return;

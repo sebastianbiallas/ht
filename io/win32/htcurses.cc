@@ -251,15 +251,15 @@ void screendrawbuf::showcursor()
 void screendrawbuf::put_vc(int dest, int ch, int vc)
 {
 	int fg, bg;
-	if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc))==VC_TRANSPARENT) {
-		bg = ((byte)((CHAR_INFO *)buf)[dest].Attributes)>>4;
+	if (VC_GET_BASECOLOR(VCP_BACKGROUND(vc)) == VC_TRANSPARENT) {
+		bg = ((byte)((CHAR_INFO *)buf)[dest].Attributes) >> 4;
 	} else if (VC_GET_LIGHT(VCP_BACKGROUND(vc))) {
-		bg = VC_GET_BASECOLOR(VCP_BACKGROUND(vc))+8;
+		bg = VC_GET_BASECOLOR(VCP_BACKGROUND(vc)) + 8;
 	} else {
 		bg = VC_GET_BASECOLOR(VCP_BACKGROUND(vc));
 	}
-	if (VC_GET_BASECOLOR(VCP_FOREGROUND(vc))==VC_TRANSPARENT) {
-		fg = (byte)(((CHAR_INFO *)buf)[dest].Attributes&0xf);
+	if (VC_GET_BASECOLOR(VCP_FOREGROUND(vc)) == VC_TRANSPARENT) {
+		fg = (byte)(((CHAR_INFO *)buf)[dest].Attributes & 0xf);
 	} else if (VC_GET_LIGHT(VCP_FOREGROUND(vc))) {
 		fg = VC_GET_BASECOLOR(VCP_FOREGROUND(vc)) + 8;
 	} else {
@@ -271,5 +271,5 @@ void screendrawbuf::put_vc(int dest, int ch, int vc)
 		ch = o;
 	}
 	((CHAR_INFO *)buf)[dest].Char.UnicodeChar = ch ? ch : ' ';
-        ((CHAR_INFO *)buf)[dest].Attributes = (unsigned char)((bg<<4)|fg);
+        ((CHAR_INFO *)buf)[dest].Attributes = (unsigned char)((bg<<4) | fg);
 }

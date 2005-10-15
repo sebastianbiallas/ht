@@ -498,7 +498,6 @@ struct ht_mask_ptable {
 class ht_mask_sub: public ht_sub {
 protected:
 	ht_string_list *masks;
-	char temp[512];	/* FIXME: possible buffer overflow */
 	UINT uid;
 public:
 			void init(ht_streamfile *file, UINT uid);

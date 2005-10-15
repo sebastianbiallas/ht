@@ -196,16 +196,16 @@ Window key bindings
 Analyser key bindings
 
 @multitable @columnfractions .25 .75
-@item c                    
+@item c
 @tab continue code analysis at cursor
-@item f                    
+@item f
 @tab follow dword ptr at address
-@item n                    
+@item n
 @tab name current address 
 (empty string to delete)
-@item x                    
+@item x
 @tab show xrefs (search for xrefs)
-@item #                    
+@item #
 @tab edit comments
 @item s
 @tab define a string
@@ -215,12 +215,12 @@ Analyser key bindings
 @tab define a halfword (16bit)
 @item b
 @tab define a byte (8bit)
-@item Ctrl+A               
+@item Ctrl+A
 @tab call assembler
-@item Ctrl+F               
+@item Ctrl+F
 @tab goto start of current function@*
 (indicated in the 2nd line)
-@item Ctrl+L               
+@item Ctrl+L
 @tab goto previous label
 @item Ctrl+T               
 @tab show recursive function references
