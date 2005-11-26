@@ -76,7 +76,7 @@ screendrawbuf::~screendrawbuf()
 
 	setcursor(0, size.h-1);
 	show();
-	if (buf) free(buf);
+	free(buf);
 }
 
 bool screendrawbuf::init_console()
@@ -175,7 +175,7 @@ void screendrawbuf::b_rmove(int rx, int ry)
 void screendrawbuf::b_setbounds(bounds *b)
 {
 	genericdrawbuf::b_setbounds(b);
-	if (buf) free(buf);
+	free(buf);
 	buf = (CHAR_INFO *)malloc(size.w * size.h * sizeof (CHAR_INFO));
 	b_fill(size.x, size.y, size.w, size.h, VCP(VC_WHITE, VC_BLACK), ' ');
 }

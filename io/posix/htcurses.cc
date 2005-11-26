@@ -138,7 +138,7 @@ screendrawbuf::~screendrawbuf()
 {
 	endwin();
 	delwin(win);
-	if (buf) free(buf);
+	free(buf);
 }
 
 void screendrawbuf::b_fill(int x, int y, int w, int h, int c, int chr)

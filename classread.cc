@@ -351,8 +351,8 @@ void class_unread(ht_class_shared_data *shared)
 	if (!clazz) return;
 	for (UINT i=1; i<clazz->cpool_count; i++) {
 		tag = clazz->cpool[i]->tag;
-		free (clazz->cpool[i]);
-		if ((tag == CONSTANT_Long) || (tag == CONSTANT_Double)) {
+		free(clazz->cpool[i]);
+		if (tag == CONSTANT_Long || tag == CONSTANT_Double) {
 			i++;
 		}
 	}

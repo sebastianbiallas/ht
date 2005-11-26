@@ -1734,18 +1734,18 @@ void ht_aviewer::showComments(Address *Addr)
 	dialog->insert(b1);
 
 	if (dialog->run(false)==button_ok) {
-		Location *a=analy->getLocationByAddress(Addr);
+		Location *a = analy->getLocationByAddress(Addr);
 		if (a) analy->freeComments(a);
-		UINT c=text_file->linecount();
+		UINT c = text_file->linecount();
 		char buf[1024];
 		bool empty=false;
-		if (c==1) {
+		if (c == 1) {
 			UINT l = 0;
 			text_file->getline(0, 0, buf, 1024, &l, NULL);
-			empty=(l==0);
+			empty = (l==0);
 		}
 		if (!empty) {
-			for (UINT i=0; i<c; i++) {
+			for (UINT i=0; i < c; i++) {
 				UINT l;
 				if (text_file->getline(i, 0, buf, 1024, &l, NULL)) {
 					buf[l]=0;
@@ -1952,7 +1952,7 @@ restart:
 		dialog->getbounds(&b);
 		dialog->done();
 		delete dialog;
-		if ((r >= 666) && (r <= 668)) goto restart;
+		if (r >= 666 && r <= 668) goto restart;
 	} else {
 		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr)==button_yes) {
 			searchForXRefs(Addr);
@@ -2024,9 +2024,9 @@ int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
 {
 	if (!analy) return false;
-	Address *a=analy->createAddress();
+	Address *a = analy->createAddress();
 	// FIXME: this is just plain wrong!!
-	if (a->byteSize()==8) {
+	if (a->byteSize() == 8) {
 		a->getFromArray((byte*)&q);
 	} else {
 		dword ii = QWORD_GET_INT(q);
