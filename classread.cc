@@ -48,7 +48,7 @@ static u4 offset;
 #define READN(inb, n) cls_read (inb, n, 1, htio)
 #define SKIPN(n) {u1 b; for (u4 i=0; i<n; i++) {cls_read(&b, 1, 1, htio);}}
 
-ClassMethod::ClassMethod(char *n, char *d, ClassAddress s, UINT l, int f)
+ClassMethod::ClassMethod(const char *n, const char *d, ClassAddress s, UINT l, int f)
 {
 	name = ht_strdup(n);
 	start = s;
@@ -72,62 +72,62 @@ int ClassMethod::compareTo(const Object *obj) const
 
 
 /* extract name from a utf8 constant pool entry */
-static char *get_string(ht_stream *htio, classfile *clazz, UINT index)
+static const char *get_string(ht_stream *htio, classfile *clazz, UINT index)
 {
-	return (index < clazz->cpool_count) ? clazz->cpool[index]->value.string : (char*)"?";
+	return (index && index < clazz->cpool_count) ? clazz->cpool[index]->value.string : "?";
 }
 
 /* extract name from a utf8 constant pool class entry */
-static char *get_class_name(ht_stream *htio, classfile *clazz, UINT index)
+static const char *get_class_name(ht_stream *htio, classfile *clazz, UINT index)
 {
-	return (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]): (char*)"?";
+	return (index && index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]): "?";
 }
 
 /* extract name from a utf8 constant pool class entry */
 static void get_name_and_type(ht_stream *htio, classfile *clazz, UINT index, char *name, char *type)
 {
-	strcpy(name, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]) : "?");
-	strcpy(type, (index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[1]) : "?");
+	strcpy(name, (index && index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[0]) : "?");
+	strcpy(type, (index && index < clazz->cpool_count) ? get_string(htio, clazz, clazz->cpool[index]->value.llval[1]) : "?");
 }
 
 /* read and return constant pool entry */
-static cp_info *read_cpool_entry (ht_stream *htio, classfile *clazz)
+static cp_info *read_cpool_entry(ht_stream *htio, classfile *clazz)
 {
 	cp_info *cp;
 	u2 idx;
 
-	cp         = (cp_info *)malloc (sizeof (*cp));
+	cp         = (cp_info *)malloc(sizeof (*cp));
 	cp->offset = offset;
 	cp->tag    = READ1();
 	switch (cp->tag) {
-		case CONSTANT_Utf8:
-			idx = READ2();
-			cp->value.string = (char *)malloc (idx+1);
-			cls_read (cp->value.string, idx, 1, htio);
-			cp->value.string[idx] = 0;
-			break;
-		case CONSTANT_Integer:
-		case CONSTANT_Float:
-			cp->value.fval = READ4();
-			break;
-		case CONSTANT_Long:
-		case CONSTANT_Double:
-			cp->value.llval[0] = READ4();
-			cp->value.llval[1] = READ4();
-			break;
-		case CONSTANT_Class:
-		case CONSTANT_String:
-			cp->value.llval[0] = READ2();
-			break;
-		case CONSTANT_Fieldref:
-		case CONSTANT_Methodref:
-		case CONSTANT_InterfaceMethodref:
-		case CONSTANT_NameAndType:
-			cp->value.llval[0] = READ2();
-			cp->value.llval[1] = READ2();
-			break;
-		default:
-			return NULL;
+	case CONSTANT_Utf8:
+		idx = READ2();
+		cp->value.string = (char *)malloc(idx+1);
+		cls_read(cp->value.string, idx, 1, htio);
+		cp->value.string[idx] = 0;
+		break;
+	case CONSTANT_Integer:
+	case CONSTANT_Float:
+		cp->value.fval = READ4();
+		break;
+	case CONSTANT_Long:
+	case CONSTANT_Double:
+		cp->value.llval[0] = READ4();
+		cp->value.llval[1] = READ4();
+		break;
+	case CONSTANT_Class:
+	case CONSTANT_String:
+		cp->value.llval[0] = READ2();
+		break;
+	case CONSTANT_Fieldref:
+	case CONSTANT_Methodref:
+	case CONSTANT_InterfaceMethodref:
+	case CONSTANT_NameAndType:
+		cp->value.llval[0] = READ2();
+		cp->value.llval[1] = READ2();
+		break;
+	default:
+		return NULL;
 	}
 	return (cp);
 }
@@ -137,7 +137,7 @@ attrib_info *attribute_read(ht_stream *htio, classfile *clazz)
 {
 	attrib_info *a;
 	u4 len;
-	char *aname;
+	const char *aname;
 
 	a = (attrib_info *)malloc(sizeof (*a));
 	if (!a) {
@@ -393,48 +393,48 @@ void class_unread(ht_class_shared_data *shared)
 
 #define STRIP_PATH
 
-int java_demangle_type(char *result, char **type)
+int java_demangle_type(char *result, const char **type)
 {
 	switch (*((*type)++)) {
-		case '[': {
-			char temp[200];
-			java_demangle_type(temp, type);
-			return sprintf(result, "%s[]", temp);
-		}
-		case 'B':
-			return sprintf(result, "byte");
-		case 'C':
-			return sprintf(result, "char");
-		case 'D':
-			return sprintf(result, "double");
-		case 'F':
-			return sprintf(result, "float");
-		case 'I':
-			return sprintf(result, "int");
-		case 'J':
-			return sprintf(result, "long");
-		case 'L': {
-			char *oldresult = result;
-			while (**type != ';') {
-				*result = **type;
+	case '[': {
+		char temp[200];
+		java_demangle_type(temp, type);
+		return sprintf(result, "%s[]", temp);
+	}
+	case 'B':
+		return sprintf(result, "byte");
+	case 'C':
+		return sprintf(result, "char");
+	case 'D':
+		return sprintf(result, "double");
+	case 'F':
+		return sprintf(result, "float");
+	case 'I':
+		return sprintf(result, "int");
+	case 'J':
+		return sprintf(result, "long");
+	case 'L': {
+		char *oldresult = result;
+		while (**type != ';') {
+			*result = **type;
 #ifdef STRIP_PATH
-				if (*result == '/') result = oldresult; else
+			if (*result == '/') result = oldresult; else
 #endif
-				result++;
-				(*type)++;
-			}
+			result++;
 			(*type)++;
-			*result = 0;
-			return result-oldresult;
 		}
-		case 'S':
-			return sprintf(result, "short");
-		case 'V':
-			return sprintf(result, "void");
-		case 'Z':
-			return sprintf(result, "boolean");
-		default:
-			return sprintf(result, "%c", *(*type-1));
+		(*type)++;
+		*result = 0;
+		return result-oldresult;
+	}
+	case 'S':
+		return sprintf(result, "short");
+	case 'V':
+		return sprintf(result, "void");
+	case 'Z':
+		return sprintf(result, "boolean");
+	default:
+		return sprintf(result, "%c", *(*type-1));
 	}
 }
 
@@ -456,24 +456,24 @@ char *java_demangle_flags(char *result, int flags)
 	return result;
 }
 
-static char *java_strip_path(char *name)
+static const char *java_strip_path(const char *name)
 {
 #ifdef STRIP_PATH
-	char *nname = strrchr(name, '/');
+	const char *nname = strrchr(name, '/');
 	return nname?(nname+1):name;
 #else
 	return name;
 #endif
 }
 
-void java_demangle(char *result, char *classname, char *name, char *type, int flags)
+void java_demangle(char *result, const char *classname, const char *name, const char *type, int flags)
 {
 	result = java_demangle_flags(result, flags);
 	name = java_strip_path(name);
 	classname = java_strip_path(classname);
 	strcpy(result, name);
 	if (*type != '(') return;
-	char *ret = strchr(type, ')');
+	const char *ret = strchr(type, ')');
 	if (!ret) return;
 	ret++;
 	result += java_demangle_type(result, &ret);
@@ -540,7 +540,7 @@ int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *sh
 			strcpy(tag, "Field");
 			get_name_and_type(NULL, clazz, clazz->cpool[token]->value.llval[1], name, type);
 			char dtype[1024];
-			char *ttype=type;
+			const char *ttype=type;
 			java_demangle_type(dtype, &ttype);
 			ht_snprintf(data, sizeof data, "%s %s", dtype, name);
 			break;
@@ -558,7 +558,7 @@ int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *sh
 			java_demangle(data, classname, name, type, 0);
 			break;
 	}
-//     return ht_snprintf(buf, maxlen, "<%s %s>", tag, data);
+//	return ht_snprintf(buf, maxlen, "<%s %s>", tag, data);
 	return ht_snprintf(buf, maxlen, "<%s>", data);
 }
 

@@ -58,16 +58,16 @@ static const u1 CONSTANT_InterfaceMethodref = 11;
 static const u1 CONSTANT_NameAndType        = 12;
 
 typedef struct _cp_info {
-  u4 offset;
-  u1 tag;
-  union {
-    char   *string;
-    double dval;
-    float  fval;
-    long   lval;
-    int    ival;
-    long   llval[2];
-  } value;
+	u4 offset;
+	u1 tag;
+	union {
+		char   *string;
+		double dval;
+		float  fval;
+		long   lval;
+		int    ival;
+		long   llval[2];
+	} value;
 } cp_info;
 
 static const u2 ATTRIB_ConstantValue      =  1;
@@ -97,37 +97,37 @@ typedef struct _attrib_info {
 
 /* mf_info */
 typedef struct _mf_info {
-  u4 offset;
-  u2 flags;
-  char *name;
-  char *desc;
-  u2 attribs_count;
-  attrib_info **attribs;
+        u4 offset;
+        u2 flags;
+        const char *name;
+        const char *desc;
+        u2 attribs_count;
+	attrib_info **attribs;
 } mf_info;
 
 /* classfile */
 typedef struct _classfile {
-  u4 offset;
-  u4 magic;
-  u2 minor_version;
-  u2 major_version;
-  u2 cpool_count;
-  cp_info **cpool;
-  u4 coffset;
-  u2 access_flags;
-  u2 this_class;
-  u2 super_class;
-  u2 interfaces_count;
-  u2 *interfaces;
-  u4 foffset;
-  u2 fields_count;
-  mf_info **fields;
-  u4 moffset;
-  u2 methods_count;
-  mf_info **methods;
-  u4 aoffset;
-  u2 attribs_count;
-  attrib_info **attribs;
+	u4 offset;
+	u4 magic;
+	u2 minor_version;
+	u2 major_version;
+	u2 cpool_count;
+	cp_info **cpool;
+	u4 coffset;
+	u2 access_flags;
+	u2 this_class;
+	u2 super_class;
+	u2 interfaces_count;
+	u2 *interfaces;
+	u4 foffset;
+	u2 fields_count;
+	mf_info **fields;
+	u4 moffset;
+	u2 methods_count;
+	mf_info **methods;
+	u4 aoffset;
+	u2 attribs_count;
+	attrib_info **attribs;
 } classfile;
 
 struct ht_class_shared_data {
@@ -137,8 +137,8 @@ struct ht_class_shared_data {
 	Area *initialized;
 	int flags;
 	struct {
-		char *thisclass;
-		char *superclass;
+		const char *thisclass;
+		const char *superclass;
 		ht_list *interfaces;
 	} classinfo;
 };
@@ -148,14 +148,14 @@ extern void class_unread(ht_class_shared_data *);
 extern attrib_info *attribute_read(ht_stream *, classfile *);
 
 int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
-void java_demangle(char *result, char *classname, char *name, char *type, int flags);
+void java_demangle(char *result, const char *classname, const char *name, const char *type, int flags);
 char *java_demangle_flags(char *result, int flags);
 
 class cview : public ht_format_group {
 public:
-  void init(bounds *, ht_streamfile *, format_viewer_if **,
-		  ht_format_group *, FILEOFS, void *shared);
-  virtual void done();
+	void init(bounds *, ht_streamfile *, format_viewer_if **,
+		    ht_format_group *, FILEOFS, void *shared);
+	virtual void done();
 };
 
 #define ClassAddress dword
@@ -163,11 +163,11 @@ public:
 class ClassMethod: public ht_data {
 public:
 	char *name;
-	char *type;
+	const char *type;
 	ClassAddress start;
 	UINT length;
 	int flags;
-				ClassMethod(char *name, char *type, ClassAddress start, UINT length, int flags);
+			ClassMethod(const char *name, const char *type, ClassAddress start, UINT length, int flags);
 	virtual		~ClassMethod();
 	virtual int	compareTo(const Object *obj) const;
 };
