@@ -28,13 +28,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-/* stupid rsxntdj hack */
-#ifdef __RSXNT__
-extern "C" {
-	int __dj_stderr;
-}
-#endif
-
 HANDLE output;
 
 /*

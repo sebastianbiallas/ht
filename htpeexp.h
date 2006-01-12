@@ -35,13 +35,13 @@ class ht_pe_export_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 public:
-			void	init(bounds *b, ht_format_group *fg);
+		void	init(bounds *b, ht_format_group *fg);
 	virtual	void	done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 /* new */
-			char *func(UINT i, bool execute);
+		char *func(UINT i, bool execute);
 };
 
 /*
@@ -58,7 +58,7 @@ public:
 
 	ht_pe_export_function(RVA address, UINT ordinal);
 	ht_pe_export_function(RVA address, UINT ordinal, char *name);
-	~ht_pe_export_function();
+	virtual ~ht_pe_export_function();
 };
 
 struct ht_pe_export {

@@ -127,7 +127,7 @@ static void str2int(char *str, qword *q, int base)
 char *binstr2cstr(char *s, int len)
 {
 	char *x=(char*)malloc(len+1);
-	memmove(x, s, len);
+	memcpy(x, s, len);
 	x[len]=0;
 	return x;
 }
@@ -241,8 +241,8 @@ void scalarlist_concat(eval_scalarlist *l, eval_scalarlist *a, eval_scalarlist *
 {
 	l->count=a->count+b->count;
 	l->scalars=(eval_scalar*)malloc(sizeof (eval_scalar) * l->count);
-	memmove(l->scalars, a->scalars, sizeof (eval_scalar) * a->count);
-	memmove(l->scalars+a->count, b->scalars, sizeof (eval_scalar) * b->count);
+	memcpy(l->scalars, a->scalars, sizeof (eval_scalar) * a->count);
+	memcpy(l->scalars+a->count, b->scalars, sizeof (eval_scalar) * b->count);
 }
 
 void scalarlist_destroy(eval_scalarlist *l)
@@ -340,7 +340,7 @@ void scalar_create_str(eval_scalar *s, const eval_str *t)
 {
 	s->type=SCALAR_STR;
 	s->scalar.str.value=(char*)malloc(t->len ? t->len : 1);
-	memmove(s->scalar.str.value, t->value, t->len);
+	memcpy(s->scalar.str.value, t->value, t->len);
 	s->scalar.str.len=t->len;
 }
 
@@ -378,7 +378,7 @@ void scalar_context_str(const eval_scalar *s, eval_str *t)
 		case SCALAR_STR: {
 			t->value = (char*)malloc(s->scalar.str.len ? s->scalar.str.len : 1);
 			t->len = s->scalar.str.len;
-			memmove(t->value, s->scalar.str.value, t->len);
+			memcpy(t->value, s->scalar.str.value, t->len);
 			break;
 		}			
 		case SCALAR_FLOAT: {
@@ -442,8 +442,8 @@ void scalar_context_float(const eval_scalar *s, eval_float *t)
 void string_concat(eval_str *s, eval_str *a, eval_str *b)
 {
 	s->value=(char*)malloc(a->len+b->len ? a->len+b->len : 1);
-	memmove(s->value, a->value, a->len);
-	memmove(s->value+a->len, b->value, b->len);
+	memcpy(s->value, a->value, a->len);
+	memcpy(s->value+a->len, b->value, b->len);
 	s->len=a->len+b->len;
 	
 	free(a->value);
@@ -462,7 +462,7 @@ void scalar_clone(eval_scalar *result, const eval_scalar *s)
 		case SCALAR_STR:  {
 			*result = *s;
 			result->scalar.str.value = (char*)malloc(result->scalar.str.len);
-			memmove(result->scalar.str.value, s->scalar.str.value, result->scalar.str.len);
+			memcpy(result->scalar.str.value, s->scalar.str.value, result->scalar.str.len);
 			break;
 		}			
 		case SCALAR_FLOAT: {
@@ -1089,7 +1089,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 /*				l=t.len;
 				if (l > (sizeof buf)-1) l=(sizeof buf)-1;
 
-				memmove(buf, t.value, l);
+				memcpy(buf, t.value, l);
 				buf[l]=0;*/
 				sprintf_puts(b, blimit, buf);
 				
@@ -1170,7 +1170,7 @@ int func_eval(eval_scalar *r, eval_str *p)
 {
 	char *q=(char*)malloc(p->len+1);
 	int x;
-	memmove(q, p->value, p->len);
+	memcpy(q, p->value, p->len);
 	q[p->len]=0;
 	x=eval(r, q, g_eval_func_handler, g_eval_symbol_handler, eval_context);
 	free(q);
@@ -1389,7 +1389,7 @@ int exec_evalfunc(eval_scalar *r, eval_scalarlist *params, eval_func *proto)
 				sclist->count=params->count-j;
 				if (sclist->count) {
 					sclist->scalars=(eval_scalar*)malloc(sizeof (eval_scalar) * sclist->count);
-					memmove(sclist->scalars, &params->scalars[j], sizeof (eval_scalar) * sclist->count);
+					memcpy(sclist->scalars, &params->scalars[j], sizeof (eval_scalar) * sclist->count);
 				} else {
 					sclist->scalars=NULL;
 				}					

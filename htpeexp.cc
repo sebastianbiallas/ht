@@ -350,5 +350,5 @@ ht_pe_export_function::ht_pe_export_function(RVA addr, UINT ord, char *n)
 
 ht_pe_export_function::~ht_pe_export_function()
 {
-	if ((byname) && (name)) free(name);
+	if (byname) free(name);
 }

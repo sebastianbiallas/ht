@@ -43,7 +43,7 @@ void	ht_compressed_stream::done()
 	if (get_access_mode() & FAM_WRITE) {
 		flush_compressed();
 	}
-	if (buffer) free(buffer);
+	free(buffer);
 	ht_layer_stream::done();
 }
 
@@ -54,7 +54,8 @@ bool ht_compressed_stream::flush_compressed()
 		byte *workbuf = (byte *)smalloc(LZO1X_1_MEM_COMPRESS);
 		lzo_uint cbuf_len;
 		byte n[4];
-		
+
+		memset(workbuf, 0, LZO1X_1_MEM_COMPRESS);
 		lzo1x_1_compress(buffer, bufferpos, cbuf, &cbuf_len, workbuf);
 
 		free(workbuf);
