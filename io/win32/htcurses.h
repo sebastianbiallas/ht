@@ -74,7 +74,7 @@
 #define CHAR_CORNERUL_DBL	0x2554
 #define CHAR_CORNERLL_DBL	0x255a
 #define CHAR_CORNERUR_DBL	0x2557
-#define CHAR_CORNERLR_DBL	0x255c
+#define CHAR_CORNERLR_DBL	0x255d
 #define CHAR_FILLED_L		0x2591	/* FILLED, low density */
 #define CHAR_FILLED_M		0x2592	/* FILLED, medium density */
 #define CHAR_FILLED_H		0x2593  /* FILLED, high density */
