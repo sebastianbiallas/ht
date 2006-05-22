@@ -29,6 +29,7 @@ extern "C" {
 }
 #include "syntax.h"
 #include "htpal.h"
+#include "htstring.h"
 
 bool regmatch(char *str, regex_t *preg, int *len)
 {
@@ -128,6 +129,13 @@ lexer_token ht_lang_syntax_lexer::gettoken(void *b, UINT buflen, text_pos p, boo
 				case LRST_STRING: {
 					UINT sl = strlen(lr->string);
 					if ((buflen >= sl) && (memcmp(buf, lr->string, sl)==0)) {
+						l = sl;
+					}
+					break;
+				}
+				case LRST_ISTRING: {
+					UINT sl = strlen(lr->string);
+					if (buflen >= sl && ht_memicmp(buf, lr->string, sl)==0) {
 						l = sl;
 					}
 					break;
@@ -313,7 +321,7 @@ syntax_lexer_rule c_syntax_lexer_rules[]={
 	{ 0, 0, LRST_EMPTY, false, false, 0 }
 };
 
-char *c_reserved[]=
+static char *c_reserved[]=
 {
 /* types */
 	"bool", "char", "void", "int", "short", "long",
@@ -360,8 +368,8 @@ void ht_c_syntax_lexer::init()
 
 void ht_c_syntax_lexer::done()
 {
-	if (c_pal.data) free(c_pal.data);
-	if (c_reserved_sorted) free(c_reserved_sorted);
+	free(c_pal.data);
+	free(c_reserved_sorted);
 	ht_lang_syntax_lexer::done();
 }
 
@@ -420,10 +428,264 @@ vcp ht_c_syntax_lexer::gettoken_color(lexer_token t)
 
 void ht_c_syntax_lexer::reloadpalette()
 {
-	if (c_pal.data) {
-	    free(c_pal.data);
-	    c_pal.data = NULL;
-	}	    
+	free(c_pal.data);
+	c_pal.data = NULL;
+	load_pal(palclasskey_syntax, palkey_syntax_c_default, &c_pal);
+}
+
+/*
+ *	CLASS ht_pascal_syntax_lexer
+ */
+
+/* Pascal lexer states */
+#define LEX_PASCALST_NORMAL			1
+#define LEX_PASCALST_COMMENT			3
+#define LEX_PASCALST_COMMENT_EOL        	4
+#define LEX_PASCALST_ASM	        	5
+
+/* Pascal lexer tokens */
+#define LEX_PASCALTOK_ERROR			1
+#define LEX_PASCALTOK_WHITESPACE		2
+#define LEX_PASCALTOK_COMMENT			3
+#define LEX_PASCALTOK_IDENTIFIER		5
+#define LEX_PASCALTOK_RIDENTIFIER		6
+#define LEX_PASCALTOK_NUMBER			7
+#define LEX_PASCALTOK_FNUMBER			8
+#define LEX_PASCALTOK_STRING			9
+#define LEX_PASCALTOK_CHAR			10
+#define LEX_PASCALTOK_SYMBOL			11
+
+syntax_lexer_rule pascal_syntax_lexer_rules[]={
+	/* asm */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_STRING, "asm", 0, LEX_CTOK_WHITESPACE },
+	/* whitespaces */
+	{ LSTSET(LEX_PASCALST_NORMAL) | LSTSET(LEX_PASCALST_ASM),
+	  false, LRST_WHITESPACE, NULL, 0, LEX_CTOK_WHITESPACE },
+	/* {} multiline comments */
+	{ LSTSET(LEX_PASCALST_NORMAL) | LSTSET(LEX_PASCALST_ASM),
+	  false, LRST_STRING, "{", LEX_PASCALST_COMMENT, LEX_CTOK_COMMENT },
+	{ LSTSET(LEX_PASCALST_COMMENT),
+	  false, LRST_STRING, "}", LEX_PASCALST_NORMAL, LEX_CTOK_COMMENT },
+	SL_RULE_ANYCHAR(LSTSET(LEX_PASCALST_COMMENT), LEX_CTOK_COMMENT),
+	/* "" strings */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_REGEX, "'.*'[^']", 0, LEX_CTOK_STRING },
+//	{ LSTSET(LEX_PASCALST_NORMAL),
+	/* '//' one line comments */
+	{ LSTSET(LEX_PASCALST_NORMAL) | LSTSET(LEX_PASCALST_ASM),
+	  false, LRST_STRING, "//", LEX_PASCALST_COMMENT_EOL, LEX_CTOK_COMMENT },
+	SL_RULE_LINEEND(LSTSET(LEX_PASCALST_COMMENT_EOL), LEX_PASCALST_NORMAL),
+	SL_RULE_ANYCHAR(LSTSET(LEX_PASCALST_COMMENT_EOL), LEX_CTOK_COMMENT),
+	/* symbols */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_CHARSET, "(){};,.[]!~%+-/*=<>|&^?:", 0, LEX_CTOK_SYMBOL },
+/* identifiers */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_IDENTIFIER, NULL, 0, LEX_CTOK_IDENTIFIER },
+/* floats */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_REGEX, "[0-9]+\\.[0-9]+(e[+-]?[0-9]+)?", 0, LEX_CTOK_FNUMBER },
+/* numbers */
+	{ LSTSET(LEX_PASCALST_NORMAL),
+	  false, LRST_REGEX, "0[xX][0-9a-fA-F]+", 0, LEX_CTOK_NUMBER },
+	{ LSTSET(LEX_CST_NORMAL),
+	  false, LRST_REGEX, "[0-9]+", 0, LEX_CTOK_NUMBER },
+/* chars */
+	{ LSTSET(LEX_CST_NORMAL),
+	  false, LRST_REGEX, "'[^'\\]'", 0, LEX_CTOK_CHAR },
+	{ LSTSET(LEX_CST_NORMAL),
+	  false, LRST_REGEX, "'\\\\.{1,3}'", 0, LEX_CTOK_CHAR },
+/**/
+	{ 0, 0, LRST_EMPTY, false, false, 0 }
+};
+
+static char *pascal_reserved[]=
+{
+/* Directives */
+	"Abstract",
+"Default",
+"Dynamic",
+"Export",
+"Index",
+"Out",
+"Overload",
+"Override",
+"Private",
+"Protected",
+"Public",
+"Published",
+"Virtual",
+
+/* Constants: */
+"Infinity"
+"MaxInt"
+"MaxLongInt"
+"MinsPerDay"
+"MonthDays"
+"NaN"
+"Nil"
+"SecsPerDay"
+"VarTypeMask"
+
+/* Keywords: */
+
+"Absolute",
+"And",
+"Array",
+"As",
+"Asm",
+"Assembler",
+"Begin",
+"Case",
+"Class",
+"Const",
+"Constructor",
+"Destructor",
+"Div",
+"Do",
+"DownTo",
+"Else",
+"End",
+"Except",
+"Exports",
+"External",
+"Far",
+"File",
+"Finally"
+"For",
+"Forward",
+"Function",
+"Goto",
+"If",
+"Implementation",
+"In",
+"Inherited",
+"Inline",
+"Interface",
+"Interrupt",
+"Is",
+"Label",
+"Library",
+"Mod",
+"Name",
+"Near",
+"Not",
+"Object",
+"Of",
+"On",
+"Or",
+"Packed",
+"Procedure",
+"Program",
+"Property",
+"Raise",
+"Record",
+"Repeat",
+"Resident",
+"Set",
+"Shl",
+"Shr",
+"String",
+"Then",
+"ThreadVar",
+"To",
+"Try",
+"Type",
+"Unit",
+"Until",
+"Uses",
+"Var",
+"Virtual",
+"While",
+"With",
+"Xor",
+	NULL
+};
+
+#define palkey_syntax_c_default		"c/default"
+
+void ht_pascal_syntax_lexer::init()
+{
+	ht_lang_syntax_lexer::init(c_syntax_lexer_rules);
+	pascal_reserved_sorted=create_sorted_stringtable(pascal_reserved);
+
+	char **table=c_reserved;
+	
+	char **x=table;
+	while (*x) x++;
+	pascal_reserved_count=x-table;
+
+	c_pal.data = NULL;
+	c_pal.size = 0;
+
+	config_changed();
+}
+
+void ht_pascal_syntax_lexer::done()
+{
+	free(c_pal.data);
+	free(pascal_reserved_sorted);
+	ht_lang_syntax_lexer::done();
+}
+
+void ht_pascal_syntax_lexer::config_changed()
+{
+	reloadpalette();
+}
+
+vcp ht_pascal_syntax_lexer::getcolor_syntax(UINT pal_index)
+{
+	return getcolorv(&c_pal, pal_index);
+}
+
+lexer_token ht_pascal_syntax_lexer::geterrortoken()
+{
+	return LEX_PASCALTOK_ERROR;
+}
+
+lexer_state ht_pascal_syntax_lexer::getinitstate()
+{
+	return LEX_PASCALST_NORMAL;
+}
+
+char *ht_pascal_syntax_lexer::getname()
+{
+	return "Pascal/Delphi";
+}
+
+lexer_token ht_pascal_syntax_lexer::gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
+{
+	lexer_token t=ht_lang_syntax_lexer::gettoken(buf, buflen, p, start_of_line, ret_state, ret_len);
+	if (t==LEX_PASCALTOK_IDENTIFIER) {
+		if (match_sorted_stringtable((char*)buf, *ret_len, pascal_reserved_sorted, pascal_reserved_count)) {
+			t=LEX_PASCALTOK_RIDENTIFIER;
+		}
+	}
+	return t;
+}
+
+vcp ht_pascal_syntax_lexer::gettoken_color(lexer_token t)
+{
+	switch (t) {
+		case LEX_PASCALTOK_WHITESPACE: return getcolor_syntax(palidx_syntax_whitespace);
+		case LEX_PASCALTOK_COMMENT: return getcolor_syntax(palidx_syntax_comment);
+//		case LEX_PASCALTOK_PREPROCESS: return getcolor_syntax(palidx_syntax_preprocess);
+		case LEX_PASCALTOK_IDENTIFIER: return getcolor_syntax(palidx_syntax_identifier);
+		case LEX_PASCALTOK_RIDENTIFIER: return getcolor_syntax(palidx_syntax_reserved);
+		case LEX_PASCALTOK_NUMBER: return getcolor_syntax(palidx_syntax_intnum);
+		case LEX_PASCALTOK_FNUMBER: return getcolor_syntax(palidx_syntax_floatnum);
+		case LEX_PASCALTOK_STRING: return getcolor_syntax(palidx_syntax_string);
+		case LEX_PASCALTOK_CHAR: return getcolor_syntax(palidx_syntax_char);
+		case LEX_PASCALTOK_SYMBOL: return getcolor_syntax(palidx_syntax_symbol);
+	}
+	return VCP(VC_BLACK, VC_RED);
+}
+
+void ht_pascal_syntax_lexer::reloadpalette()
+{
+	free(c_pal.data);
+	c_pal.data = NULL;
 	load_pal(palclasskey_syntax, palkey_syntax_c_default, &c_pal);
 }
 
@@ -570,8 +832,8 @@ void ht_html_syntax_lexer::init()
 
 void ht_html_syntax_lexer::done()
 {
-//	if (c_pal.data) free(c_pal.data);
-//	if (c_reserved_sorted) free(c_reserved_sorted);
+//	free(c_pal.data);
+//	free(c_reserved_sorted);
 	ht_lang_syntax_lexer::done();
 }
 

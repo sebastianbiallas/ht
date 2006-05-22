@@ -28,17 +28,14 @@ char *label_type_short(int lt);
 char *xref_type(int xt);
 char xref_type_short(int xt);
 
-#define LPRFX_LOC ((char *)1)
-#define LPRFX_SUB ((char *)2)
-#define LPRFX_STUB ((char *)3)
-#define LPRFX_WRAP ((char *)4)
-#define LPRFX_OFS ((char *)5)
-#define LPRFX_DTA ((char *)6)
-#define LPRFX_DTU ((char *)7)
-#define LPRFX_STR ((char *)8)
-#define LPRFX_MAX ((char *)9)
-
-char *label_prefix(const char *p);
+#define LPRFX_LOC "loc"
+#define LPRFX_SUB "sub"
+#define LPRFX_STUB "stub"
+#define LPRFX_WRAP "wrapper"
+#define LPRFX_OFS "offset"
+#define LPRFX_DTA "data"
+#define LPRFX_DTU "?data"
+#define LPRFX_STR "str"
 
 bool valid_name(const char *str);
 void make_valid_name(char *result, const char *str);
@@ -55,10 +52,10 @@ void make_valid_name(char *result, const char *str);
 #define QUOTED_STRING(s) M_PREFIX_DUPs##s
 #define REF_STRING(s) M_PREFIX_REFs##s
 
-char *addr_label();
-char *real_name(char *s);
-char *quote_string(char *s);
-char *reference_string(char *s);
-char *comment_lookup(int special);
+char *addr_label1();
+char *real_name1(char *s);
+char *quote_string1(char *s);
+char *reference_string1(char *s);
+char *comment_lookup1(int special);
 
 #endif

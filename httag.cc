@@ -69,7 +69,7 @@ TAGSTRING *tag_make_ref_len(TAGSTRING *buf, dword id128_1, dword id128_2, dword 
 	UNALIGNED_MOVE(tag->id128_4, id128_4);
 	UNALIGNED_MOVE(tag->strlen, strlen);
 //	strcpy(buf+sizeof (ht_tag_sel), string);	/* FIXME: we assume that TAGSTRING is a char */
-	memmove(buf+sizeof (ht_tag_sel), string, strlen);
+	memcpy(buf+sizeof (ht_tag_sel), string, strlen);
 //	buf[sizeof (ht_tag_sel)+strlen]=0;
 	return buf+sizeof (ht_tag_sel)+strlen;
 }
@@ -875,16 +875,16 @@ void tag_strcat(TAGSTRING *dest, const TAGSTRING *src)
 
 void tag_strcpy(TAGSTRING *dest, const TAGSTRING *src)
 {
-	int l=tag_strlen(src);
-	memmove(dest, src, l);
-	dest[l]=0;
+	int l = tag_strlen(src);
+	memcpy(dest, src, l);
+	dest[l] = 0;
 }
 
 TAGSTRING *tag_strdup(const TAGSTRING *tagstring)
 {
 	int l=tag_strlen(tagstring);
-	TAGSTRING *s=(TAGSTRING*)malloc((sizeof(TAGSTRING)+1)*l);
-	memmove(s, tagstring, sizeof(TAGSTRING)*l);
+	TAGSTRING *s=(TAGSTRING*)malloc((sizeof(TAGSTRING))*l + 1);
+	memcpy(s, tagstring, sizeof(TAGSTRING)*l);
 	s[l]=0;
 	return s;
 }

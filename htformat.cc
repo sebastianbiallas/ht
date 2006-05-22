@@ -2694,6 +2694,8 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			
 			UINT s=file->get_size();
 
+			if (!o) o = clipboard_getsize();
+
 			char buf[32];
 			sprintf(buf, "%d", o);
 			if (inputbox("resize", "new file size", buf, sizeof buf, 0)==button_ok) {

@@ -111,7 +111,7 @@ bool file_new_dialog(UINT *mode)
 	b.w = 40;
 	b.h = 8;
 	
-	ht_dialog *d=new ht_dialog();
+	ht_dialog *d = new ht_dialog();
 	d->init(&b, "create new file", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	
 	b.x=0;
@@ -124,7 +124,7 @@ bool file_new_dialog(UINT *mode)
 	c.w=b.w-2-c.x;
 	c.h=b.h-2-c.y;
 
-	ht_text_listbox *mode_input=new ht_text_listbox();
+	ht_text_listbox *mode_input = new ht_text_listbox();
 	mode_input->init(&c);
 	
 	mode_input->insert_str(FOM_TEXT, "text");
@@ -2373,7 +2373,7 @@ void ht_app::handlemsg(htmsg *msg)
 
 						ht_streamfile *old = e->layer->get_layered();
 
-						if (f->set_access_mode(old->get_access_mode())) {
+						if (f->set_access_mode(old->get_access_mode()) == 0) {
 							e->layer->set_layered(f);
 							e->isfile = true;
 
@@ -2603,7 +2603,7 @@ void ht_app::handlemsg(htmsg *msg)
 			UINT mode;
 			
 			if (file_new_dialog(&mode)) {
-				ht_mem_file *mfile=new ht_mem_file();
+				ht_mem_file *mfile = new ht_mem_file();
 				mfile->init();
 				switch (mode) {
 					case FOM_TEXT: {

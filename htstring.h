@@ -31,6 +31,7 @@ int ht_strncpy(char *s1, const char *s2, size_t max);
 int ht_strncmp(const char *s1, const char *s2, size_t max);
 int ht_strnicmp(const char *s1, const char *s2, size_t max);
 int ht_stricmp(const char *s1, const char *s2);
+int ht_memicmp(const void *s1, const void *s2, size_t n);
 
 int ht_strcicomm(const char *s1, const char *s2);
 int ht_strccomm(const char *s1, const char *s2);

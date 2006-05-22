@@ -446,20 +446,10 @@ void CommentList::appendPostComment(const char *s)
 	append(new ht_data_string(s));
 }
 
-void CommentList::appendPreComment(int special)
-{
-	append(new ht_data_uint(special));
-}
-
-void CommentList::appendPostComment(int special)
-{
-	append(new ht_data_uint(special+0x10000000));
-}
-
 const char *CommentList::getName(UINT i)
 {
 	ht_data *d = get(i);
-	return d ? ((d->object_id()==ATOM_HT_DATA_UINT) ? comment_lookup(((ht_data_uint*)d)->value): ((ht_data_string*)d)->value) : NULL;
+	return d ? ((ht_data_string*)d)->value : NULL;
 }
 
 /*
@@ -710,16 +700,13 @@ void	Analyser::done()
 }
 
 /*
- *	addaddrlabel will never overwrite an existing label (like addlabel)
+ *	addAddressSymbol will never overwrite an existing label (like addlabel)
  */
-bool Analyser::addAddressSymbol(Address *address, const char *Prefix, labeltype type, Location *infunc)
+bool Analyser::addAddressSymbol(Address *address, const char *prefix, labeltype type, Location *infunc)
 {
 	if (!validAddress(address, scvalid)) return false;
 
-
-	char *prefix = label_prefix(Prefix);
-
-	char	symbol[1024];
+	char symbol[1024];
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 	ht_snprintf(symbol, sizeof symbol, "%s_%y", prefix, address);
 
@@ -1227,10 +1214,10 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 						if (l && l->name) {
 							ht_snprintf(buf, sizeof buf, "%s %s", ";  W R A P P E R for", l->name);
-							ht_snprintf(label, sizeof label, "%s_%s_%y", label_prefix(LPRFX_WRAP), l->name, branch_addr);
+							ht_snprintf(label, sizeof label, "%s_%s_%y", LPRFX_WRAP, l->name, branch_addr);
 						} else {
 							ht_snprintf(buf, sizeof buf, "%s %s %y", ";  W R A P P E R for", "address", wrap_addr);
-							ht_snprintf(label, sizeof label, "%s_%y_%y", label_prefix(LPRFX_WRAP), wrap_addr, branch_addr);
+							ht_snprintf(label, sizeof label, "%s_%y_%y", LPRFX_WRAP, wrap_addr, branch_addr);
 						}
 						addComment(branch_addr, 0, buf);
 						addComment(branch_addr, 0, ";----------------------------------------------");

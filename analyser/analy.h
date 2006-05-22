@@ -205,9 +205,7 @@ class CommentList: public ht_clist {
 public:
 	void			init();
 	void			appendPreComment(const char *s);
-	void			appendPreComment(int special);
 	void			appendPostComment(const char *s);
-	void			appendPostComment(int special);
 	const char *	getName(UINT i);
 };
 

@@ -53,28 +53,29 @@ static ht_view *htelf_init(bounds *b, ht_streamfile *file, ht_format_group *form
 	if (file->seek(header_ofs) != 0) return NULL;
 	if (file->read(&header, sizeof header) != sizeof header) return NULL;
 	// check for magic
-	if ((header.e_ident[ELF_EI_MAG0]!=ELFMAG0) || (header.e_ident[ELF_EI_MAG1]!=ELFMAG1)
-	||  (header.e_ident[ELF_EI_MAG2]!=ELFMAG2) || (header.e_ident[ELF_EI_MAG3]!=ELFMAG3))
+	if (header.e_ident[ELF_EI_MAG0] != ELFMAG0 || header.e_ident[ELF_EI_MAG1] != ELFMAG1
+	 || header.e_ident[ELF_EI_MAG2] != ELFMAG2 || header.e_ident[ELF_EI_MAG3] != ELFMAG3)
 		return NULL;
+
 	switch (header.e_ident[ELF_EI_DATA]) {
-		case ELFDATA2LSB:
-		case ELFDATA2MSB:
-			break;
-		default:
-			LOG_EX(LOG_WARN, "File seems to be ELF. But byte-order"
-				" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%x)",
-				header.e_ident[ELF_EI_DATA], header_ofs+5);
-			return NULL;
+	case ELFDATA2LSB:
+	case ELFDATA2MSB:
+		break;
+	default:
+		LOG_EX(LOG_WARN, "File seems to be ELF. But byte-order"
+			" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%x)",
+			header.e_ident[ELF_EI_DATA], header_ofs+5);
+		return NULL;
 	}
 	switch (header.e_ident[ELF_EI_CLASS]) {
-		case ELFCLASS32:
-		case ELFCLASS64:
-			break;
-		default:
-			LOG_EX(LOG_WARN, "File seems to be ELF. But class-value"
-				" (ELF_EI_CLASS) 0x%02x is unsupported. (byte at offset=0x%x)",
-				header.e_ident[ELF_EI_CLASS], header_ofs+4);
-			return NULL;
+	case ELFCLASS32:
+	case ELFCLASS64:
+		break;
+	default:
+		LOG_EX(LOG_WARN, "File seems to be ELF. But class-value"
+			" (ELF_EI_CLASS) 0x%02x is unsupported. (byte at offset=0x%x)",
+			header.e_ident[ELF_EI_CLASS], header_ofs+4);
+		return NULL;
 	}
 
 	try {
@@ -133,12 +134,12 @@ void ht_elf::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format
 	if (file->read(&elf_shared->ident, sizeof elf_shared->ident) != sizeof elf_shared->ident)
 		throw ht_msg_exception("read error");
 	switch (elf_shared->ident.e_ident[ELF_EI_DATA]) {
-		case ELFDATA2LSB:
-			elf_shared->byte_order = little_endian;
-			break;
-		case ELFDATA2MSB:
-			elf_shared->byte_order = big_endian;
-			break;
+	case ELFDATA2LSB:
+		elf_shared->byte_order = little_endian;
+		break;
+	case ELFDATA2MSB:
+		elf_shared->byte_order = big_endian;
+		break;
 	}
 
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {

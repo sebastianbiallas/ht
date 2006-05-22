@@ -82,39 +82,39 @@ screendrawbuf::screendrawbuf(char *title)
 	use_colors=0;
 	use_high_colors=0;
 	if (has_colors()) {
-	    use_colors=1;
-	    char *term=getenv("TERM");
-	    int bold_support=0;
-	    attr_t attrs;
-	    short cur_color=1;
-	    start_color();
-/* FIXME: Does this work ???: test if the WA_BOLD attr can be set */
-	    attr_on(WA_BOLD, 0);
-	    attrs=WA_NORMAL;
-	    attr_get(&attrs, &cur_color, 0);
-	    bold_support=(attrs==WA_BOLD);
-	    attr_off(WA_BOLD, 0);
+		use_colors=1;
+		char *term=getenv("TERM");
+		int bold_support=0;
+		attr_t attrs;
+		short cur_color=1;
+		start_color();
+		/* FIXME: Does this work???: test if the WA_BOLD attr can be set */
+		attr_on(WA_BOLD, 0);
+		attrs=WA_NORMAL;
+		attr_get(&attrs, &cur_color, 0);
+		bold_support=(attrs==WA_BOLD);
+		attr_off(WA_BOLD, 0);
 	    
-	    is_xterm=(strcmp(term, "linux") && strcmp(term, "console"));
-	    if ( (!is_xterm) && (!bold_support)) {
-		HT_WARN("terminal is of type '%s' (non-x-terminal) but bold_test fails !", term);
-	    }
-	    if (bold_support) {
-		    use_high_colors=1;
-	    } else {
-		    HT_WARN("terminal only supports 8 foreground colors !");
-	    }
-	    for (int fg=0; fg<8; fg++) {
-		    for (int bg=0; bg<8; bg++) {
-			colormap[fg+bg*8]=fg+bg*8;
-			init_pair(fg+bg*8, colors[fg], colors[bg]);
-		    }
-	    }
-	    colormap[7]=0;
-	    colormap[0]=7;
-	    init_pair(7, COLOR_BLACK, COLOR_BLACK);
+		is_xterm=(strcmp(term, "linux") && strcmp(term, "console"));
+		if (!is_xterm && !bold_support) {
+			HT_WARN("terminal is of type '%s' (non-x-terminal) but bold_test fails!", term);
+		}
+		if (bold_support) {
+			use_high_colors=1;
+		} else {
+			HT_WARN("terminal only supports 8 foreground colors!");
+		}
+		for (int fg=0; fg<8; fg++) {
+			for (int bg=0; bg<8; bg++) {
+				colormap[fg+bg*8]=fg+bg*8;
+				init_pair(fg+bg*8, colors[fg], colors[bg]);
+			}
+		}
+		colormap[7]=0;
+		colormap[0]=7;
+		init_pair(7, COLOR_BLACK, COLOR_BLACK);
 	} else {
-	    HT_WARN("terminal lacks color support !");
+		HT_WARN("terminal lacks color support!");
 	}
 	wtimeout(win, 1);
 	meta(win, 1);
@@ -232,24 +232,24 @@ void screendrawbuf::show()
 	drawbufch *ch=buf;
 	int c=-1;
 	for (int iy=0; iy<size.h; iy++) {
-			move(iy+size.y, size.x);
-			for (int ix=0; ix<size.w; ix++) {
-				if ((use_colors) && (ch->c!=c)) {
-					c=ch->c;
-					if (use_high_colors) {
-						if (is_xterm && (c==8)) {
-					/* some terminals can't display dark grey, so we take light grey instead... */
-						    attrset(A_NORMAL);
-						    c=7;
-						} else {
-						    if (c&8) attrset(A_BOLD); else attrset(A_NORMAL);
-						}
+		move(iy+size.y, size.x);
+		for (int ix=0; ix<size.w; ix++) {
+			if (use_colors && ch->c != c) {
+				c=ch->c;
+				if (use_high_colors) {
+					if (is_xterm && c == 8) {
+						/* some terminals can't display dark grey, so we take light grey instead... */
+						attrset(A_NORMAL);
+						c = 7;
+					} else {
+						if (c&8) attrset(A_BOLD); else attrset(A_NORMAL);
 					}
-					color_set( colormap[(c&7) | ((c&(7<<4))>>1)], 0);
 				}
-				if ((((unsigned char)ch->ch>=0x20) && ((unsigned char)ch->ch<=0x7e)) || ((unsigned int)ch->ch>0xff)) addch(ch->ch); else addch(32);
-				ch++;
+				color_set( colormap[(c&7) | ((c&(7<<4))>>1)], 0);
 			}
+			if ((((unsigned char)ch->ch>=0x20) && ((unsigned char)ch->ch<=0x7e)) || ((unsigned int)ch->ch>0xff)) addch(ch->ch); else addch(32);
+			ch++;
+		}
 	}
 	curs_set(0);
 	refresh();

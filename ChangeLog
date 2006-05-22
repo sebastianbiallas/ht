@@ -6,6 +6,7 @@ version 0.9-trunk:
 	- better Mach-O executable sections detection
 	- allow ':' key for changing comments in analyser
 	- [Win] use unicode output
+	- updated minilzo
 	- small bug fixes
 
 version 0.9.1:

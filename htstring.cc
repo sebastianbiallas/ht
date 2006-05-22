@@ -155,6 +155,25 @@ int ht_strcicomm(const char *s1, const char *s2)
 	return r;
 }
 
+int ht_memicmp(const void *p1, const void *p2, size_t n)
+{
+	const char *s1 = static_cast<const char *>(p1);
+	const char *s2 = static_cast<const char *>(p2);
+	if (!s1) return s2 ? -1 : 0;
+	if (!s2) return s1 ? 1 : 0;
+	while (n--) {
+		char c1 = tolower(*s1), c2 = tolower(*s2);
+		if (c1 > c2) {
+			return 1;
+		} else if (c1 < c2) {
+			return -1;
+		}
+		s1++;
+		s2++;
+	}
+	return 0;
+}
+
 int escape_special_str(char *result, int resultmaxlen, const char *s, const char *specialchars, bool bit7)
 {
 	return escape_special(result, resultmaxlen, s, strlen(s), specialchars, bit7);

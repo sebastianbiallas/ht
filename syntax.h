@@ -39,13 +39,14 @@ typedef UINT lexer_token;
 enum lexer_rule_string_type {
 	LRST_EMPTY,
 	LRST_STRING,
+	LRST_ISTRING,
 	LRST_STRING_EXPECT,
 	LRST_REGEX,
 	LRST_CHARSET,
 	LRST_WHITESPACE,
 	LRST_QSTRING,			/* '[^']*' */
 	LRST_DQSTRING,			/* "[^"]*" */
-//     LRST_DQSTRING2,		/* "([^"]|\")*" */
+//	LRST_DQSTRING2,		/* "([^"]|\")*" */
 	LRST_ANYCHAR,
 	LRST_IDENTIFIER
 };
@@ -103,6 +104,31 @@ class ht_c_syntax_lexer: public ht_lang_syntax_lexer {
 protected:
 	char **c_reserved_sorted;
 	UINT c_reserved_count;
+
+	palette c_pal;
+	
+	virtual	void config_changed();
+			void reloadpalette();
+public:
+			void init();
+	virtual	void done();
+/* overwritten */
+	virtual	vcp getcolor_syntax(UINT pal_index);
+	virtual	lexer_state getinitstate();
+	virtual	lexer_token geterrortoken();
+	virtual	char *getname();
+	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len);
+	virtual	vcp gettoken_color(lexer_token t);
+};
+
+/*
+ *	CLASS ht_pascal_syntax_lexer
+ */
+
+class ht_pascal_syntax_lexer: public ht_lang_syntax_lexer {
+protected:
+	char **pascal_reserved_sorted;
+	UINT pascal_reserved_count;
 
 	palette c_pal;
 	
