@@ -34,8 +34,6 @@
 /* x86-specific styles */
 #define X86DIS_STYLE_EXPLICIT_MEMSIZE	0x00000001	/* IF SET: mov word ptr [0000], ax 	ELSE: mov [0000], ax */
 #define X86DIS_STYLE_OPTIMIZE_ADDR	0x00000002	/* IF SET: mov [eax*3], ax 		ELSE: mov [eax+eax*2+00000000], ax */
-/*#define X86DIS_STYLE_USE16		0x00000004
-#define X86DIS_STYLE_USE32		0x00000008*/
 
 struct x86dis_insn {
 	bool invalid;

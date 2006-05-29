@@ -2335,6 +2335,7 @@ void ht_app::handlemsg(htmsg *msg)
 				sys_write_data_to_native_clipboard(buf, r);
 			}
 			free(buf);
+			break;
 		}
 #endif
 		case cmd_file_save: {

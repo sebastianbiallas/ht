@@ -66,7 +66,7 @@ void ht_hex_viewer::get_pindicator_str(char *buf)
 	if (get_current_offset(&o)) {
 		char ttemp[1024];
 		if (sel_end-sel_start > 0) {
-			ht_snprintf(ttemp, sizeof ttemp, "selection %xh-%xh (%d byte%s)", sel_start, sel_end-1, sel_end-sel_start, sel_end-sel_start==1?"":"s");
+			ht_snprintf(ttemp, sizeof ttemp, "selection %xh-%xh (%d byte%s) ", sel_start, sel_end-1, sel_end-sel_start, sel_end-sel_start==1?"":"s");
 		} else {
 			ttemp[0]=0;
 		}
