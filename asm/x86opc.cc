@@ -612,7 +612,7 @@ x86opc_insn x86_insns_ext[256] = {
 {"&sqrtps|sqrtpd", {{Vo}, {Wo}}},
 {"&rsqrtps|rsqrtpd", {{Vo}, {Wo}}},
 {"&rcpps|rcppd", {{Vo}, {Wo}}},
-{"&andps|addpd", {{Vo}, {Wo}}},
+{"&andps|andpd", {{Vo}, {Wo}}},
 {"&andnps|andnpd", {{Vo}, {Wo}}},
 {"&orps|orpd", {{Vo}, {Wo}}},
 {"&xorps|xorpd", {{Vo}, {Wo}}},
