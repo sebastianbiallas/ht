@@ -1175,16 +1175,16 @@ char *x86dis::str(dis_insn *disasm_insn, int options)
 
 static void pickname(char *result, const char *name, int n)
 {
-	char *s = strchr(name+1, '|');
-	if (!s) {
-		strcpy(result, name);
-		return;
-	}
-	if (n == 0) {
-		ht_snprintf(result, s - name, "%s", name + 1);
-	} else {
-		strcpy(result, s+1);
-	}
+	const char *s = name;
+	do {
+		name = s+1;
+		s = strchr(name, '|');
+		if (!s) {
+			strcpy(result, name);
+			return;
+		}
+	} while (n--);
+	ht_snprintf(result, s-name+1, "%s", name);
 }
 
 char *x86dis::strf(dis_insn *disasm_insn, int opt, char *format)
@@ -1220,6 +1220,9 @@ char *x86dis::strf(dis_insn *disasm_insn, int opt, char *format)
 	char *s=insnstr;
 	char n[32];
 	switch (insn->name[0]) {
+	case '|':
+		pickname(n, insn->name, 0);
+		break;
 	case '?':
 		pickname(n, insn->name, (insn->eopsize == X86_OPSIZE32) ? 1 : 0);
 		break;

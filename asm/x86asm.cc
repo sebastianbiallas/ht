@@ -1035,35 +1035,37 @@ int x86asm::match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int 
 
 static void pickname(char *result, const char *name, int n)
 {
-	char *s = strchr(name+1, '|');
-	if (!s) {
-		strcpy(result, name);
-		return;
-	}
-	if (n == 0) {
-		ht_snprintf(result, s - name, "%s", name + 1);
-	} else {
-		strcpy(result, s+1);
-	}
+	const char *s = name;
+	do {
+		name = s+1;
+		s = strchr(name, '|');
+		if (!s) {
+			strcpy(result, name);
+			return;
+		}
+	} while (n--);
+	ht_snprintf(result, s-name+1, "%s", name);
 }
 
 int x86asm::match_opcode_name(char *input_name, const char *opcodelist_name)
 {
 	if (opcodelist_name) {
-		char n1[32], n2[32];
+		char n1[32], n2[32], n3[32];
 		pickname(n1, opcodelist_name, 0);
 		pickname(n2, opcodelist_name, 1);
+		pickname(n3, opcodelist_name, 2);
 		switch (opcodelist_name[0]) {
-		case '?':
-			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH_IF_OPSIZE16;
-			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH_IF_OPSIZE32;
+		case '|':
+			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH;
+			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH;
+			if (strcmp(n3, input_name)==0) return MATCHOPNAME_MATCH;
 			break;
 		case '&':
 			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH_IF_NOOPPREFIX;
 			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH_IF_OPPREFIX;
 			break;
 		default:
-			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH;
+			if (strcmp(opcodelist_name, input_name)==0) return MATCHOPNAME_MATCH;
 		}
 	}
 	return MATCHOPNAME_NOMATCH;
