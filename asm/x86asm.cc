@@ -1060,6 +1060,10 @@ int x86asm::match_opcode_name(char *input_name, const char *opcodelist_name)
 			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH;
 			if (strcmp(n3, input_name)==0) return MATCHOPNAME_MATCH;
 			break;
+		case '?':
+			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH_IF_OPSIZE16;
+			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH_IF_OPSIZE32;
+			break;
 		case '&':
 			if (strcmp(n1, input_name)==0) return MATCHOPNAME_MATCH_IF_NOOPPREFIX;
 			if (strcmp(n2, input_name)==0) return MATCHOPNAME_MATCH_IF_OPPREFIX;
