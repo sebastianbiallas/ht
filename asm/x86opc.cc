@@ -222,6 +222,7 @@ char *x86_segs[8] = {
 #define GROUP_EXT_AE		19
 #define GROUP_EXT_BA		20
 #define GROUP_EXT_C7		21
+#define GROUP_EXT_C7_F3		22
 
 x86opc_insn x86_insns[256] = {
 /* 00 */
@@ -477,8 +478,8 @@ x86opc_insn x86_insns[256] = {
 {0, {{SPECIAL_TYPE_FGROUP, 6}}},
 {0, {{SPECIAL_TYPE_FGROUP, 7}}},
 /* E0 */
-{"loopnz", {{Jb}}},
-{"loopz", {{Jb}}},
+{"|loopnz|loopne", {{Jb}}},
+{"|loopz|loope", {{Jb}}},
 {"loop", {{Jb}}},
 {"?jcxz|jecxz", {{Jb}}},
 {"in", {{__al}, {Ib}}},
@@ -1323,7 +1324,7 @@ x86opc_insn x86_insns_ext_f3[256] = {
 {0},
 {0},
 {0},
-{0},
+{0, {{SPECIAL_TYPE_GROUP, GROUP_EXT_C7_F3}}},
 /* c8 */
 {0},
 {0},
@@ -1630,9 +1631,22 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 {0},
 {0},
 {0},
+{"vmptrld", {{Mq}}},
+{"vmptrst", {{Mq}}},
+},
+/* 22 - GROUP_EXT_F3_C7 */
+{
 {0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{"vmxon", {{Mq}}},
 {0},
 },
+
+
 };
 
 /*

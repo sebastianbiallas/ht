@@ -185,7 +185,7 @@ struct x86opc_finsn {
 #define X86_REG_SI		6
 #define X86_REG_DI		7
 
-#define X86_GROUPS		22
+#define X86_GROUPS		23
 
 extern char *x86_regs[3][8];
 extern char *x86_segs[8];
