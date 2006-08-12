@@ -130,8 +130,10 @@ struct x86_insn_op {
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
 #define SPECIAL_TYPE_INVALID		0
 #define SPECIAL_TYPE_PREFIX 		1
-#define SPECIAL_TYPE_GROUP 		2
-#define SPECIAL_TYPE_FGROUP 		3
+#define SPECIAL_TYPE_OPC_GROUP 		2
+#define SPECIAL_TYPE_GROUP 		3
+#define SPECIAL_TYPE_SGROUP 		4
+#define SPECIAL_TYPE_FGROUP 		5
 
 #define SIZE_0			'0'		/* size unimportant */
 #define SIZE_B			'b'		/* byte */
@@ -185,7 +187,9 @@ struct x86opc_finsn {
 #define X86_REG_SI		6
 #define X86_REG_DI		7
 
-#define X86_GROUPS		23
+#define X86_OPC_GROUPS		2
+#define X86_GROUPS		26
+#define X86_SPECIAL_GROUPS	7
 
 extern char *x86_regs[3][8];
 extern char *x86_segs[8];
@@ -194,6 +198,8 @@ extern x86opc_insn x86_insns_ext[256];
 extern x86opc_insn x86_insns_ext_f2[256];
 extern x86opc_insn x86_insns_ext_f3[256];
 extern x86opc_insn x86_group_insns[X86_GROUPS][8];
+extern x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256];
+extern x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9];
 
 extern x86opc_insn x86_modfloat_group_insns[8][8];
 extern x86opc_finsn x86_float_group_insns[8][8];

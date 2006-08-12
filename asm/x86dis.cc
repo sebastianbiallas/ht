@@ -254,10 +254,26 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				break;
 			}
 			break;
+		case SPECIAL_TYPE_OPC_GROUP: {
+			insn.opcodeclass = X86DIS_OPCODE_CLASS_EXT;
+			insn.opcode = getbyte();
+			decode_insn(&x86_opc_group_insns[(int)special.data][insn.opcode]);
+			break;
+		}
 		case SPECIAL_TYPE_GROUP: {
 			int m = mkreg(getmodrm());
 			insn.opcode |= m<<8;
 			decode_insn(&x86_group_insns[(int)special.data][m]);
+			break;
+		}
+		case SPECIAL_TYPE_SGROUP: {
+			int m = getmodrm();
+			if (mkmod(m) != 3) {
+				m = 8;
+			} else {
+				m = mkrm(m) & 0x7;
+			}
+			decode_insn(&x86_special_group_insns[(int)special.data][m]);
 			break;
 		}
 		case SPECIAL_TYPE_FGROUP: {
