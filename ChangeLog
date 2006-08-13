@@ -4,6 +4,7 @@
 version 0.9-trunk:
 
 version 0.9.3:
+	- [x86] added SSE4 and missing vanderpool/pacifica instructions
 	- [x86] andpd had wrong mnemonic
 	- [x86-asm] allow alternative mnemonics (like jz vs. je)
 
