@@ -111,7 +111,6 @@ protected:
 	void splitstr(const char *s, char *name, char *op[3]);
 public:
 			x86asm(int opsize, int addrsize);
-	virtual	~x86asm();
 
 	virtual	asm_insn *alloc_insn();
 	virtual	asm_code *encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address);
