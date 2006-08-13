@@ -54,6 +54,10 @@ screendrawbuf::screendrawbuf(char *title)
 	b.h = screen_info.dwSize.Y;*/
 	b.w = screen_info.srWindow.Right - screen_info.srWindow.Left + 1;
 	b.h = screen_info.srWindow.Bottom - screen_info.srWindow.Top + 1;
+
+	dx = screen_info.srWindow.Left;
+	dy = screen_info.srWindow.Top;
+
 	b_setbounds(&b);
 
 	cursor_visible = true;
@@ -81,12 +85,12 @@ bool screendrawbuf::init_console()
 
 	if (output == INVALID_HANDLE_VALUE) return false;
 	if (SetConsoleActiveScreenBuffer(output) == FALSE) return false;
-	if (!GetConsoleScreenBufferInfo(output, &csbiInfo)) return false;
+/*	if (!GetConsoleScreenBufferInfo(output, &csbiInfo)) return false;
 	windowRect.Left = 0;
 	windowRect.Top = 0;
 	windowRect.Right = csbiInfo.dwSize.X - 1;
 	windowRect.Bottom = csbiInfo.dwSize.Y - 1;
-	if (!SetConsoleWindowInfo(output, TRUE, &windowRect)) return false;
+	if (!SetConsoleWindowInfo(output, TRUE, &windowRect)) return false;*/
 	if (SetConsoleMode(output, 0) == FALSE) return false;
 	return true;
 }
@@ -177,8 +181,8 @@ void screendrawbuf::show()
 {
 	COORD xy, xy2;
 	if (cursor_redraw) {
-		xy.X = cursorx;
-		xy.Y = cursory;
+		xy.X = cursorx+dx;
+		xy.Y = cursory+dy;
 		SetConsoleCursorPosition(output, xy);
 		cursor_redraw = false;
 	}
@@ -187,10 +191,10 @@ void screendrawbuf::show()
 	xy2.X = size.w;
 	xy2.Y = size.h;
 	SMALL_RECT sr;
-	sr.Left = 0;
-	sr.Top = 0;
-	sr.Right = size.w-1;
-	sr.Bottom = size.h-1;
+	sr.Left = dx;
+	sr.Top = dy;
+	sr.Right = size.w-1+dx;
+	sr.Bottom = size.h-1+dy;
 	WriteConsoleOutputW(output, (CHAR_INFO *)buf, xy2, xy, &sr);
 }
 
@@ -204,8 +208,8 @@ void screendrawbuf::hidecursor()
 {
 	if (cursor_visible) {
 		COORD xy;
-		xy.X=size.w-1;
-		xy.Y=size.h-1;
+		xy.X=size.w-1+dx;
+		xy.Y=size.h-1+dy;
 		SetConsoleCursorPosition(output, xy);
 		CONSOLE_CURSOR_INFO ci;
 		ci.dwSize = 0xd;

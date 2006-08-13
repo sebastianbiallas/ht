@@ -31,14 +31,16 @@
 #define X86ASM_PREFIX_F20F			2
 #define X86ASM_PREFIX_F30F			3
 #define X86ASM_PREFIX_0F0F			4
-#define X86ASM_PREFIX_D8			5
-#define X86ASM_PREFIX_D9			6
-#define X86ASM_PREFIX_DA			7
-#define X86ASM_PREFIX_DB			8
-#define X86ASM_PREFIX_DC			9
-#define X86ASM_PREFIX_DD			10
-#define X86ASM_PREFIX_DE			11
-#define X86ASM_PREFIX_DF			12
+#define X86ASM_PREFIX_0F38			5
+#define X86ASM_PREFIX_0F3A			6
+#define X86ASM_PREFIX_D8			7
+#define X86ASM_PREFIX_D9			8
+#define X86ASM_PREFIX_DA			9
+#define X86ASM_PREFIX_DB			10
+#define X86ASM_PREFIX_DC			11
+#define X86ASM_PREFIX_DD			12
+#define X86ASM_PREFIX_DE			13
+#define X86ASM_PREFIX_DF			14
 
 #define X86ASM_ERRMSG_AMBIGUOUS		"ambiguous command"
 #define X86ASM_ERRMSG_UNKNOWN_COMMAND	"unknown command '%s'"
@@ -386,7 +388,15 @@ int x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int
 	dispsize = 0;
 	immsize = 0;
 	if (additional_opcode != -1) {
-		emitmodrm_reg(additional_opcode);
+		if (additional_opcode & 0x80) {
+			if (additional_opcode == 0x89) {
+				emitmodrm_mod(3);
+			} else {
+				emitmodrm_reg(additional_opcode & ~0x80);
+			}
+		} else {
+			emitmodrm_reg(additional_opcode);
+		}
 	}
 
 	if (eopsize != opsize || insn->opsizeprefix == X86_PREFIX_OPSIZE) {
@@ -1128,8 +1138,13 @@ void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix)
 			x86opc_insn_op_special special=*((x86opc_insn_op_special*)(&opcodes[i].op[0]));
 			if (special.type==SPECIAL_TYPE_GROUP) {
 				x86opc_insn *group=x86_group_insns[special.data];
-				for (int g=0; g<8; g++) {
+				for (int g=0; g < 8; g++) {
 					match_opcode(&group[g], insn, prefix, i, g);
+				}
+			} else if (special.type == SPECIAL_TYPE_SGROUP) {
+				x86opc_insn *group = x86_special_group_insns[special.data];
+				for (int g=0; g < 9; g++) {
+					match_opcode(&group[g], insn, prefix, i, 0x80+g);
 				}
 			}
 		}
@@ -1140,8 +1155,8 @@ void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix)
 void x86asm::match_fopcodes(x86asm_insn *insn)
 {
 	/* try modrm fopcodes */
-	for (int i=0; i<8; i++) {
-		for (int j=0; j<8; j++) {
+	for (int i=0; i < 8; i++) {
+		for (int j=0; j < 8; j++) {
 			int n = match_opcode_name(insn->name, x86_modfloat_group_insns[i][j].name);
 			namefound |= n;
 			if (n != MATCHOPNAME_NOMATCH) {

@@ -94,6 +94,7 @@ class screendrawbuf: public genericdrawbuf {
 protected:
 	void *buf;	// actually CHAR_INFO *
 	int cursorx, cursory;
+	int dx, dy;
 	bool cursor_visible;
 	bool cursor_redraw;
 	bool init_console();
