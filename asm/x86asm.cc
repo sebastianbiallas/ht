@@ -1145,13 +1145,15 @@ void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix)
 			if (special.type==SPECIAL_TYPE_GROUP) {
 				x86opc_insn *group=x86_group_insns[special.data];
 				for (int g=0; g < 8; g++) {
-					x86opc_insn_op_special special2 = *((x86opc_insn_op_special*)(&group[g].op[0]));
-					if (special2.type == SPECIAL_TYPE_SGROUP) {
-						x86opc_insn *group = x86_special_group_insns[special2.data];
-						for (int h=0; h < 8; h++) {
-							match_opcode(&group[h], insn, prefix, i, (h<<3) + g + 0x800);
+					if (!group[g].name) {
+						x86opc_insn_op_special special2 = *((x86opc_insn_op_special*)(&group[g].op[0]));
+						if (special2.type == SPECIAL_TYPE_SGROUP) {
+							x86opc_insn *group = x86_special_group_insns[special2.data];
+							for (int h=0; h < 8; h++) {
+								match_opcode(&group[h], insn, prefix, i, (h<<3) + g + 0x800);
+							}
+							match_opcode(&group[8], insn, prefix, i, -1);
 						}
-						match_opcode(&group[8], insn, prefix, i, -1);
 					} else {
 						match_opcode(&group[g], insn, prefix, i, g);
 					}
