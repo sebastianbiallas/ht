@@ -147,9 +147,9 @@ if test "x$NEED_CURSES" = "x1"; then
 fi    
 
 dnl Makefile vars.
-HT_LDFLAGS="$HT_LIBS $HT_LDFLAGS"
 AC_SUBST(IO_DIR)
 AC_SUBST(HT_LDFLAGS)
+AC_SUBST(HT_LIBS)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

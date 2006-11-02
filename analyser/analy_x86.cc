@@ -597,7 +597,12 @@ void	AnalyX86Disassembler::examineOpcode(OPCODE *opcode)
 branch_enum_t AnalyX86Disassembler::isBranch(OPCODE *opcode)
 {
 	x86dis_insn *o = (x86dis_insn*)opcode;
-	char *opcode_str = o->name;
+	const char *opcode_str = o->name;
+	if (opcode_str[0] == '|') {
+		opcode_str++;
+	}
+	
+	
 	if (opcode_str[0]=='j') {
 		if (opcode_str[1]=='m') return br_jump; else return br_jXX;
 	} else if ((opcode_str[0]=='l') && (opcode_str[1]=='o')  && (opcode_str[2]=='o')) {

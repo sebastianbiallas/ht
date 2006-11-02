@@ -17,9 +17,8 @@ SUBDIRS		= tools analyser asm doc info io output eval minilzo srt
 
 INCLUDES	= -I$(srcdir)/$(ANALYSER_DIR) -I$(srcdir)/$(ASM_DIR) -I$(srcdir)/$(INFO_DIR) -I$(srcdir)/$(IO_DIR) -I$(srcdir)/$(COMIO_DIR) -I$(srcdir)/$(OUTPUT_DIR) -I$(srcdir)/$(EVAL_DIR) -I$(srcdir)/$(MINILZO_DIR) -I$(srcdir)/$(SRT_DIR) -I$(srcdir)
 
-ht_LDADD	= $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a $(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a $(MINILZO_DIR)/liblzo.a $(SRT_DIR)/libsrt.a
+ht_LDADD	= $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a $(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a $(MINILZO_DIR)/liblzo.a $(SRT_DIR)/libsrt.a @HT_LIBS@
 ht_LDFLAGS	= @HT_LDFLAGS@
-ht_LIBS		= @HT_LIBS@
 
 ht_SOURCES	= htdoc.c htdoc.h blockop.cc blockop.h coff_s.h common.cc common.h \
 config.h cstream.cc cstream.h demangle.h elfstruc.h htendian.cc \

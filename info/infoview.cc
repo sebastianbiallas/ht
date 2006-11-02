@@ -157,8 +157,8 @@ bool parse_xref_body(ht_streamfile *f, ht_tree *t, char **n, UINT *o, UINT *line
 		(*line)++;
 	}
 	free(thetarget);
-	if (name) free(name);
-	if (target) free(target);
+	free(name);
+	free(target);
 //	fprintf(stderr, "t2\n");
 	*n = end;
 	return true;
@@ -352,9 +352,9 @@ public:
 
 	~info_history_entry()
 	{
-		if (cwd) free(cwd);
-		if (file) free(file);
-		if (node) free(node);
+		free(cwd);
+		free(file);
+		free(node);
 	}
 };
  
@@ -424,9 +424,9 @@ void ht_info_viewer::done()
 		xrefs->destroy();
 		delete xrefs;
 	}
-	if (cwd) free(cwd);
-	if (node) free(node);
-	if (file) free(file);
+	free(cwd);
+	free(node);
+	free(file);
 	ht_text_viewer::done();
 }
 
@@ -583,13 +583,13 @@ bool ht_info_viewer::igotonode(char *f, char *n, bool add2hist)
 		xofs = 0;
 		top_line = 0;
 
-		if (file) free(file);
+		free(file);
 		file = strdup(nfile);
 
-		if (cwd) free(cwd);
+		free(cwd);
 		cwd = strdup(ncwd);
 
-		if (node) free(node);
+		free(node);
 		node = strdup(n);
 
 //		fprintf(stderr, "setset: c:%s, f:%s, n:%s\n", cwd, file, node);
@@ -610,93 +610,93 @@ void ht_info_viewer::handlemsg(htmsg *msg)
 {
 	if (msg->msg == msg_keypressed) {
 		switch (msg->data1.integer) {
-			case K_Space:
-			case K_Return: 
-				if (get_xrefs()) {
-					info_pos p(top_line + cursory, xofs + physical_cursorx());
-					info_xref *x = (info_xref*)get_xrefs()->get(&p);
-					if (!x) {
-						UINT cx = physical_cursorx();
-						info_pos *q = (info_pos*)get_xrefs()->enum_prev((ht_data**)&x, &p);
-						if ((q) && ((q->line != top_line+cursory) ||
-						(cx < q->ofs) || (cx >= q->ofs + x->len))) {
-							x = NULL;
+		case K_Space:
+		case K_Return: 
+			if (get_xrefs()) {
+				info_pos p(top_line + cursory, xofs + physical_cursorx());
+				info_xref *x = (info_xref*)get_xrefs()->get(&p);
+				if (!x) {
+					UINT cx = physical_cursorx();
+					info_pos *q = (info_pos*)get_xrefs()->enum_prev((ht_data**)&x, &p);
+					if ((q) && ((q->line != top_line+cursory) ||
+					(cx < q->ofs) || (cx >= q->ofs + x->len))) {
+						x = NULL;
+					}
+				}
+				if (x) {
+					char *p = NULL, *q = NULL;
+					char *a = x->target;
+					if (*a == '(') {
+						char *b = strchr(a, ')');
+						if (b) {
+							p = memndup(a+1, b-a-1);
+							q = ht_strdup(b+1);
 						}
 					}
-					if (x) {
-						char *p = NULL, *q = NULL;
-						char *a = x->target;
-						if (*a == '(') {
-							char *b = strchr(a, ')');
-							if (b) {
-								p = memndup(a+1, b-a-1);
-								q = ht_strdup(b+1);
-							}
-						}
-						if (!p)	p = ht_strdup(file);
-						if (!q)	q = ht_strdup(x->target);
-						if (!igotonode(p, q, true))
-							errorbox("help topic '(%s)%s' not found", p, q);
-						if (p) free(p);
-						if (q) free(q);
-					}
+					if (!p)	p = ht_strdup(file);
+					if (!q)	q = ht_strdup(x->target);
+					if (!igotonode(p, q, true))
+						errorbox("help topic '(%s)%s' not found", p, q);
+					free(p);
+					free(q);
+				}
+				clearmsg(msg);
+				dirtyview();
+				return;
+			}
+			break;
+		case K_Alt_Backspace:
+		case K_Backspace: {
+			int c;
+			if ((c = history->count())) {
+				info_history_entry *e = (info_history_entry*)history->get(c-1);
+//				fprintf(stderr, "backspace: %s, %s\n", e->file, e->node);
+				if (e->node) {
+					if (igotonode(e->file, e->node, false)) {
+						cursorx = e->cursorx;
+						cursory = e->cursory;
+						xofs = e->xofs;
+						top_line = e->top_line;
+					} else {
+						errorbox("help topic '(%s)%s' not found", e->file, e->node);
+					}						
+					history->del(c-1);
 					clearmsg(msg);
 					dirtyview();
 					return;
-				}
-				break;
-			case K_Alt_Backspace:
-			case K_Backspace: {
-				int c;
-				if ((c = history->count())) {
-					info_history_entry *e = (info_history_entry*)history->get(c-1);
-//					fprintf(stderr, "backspace: %s, %s\n", e->file, e->node);
-					if (e->node) {
-						if (igotonode(e->file, e->node, false)) {
-							cursorx = e->cursorx;
-							cursory = e->cursory;
-							xofs = e->xofs;
-							top_line = e->top_line;
-						} else {
-							errorbox("help topic '(%s)%s' not found", e->file, e->node);
-						}						
-						history->del(c-1);
-						clearmsg(msg);
-						dirtyview();
-						return;
-					}						
-				}
-				break;					
+				}						
 			}
-			case K_Tab: {
-				if (get_xrefs()) {
-					info_pos p(top_line + cursory, xofs + physical_cursorx());
-					info_xref *r;
-					info_pos *q = (info_pos*)get_xrefs()->enum_next((ht_data**)&r, &p);
-					if (q) {
-						goto_line(q->line);
-						cursor_pput(q->ofs);
-					}
-				}					
-				clearmsg(msg);
-				dirtyview();
-				return;
-			}
-			case K_BackTab: {
-				if (get_xrefs()) {
-					info_pos p(top_line + cursory, xofs + physical_cursorx());
-					info_xref *r;
-					info_pos *q = (info_pos*)get_xrefs()->enum_prev((ht_data**)&r, &p);
-					if (q) {
-						goto_line(q->line);
-						cursor_pput(q->ofs);
-					}
-				}					
-				clearmsg(msg);
-				dirtyview();
-				return;
-			}
+			break;					
 		}
+		case K_Tab: {
+			if (get_xrefs()) {
+				info_pos p(top_line + cursory, xofs + physical_cursorx());
+				info_xref *r;
+				info_pos *q = (info_pos*)get_xrefs()->enum_next((ht_data**)&r, &p);
+				if (q) {
+					goto_line(q->line);
+					cursor_pput(q->ofs);
+				}
+			}					
+			clearmsg(msg);
+			dirtyview();
+			return;
+		}
+		case K_BackTab: {
+			if (get_xrefs()) {
+				info_pos p(top_line + cursory, xofs + physical_cursorx());
+				info_xref *r;
+				info_pos *q = (info_pos*)get_xrefs()->enum_prev((ht_data**)&r, &p);
+				if (q) {
+					goto_line(q->line);
+					cursor_pput(q->ofs);
+				}
+			}					
+			clearmsg(msg);
+			dirtyview();
+			return;
+		}
+	}
 	}
 	ht_text_viewer::handlemsg(msg);
 }
