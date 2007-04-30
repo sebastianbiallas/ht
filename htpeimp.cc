@@ -21,15 +21,15 @@
 #include "formats.h"
 #include "htanaly.h"
 #include "htctrl.h"
-#include "htdata.h"
-#include "htendian.h"
+#include "data.h"
+#include "endianess.h"
 #include "htiobox.h"
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htpe.h"
 #include "htpeimp.h"
 #include "stream.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "httag.h"
 #include "log.h"
 #include "pe_analy.h"
@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeimports_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -47,7 +47,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 
 	bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
-	dword sec_rva, sec_size;
+	uint32 sec_rva, sec_size;
 	if (pe32) {
 		sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
 		sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
@@ -61,7 +61,8 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	start_timer(h0);
 
 	ht_group *g;
-	bounds c;
+	Bounds c;
+	String fn, s, dllname;
 
 	c=*b;
 	g=new ht_group();
@@ -80,15 +81,15 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	c.h=1;
 
 	PE_IMPORT_DESCRIPTOR import;
-	FILEOFS dofs;
-	UINT dll_index;
+	FileOfs dofs;
+	uint dll_index;
 	char iline[256];
 	
 	/* get import directory offset */
 	/* 1. get import directory rva */
-	FILEOFS iofs;
+	FileOfs iofs;
 	RVA irva;
-	UINT isize;
+	uint isize;
 	if (pe32) {
 		irva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].address;
 		isize = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_IMPORT].size;
@@ -98,7 +99,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	}
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
-	LOG("%s: PE: reading import directory at offset %08x, rva %08x, size %08x...", file->get_filename(), iofs, irva, isize);
+	LOG("%y: PE: reading import directory at offset 0x%08qx, rva 0x%08x, size 0x%08x...", &file->getFilename(fn), iofs, irva, isize);
 
 	/* make a memfile out of the whole file */
 
@@ -111,18 +112,20 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 
 	while (1) {
 		file->seek(dofs);
-		file->read(&import, sizeof import);
-		create_host_struct(&import, PE_IMPORT_DESCRIPTOR_struct, little_endian);
+		file->readx(&import, sizeof import);
+		createHostStruct(&import, PE_IMPORT_DESCRIPTOR_struct, little_endian);
 		if ((!import.characteristics) && (!import.name)) break;
 		dofs = file->tell();
 		/* get name of dll */
-		FILEOFS iname_ofs;
-		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)
-			|| file->seek(iname_ofs)) {
-			/* ? try as ofs?*/
-			if (file->seek(import.name)) goto pe_read_error;
+		FileOfs iname_ofs;
+		if (!pe_rva_to_ofs(&pe_shared->sections, import.name, &iname_ofs)) {
+			if (import.name >= file->getSize()) goto pe_read_error;
+			file->seek(import.name);
+		} else {
+			if (iname_ofs >= file->getSize()) goto pe_read_error;
+			file->seek(iname_ofs);
 		}
-		char *dllname = fgetstrz(file);	/* dont forget to free it at the end of the scope !!! */
+		file->readStringz(dllname);
 		dll_count++;
 
 		/*** imported functions by name or by ordinal ***/
@@ -134,7 +137,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		 *	as if it contained just imported addresses.
 		 */
 		RVA fthunk_rva = import.first_thunk;
-		FILEOFS fthunk_ofs;
+		FileOfs fthunk_ofs;
 		if (!pe_rva_to_ofs(&pe_shared->sections, fthunk_rva, &fthunk_ofs)) goto pe_read_error;
 		/*
 		 *	...and Original First Thunk (OFT)
@@ -143,7 +146,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		 *	the original one (bound executables).
 		 */
 		RVA thunk_rva;
-		FILEOFS thunk_ofs;
+		FileOfs thunk_ofs;
 		if (import.original_first_thunk) {
 			thunk_rva = import.original_first_thunk;
 			if (!pe_rva_to_ofs(&pe_shared->sections, thunk_rva, &thunk_ofs)) goto pe_read_error;
@@ -151,22 +154,22 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 			thunk_rva = fthunk_rva;
 			thunk_ofs = fthunk_ofs;
 		}
-		ht_pe_import_library *lib=new ht_pe_import_library(dllname);
+		ht_pe_import_library *lib=new ht_pe_import_library(dllname.contentChar());
 		pe_shared->imports.libs->insert(lib);
 
 		PE_THUNK_DATA thunk;
 		PE_THUNK_DATA_64 thunk64;
-		UINT thunk_count = 0;
+		uint thunk_count = 0;
 		file->seek(thunk_ofs);
 		while (1) {
 			if (pe32) {
-				file->read(&thunk, sizeof thunk);
-				create_host_struct(&thunk, PE_THUNK_DATA_struct, little_endian);
+				file->readx(&thunk, sizeof thunk);
+				createHostStruct(&thunk, PE_THUNK_DATA_struct, little_endian);
 				if (!thunk.ordinal) break;
 			} else {
-				file->read(&thunk64, sizeof thunk64);
-				create_host_struct(&thunk64, PE_THUNK_DATA_64_struct, little_endian);
-				if (!QWORD_GET_LO(thunk64.ordinal)) break;
+				file->readx(&thunk64, sizeof thunk64);
+				createHostStruct(&thunk64, PE_THUNK_DATA_64_struct, little_endian);
+				if (!thunk64.ordinal) break;
 			}
 			thunk_count++;
 		}
@@ -176,63 +179,64 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		file->seek(thunk_ofs);
 		if (thunk_count) {
 			if (pe32) {
-				thunk_table=(PE_THUNK_DATA*)malloc(sizeof *thunk_table * thunk_count);
-				file->read(thunk_table, sizeof *thunk_table * thunk_count);
+				thunk_table = ht_malloc(sizeof *thunk_table * thunk_count);
+				file->readx(thunk_table, sizeof *thunk_table * thunk_count);
 				// FIXME: ?
-				for (UINT i=0; i<thunk_count; i++) {
-					create_host_struct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
+				for (uint i=0; i<thunk_count; i++) {
+					createHostStruct(thunk_table+i, PE_THUNK_DATA_struct, little_endian);
 				}
 			} else {
-				thunk_table64=(PE_THUNK_DATA_64*)malloc(sizeof *thunk_table64 * thunk_count);
-				file->read(thunk_table64, sizeof *thunk_table64 * thunk_count);
+				thunk_table64 = ht_malloc(sizeof *thunk_table64 * thunk_count);
+				file->readx(thunk_table64, sizeof *thunk_table64 * thunk_count);
 				// FIXME: ?
-				for (UINT i=0; i<thunk_count; i++) {
-					create_host_struct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
+				for (uint i=0; i<thunk_count; i++) {
+					createHostStruct(thunk_table64+i, PE_THUNK_DATA_64_struct, little_endian);
 				}
 			}
 		}
-		for (dword i=0; i<thunk_count; i++) {
+		for (uint32 i=0; i<thunk_count; i++) {
 			function_count++;
 			ht_pe_import_function *func;
 			/* follow (original) first thunk */
 			if (pe32) {
-				thunk = *(thunk_table+i);
+				thunk = thunk_table[i];
 
 				if (thunk.ordinal & 0x80000000) {
 					/* by ordinal */
 					func = new ht_pe_import_function(dll_index, fthunk_rva, thunk.ordinal&0xffff);
 				} else {
 					/* by name */
-					FILEOFS function_desc_ofs;
-					word hint = 0;
-					if (!pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)
-						|| file->seek(function_desc_ofs)) {
-						if (file->seek(thunk.function_desc_address)) goto pe_read_error;
+					FileOfs function_desc_ofs;
+					uint16 hint = 0;
+					if (pe_rva_to_ofs(&pe_shared->sections, thunk.function_desc_address, &function_desc_ofs)) {
+						if (function_desc_ofs >= file->getSize()) goto pe_read_error;
+						file->seek(function_desc_ofs);
+					} else {
+						if (thunk.function_desc_address >= file->getSize()) goto pe_read_error;
+						file->seek(thunk.function_desc_address); 
 					}
-					file->read(&hint, 2);
-					hint = create_host_int(&hint, 2, little_endian);
-					char *name = fgetstrz(file);
-					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
-					free(name);
+					file->readx(&hint, 2);
+					hint = createHostInt(&hint, 2, little_endian);
+					file->readStringz(s);
+					func = new ht_pe_import_function(dll_index, fthunk_rva, s.contentChar(), hint);
 				}
 			} else {
-				thunk64 = *(thunk_table64+i);
+				thunk64 = thunk_table64[i];
 
 				// FIXME: is this correct ?
-				if (QWORD_GET_LO(thunk64.ordinal) & 0x80000000) {
+				if (thunk64.ordinal & 0x8000000000000000ULL) {
 					/* by ordinal */
-					func = new ht_pe_import_function(dll_index, fthunk_rva, QWORD_GET_LO(thunk64.ordinal)&0xffff);
+					func = new ht_pe_import_function(dll_index, fthunk_rva, thunk64.ordinal & 0xffff);
 				} else {
 					/* by name */
-					FILEOFS function_desc_ofs;
-					word hint = 0;
-					if (!pe_rva_to_ofs(&pe_shared->sections, QWORD_GET_LO(thunk64.function_desc_address), &function_desc_ofs)) goto pe_read_error;
+					FileOfs function_desc_ofs;
+					uint16 hint = 0;
+					if (!pe_rva_to_ofs(&pe_shared->sections, thunk64.function_desc_address, &function_desc_ofs)) goto pe_read_error;
 					file->seek(function_desc_ofs);
-					file->read(&hint, 2);
-					hint = create_host_int(&hint, 2, little_endian);
-					char *name = fgetstrz(file);
-					func = new ht_pe_import_function(dll_index, fthunk_rva, name, hint);
-					free(name);
+					file->readx(&hint, 2);
+					hint = createHostInt(&hint, 2, little_endian);
+					file->readStringz(s);
+					func = new ht_pe_import_function(dll_index, fthunk_rva, s.contentChar(), hint);
 				}
 			}
 			pe_shared->imports.funcs->insert(func);
@@ -257,25 +261,23 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 		} else {
 			free(thunk_table64);
 		}			
-
-		free(dllname);
 	}
 
 	stop_timer(h0);
-//	LOG("%s: PE: %d ticks (%d msec) to read imports", file->get_name(), get_timer_tick(h0), get_timer_msec(h0));
+//	LOG("%y: PE: %d ticks (%d msec) to read imports", file->get_name(), get_timer_tick(h0), get_timer_msec(h0));
 	delete_timer(h0);
 
-	ht_snprintf(iline, sizeof iline, "* PE import directory at offset %08x (%d functions from %d libraries)", iofs, function_count, dll_count);
+	ht_snprintf(iline, sizeof iline, "* PE import directory at offset %08qx (%d functions from %d libraries)", iofs, function_count, dll_count);
 	head=new ht_statictext();
 	head->init(&c, iline, align_left);
 
 	g->insert(head);
 	g->insert(v);
 	//
-	for (UINT i=0; i<pe_shared->imports.funcs->count(); i++) {
-		ht_pe_import_function *func = (ht_pe_import_function*)pe_shared->imports.funcs->get(i);
+	for (uint i=0; i<pe_shared->imports.funcs->count(); i++) {
+		ht_pe_import_function *func = (ht_pe_import_function*)(*pe_shared->imports.funcs)[i];
 		assert(func);
-		ht_pe_import_library *lib = (ht_pe_import_library*)pe_shared->imports.libs->get(func->libidx);
+		ht_pe_import_library *lib = (ht_pe_import_library*)(*pe_shared->imports.libs)[func->libidx];
 		assert(lib);
 		char addr[32], name[256];
 		ht_snprintf(addr, sizeof addr, "%08x", func->address);
@@ -295,7 +297,7 @@ static ht_view *htpeimports_init(bounds *b, ht_streamfile *file, ht_format_group
 	return g;
 pe_read_error:
 	delete_timer(h0);
-	errorbox("%s: PE import section seems to be corrupted.", file->get_filename());
+	errorbox("%y: PE import section seems to be corrupted.", &file->getFilename(fn));
 	g->done();
 	delete g;
 	v->done();
@@ -312,21 +314,21 @@ format_viewer_if htpeimports_if = {
  *	class ht_pe_import_library
  */
 
-ht_pe_import_library::ht_pe_import_library(char *n)
+ht_pe_import_library::ht_pe_import_library(const char *n)
 {
 	name = ht_strdup(n);
 }
 
 ht_pe_import_library::~ht_pe_import_library()
 {
-	if (name) free(name);
+	free(name);
 }
 
 /*
  *	class ht_pe_import_function
  */
 
-ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, UINT o)
+ht_pe_import_function::ht_pe_import_function(uint li, RVA a, uint o)
 {
 	libidx = li;
 	ordinal = o;
@@ -334,7 +336,7 @@ ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, UINT o)
 	byname = false;
 }
 
-ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, char *n, UINT h)
+ht_pe_import_function::ht_pe_import_function(uint li, RVA a, const char *n, uint h)
 {
 	libidx= li;
 	name.name = ht_strdup(n);
@@ -345,14 +347,14 @@ ht_pe_import_function::ht_pe_import_function(UINT li, RVA a, char *n, UINT h)
 
 ht_pe_import_function::~ht_pe_import_function()
 {
-	if ((byname) && (name.name)) free(name.name);
+	if (byname) free(name.name);
 }
 
 /*
  *	CLASS ht_pe_import_viewer
  */
 
-void	ht_pe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
+void	ht_pe_import_viewer::init(Bounds *b, const char *Desc, ht_format_group *fg)
 {
 	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
 	options |= VO_BROWSABLE;
@@ -371,7 +373,7 @@ void	ht_pe_import_viewer::done()
 void ht_pe_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	UINT l, s;
+	uint l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -386,7 +388,7 @@ void ht_pe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_pe_import_viewer::func(UINT i, bool execute)
+const char *ht_pe_import_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:
@@ -418,36 +420,27 @@ char *ht_pe_import_viewer::func(UINT i, bool execute)
 void ht_pe_import_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_funcexec:
-			if (func(msg->data1.integer, 1)) {
-				clearmsg(msg);
-				return;
-			}
-			break;
-		case msg_funcquery: {
-			char *s=func(msg->data1.integer, 0);
-			if (s) {
-				msg->msg=msg_retval;
-				msg->data1.str=s;
-			}
-			break;
+	case msg_funcexec:
+		if (func(msg->data1.integer, 1)) {
+			clearmsg(msg);
+			return;
 		}
-/*		case msg_get_scrollinfo:
-			switch (msg->data1.integer) {
-				case gsi_pindicator: {
-					strcpy((char*)msg->data2.ptr, " Enter to view, Backspace to return here");
-					clearmsg(msg);
-					return;
-				}
-			}
-			break;*/
-		case msg_keypressed: {
-			if (msg->data1.integer == K_Return) {
-				select_entry(e_cursor);
-				clearmsg(msg);
-			}
-			break;
+		break;
+	case msg_funcquery: {
+		const char *s=func(msg->data1.integer, 0);
+		if (s) {
+			msg->msg=msg_retval;
+			msg->data1.cstr=s;
 		}
+		break;
+	}
+	case msg_keypressed: {
+		if (msg->data1.integer == K_Return) {
+			select_entry(e_cursor);
+			clearmsg(msg);
+		}
+		break;
+	}
 	}
 	ht_text_listbox::handlemsg(msg);
 }
@@ -458,7 +451,7 @@ bool ht_pe_import_viewer::select_entry(void *entry)
 
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 
-	ht_pe_import_function *e = (ht_pe_import_function*)pe_shared->imports.funcs->get(i->id);
+	ht_pe_import_function *e = (ht_pe_import_function*)(*pe_shared->imports.funcs)[i->id];
 	if (!e) return true;
 	if (pe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)pe_shared->v_image;
@@ -467,7 +460,7 @@ bool ht_pe_import_viewer::select_entry(void *entry)
 		if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 			addr = a->createAddress32(e->address+pe_shared->pe32.header_nt.image_base);
 		} else {
-			addr = a->createAddress64(to_qword(e->address)+pe_shared->pe64.header_nt.image_base);
+			addr = a->createAddress64(e->address+pe_shared->pe64.header_nt.image_base);
 		}
 		if (av->gotoAddress(addr, NULL)) {
 			app->focus(av);

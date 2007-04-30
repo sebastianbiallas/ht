@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if 0
 #ifndef __TERMINAL_H__
 #define __TERMINAL_H__
 
@@ -29,17 +30,17 @@
 
 class Terminal: public ht_ltextfile {
 private:
-	ht_streamfile *in, *out, *err;
+	File *in, *out, *err;
 	int sys_ipc_handle;
 // FIXME: we need line buffering using String2	
 
-			bool append(ht_streamfile *file);
+			bool append(File *file);
 			
 public:
-			void init(ht_streamfile *in, ht_streamfile *out, ht_streamfile *err, int sys_ipc_handle);
-	virtual	void done();
+		Terminal(File *in, File *out, File *err, int sys_ipc_handle);
+	virtual	~Terminal();
 /* oerwritten */	
-	virtual	UINT write(const void *buf, UINT size);
+	virtual	uint write(const void *buf, uint size);
 /* new */
 			bool connected();
 			bool update();
@@ -54,9 +55,9 @@ private:
 	Terminal	*term;
 	
 			void do_update();
-			void get_pindicator_str(char *buf);
+			int get_pindicator_str(char *buf, int max_len);
 public:
-			void init(bounds *b, Terminal *term, bool own_term);
+			void init(Bounds *b, Terminal *term, bool own_term);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -65,3 +66,4 @@ public:
 
 #endif /* __TERMINAL_H__ */
 
+#endif

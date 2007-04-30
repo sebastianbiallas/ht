@@ -23,7 +23,7 @@
 
 #include "elfstruc.h"
 #include "formats.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "htformat.h"
 #include "relfile.h"
 
@@ -31,8 +31,8 @@
 #define DESC_ELF_HEADER "elf/header"
 #define DESC_ELF_SECTION_HEADERS "elf/section headers"
 #define DESC_ELF_PROGRAM_HEADERS "elf/program headers"
-#define DESC_ELF_SYMTAB "elf/symbol table %s (%d)"
-#define DESC_ELF_RELOCTAB "elf/relocation table %s (%d)"
+#define DESC_ELF_SYMTAB "elf/symbol table %y (%d)"
+#define DESC_ELF_RELOCTAB "elf/relocation table %y (%d)"
 #define DESC_ELF_IMAGE "elf/image"
 
 #define ATOM_ELF_CLASS	 			0x454c4600
@@ -73,16 +73,18 @@
 
 extern format_viewer_if htelf_if;
 
-class sectionAndIdx: public ht_data {
+class FakeAddr: public Object {
 public:
 	uint secidx;
 	uint symidx;
+	uint32 addr;
 
-	sectionAndIdx(uint asecidx, uint asymidx)
+	FakeAddr(uint asecidx, uint asymidx, uint32 aAddr)
+		: secidx(asecidx), symidx(asymidx), addr(aAddr)
 	{
-		secidx = asecidx;
-		symidx = asymidx;
 	}
+
+	virtual int compareTo(const Object *) const;
 };
 
 struct elf_section_headers {
@@ -112,9 +114,9 @@ struct ht_elf_reloc_section32 {
 };
 
 struct ht_elf_shared_data {
-	FILEOFS header_ofs;
+	FileOfs header_ofs;
 	ELF_HEADER ident;
-	endianess byte_order;
+	Endianess byte_order;
 	union {
 		ELF_HEADER32 header32;
 		ELF_HEADER64 header64;
@@ -128,7 +130,7 @@ struct ht_elf_shared_data {
 	ht_format_viewer *v_image;
 	int fake_undefined_shidx;
 	uint fake_undefined_size;
-	ht_tree *undefined2fakeaddr;
+	Container *undefined2fakeaddr;
 };
 
 /*
@@ -140,10 +142,10 @@ protected:
 	/* new */
 		void auto_relocate32();
 		void fake_undefined_symbols32();
-		uint find_reloc_section_for(UINT si);
+		uint find_reloc_section_for(uint si);
 		void relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a);
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs);
+		void init(Bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs);
 	virtual	void done();
 	/* extends ? */
 	virtual	void loc_enum_start();
@@ -154,7 +156,7 @@ public:
  *	ht_elf32_reloc_entry
  */
 
-class ht_elf32_reloc_entry: public ht_data {
+class ht_elf32_reloc_entry: public Object {
 public:
 	uint	type;
 	union {
@@ -173,22 +175,22 @@ class ht_elf32_reloc_file: public ht_reloc_file {
 protected:
 	ht_elf_shared_data *data;
 	/* extends ht_reloc_file */
-	virtual void	reloc_apply(ht_data *reloc, byte *data);
-	virtual bool	reloc_unapply(ht_data *reloc, byte *data);
+	virtual void	reloc_apply(Object *reloc, byte *data);
+	virtual bool	reloc_unapply(Object *reloc, byte *data);
 public:
-		   void	init(ht_streamfile *streamfile, bool own_streamfile, ht_elf_shared_data *data);
+		   	ht_elf32_reloc_file(File *File, bool own_streamfile, ht_elf_shared_data *data);
 };
 
 bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);
 
-bool elf_phys_and_mem_section(elf_section_header *s, UINT elfclass);
-bool elf_valid_section(elf_section_header *s, UINT elfclass);
+bool elf_phys_and_mem_section(elf_section_header *s, uint elfclass);
+bool elf_valid_section(elf_section_header *s, uint elfclass);
 
-bool elf_addr_to_section(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, int *section);
-bool elf_addr_to_ofs(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr, dword *ofs);
-bool elf_addr_is_valid(elf_section_headers *section_headers, UINT elfclass, ELFAddress addr);
+bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section);
+bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, FileOfs *ofs);
+bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFAddress addr);
 
-bool elf_ofs_to_addr(elf_section_headers *section_headers, UINT elfclass, dword ofs, ELFAddress *addr);
-bool elf_ofs_to_section(elf_section_headers *section_headers, UINT elfclass, dword ofs, dword *section);
+bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, FileOfs ofs, ELFAddress *addr);
+bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, FileOfs ofs, uint32 *section);
 
 #endif /* !__HTELF_H__ */

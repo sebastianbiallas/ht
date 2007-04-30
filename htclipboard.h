@@ -21,7 +21,7 @@
 #ifndef __HTCLIPBOARD_H__
 #define __HTCLIPBOARD_H__
 
-#include "global.h"
+#include "io/types.h"
 #include "stream.h"
 #include "htformat.h"
 
@@ -29,17 +29,17 @@
  *	CLASS ht_clipboard
  */
 
-class ht_clipboard: public ht_mem_file {
+class ht_clipboard: public MemoryFile {
 public:
-	ht_list *copy_history;
-	dword select_start, select_len;
+	List *copy_history;
+	FileOfs select_start, select_len;
 
-			void init();
-	virtual	void done();
+		ht_clipboard();
+	virtual	~ht_clipboard();
 /* overwritten */
-	virtual	UINT	write(const void *buf, UINT size);
+	virtual	uint write(const void *buf, uint size);
 /* new */
-			void clear();
+		void clear();
 };
 
 /*
@@ -48,31 +48,31 @@ public:
 
 class ht_clipboard_viewer: public ht_uformat_viewer {
 protected:
-	UINT lastwritecount;
-	UINT lastentrycount;
+	uint lastwritecount;
+	uint lastentrycount;
 
-			void get_pindicator_str(char *buf);
-			void selection_changed();
+		int get_pindicator_str(char *buf, int max_len);
+		void selection_changed();
 public:
-			void init(bounds *b, char *desc, int caps, ht_clipboard *clipboard, ht_format_group *format_group);
+		void init(Bounds *b, const char *desc, int caps, ht_clipboard *clipboard, ht_format_group *format_group);
 /* overwritten */
 	virtual	void draw();
-	virtual 	void handlemsg(htmsg *msg);
-	virtual	void pselect_add(FILEOFS start, FILEOFS end);
-	virtual	void pselect_set(FILEOFS start, FILEOFS end);
+	virtual void handlemsg(htmsg *msg);
+	virtual	void pselect_add(FileOfs start, FileOfs end);
+	virtual	void pselect_set(FileOfs start, FileOfs end);
 /* new */
 			void update_content();
 };
 
 /* clipboard functions */
 
-void clipboard_add_copy_history_entry(char *source, dword start, dword size, time_t time);
-int clipboard_copy(char *source_desc, void *buf, dword len);
-int clipboard_copy(char *source_desc, ht_streamfile *streamfile, dword offset, dword len);
-int clipboard_paste(void *buf, dword maxlen);
-int clipboard_paste(ht_streamfile *streamfile, dword offset);
-int clipboard_clear();
-dword clipboard_getsize();
+void clipboard_add_copy_history_entry(const char *source, FileOfs start, FileOfs size, time_t time);
+FileOfs clipboard_copy(const char *source_desc, void *buf, uint len);
+FileOfs clipboard_copy(const char *source_desc, File *streamfile, FileOfs offset, FileOfs len);
+FileOfs clipboard_paste(void *buf, FileOfs maxlen);
+FileOfs clipboard_paste(File *streamfile, FileOfs offset);
+bool clipboard_clear();
+FileOfs clipboard_getsize();
 
 /*
  *	INIT

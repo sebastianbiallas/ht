@@ -2,7 +2,7 @@
  *	HT Editor
  *	store.h
  *
- *	Copyright (C) 1999-2002 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 1999-2003 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -21,48 +21,51 @@
 #ifndef STORE_H
 #define STORE_H
 
-#include "common.h"
-#include "global.h"
-#include "htdata.h"
+#include "data.h"
+#include "sys/types.h"
 
 typedef Object *(*object_builder)();
 
-class ht_stream;
-
 #include "stream.h"
+#include "except.h"
 
-class ht_object_stream_inter: public ht_object_stream {
+class ObjectNotRegisteredException: public MsgfException {
+	ObjectID mID;
 public:
-	virtual Object	*getObject(char *name);
-	virtual void	getObject(Object *&o, char *name);
-	virtual void	putObject(Object *obj, char *name);
+	ObjectNotRegisteredException(ObjectID aID);
 };
 
-class ht_object_stream_bin: public ht_object_stream_inter {
+class ObjectStreamInter: public ObjectStream {
 public:
-		   void	init(ht_stream *s);
-/* overwritten */
-	virtual void	*getBinary(int size, char *desc);
-	virtual void	getBinary(void *p, int size, char *desc);
-	virtual bool	getBool(char *desc);
-	virtual int	getIntDec(int size, char *desc);
-	virtual int	getIntHex(int size, char *desc);
-	virtual qword	getQWordDec(int size, char *desc);
-	virtual qword	getQWordHex(int size, char *desc);
-	virtual void	getSeparator();
-	virtual char	*getString(char *desc);
-	virtual void	putBinary(void *mem, int size, char *desc);
-	virtual void	putBool(bool b, char *desc);
-	virtual void	putInfo(char *info);
-	virtual void	putIntDec(int a, int size, char *desc);
-	virtual void	putIntHex(int a, int size, char *desc);
-	virtual void	putQWordDec(qword a, int size, char *desc);
-	virtual void	putQWordHex(qword a, int size, char *desc);
-	virtual void	putSeparator();
-	virtual void	putString(char *string, char *desc);
+			ObjectStreamInter(Stream *s, bool own_stream);
+	/* extends ObjectStream */
+	virtual Object *getObjectInternal(const char *name, ObjectID id = OBJID_INVALID);
+	virtual void	putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID);
 };
 
-class ht_object_stream_txt: public ht_object_stream_inter {
+class ObjectStreamBin: public ObjectStreamInter {
+public:
+				ObjectStreamBin(Stream *s, bool own_s);
+	/* extends ObjectStream */
+	virtual void		getBinary(void *buf, uint size, const char *desc);
+	virtual bool		getBool(const char *desc);
+	virtual uint64		getInt(uint size, const char *desc);
+	virtual char *		getString(const char *desc);
+	virtual byte *		getLenString(int &length, const char *desc);
+
+	virtual void		putBinary(const void *mem, uint size, const char *desc);
+	virtual void		putBool(bool b, const char *desc);
+	virtual void		putComment(const char *comment);
+	virtual void		putCommentf(const char *comment_format, ...);
+	virtual void		putInt(uint64 i, uint size, const char *desc, uint int_fmt_hint = OS_FMT_DEC);
+	virtual void		putSeparator();
+	virtual void		putString(const char *string, const char *desc);
+	virtual void		putLenString(const byte *string, int length, const char *desc);
+
+	virtual void		corrupt();
+};
+
+class ObjectStreamText: public ObjectStreamInter {
 protected:
 	char		cur;
 	int		line;
@@ -70,74 +73,80 @@ protected:
 	int		indent;
 public:
 	   
-		void	init(ht_stream *s);
-/* overwritten */
-	virtual void	*getBinary(int size, char *desc);
-	virtual void	getBinary(void *p, int size, char *desc);
-	virtual bool	getBool(char *desc);
-	virtual int	getIntDec(int size, char *desc);
-	virtual int	getIntHex(int size, char *desc);
-	virtual qword	getQWordDec(int size, char *desc);
-	virtual qword	getQWordHex(int size, char *desc);
-	virtual void	getObject(Object *&o, char *name);
-	virtual void	getSeparator();
-	virtual char	*getString(char *desc);
-	virtual void	putBinary(void *mem, int size, char *desc);
-	virtual void	putBool(bool b, char *desc);
-	virtual void	putInfo(char *info);
-	virtual void	putIntDec(int a, int size, char *desc);
-	virtual void	putIntHex(int a, int size, char *desc);
-	virtual void	putQWordDec(qword a, int size, char *desc);
-	virtual void	putQWordHex(qword a, int size, char *desc);
-	virtual void	putObject(Object *obj, char *name);
-	virtual void	putSeparator();
-	virtual void	putString(char *string, char *desc);
+				ObjectStreamText(Stream *s, bool own_stream);
+	/* extends ObjectStreamInter */
+	virtual Object *	getObjectInternal(const char *name, ObjectID id = OBJID_INVALID);
+	virtual void		putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID);
+	/* extends ObjectStream */
+	virtual void		getBinary(void *buf, uint size, const char *desc);
+	virtual bool		getBool(const char *desc);
+	virtual uint64		getInt(uint size, const char *desc);
+	virtual char *		getString(const char *desc);
+	virtual byte *		getLenString(int &length, const char *desc);
+	
+	virtual void		putBinary(const void *mem, uint size, const char *desc);
+	virtual void		putBool(bool b, const char *desc);
+	virtual void		putComment(const char *comment);
+	virtual void		putInt(uint64 i, uint size, const char *desc, uint int_fmt_hint = OS_FMT_DEC);
+	virtual void		putSeparator();
+	virtual void		putString(const char *string, const char *desc);
+	virtual void		putLenString(const byte *string, int length, const char *desc);
 
-		   void	setSyntaxError();
-		   int	getErrorLine();
+	virtual void		corrupt();
+
+		   void		setSyntaxError();
+		   int		getErrorLine();
 private:
 /* io */
 		   void	expect(char c);
 		   void	skipWhite();
 		   char	readChar();
-		   void	readDesc(char *desc);
+		   void	readDesc(const char *desc);
 
 		   
-		   void	putDesc(char *desc);
+		   void	putDesc(const char *desc);
 		   void	putIndent();
 		   void	putChar(char c);
-		   void	putS(char *s);
+		   void	putS(const char *s);
 };
 
 /*
- *   ht_object_stream_memmap dups strings + mem for set/getdata
- *	WARNING: not endian-neutral!!
+ *   ObjectStreamNative View:set/getData() methods
+ *	(endian-dependend)
  */
- 
-class ht_object_stream_memmap: public ht_object_stream_bin {
+
+#define DATABUF_BOOL(name)		bool		name PACKED
+#define DATABUF_UINT(name)		uint		name PACKED
+#define DATABUF_PTR(type, name)		type*		name PACKED
+
+class ObjectStreamNative: public ObjectStream {
 protected:
 	bool duplicate;
-	ht_clist	*allocd;
+	Array allocd;
 
-		   void	*duppa(void *p, int size);
+		void		*duppa(const void *p, int size);
 public:
-		   void	init(ht_stream *s, bool duplicate);
-	virtual void	done();
-	virtual void	*getBinary(int size, char *desc);
-	virtual void	getBinary(void *p, int size, char *desc);
-	virtual int	getIntDec(int size, char *desc);
-	virtual int	getIntHex(int size, char *desc);
-	virtual qword	getQWordDec(int size, char *desc);
-	virtual qword	getQWordHex(int size, char *desc);
-	virtual char	*getString(char *desc);
-	virtual UINT	recordStart(UINT size);
-	virtual void	recordEnd(UINT);
-	virtual void	putBinary(void *mem, int size, char *desc);
-	virtual void	putIntDec(int a, int size, char *desc);
-	virtual void	putIntHex(int a, int size, char *desc);
-	virtual void	putQWordDec(qword a, int size, char *desc);
-	virtual void	putQWordHex(qword a, int size, char *desc);
-	virtual void	putString(char *string, char *desc);
+				ObjectStreamNative(Stream *s, bool own_s, bool duplicate);
+/* extends ObjectStream */
+	virtual void		getBinary(void *buf, uint size, const char *desc);
+	virtual bool		getBool(const char *desc);
+	virtual uint64		getInt(uint size, const char *desc);
+	virtual Object *	getObjectInternal(const char *name, ObjectID id = OBJID_INVALID);
+	virtual char *		getString(const char *desc);
+	virtual byte *		getLenString(int &length, const char *desc);
+
+	virtual void		putBinary(const void *mem, uint size, const char *desc);
+	virtual void		putBool(bool b, const char *desc);
+	virtual void		putComment(const char *comment);
+	virtual void		putInt(uint64 i, uint size, const char *desc, uint int_fmt_hint = OS_FMT_DEC);
+	virtual void		putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID);
+	virtual void		putSeparator();
+	virtual void		putString(const char *string, const char *desc);
+	virtual void		putLenString(const byte *string, int length, const char *desc);
+
+	virtual void		corrupt();
 };
+
+void putIDComment(ObjectStream &o, uint32 id);
 
 #endif

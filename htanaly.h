@@ -23,7 +23,7 @@
 
 #include "analy.h"
 #include "cmds.h"
-#include "global.h"
+#include "io/types.h"
 #include "htdialog.h"
 #include "htformat.h"
 #include "httree.h"
@@ -66,13 +66,13 @@ class ht_aviewer;
 
 class AnalyserInformation: public ht_statictext {
 	ht_aviewer	*analy;     
-	char			buf[1024];
-	int			addrs, labels;
-	const char	*aname, *atype, *adis;
+	int		addrs, labels;
+	const char	*atype, *adis;
+	String		aname;
 public:
-			void	init(bounds *b, ht_aviewer *a);
+		void init(Bounds *b, ht_aviewer *a);
 	virtual	void done();
-	virtual	char *gettext();
+	virtual	int  gettext(char *text, int maxlen);
 	virtual	bool idle();
 };
 
@@ -86,20 +86,20 @@ public:
 	int		idle_count;
 	int		symbols;
 
-			void		init(bounds *b, Analyser *Analy);
-	virtual   void		done();
-	virtual   int		calcCount();
-	virtual   int		cursorAdjust();
-	virtual	int		estimateEntryPos(void *entry);
-	virtual   void *	getFirst();
-	virtual   void *	getLast();
-	virtual   void *	getNext(void *entry);
-	virtual   void *	getPrev(void *entry);
-	virtual   char *	getStr(int col, void *entry);
-	virtual	bool		idle();
-	virtual   int		numColumns();
-	virtual	void *	quickfind(char *s);
-	virtual	char *	quickfindCompletition(char *s);
+		void	init(Bounds *b, Analyser *Analy);
+	virtual void	done();
+	virtual int	calcCount();
+	virtual int	cursorAdjust();
+	virtual	int	estimateEntryPos(void *entry);
+	virtual void *	getFirst();
+	virtual void *	getLast();
+	virtual void *	getNext(void *entry);
+	virtual void *	getPrev(void *entry);
+	virtual const char *getStr(int col, void *entry);
+	virtual	bool	idle();
+	virtual int	numColumns();
+	virtual	void *	quickfind(const char *s);
+	virtual	char *	quickfindCompletition(const char *s);
 };
 
 struct CallChainNode {
@@ -115,7 +115,7 @@ class CallChain: public ht_treeview {
 		Analyser		*analy;
 		CallChainNode *root;
 public:
-			   void	init(bounds *b, Analyser *analy, Address *a, char *desc);
+			   void	init(Bounds *b, Analyser *analy, Address *a, char *desc);
 		virtual void	done();
 		virtual void	adjust(void *node, bool expand);
 		virtual void   *get_child(void *node, int i);
@@ -143,15 +143,15 @@ private:
 class AnalyInfoline: public ht_statictext {
 public:
 	ht_aviewer	*analy;
-	char			*s;
-	FILEOFS		fofs;
+	char		*s;
+	FileOfs		fofs;
 	Address		*addr;
-	char			*displayformat;
-			void	init(bounds *b, ht_aviewer *A, char *Format);
-	virtual	void done();
-	virtual	char *gettext();
-			void update(Address *cursor_addr, FILEOFS ecursor_addr);
-			bool valid();
+	char		*displayformat;
+		void	init(Bounds *b, ht_aviewer *A, const char *Format);
+	virtual	void	done();
+	virtual	int	gettext(char *text, int maxlen);
+		void	update(Address *cursor_addr, FileOfs ecursor_addr);
+		bool	valid();
 };
 
 /*
@@ -161,22 +161,22 @@ public:
 class ht_aviewer;
 class ht_analy_sub: public ht_sub {
 public:
-	Analyser		*analy;
+	Analyser	*analy;
 	Address        *lowestaddress, *highestaddress;
 	AnalyserOutput *output;
 	ht_aviewer	*aviewer;
 	
-			void init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
+		void	init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
-	virtual	bool convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id);
-	virtual	bool closest_line_id(LINE_ID *line_id);
+	virtual	bool	convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
+	virtual	bool	closest_line_id(LINE_ID *line_id);
 	virtual	void	first_line_id(LINE_ID *line_id);
 	virtual	bool	getline(char *line, const LINE_ID line_id);
 	virtual	void	last_line_id(LINE_ID *line_id);
 	virtual	int	next_line_id(LINE_ID *line_id, int n);
 	virtual	int	prev_line_id(LINE_ID *line_id, int n);
 			void	setAnalyser(Analyser *Analy);
-	virtual	ht_search_result *search(ht_search_request *search, FILEOFS start, FILEOFS end);
+	virtual	ht_search_result *search(ht_search_request *search, FileOfs start, FileOfs end);
 };
 
 /*
@@ -192,39 +192,39 @@ public:
 	ht_analy_sub *analy_sub;
 	bool one_load_hack;
 	bool pause;
-			void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy);
-	virtual	void	done();
-			bool convertAddressToViewerPos(Address *a, viewer_pos *p);
-			bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
-			void	attachInfoline(AnalyInfoline *V);
-			bool canCreateAddress(Address *addr, bool error_msg);
-			void dataStringDialog();
-			void dataIntDialog(taddr_int_subtype subtype, int length);
-			void exportFileDialog();
-	virtual	char *func(UINT i, bool execute);
-			void generateOutputDialog();
-			bool getCurrentAddress(Address **a);
-	virtual	bool get_current_offset(FILEOFS *ofs);
-	virtual	void get_pindicator_str(char *buf);
+		void init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy);
+	virtual	void done();
+		bool convertAddressToViewerPos(Address *a, viewer_pos *p);
+		bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
+		void attachInfoline(AnalyInfoline *V);
+		bool canCreateAddress(Address *addr, bool error_msg);
+		void dataStringDialog();
+		void dataIntDialog(taddr_int_subtype subtype, int length);
+		void exportFileDialog();
+	virtual	const char *func(uint i, bool execute);
+		void generateOutputDialog();
+		bool getCurrentAddress(Address **a);
+	virtual	bool get_current_offset(FileOfs *ofs);
+	virtual	int  get_pindicator_str(char *buf, int max_len);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
-			bool gotoAddress(Address *a, ht_view *source_object);
-	virtual	void	handlemsg(htmsg *msg);
-	virtual	bool	idle();
-	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
-	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
-			bool pos_to_string(viewer_pos p, char *result, int maxlen);
-	virtual	int	ref_sel(LINE_ID *id);
+		bool gotoAddress(Address *a, ht_view *source_object);
+	virtual	void handlemsg(htmsg *msg);
+	virtual	bool idle();
+	virtual	bool offset_to_pos(FileOfs ofs, viewer_pos *p);
+	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
+		bool pos_to_string(viewer_pos p, char *result, int maxlen);
+	virtual	bool ref_sel(LINE_ID *id);
 	virtual	void reloadpalette();
 	virtual	void setAnalyser(Analyser *a) = 0;
-			void showCallChain(Address *addr);
-			void showComments(Address *addr);
-			void showInfo(Address *addr);
-			void showSymbols(Address *addr);
-			void showXRefs(Address *addr);
-			void searchForXRefs(Address *addr);
-	virtual	bool qword_to_pos(qword q, viewer_pos *p);
-	virtual	int func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
-	virtual	int symbol_handler(eval_scalar *result, char *name);
+		void showCallChain(Address *addr);
+		void showComments(Address *addr);
+		void showInfo(Address *addr);
+		void showSymbols(Address *addr);
+		void showXRefs(Address *addr);
+		void searchForXRefs(Address *addr);
+	virtual	bool qword_to_pos(uint64 q, viewer_pos *p);
+	virtual	bool func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
+	virtual	bool symbol_handler(eval_scalar *result, char *name);
 };
 
 #endif

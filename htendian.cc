@@ -19,11 +19,10 @@
  */
 
 #include "htdebug.h"
-#include "htendian.h"
-#include "global.h"
+#include "endianess.h"
 #include <string.h>
 
-void create_foreign_int(void *buf, int i, int size, endianess to_endianess)
+void createForeignInt(void *buf, int i, int size, endianess to_endianess)
 {
 	byte *b=(byte*)buf;
 	switch (size) {
@@ -61,7 +60,7 @@ void create_foreign_int(void *buf, int i, int size, endianess to_endianess)
 	}
 }
 
-int create_host_int(const void *buf, int size, endianess from_endianess)
+int createHostInt(const void *buf, int size, endianess from_endianess)
 {
 	byte *b=(byte*)buf;
 	switch (size) {
@@ -88,11 +87,11 @@ int create_host_int(const void *buf, int size, endianess from_endianess)
 	return 0;
 }
 
-void create_foreign_int64(void *buf, const qword i, int size, endianess to_endianess)
+void create_foreign_int64(void *buf, const uint64 i, int size, endianess to_endianess)
 {
 	byte *b = (byte*)buf;
-	dword hi = QWORD_GET_HI(i);
-	dword lo = QWORD_GET_LO(i);
+	uint32 hi = QWORD_GET_HI(i);
+	uint32 lo = QWORD_GET_LO(i);
 	switch (to_endianess) {
 		case big_endian:
 			b[0]=hi>>24;
@@ -117,10 +116,10 @@ void create_foreign_int64(void *buf, const qword i, int size, endianess to_endia
 	}
 }
 
-qword create_host_int64(const void *buf, endianess from_endianess)
+uint64 create_host_int64(const void *buf, endianess from_endianess)
 {
 	byte *b = (byte*)buf;
-	qword q;
+	uint64 q;
 	switch (from_endianess) {
 		case big_endian:
 			QWORD_SET_HI(q, (b[0]<<24) | (b[1]<<16) | (b[2]<<8) | b[3]);
@@ -134,7 +133,7 @@ qword create_host_int64(const void *buf, endianess from_endianess)
 	return q;
 }
 
-void create_host_struct(void *buf, const byte *table, endianess from)
+void createHostStruct(void *buf, const byte *table, endianess from)
 {
 	byte *buf2 = (byte *)buf;
 	while (*table) {
@@ -142,22 +141,22 @@ void create_host_struct(void *buf, const byte *table, endianess from)
 		if (*table & STRUCT_ENDIAN_HOST) {
 			switch (table2) {
 				case STRUCT_ENDIAN_BYTE: {
-					byte a = create_host_int(buf2, STRUCT_ENDIAN_BYTE, from);
+					byte a = createHostInt(buf2, STRUCT_ENDIAN_BYTE, from);
 					memcpy(buf2, &a, STRUCT_ENDIAN_BYTE);
 					break;
 				}
 				case STRUCT_ENDIAN_WORD: {
-					word a = create_host_int(buf2, STRUCT_ENDIAN_WORD, from);
+					uint16 a = createHostInt(buf2, STRUCT_ENDIAN_WORD, from);
 					memcpy(buf2, &a, STRUCT_ENDIAN_WORD);
 					break;
 				}
 				case STRUCT_ENDIAN_DWORD: {
-					dword a = create_host_int(buf2, STRUCT_ENDIAN_DWORD, from);
+					uint32 a = createHostInt(buf2, STRUCT_ENDIAN_DWORD, from);
 					memcpy(buf2, &a, STRUCT_ENDIAN_DWORD);
 					break;
 				}
 				case STRUCT_ENDIAN_QWORD: {
-					qword q = create_host_int64(buf2, from);
+					uint64 q = create_host_int64(buf2, from);
 					memcpy(buf2, &q, STRUCT_ENDIAN_QWORD);
 					break;
 				}

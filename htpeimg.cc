@@ -23,12 +23,12 @@
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htpeimg.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "pe_analy.h"
 #include "pestruct.h"
 #include "snprintf.h"
 
-static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -36,11 +36,12 @@ static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 
 	bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
-	LOG("%s: PE: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: PE: loading image (starting analyser)...", &file->getFilename(fn));
 	PEAnalyser *p = new PEAnalyser();
 	p->init(pe_shared, file);
 
-	bounds c=*b;
+	Bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_PE_IMAGE"-g");
 	AnalyInfoline *head;
@@ -60,7 +61,7 @@ static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 /* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+	for (uint i=0; i<pe_shared->sections.section_count; i++) {
 		if (s->data_address < l) l = s->data_address;
 		if ((s->data_address + s->data_size > h) && s->data_size) h = s->data_address + s->data_size - 1;
 		s++;
@@ -74,8 +75,8 @@ static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 		low = p->createAddress32(l);
 		high = p->createAddress32(h);
 	} else {
-		low = p->createAddress64(to_qword(l) + pe_shared->pe64.header_nt.image_base);
-		high = p->createAddress64(to_qword(h) + pe_shared->pe64.header_nt.image_base);
+		low = p->createAddress64(l + pe_shared->pe64.header_nt.image_base);
+		high = p->createAddress64(h + pe_shared->pe64.header_nt.image_base);
 	}
 	
 	ht_analy_sub *analy=new ht_analy_sub();
@@ -91,9 +92,9 @@ static ht_view *htpeimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 
 	Address *tmpaddr;
 	if (pe32) {
-		tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
+		tmpaddr = p->createAddress32(pe_shared->pe32.header.entrypoint_address + pe_shared->pe32.header_nt.image_base);
 	} else {
-		tmpaddr = p->createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
+		tmpaddr = p->createAddress64(pe_shared->pe64.header.entrypoint_address + pe_shared->pe64.header_nt.image_base);
 	}
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
@@ -115,9 +116,9 @@ format_viewer_if htpeimage_if = {
 static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-	RVA rva = QWORD_GET_INT(i->value);
+	RVA rva = i->value;
 	viewer_pos p;
-	FILEOFS ofs;
+	FileOfs ofs;
 	if (pe_rva_to_ofs(&aviewer->pe_shared->sections, rva, &ofs)
 	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
@@ -136,27 +137,26 @@ static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_pe_aviewer *aviewer = (ht_pe_aviewer*)eval_get_context();
-	UINT i = QWORD_GET_INT(q->value)-1;
-	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
-	(i < aviewer->pe_shared->sections.section_count)) {
+	uint64 i = q->value - 1;
+	if (i >= 0 && i < aviewer->pe_shared->sections.section_count) {
 		viewer_pos p;
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
 					    aviewer->pe_shared->sections.sections[i].data_address,
 					   &ofs)
 		 && aviewer->offset_to_pos(ofs, &p)) {
 			Address *a;
-			int b;
+			uint64 b;
 			aviewer->convertViewerPosToAddress(p, &a);
-			a->putIntoArray((byte*)&b);
+			a->putIntoUInt64(b);
 			delete a;
-			scalar_create_int_c(result, b);
+			scalar_create_int_q(result, b);
 			return 1;
 		} else {
 //			set_eval_error("invalid file offset or no corresponding RVA for '0%xh'", rva);
 		}     
 	} else {
-		set_eval_error("no section number %qd", &q->value);
+		set_eval_error("no section number %qd", q->value);
 	}
 	return 0;
 }
@@ -167,7 +167,7 @@ static int pe_viewer_func_section_str(eval_scalar *result, eval_str *str)
 	int section;
 	char str2[COFF_SIZEOF_SHORT_NAME+1];
 	memset(str2, 0, COFF_SIZEOF_SHORT_NAME+1);
-	memmove(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
+	memcpy(str2, str->value, MIN(str->len, COFF_SIZEOF_SHORT_NAME));
 	if (pe_section_name_to_section(&aviewer->pe_shared->sections, str2, &section)) {
 		eval_scalar i;
 		scalar_create_int_c(&i, section+1);
@@ -190,13 +190,13 @@ static int pe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 /*
  *	CLASS ht_pe_aviewer
  */
-void ht_pe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_pe_shared_data *PE_shared)
+void ht_pe_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_pe_shared_data *PE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	pe_shared = PE_shared;
 }
 
-int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+bool ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 	eval_func myfuncs[] = {
 		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT},
@@ -206,7 +206,7 @@ int ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist
 			"returns address of section with index param1 otherwise"},
 		{NULL}
 	};
-	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
+	if (std_eval_func_handler(result, name, params, myfuncs)) return true;
 	return ht_aviewer::func_handler(result, name, params);
 }
 

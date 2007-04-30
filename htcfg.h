@@ -21,13 +21,13 @@
 #ifndef __HTCFG_H__
 #define __HTCFG_H__
 
-#include "common.h"
+#include "data.h"
 #include "stream.h"
 
 #if defined(WIN32) || defined(__WIN32__) || defined(MSDOS) || defined(DJGPP)
-#define SYSTEM_CONFIG_FILE_NAME "ht.cfg"
+#define SYSTEM_CONFIG_FILE_NAME "ht2.cfg"
 #else
-#define SYSTEM_CONFIG_FILE_NAME ".htcfg"
+#define SYSTEM_CONFIG_FILE_NAME ".htcfg2"
 #endif
 
 enum loadstore_result {
@@ -46,10 +46,11 @@ enum loadstore_result {
  *	Version 3: HT 0.4.5
  *	Version 4: HT 0.5.0
  *	Version 5: HT 0.6.0
+ *	Version 6: HT 2.0beta
  */
 
 #define ht_systemconfig_magic				"HTCP"
-#define ht_systemconfig_fileversion		5
+#define ht_systemconfig_fileversion			6
 
 
 
@@ -57,33 +58,35 @@ enum loadstore_result {
  *	Version 1: HT 0.5.0
  *	Version 2: HT 0.6.0
  *	Version 3: HT 0.7.0
+ *	Version 4: HT 2.0beta
  */
 
 #define ht_fileconfig_magic				"HTCF"
-#define ht_fileconfig_fileversion			3
+#define ht_fileconfig_fileversion			4
 
 
 
 /*	PROJECT CONFIG FILE VERSION HISTORY
  *	Version 1: HT 0.7.0
+ *	Version 2: HT 2.0beta
  */
 
-#define ht_projectconfig_magic			"HTPR"
-#define ht_projectconfig_fileversion		1
+#define ht_projectconfig_magic				"HTPR"
+#define ht_projectconfig_fileversion			2
 
 
 
 /**/
 
 extern char *systemconfig_file;
-loadstore_result save_systemconfig();
+loadstore_result save_systemconfig(String &error_info);
 bool load_systemconfig(loadstore_result *result, int *error_info);
 
-typedef int (*load_fcfg_func)(ht_object_stream *f, void *context);
-typedef void (*store_fcfg_func)(ht_object_stream *f, void *context);
+typedef void (*load_fcfg_func)(ObjectStream &f, void *context);
+typedef void (*store_fcfg_func)(ObjectStream &f, void *context);
 
-loadstore_result save_fileconfig(char *fileconfig_file, const char *magic, UINT version, store_fcfg_func store_func, void *context);
-loadstore_result load_fileconfig(char *fileconfig_file, const char *magic, UINT version, load_fcfg_func load_func, void *context, int *error_info);
+loadstore_result save_fileconfig(const char *fileconfig_file, const char *magic, uint version, store_fcfg_func store_func, void *context, String &error_info);
+loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic, uint version, load_fcfg_func load_func, void *context, String &error_info);
 
 /*
  *	INIT

@@ -23,7 +23,7 @@
 #include "htpal.h"
 #include "htleimg.h"
 #include "htsearch.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "tools.h"
 
@@ -32,17 +32,18 @@
 #include "htanaly.h"
 #include "le_analy.h"
 
-static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
-	ht_streamfile *myfile = le_shared->reloc_file;
+	File *myfile = le_shared->reloc_file;
 
-	LOG("%s: LE: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: LE: loading image (starting analyser)...", &file->getFilename(fn));
 	LEAnalyser *p = new LEAnalyser();
 	p->init(le_shared, myfile);
 
-	bounds c = *b;
+	Bounds c = *b;
 	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_LE_IMAGE"-g");
 	AnalyInfoline *head;
@@ -63,9 +64,9 @@ static ht_view *htleimage_init(bounds *b, ht_streamfile *file, ht_format_group *
 /* search for lowest/highest */
 	LEAddress l=(LEAddress)-1, h=0;
 	LE_OBJECT *s = le_shared->objmap.header;
-	for (UINT i=0; i<le_shared->objmap.count; i++) {
+	for (uint i=0; i<le_shared->objmap.count; i++) {
 		LEAddress base = LE_MAKE_ADDR(le_shared, i, 0);
-		UINT evsize = MAX(LE_get_seg_vsize(le_shared, i), LE_get_seg_psize(le_shared, i));
+		uint evsize = MAX(LE_get_seg_vsize(le_shared, i), LE_get_seg_psize(le_shared, i));
 		if (base < l) l = base;
 		if ((base + evsize > h) && (evsize)) h = base + evsize - 1;
 		s++;
@@ -100,14 +101,14 @@ format_viewer_if htleimage_if = {
  *	CLASS ht_le_aviewer
  */
 
-void ht_le_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_le_shared_data *LE_shared)
+void ht_le_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_le_shared_data *LE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	le_shared = LE_shared;
 	file = File;
 }
 
-char *ht_le_aviewer::func(UINT i, bool execute)
+const char *ht_le_aviewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 3: {
@@ -124,7 +125,7 @@ char *ht_le_aviewer::func(UINT i, bool execute)
 	return ht_aviewer::func(i, execute);
 }
 
-bool ht_le_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_le_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	if (!analy) return false;
 	Address *a = ((LEAnalyser*)analy)->realFileofsToAddress(ofs);
@@ -133,12 +134,12 @@ bool ht_le_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return res;
 }
 
-bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_le_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	if (analy) {
 		Address *addr;
 		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FILEOFS o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
+		FileOfs o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
 		delete addr;
 		if (o!=INVALID_FILE_OFS) {
 			*ofs=o;
@@ -148,11 +149,11 @@ bool ht_le_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
 	return false;
 }
 
-bool ht_le_aviewer::get_current_real_offset(FILEOFS *ofs)
+bool ht_le_aviewer::get_current_real_offset(FileOfs *ofs)
 {
-	FILEOFS o;
+	FileOfs o;
 	if (!get_current_offset(&o)) return false;
-	UINT m;
+	FileOfs m;
 	if (!le_shared->linear_file->map_ofs(o, ofs, &m)) return false;
 	return true;
 }

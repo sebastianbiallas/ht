@@ -23,15 +23,11 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "global.h"
-#include "htdata.h"
+#include "io/types.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #ifdef NO_NATIVE_UNALIGNED_MOVES
 #define UNALIGNED_MOVE(a, b) memcpy(&(a), &(b), sizeof(a))
@@ -41,10 +37,8 @@
 #define UNALIGNED_MOVE_CONST(a, b, type) (a) = (b)
 #endif
 
-dword delinearize(dword d);
-
-int compare_keys_int_delinear(ht_data *key_a, ht_data *key_b);
-int compare_keys_uint_delinear(ht_data *key_a, ht_data *key_b);
+uint32 delinearize(uint32 d);
+uint64 delinearize64(uint64 d);
 
 int *random_permutation(int max);
 

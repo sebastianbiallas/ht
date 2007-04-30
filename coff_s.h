@@ -21,35 +21,36 @@
 #ifndef __COFF_S_H_
 #define __COFF_S_H_
 
-#include "global.h"
+#include "io/types.h"
 #include "tools.h"
 
 typedef unsigned int RVA;
 
-typedef struct	COFF_HEADER {
-	word machine;
-	word section_count;
-	dword timestamp;
-	dword symbol_table_offset;
-	dword symbol_count;
-	word optional_header_size;
-	word characteristics;
-} HTPACKED;
+struct COFF_HEADER {
+	uint16 machine;
+	uint16 section_count;
+	uint32 timestamp;
+	uint32 symbol_table_offset;
+	uint32 symbol_count;
+	uint16 optional_header_size;
+	uint16 characteristics;
+} PACKED;
 
 #define COFF_RELOCS_STRIPPED		   	0x0001  // Relocation info stripped from file.
 #define COFF_EXECUTABLE_IMAGE		   	0x0002  // File is executable  (i.e. no unresolved externel references).
 #define COFF_LINE_NUMS_STRIPPED			0x0004  // Line nunbers stripped from file.
 #define COFF_LOCAL_SYMS_STRIPPED	   	0x0008  // Local symbols stripped from file.
 #define COFF_AGGRESIVE_WS_TRIM	  		0x0010  // Agressively trim working set
-#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine word are reversed.
-#define COFF_32BIT_MACHINE			0x0100  // 32 bit word machine.
+#define COFF_LARGE_ADDRESS	  		0x0020  // Large address aware
+#define COFF_BYTES_REVERSED_LO	  		0x0080  // Bytes of machine uint16 are reversed.
+#define COFF_32BIT_MACHINE			0x0100  // 32 bit uint16 machine.
 #define COFF_DEBUG_STRIPPED		   	0x0200  // Debugging info stripped from file in .DBG file
 #define COFF_REMOVABLE_RUN_FROM_SWAP   		0x0400  // If Image is on removable media, copy and run from the swap file.
 #define COFF_NET_RUN_FROM_SWAP	   		0x0800  // If Image is on Net, copy and run from the swap file.
 #define COFF_SYSTEM				0x1000  // System File.
 #define COFF_DLL				0x2000  // File is a DLL.
 #define COFF_UP_SYSTEM_ONLY		   	0x4000  // File should only be run on a UP machine
-#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine word are reversed.
+#define COFF_BYTES_REVERSED_HI	  		0x8000  // Bytes of machine uint16 are reversed.
 
 #define COFF_MACHINE_UNKNOWN		   	0
 #define COFF_MACHINE_I386		   	0x14c   // Intel 386
@@ -66,13 +67,14 @@ typedef struct	COFF_HEADER {
 #define COFF_MACHINE_THUMB			0x1c2   // THUMB
 #define COFF_MACHINE_POWERPC_BE		   	0x1df   // IBM PowerPC Big-Endian (?)
 #define COFF_MACHINE_POWERPC_LE		   	0x1f0   // IBM PowerPC Little-Endian
+#define COFF_MACHINE_POWERPC64_BE		0x1f2   // IBM PowerPC64 Big-Endian (?)
 #define COFF_MACHINE_IA64			0x200   // Intel IA64
 #define COFF_MACHINE_MIPS16			0x266   // MIPS16
 #define COFF_MACHINE_68k			0x268   // Motorola 68k
 #define COFF_MACHINE_ALPHA_AXP_64		0x284   // Alpha AXP 64
 #define COFF_MACHINE_MIPSf			0x366   // MIPSf
 #define COFF_MACHINE_MIPS16f			0x466   // MIPS16f
-#define COFF_MACHINE_AMD_HAMMER			0x8664  // AMD Hammer
+#define COFF_MACHINE_AMD64			0x8664  // AMD 64
 
 // FIXME: not yet implemented: XCOFF64, no sample file available
 //#define COFF_MACHINE_POWERPC64_BE	   	0x1ef   // XCOFF 64Bit Big-Endian (PowerPC only ?)
@@ -96,31 +98,31 @@ typedef struct	COFF_HEADER {
 
 #define COFF_OPTMAGIC_PE64			0x20b
 
-typedef struct	COFF_OPTIONAL_HEADER32 {
-	word magic;
+struct	COFF_OPTIONAL_HEADER32 {
+	uint16 magic;
 	byte major_linker_version;
 	byte minor_linker_version;
-	dword code_size;
-	dword data_size;
-	dword bss_size;
-	dword entrypoint_address;
-	dword code_base;
-	dword data_base;
-} HTPACKED;
+	uint32 code_size;
+	uint32 data_size;
+	uint32 bss_size;
+	uint32 entrypoint_address;
+	uint32 code_base;
+	uint32 data_base;
+} PACKED;
 
 /*
  *	same as COFF_OPTIONAL_HEADER32 but no data_base
  */
-typedef struct	COFF_OPTIONAL_HEADER64 {
-	word magic;
+struct	COFF_OPTIONAL_HEADER64 {
+	uint16 magic;
 	byte major_linker_version;
 	byte minor_linker_version;
-	dword code_size;
-	dword data_size;
-	dword bss_size;
-	dword entrypoint_address;
-	dword code_base;
-} HTPACKED;
+	uint32 code_size;
+	uint32 data_size;
+	uint32 bss_size;
+	uint32 entrypoint_address;
+	uint32 code_base;
+} PACKED;
 
 /*
  *	Section header
@@ -130,16 +132,16 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 
 struct COFF_SECTION_HEADER {
 	byte name[COFF_SIZEOF_SHORT_NAME];
-	dword data_vsize;	// or data_phys_address !
-	dword data_address;
-	dword data_size;
-	dword data_offset;
-	dword relocation_offset;
-	dword linenumber_offset;
-	word relocation_count;
-	word linenumber_count;
-	dword characteristics;
-} HTPACKED;
+	uint32 data_vsize;	// or data_phys_address !
+	uint32 data_address;
+	uint32 data_size;
+	uint32 data_offset;
+	uint32 relocation_offset;
+	uint32 linenumber_offset;
+	uint16 relocation_count;
+	uint16 linenumber_count;
+	uint32 characteristics;
+} PACKED;
 
 #define COFF_SIZEOF_SECTION_HEADER		40
 

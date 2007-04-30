@@ -1,3 +1,4 @@
+asfas
 /* 
  *	HT Editor
  *	htendian.h
@@ -21,7 +22,7 @@
 #ifndef __HTENDIAN_H__
 #define __HTENDIAN_H__
 
-#include "global.h"
+#include "io/types.h"
 
 #define STRUCT_ENDIAN_BYTE  1
 #define STRUCT_ENDIAN_WORD  2
@@ -30,11 +31,11 @@
 #define STRUCT_ENDIAN_HOST  128
 
 enum endianess {big_endian, little_endian};
-void create_foreign_int(void *buf, int i, int size, endianess to_endianess);
-void create_foreign_int64(void *buf, const qword i, int size, endianess to_endianess);
-int create_host_int(const void *buf, int size, endianess from_endianess);
-qword create_host_int64(const void *buf, endianess from_endianess);
-void create_host_struct(void *buf, const byte *table, endianess from);
+void createForeignInt(void *buf, int i, int size, endianess to_endianess);
+void create_foreign_int64(void *buf, const uint64 i, int size, endianess to_endianess);
+int createHostInt(const void *buf, int size, endianess from_endianess);
+uint64 create_host_int64(const void *buf, endianess from_endianess);
+void createHostStruct(void *buf, const byte *table, endianess from);
 
 #endif /* __HTENDIAN_H__ */
 

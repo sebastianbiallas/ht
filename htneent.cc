@@ -18,9 +18,9 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htctrl.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "htiobox.h"
 #include "htne.h"
 #include "htneent.h"
@@ -37,30 +37,30 @@ static ht_tag_flags_s ne_entflags[] =
 	{0, 0}
 };
 
-static ht_view *htneentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneentrypoints_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared = (ht_ne_shared_data *)group->get_shared_data();
 
-	FILEOFS h = ne_shared->hdr_ofs;
+	FileOfs h = ne_shared->hdr_ofs;
 	ht_ne_entrypoint_viewer *v = new ht_ne_entrypoint_viewer();
 	v->init(b, DESC_NE_ENTRYPOINTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 
-	register_atom(ATOM_NE_ENTFLAGS, ne_entflags);
+	registerAtom(ATOM_NE_ENTFLAGS, ne_entflags);
 
 	char line[1024], *l;	/* possible buffer overflow */
-	ht_snprintf(line, sizeof line, "* NE entrypoint table at offset %08x", h+ne_shared->hdr.enttab);
+	ht_snprintf(line, sizeof line, "* NE entrypoint table at offset 0x%08qx", h+ne_shared->hdr.enttab);
 	m->add_mask(line);
 
-	FILEOFS o = h + ne_shared->hdr.enttab;
+	FileOfs o = h + ne_shared->hdr.enttab;
 	NE_ENTRYPOINT_HEADER e;
 
-	dword index = 1;
+	uint32 index = 1;
 	while (o + sizeof e < h+ne_shared->hdr.enttab+ne_shared->hdr.cbenttab) {
 		file->seek(o);
 		file->read(&e, sizeof e);
-		create_host_struct(&e, NE_ENTRYPOINT_HEADER_struct, little_endian);
+		createHostStruct(&e, NE_ENTRYPOINT_HEADER_struct, little_endian);
 		o += sizeof e;
 
 		if (e.seg_index==0) {
@@ -123,23 +123,23 @@ format_viewer_if htneentrypoints_if = {
  *	CLASS ht_ne_entrypoint_viewer
  */
 
-int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
+bool ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 {
 /*   FIXNEW
-	UINT seg = id_high;
-	FILEOFS o = id_low;
+	uint seg = id_high;
+	FileOfs o = id_low;
 	ADDR a;
 	if (seg == 0xff) {
 		NE_ENTRYPOINT_MOVABLE e;
 		file->seek(o);
 		file->read(&e, sizeof e);
-		create_host_struct(&e, NE_ENTRYPOINT_MOVABLE_struct, little_endian);
+		createHostStruct(&e, NE_ENTRYPOINT_MOVABLE_struct, little_endian);
 		a = NE_MAKE_ADDR(e.seg, e.offset);
 	} else {
 		NE_ENTRYPOINT_FIXED e;
 		file->seek(o);
 		file->read(&e, sizeof e);
-		create_host_struct(&e, NE_ENTRYPOINT_FIXED_struct, little_endian);
+		createHostStruct(&e, NE_ENTRYPOINT_FIXED_struct, little_endian);
 		a = NE_MAKE_ADDR(seg, e.offset);
 	}
 
@@ -149,5 +149,5 @@ int ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 		app->focus(ne_shared->v_image);
 	} else errorbox("can't follow: address %y is not valid !", a);
 	return 1;*/
-	return 0;
+	return false;
 }

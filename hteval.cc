@@ -20,13 +20,13 @@
 
 #include <string.h>
 
-#include "htatom.h"
+#include "atom.h"
 #include "htctrl.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "hthist.h"
 #include "htiobox.h"
 #include "htpal.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "syntax.h"
 #include "textedit.h"
@@ -47,7 +47,7 @@ extern "C" {
 class ht_help_lexer: public ht_syntax_lexer {
 public:
 /* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index)
+	virtual	vcp getcolor_syntax(uint pal_index)
 	{
 		return VCP(VC_BLUE, VC_TRANSPARENT);
 	}
@@ -62,12 +62,12 @@ public:
 		return 3;
 	}
 
-	virtual	char *getname()
+	virtual	const char *getname()
 	{
 		return "bla";
 	}
 
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len)
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
 	{
 		*ret_len = buflen;
 		int ps = *ret_state;
@@ -87,15 +87,14 @@ public:
 	}
 };
 
-static void dialog_fhelp(ht_streamfile *f)
+static void dialog_fhelp(File *f)
 {
 	ht_help_lexer *l = new ht_help_lexer();
 	l->init();
 
-	ht_ltextfile *t = new ht_ltextfile();
-	t->init(f, true, NULL);
+	ht_ltextfile *t = new ht_ltextfile(f, true, NULL);
 
-	bounds b, c;
+	Bounds b, c;
 	app->getbounds(&c);
 	b = c;
 //	b.w = 70;
@@ -145,8 +144,7 @@ void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol
 		scalar_context_str(&res, &s);
 		scalar_destroy(&res);
 
-		ht_memmap_file *f = new ht_memmap_file();
-		f->init((byte*)s.value, s.len);
+		ConstMemMapFile *f = new ConstMemMapFile(s.value, s.len);
 
 		dialog_fhelp(f);
 
@@ -157,7 +155,7 @@ void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol
 /*
  *
  */
-static int sprint_base2(char *x, dword value, bool leading_zeros)
+static int sprint_base2(char *x, uint32 value, bool leading_zeros)
 {
 	char *ix = x;
 	bool draw = leading_zeros;
@@ -170,11 +168,11 @@ static int sprint_base2(char *x, dword value, bool leading_zeros)
 	return x-ix;
 }
 
-static int sprint_base2_0(char *x, dword value, int zeros)
+static int sprint_base2_0(char *x, uint32 value, int zeros)
 {
 	char *ix = x;
 	char vi = 0;
-	dword m = 0x80000000;
+	uint32 m = 0x80000000;
 	while (zeros < 32) {m >>= 1; zeros++;}
 	do {
 		if (value & m) {
@@ -221,43 +219,42 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				char buf1[1024];
 				char buf2[1024];
 				// FIXME
-				dword lo = QWORD_GET_LO(r.scalar.integer.value);
-				dword hi = QWORD_GET_HI(r.scalar.integer.value);
 				x += sprintf(x, "64bit integer:\n");
-				ht_snprintf(buf1, sizeof buf1, "%qx", &r.scalar.integer.value);
+				ht_snprintf(buf1, sizeof buf1, "%qx", r.scalar.integer.value);
 				nicify(buf2, buf1, 4);
 				x += ht_snprintf(x, 64, "hex   %s\n", buf2);
-				ht_snprintf(buf1, sizeof buf1, "%qu", &r.scalar.integer.value);
+				ht_snprintf(buf1, sizeof buf1, "%qu", r.scalar.integer.value);
 				nicify(buf2, buf1, 3);
 				x += ht_snprintf(x, 64, "dec   %s\n", buf2);
-				if (to_sint64(r.scalar.integer.value) < to_sint64(0)) {
-					ht_snprintf(buf1, sizeof buf1, "%qd", &r.scalar.integer.value);
+				if ((sint64)r.scalar.integer.value < 0) {
+					ht_snprintf(buf1, sizeof buf1, "%qd", r.scalar.integer.value);
 					nicify(buf2, buf1+1, 3);
 					x += ht_snprintf(x, 64, "sdec  -%s\n", buf2);
 				}
-				ht_snprintf(buf1, sizeof buf1, "%qo", &r.scalar.integer.value);
+				ht_snprintf(buf1, sizeof buf1, "%qo", r.scalar.integer.value);
 				nicify(buf2, buf1, 3);
 				x += ht_snprintf(x, 64, "oct   %s\n", buf2);
 
-				sprint_base2(buf1, lo, true);
+				uint32 l = r.scalar.integer.value;
+				ht_snprintf(buf1, sizeof buf1, "%032b", l);
 				nicify(buf2, buf1, 8);
 				x += ht_snprintf(x, 64, "binlo %s\n", buf2);
-				if (hi) {
-					sprint_base2(buf1, hi, true);
+				if (r.scalar.integer.value >> 32) {
+					l = r.scalar.integer.value >> 32;
+					ht_snprintf(buf1, sizeof buf1, "%032b", l);
 					nicify(buf2, buf1, 8);
 					x += ht_snprintf(x, 64, "binhi %s\n", buf2);
 				}
 				char bb[4];
-				int i = lo;
 				/* big-endian string */
 				x += sprintf(x, "%s", "string \"");
-				create_foreign_int(bb, i, 4, big_endian);
+				createForeignInt(bb, r.scalar.integer.value, 4, big_endian);
 				bin2str(x, bb, 4);
 				x += 4;
 				x += sprintf(x, "%s", "\" 32bit big-endian (e.g. network)\n");
 				/* little-endian string */
 				x += sprintf(x, "string \"");
-				create_foreign_int(bb, i, 4, little_endian);
+				createForeignInt(bb, r.scalar.integer.value, 4, little_endian);
 				bin2str(x, bb, 4);
 				x += 4;
 				x += sprintf(x, "%s", "\" 32bit little-endian (e.g. x86)\n");
@@ -275,7 +272,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				*(x++)='\n';
 				/* raw */
 				x+=sprintf(x, "raw       '");
-				int ll = MIN((UINT)r.scalar.str.len, 0xff);
+				int ll = MIN((uint)r.scalar.str.len, 0xff);
 				bin2str(x, r.scalar.str.value, ll);
 				x+=ll;
 				*(x++)='\'';
@@ -288,7 +285,8 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 				x+=sprintf(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
 				// FIXME: endianess/hardware format
 				float ff = ((float)r.scalar.floatnum.value);
-				dword f = *(dword*)&ff;
+				uint32 f;
+				memcpy(&f, &ff, 4);
 				x += sprintf(x, "\n-- IEEE-754, 32 bit --");
 				x += sprintf(x, "\nhex   %08x\nbin   ", f);
 				x += sprint_base2(x, f, true);
@@ -302,7 +300,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 		}
 		scalar_destroy(&r);
 	} else {
-		char *str="?";
+		const char *str="?";
 		int pos=0;
 		get_eval_error(&str, &pos);
 		s->isetcursor(pos);
@@ -314,7 +312,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
 
 void eval_dialog()
 {
-	bounds b, c;
+	Bounds b, c;
 	app->getbounds(&c);
 	b.w=70;
 	b.h=17;
@@ -322,24 +320,24 @@ void eval_dialog()
 	b.y=(c.h-b.h)/2;
 	ht_dialog *d=new ht_dialog();
 	c=b;
-	char *hint="type integer, float or string expression to evaluate";
+	const char *hint="type integer, float or string expression to evaluate";
 
 	d->init(&b, "evaluate", FS_TITLE | FS_MOVE | FS_RESIZE);
 
-	ht_list *ehist=(ht_list*)find_atom(HISTATOM_EVAL_EXPR);
+	List *ehist = (List*)getAtomValue(HISTATOM_EVAL_EXPR);
 
 	/* input line */
-	BOUNDS_ASSIGN(b, 1, 1, c.w-14, 1);
-	ht_strinputfield *s=new ht_strinputfield();
+	b.assign(1, 1, c.w-14, 1);
+	ht_strinputfield *s = new ht_strinputfield();
 	s->init(&b, 255, ehist);
 	d->insert(s);
 	/* help button */
 	ht_button *bhelp = new ht_button();
-	BOUNDS_ASSIGN(b, c.w-12, 1, 10, 1);
+	b.assign(c.w-12, 1, 10, 1);
 	bhelp->init(&b, "~Functions", BUTTON_HELP);
 	d->insert(bhelp);
 	/* result text */
-	BOUNDS_ASSIGN(b, 1, 3, c.w-4, c.h-5);
+	b.assign(1, 3, c.w-4, c.h-5);
 	ht_statictext *t=new ht_statictext();
 	t->init(&b, hint, align_left);
 	t->growmode = MK_GM(GMH_LEFT, GMV_FIT);
@@ -348,10 +346,10 @@ void eval_dialog()
 	int button;
 	while ((button = d->run(false)) != button_cancel) {
 		switch (button) {
-		case button_ok:
+		case button_ok: {
 			ht_strinputfield_data str;
 			char b[1024];
-			s->databuf_get(&str, sizeof str);
+			ViewDataBuf vdb(s, &str, sizeof str);
 			if (str.textlen) {
 				bin2str(b, str.text, str.textlen);
 				insert_history_entry(ehist, b, 0);
@@ -360,6 +358,7 @@ void eval_dialog()
 				t->settext(hint);
 			}
 			break;
+		}
 		case BUTTON_HELP:
 			dialog_eval_help(NULL, NULL, NULL);
 			break;

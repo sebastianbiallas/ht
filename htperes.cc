@@ -22,15 +22,15 @@
 #include "htapp.h"
 #include "htctrl.h"
 #include "htdialog.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "hthex.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htnewexe.h"
 #include "htobj.h"
 #include "htpe.h"
 #include "htperes.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "httree.h"
 #include "log.h"
 #include "pestruct.h"
@@ -70,14 +70,14 @@ static int_hash languages[] = {
 	{ 0 }
 };
 
-class ht_pe_resource_leaf: public ht_data {
+class ht_pe_resource_leaf: public Object {
 public:
-	dword offset;
-	dword size;
+	uint32 offset;
+	uint32 size;
 };
 
-static ht_streamfile *peresource_file;
-static FILEOFS peresource_dir_ofs;
+static File *peresource_file;
+static FileOfs peresource_dir_ofs;
 static ht_static_treeview *peresource_tree;
 static char peresource_string[128];
 static pe_section_headers *peresource_section_headers;
@@ -90,26 +90,26 @@ static void read_resource_dir(void *node, int ofs, int level)
 // get directory
 	peresource_file->seek(peresource_dir_ofs+ofs);
 	if (peresource_file->read(&dir, sizeof dir) != (sizeof dir)) return;
-	create_host_struct(&dir, PE_RESOURCE_DIRECTORY_struct, little_endian);
+	createHostStruct(&dir, PE_RESOURCE_DIRECTORY_struct, little_endian);
 // get entries
 	PE_RESOURCE_DIRECTORY_ENTRY entry;
 	for (int i=0; i<dir.name_count+dir.id_count; i++) {
 		peresource_file->seek(peresource_dir_ofs+ofs+sizeof dir+i*8);
 		peresource_file->read(&entry, sizeof entry);
-		create_host_struct(&entry, PE_RESOURCE_DIRECTORY_ENTRY_struct, little_endian);
+		createHostStruct(&entry, PE_RESOURCE_DIRECTORY_ENTRY_struct, little_endian);
 		if (entry.offset_to_directory & 0x80000000) {
 			bool hasname = entry.name & 0x80000000;
 			PE_RESOURCE_DIRECTORY subdir;
 			peresource_file->seek(peresource_dir_ofs+entry.offset_to_directory & 0x7fffffff);
 			peresource_file->read(&subdir, sizeof subdir);
-			create_host_struct(&subdir, PE_RESOURCE_DIRECTORY_struct, little_endian);
+			createHostStruct(&subdir, PE_RESOURCE_DIRECTORY_struct, little_endian);
 			if (hasname) {
 				peresource_file->seek(peresource_dir_ofs+entry.name & 0x7fffffff);
-				char *name = getstrw(peresource_file);
+				char *name = peresource_file->readstrw();
 				ht_snprintf(peresource_string, sizeof peresource_string, "%s [%d]", name, subdir.name_count+subdir.id_count);
 				free(name);
 			} else {
-				char *s = (!level) ? matchhash(entry.name & 0xffff, restypes) : NULL;
+				const char *s = (!level) ? matchhash(entry.name & 0xffff, restypes) : NULL;
 				if (s) {
 					ht_snprintf(peresource_string, sizeof peresource_string, "ID %04x, %s [%d]", entry.name & 0xffff, s, subdir.name_count+subdir.id_count);
 				} else {
@@ -121,7 +121,7 @@ static void read_resource_dir(void *node, int ofs, int level)
 		} else {
 			char *rm = peresource_string;
 			char *rm_end = rm + sizeof peresource_string;
-			char *s = matchhash((char)entry.name, languages);
+			const char *s = matchhash((char)entry.name, languages);
 			if (s) {
 				rm += ht_snprintf(rm, rm_end-rm, "resource, %s (%04x) ", s, entry.name & 0xffff);
 			} else {
@@ -131,17 +131,17 @@ static void read_resource_dir(void *node, int ofs, int level)
 			PE_RESOURCE_DATA_ENTRY data;
 			peresource_file->seek(peresource_dir_ofs+entry.offset_to_directory);
 			peresource_file->read(&data, sizeof data);
-			create_host_struct(&data, PE_RESOURCE_DATA_ENTRY_struct, little_endian);
+			createHostStruct(&data, PE_RESOURCE_DATA_ENTRY_struct, little_endian);
 			
 			ht_pe_resource_leaf *xdata = NULL;
-			FILEOFS dofs=0;
+			FileOfs dofs=0;
 			if (pe_rva_to_ofs(peresource_section_headers, data.offset_to_data, &dofs)) {
 				xdata = new ht_pe_resource_leaf();
 				xdata->offset = dofs;
 				xdata->size = data.size;
-				rm += ht_snprintf(rm, rm_end-rm, "offset %08x", dofs);
+				rm += ht_snprintf(rm, rm_end-rm, "offset %08qx", dofs);
 			} else {
-				rm += ht_snprintf(rm, rm_end-rm, "offset ? (rva %08x, currupt)", data.offset_to_data);
+				rm += ht_snprintf(rm, rm_end-rm, "offset? (rva %08x, corrupt)", data.offset_to_data);
 			}
 			ht_snprintf(rm, rm_end-rm, " size %08x", data.size);
 			peresource_tree->add_child(node, peresource_string, xdata);
@@ -149,7 +149,7 @@ static void read_resource_dir(void *node, int ofs, int level)
 	}
 }
 
-static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htperesources_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
@@ -157,7 +157,7 @@ static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_gro
 
 	bool pe32 = (pe_shared->opt_magic==COFF_OPTMAGIC_PE32);
 
-	dword sec_rva, sec_size;
+	uint32 sec_rva, sec_size;
 	if (pe32) {
 		sec_rva = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
 		sec_size = pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
@@ -167,29 +167,30 @@ static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_gro
 	}
 	if (!sec_rva || !sec_size) return NULL;
 
-	ht_static_treeview *t=new ht_pe_resource_viewer();
+	ht_pe_resource_viewer *t=new ht_pe_resource_viewer();
 	t->init(b, DESC_PE_RESOURCES);
 
 	void *root;
+	String fn;
 /* get resource directory offset */
 	/* 1. get resource directory rva */
-	FILEOFS iofs;
-	dword irva;
+	FileOfs iofs;
+	uint32 irva;
 	if (pe32) {
 		irva=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
-//		dword isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
+//		uint32 isize=pe_shared->pe32.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].size;
 	} else {
 		irva=pe_shared->pe64.header_nt.directory[PE_DIRECTORY_ENTRY_RESOURCE].address;
 	}
 	/* 2. transform it into an offset */
 	if (!pe_rva_to_ofs(&pe_shared->sections, irva, &iofs)) goto pe_read_error;
 
-	LOG("%s: PE: reading resource directory at offset %08x, rva %08x", file->get_filename(), iofs, irva);
+	LOG("%y: PE: reading resource directory at offset 0x%08qx, rva %08x", &file->getFilename(fn), iofs, irva);
 
-	peresource_file=file;
-	peresource_dir_ofs=iofs;
-	peresource_tree=t;
-	peresource_section_headers=&pe_shared->sections;
+	peresource_file = file;
+	peresource_dir_ofs = iofs;
+	peresource_tree = t;
+	peresource_section_headers = &pe_shared->sections;
 
 	root=t->add_child(0, "pe resources");
 
@@ -200,7 +201,7 @@ static ht_view *htperesources_init(bounds *b, ht_streamfile *file, ht_format_gro
 	pe_shared->v_resources = t;
 	return t;
 pe_read_error:
-	errorbox("%s: PE resource directory seems to be corrupted.", file->get_filename());
+	errorbox("%y: PE resource directory seems to be corrupted.", &file->getFilename(fn));
 	t->done();
 	delete t;
 	return NULL;
@@ -215,7 +216,7 @@ format_viewer_if htperesources_if = {
  *	CLASS ht_pe_resource_viewer
  */
 
-void ht_pe_resource_viewer::init(bounds *b, char *desc)
+void ht_pe_resource_viewer::init(Bounds *b, const char *desc)
 {
 	ht_static_treeview::init(b, desc);
 	VIEW_DEBUG_NAME("ht_pe_resource_viewer");
@@ -230,7 +231,7 @@ void ht_pe_resource_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_vstate_restore:
-			vstate_restore((ht_data*)msg->data1.ptr);
+			vstate_restore((Object*)msg->data1.ptr);
 			clearmsg(msg);
 			return;
 	}
@@ -263,12 +264,12 @@ void ht_pe_resource_viewer::select_node(void *node)
 	}
 }
 
-class ht_pe_resource_viewer_vstate: public ht_data {
+class ht_pe_resource_viewer_vstate: public Object {
 public:
 	void *node;
 };
 
-ht_data *ht_pe_resource_viewer::vstate_create()
+Object *ht_pe_resource_viewer::vstate_create()
 {
 	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	v->node = get_cursor_node();
@@ -277,7 +278,7 @@ ht_data *ht_pe_resource_viewer::vstate_create()
 
 bool ht_pe_resource_viewer::vstate_save()
 {
-	ht_data *vs = vstate_create();
+	Object *vs = vstate_create();
 	if (vs) {
 		htmsg m;
 		m.msg = msg_vstate_save;
@@ -290,7 +291,7 @@ bool ht_pe_resource_viewer::vstate_save()
 	return false;
 }
 
-void ht_pe_resource_viewer::vstate_restore(ht_data *d)
+void ht_pe_resource_viewer::vstate_restore(Object *d)
 {
 	ht_pe_resource_viewer_vstate *v = new ht_pe_resource_viewer_vstate();
 	goto_node(v->node);

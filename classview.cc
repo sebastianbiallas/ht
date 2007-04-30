@@ -22,7 +22,7 @@
 
 #include "class.h"
 #include "classimg.h"
-#include "htatom.h"
+#include "atom.h"
 #include "httag.h"
 #include "snprintf.h"
 #include "stream.h"
@@ -43,10 +43,10 @@ ht_tag_flags_s access_flags[] =
 	{8+5,  "[0x0020] synchronized"},
 	{8+6,  "[0x0040] volatile"},
 	{8+7,  "[0x0080] transient"},
-	{8+8,  "[0x0100] native"},
-	{8+9,  "[0x0200] interface"},
-	{8+10, "[0x0400] abstract"},
-	{8+11, "[0x0800] strict"},
+	{0,    "[0x0100] native"},
+	{1,    "[0x0200] interface"},
+	{2,    "[0x0400] abstract"},
+	{3,    "[0x0800] strict"},
 	{0, 0}
 };
 int_hash cpool_tags [] = 
@@ -76,7 +76,7 @@ ht_mask_ptable cls_class1_hdr[] =
 ht_mask_ptable cls_class2_hdr[] = 
 {
 	{"access flags",               STATICTAG_EDIT_WORD_BE ("00000000")
-" "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
+                                       " "STATICTAG_FLAGS("00000000", ATOM_CLS_ACCESS_STR)},
 	{"this class",                 STATICTAG_EDIT_WORD_BE ("00000002")},
 	{"super class",                STATICTAG_EDIT_WORD_BE ("00000004")},
 	{"interfaces count",           STATICTAG_EDIT_WORD_BE ("00000006")},
@@ -162,89 +162,94 @@ ht_mask_ptable aexpt_hdr[] =
 };
 ht_mask_ptable aexpt_info[] = 
 {
-	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-	{"end pc",                     STATICTAG_EDIT_WORD_BE ("00000002")},
-	{"handler pc",                 STATICTAG_EDIT_WORD_BE ("00000004")},
-	{"catch type",                 STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"start pc",                   STATICTAG_EDIT_WORD_BE("00000000")},
+	{"end pc",                     STATICTAG_EDIT_WORD_BE("00000002")},
+	{"handler pc",                 STATICTAG_EDIT_WORD_BE("00000004")},
+	{"catch type",                 STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 }; 
 ht_mask_ptable ainn_info[] = 
 {
-	{"inner class info index",     STATICTAG_EDIT_WORD_BE ("00000000")},
-	{"outer class info index",     STATICTAG_EDIT_WORD_BE ("00000002")},
-	{"inner name index",           STATICTAG_EDIT_WORD_BE ("00000004")},
-	{"inner class access flags",   STATICTAG_EDIT_WORD_BE ("00000006")
-" "STATICTAG_FLAGS("00000006", ATOM_CLS_ACCESS_STR)},
+	{"inner class info index",     STATICTAG_EDIT_WORD_BE("00000000")},
+	{"outer class info index",     STATICTAG_EDIT_WORD_BE("00000002")},
+	{"inner name index",           STATICTAG_EDIT_WORD_BE("00000004")},
+	{"inner class access flags",   STATICTAG_EDIT_WORD_BE("00000006")
+                                       " "STATICTAG_FLAGS("00000006", ATOM_CLS_ACCESS_STR)},
 	{0, 0}
 };
 ht_mask_ptable aline_info[] = 
 {
-	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-	{"line number",                STATICTAG_EDIT_WORD_BE ("00000002")},
+	{"start pc",                   STATICTAG_EDIT_WORD_BE("00000000")},
+	{"line number",                STATICTAG_EDIT_WORD_BE("00000002")},
 	{0, 0}
 }; 
 ht_mask_ptable aloc_info[] = 
 {
-	{"start pc",                   STATICTAG_EDIT_WORD_BE ("00000000")},
-	{"length",                     STATICTAG_EDIT_WORD_BE ("00000002")},
-	{"name index",                 STATICTAG_EDIT_WORD_BE ("00000004")},
-	{"descriptor index",           STATICTAG_EDIT_WORD_BE ("00000006")},
-	{"index",                      STATICTAG_EDIT_WORD_BE ("00000008")},
+	{"start pc",                   STATICTAG_EDIT_WORD_BE("00000000")},
+	{"length",                     STATICTAG_EDIT_WORD_BE("00000002")},
+	{"name index",                 STATICTAG_EDIT_WORD_BE("00000004")},
+	{"descriptor index",           STATICTAG_EDIT_WORD_BE("00000006")},
+	{"index",                      STATICTAG_EDIT_WORD_BE("00000008")},
 	{0, 0}
 };
 ht_mask_ptable axpt_info[] = 
 {
-	{"exception",                  STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"exception",                  STATICTAG_EDIT_WORD_BE("00000000")},
 	{0, 0}
 };
 ht_mask_ptable attrib_hdr[] = 
 {
-	{"attribute name index",       STATICTAG_EDIT_WORD_BE ("00000000")},
+	{"attribute name index",       STATICTAG_EDIT_WORD_BE("00000000")},
 	{"attribute length",           STATICTAG_EDIT_DWORD_BE("00000002")},
 	{0, 0}
 };
 ht_mask_ptable aconst_hdr[] = 
 {
-	{"constantvalue index",        STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"constantvalue index",        STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 ht_mask_ptable acode_hdr[] = 
 {
-	{"max stack",                  STATICTAG_EDIT_WORD_BE ("00000006")},
-	{"max locals",                 STATICTAG_EDIT_WORD_BE ("00000008")},
+	{"max stack",                  STATICTAG_EDIT_WORD_BE("00000006")},
+	{"max locals",                 STATICTAG_EDIT_WORD_BE("00000008")},
 	{"code length",                STATICTAG_EDIT_DWORD_BE("0000000a")},
 	{0, 0}
 };
 ht_mask_ptable axpt_hdr[] = 
 {
-	{"number of exceptions",       STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"number of exceptions",       STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 ht_mask_ptable ainn_hdr[] = 
 {
-	{"number of classes",          STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"number of classes",          STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 ht_mask_ptable asrc_hdr[] = 
 {
-	{"sourcefile index",           STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"sourcefile index",           STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 ht_mask_ptable alin_hdr[] = 
 {
-	{"line_number table length",   STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"line_number table length",   STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 ht_mask_ptable aloc_hdr[] = 
 {
-	{"local variable table length",STATICTAG_EDIT_WORD_BE ("00000006")},
+	{"local variable table length",STATICTAG_EDIT_WORD_BE("00000006")},
+	{0, 0}
+};
+ht_mask_ptable asignature_hdr[] = 
+{
+	{"signature",                  STATICTAG_EDIT_WORD_BE("00000006")},
 	{0, 0}
 };
 
-static void attrib_view(ht_group_sub *g, ht_streamfile *f,
+static void attrib_view(ht_group_sub *g, File *f,
 		  unsigned *idx, classfile *c, attrib_info *a)
 {
-        ht_group_sub *g2, *g3;
+	ht_group_sub *g2, *g3;
 	ht_mask_sub *s, *s2;
 	ht_collapsable_sub *cs, *cs2;
 	attrib_info *atr;
@@ -260,7 +265,7 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 	g->insertsub(s);
 	switch (a->tag) {
 	case ATTRIB_SourceFile:
-    		s->add_staticmask_ptable(asrc_hdr, a->offset, true);
+		s->add_staticmask_ptable(asrc_hdr, a->offset, true);
 		break;
 	case ATTRIB_Code:
 		s->add_staticmask_ptable(acode_hdr, a->offset, true);
@@ -268,7 +273,7 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		f->seek(j);
 		f->read(inp, 4);
 		j += 4;
-		code_len = ((u4)inp[0])<<8 | ((u4)inp[1])<<8 | ((u4)inp[2])<<8 | (u4)inp[3];
+		code_len = (((((((u4)inp[0]<<8)|inp[1])<<8)|inp[2])<<8)|inp[3]);
 		j += code_len;
 
 		s2 = new ht_mask_sub();
@@ -280,61 +285,64 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		j += 2;
 		tabl_len = (((u2)inp[0]<<8)|inp[1]);
 		g2 = new ht_group_sub();
-		g2->init (f);
+		g2->init(f);
 		if (!tabl_len) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
-		for (i=0; i<tabl_len; i++) {
+		for (i=0; i < tabl_len; i++) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_staticmask_ptable(aexpt_info, j+i*8, true);
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "exception table entry [%08x]:", i);
 			cs->init(f, s2, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		j += tabl_len * 8;
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "exception table", 1);
-		g->insertsub (cs2);
-	
+		g->insertsub(cs2);
+
 		s2 = new ht_mask_sub();
-		s2->init (f, (*idx)++);
+		s2->init(f, (*idx)++);
 		s2->add_staticmask_ptable(atr_hdr, j, true);
-		g->insertsub (s2);
+		g->insertsub(s2);
 		f->seek(j);
 		f->read(inp, 2);
 		j += 2;
 		tabl_len = (((u2)inp[0]<<8)|inp[1]);
 		g2 = new ht_group_sub();
-		g2->init (f);
+		g2->init(f);
 		if (!tabl_len) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
 		for (i=0; i<tabl_len; i++) {
 			g3 = new ht_group_sub();
 			g3->init(f);
-			f->seek (j);
-			atr = attribute_read (f, c);
+			f->seek(j);
+			atr = attribute_read(f, c);
 			atr->offset = j;
 			j += atr->len + 6;
 			attrib_view(g3, f, idx, c, atr);
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
-			c->cpool[atr->name]->value.string); 
-			free (atr);
+				c->cpool[atr->name]->value.string); 
+			free(atr);
 			cs->init(f, g3, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "attributes", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
+		break;
+	case ATTRIB_Signature:
+		s->add_staticmask_ptable(asignature_hdr, a->offset, true);
 		break;
 	case ATTRIB_ConstantValue:
 		s->add_staticmask_ptable(aconst_hdr, a->offset, true);
@@ -344,14 +352,14 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		f->seek(a->offset+6);
 		f->read(inp, 2);
 		j = a->offset + 6 + 2;
-		tabl_len = ((u2)inp[0]<<8) | inp[1];
+		tabl_len = (((u2)inp[0]<<8)|inp[1]);
 		g2 = new ht_group_sub();
-		g2->init (f);
+		g2->init(f);
 		if (!tabl_len) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
 		for (i=0; i<tabl_len; i++) {
 			s2 = new ht_mask_sub();
@@ -360,11 +368,11 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "line number table entry [%08x]:", i);
 			cs->init(f, s2, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "line number table", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
 		break;
 	case ATTRIB_InnerClasses:
 		s->add_staticmask_ptable(ainn_hdr, a->offset, true);
@@ -378,7 +386,7 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
 		for (i=0; i<tabl_len; i++) {
 			s2 = new ht_mask_sub();
@@ -387,11 +395,11 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "classes entry [%08x]:", i);
 			cs->init(f, s2, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "classes", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
 		break;
 	case ATTRIB_Exceptions:
 		s->add_staticmask_ptable(axpt_hdr, a->offset, true);
@@ -400,12 +408,12 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		j = a->offset + 6 + 2;
 		tabl_len = (((u2)inp[0]<<8)|inp[1]);
 		g2 = new ht_group_sub();
-		g2->init (f);
+		g2->init(f);
 		if (!tabl_len) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
 		for (i=0; i<tabl_len; i++) {
 			s2 = new ht_mask_sub();
@@ -414,11 +422,11 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "exception index table entry [%08x]:", i);
 			cs->init(f, s2, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "exception index table", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
 		break;
 	case ATTRIB_LocalVariableTable:
 		s->add_staticmask_ptable(aloc_hdr, a->offset, true);
@@ -427,12 +435,12 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 		j = a->offset + 6 + 2;
 		tabl_len = (((u2)inp[0]<<8)|inp[1]);
 		g2 = new ht_group_sub();
-		g2->init (f);
+		g2->init(f);
 		if (!tabl_len) {
 			s2 = new ht_mask_sub();
 			s2->init(f, (*idx)++);
 			s2->add_mask("<none>");
-			g2->insertsub (s2);
+			g2->insertsub(s2);
 		}
 		for (i=0; i<tabl_len; i++) {
 			s2 = new ht_mask_sub();
@@ -441,20 +449,20 @@ static void attrib_view(ht_group_sub *g, ht_streamfile *f,
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "local variable table entry [%08x]:", i);
 			cs->init(f, s2, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(f, g2, 1, "local variable table", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
 		break;
 	case ATTRIB_Synthetic:
 	case ATTRIB_Deprecated:
 	default:
-	break;
+		break;
 	}
 }
 
-static void mf_view(ht_group_sub *g, ht_streamfile *f,
+static void mf_view(ht_group_sub *g, File *f,
 	   unsigned *idx, classfile *c, mf_info *mf)
 {
 	ht_group_sub *g2, *g3;
@@ -468,30 +476,30 @@ static void mf_view(ht_group_sub *g, ht_streamfile *f,
 	g->insertsub(s);
 
 	g2 = new ht_group_sub();
-	g2->init (f);
+	g2->init(f);
 	if (!mf->attribs_count) {
 		s = new ht_mask_sub();
 		s->init(f, (*idx)++);
 		s->add_mask("<none>");
-		g2->insertsub (s);
+		g2->insertsub(s);
 	}
-	for (UINT i=0; i < mf->attribs_count; i++) {
+	for (uint i=0; i<mf->attribs_count; i++) {
 		g3 = new ht_group_sub();
 		g3->init(f);
 		attrib_view(g3, f, idx, c, mf->attribs[i]);
 		cs = new ht_collapsable_sub();
 		ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i, c->cpool[mf->attribs[i]->name]->value.string);
 		cs->init(f, g3, 1, info, 1);
-		g2->insertsub (cs);
+		g2->insertsub(cs);
 	}
 	cs2 = new ht_collapsable_sub();
 	cs2->init(f, g2, 1, "attributes", 1);
-	g->insertsub (cs2);
+	g->insertsub(cs2);
 }
 
-static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *class_view(Bounds *b, File *file, ht_format_group *group)
 {
-        ht_mask_sub *s;
+	ht_mask_sub *s;
 	ht_collapsable_sub *cs, *cs2;
 	ht_group_sub *g, *g2, *g3;
 	classfile *clazz;
@@ -502,8 +510,8 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 	if (clazz) {
 		ht_uformat_viewer *v = new ht_uformat_viewer();
 		v->init(b, DESC_JAVA_HEADERS, VC_EDIT, file, group);
-		register_atom(ATOM_CLS_ACCESS, access_flags);
-		register_atom(ATOM_CLS_CPOOL,  cpool_tags);
+		registerAtom(ATOM_CLS_ACCESS, access_flags);
+		registerAtom(ATOM_CLS_CPOOL,  cpool_tags);
 
 		g = new ht_group_sub();
 		g->init(file);
@@ -514,8 +522,8 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 		g->insertsub(s);
 
 		g2 = new ht_group_sub();
-		g2->init (file);
-		for (i=1; i<clazz->cpool_count; i++) {
+		g2->init(file);
+		for (i=1; i < clazz->cpool_count; i++) {
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_staticmask_ptable(cpool_hdr, clazz->cpool[i]->offset, true);
@@ -548,11 +556,11 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 			}
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "constant pool entry [%08x]: %s", i,
-				(clazz->cpool[i]->tag == CONSTANT_Utf8) 
-				? clazz->cpool[i]->value.string : "");
+					(clazz->cpool[i]->tag == CONSTANT_Utf8) 
+					? clazz->cpool[i]->value.string : "");
 			cs->init(file, s, 1, info, 1);
 			g2->insertsub(cs);
-			if (clazz->cpool[i]->tag == CONSTANT_Long 
+			if (clazz->cpool[i]->tag == CONSTANT_Long
 			 || clazz->cpool[i]->tag == CONSTANT_Double) {
 				i++;
 			}
@@ -560,32 +568,35 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 		cs2 = new ht_collapsable_sub();
 		cs2->init(file, g2, 1, "constant pool", 1);
 		g->insertsub(cs2);
+
 		s = new ht_mask_sub();
 		s->init(file, idx++);
 		s->add_staticmask_ptable(cls_class2_hdr, clazz->coffset, true);
 		g->insertsub(s);
+
 		g2 = new ht_group_sub();
 		g2->init(file);
 		if (!clazz->interfaces_count) {
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_mask("<none>");
-			g2->insertsub (s);
+			g2->insertsub(s);
 		}
-		for (i=0; i<clazz->interfaces_count; i++) {
+		for (i=0; i < clazz->interfaces_count; i++) {
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_staticmask_ptable(iface_hdr, clazz->coffset+8+i*2, true);
 			cs = new ht_collapsable_sub();
 			j = clazz->cpool[clazz->interfaces[i]]->value.llval[0];
 			ht_snprintf(info, sizeof info, "interface entry [%08x]: %s", i,
-			clazz->cpool[j]->value.string);
+				clazz->cpool[j]->value.string);
 			cs->init(file, s, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(file, g2, 1, "interfaces", 1);
 		g->insertsub(cs2);
+
 		s = new ht_mask_sub();
 		s->init(file, idx++);
 		s->add_staticmask_ptable(field_hdr, clazz->foffset, true);
@@ -596,33 +607,34 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_mask("<none>");
-			g2->insertsub (s);
+			g2->insertsub(s);
 		}
-		for (i=0; i<clazz->fields_count; i++) {
+		for (i=0; i < clazz->fields_count; i++) {
 			g3 = new ht_group_sub();
 			g3->init(file);
 			mf_view(g3, file, &idx, clazz, clazz->fields[i]);
 			cs = new ht_collapsable_sub();
 			ht_snprintf(info, sizeof info, "field entry [%08x]: %s", i, clazz->fields[i]->name);
-			cs->init(file, g3, 1, info, 1);
-			g2->insertsub (cs);
+				cs->init(file, g3, 1, info, 1);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(file, g2, 1, "fields", 1);
 		g->insertsub(cs2);
+
 		s = new ht_mask_sub();
 		s->init(file, idx++);
 		s->add_staticmask_ptable(method_hdr, clazz->moffset, true);
 		g->insertsub(s);
 		g2 = new ht_group_sub();
-		g2->init (file);
+		g2->init(file);
 		if (!clazz->methods_count) {
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_mask("<none>");
-			g2->insertsub (s);
+			g2->insertsub(s);
 		}
-		for (i=0; i < clazz->methods_count; i++) {
+		for (i=0; i<clazz->methods_count; i++) {
 			g3 = new ht_group_sub();
 			g3->init(file);
 			mf_view(g3, file, &idx, clazz, clazz->methods[i]);
@@ -633,33 +645,35 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(file, g2, 1, "methods", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
+
 		s = new ht_mask_sub();
 		s->init(file, idx++);
 		s->add_staticmask_ptable(atr_hdr, clazz->aoffset, true);
 		g->insertsub(s);
 		g2 = new ht_group_sub();
-		g2->init (file);
+		g2->init(file);
 		if (!clazz->attribs_count) {
 			s = new ht_mask_sub();
 			s->init(file, idx++);
 			s->add_mask("<none>");
-			g2->insertsub (s);
+			g2->insertsub(s);
 		}
-		for (i=0; i < clazz->attribs_count; i++) {
+		for (i=0; i<clazz->attribs_count; i++) {
 			g3 = new ht_group_sub();
 			g3->init(file);
 			attrib_view(g3, file, &idx, clazz, clazz->attribs[i]);
 			cs = new ht_collapsable_sub();
 			j = clazz->attribs[i]->name;
 			ht_snprintf(info, sizeof info, "attribute entry [%08x]: %s", i,
-				clazz->cpool[j]->value.string);
+			    clazz->cpool[j]->value.string);
 			cs->init(file, g3, 1, info, 1);
-			g2->insertsub (cs);
+			g2->insertsub(cs);
 		}
 		cs2 = new ht_collapsable_sub();
 		cs2->init(file, g2, 1, "attributes", 1);
-		g->insertsub (cs2);
+		g->insertsub(cs2);
+
 		v->insertsub(g);
 		return v;
 	} else {
@@ -667,8 +681,8 @@ static ht_view *class_view(bounds *b, ht_streamfile *file, ht_format_group *grou
 	}
 }
 
-void cview::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs,
-		  ht_format_group *g, FILEOFS header_ofs, void *shared)
+void cview::init(Bounds *b, File *f, format_viewer_if **ifs,
+		  ht_format_group *g, FileOfs header_ofs, void *shared)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_JAVA, f, false, true, 0, g);
 
@@ -696,7 +710,7 @@ static format_viewer_if *htcls_ifs[] = {
 	0
 };
 
-static ht_view *class_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *class_init(Bounds *b, File *file, ht_format_group *group)
 {
 	u1 magic[4];
 

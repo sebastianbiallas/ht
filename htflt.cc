@@ -22,7 +22,7 @@
 #include "htflt.h"
 #include "htflthd.h"
 #include "htfltimg.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -36,7 +36,7 @@ static format_viewer_if *htflt_ifs[] = {
 	0
 };
 
-static ht_view *htflt_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htflt_init(Bounds *b, File *file, ht_format_group *format_group)
 {
 	byte ident[4];
 	file->seek(0);
@@ -57,22 +57,24 @@ format_viewer_if htflt_if = {
 /*
  *	CLASS ht_flt
  */
-void ht_flt::init(bounds *b, ht_streamfile *f, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs)
+void ht_flt::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_FLT, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_flt");
 
-	LOG("%s: FLAT: found header at %08x", file->get_filename(), header_ofs);
+	String fn;
+	file->getFilename(fn);
+	LOG("%y: FLAT: found header at %08qx", &fn, header_ofs);
 	
-	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)malloc(sizeof(ht_flt_shared_data));
+	ht_flt_shared_data *flt_shared = ht_malloc(sizeof (ht_flt_shared_data));
 	
-	shared_data=flt_shared;
-	flt_shared->header_ofs=header_ofs;
+	shared_data = flt_shared;
+	flt_shared->header_ofs = header_ofs;
 
 	/* read header */
 	file->seek(header_ofs);
 	file->read(&flt_shared->header, sizeof flt_shared->header);
-	create_host_struct(&flt_shared->header, FLAT_HEADER_struct, big_endian);
+	createHostStruct(&flt_shared->header, FLAT_HEADER_struct, big_endian);
 
 	flt_shared->code_start = sizeof flt_shared->header;
 	flt_shared->code_end = flt_shared->header.data_start;

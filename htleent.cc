@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htnewexe.h"
 #include "htle.h"
 #include "htlehead.h"
@@ -70,7 +70,7 @@ static ht_mask_ptable le_entry32[]=
 	{0, 0}
 };
 
-static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleentrypoints_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
@@ -79,11 +79,11 @@ static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 	v->init(b, DESC_LE_ENTRYPOINTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
-	register_atom(ATOM_LE_ENTRY_FLAGS, le_entry_flags);
-	register_atom(ATOM_LE_ENTRY_BUNDLE_FLAGS, le_entry_bundle_flags);
+	registerAtom(ATOM_LE_ENTRY_FLAGS, le_entry_flags);
+	registerAtom(ATOM_LE_ENTRY_BUNDLE_FLAGS, le_entry_bundle_flags);
 	char info[128];
 	
-	ht_snprintf(info, sizeof info, "* LE entry header at offset %08x", h+le_shared->hdr.enttab);
+	ht_snprintf(info, sizeof info, "* LE entry header at offset 0x%08qx", h+le_shared->hdr.enttab);
 
 /* FIXME: false */
 	bool le_bigendian = false;
@@ -91,7 +91,7 @@ static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 	m->add_staticmask_ptable(le_entry_bundle_header, h+le_shared->hdr.enttab, le_bigendian);
 	v->insertsub(m);
 
-	FILEOFS o=h+le_shared->hdr.enttab;
+	FileOfs o=h+le_shared->hdr.enttab;
 	while (1) {
 		char t[32];
 		LE_ENTRYPOINT_BUNDLE hdr;
@@ -99,7 +99,7 @@ static ht_view *htleentrypoints_init(bounds *b, ht_streamfile *file, ht_format_g
 		file->seek(o);
 		o+=file->read(&hdr, sizeof hdr);
 		if (!hdr.entry_count) break;
-		char *flags_str;
+		const char *flags_str;
 		if (hdr.flags & LE_ENTRYPOINT_BUNDLE_32BIT) {
 			flags_str="32-bit";
 		} else {

@@ -27,12 +27,12 @@
 
 // file open modes
 
-#define FOM_AUTO					0
+#define FOM_AUTO				0
 #define FOM_BIN					1
-#define FOM_TEXT					2
+#define FOM_TEXT				2
 
 //
-#define VIEWERGROUP_NAME				"viewergroup"
+#define VIEWERGROUP_NAME			"viewergroup"
 
 /*
  *	CLASS ht_status
@@ -58,14 +58,15 @@ protected:
 	int		clear_len;
 	int		analy_ani;
 public:
-			void init(bounds *b);
+		void init(Bounds *b);
 	virtual	void done();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool idle();
+	virtual void getminbounds(int *width, int *height);
 private:
-			void render();
-	virtual	char *defaultpalette();
+		void render();
+	virtual	const char *defaultpalette();
 };
 
 /*
@@ -74,12 +75,12 @@ private:
 
 class ht_keyline: public ht_view {
 public:
-			void init(bounds *b);
+		void init(Bounds *b);
 	virtual	void done();
-/* overwritten */
+	/* overwritten */
 	virtual	void draw();
-	virtual	void handlemsg(htmsg *msg);
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
+	virtual void getminbounds(int *width, int *height);
 };
 
 /*
@@ -88,18 +89,17 @@ public:
 
 class ht_desktop: public ht_view {
 public:
-			void init(bounds *b);
-	virtual	void done();
-/* overwritten */
+		void init(Bounds *b);
+	/* overwritten */
 	virtual	void draw();
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 };
 
 /*
  *	CLASS ht_logviewer
  */
 
-class ht_log_msg: public ht_data {
+class ht_log_msg: public Object {
 public:
 	vcp color;
 	char *msg;
@@ -109,16 +109,16 @@ public:
 
 typedef unsigned int LogColor;
 
-class ht_log: public ht_clist {
+class ht_log: public Array {
 protected:
-	UINT maxlinecount;
+	uint maxlinecount;
 
 	void deletefirstline();
 	void	insertline(LogColor c, char *line);
 public:
-			void init(compare_keys_func_ptr compare_keys = 0);
+	ht_log();
 /* new */
-			void log(LogColor c, char *line);
+	void log(LogColor c, char *line);
 };
 
 class ht_logviewer: public ht_viewer {
@@ -128,15 +128,15 @@ private:
 	int ofs, xofs;
 	ht_window *window;
 
-/* new */
+	/* new */
 	int cursor_up(int n);
 	int cursor_down(int n);
 	bool get_vscrollbar_pos(int *pstart, int *psize);
 	void update();
 public:
-			void init(bounds *b, ht_window *window, ht_log *log, bool own_log);
+		void init(Bounds *b, ht_window *window, ht_log *log, bool own_log);
 	virtual	void done();
-/* overwritten */
+	/* overwritten */
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
 };
@@ -145,7 +145,7 @@ public:
  *	CLASS ht_vstate_history_entry
  */
 
-class ht_vstate_history_entry: public ht_data {
+class ht_vstate_history_entry: public Object {
 public:
 	Object *data;
 	ht_view *view;
@@ -160,16 +160,18 @@ public:
 
 class ht_file_window: public ht_window {
 protected:
-	ht_list *vstate_history;
+	Array vstate_history;
 	int vstate_history_pos;
 	
-			void add_vstate_history(ht_vstate_history_entry *e);
+		void add_vstate_history(ht_vstate_history_entry *e);
 public:
-	ht_streamfile	*file;
+	File	*file;
 
-			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *file);
+		ht_file_window();
+		
+		void init(Bounds *b, const char *desc, uint framestyle, uint number, File *file);
 	virtual	void done();
-/* overwritten */
+	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 };
 
@@ -177,38 +179,41 @@ public:
  *	CLASS ht_project
  */
 
-class ht_project: public ht_sorted_list {
+class ht_project: public AVLTree {
 protected:
 	char *filename;
 public:
-		   void init(char *filename);
-	virtual void done();
+	explicit ht_project(const char *filename);
+		ht_project(BuildCtorArg &a): AVLTree(a) {};
+	virtual ~ht_project();
 /* overwritten */
-	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
-	virtual void	store(ht_object_stream *s);
+	virtual void load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
+	virtual void store(ObjectStream &s) const;
 /* new */
-		   char *get_filename();
+		const char *get_filename();
 };
 
 /*
  *	CLASS ht_project_item
  */
 
-class ht_project_item: public ht_data {
+class ht_project_item: public Object {
 protected:
 	char *filename;
 	char *path;
 public:
-		   void init(char *filename, char *path);
-	virtual void done();
+		ht_project_item(const char *filename, const char *path);
+		ht_project_item(BuildCtorArg &a): Object(a) {};
+	virtual ~ht_project_item();
 /* overwritten */
-	virtual int	load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
-	virtual void	store(ht_object_stream *s);
+	virtual void load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
+	virtual void store(ObjectStream &s) const;
+	virtual int compareTo(const Object *) const;
 /* new */
-	const char *get_filename();
-	const char *get_path();
+	const char *get_filename() const;
+	const char *get_path() const;
 };
 
 /*
@@ -218,26 +223,26 @@ public:
 class ht_project_listbox: public ht_listbox {
 protected:
 	ht_project *project;
-	UINT colwidths[4];
+	uint colwidths[4];
 	
 public:
-			void		init(bounds *b, ht_project *project);
+		void	init(Bounds *b, ht_project *project);
 			
-	virtual	int		calcCount();
-	virtual	void		draw();
+	virtual	int	calcCount();
+	virtual	void	draw();
 	virtual	void *	getFirst();
 	virtual	void *	getLast();
 	virtual	void *	getNext(void *entry);
 	virtual	void *	getPrev(void *entry);
-	virtual	char *	getStr(int col, void *entry);
-	virtual	void		handlemsg(htmsg *msg);
-	virtual	int		numColumns();
-	virtual	void *	quickfind(char *s);
-	virtual	char *	quickfindCompletition(char *s);
-	virtual	bool		selectEntry(void *entry);
+	virtual	const char *getStr(int col, void *entry);
+	virtual	void	handlemsg(htmsg *msg);
+	virtual	int	numColumns();
+	virtual	void *	quickfind(const char *s);
+	virtual	char *	quickfindCompletition(const char *s);
+	virtual	bool	selectEntry(void *entry);
 /* new */
-			char *	func(UINT i, bool execute);
-			void		set_project(ht_project *project);
+		const char *func(uint i, bool execute);
+		void	set_project(ht_project *project);
 };
 
 /*
@@ -251,7 +256,7 @@ protected:
 	char wtitle[128];
 public:
 
-			void	init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **project);
+		void init(Bounds *b, const char *desc, uint framestyle, uint number, ht_project **project);
 	virtual	void done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
@@ -263,23 +268,23 @@ public:
 
 #define AWT_LOG		0
 #define AWT_CLIPBOARD	1
-#define AWT_HELP		2
-#define AWT_FILE		3
+#define AWT_HELP	2
+#define AWT_FILE	3
 #define AWT_OFM		4
-#define AWT_PROJECT		5
-#define AWT_TERM		6
+#define AWT_PROJECT	5
+#define AWT_TERM	6
 
-class ht_app_window_entry: public ht_data {
+class ht_app_window_entry: public Object {
 public:
-	UINT type;
+	uint type;
 	ht_window *window;
 	bool minimized;
-	UINT number;
+	uint number;
 	bool isfile;
-	ht_layer_streamfile *layer;
+	FileLayer *layer;
 
-	ht_app_window_entry(ht_window *window, UINT number, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
-	~ht_app_window_entry();
+	ht_app_window_entry(ht_window *window, uint number, uint type, bool minimized, bool isfile, FileLayer *layer);
+	virtual int compareTo(const Object *) const;
 };
 
 /*
@@ -288,9 +293,9 @@ public:
 
 class ht_app: public ht_dialog {
 protected:
-	ht_sorted_list *windows;
+	Container *windows;
 
-	ht_list *syntax_lexers;
+	Container *syntax_lexers;
 
 	ht_keyline *keyline;
 	ht_desktop *desktop;
@@ -300,54 +305,59 @@ protected:
 	bool exit_program;
 
 /* new */
-			ht_window *create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);
-			ht_window *create_window_file_text(bounds *b, ht_layer_streamfile *file, char *title, bool isfile);
+			ht_window *create_window_file_bin(Bounds *b, FileLayer *file, const char *title, bool isfile);
+			ht_window *create_window_file_text(Bounds *b, FileLayer *file, const char *title, bool isfile);
 			
 			bool accept_close_all_windows();
-			UINT find_free_window_number();
+			uint find_free_window_number();
 			
-			UINT get_window_number(ht_window *window);
-			UINT get_window_listindex(ht_window *window);
+			uint get_window_number(ht_window *window);
+			ObjHandle get_window_listindex(ht_window *window);
 
-			void get_stdbounds_file(bounds *b);
-			void get_stdbounds_tool(bounds *b);
+			void get_stdbounds_file(Bounds *b);
+			void get_stdbounds_tool(Bounds *b);
 			
-			int popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, ht_list *structure, int depth, int *currenti, ht_view *currentv);
+			int popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, List *structure, int depth, int *currenti, ht_view *currentv);
 /* overwritten */
-	virtual	char *defaultpalette();
-	virtual	char *defaultpaletteclass();
+	virtual	const char *defaultpalette();
+	virtual	const char *defaultpaletteclass();
 public:
 	ht_view *menu;
-		void insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer);
 
-		void init(bounds *b);
+		ht_app() {};
+		ht_app(BuildCtorArg &a): ht_dialog(a) {};
+		void insert_window(ht_window *window, uint type, bool minimized, bool isfile, FileLayer *layer);
+
+		void init(Bounds *b);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();
-	virtual	int focus(ht_view *view);
-	virtual	char *func(UINT i, bool execute);
+	virtual	bool focus(ht_view *view);
+	virtual	const char *func(uint i, bool execute);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	int load(ht_object_stream *f);
-	virtual OBJECT_ID object_id() const;
+	virtual	void load(ObjectStream &f);
+	virtual ObjectID getObjectID() const;
 	virtual	int run(bool modal);
-	virtual	void store(ht_object_stream *f);
+	virtual	void store(ObjectStream &f) const;
 /* new */
-			ht_window *create_window_clipboard();
-			ht_window *create_window_file(char *filename, UINT mode, bool allow_duplicates);
-			ht_window *create_window_file_bin(char *filename, bool allow_duplicates);
-			ht_window *create_window_file_text(char *filename, bool allow_duplicates);
-			ht_window *create_window_help(char *file, char *node);
-			ht_window *create_window_log();
-			ht_window *create_window_ofm(char *url1, char *url2);
-			ht_window *create_window_project();
-			ht_window *create_window_term(const char *cmd);
-			void delete_window(ht_window *window);
-			ht_window *get_window_by_filename(char *filename);
-			ht_window *get_window_by_number(UINT number);
-			ht_window *get_window_by_type(UINT type);
-			ht_view *popup_view_list(char *dialog_title);
-			ht_window *popup_window_list(char *dialog_title);
-			void project_opencreate(char *filename);
+		ht_window *create_window_clipboard();
+		ht_window *create_window_file(const char *filename, uint mode, bool allow_duplicates);
+		ht_window *create_window_file_bin(const char *filename, bool allow_duplicates);
+		ht_window *create_window_file_text(const char *filename, bool allow_duplicates);
+		ht_window *create_window_help(const char *file, const char *node);
+		ht_window *create_window_log();
+		ht_window *create_window_ofm(const char *url1, const char *url2);
+		ht_window *create_window_project();
+		ht_window *create_window_term(const char *cmd);
+		void delete_window(ht_window *window);
+		ht_window *get_window_by_filename(const char *filename);
+		ht_window *get_window_by_number(uint number);
+		ht_window *get_window_by_type(uint type);
+		ht_view *popup_view_list(const char *dialog_title);
+		ht_window *popup_window_list(const char *dialog_title);
+		void project_opencreate(const char *filename);
+		void tile(bool vertical);
+		void modal_resize();
 };
 
 extern ht_log *loglines;

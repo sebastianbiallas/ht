@@ -21,33 +21,33 @@
 #ifndef __MZSTRUCT_H_
 #define __MZSTRUCT_H_
 
-#include "global.h"
+#include "io/types.h"
 #include "tools.h"
 
 #define IMAGE_MZ_MAGIC0	'M'
 #define IMAGE_MZ_MAGIC1 'Z'
 
 struct IMAGE_MZ_HEADER {
-	word magic;
-	word sizelp;
-	word sizep;
-	word reloc_count;
-	word header_size;
-	word minalloc;
-	word maxalloc;
-	word ss;
-	word sp;
-	word checksum;
-	word ip;
-	word cs;
-	word reloc_ofs;
-	word overlay_num;
-	word res[4];
-	word oemid;
-	word oeminfo;
-	word res2[10];
-	dword newexe_ofs;
-} HTPACKED;
+	uint16 magic PACKED;
+	uint16 sizelp PACKED;
+	uint16 sizep PACKED;
+	uint16 reloc_count PACKED;
+	uint16 header_size PACKED;
+	uint16 minalloc PACKED;
+	uint16 maxalloc PACKED;
+	uint16 ss PACKED;
+	uint16 sp PACKED;
+	uint16 checksum PACKED;
+	uint16 ip PACKED;
+	uint16 cs PACKED;
+	uint16 reloc_ofs PACKED;
+	uint16 overlay_num PACKED;
+	uint16 res[4] PACKED;
+	uint16 oemid PACKED;
+	uint16 oeminfo PACKED;
+	uint16 res2[10] PACKED;
+	uint32 newexe_ofs PACKED;
+};
 
 extern byte MZ_HEADER_struct[];
 

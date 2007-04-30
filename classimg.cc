@@ -27,15 +27,16 @@
 #include "log.h"
 #include "snprintf.h"
 
-ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htclassimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_class_shared_data *class_shared=(ht_class_shared_data *)group->get_shared_data();
 
-	LOG("%s: JAVA: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: JAVA: loading image (starting analyser)...", &file->getFilename(fn));
 	ClassAnalyser *a = new ClassAnalyser();
 	a->init(class_shared, file);
 
-	bounds c = *b;
+	Bounds c = *b;
 	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_JAVA_IMAGE"-g");
 	AnalyInfoline *head;
@@ -59,7 +60,7 @@ ht_view *htclassimage_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	if (!high) {
 		high = a->createAddress32(0);
 	} else {
-		high = (Address *)high->duplicate();
+		high = high->clone();
 		high->add(-1);
 	}
 	analy->init(file, v, a, low, high);
@@ -92,7 +93,7 @@ format_viewer_if htclassimage_if = {
 /*
  *	CLASS ht_class_aviewer
  */
-void ht_class_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_class_shared_data *Class_shared)
+void ht_class_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_class_shared_data *Class_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	class_shared = Class_shared;
@@ -106,23 +107,4 @@ void ht_class_aviewer::setAnalyser(Analyser *a)
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-
-#if 0
-static ht_view *
-class_image(bounds *b, ht_streamfile *file, ht_format_group *group)
-{
-  classfile *clazz;
-
-  clazz = ((ht_class_shared_data *)group->get_shared_data())->file;
-  if (clazz) {
-
-    ht_uformat_viewer *v = new ht_uformat_viewer();
-    v->init(b, DESC_JAVA_IMAGE, VC_EDIT, file, group);
-    /* need to insert more code here */
-    return v;
-  } else {
-    return NULL;
-  }
-}
-#endif
 

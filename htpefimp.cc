@@ -21,14 +21,14 @@
 #include "formats.h"
 #include "htanaly.h"
 #include "htctrl.h"
-#include "htdata.h"
-#include "htendian.h"
+#include "data.h"
+#include "endianess.h"
 #include "htiobox.h"
 #include "htpal.h"
 #include "htpef.h"
 #include "htpefimp.h"
 #include "stream.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "httag.h"
 #include "log.h"
 #include "pef_analy.h"
@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htpefimports_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
 
@@ -46,14 +46,14 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	|| !pef_shared->loader_info_header.importedLibraryCount 
 	|| !pef_shared->loader_info_header.totalImportedSymbolCount) return NULL;
 	
-	FILEOFS nametable = pef_shared->loader_info_header_ofs + pef_shared->loader_info_header.loaderStringsOffset;
-	FILEOFS functions_offset = pef_shared->loader_info_header_ofs 
+	FileOfs nametable = pef_shared->loader_info_header_ofs + pef_shared->loader_info_header.loaderStringsOffset;
+	FileOfs functions_offset = pef_shared->loader_info_header_ofs 
 			+ sizeof pef_shared->loader_info_header
 			+ pef_shared->loader_info_header.importedLibraryCount
 				* sizeof(PEF_ImportedLibrary);
 
 	ht_group *g;
-	bounds c;
+	Bounds c;
 
 	c=*b;
 	g=new ht_group();
@@ -78,10 +78,10 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 
 		PEF_ImportedLibrary lib;
 		file->read(&lib, sizeof lib);
-		create_host_struct(&lib, PEF_ImportedLibrary_struct, pef_shared->byte_order);
+		createHostStruct(&lib, PEF_ImportedLibrary_struct, pef_shared->byte_order);
 
 		file->seek(nametable + lib.nameOffset);
-		char *libname = fgetstrz(file);
+		char *libname = file->fgetstrz();
 
 		ht_pef_import_library *library=new ht_pef_import_library(libname);
 		pef_shared->imports.libs->insert(library);
@@ -90,13 +90,13 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 			file->seek(functions_offset + 4 * (lib.firstImportedSymbol+j));
 			uint32 entry;
 			file->read(&entry, 4);
-			entry = create_host_int(&entry, 4, pef_shared->byte_order);
+			entry = createHostInt(&entry, 4, pef_shared->byte_order);
 			
 			uint32 symbol_ofs = entry & 0x00ffffff;
 			uint32 symbol_class = entry >> 24;
 
 			file->seek(nametable+symbol_ofs);
-			char *symbol_name = fgetstrz(file);
+			char *symbol_name = file->fgetstrz();
 
 			ht_pef_import_function *func = new ht_pef_import_function(i, symbol_num, symbol_name, symbol_class);
 			pef_shared->imports.funcs->insert(func);
@@ -109,7 +109,7 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	}
 
 	char iline[1024];
-	ht_snprintf(iline, sizeof iline, "* PEF import library description at offset %08x (%d functions from %d libraries)", 
+	ht_snprintf(iline, sizeof iline, "* PEF import library description at offset %08qx (%d functions from %d libraries)", 
 		pef_shared->loader_info_header_ofs + sizeof pef_shared->loader_info_header, 
 		function_count, lib_count);
 		
@@ -119,10 +119,10 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	g->insert(head);
 	g->insert(v);
 	//
-	for (UINT i=0; i < pef_shared->imports.funcs->count(); i++) {
-		ht_pef_import_function *func = (ht_pef_import_function*)pef_shared->imports.funcs->get(i);
+	for (uint i=0; i < pef_shared->imports.funcs->count(); i++) {
+		ht_pef_import_function *func = (ht_pef_import_function*)(*pef_shared->imports.funcs)[i];
 		assert(func);
-		ht_pef_import_library *lib = (ht_pef_import_library*)pef_shared->imports.libs->get(func->libidx);
+		ht_pef_import_library *lib = (ht_pef_import_library*)(*pef_shared->imports.libs)[func->libidx];
 		assert(lib);
 		char addr[32], name[256];
 		ht_snprintf(addr, sizeof addr, "%d", func->num);
@@ -137,7 +137,8 @@ ht_view *htpefimports_init(bounds *b, ht_streamfile *file, ht_format_group *grou
 	pef_shared->v_imports = v;
 	return g;
 pef_read_error:
-	errorbox("%s: PEF import library description seems to be corrupted.", file->get_filename());
+	String fn;
+	errorbox("%y: PEF import library description seems to be corrupted.", &file->getFilename(fn));
 	g->done();
 	delete g;
 	v->done();
@@ -161,14 +162,14 @@ ht_pef_import_library::ht_pef_import_library(char *n)
 
 ht_pef_import_library::~ht_pef_import_library()
 {
-	if (name) free(name);
+	free(name);
 }
 
 /*
  *	class ht_pe_import_function
  */
 
-ht_pef_import_function::ht_pef_import_function(UINT aLibidx, int aNum, const char *aName, UINT aSym_class)
+ht_pef_import_function::ht_pef_import_function(uint aLibidx, int aNum, const char *aName, uint aSym_class)
 {
 	libidx = aLibidx;
 	name = ht_strdup(aName);
@@ -185,7 +186,7 @@ ht_pef_import_function::~ht_pef_import_function()
  *	CLASS ht_pef_import_viewer
  */
 
-void ht_pef_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
+void ht_pef_import_viewer::init(Bounds *b, const char *Desc, ht_format_group *fg)
 {
 	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
 	options |= VO_BROWSABLE;
@@ -204,7 +205,7 @@ void	ht_pef_import_viewer::done()
 void ht_pef_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	UINT l, s;
+	uint l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -219,7 +220,7 @@ void ht_pef_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_pef_import_viewer::func(UINT i, bool execute)
+const char *ht_pef_import_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:
@@ -243,36 +244,27 @@ char *ht_pef_import_viewer::func(UINT i, bool execute)
 void ht_pef_import_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_funcexec:
-			if (func(msg->data1.integer, 1)) {
-				clearmsg(msg);
-				return;
-			}
-			break;
-		case msg_funcquery: {
-			char *s=func(msg->data1.integer, 0);
-			if (s) {
-				msg->msg=msg_retval;
-				msg->data1.str=s;
-			}
-			break;
+	case msg_funcexec:
+		if (func(msg->data1.integer, 1)) {
+			clearmsg(msg);
+			return;
 		}
-/*		case msg_get_scrollinfo:
-			switch (msg->data1.integer) {
-				case gsi_pindicator: {
-					strcpy((char*)msg->data2.ptr, " Enter to view, Backspace to return here");
-					clearmsg(msg);
-					return;
-				}
-			}
-			break;*/
-		case msg_keypressed: {
-			if (msg->data1.integer == K_Return) {
-				select_entry(e_cursor);
-				clearmsg(msg);
-			}
-			break;
+		break;
+	case msg_funcquery: {
+		const char *s=func(msg->data1.integer, 0);
+		if (s) {
+			msg->msg=msg_retval;
+			msg->data1.cstr=s;
 		}
+		break;
+	}
+	case msg_keypressed: {
+		if (msg->data1.integer == K_Return) {
+			select_entry(e_cursor);
+			clearmsg(msg);
+		}
+		break;
+	}
 	}
 	ht_text_listbox::handlemsg(msg);
 }

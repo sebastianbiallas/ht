@@ -21,7 +21,7 @@
 #ifndef __HTPAL_H__
 #define __HTPAL_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htobj.h"
 #include "htreg.h"
 
@@ -29,7 +29,7 @@
 
 struct defpal {
 	int idx;
-	char *name;
+	const char *name;
 	int color;
 };
 
@@ -39,16 +39,17 @@ struct defpal {
 
 class palette_entry: public ht_registry_data {
 public:
-	UINT idx;
+	uint idx;
 	vcp color;
 
-			palette_entry(UINT idx=0, vcp color=0);
+		palette_entry(uint idx=0, vcp color=0);
+		palette_entry(BuildCtorArg&a): ht_registry_data(a) {};
 /* overwritten */
 	virtual	bool editdialog(const char *keyname);
-	virtual   void strvalue(char *buf32bytes);
-	virtual	int  load(ht_object_stream *f);
-	virtual	OBJECT_ID object_id() const;
-	virtual	void store(ht_object_stream *f);
+	virtual void strvalue(char *buf32bytes);
+	virtual	void load(ObjectStream &f);
+	virtual	ObjectID getObjectID() const;
+	virtual	void store(ObjectStream &f) const;
 };
 
 /*
@@ -61,8 +62,8 @@ public:
  *   palette class keys
  */
 
-#define palclasskey_generic						"generic"
-#define palclasskey_tags	     					"tags"
+#define palclasskey_generic					"generic"
+#define palclasskey_tags	     				"tags"
 #define palclasskey_syntax	     				"syntax"
 
 /*
@@ -76,35 +77,35 @@ public:
 #define palkey_generic_desktop_default				"desktop"
 #define palkey_generic_help_default				"help"
 
-#define palkey_generic_cyan						"cyan"
-#define palkey_generic_black						"black"
-#define palkey_generic_blue						"blue"
-#define palkey_generic_gray						"gray"
+#define palkey_generic_cyan					"cyan"
+#define palkey_generic_black					"black"
+#define palkey_generic_blue					"blue"
+#define palkey_generic_gray					"gray"
 #define palkey_generic_special					"special"
 
-#define palidx_generic_body						0
+#define palidx_generic_body					0
 #define palidx_generic_text_focused				1
 #define palidx_generic_text_unfocused				2
 #define palidx_generic_text_shortcut				3
-#define palidx_generic_text_shortcut_selected		4
+#define palidx_generic_text_shortcut_selected			4
 #define palidx_generic_text_selected				5
 #define palidx_generic_text_disabled				6
 #define palidx_generic_frame_focused				7
 #define palidx_generic_frame_unfocused				8
 #define palidx_generic_frame_move_resize			9
 #define palidx_generic_frame_killer				10
-#define palidx_generic_scrollbar					11
+#define palidx_generic_scrollbar				11
 #define palidx_generic_input_focused				12
 #define palidx_generic_input_unfocused				13
 #define palidx_generic_input_selected				14
-#define palidx_generic_input_clip 					15
+#define palidx_generic_input_clip 				15
 #define palidx_generic_button_focused				16
 #define palidx_generic_button_unfocused				17
 #define palidx_generic_button_shadow 				18
 #define palidx_generic_button_shortcut				19
 #define palidx_generic_list_focused_selected			20
-#define palidx_generic_list_focused_unselected		21
-#define palidx_generic_list_unfocused_selected		22
+#define palidx_generic_list_focused_unselected			21
+#define palidx_generic_list_unfocused_selected			22
 #define palidx_generic_list_unfocused_unselected		23
 #define palidx_generic_cluster_focused				24
 #define palidx_generic_cluster_unfocused			25
@@ -114,8 +115,8 @@ public:
  *   reg/pal management
  */
 
-vcp getcolorv(palette *pal, UINT index);
-bool load_pal(char *pal_class, char *pal_flavour, palette *p);
+vcp getcolorv(palette *pal, uint index);
+bool load_pal(const char *pal_class, const char *pal_flavour, palette *p);
 
 /*
  *	INIT

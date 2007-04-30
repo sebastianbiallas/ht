@@ -1,3 +1,4 @@
+asdf
 /* 
  *	HT Editor
  *	htstring.h
@@ -21,20 +22,19 @@
 #ifndef __HTSTRING_H__
 #define __HTSTRING_H__
 
-#include "global.h"
+#include "io/types.h"
 #include "config.h"
-#include "htdata.h"
+#include "data.h"
 
 char *ht_strdup(const char *str);
-char *ht_strndup(const char *str, size_t max);
-int ht_strncpy(char *s1, const char *s2, size_t max);
+char *ht_strndup(const char *str, int maxlen);
+int ht_strncpy(char *s1, const char *s2, int maxlen);
 int ht_strncmp(const char *s1, const char *s2, size_t max);
 int ht_strnicmp(const char *s1, const char *s2, size_t max);
 int ht_stricmp(const char *s1, const char *s2);
-int ht_memicmp(const void *s1, const void *s2, size_t n);
 
-int ht_strcicomm(const char *s1, const char *s2);
-int ht_strccomm(const char *s1, const char *s2);
+int strcicomm(const char *s1, const char *s2);
+int strccomm(const char *s1, const char *s2);
 #define strend(s) ((s)+strlen(s))
 int escape_special_str(char *result, int resultmaxlen, const char *s, const char *specialchars=0, bool bit7=true);
 int escape_special(char *result, int resultmaxlen, const void *s, int len, const char *specialchars=0, bool bit7=true);
@@ -50,8 +50,8 @@ bool waitforchar(char **str, char b);
 
 /* string evaluation functions */
 
-bool bnstr(char **str, dword *v, int defaultbase);
-bool bnstr(char **str, qword *q, int defaultbase);
+bool bnstr(char **str, uint32 *v, int defaultbase);
+bool bnstr(char **str, uint64 *q, int defaultbase);
 
 /* hex/string functions */
 
@@ -62,51 +62,23 @@ bool hexw_ex(uint16 &result, const char *s);
 bool hexd_ex(uint32 &result, const char *s);
 
 char *mkhexb(char *buf, byte d);
-char *mkhexw(char *buf, word d);
-char *mkhexd(char *buf, dword d);
-char *mkhexq(char *buf, qword q);
-
-/*
- *	ht_data_string
- */
-class ht_data_string: public ht_data {
-public:
-	char *value;
-
-			ht_data_string(const char *s = 0);
-	virtual 	~ht_data_string();
-	/* overwritten */
-	virtual	int  load(ht_object_stream *f);
-	virtual	void store(ht_object_stream *f);
-	virtual	int	toString(char *s, int maxlen);
-	virtual	OBJECT_ID object_id() const;
-};
+char *mkhexw(char *buf, uint16 d);
+char *mkhexd(char *buf, uint32 d);
+char *mkhexq(char *buf, uint64 q);
 
 /*
  *	ht_string_list
  */
-class ht_string_list: public ht_clist {
+class ht_string_list: public Array {
 public:
-			void init();
+		ht_string_list();
 	/* new */
-			char *get_string(UINT i);
-			void insert_string(char *s);
+		const char *get_string(uint i);
+		void insert_string(const char *s);
 };
 
-/*
- *	ht_sorted_string_list
- */
-
-class ht_sorted_string_list: public ht_sorted_list {
-public:
-			void init(int (*compare_keys_proc)(ht_data *key_a, ht_data *key_b));
-/* new */
-			char *get_string(char *s);
-			void insert_string(char *s);
-};
-
-int compare_keys_string(ht_data *key_a, ht_data *key_b);
-int icompare_keys_string(ht_data *key_a, ht_data *key_b);
+int compare_keys_string(Object *key_a, Object *key_b);
+int icompare_keys_string(Object *key_a, Object *key_b);
 
 /*
  *	INIT

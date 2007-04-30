@@ -18,12 +18,12 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htnewexe.h"
 #include "htle.h"
 #include "htleobj.h"
 #include "httag.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "snprintf.h"
 
@@ -64,35 +64,35 @@ static ht_tag_flags_s le_objflags[] =
 	{0, 0}
 };
 
-static ht_view *htleobjects_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleobjects_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
-	dword h=le_shared->hdr_ofs;
+	uint32 h=le_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_LE_OBJECTS, VC_EDIT, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 
-	register_atom(ATOM_LE_OBJFLAGS, le_objflags);
+	registerAtom(ATOM_LE_OBJFLAGS, le_objflags);
 
 /* FIXME: */
 	bool le_bigendian = false;
 
 	char t[64];
-	ht_snprintf(t, sizeof t, "* LE object headers at offset %08x", h+le_shared->hdr.objtab);
+	ht_snprintf(t, sizeof t, "* LE object headers at offset 0x%08qx", h+le_shared->hdr.objtab);
 	m->add_mask(t);
 
 	v->insertsub(m);
 
-	for (dword i=0; i<le_shared->hdr.objcnt; i++) {
+	for (uint32 i=0; i<le_shared->hdr.objcnt; i++) {
 		m=new ht_mask_sub();
 		m->init(file, i);
 
 		char n[5];
 		m->add_staticmask_ptable(leobj, h+le_shared->hdr.objtab+i*24, le_bigendian);
 		
-		memmove(&n, le_shared->objmap.header[i].name, 4);
+		memcpy(&n, le_shared->objmap.header[i].name, 4);
 		n[4]=0;
 
 		bool use32=le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32;

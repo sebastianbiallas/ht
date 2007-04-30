@@ -29,38 +29,40 @@
  *	histories
  */
 
-#define HISTATOM_GOTO			MAGICD("HIS\x80")
-#define HISTATOM_FILE			MAGICD("HIS\x81")
-#define HISTATOM_SEARCH_BIN		MAGICD("HIS\x82")
-#define HISTATOM_SEARCH_EVALSTR	MAGICD("HIS\x83")
-#define HISTATOM_SEARCH_VREGEX	MAGICD("HIS\x84")
-#define HISTATOM_SEARCH_EXPR		MAGICD("HIS\x85")
-#define HISTATOM_ASSEMBLER		MAGICD("HIS\x86")
-#define HISTATOM_NAME_ADDR		MAGICD("HIS\x87")
-#define HISTATOM_EVAL_EXPR		MAGICD("HIS\x88")
+#define HISTATOM_GOTO			MAGIC32("HIS\x80")
+#define HISTATOM_FILE			MAGIC32("HIS\x81")
+#define HISTATOM_SEARCH_BIN		MAGIC32("HIS\x82")
+#define HISTATOM_SEARCH_EVALSTR		MAGIC32("HIS\x83")
+#define HISTATOM_SEARCH_VREGEX		MAGIC32("HIS\x84")
+#define HISTATOM_SEARCH_EXPR		MAGIC32("HIS\x85")
+#define HISTATOM_ASSEMBLER		MAGIC32("HIS\x86")
+#define HISTATOM_NAME_ADDR		MAGIC32("HIS\x87")
+#define HISTATOM_EVAL_EXPR		MAGIC32("HIS\x88")
 
 /*
  *	CLASS ht_history_entry
  */
 
-class ht_history_entry: public ht_data {
+class ht_history_entry: public Object {
 public:
 	char *desc;
-	ht_object_stream_bin *data;
-	ht_mem_file *datafile;
+	ObjectStreamBin *data;
+	MemoryFile *datafile;
 	
-	ht_history_entry(char *str=0, ht_object_stream_bin *data=0, ht_mem_file *datafile=0);
+	ht_history_entry(char *str=0, ObjectStreamBin *data = NULL, MemoryFile *datafile = NULL);
+	ht_history_entry(BuildCtorArg &a): Object(a) {};
 	~ht_history_entry();
 /* overwritten */
-	virtual int	load(ht_object_stream *s);
-	virtual void	store(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
+	virtual int	compareTo(const Object *) const;
+	virtual void	load(ObjectStream &s);
+	virtual void	store(ObjectStream &s) const;
+	virtual ObjectID getObjectID() const;
 };
 
-bool insert_history_entry(ht_list *history, char *name, ht_view *view);
+bool insert_history_entry(List *history, char *name, ht_view *view);
 
-void store_history(ht_object_stream *s);
-bool load_history(ht_object_stream *s);
+void store_history(ObjectStream &s);
+bool load_history(ObjectStream &s);
 
 /*
  *	INIT

@@ -19,7 +19,7 @@
  */
 
 #include "machostruc.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htmacho.h"
 #include "htmachohd.h"
 #include "httag.h"
@@ -173,7 +173,7 @@ static ht_mask_ptable macho_i386_thread_state[]=
 	{0, 0}
 };
 
-static ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmachoheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
 	
@@ -182,28 +182,28 @@ static ht_view *htmachoheader_init(bounds *b, ht_streamfile *file, ht_format_gro
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	ht_snprintf(info, sizeof info, "* Mach-O header at offset %08x", macho_shared->header_ofs);
+	ht_snprintf(info, sizeof info, "* Mach-O header at offset %08qx", macho_shared->header_ofs);
+
 	bool isbigendian;
 	switch (macho_shared->image_endianess) {
-		case little_endian: isbigendian = false; break;
-		case big_endian: isbigendian = true; break;
+	case little_endian: isbigendian = false; break;
+	case big_endian: isbigendian = true; break;
 	}
+
 	m->add_mask(info);
 	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, isbigendian);
 
-	FILEOFS ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
-	for (UINT i=0; i<macho_shared->cmds.count; i++) {
+	FileOfs ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
+	for (uint i=0; i<macho_shared->cmds.count; i++) {
 		switch (macho_shared->cmds.cmds[i]->cmd.cmd) {
 			case LC_SEGMENT: {
 				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds.cmds[i];
-				char segname[17];
-				ht_snprintf(segname, sizeof segname, "%s", c->segname);
 			    	char info[128];
-				ht_snprintf(info, sizeof info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
+				ht_snprintf(info, sizeof info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", c->segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, isbigendian);
-				FILEOFS sofs = sizeof (MACHO_SEGMENT_COMMAND);
-				for (UINT j=0; j<c->nsects; j++) {
+				FileOfs sofs = sizeof (MACHO_SEGMENT_COMMAND);
+				for (uint j=0; j<c->nsects; j++) {
 					ht_snprintf(info, sizeof info, "**** section %d ****", j);
 					m->add_mask(info);
 					m->add_staticmask_ptable(macho_section_header, ofs+sofs, isbigendian);

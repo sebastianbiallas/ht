@@ -22,20 +22,21 @@
 #include "formats.h"
 #include "htpal.h"
 #include "htxbeimg.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "xbe_analy.h"
 #include "xbestruct.h"
 #include "snprintf.h"
 
-static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
-	LOG("%s: XBE: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: XBE: loading image (starting analyser)...", &file->getFilename(fn));
 	XBEAnalyser *p = new XBEAnalyser();
 	p->init(xbe_shared, file);
 
-	bounds c=*b;
+	Bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_XBE_IMAGE"-g");
 	AnalyInfoline *head;
@@ -55,7 +56,7 @@ static ht_view *htxbeimage_init(bounds *b, ht_streamfile *file, ht_format_group 
 	/* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	XBE_SECTION_HEADER *s=xbe_shared->sections.sections;
-	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
+	for (uint i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		if (s->virtual_address < l) l = s->virtual_address;
 		if ((s->virtual_address + s->virtual_size > h) && s->virtual_size) h = s->virtual_address + s->virtual_size - 1;
 		s++;
@@ -102,9 +103,9 @@ format_viewer_if htxbeimage_if = {
 static int xbe_viewer_func_rva(eval_scalar *result, eval_int *i)
 {
 	ht_xbe_aviewer *aviewer = (ht_xbe_aviewer*)eval_get_context();
-	RVA rva = QWORD_GET_INT(i->value);
+	RVA rva = i->value;
 	viewer_pos p;
-	FILEOFS ofs;
+	FileOfs ofs;
 	if (xbe_rva_to_ofs(&aviewer->xbe_shared->sections, rva, &ofs)
 	&& aviewer->offset_to_pos(ofs, &p)) {
 		Address *a;
@@ -123,11 +124,11 @@ static int xbe_viewer_func_rva(eval_scalar *result, eval_int *i)
 static int xbe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 {
 	ht_xbe_aviewer *aviewer = (ht_xbe_aviewer*)eval_get_context();
-	UINT i = QWORD_GET_INT(q->value)-1;
-	if (!QWORD_GET_HI(q->value) && (i >= 0) &&
+	sint64 i = q->value-1;
+	if (i >= 0 &&
 	(i < aviewer->xbe_shared->sections.number_of_sections)) {
 		viewer_pos p;
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (xbe_rva_to_ofs(&aviewer->xbe_shared->sections,
 					    aviewer->xbe_shared->sections.sections[i].virtual_address,
 					   &ofs)
@@ -174,13 +175,13 @@ static int xbe_viewer_func_section(eval_scalar *result, eval_scalar *q)
 /*
  *	ht_xbe_aviewer
  */
-void ht_xbe_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_xbe_shared_data *XBE_shared)
+void ht_xbe_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_xbe_shared_data *XBE_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	xbe_shared = XBE_shared;
 }
 
-int ht_xbe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+bool ht_xbe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 	eval_func myfuncs[] = {
 		{"rva", (void*)&xbe_viewer_func_rva, {SCALAR_INT},
@@ -190,7 +191,7 @@ int ht_xbe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlis
 			"returns address of section with index param1 otherwise"},
 		{NULL}
 	};
-	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
+	if (std_eval_func_handler(result, name, params, myfuncs)) return true;
 	return ht_aviewer::func_handler(result, name, params);
 }
 

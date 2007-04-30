@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htnewexe.h"
 #include "htle.h"
 #include "htlehead.h"
@@ -132,25 +132,25 @@ static ht_mask_ptable leheader[]=
 	{0, 0}
 };
 
-static ht_view *htleheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htleheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 
 	/* FIXME: */
 	bool le_bigendian = false;
 
-	FILEOFS h = le_shared->hdr_ofs;
+	FileOfs h = le_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_LE_HEADER, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 
-	register_atom(ATOM_LE_FLAGS, le_flags);
-	register_atom(ATOM_LE_MACHINE, le_machines);
-	register_atom(ATOM_LE_OS, le_os);
+	registerAtom(ATOM_LE_FLAGS, le_flags);
+	registerAtom(ATOM_LE_MACHINE, le_machines);
+	registerAtom(ATOM_LE_OS, le_os);
 
 	char info[128];
-	ht_snprintf(info, sizeof info, "* LE header at offset %08x", le_shared->hdr_ofs);
+	ht_snprintf(info, sizeof info, "* LE header at offset 0x%08qx", le_shared->hdr_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(leheader, h, le_bigendian);
 	v->insertsub(m);

@@ -23,7 +23,7 @@
 #include "htcoff.h"
 #include "htcoffhd.h"
 #include "htcoffimg.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "mzstruct.h"
 #include "stream.h"
 
@@ -36,20 +36,20 @@ format_viewer_if *htcoff_ifs[] = {
 	0
 };
 
-static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
+static bool is_coff(File *file, Endianess &endian, FileOfs ofs)
 {
 	// unfortunately COFF has no magic (urgs). so we have to guess
 	// a little bit.
 	COFF_HEADER h;
 	bool machine_found = false;
-	endianess end;
+	Endianess end;
 
 	// FIXME: I'm not sure little/big-endian assignment for CPUs is incorrect...
 
 	// LITTLE-ENDIAN machines
 	file->seek(ofs);
 	if (file->read(&h, sizeof h) != sizeof h) return false;
-	create_host_struct(&h, COFF_HEADER_struct, little_endian);
+	createHostStruct(&h, COFF_HEADER_struct, little_endian);
 	switch (h.machine) {
 		case COFF_MACHINE_I386:
 		case COFF_MACHINE_I486:
@@ -76,7 +76,7 @@ static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	if (!machine_found) {
 		file->seek(ofs);
 		if (file->read(&h, sizeof h)!=sizeof h) return 0;
-		create_host_struct(&h, COFF_HEADER_struct, big_endian);
+		createHostStruct(&h, COFF_HEADER_struct, big_endian);
 		switch (h.machine) {
 			case COFF_MACHINE_R3000BE:
 			case COFF_MACHINE_POWERPC_BE:
@@ -103,10 +103,10 @@ static bool is_coff(ht_streamfile *file, endianess &endian, FILEOFS ofs)
 	return true;
 }
 
-static ht_view *htcoff_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htcoff_init(Bounds *b, File *file, ht_format_group *format_group)
 {
-	FILEOFS h;
-	endianess end;
+	FileOfs h;
+	Endianess end;
 	/* look for pure coff */
 	if (!is_coff(file, end, h = 0)) {
 		/* look for dj-coff */
@@ -131,13 +131,14 @@ format_viewer_if htcoff_if = {
 /*
  *	CLASS ht_coff
  */
-void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS h, endianess end)
+void ht_coff::init(Bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs h, Endianess end)
 {
 	ht_format_group::init(b, VO_BROWSABLE | VO_SELECTABLE | VO_RESIZE, DESC_COFF, file, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_coff");
 
-	LOG("%s: COFF: found header at %08x", file->get_filename(), h);
-	coff_shared = (ht_coff_shared_data *)malloc(sizeof(*coff_shared));
+	String fn;
+	LOG("%y: COFF: found header at 0x%08qx", &file->getFilename(fn), h);
+	coff_shared = ht_malloc(sizeof(*coff_shared));
 	coff_shared->hdr_ofs = h;
 	coff_shared->sections.hdr_ofs = h;
 	coff_shared->v_image = NULL;
@@ -146,17 +147,17 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 
 	/* headers */
 	file->seek(h);
-	file->read(&coff_shared->coffheader, sizeof coff_shared->coffheader);
-	create_host_struct(&coff_shared->coffheader, COFF_HEADER_struct, end);
+	file->readx(&coff_shared->coffheader, sizeof coff_shared->coffheader);
+	createHostStruct(&coff_shared->coffheader, COFF_HEADER_struct, end);
 	coff_shared->opt_magic = 0;
 	if (coff_shared->coffheader.optional_header_size >= 2) {
-		file->read(&coff_shared->opt_magic, sizeof coff_shared->opt_magic);
+		file->readx(&coff_shared->opt_magic, sizeof coff_shared->opt_magic);
 		file->seek(h + sizeof coff_shared->coffheader);
-		coff_shared->opt_magic = create_host_int(&coff_shared->opt_magic, 2, end);
+		coff_shared->opt_magic = createHostInt(&coff_shared->opt_magic, 2, end);
 		switch (coff_shared->opt_magic) {
 			case COFF_OPTMAGIC_COFF32:
-				file->read(&coff_shared->coff32header, sizeof coff_shared->coff32header);
-				create_host_struct(&coff_shared->coff32header, COFF_OPTIONAL_HEADER32_struct, end);
+				file->readx(&coff_shared->coff32header, sizeof coff_shared->coff32header);
+				createHostStruct(&coff_shared->coff32header, COFF_OPTIONAL_HEADER32_struct, end);
 				break;
 		}
 	}
@@ -169,10 +170,10 @@ void ht_coff::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_fo
 
 	file->seek(h+os+24);
 	if (coff_shared->sections.section_count) {
-		coff_shared->sections.sections=(COFF_SECTION_HEADER*)malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
+		coff_shared->sections.sections = ht_malloc(coff_shared->sections.section_count * sizeof *coff_shared->sections.sections);
 		file->read(coff_shared->sections.sections, coff_shared->sections.section_count*sizeof *coff_shared->sections.sections);
-		for (UINT i=0; i<coff_shared->sections.section_count; i++) {
-			create_host_struct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
+		for (uint i=0; i<coff_shared->sections.section_count; i++) {
+			createHostStruct(&coff_shared->sections.sections[i], COFF_SECTION_HEADER_struct, end);
 		}
 	} /* CHECK - sufficient */
 	shared_data = coff_shared;
@@ -190,100 +191,100 @@ void ht_coff::done()
  *	rva conversion routines
  */
 
-int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section)
+bool coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((rva >= s->data_address) && (rva < s->data_address+s->data_size)) {
 			*section = i;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
-int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs)
+bool coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, FileOfs *ofs)
 {
-	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
-		if (s->data_offset && (rva >= s->data_address) &&
-		(rva < s->data_address+s->data_size)) {
-			*ofs = rva-s->data_address+s->data_offset+section_headers->hdr_ofs;
-			return 1;
+	COFF_SECTION_HEADER *s = section_headers->sections;
+	for (uint i = 0; i < section_headers->section_count; i++) {
+		if (s->data_offset && rva >= s->data_address 
+		&& rva < s->data_address+s->data_size) {
+			*ofs = rva-s->data_address + s->data_offset + section_headers->hdr_ofs;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
-int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva)
+bool coff_rva_is_valid(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((rva >= s->data_address) && (rva < s->data_address+s->data_size)) {
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
-int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
+bool coff_rva_is_physical(coff_section_headers *section_headers, RVA rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if (s->data_offset && (rva >= s->data_address) &&
 		(rva < s->data_address+s->data_size)) {
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
 /*
  *	ofs conversion routines
  */
 
-int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva)
+bool coff_ofs_to_rva(coff_section_headers *section_headers, uint32 ofs, RVA *rva)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
 		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
 			*rva=ofs-(s->data_offset+section_headers->hdr_ofs)+s->data_address;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
-int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section)
+bool coff_ofs_to_section(coff_section_headers *section_headers, uint32 ofs, uint *section)
 {
 	COFF_SECTION_HEADER *s=section_headers->sections;
-	for (UINT i=0; i<section_headers->section_count; i++) {
+	for (uint i=0; i<section_headers->section_count; i++) {
 		if ((ofs>=s->data_offset+section_headers->hdr_ofs) &&
 		(ofs<s->data_offset+section_headers->hdr_ofs+s->data_size)) {
 			*section=i;
-			return 1;
+			return true;
 		}
 		s++;
 	}
-	return 0;
+	return false;
 }
 
-int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section)
+int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, uint32 ofs, RVA *rva, uint *section)
 {
-	int r=coff_ofs_to_rva(section_headers, ofs, rva);
+	int r = coff_ofs_to_rva(section_headers, ofs, rva);
 	if (r) {
-		r=coff_ofs_to_section(section_headers, ofs, section);
+		r = coff_ofs_to_section(section_headers, ofs, section);
 	}
 	return r;
 }
 
-int coff_ofs_is_valid(coff_section_headers *section_headers, dword ofs)
+bool coff_ofs_is_valid(coff_section_headers *section_headers, uint32 ofs)
 {
 	RVA rva;
 	return coff_ofs_to_rva(section_headers, ofs, &rva);

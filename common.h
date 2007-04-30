@@ -21,7 +21,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "global.h"
+#include "io/types.h"
 #include "htdebug.h"
 
 /**
@@ -43,7 +43,7 @@
 /** used to define OBJECT_IDs */
 #define MAGICD(magic) (unsigned long)(((unsigned char)magic[0]<<24) | ((unsigned char)magic[1]<<16) | ((unsigned char)magic[2]<<8) | (unsigned char)magic[3])
 
-#define ATOM_OBJECT MAGICD("OBJ0")
+#define ATOM_OBJECT MAGIC32("OBJ0")
 
 class ht_object_stream;
 
@@ -55,28 +55,60 @@ public:
 #ifdef HTDEBUG
 	bool initialized;
 	bool destroyed;
-				Object();
+#endif
+
+					Object();
 	virtual			~Object();
 
-		void		init();
+			void		init();
 	virtual	void		done();
-#else
-
-				Object() {};
-	virtual			~Object() {};
-
-		void		init() {};
-	virtual	void		done() {};
-#endif
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	Object *	duplicate();
 	virtual	bool		idle();
 	virtual	bool		instanceOf(OBJECT_ID id);
-		bool		instanceOf(Object *o) {return instanceOf(o->object_id());};
-	virtual	int		load(ht_object_stream *s) {return 0;};
+			bool		instanceOf(Object *o);
+	virtual	int		load(ht_object_stream *s);
 	virtual	OBJECT_ID	object_id() const;
-	virtual	void		store(ht_object_stream *s) {};
+	virtual	void		store(ht_object_stream *s);
 	virtual	int		toString(char *s, int maxlen);
+};
+
+class SInt64;
+
+class UInt64: public Object {
+	uint64	mInt;
+public:
+					UInt64();
+					UInt64(const UInt64 &u);
+					UInt64(const SInt64 &s);
+					UInt64(uint u);
+					UInt64(uint64 u);
+	virtual			~UInt64();
+
+			void		assign(const UInt64 &u);
+			void		assign(const SInt64 &s);
+			void		assign(uint u);
+			void		assign(uint64 u);
+	virtual	int		compareTo(const Object *obj) const;
+	virtual	Object *	duplicate();
+	virtual	bool		instanceOf(OBJECT_ID id);
+	virtual	int		load(ht_object_stream *s);
+	virtual	OBJECT_ID	object_id() const;
+	virtual	void		store(ht_object_stream *s);
+	virtual	int		toString(char *s, int maxlen);
+
+			void		operator =(const UInt64 &u);
+			void		operator +=(const UInt64 &u);
+			void		operator -=(const UInt64 &u);
+			UInt64 &	operator ++();
+			UInt64 	operator ++(int b);
+			
+			bool		operator < (const UInt64 &s);
+			bool		operator > (const UInt64 &s);
+			bool		operator <=(const UInt64 &s);
+			bool		operator >=(const UInt64 &s);
+			bool		operator ==(const UInt64 &s);
+			bool		operator !=(const UInt64 &s);
 };
 
 #endif

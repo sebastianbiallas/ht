@@ -40,7 +40,7 @@ struct vfs_extra {
 
 class VfsListbox: public ht_itext_listbox {
 protected:
-	ht_list *vfs_list;
+	Container *vfs_list;
 	Vfs *cvfs;
 	char cdir[VFS_DIR_MAX+1];
 	char cproto[VFS_PROTO_MAX+1];
@@ -60,14 +60,14 @@ protected:
 	virtual	bool 		selectEntry(void *entry);
 		char *		translateProp(char *fmt, int *type);
 public:
-		void		init(bounds *b, ht_list *vfs_list, ht_text *show_pos);
+		void		init(Bounds *b, Container *vfs_list, ht_text *show_pos);
 	virtual	void		done();
 	/* overwritten */
 	virtual	void		config_changed();
 	virtual	int		cursorAdjust();
 	virtual	void		handlemsg(htmsg *msg);
-	virtual	void *		quickfind(char *s);
-	virtual	char *		quickfindCompletition(char *s);
+	virtual	void *		quickfind(const char *s);
+	virtual	char *		quickfindCompletition(const char *s);
 	virtual	void		update();
 	/* new */
 		int		changeURL(const char *url);

@@ -26,11 +26,11 @@
 	
 #include "htctrl.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htreg.h"
-#include "htsys.h"
+#include "sys.h"
 #include "httag.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "store.h"
 #include "tools.h"
@@ -69,7 +69,7 @@ int LocalFs::compareFilenames(const char *a, const char *b)
 	return ht_stricmp(a, b);
 }
 
-int LocalFs::createFile(const char *filename, UINT createtype)
+int LocalFs::createFile(const char *filename, uint createtype)
 {
 	// FIXME
 	return ENOSYS;
@@ -84,26 +84,26 @@ int LocalFs::deleteFile(const char *filename)
 	return remove(filename);
 }
 
-void *LocalFs::enumFiletype(UINT *type, char **name, void *handle)
+void *LocalFs::enumFiletype(uint *type, char **name, void *handle)
 {
 	*type = 0;
-	*name = "file";
+	*name = (char*)"file";
 	return NULL;
 }
 
 bool LocalFs::findFirst(const char *dirname, pfind_t *f)
 {
-	return (sys_findfirst(dirname, f)==0);
+	return (sys_findfirst(*f, dirname) == 0);
 }
 
 bool LocalFs::findNext(pfind_t *f)
 {
-	return (sys_findnext(f)==0);
+	return (sys_findnext(*f) == 0);
 }
 
 bool LocalFs::findClose(pfind_t *f)
 {
-	return (sys_findclose(f)==0);
+	return (sys_findclose(*f) == 0);
 }
 
 int LocalFs::getCaps()
@@ -134,7 +134,7 @@ int LocalFs::open(const char *filename, bool edit)
 
 int LocalFs::pstat(pstat_t *s, const char *filename)
 {
-	return sys_pstat(s, filename);
+	return sys_pstat(*s, filename);
 }
 
 int LocalFs::renameFile(const char *filename, const char *newname)
@@ -142,26 +142,21 @@ int LocalFs::renameFile(const char *filename, const char *newname)
 	return rename(filename, newname);
 }
 
-int LocalFs::fileClose(ht_streamfile *f)
+int LocalFs::fileClose(File *f)
 {
-	f->done();
-	int e=f->get_error();
 	delete f;
-	return e;
+	return 0;
 }
 
-int LocalFs::fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
+int LocalFs::fileOpen(const char *filename, IOAccessMode access_mode, FileOpenMode open_mode, File **f)
 {
-	ht_file *file=new ht_file();
-	file->init(filename, access_mode, open_mode);
-	int e=file->get_error();
-	if (e) {
-		file->done();
-		delete file;
-		return e;
+	try {
+		LocalFile *file=new LocalFile(filename, access_mode, open_mode);
+		*f=file;
+		return 0;
+	} catch (const IOException &e) {
+		return EIO;
 	}
-	*f=file;
-	return 0;
 }
 	
 /*
@@ -170,115 +165,94 @@ int LocalFs::fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht
 
 #define REGNODE_FILE_MAGIC	"HTRG"
 
-void RegNodeFile::init(const char *nn, UINT am, UINT om)
+RegNodeFile::RegNodeFile(const char *nn, uint am, uint om)
+	: MemoryFile(0, 1024, am)
 {
 	access_mode0 = am;
-	ht_mem_file::init(0, 1024, am);
 	open_mode = om;
 	nodename = ht_strdup(nn);
-	if ((access_mode & FAM_READ) && (access_mode & FAM_WRITE)) {
-		set_error(EINVAL);
-		return;
+	if ((am & IOAM_READ) && (am & IOAM_WRITE)) {
+		throw IOException(EINVAL);
 	}
 	
-	ht_registry_node_type type;
-	ht_registry_data *data;
-	if (!(open_mode & FOM_CREATE)) {
-		if (!registry->find_data_entry(nodename, &data, &type, false)) {
-			set_error(ENOENT);
-			return;
+	ht_registry_node *node;
+	if (!(om & FOM_CREATE)) {
+		if (!registry->find_data_entry(nodename, &node, false)) {
+			throw IOException(ENOENT);
 		}
 	}
-	if (access_mode & FAM_READ) {
-		if (open_mode & FOM_CREATE) {
-			set_error(EINVAL);
-			return;
+	if (am & IOAM_READ) {
+		if (om & FOM_CREATE) {
+			throw IOException(EINVAL);
 		}
-		ht_object_stream_bin *o = new ht_object_stream_bin();
-		o->init(this);
-			
-		store_node(o, type, data);
-			
-		o->done();
-		delete o;
+		ObjectStreamBin o(this, false);
+
+		store_node(o, node);
 
 		seek(0);
 	}
 }
 
-void RegNodeFile::done()
+RegNodeFile::~RegNodeFile()
 {
-	if (access_mode & FAM_WRITE) {
-		ht_registry_node_type type;
-		ht_registry_data *data;
+	if (getAccessMode() & IOAM_WRITE) {
+		ht_registry_node *node;
 
 		seek(0);
 
-		ht_object_stream_bin *o=new ht_object_stream_bin();
-		o->init(this);
+		ObjectStreamBin o(this, false);
 
-		int e=load_node(o, &type, &data);
+		int e = load_node(o, &node);
 		
 		if (e==0) {
 			if (open_mode & FOM_CREATE) {
-				if ((e = registry->create_node(nodename, type))) {
-					set_error(e);
+				if ((e = registry->create_node(nodename, node->type))) {
+//					set_error(e);
 				}
 			}
-			registry->set_node(nodename, type, data);
+			registry->set_node(nodename, node->type, node->data);
 
 			htmsg m;
 			m.msg = msg_config_changed;
 			m.type = mt_broadcast;
 			app->sendmsg(&m);
-		} else set_error(e);
-
-		o->done();
-		delete o;
+		}
 	}
 	free(nodename);
-	ht_mem_file::done();
 }
 
-int RegNodeFile::load_node(ht_object_stream *s, ht_registry_node_type *type, ht_registry_data **data)
+int RegNodeFile::load_node(ObjectStream &s, ht_registry_node **node)
 {
 	byte magic[4];
-	int n = s->read(magic, sizeof magic);
-	if ((n != sizeof magic) || memcmp(magic, REGNODE_FILE_MAGIC, 4)==0) {
-		*type = s->getIntDec(4, NULL);
-		*data = (ht_registry_data*)s->getObject(NULL);
-		return s->get_error();
-	}
-	
-	ht_mem_file *g = new ht_mem_file();
-	g->init();
-	g->write(magic, n);
-	s->copy_to(g);
-	ht_registry_data_raw *d = new ht_registry_data_raw(g->bufptr(), g->get_size());
-	g->done();
-	delete g;
-	
-	*type=RNT_RAW;
-	*data=d;
-	return s->get_error();
-}
-
-void	RegNodeFile::store_node(ht_object_stream *s, ht_registry_node_type type, ht_registry_data *data)
-{
-	if (type==RNT_RAW) {
-		ht_registry_data_raw *d=(ht_registry_data_raw*)data;
-		s->write(d->value, d->size);
+	ht_registry_node_type type;
+	ht_registry_data *data;
+	int n = s.read(magic, sizeof magic);
+	if (n != sizeof magic || memcmp(magic, REGNODE_FILE_MAGIC, 4)==0) {
+		type = s.getInt(4, NULL);
+		data = s.getObject(NULL);
 	} else {
-		s->write((void*)REGNODE_FILE_MAGIC, 4);
-		s->putIntDec(type, 4, NULL);
-		s->putObject(data, NULL);
+		MemoryFile g;
+		g.write(magic, n);
+		s.copyAllTo(&g);
+		ht_registry_data_raw *d = new ht_registry_data_raw(g.getBufPtr(), g.getSize());
+
+		type = RNT_RAW;
+		data = d;
 	}
+	*node = new ht_registry_node(type, NULL, data);
+	return 0;
 }
 
-bool	RegNodeFile::set_access_mode(UINT am)
+void	RegNodeFile::store_node(ObjectStream &s, ht_registry_node *node)
 {
-	access_mode = access_mode0;
-	return (am == access_mode0);
+	if (node->type == RNT_RAW) {
+		ht_registry_data_raw *d = (ht_registry_data_raw*)node->data;
+		s.write(d->value, d->size);
+	} else {
+		s.write((void*)REGNODE_FILE_MAGIC, 4);
+		s.putInt(node->type, 4, NULL);
+		s.putObject(node->data, NULL);
+	}
 }
 
 /*
@@ -299,19 +273,18 @@ void RegistryFs::done()
 
 int RegistryFs::canonicalize(char *result, const char *filename, const char *cwd)
 {
-	ht_registry_data *data;
-	ht_registry_node_type type;
+	ht_registry_node *node;
 	
 	sys_common_canonicalize(result, filename, cwd, unix_is_path_delim);
-	return registry->find_data_entry(result, &data, &type, 0);
+	return registry->find_data_entry(result, &node, 0);
 }
 
-void RegistryFs::create_pfind_t(pfind_t *f, const char *key, ht_registry_data *data, ht_registry_node_type type)
+void RegistryFs::create_pfind_t(pfind_t *f, const ht_registry_node *node)
 {
-	f->name = key;
+	f->name = node->name;
 	f->stat.caps = pstat_mode_type | pstat_desc;
-	create_pstat_t(&f->stat, data, type);
-	data->strvalue(f->stat.desc);		/* FIXME: possible buffer overflow !!! only 32 bytes... */
+	create_pstat_t(&f->stat, node->data, node->type);
+	node->data->strvalue(f->stat.desc);		/* FIXME: possible buffer overflow !!! only 32 bytes... */
 }
 
 void RegistryFs::create_pstat_t(pstat_t *s, ht_registry_data *data, ht_registry_node_type type)
@@ -333,70 +306,68 @@ void RegistryFs::create_pstat_t(pstat_t *s, ht_registry_data *data, ht_registry_
 	}
 }
 
-int RegistryFs::createFile(const char *filename, UINT createtype)
+int RegistryFs::createFile(const char *filename, uint createtype)
 {
-	int e=registry->create_node(filename, createtype);
+	int e = registry->create_node(filename, createtype);
 	htmsg m;
-	m.msg=msg_config_changed;
-	m.type=mt_broadcast;
+	m.msg = msg_config_changed;
+	m.type = mt_broadcast;
 	app->sendmsg(&m);
 	return e;
 }
 
 int RegistryFs::deleteFile(const char *filename)
 {
-	int e=registry->delete_node(filename);
+	int e = registry->delete_node(filename);
 	htmsg m;
-	m.msg=msg_config_changed;
-	m.type=mt_broadcast;
+	m.msg = msg_config_changed;
+	m.type = mt_broadcast;
 	app->sendmsg(&m);
 	return e;
 }
 
-void *RegistryFs::enumFiletype(UINT *type, char **name, void *handle)
+void *RegistryFs::enumFiletype(uint *type, char **name, void *handle)
 {
-	ht_data_string *key = (ht_data_string*)handle;
-	ht_registry_node_type_desc *value;
-	do {
-		key = (ht_data_string *)registry->node_types->enum_next((ht_data**)&value, key);
-	} while (value && (value->type==RNT_SUBDIR));
-	if (key && value) {
-		*type=value->type;
-		*name=key->value;
-		return key;
+	ObjHandle oh = registry->node_types->find((Object*)handle);
+	ht_registry_node_type_desc *n;
+	while ((n = (ht_registry_node_type_desc *)registry->node_types->get(oh))
+		&& n->type == RNT_SUBDIR) {
+		oh = registry->node_types->findNext(oh);
+	}
+	if (n) {
+		*type = n->type;
+		*name = n->name;
+		return n;
 	}
 	return NULL;
 }
 
 int RegistryFs::compareFilenames(const char *a, const char *b)
 {
-	if (strcmp(a, "..")==0) return -1;
-	if (strcmp(b, "..")==0) return 1;
+	if (strcmp(a, "..") == 0) return -1;
+	if (strcmp(b, "..") == 0) return 1;
 	return strcmp(a, b);
 }
 
 bool RegistryFs::findFirst(const char *dirname, pfind_t *f)
 {
-	const char *key;
-	ht_registry_data *data;
-	ht_registry_node_type type;
+	ht_registry_node *node;
 	
-	if (enum_last) free(enum_last);
+	free(enum_dir);
 	enum_last = NULL;
-	if (enum_dir) free(enum_dir);
 	enum_dir = NULL;
-	if ((strcmp(dirname, "/")==0) || (strcmp(dirname, "")==0)){
-		if ((key = registry->enum_next(&data, &type, dirname, NULL))) {
-			enum_last = strdup(key);
-			enum_dir = strdup(dirname);
-			create_pfind_t(f, key, data, type);
+	if (strcmp(dirname, "/")==0 || strcmp(dirname, "")==0) {
+		if ((node = registry->enum_next(dirname, NULL))) {
+			enum_last = node;
+			enum_dir = ht_strdup(dirname);
+			create_pfind_t(f, node);
 			return true;
 		}
 	} else {
-		enum_dir = strdup(dirname);
-		f->name="..";
-		f->stat.caps=pstat_mode_type;
-		f->stat.mode=HT_S_IFDIR;
+		enum_dir = ht_strdup(dirname);
+		f->name = "..";
+		f->stat.caps = pstat_mode_type;
+		f->stat.mode = HT_S_IFDIR;
 		return true;
 	}
 	return false;
@@ -404,14 +375,11 @@ bool RegistryFs::findFirst(const char *dirname, pfind_t *f)
 
 bool RegistryFs::findNext(pfind_t *f)
 {
-	const char *key;
-	ht_registry_data *data;
-	ht_registry_node_type type;
+	ht_registry_node *node;
 	
-	if ((key = registry->enum_next(&data, &type, enum_dir, enum_last))) {
-		if (enum_last) free(enum_last);
-		enum_last = strdup(key);
-		create_pfind_t(f, key, data, type);
+	if ((node = registry->enum_next(enum_dir, enum_last))) {
+		enum_last = node;
+		create_pfind_t(f, node);
 		return true;
 	}
 	return false;
@@ -444,14 +412,13 @@ int RegistryFs::makeDir(const char *dirname)
 
 int RegistryFs::open(const char *filename, bool edit)
 {
-	ht_registry_data *data;
-	ht_registry_node_type type;
+	ht_registry_node *node;
 	
-	if (registry->find_data_entry(filename, &data, &type, false)) {
-		if (data->editdialog(filename)) {
+	if (registry->find_data_entry(filename, &node, false)) {
+		if (node->data->editdialog(filename)) {
 			htmsg m;
-			m.msg=msg_config_changed;
-			m.type=mt_broadcast;
+			m.msg = msg_config_changed;
+			m.type = mt_broadcast;
 			app->sendmsg(&m);
 		}
 		return 0;
@@ -461,15 +428,14 @@ int RegistryFs::open(const char *filename, bool edit)
 
 int RegistryFs::pstat(pstat_t *s, const char *filename)
 {
-	ht_registry_data *data;
-	ht_registry_node_type type;
+	ht_registry_node *node;
 
 	char key[VFS_DIR_MAX];
 	ht_snprintf(key, sizeof key, "%s", filename);
 	int l = strlen(key)-1;
-	if ((l>=0) && (key[l] == '/')) key[l]=0;
-	if (registry->find_any_entry(key, &data, &type)) {
-		create_pstat_t(s, data, type);
+	if (l >= 0 && key[l] == '/') key[l] = 0;
+	if (registry->find_any_entry(key, &node)) {
+		create_pstat_t(s, node->data, node->type);
 		return 0;
 	}
 	return EINVAL;
@@ -480,25 +446,19 @@ int RegistryFs::renameFile(const char *filename, const char *newname)
 	return EXDEV;
 }
 
-int RegistryFs::fileClose(ht_streamfile *f)
+int RegistryFs::fileClose(File *f)
 {
-	f->done();
-	int e=f->get_error();
 	delete f;
-	return e;
+	return 0;
 }
 
-int RegistryFs::fileOpen(const char *filename, UINT access_mode, UINT open_mode, ht_streamfile **f)
+int RegistryFs::fileOpen(const char *filename, IOAccessMode access_mode, FileOpenMode open_mode, File **f)
 {
-	RegNodeFile *file=new RegNodeFile();
-	file->init(filename, access_mode, open_mode);
-	int e=file->get_error();
-	if (e) {
-		file->done();
-		delete file;
-		return e;
+	try {
+		*f = new RegNodeFile(filename, access_mode, open_mode);
+		return 0;
+	} catch (const IOException &e) {
+		return e.mPosixErrno;
 	}
-	*f=file;
-	return 0;
 }
 

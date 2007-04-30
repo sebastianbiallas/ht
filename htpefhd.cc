@@ -19,7 +19,7 @@
  */
 
 #include "pefstruc.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htpef.h"
 #include "htpefhd.h"
 #include "httag.h"
@@ -130,24 +130,24 @@ static ht_mask_ptable pef_loader_info_header[]=
 	{0, 0}
 };*/
 
-ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htpefheader_init(Bounds *b, File *file, ht_format_group *group)
 {
-	ht_pef_shared_data *pef_shared=(ht_pef_shared_data *)group->get_shared_data();
+	ht_pef_shared_data *pef_shared = (ht_pef_shared_data *)group->get_shared_data();
 
-	ht_uformat_viewer *v=new ht_uformat_viewer();
+	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_PEF_HEADER, VC_EDIT, file, group);
-	ht_mask_sub *m=new ht_mask_sub();
+	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	ht_snprintf(info, sizeof info, "* PEF header at offset %08x", pef_shared->header_ofs);
-	register_atom(ATOM_PEF_ARCH, pef_arch);
-	register_atom(ATOM_PEF_SHARE_KIND, pef_shareKind);
-	register_atom(ATOM_PEF_SECTION_KIND, pef_sectionKind);
+	ht_snprintf(info, sizeof info, "* PEF header at offset %08qx", pef_shared->header_ofs);
+	registerAtom(ATOM_PEF_ARCH, pef_arch);
+	registerAtom(ATOM_PEF_SHARE_KIND, pef_shareKind);
+	registerAtom(ATOM_PEF_SECTION_KIND, pef_sectionKind);
 	m->add_mask(info);
 	m->add_staticmask_ptable(pef_header, pef_shared->header_ofs, true);
 	v->insertsub(m);
 	
-	for (int i=0; i<pef_shared->contHeader.sectionCount; i++) {
+	for (int i=0; i < pef_shared->contHeader.sectionCount; i++) {
 		m = new ht_mask_sub();
 		m->init(file, 1);
 		ht_snprintf(info, sizeof info, "Section %d", i);
@@ -162,7 +162,7 @@ ht_view *htpefheader_init(bounds *b, ht_streamfile *file, ht_format_group *group
 	if (pef_shared->loader_info_header_ofs) {
 		m = new ht_mask_sub();
 		m->init(file, 1);
-		ht_snprintf(info, sizeof info, "Loader header at offset %08x", pef_shared->loader_info_header_ofs);
+		ht_snprintf(info, sizeof info, "Loader header at offset %08qx", pef_shared->loader_info_header_ofs);
 		m->add_staticmask_ptable(pef_loader_info_header, pef_shared->loader_info_header_ofs, true);
 		ht_collapsable_sub *cs = new ht_collapsable_sub();
 		cs->init(file, m, 1, info, 1);

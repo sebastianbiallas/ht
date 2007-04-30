@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htctrl.h"
 #include "htdialog.h"
 #include "hthist.h"
@@ -30,12 +30,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-int imsgbox(bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, char *buf)
+int imsgbox(Bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, char *buf)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | (modal ? 0 : FS_MOVE | FS_RESIZE));
 
-	bounds c;
+	Bounds c;
 
 	c.x=1;
 	c.y=0;
@@ -133,7 +133,7 @@ int imsgbox(bounds *b, int buttonmask, const char *title, bool modal, statictext
 		pos++;
 	}
 	if (!buttons) {
-		bounds x;
+		Bounds x;
 		text->getbounds(&x);
 		x.h+=2;
 		text->setbounds(&x);
@@ -161,16 +161,16 @@ int msgbox(int buttonmask, const char *title, bool modal, statictext_align align
 	}
 	int strl=strlen(buf);
 
-	bounds b;
+	Bounds b;
 	app->getbounds(&b);
 	b.w=55;
 	b.h=MAX(strl/(b.w-4), ns)+6;
-	b.x=(screen->size.w-b.w)/2;
-	b.y=(screen->size.h-b.h)/2;
+	b.x=(screen->w - b.w)/2;
+	b.y=(screen->h - b.h)/2;
 	return imsgbox(&b, buttonmask, title, modal, align, buf);
 }
 
-int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...)
+int msgboxrect(Bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...)
 {
 	char buf[1024];
 	va_list arg;
@@ -181,9 +181,9 @@ int msgboxrect(bounds *b, int buttonmask, const char *title, bool modal, statict
 	return imsgbox(b, buttonmask, title, modal, align, buf);
 }
 
-bool inputbox(const char *title, const char *label, char *result, int limit, dword histid)
+bool inputbox(const char *title, const char *label, char *result, int limit, uint32 histid)
 {
-	bounds b;
+	Bounds b;
 	app->getbounds(&b);
 	b.x = (b.w - 60) / 2,
 	b.y = (b.h - 8) / 2;
@@ -192,21 +192,21 @@ bool inputbox(const char *title, const char *label, char *result, int limit, dwo
 	return inputboxrect(&b, title, label, result, limit, histid);
 }
 
-bool inputboxrect(bounds *b, const char *title, const char *label, char *result, int limit, dword histid)
+bool inputboxrect(Bounds *b, const char *title, const char *label, char *result, int limit, uint32 histid)
 {
 	ht_dialog *dialog=new ht_dialog();
 	dialog->init(b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 
 	ht_strinputfield *input;
 
-	bounds  b2;
+	Bounds  b2;
 	b2.x = 3 + strlen(label);
 	b2.y = 1;
 	b2.w = b->w - 3 - b2.x;
 	b2.h = 1;
 
-	ht_clist *hist = 0;
-	if (histid) hist = (ht_clist*)find_atom(histid);
+	List *hist = NULL;
+	if (histid) hist = (List*)getAtomValue(histid);
 	input = new ht_strinputfield();
 	input->init(&b2, limit, hist);
 	ht_inputfield_data d;
@@ -243,8 +243,8 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 
 	if (dialog->run(0)) {
 		int dsize = input->datasize();
-		ht_inputfield_data *data=(ht_inputfield_data*)malloc(dsize);
-		input->databuf_get(data, dsize);
+		ht_inputfield_data *data = ht_malloc(dsize);
+		ViewDataBuf vdb(input, data, dsize);
 		bin2str(result, data->text, data->textlen);
 		free(data);
 		if (hist) insert_history_entry(hist, result, 0);
@@ -258,12 +258,12 @@ bool inputboxrect(bounds *b, const char *title, const char *label, char *result,
 	return false;
 }
 
-void get_std_progress_indicator_metrics(bounds *b)
+void get_std_progress_indicator_metrics(Bounds *b)
 {
 	app->getbounds(b);
 	b->w=b->w*2/3;
 	b->h=6;
-	b->x=(screen->size.w-b->w)/2;
-	b->y=(screen->size.h-b->h)/2;
+	b->x=(screen->w - b->w)/2;
+	b->y=(screen->h - b->h)/2;
 }
 

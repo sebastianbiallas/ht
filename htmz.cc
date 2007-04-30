@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htendian.h"
+#include "endianess.h"
 #include "htmz.h"
 #include "htmzhead.h"
 #include "htmzrel.h"
@@ -33,12 +33,12 @@ static format_viewer_if *htmz_ifs[] = {
 	0
 };
 
-static ht_view *htmz_init(bounds *b, ht_streamfile *file, ht_format_group *format_group)
+static ht_view *htmz_init(Bounds *b, File *file, ht_format_group *format_group)
 {
 	byte magic[2];
 	file->seek(0);
-	file->read(magic, 2);
-	if ((magic[0] != IMAGE_MZ_MAGIC0) || (magic[1] != IMAGE_MZ_MAGIC1))
+	if (file->read(magic, 2) != 2 
+	 || magic[0] != IMAGE_MZ_MAGIC0 || magic[1] != IMAGE_MZ_MAGIC1)
 		return NULL;
 
 	ht_mz *g = new ht_mz();
@@ -51,14 +51,14 @@ format_viewer_if htmz_if = {
 	0
 };
 
-void ht_mz::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group)
+void ht_mz::init(Bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_MZ, file, false, true, 0, format_group);
-	ht_mz_shared_data *mz_shared = (ht_mz_shared_data*)malloc(sizeof (ht_mz_shared_data));
+	ht_mz_shared_data *mz_shared = ht_malloc(sizeof (ht_mz_shared_data));
 	shared_data = mz_shared;
 	file->seek(0);
 	file->read(&mz_shared->header, sizeof mz_shared->header);
-	create_host_struct(&mz_shared->header, MZ_HEADER_struct, little_endian);
+	createHostStruct(&mz_shared->header, MZ_HEADER_struct, little_endian);
 	shared_data = mz_shared;
 	ht_format_group::init_ifs(ifs);
 }
@@ -78,12 +78,12 @@ bool ht_mz::loc_enum_next(ht_format_loc *loc)
 {
 	ht_mz_shared_data *sh=(ht_mz_shared_data*)shared_data;
 	if (loc_enum) {
-		loc->name="mz";
-		loc->start=0;
-		loc->length=sh->header.header_size*16+(sh->header.sizep-1)*512+
-		sh->header.sizelp;
+		loc->name = "mz";
+		loc->start = 0;
+		loc->length= sh->header.header_size*16+(sh->header.sizep-1)*512+
+			     sh->header.sizelp;
 
-		loc_enum=0;
+		loc_enum = 0;
 		return true;
 	}
 	return false;

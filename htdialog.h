@@ -25,7 +25,8 @@
 
 #include "htdebug.h"
 #include "htobj.h"
-#include "htstring.h"
+#include "strtools.h"
+#include "io/keyb.h"
 
 /*
  *	CLASS ht_dialog
@@ -33,20 +34,21 @@
 
 #define ds_normal			0
 #define ds_term_ok			1
-#define ds_term_cancel		2
+#define ds_term_cancel			2
 
-#define button_cancel		0
+#define button_cancel			0
 #define button_ok			1
-#define button_yes            button_ok
+#define button_yes			button_ok
 #define button_no			2
 #define button_skip			button_no
 #define button_all			3
 #define button_none			4
 
-class ht_queued_msg: public ht_data {
+class ht_queued_msg: public Object {
 public:
 	ht_view *target;
 	htmsg msg;
+		    ht_queued_msg(ht_view *target, htmsg &msg);
 };
 
 class ht_dialog: public ht_window {
@@ -54,39 +56,42 @@ protected:
 	int state;
 	int return_val;
 
-	ht_queue *msgqueue;
+	Queue *msgqueue;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 			ht_queued_msg *dequeuemsg();
 public:
-			void	init(bounds *b, const char *desc, UINT framestyle);
+			ht_dialog() {};
+			ht_dialog(BuildCtorArg&a): ht_window(a) {};
+		void	init(Bounds *b, const char *desc, uint framestyle);
 	virtual	void	done();
 /* overwritten */
-	virtual	int alone();
-	virtual 	void draw();
+	virtual	int aclone();
+	virtual void draw();
 	virtual	void handlemsg(htmsg *msg);
-			void queuemsg(ht_view *target, htmsg *msg);
 /* new */
+		void queuemsg(ht_view *target, htmsg &msg);
 	virtual	int getstate(int *return_val);
 	virtual	int run(bool modal);
 	virtual	void setstate(int state, int return_val);
 };
 
+
 /*
  *	CLASS ht_cluster
  */
 
-class ht_cluster: public ht_view {
+class ht_cluster: public ht_dialog_widget {
 protected:
 			ht_string_list *strings;
 			int sel;
 			int scount;
 			ht_key shortcuts[32];
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, ht_string_list *strings);
+			void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
 };
 
@@ -100,16 +105,16 @@ struct ht_checkboxes_data {
 
 class ht_checkboxes: public ht_cluster {
 protected:
-			dword state;
+			uint32 state;
 public:
-			void	init(bounds *b, ht_string_list *strings);
+			void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
 /* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 };
 
 /*
@@ -122,14 +127,14 @@ struct ht_radioboxes_data {
 
 class ht_radioboxes: public ht_cluster {
 public:
-			void	init(bounds *b, ht_string_list *strings);
+			void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
 /* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 };
 
 /*
@@ -143,35 +148,35 @@ struct ht_inputfield_data {
 	DDECL_PTR(byte, text);
 };
 
-class ht_inputfield: public ht_view {
+class ht_inputfield: public ht_dialog_widget {
 protected:
-			byte **text, *textv;
-			byte **curchar, *curcharv;
-			byte **selstart, *selstartv;
-			byte **selend, *selendv;
-			int *textlen, textlenv;
-			int *maxtextlen, maxtextlenv;
-			int insert;
-			int ofs;
-			ht_inputfield *attachedto;
-			ht_list *history;
+	byte **text, *textv;
+	byte **curchar, *curcharv;
+	byte **selstart, *selstartv;
+	byte **selend, *selendv;
+	int *textlen, textlenv;
+	int *maxtextlen, maxtextlenv;
+	int insert;
+	int ofs;
+	ht_inputfield *attachedto;
+	List *history;
 
-			void freebuf();
-			int insertbyte(byte *pos, byte b);
-			void select_add(byte *start, byte *end);
+		void freebuf();
+		int insertbyte(byte *pos, byte b);
+		void select_add(byte *start, byte *end);
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, int maxtextlen, ht_list *history=0);
+		void	init(Bounds *b, int maxtextlen, List *history = NULL);
 	virtual	void	done();
 /* overwritten */
 	virtual	int datasize();
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 /* new */
-			void attach(ht_inputfield *inputfield);
-			void query(byte ***curchar, byte ***text, byte ***selstart, byte ***selend, int **textlen, int **maxtextlen);
-			void isetcursor(UINT pos);
+		void attach(ht_inputfield *inputfield);
+		void query(byte ***curchar, byte ***text, byte ***selstart, byte ***selend, int **textlen, int **maxtextlen);
+		void isetcursor(uint pos);
 };
 
 /*
@@ -186,12 +191,12 @@ protected:
 	bool selectmode;
 	
 /* new */
-			void correct_viewpoint();
-			void history_dialog();
-			bool inputbyte(byte a);
-			bool setbyte(byte a);
+		void correct_viewpoint();
+		void history_dialog();
+		bool inputbyte(byte a);
+		bool setbyte(byte a);
 public:
-			void	init(bounds *b, int maxtextlen, ht_list *history=0);
+		void	init(Bounds *b, int maxtextlen, List *history = NULL);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();
@@ -207,11 +212,11 @@ public:
 
 class ht_hexinputfield: public ht_inputfield {
 protected:
-			int nib;
+	int nib;
 
-			void correct_viewpoint();
+		void correct_viewpoint();
 public:
-			void	init(bounds *b, int maxtextlen);
+		void	init(Bounds *b, int maxtextlen);
 	virtual	void	done();
 /* overwritten */
 	virtual 	void draw();
@@ -225,7 +230,7 @@ public:
  *	CLASS ht_button
  */
 
-class ht_button: public ht_view {
+class ht_button: public ht_dialog_widget {
 protected:
 	int value;
 	int pressed;
@@ -235,15 +240,16 @@ protected:
 	ht_key shortcut2;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, const char *text, int value);
+		void	init(Bounds *b, const char *text, int value);
 	virtual	void	done();
-/* overwritten */
-	virtual 	void draw();
-	virtual	void handlemsg(htmsg *msg);
-/* new */
-	virtual	void push();
+	/* overwritten */
+	virtual void 	draw();
+	virtual	void 	handlemsg(htmsg *msg);
+	virtual void	getminbounds(int *width, int *height);
+	/* new */
+	virtual	void 	push();
 };
 
 
@@ -253,7 +259,7 @@ public:
 
 class ht_listbox;
 
-class ht_listbox_title: public ht_view {
+class ht_listbox_title: public ht_dialog_widget {
 public:
 	ht_listbox *listbox;
 protected:
@@ -261,87 +267,91 @@ protected:
 	int cols;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b);               
-	virtual	void	done();
+		void init(Bounds *b);               
+	virtual	void done();
 /* overwritten */
-	virtual 	void draw();
+	virtual	void draw();
 /* new */
 	virtual	vcp getTextColor();
-			void setText(int cols, ...);
-			void setTextv(int cols, va_list arguments);
-			void update();
+		void setText(int cols, ...);
+		void setTextv(int cols, va_list arguments);
+		void update();
 };
 
 /*
  *	CLASS ht_listbox
  */
 
+struct ht_listbox_data_internal {
+	void *top_ptr;
+	void *cursor_ptr;
+};
+
 struct ht_listbox_data {
-	DDECL_PTR(void, top_ptr);
-	DDECL_PTR(void, cursor_ptr);
+	DDECL_PTR(ht_listbox_data_internal, data);
 };
 
 #define LISTBOX_NORMAL 0
 #define LISTBOX_QUICKFIND 1
 
-class ht_listbox: public ht_view {
+class ht_listbox: public ht_dialog_widget {
 protected:
 public:
-	int		cursor, pos, cached_count;
-	int		visible_height;
-	void		*e_top, *e_cursor;
-	int		x;
-	char		quickfinder[100];
-	char		*qpos;
-	UINT		listboxcaps;
+	int	cursor, pos, cached_count;
+	int	visible_height;
+	void	*e_top, *e_cursor;
+	int	x;
+	char	quickfinder[100];
+	char	*qpos;
+	uint	listboxcaps;
 
-	int		cols;
-	int		*widths;
+	int	cols;
+	int	*widths;
 	
 	ht_scrollbar *scrollbar;
-	bool		mScrollbarEnabled;
+	bool	mScrollbarEnabled;
 	ht_listbox_title *title;
 
 public:
-			void		init(bounds *b, UINT Listboxcaps=LISTBOX_QUICKFIND);
+		void		init(Bounds *b, uint Listboxcaps=LISTBOX_QUICKFIND);
 	virtual	void		done();
-			void		attachTitle(ht_listbox_title *title);
-			void		adjustPosHack();
-			void		adjustScrollbar();
+		void		attachTitle(ht_listbox_title *title);
+		void		adjustPosHack();
+		void		adjustScrollbar();
 	virtual	int		calcCount() = 0;
-			void		clearQuickfind();
+		void		clearQuickfind();
 	virtual	int		cursorAdjust();
-			int		cursorUp(int n);
-			int		cursorDown(int n);
+		int		cursorUp(int n);
+		int		cursorDown(int n);
 	virtual	int		datasize();
-	virtual	char *	defaultpalette();
+	virtual	const char *	defaultpalette();
 	virtual	void		draw();
 	virtual	int		estimateEntryPos(void *entry);
-	virtual	void		getdata(ht_object_stream *s);
-	virtual	void *	getFirst() = 0;
-	virtual	void *	getLast() = 0;
-	virtual	void *	getNext(void *entry) = 0;
-	virtual	void *	getPrev(void *entry) = 0;
-	virtual	char *	getStr(int col, void *entry) = 0;
-			void		gotoItemByEntry(void *entry, bool clear_quickfind = true);
-	virtual	void		gotoItemByPosition(UINT pos);
+	virtual	void		getdata(ObjectStream &s);
+	virtual	void *		getFirst() = 0;
+	virtual	void *		getLast() = 0;
+	virtual	void *		getNext(void *entry) = 0;
+	virtual	void *		getPrev(void *entry) = 0;
+	virtual	const char *	getStr(int col, void *entry) = 0;
+		void		gotoItemByEntry(void *entry, bool clear_quickfind = true);
+	virtual	void		gotoItemByPosition(uint pos);
 	virtual	void		handlemsg(htmsg *msg);
 	virtual	int		numColumns();
-	virtual	void *	quickfind(char *s) = 0;
-	virtual	char *	quickfindCompletition(char *s);
+	virtual	void *		quickfind(const char *s) = 0;
+	virtual	char *		quickfindCompletition(const char *s);
 	virtual	void		redraw();
 	virtual	void		resize(int rw, int rh);
 	virtual	bool		selectEntry(void *entry);
-	virtual	void		setdata(ht_object_stream *s);
+	virtual	void		setdata(ObjectStream &s);
 	virtual	void		stateChanged();
 	virtual	void		update();
-			void		updateCursor();
-	virtual	ht_data *	vstate_create();
-			void		vstate_save();
+		void		updateCursor();
+	virtual	Object *	vstate_create();
+		void		vstate_save();
 protected:
-			void		rearrangeColumns();
+		void	rearrangeColumns();
 };
 
 /*
@@ -352,9 +362,9 @@ protected:
 
 struct ht_text_listbox_item {
 	ht_text_listbox_item	*next, *prev;
-	int					id;
-	void					*extra_data;
-	char					*data[0];
+	int id;
+	void			*extra_data;
+	char			*data[0];
 };
 
 struct ht_text_listbox_sort_order {
@@ -364,45 +374,45 @@ struct ht_text_listbox_sort_order {
 
 class ht_text_listbox: public ht_listbox {
 protected:
-	int					cols, keycol, count;
+	int			cols, keycol, count;
 	ht_text_listbox_item	*first, *last;
-	int					Cursor_adjust;
+	int			Cursor_adjust;
 
 public:
-			void		init(bounds *b, int Cols=1, int Keycol=0, UINT Listboxcaps=LISTBOX_QUICKFIND);
-	virtual	void		done();
-	virtual   int		calcCount();
-	virtual	int		compare_strn(const char *s1, const char *s2, size_t l);
-	virtual	int		compare_ccomm(const char *s1, const char *s2);
-	virtual   int		cursorAdjust();
-			void *	getEntryByID(UINT id);
-	virtual   void *	getFirst();
-	virtual   void *	getLast();
-			UINT		getID(void *entry);
-	virtual   void *	getNext(void *entry);
-	virtual   void *	getPrev(void *entry);
-	virtual   char *	getStr(int col, void *entry);
-			void		insert_str(int id, char *str, ...);
-			void		insert_str(int id, char **strs);
-			void		insert_str_extra(int id, void *extra_data, char *str, ...);
-			void		insert_str_extra(int id, void *extra_data, char **strs);
-	virtual   int		numColumns();
-	virtual	void *	quickfind(char *s);
-	virtual	char *	quickfindCompletition(char *s);
-			void		sort(int count, ht_text_listbox_sort_order *so);
-	virtual   void		update();
+		void	init(Bounds *b, int Cols=1, int Keycol=0, uint Listboxcaps=LISTBOX_QUICKFIND);
+	virtual	void	done();
+	virtual	int	calcCount();
+	virtual	int	compare_strn(const char *s1, const char *s2, int l);
+	virtual	int	compare_ccomm(const char *s1, const char *s2);
+	virtual	int	cursorAdjust();
+		void *	getEntryByID(uint id);
+	virtual	void *	getFirst();
+	virtual	void *	getLast();
+		uint	getID(void *entry);
+		void *	getExtra(void *entry);
+	virtual	void *	getNext(void *entry);
+	virtual	void *	getPrev(void *entry);
+	virtual	const char *getStr(int col, void *entry);
+		void	insert_str(int id, const char *str, ...);
+		void	insert_str(int id, const char **strs);
+		void	insert_str_extra(int id, void *extra_data, const char *str, ...);
+		void	insert_str_extra(int id, void *extra_data, const char **strs);
+	virtual	int	numColumns();
+	virtual	void *	quickfind(const char *s);
+	virtual	char *	quickfindCompletition(const char *s);
+		void	sort(int count, ht_text_listbox_sort_order *so);
+	virtual	void	update();
 protected:
-	virtual	void		clearAll();
-	virtual	void		freeExtraData(void *extra_data);
+	virtual	void	clearAll();
+	virtual	void	freeExtraData(void *extra_data);
 };
 
 #define ht_itext_listbox_data ht_text_listbox_data
 
 class ht_itext_listbox: public ht_text_listbox {
 public:
-			void	init(bounds *b, int Cols=1, int Keycol=0);
-	virtual	void	done();
-	virtual	int	compare_strn(const char *s1, const char *s2, size_t l);
+		void	init(Bounds *b, int Cols=1, int Keycol=0);
+	virtual	int	compare_strn(const char *s1, const char *s2, int l);
 	virtual	int	compare_ccomm(const char *s1, const char *s2);
 };
 
@@ -420,7 +430,7 @@ enum statictext_align {
 #define ALIGN_CHAR_ESCAPE	'\e'
 #define ALIGN_CHAR_LEFT		'l'
 #define ALIGN_CHAR_CENTER	'c'
-#define ALIGN_CHAR_RIGHT		'r'
+#define ALIGN_CHAR_RIGHT	'r'
  
 struct ht_statictext_linedesc {
 	int ofs;
@@ -436,16 +446,16 @@ protected:
 	bool transparent;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, const char *text, statictext_align align, bool breaklines=true, bool transparent=false);
+		void	init(Bounds *b, const char *text, statictext_align align, bool breaklines=true, bool transparent=false);
 	virtual	void	done();
 /* overwritten */
-	virtual 	void draw();
-	virtual	char *gettext();
-/* new */
-	virtual	vcp gettextcolor();
+	virtual	void draw();
 	virtual	void settext(const char *text);
+/* new */
+	virtual	int gettext(char *text, int maxlen);
+	virtual	vcp gettextcolor();
 };
 
 /*
@@ -460,19 +470,18 @@ struct ht_listpopup_dialog_data {
 class ht_listpopup_dialog: public ht_dialog {
 protected:
 	ht_listbox *listbox;
-	virtual	void init_text_listbox(bounds *b);
+	virtual	void init_text_listbox(Bounds *b);
 public:
-			void init(bounds *b, char *desc);
-	virtual	void done();
+		void init(Bounds *b, const char *desc);
 /* overwritten */
-	virtual	char *defaultpalette();
-	virtual	int	datasize();
-	virtual	void getdata(ht_object_stream *s);
-			void	insertstring(char *string);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	const char *defaultpalette();
+	virtual	int  datasize();
+	virtual	void getdata(ObjectStream &s);
+		void insertstring(const char *string);
+	virtual	void setdata(ObjectStream &s);
 /* new */
-			void select_next();
-			void select_prev();
+		void select_next();
+		void select_prev();
 };
 
 /*
@@ -485,20 +494,20 @@ class ht_listpopup: public ht_statictext {
 protected:
 	ht_listpopup_dialog *listpopup;
 /* new */	
-			int	run_listpopup();
+		int	run_listpopup();
 public:
-			void	init(bounds *b);
+		void	init(Bounds *b);
 	virtual	void	done();
 /* overwritten */
 	virtual	int  datasize();
-	virtual 	void draw();
+	virtual void draw();
 	virtual	vcp  gettextcolor();
-	virtual	void getdata(ht_object_stream *s);
-	virtual	char *gettext();
+	virtual	void getdata(ObjectStream &s);
+	virtual	int gettext(char *text, int maxlen);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void setdata(ObjectStream &s);
 /* new */
-			void	insertstring(char *string);
+		void	insertstring(const char *string);
 };
 
 /*
@@ -506,18 +515,18 @@ public:
  */
 
 class ht_history_listbox: public ht_listbox {
-	ht_list	*history;
+	List	*history;
 public:
-			void init(bounds *b, ht_list *hist);
-	virtual   int  calcCount();
-	virtual   void *getFirst();
-	virtual   void *getLast();
-	virtual   void *getNext(void *entry);
-	virtual   void *getPrev(void *entry);
-	virtual   char *getStr(int col, void *entry);
+		void init(Bounds *b, List *hist);
+	virtual int  calcCount();
+	virtual void *getFirst();
+	virtual void *getLast();
+	virtual void *getNext(void *entry);
+	virtual void *getPrev(void *entry);
+	virtual const char *getStr(int col, void *entry);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	void *quickfind(char *s);
-	virtual	char	*quickfindCompletition(char *s);
+	virtual	void *quickfind(const char *s);
+	virtual	char *quickfindCompletition(const char *s);
 };
 
 /*
@@ -526,19 +535,19 @@ public:
 
 class ht_history_popup_dialog: public ht_listpopup_dialog {
 protected:
-	ht_list	*history;
-	virtual	void init_text_listbox(bounds *b);
+	List	*history;
+	virtual	void init_text_listbox(Bounds *b);
 public:
-			void init(bounds *b, ht_list *hist);
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+		void init(Bounds *b, List *hist);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 };
 
 /*
  *	CLASS ht_label
  */
 
-class ht_label: public ht_view {
+class ht_label: public ht_dialog_widget {
 protected:
 	ht_view *connected;
 	char *text;
@@ -546,9 +555,9 @@ protected:
 	ht_key shortcut;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, const char *text, ht_view *connected);
+		void	init(Bounds *b, const char *text, ht_view *connected);
 	virtual	void	done();
 /* overwritten */
 	virtual	void draw();
@@ -562,13 +571,13 @@ public:
 class ht_progress_indicator: public ht_window {
 protected:
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
 	ht_statictext *text;
 	
-			void	init(bounds *b, char *hint);
+		void init(Bounds *b, const char *hint);
 /* new */
-			void settext(const char *text);
+		void settext(const char *text);
 };
 
 /*
@@ -579,25 +588,25 @@ struct ht_color_block_data {
 	DDECL_UINT(color);
 };
 
-#define cf_light		1
-#define cf_transparent   2
+#define cf_light	1
+#define cf_transparent	2
 
-class ht_color_block: public ht_view {
+class ht_color_block: public ht_dialog_widget {
 protected:
 	int color;
 	int colors;
 	int flags;
 
 /* overwritten */
-	virtual	char *defaultpalette();
+	virtual	const char *defaultpalette();
 public:
-			void	init(bounds *b, int selected, int flags);
+		void	init(Bounds *b, int selected, int flags);
 	virtual	void	done();
 /* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
-	virtual	void getdata(ht_object_stream *s);
-	virtual	void setdata(ht_object_stream *s);
+	virtual	void getdata(ObjectStream &s);
+	virtual	void setdata(ObjectStream &s);
 	virtual	void handlemsg(htmsg *msg);
 };
 
@@ -605,15 +614,16 @@ public:
  *	CLASS ht_listbox_ptr
  */
 
-class ht_listbox_ptr: public ht_data {
+class ht_listbox_ptr: public Object {
 public:
 	ht_listbox *listbox;
 
-	ht_listbox_ptr(ht_listbox *listbox);
-	~ht_listbox_ptr();
+	ht_listbox_ptr(ht_listbox *aListbox)
+		: listbox(aListbox)
+	{
+	}
 };
 
-void center_bounds(bounds *b);
+void center_bounds(Bounds *b);
 
 #endif /* !__HTDIALOG_H__ */
-

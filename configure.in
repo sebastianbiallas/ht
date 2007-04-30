@@ -1,22 +1,21 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(common.h)
 
-PACKAGE=ht
-VERSION=0.9trunk
+AC_INIT(ht,[2.0.6],[https://sourceforge.net/tracker/?group_id=1066])
+AC_PREREQ(2.59)
 
 dnl Check the system.
 AC_CANONICAL_SYSTEM
 
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-
 AC_ARG_ENABLE(x11-textmode, 
 	[  --enable-x11-textmode   build with x11 textmode support [default=yes]],,enable_x11_textmode="yes")
+AC_ARG_ENABLE(maintainermode,
+	[  --enable-maintainermode minimise autodetection for package mantainers [default=no]],,enable_maintainermode="no")
 AC_ARG_ENABLE(release,
-	[  --enable-release        make a release build [default=no]],,enable_release="no")
+	[  --enable-release        make a release build [default=yes]],,enable_release="yes")
 AC_ARG_ENABLE(profiling,
 	[  --enable-profiling      make a profile build [default=no]],,enable_profiling="no")
 
+if test "x$enable_maintainermode" = "xno"; then
 if test "x$enable_release" = "xyes"; then
     FLAGS_ALL="-O2 -fomit-frame-pointer -Wall -fsigned-char"
 else
@@ -26,8 +25,9 @@ fi
 if test "x$enable_profiling" = "xyes"; then
     FLAGS_ALL="$FLAGS_ALL -pg -g"
 fi
+fi
 
-AM_INIT_AUTOMAKE($PACKAGE,$VERSION,no-define)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 dnl Check OS specifica
@@ -45,12 +45,14 @@ linux*)
 	echo "*** LINUX, building POSIX version. we need (n)curses." 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=1
+	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 *freebsd*) 
 	IO_DIR=posix
 	echo "*** FREEBSD, building native FreeBSD version. we need (n)curses." 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=1
+	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 cygwin*)
 	IO_DIR=win32
@@ -71,6 +73,7 @@ mingw32*)
 	echo "*** POSIX-generic, we need (n)curses, '-pipe' disabled for safety" 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=0
+	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;	
 esac
 
@@ -90,8 +93,10 @@ if test "xNO_NATIVE_UNALIGNED_MOVES" = "x1"; then
 	FLAGS_NO_NATIVE_UNALIGNED_MOVES="-DNO_NATIVE_UNALIGNED_MOVES";
 fi
 
-CXXFLAGS="$FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
-CFLAGS="$FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
+CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor"
+CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
+
+AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
 
 AM_CONDITIONAL(USE_POSIX_DIR, test x$IO_DIR = xposix)
 AM_CONDITIONAL(USE_DJGPP_DIR, test x$IO_DIR = xdjgpp)
@@ -102,6 +107,7 @@ AC_PROG_RANLIB
 AC_PATH_PROGS(MAKE, gmake make, :)
 AC_PROG_MAKE_SET
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_YACC
 AM_PROG_LEX
@@ -113,6 +119,45 @@ if test "x$AR" = "x"; then
 fi
 
 dnl Checks for libraries.
+
+minilzo_enabled=no
+
+AC_ARG_WITH(included-lzo,
+	AS_HELP_STRING([--with-included-lzo],
+		[use included minilzo]),
+	minilzo_enabled=$withval,
+	minilzo_enabled=no)
+
+AC_MSG_CHECKING([whether to use the included lzo compression library])
+AC_MSG_RESULT($minilzo_enabled)
+
+LZO_LIBS=
+if test "$minilzo_enabled" != "yes"; then
+  AC_CHECK_LIB(lzo2, lzo1x_1_compress, LZO_LIBS=-llzo2)
+  if test "$LZO_LIBS" = ""; then
+    AC_CHECK_LIB(lzo, lzo1x_1_compress, LZO_LIBS=-llzo, [
+      minilzo_enabled=yes
+      AC_MSG_WARN(
+***
+*** Could not find liblzo or liblzo2. Will use the included minilzo.
+)
+    ])
+  fi
+fi
+AC_SUBST(LZO_LIBS)
+
+if test "$LZO_LIBS" = "-llzo"; then
+  AC_CHECK_HEADERS(lzo1x.h)
+elif test "$LZO_LIBS" = "-llzo2"; then
+  AC_CHECK_HEADERS(lzo/lzo1x.h)
+fi
+
+if test "$minilzo_enabled" = "yes"; then
+  AC_DEFINE(USE_MINILZO, 1, [whether to use the included minilzo])
+fi
+
+AM_CONDITIONAL(USE_LZO, test "$use_lzo" = "yes")
+AM_CONDITIONAL(ENABLE_INCLUDED_LZO, test "$minilzo_enabled" = "yes")
 
 HAVE_X11=0
 
@@ -132,6 +177,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
+AC_CHECK_HEADERS([stdint.h])
 
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
@@ -175,7 +221,6 @@ io/djgpp/Makefile
 io/win32/Makefile
 minilzo/Makefile
 output/Makefile
-srt/Makefile
 tools/Makefile
 ])
 
@@ -193,3 +238,4 @@ else
 fi
 echo "enable profiling:                 $enable_profiling" 1>&2
 echo "make a release build:             $enable_release" 1>&2
+echo "using included minilzo:           $minilzo_enabled" 1>&2

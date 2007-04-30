@@ -24,7 +24,7 @@
 #include "formats.h"
 #include "coff_s.h"
 #include "htcoffhd.h"
-#include "htendian.h"
+#include "endianess.h"
 
 #define DESC_COFF			"coff - unix common obj file"
 #define DESC_COFF_HEADER		"coff/header"
@@ -48,16 +48,16 @@
 extern format_viewer_if htcoff_if;
 
 struct coff_section_headers {
-	UINT hdr_ofs;		// duplicate of ht_coff_shared_data.hdr_ofs (!)
-	UINT section_count;
+	uint hdr_ofs;		// duplicate of ht_coff_shared_data.hdr_ofs (!)
+	uint section_count;
 	COFF_SECTION_HEADER *sections;
 };
 
 struct ht_coff_shared_data {
-	dword hdr_ofs;
+	uint32 hdr_ofs;
 	COFF_HEADER coffheader;
-	word opt_magic;
-	endianess endian;
+	uint16 opt_magic;
+	Endianess endian;
 	union {
 		COFF_OPTIONAL_HEADER32 coff32header;
 	};
@@ -74,17 +74,17 @@ class ht_coff: public ht_format_group {
 private:
 	ht_coff_shared_data *coff_shared;
 public:
-		void init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_format_group *format_group, FILEOFS header_ofs, endianess end);
+		void init(Bounds *b, File *file, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, Endianess end);
 	virtual	void done();
 };
 
-int coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section);
-int coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, dword *ofs);
-int coff_rva_is_valid(coff_section_headers *section_headers, RVA rva);
-int coff_rva_is_physical(coff_section_headers *section_headers, RVA rva);
+bool coff_rva_to_section(coff_section_headers *section_headers, RVA rva, int *section);
+bool coff_rva_to_ofs(coff_section_headers *section_headers, RVA rva, FileOfs *ofs);
+bool coff_rva_is_valid(coff_section_headers *section_headers, RVA rva);
+bool coff_rva_is_physical(coff_section_headers *section_headers, RVA rva);
 
-int coff_ofs_to_rva(coff_section_headers *section_headers, dword ofs, RVA *rva);
-int coff_ofs_to_section(coff_section_headers *section_headers, dword ofs, UINT *section);
-int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, dword ofs, RVA *rva, UINT *section);
+bool coff_ofs_to_rva(coff_section_headers *section_headers, uint32 ofs, RVA *rva);
+bool coff_ofs_to_section(coff_section_headers *section_headers, uint32 ofs, uint *section);
+int coff_ofs_to_rva_and_section(coff_section_headers *section_headers, uint32 ofs, RVA *rva, uint *section);
 
 #endif /* !__HTCOFF_H__ */

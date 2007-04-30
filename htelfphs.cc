@@ -19,7 +19,7 @@
  */
 
 #include "elfstruc.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htelf.h"
 #include "htelfphs.h"
 #include "httag.h"
@@ -78,9 +78,11 @@ static ht_tag_flags_s elf_ph_flags[] =
 	{0, 0}
 };
 
-static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfprogramheaders_init(Bounds *b, File *file, ht_format_group *group)
 {
-	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
+	ht_elf_shared_data *elf_shared = (ht_elf_shared_data *)group->get_shared_data();
+
+	if (!elf_shared->pheaders.count) return NULL;
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
 	ht_uformat_viewer *v = NULL;
@@ -88,28 +90,28 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		v = new ht_uformat_viewer();
 		v->init(b, DESC_ELF_PROGRAM_HEADERS, VC_EDIT, file, group);
 	
-		register_atom(ATOM_ELF_PH_TYPE, elf_ph_type);
-		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
+		registerAtom(ATOM_ELF_PH_TYPE, elf_ph_type);
+		registerAtom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 	
-		FILEOFS h=elf_shared->header32.e_phoff;
+		FileOfs h = elf_shared->header32.e_phoff;
 	
-		ht_mask_sub *m=new ht_mask_sub();
+		ht_mask_sub *m = new ht_mask_sub();
 		m->init(file, 0);
 	
 		char info[128];
-		ht_snprintf(info, sizeof info, "* ELF program headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF program headers at offset %08qx", h);
 	
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+		for (uint i=0; i < elf_shared->pheaders.count; i++) {
 		
-			ht_mask_sub *n=new ht_mask_sub();
+			ht_mask_sub *n = new ht_mask_sub();
 			n->init(file, i);
 		
 			char t[32];
-			char *etype = matchhash(elf_shared->pheaders.pheaders32[i].p_type, elf_ph_type);
-			if (!etype) etype="?";
+			const char *etype = matchhash(elf_shared->pheaders.pheaders32[i].p_type, elf_ph_type);
+			if (!etype) etype = "?";
 			ht_snprintf(t, sizeof t, "entry %d (%s)", i, etype);
 		
 			n->add_staticmask_ptable(elfprogramheader32, h+i*elf_shared->header32.e_phentsize, elf_bigendian);
@@ -123,28 +125,27 @@ static ht_view *htelfprogramheaders_init(bounds *b, ht_streamfile *file, ht_form
 		v = new ht_uformat_viewer();
 		v->init(b, DESC_ELF_PROGRAM_HEADERS, VC_EDIT, file, group);
 	
-		register_atom(ATOM_ELF_PH_TYPE, elf_ph_type);
-		register_atom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
+		registerAtom(ATOM_ELF_PH_TYPE, elf_ph_type);
+		registerAtom(ATOM_ELF_PH_FLAGS, elf_ph_flags);
 
-		/* FIXME: 64-bit */
-		FILEOFS h=elf_shared->header64.e_phoff.lo;
+		FileOfs h = elf_shared->header64.e_phoff;
 	
 		ht_mask_sub *m=new ht_mask_sub();
 		m->init(file, 0);
 	
 		char info[128];
-		ht_snprintf(info, sizeof info, "* ELF program headers at offset %08x", h);
+		ht_snprintf(info, sizeof info, "* ELF program headers at offset 0x%08qx", h);
 	
 		m->add_mask(info);
 
 		v->insertsub(m);
-		for (UINT i=0; i<elf_shared->pheaders.count; i++) {
+		for (uint i=0; i<elf_shared->pheaders.count; i++) {
 		
 			ht_mask_sub *n=new ht_mask_sub();
 			n->init(file, i);
 		
 			char t[32];
-			char *etype=matchhash(elf_shared->pheaders.pheaders64[i].p_type, elf_ph_type);
+			const char *etype=matchhash(elf_shared->pheaders.pheaders64[i].p_type, elf_ph_type);
 			if (!etype) etype="?";
 			ht_snprintf(t, sizeof t, "entry %d (%s)", i, etype);
 		

@@ -23,16 +23,16 @@
 
 #include "blockop.h"
 #include "cmds.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htctrl.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "hteval.h"
-#include "htexcept.h"
+#include "except.h"
 #include "hthist.h"
 #include "htiobox.h"
-#include "htkeyb.h"
-#include "htstring.h"
-#include "process.h"
+#include "keyb.h"
+#include "strtools.h"
+#include "htprocess.h"
 #include "snprintf.h"
 
 #include "evalx.h"
@@ -41,25 +41,25 @@
  *	CLASS ht_blockop_dialog
  */
 
-void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history)
+void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *history)
 {
 	ht_dialog::init(b, "operate on block", FS_TITLE | FS_KILLER | FS_MOVE);
-	bounds c;
+	Bounds c;
 
-	bool prerange=(pend>pstart);
+	bool prerange = (pend > pstart);
 
 	ht_statictext *text;
 
 	ht_label *s;
 	
-	ht_list *addrhist=(ht_list*)find_atom(HISTATOM_GOTO);
+	List *addrhist = (List*)getAtomValue(HISTATOM_GOTO);
 /* start */
 	c=*b;
 	c.h=1;
 	c.w=13;
 	c.x=7;
 	c.y=1;
-	start=new ht_strinputfield();
+	start = new ht_strinputfield();
 	start->init(&c, 64, addrhist);
 	insert(start);
 	if (prerange) {
@@ -137,7 +137,7 @@ void ht_blockop_dialog::init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *h
 	insert(text);
 	
 /* action */
-	ht_list *ehist=(ht_list*)find_atom(HISTATOM_EVAL_EXPR);
+	List *ehist=(List*)getAtomValue(HISTATOM_EVAL_EXPR);
 
 	c=*b;
 	c.h=1;
@@ -195,39 +195,40 @@ struct ht_blockop_dialog_data {
  *   blockop_dialog
  */
 
-static dword blockop_i;
-static dword blockop_o;
+static uint32 blockop_i;
+static uint32 blockop_o;
 static bool blockop_expr_is_const;
 
-static int blockop_symbol_eval(eval_scalar *r, char *symbol)
+static bool blockop_symbol_eval(eval_scalar *r, char *symbol)
 {
-	if (strcmp(symbol, "i")==0) {
+	if (strcmp(symbol, "i") == 0) {
+		r->type = SCALAR_INT;
+		r->scalar.integer.value = blockop_i;
+		r->scalar.integer.type = TYPE_UNKNOWN;
+		blockop_expr_is_const = false;
+		return true;
+	} else if (strcmp(symbol, "o") == 0) {
 		r->type=SCALAR_INT;
-		r->scalar.integer.value=to_qword(blockop_i);
-		r->scalar.integer.type=TYPE_UNKNOWN;
-		blockop_expr_is_const=false;
-		return 1;
-	} else if (strcmp(symbol, "o")==0) {
-		r->type=SCALAR_INT;
-		r->scalar.integer.value=to_qword(blockop_o);
-		r->scalar.integer.type=TYPE_UNKNOWN;
-		blockop_expr_is_const=false;
-		return 1;
+		r->scalar.integer.value = blockop_o;
+		r->scalar.integer.type = TYPE_UNKNOWN;
+		blockop_expr_is_const = false;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-static int func_readint(eval_scalar *result, eval_int *offset, int size, endianess e)
+static int func_readint(eval_scalar *result, eval_int *offset, int size, Endianess e)
 {
-	ht_streamfile *f=(ht_streamfile*)eval_get_context();
-	byte buf[4];
-	int read = 0;
-	if ((f->seek(QWORD_GET_INT(offset->value))!=0) ||
-	((read = f->read(buf, size)) != size)) {
-		set_eval_error("i/o error (requested %d, read %d from ofs %08x)", size, read, offset->value);
+	File *f=(File*)eval_get_context();
+	byte buf[8];
+	try {
+		f->seek(offset->value);
+		f->readx(buf, size);
+	} catch (const IOException&) {
+		set_eval_error("i/o error (couldn't read %d bytes from ofs %qd (0x%qx))", size, offset->value, offset->value);
 		return 0;
 	}
-	scalar_create_int_c(result, create_host_int(buf, size, e));
+	scalar_create_int_q(result, createHostInt64(buf, size, e));
 	return 1;
 }
 
@@ -246,6 +247,11 @@ static int func_read32le(eval_scalar *result, eval_int *offset)
 	return func_readint(result, offset, 4, little_endian);
 }
 
+static int func_read64le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 8, little_endian);
+}
+
 static int func_read16be(eval_scalar *result, eval_int *offset)
 {
 	return func_readint(result, offset, 2, big_endian);
@@ -256,19 +262,27 @@ static int func_read32be(eval_scalar *result, eval_int *offset)
 	return func_readint(result, offset, 4, big_endian);
 }
 
+static int func_read64be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 8, big_endian);
+}
+
 static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
-	ht_streamfile *f=(ht_streamfile*)eval_get_context();
+	File *f=(File*)eval_get_context();
 
-	UINT l=QWORD_GET_INT(len->value);
-	void *buf=malloc(l);	/* FIXME: may be too slow... */
+	uint l = len->value;
+	void *buf = malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		eval_str s;
-		UINT c = 0;
-		if ((f->seek(QWORD_GET_INT(offset->value))!=0) || ( (c=f->read(buf, l)) !=l)) {
+		uint c = 0;
+		try {
+			f->seek(offset->value);
+			f->readx(buf, l);
+		} catch (const IOException&) {
 			free(buf);
-			set_eval_error("i/o error (requested %d, read %d from ofs %08x)", l, c, offset->value);
+			set_eval_error("i/o error (couldn't read %d bytes from ofs %d (0x%qx))", l, c, offset->value, offset->value);
 			return 0;
 		}
 		s.value=(char*)buf;
@@ -281,10 +295,10 @@ static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 	return 0;
 }
 
-static int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *params)
+static bool blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *params)
 {
-/* FIXME: non-constant funcs (e.g. rand()) should
-   set blockop_expr_is_const to false */
+	/* FIXME: non-constant funcs (e.g. rand()) should
+	   set blockop_expr_is_const to false */
 	eval_func myfuncs[] = {
 		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}},
 		{"read16le", (void*)&func_read16le, {SCALAR_INT}},
@@ -295,7 +309,7 @@ static int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *p
 		{NULL}
 	};
 	
-	blockop_expr_is_const=false;
+	blockop_expr_is_const = false;
 		
 	return std_eval_func_handler(result, name, params, myfuncs);
 }
@@ -304,20 +318,20 @@ static int blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *p
  *	BLOCKOP STRING
  */
 
-class ht_blockop_str_context: public ht_data {
+class ht_blockop_str_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 
-	FILEOFS ofs;
-	UINT len;
+	FileOfs ofs;
+	uint len;
 
-	UINT size;
+	uint size;
 	bool netendian;
 
 	char *action;
 
-	UINT i;
-	FILEOFS o;
+	uint i;
+	FileOfs o;
 
 	bool expr_const;
 	eval_str v;
@@ -329,7 +343,7 @@ public:
 	}
 };
 
-ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, UINT size, bool netendian, char *action)
+Object *create_blockop_str_context(File *file, FileOfs ofs, uint len, uint size, bool netendian, char *action)
 {
 	ht_blockop_str_context *ctx = new ht_blockop_str_context();
 	ctx->file = file;
@@ -349,10 +363,10 @@ ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 	blockop_o = ctx->o;
 	eval_scalar r;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
-		char *s;
+		const char *s;
 		int p;
 		get_eval_error(&s, &p);
-		throw ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
+		throw MsgfException("error evaluating '%s': %s at %d", action, s, p);
 	}
 
 	ctx->expr_const = blockop_expr_is_const;
@@ -365,22 +379,23 @@ ht_data *create_blockop_str_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 }
 
 #define BLOCKOP_STR_MAX_ITERATIONS 1024
-bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
+bool blockop_str_process(Object *context, ht_text *progress_indicator)
 {
 	char status[64];
 	ht_blockop_str_context *ctx = (ht_blockop_str_context*)context;
 	if (ctx->expr_const) {
 		ht_snprintf(status, sizeof status, "operating (constant string)... %d%% complete", (int)(((double)(ctx->o-ctx->ofs)) * 100 / ctx->len));
 		progress_indicator->settext(status);
-		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
-			UINT s = ctx->v.len;
+			uint s = ctx->v.len;
 			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
 			
 			ctx->file->seek(ctx->o);
-			if (ctx->file->write(ctx->v.value, s)!=s) {
-				throw ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
-			}
+			ctx->file->writex(ctx->v.value, s);
+/*			!=s) {
+				throw ht_io_exception("blockop_str(): write error at pos %08qx, size %08qx", ctx->o, s);
+			}*/
 			ctx->o += s;
 		} else {
 			return false;
@@ -390,26 +405,27 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_str sr;
-		for (UINT i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_STR_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_i = ctx->i;
 			blockop_o = ctx->o;
 			if (!eval(&r, ctx->action, blockop_func_eval, blockop_symbol_eval, ctx->file)) {
-				char *s;
+				const char *s;
 				int p;
 				get_eval_error(&s, &p);
-				throw ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
+				throw MsgfException("error evaluating '%s': %s at %d", ctx->action, s, p);
 			}
 			scalar_context_str(&r, &sr);
 			scalar_destroy(&r);
 
-			UINT s = sr.len;
+			uint s = sr.len;
 			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;
 
 			ctx->file->seek(ctx->o);
-			if (ctx->file->write(sr.value, s)!=s) {
+			ctx->file->writex(sr.value, s);
+/*			!=s) {
 				throw ht_io_exception("blockop_str(): write error at pos %08x, size %08x", ctx->o, s);
-			}
+			}*/
 			string_destroy(&sr);
 			ctx->o += s;
 			ctx->i++;
@@ -424,23 +440,23 @@ bool blockop_str_process(ht_data *context, ht_text *progress_indicator)
  *	BLOCKOP INTEGER
  */
 
-class ht_blockop_int_context: public ht_data {
+class ht_blockop_int_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 
-	FILEOFS ofs;
-	UINT len;
+	FileOfs ofs;
+	uint len;
 
-	UINT size;
-	endianess endian;
+	uint size;
+	Endianess endian;
 
 	char *action;
 
-	UINT i;
-	FILEOFS o;
+	uint i;
+	FileOfs o;
 
 	bool expr_const;
-	UINT v;
+	uint v;
 
 	~ht_blockop_int_context()
 	{
@@ -448,7 +464,7 @@ public:
 	}
 };
 
-ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, UINT size, endianess endian, char *action)
+Object *create_blockop_int_context(File *file, FileOfs ofs, uint len, uint size, Endianess endian, char *action)
 {
 	ht_blockop_int_context *ctx = new ht_blockop_int_context();
 	ctx->file = file;
@@ -469,71 +485,70 @@ ht_data *create_blockop_int_context(ht_streamfile *file, FILEOFS ofs, UINT len, 
 	eval_scalar r;
 	eval_int ir;
 	if (!eval(&r, action, blockop_func_eval, blockop_symbol_eval, file)) {
-		char *s;
+		const char *s;
 		int p;
 		get_eval_error(&s, &p);
-		throw ht_io_exception("error evaluating '%s': %s at %d", action, s, p);
+		throw MsgfException("error evaluating '%s': %s at %d", action, s, p);
 	}
 
 	ctx->expr_const = blockop_expr_is_const;
 	
 	if (ctx->expr_const) {
 		scalar_context_int(&r, &ir);
-		ctx->v = QWORD_GET_INT(ir.value);
+		ctx->v = ir.value;
 	}
 	scalar_destroy(&r);
 	return ctx;
 }
 
 #define BLOCKOP_INT_MAX_ITERATIONS	1024
-bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
+bool blockop_int_process(Object *context, ht_text *progress_indicator)
 {
 	ht_blockop_int_context *ctx = (ht_blockop_int_context*)context;
 	char status[64];
 	if (ctx->expr_const) {		
 		ht_snprintf(status, sizeof status, "operating (constant integer)... %d%% complete", (int)(((double)(ctx->o-ctx->ofs)) * 100 / ctx->len));
 		progress_indicator->settext(status);
-		byte ibuf[4];
-		create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
+		byte ibuf[8];
+		createForeignInt64(ibuf, ctx->v, ctx->size, ctx->endian);
 		ctx->file->seek(ctx->o);
-		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
-		if (ctx->o < ctx->ofs + ctx->len) {
-			UINT s = ctx->size;
-			if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
-			if (ctx->file->write(ibuf, s)!=s) {
-				throw ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
+		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++) {
+			if (ctx->o < ctx->ofs + ctx->len) {
+				uint s = ctx->size;
+				if (ctx->o + s > ctx->ofs + ctx->len) s = ctx->ofs + ctx->len - ctx->o;
+				ctx->file->writex(ibuf, s);
+				ctx->o += s;
+			} else {
+				return false;
 			}
-			ctx->o += s;
-		} else {
-			return false;
 		}
+		
 	} else {
 		ht_snprintf(status, sizeof status, "operating (variable integer)... %d%% complete", (int)(((double)(ctx->o-ctx->ofs)) * 100 / ctx->len));
 		progress_indicator->settext(status);
 		eval_scalar r;
 		eval_int ir;
-		for (UINT i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
+		for (uint i=0; i < BLOCKOP_INT_MAX_ITERATIONS; i++)
 		if (ctx->o < ctx->ofs + ctx->len) {
 			blockop_o = ctx->o;
 			blockop_i = ctx->i;
 			if (!eval(&r, ctx->action, blockop_func_eval, blockop_symbol_eval, ctx->file)) {
-				char *s;
+				const char *s;
 				int p;
 				get_eval_error(&s, &p);
-				throw ht_io_exception("error evaluating '%s': %s at %d", ctx->action, s, p);
+				throw MsgfException("error evaluating '%s': %s at %d", ctx->action, s, p);
 			}
 			scalar_context_int(&r, &ir);
 			scalar_destroy(&r);
-			ctx->v=QWORD_GET_INT(ir.value);
+			ctx->v = ir.value;
 
-			UINT s = ctx->size;
+			uint s = ctx->size;
 			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;
 
-			byte ibuf[4];
-			create_foreign_int(ibuf, ctx->v, ctx->size, ctx->endian);
-			if ((ctx->file->seek(ctx->o) != 0) || (ctx->file->write(ibuf, s)!=s)) {
-				throw ht_io_exception("blockop_int(): write error at pos %08x, size %08x", ctx->o, s);
-			}
+			byte ibuf[8];
+			createForeignInt64(ibuf, ctx->v, ctx->size, ctx->endian);
+			ctx->file->seek(ctx->o);
+			ctx->file->writex(ibuf, s);
 			ctx->o += s;
 			ctx->i++;
 		} else {
@@ -547,11 +562,11 @@ bool blockop_int_process(ht_data *context, ht_text *progress_indicator)
  *
  */
 
-bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FILEOFS *ofs)
+bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FileOfs *ofs)
 {
 	if (string && *string && stringlen<64) {
 		char str[64];
-		memmove(str, string, stringlen);
+		memcpy(str, string, stringlen);
 		str[stringlen]=0;
 		if (!format->string_to_offset(str, ofs)) {
 			errorbox("%s: '%s' doesn't seem to be a valid offset", string_desc, &str);
@@ -563,92 +578,92 @@ bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, in
 }
 		
 		
-void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend)
+void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 {
-	bounds b;
-	b.w=65;
-	b.h=15;
-	b.x=(screen->size.w-b.w)/2;
-	b.y=(screen->size.h-b.h)/2;
+	Bounds b;
+	b.w = 65;
+	b.h = 15;
+	b.x = (screen->w - b.w)/2;
+	b.y = (screen->h - b.h)/2;
 	
 	ht_blockop_dialog *d=new ht_blockop_dialog();
 	d->init(&b, pstart, pend, 0);
 	bool run = true;
 	int r;
-	while (run && ((r = d->run(false)) != button_cancel)) {
+	while (run && (r = d->run(false)) != button_cancel) {
 		switch (r) {
-			case 100:
-				dialog_eval_help(blockop_func_eval, blockop_symbol_eval, NULL);
-				break;
-			default: 
+		case 100:
+			dialog_eval_help(blockop_func_eval, blockop_symbol_eval, NULL);
+			break;
+		default: 
 		{
 		ht_blockop_dialog_data t;
-		d->databuf_get(&t, sizeof t);
+		ViewDataBuf vdb(d, &t, sizeof t);
 		
-		ht_streamfile *file=format->get_file();
+		File *file=format->get_file();
 
 		baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 		
-		if (file->get_access_mode() & FAM_WRITE) {
-			FILEOFS start=pstart, end=pend;
+		if (file->getAccessMode() & IOAM_WRITE) {
+			FileOfs start=pstart, end=pend;
 
-			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start) &&
-			format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
+			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start)
+			 && format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
 				if (end > start) {
 					int esize=0;
 					int esizes[3]={4, 2, 1};
 					switch (t.mode.cursor_pos) {
 						/* element type: byte */
 						case 0: esize++;
-						/* element type: word */
+						/* element type: uint16 */
 						case 1: esize++;
-						/* element type: dword */
+						/* element type: uint32 */
 						case 2: {
 							char a[4096];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_EVAL_EXPR), a, NULL);
 						
 							char addr[128];
 							bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_GOTO), addr, NULL);
 							bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_GOTO), addr, NULL);
 						
 							esize = esizes[esize];
-							ht_data *ctx = NULL;
+							Object *ctx = NULL;
 							try {
 								ctx = create_blockop_int_context(file, start, end-start, esize, little_endian, a);
 								if (ctx) {
 									/*bool b = */execute_process(blockop_int_process, ctx);
 								}
-							} catch (const ht_exception &e) {
-								errorbox("error: %s", e.what());
+							} catch (const Exception &e) {
+								errorbox("error: %y", &e);
 							}
-							if (ctx) delete ctx;
+							delete ctx;
 							break;
 						}
 						/* element type: string */
 						case 3: {
 							char a[256];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_EVAL_EXPR), a, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_EVAL_EXPR), a, NULL);
 
 							char addr[128];
 							bin2str(addr, t.start.text, MIN(sizeof addr, t.start.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_GOTO), addr, NULL);
 							bin2str(addr, t.end.text, MIN(sizeof addr, t.end.textlen));
-							insert_history_entry((ht_list*)find_atom(HISTATOM_GOTO), addr, NULL);
+							insert_history_entry((List*)getAtomValue(HISTATOM_GOTO), addr, NULL);
 
-							ht_data *ctx = NULL;
+							Object *ctx = NULL;
 							try {
 								ctx = create_blockop_str_context(file, start, end-start, esize, little_endian, a);
 								if (ctx) {
 									/*bool b = */execute_process(blockop_str_process, ctx);
 								}
-							} catch (const ht_exception &e) {
-								errorbox("error: %s", e.what());
+							} catch (const Exception &e) {
+								errorbox("error: %y", &e);
 							}
-							if (ctx) delete ctx;
+							delete ctx;
 							break;
 						}
 						default:

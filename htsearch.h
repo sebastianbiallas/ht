@@ -21,12 +21,12 @@
 #ifndef __HTSEARCH_H__
 #define __HTSEARCH_H__
 
-#include "htatom.h"
+#include "atom.h"
 #include "htdialog.h"
-#include "htexcept.h"
+#include "except.h"
 #include "htformat.h"
 #include "htobj.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "stream.h"
 
 #include <sys/types.h>
@@ -37,10 +37,6 @@ extern "C" {
 /*
  *	searching
  */
-
-// search classes
-#define SC_PHYSICAL			0    // search in underlying binary data
-#define SC_VISUAL			1    // search in displayed text
 
 // search types + flags
 #define ST_FXBIN		0		// search using fixed binary pattern
@@ -53,7 +49,7 @@ extern "C" {
 
 #define ST_EXPR		3         // search stops when expression evals to non-zero
 
-typedef ht_view* (*create_form_func)(bounds *b, HT_ATOM histid);
+typedef ht_view* (*create_form_func)(Bounds *b, uint histid);
 typedef void (*create_desc_func)(char *buf, int buflen, ht_view *form);
 
 /*
@@ -61,24 +57,24 @@ typedef void (*create_desc_func)(char *buf, int buflen, ht_view *form);
  */
 class ht_fxbin_search_request: public ht_search_request {
 public:
-	UINT data_size;
+	uint data_size;
 	byte *data;
 	
-			ht_fxbin_search_request(UINT search_class, UINT flags, UINT data_size, byte *data);
-	virtual	~ht_fxbin_search_request();
+			ht_fxbin_search_request(uint search_class, uint flags, uint data_size, byte *data);
+	virtual		~ht_fxbin_search_request();
 	/* overwritten */
-	virtual	Object *duplicate();
+	virtual	ht_fxbin_search_request *clone() const;
 };
 
 /*
  *	CLASS ht_regex_search_request
  */
-class ht_regex_search_exception: public ht_exception {
+class ht_regex_search_exception: public Exception {
 protected:
 	char rxerr[128];
 public:	
 	ht_regex_search_exception(int e, regex_t *r);
-	virtual const char *what() const;
+	virtual String &reason(String &) const;
 };
 
 class ht_regex_search_request: public ht_search_request {
@@ -86,10 +82,10 @@ public:
 	char *rx_str;
 	regex_t rx;
 
-			ht_regex_search_request(UINT search_class, UINT flags, char *regex);
+			ht_regex_search_request(uint search_class, uint flags, char *regex);
 	virtual	~ht_regex_search_request();
 	/* overwritten */
-	virtual	Object *duplicate();
+	virtual	 ht_regex_search_request* clone() const;
 };
 
 /*
@@ -99,10 +95,10 @@ class ht_expr_search_request: public ht_search_request {
 public:
 	char *expr;
 
-			ht_expr_search_request(UINT search_class, UINT flags, char *Expr);
+		ht_expr_search_request(uint search_class, uint flags, char *Expr);
 	virtual	~ht_expr_search_request();
 	/* overwritten */
-	virtual	Object *duplicate();
+	virtual	ht_expr_search_request *clone() const;
 };
 
 /* binary search function */
@@ -112,7 +108,7 @@ public:
  */
 struct ht_hexascii_search_form_data {
 	ht_strinputfield_data str;
-	ht_hexinputfield_data hex;
+//	ht_hexinputfield_data hex; // is attached to |str|
 	ht_strinputfield_data start;
 	ht_strinputfield_data end;
 	ht_checkboxes_data options;
@@ -125,7 +121,7 @@ protected:
 	ht_strinputfield *range_end;
 	ht_checkboxes *option_boxes;
 public:
-			void init(bounds *b, int options, ht_list *history=0);
+			void init(Bounds *b, int options, List *history=0);
 };
 
 /*
@@ -145,7 +141,7 @@ protected:
 	ht_strinputfield *range_end;
 	ht_checkboxes *option_boxes;
 public:
-			void	init(bounds *b, int options, ht_list *history=0);
+			void	init(Bounds *b, int options, List *history=0);
 };
 
 /*
@@ -165,7 +161,7 @@ protected:
 	ht_strinputfield *range_end;
 	ht_checkboxes *option_boxes;
 public:
-			void	init(bounds *b, int options, ht_list *history=0);
+			void	init(Bounds *b, int options, List *history=0);
 };
 
 /*
@@ -185,7 +181,7 @@ protected:
 	ht_strinputfield *range_end;
 	ht_checkboxes *option_boxes;
 public:
-			void	init(bounds *b, int options, ht_list *history=0);
+			void	init(Bounds *b, int options, List *history=0);
 };
 
 /*
@@ -200,7 +196,7 @@ class ht_replace_hexascii_search_form: public ht_group {
 protected:
 	ht_strinputfield *str;
 public:
-			void init(bounds *b, int options, ht_list *history=0);
+			void init(Bounds *b, int options, List *history=0);
 };
 
 /*
@@ -226,12 +222,12 @@ protected:
 public:
 	ht_xgroup *search_mode_xgroup;
 	
-			void	init(bounds *b, const char *title);
+			void	init(Bounds *b, const char *title);
 	virtual	void	done();
 	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	/* new */
-			void insert_search_mode(int id, char *desc, ht_view *v);
+			void insert_search_mode(int id, const char *desc, ht_view *v);
 			void select_search_mode(int id);
 			ht_view *get_search_modeform();
 			int get_search_modeid();
@@ -255,12 +251,12 @@ protected:
 public:
 	ht_xgroup *replace_mode_xgroup;
 	
-			void	init(bounds *b);
+			void	init(Bounds *b);
 	virtual	void	done();
 	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	/* new */
-			void insert_replace_mode(int id, char *desc, ht_view *v);
+			void insert_replace_mode(int id, const char *desc, ht_view *v);
 			void select_replace_mode(int id);
 			ht_view *get_replace_modeform();
 			int get_replace_modeid();
@@ -275,29 +271,29 @@ public:
 #define SEARCHMODE_VREGEX	4
 #define SEARCHMODE_EXPR		8
 
-ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, viewer_pos *start, viewer_pos *end);
-UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled);
+ht_search_request *search_dialog(ht_format_viewer *format, uint searchmodes, viewer_pos *start, viewer_pos *end);
+uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled);
 
-class ht_search_bin_context: public ht_data {
+class ht_search_bin_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 	bool file_end;
-	UINT flags;
+	uint flags;
 	
-	FILEOFS ofs;
-	UINT len;
+	FileOfs ofs;
+	FileOfs len;
 
 	byte *pat;
-	UINT patlen;
+	uint patlen;
 
-	FILEOFS o;
-	UINT c;
+	FileOfs o;
+	uint c;
 	
 	byte *buf;
 	byte *bufptr;
 
 	bool *return_success;
-	FILEOFS *return_ofs;
+	FileOfs *return_ofs;
 	
 	~ht_search_bin_context();
 };
@@ -305,37 +301,35 @@ public:
 // flags
 #define SFBIN_CASEINSENSITIVE	1
 
-ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *pat, UINT patlen, UINT flags, UINT *return_ofs, bool *return_success);
-bool search_bin_process(ht_data *context, ht_text *progress_indicator);
+Object* create_search_bin_context(File *file, FileOfs ofs, FileOfs len, byte *pat, uint patlen, uint flags, FileOfs *return_ofs, bool *return_success);
+bool search_bin_process(Object *context, ht_text *progress_indicator);
 
-ht_view* create_form_hexascii(bounds *b, HT_ATOM histid);
+ht_view* create_form_hexascii(Bounds *b, uint histid);
 void create_desc_hexascii(char *buf, int buflen, ht_view *f);
-
-ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize);
 
 /*
  *
  */
-class ht_replace_bin_context: public ht_data {
+class ht_replace_bin_context: public Object {
 public:
-	ht_streamfile *file;
+	File *file;
 
-	FILEOFS ofs;
-	UINT len;
+	FileOfs ofs;
+	FileOfs len;
 	
-	UINT repllen;
+	FileOfs repllen;
 	byte *repl;
 
-	FILEOFS o;
-	UINT z;
+	FileOfs o;
+	FileOfs z;
 	byte *buf;
 	
-	UINT *return_repllen;
+	FileOfs *return_repllen;
 
 	~ht_replace_bin_context();
 };
  
-ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *repl, UINT repllen, UINT *return_repllen);
-bool replace_bin_process(ht_data *context, ht_text *progress_indicator);
+Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, byte *repl, FileOfs repllen, FileOfs *return_repllen);
+bool replace_bin_process(Object *context, ht_text *progress_indicator);
 
 #endif /* __HTSEARCH_H__ */

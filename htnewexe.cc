@@ -21,9 +21,9 @@
 #include "htnewexe.h"
 
 #include "mzstruct.h"
-#include "htendian.h"
+#include "endianess.h"
 
-FILEOFS get_newexe_header_ofs(ht_streamfile *file)
+FileOfs get_newexe_header_ofs(File *file)
 {
 	/* look for mz magic */
 	byte mzmagic[2];
@@ -32,15 +32,15 @@ FILEOFS get_newexe_header_ofs(ht_streamfile *file)
 	if ((mzmagic[0] != IMAGE_MZ_MAGIC0) || (mzmagic[1] != IMAGE_MZ_MAGIC1))
 		return 0;
 	/* test if reloc_ofs >= 0x40 */
-	word reloc_ofs;
+	uint16 reloc_ofs;
 	file->seek(24);
 	file->read(&reloc_ofs, 2);
-	reloc_ofs = create_host_int(&reloc_ofs, 2, little_endian);
+	reloc_ofs = createHostInt(&reloc_ofs, 2, little_endian);
 	if (reloc_ofs && reloc_ofs < 0x40) return 0;
 	/* ok seems to be a newexe */
-	FILEOFS newexe_ofs;
+	FileOfs newexe_ofs;
 	file->seek(60);
 	file->read(&newexe_ofs, 4);
-	newexe_ofs = create_host_int(&newexe_ofs, 4, little_endian);
+	newexe_ofs = createHostInt(&newexe_ofs, 4, little_endian);
 	return newexe_ofs;
 }

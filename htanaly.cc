@@ -18,9 +18,12 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <cstdlib>
+#include <cstring>
+#include <memory>
+
 #include "analy.h"
 #include "analy_names.h"
-#include "global.h"
 #include "log.h"
 #include "htanaly.h"
 #include "htctrl.h" // FIXME: globalerror
@@ -29,10 +32,10 @@
 #include "hthist.h"
 #include "htidle.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htmenu.h"
 #include "htsearch.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "httag.h"
 #include "httree.h"
 #include "language.h"
@@ -50,18 +53,15 @@ extern "C" {
 #include "evalx.h"
 }
 
-#include <stdlib.h>
-#include <string.h>
-
 /* FIXME: test */
-#include "srt.h"
+//#include "srt.h"
 #include "out_html.h"
 #include "out_sym.h"
 
 /*
  *   AnalyserInformation
  */
-void	AnalyserInformation::init(bounds *b, ht_aviewer *a)
+void	AnalyserInformation::init(Bounds *b, ht_aviewer *a)
 {
 	analy = a;
 	assert(a);
@@ -76,19 +76,18 @@ void AnalyserInformation::done()
 	ht_statictext::done();
 }
 
-char *AnalyserInformation::gettext()
+int AnalyserInformation::gettext(char *buf, int maxlen)
 {
-	ht_snprintf(buf, sizeof buf,
+	return ht_snprintf(buf, maxlen,
 		"Analyser statistics:\n"
 		"====================\n\n"          
-		"Type: %s\nFile: %s\n"
+		"Type: %s\nFile: %y\n"
 		"Using disassembler: %s\n\n"
 		"Known locations: %d\n"
 		"Known symbols: %d\n\n",
-		atype, aname,
+		atype, &aname,
 		adis,
 		addrs, labels);
-	return buf;
 }
 
 bool AnalyserInformation::idle()
@@ -97,7 +96,7 @@ bool AnalyserInformation::idle()
 		addrs = analy->analy->getLocationCount();
 		labels = analy->analy->getSymbolCount();
 		atype = analy->analy->getType();
-		aname = analy->analy->getName();
+		analy->analy->getName(aname);
 		if (analy->analy->disasm) {
 			adis = analy->analy->disasm->getName();
 		} else {
@@ -112,11 +111,11 @@ bool AnalyserInformation::idle()
  *   SymbolBox
  */
 
-void SymbolBox::init(bounds *b, Analyser *Analy)
+void SymbolBox::init(Bounds *b, Analyser *Analy)
 {
 	analy = Analy;
 	ht_listbox::init(b);
-	str = (char *)smalloc(1024);
+	str = ht_malloc(1024);
 	symbols = analy->getSymbolCount();
 	idle_count = 1;
 }
@@ -166,21 +165,21 @@ void *SymbolBox::getPrev(void *entry)
 	return analy->enumSymbolsReverse((Symbol *)entry);
 }
 
-char *SymbolBox::getStr(int col, void *entry)
+const char *SymbolBox::getStr(int col, void *entry)
 {
 	if (!entry) return NULL;
 	Symbol *l = ((Symbol *)entry);
 	switch (col) {
-		case 0:
-			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_WHITESPACE;
-			ht_snprintf(str, 1024, "%y", l->location->addr);
-			break;
-		case 1:
-			ht_snprintf(str, 1024, "%s", label_type_short(l->type));
-			break;
-		case 2:
-			ht_snprintf(str, 1024, "%s", l->name);
-			break;
+	case 0:
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_WHITESPACE;
+		ht_snprintf(str, 1024, "%y", l->location->addr);
+		break;
+	case 1:
+		ht_snprintf(str, 1024, "%s", label_type_short(l->type));
+		break;
+	case 2:
+		ht_snprintf(str, 1024, "%s", l->name);
+		break;
 	}
 	return str;
 }
@@ -198,12 +197,12 @@ bool SymbolBox::idle()
 	return 0;
 }
 
-int	SymbolBox::numColumns()
+int SymbolBox::numColumns()
 {
 	return 3;
 }
 
-void *SymbolBox::quickfind(char *s)
+void *SymbolBox::quickfind(const char *s)
 {
 	Symbol *tmp = analy->getSymbolByName(s);
 	if (tmp) return tmp;
@@ -212,7 +211,7 @@ void *SymbolBox::quickfind(char *s)
 		int slen = strlen(s);
 		int tlen = strlen(tmp->name);
 		if (slen > tlen) return NULL;
-		if (strncmp(tmp->name, s, slen)==0) return tmp;
+		if (ht_strncmp(tmp->name, s, slen)==0) return tmp;
 		return NULL;
 	} else {
 		return NULL;
@@ -220,7 +219,7 @@ void *SymbolBox::quickfind(char *s)
 }
 
 
-char	*SymbolBox::quickfindCompletition(char *s)
+char *SymbolBox::quickfindCompletition(const char *s)
 {
 	if (analy->getSymbolByName(s)) {
 		return ht_strdup(s);
@@ -237,7 +236,7 @@ char	*SymbolBox::quickfindCompletition(char *s)
 	if (!ht_strncmp(tmp->name, tmp2->name, slen)==0) {
 		return ht_strdup(tmp->name);
 	}
-	char *res = (char *)smalloc(1024); // buffer bla
+	char *res = ht_malloc(1024); // buffer bla
 	strcpy(res, tmp->name);
 	while (tmp2 && (ht_strncmp(tmp2->name, s, slen)==0)) {
 //		fprintf(stdout, "while(%s, %s, %d)\n", tmp2->name, s, slen);
@@ -252,7 +251,7 @@ char	*SymbolBox::quickfindCompletition(char *s)
 /*
  *	CLASS CallChain
  */
-void	CallChain::init(bounds *b, Analyser *Analy, Address *a, char *desc)
+void	CallChain::init(Bounds *b, Analyser *Analy, Address *a, char *desc)
 {
 	ht_treeview::init(b, desc);
 	VIEW_DEBUG_NAME("CallChain");
@@ -281,15 +280,15 @@ void	CallChain::adjust(void *node, bool expand)
 	((CallChainNode*)node)->expanded = expand;
 }
 
-CallChainNode *CallChain::createNode(Address *A)
+CallChainNode *CallChain::createNode(Address *a)
 {
-	CallChainNode *n = (CallChainNode *)smalloc(sizeof(CallChainNode));
+	CallChainNode *n = ht_malloc(sizeof(CallChainNode));
 	n->next = NULL;
 	n->prev = NULL;
 	n->child = NULL;
 	n->examined = false;
-	n->xa = (Address *)A->duplicate();
-	n->faddr = analy->getFunctionByAddress(A);
+	n->xa = a->clone();
+	n->faddr = analy->getFunctionByAddress(a);
 	assert(n->faddr);
 	n->fa = n->faddr->addr;
 	n->expanded = false;
@@ -300,14 +299,15 @@ void CallChain::examineNode(CallChainNode *n)
 {
 	n->examined = true;
 	if (has_children(n)) {
-		ht_tree *x_tree = n->faddr->xrefs;
+		Container *x_tree = n->faddr->xrefs;
 		assert(x_tree);
-		AddrXRef *x;
-		Address *a = (Address *)x_tree->enum_next((ht_data**)&x, NULL);
-		assert(a);
-		CallChainNode *nn = n->child = createNode(a);
-		while ((a = (Address *)x_tree->enum_next((ht_data**)&x, a))) {
-			nn->next = createNode(a);
+		ObjHandle oh = x_tree->findFirst();
+		AddrXRef *x = (AddrXRef *)x_tree->get(oh);
+		assert(x);
+		CallChainNode *nn = n->child = createNode(x->addr);
+		while ((oh = x_tree->findNext(oh)) != invObjHandle) {
+			x = (AddrXRef *)x_tree->get(oh);
+			nn->next = createNode(x->addr);
 			nn = nn->next;
 		}
 	}
@@ -378,14 +378,12 @@ void	CallChain::select_node(void *node)
 /*
  *
  */
-#define ANALYINFOLINE_DISPLAYFORMAT_LENGTH 1024
-void AnalyInfoline::init(bounds *b, ht_aviewer *A, char *Format)
+void AnalyInfoline::init(Bounds *b, ht_aviewer *A, const char *Format)
 {
 	ht_statictext::init(b, 0, align_left);
 	VIEW_DEBUG_NAME("AnalyInfoline");
 	analy = A;
 	displayformat = ht_strdup(Format);
-	s = (char *)smalloc(ANALYINFOLINE_DISPLAYFORMAT_LENGTH);
 	addr = new InvalidAddress();
 	fofs = INVALID_FILE_OFS;
 }
@@ -393,13 +391,13 @@ void AnalyInfoline::init(bounds *b, ht_aviewer *A, char *Format)
 void AnalyInfoline::done()
 {
 	free(displayformat);
-	free(s);
 	delete addr;
 	ht_statictext::done();
 }
 
-char *AnalyInfoline::gettext()
+int AnalyInfoline::gettext(char *buf, int maxlen)
 {
+	if (maxlen <= 0) return 0;
 	if (valid()) {
 		const char *sec = analy->analy->getSegmentNameByAddress(addr);
 		if (fofs != INVALID_FILE_OFS) {
@@ -407,49 +405,49 @@ char *AnalyInfoline::gettext()
 			const char *func = analy->analy->getSymbolNameByLocation(a);
 
 			char *d = displayformat;
-			char *ss = s;
+			char *ss = buf, *s = buf;
 			while (*d) {
-				if (*d=='%') {
+				if (*d == '%') {
 					d++;
 					switch (*d) {
-						case ANALY_STATUS_ARG_SECTION:
-							if (sec) ss+=ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), "%s", sec);
-							break;
-						case ANALY_STATUS_ARG_FILEOFFSET:
-							ss+=ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), "%08x", fofs);
-							break;
-						case ANALY_STATUS_ARG_RAW_UNASM: {
-							int length;
-							ss+=ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), "%s", analy->analy->getDisasmStr(addr, length));
-							break;
-						}
-						case ANALY_STATUS_ARG_FUNCTION: {
-							if (func) {
-								int d = 0;
-								addr->difference(d, a->addr);
-								char sign='+';
-								if (d<0) {
-									d=-d;
-									sign = '-';
-								}
-								ss+=ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), "%s%c%x", func, sign, d);
+					case ANALY_STATUS_ARG_SECTION:
+						if (sec) ss += ht_snprintf(ss, maxlen-(ss-s), "%s", sec);
+						break;
+					case ANALY_STATUS_ARG_FILEOFFSET:
+						ss += ht_snprintf(ss, maxlen-(ss-s), "%08qx", fofs);
+						break;
+					case ANALY_STATUS_ARG_RAW_UNASM: {
+						int length;
+						ss += ht_snprintf(ss, maxlen-(ss-s), "%s", analy->analy->getDisasmStr(addr, length));
+						break;
+					}
+					case ANALY_STATUS_ARG_FUNCTION: {
+						if (func) {
+							int d = 0;
+							addr->difference(d, a->addr);
+							char sign = '+';
+							if (d < 0) {
+								d =- d;
+								sign = '-';
 							}
-							break;
+							ss += ht_snprintf(ss, maxlen-(ss-s), "%s%c%x", func, sign, d);
 						}
-						case ANALY_STATUS_ARG_OFFSET:
-							global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
-							ss+=ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), "%y", addr);
-							break;
-						case '%':
-							if (ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s)) {
-								*ss++ = '%';
-							}
-							break;
-						default:
-							ss += ht_snprintf(ss, ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s), " error in format ");
+						break;
+					}
+					case ANALY_STATUS_ARG_OFFSET:
+						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+						ss += ht_snprintf(ss, maxlen-(ss-s), "%y", addr);
+						break;
+					case '%':
+						if (maxlen-(ss-s) > 1) {
+							*ss++ = '%';
+						}
+						break;
+					default:
+						ss += ht_snprintf(ss, maxlen-(ss-s), " error in format ");
 					}
 				} else {
-					if (ANALYINFOLINE_DISPLAYFORMAT_LENGTH-(ss-s)>1) {
+					if (maxlen - (ss-s) > 1) {
 						// leave space for trailing zero
 						*ss++ = *d;
 					}
@@ -457,25 +455,25 @@ char *AnalyInfoline::gettext()
 				d++;
 			}
 			*ss = 0;
+			return ss - s;
 		} else {
 			if (!sec) {
-				ht_snprintf(s, ANALYINFOLINE_DISPLAYFORMAT_LENGTH, "[not in file]");
+				return ht_strlcpy(buf, "[not in file]", maxlen);
 			} else {
-				ht_snprintf(s, ANALYINFOLINE_DISPLAYFORMAT_LENGTH, "<%s> [not in file]", sec);
+				return ht_snprintf(buf, maxlen, "<%s> [not in file]", sec);
 			}
 		}
-		return s;
 	} else {
-		return "<no analyser>";
+		return ht_strlcpy(buf, "<no analyser>", maxlen);
 	}
 }
 
-void AnalyInfoline::update(Address *cursor_addr, FILEOFS ecursor_addr)
+void AnalyInfoline::update(Address *cursor_addr, FileOfs ecursor_addr)
 {
 	delete addr;
 	if (valid()) {
 		fofs = ecursor_addr;
-		addr = (Address *)cursor_addr->duplicate();
+		addr = cursor_addr->clone();
 	} else {
 		fofs = INVALID_FILE_OFS;
 		addr = new InvalidAddress();
@@ -492,7 +490,7 @@ bool AnalyInfoline::valid()
 /*
  *
  */
-void ht_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analy)
+void ht_aviewer::init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy)
 {
 	analy = Analy;
 	if (Analy) {
@@ -527,14 +525,14 @@ void ht_aviewer::attachInfoline(AnalyInfoline *V)
 	infoline = V;
 }
 
-bool ht_aviewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	if (analy) {
 		Address *addr;
 		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FILEOFS o=analy->addressToFileofs(addr);
+		FileOfs o=analy->addressToFileofs(addr);
 		delete addr;
-		if (o!=INVALID_FILE_OFS) {
+		if (o != INVALID_FILE_OFS) {
 			*ofs=o;
 			return true;
 		}
@@ -549,8 +547,7 @@ bool ht_aviewer::pos_to_string(viewer_pos p, char *result, int maxlen)
 	if (!convertViewerPosToAddress(p, &a)) return false;
 	Location *addr = analy->getLocationByAddress(a);
 	if (addr && addr->label) {
-		// FIXME: strncpy
-		ht_snprintf(result, maxlen, "%s", addr->label->name);
+		ht_strlcpy(result, addr->label->name, maxlen);
 		return true;
 	}
 	addr = analy->getFunctionByAddress(a);
@@ -568,7 +565,7 @@ bool ht_aviewer::pos_to_string(viewer_pos p, char *result, int maxlen)
 bool ht_aviewer::convertViewerPosToAddress(const viewer_pos &p, Address **a)
 {
 	*a = analy->createAddress();
-	(*a)->getFromArray((byte*)&(p.u.line_id.id2));
+	(*a)->getFromUInt64((uint64(p.u.line_id.id1) << 32) + p.u.line_id.id2);
 	return true;
 }
 
@@ -577,27 +574,29 @@ bool ht_aviewer::convertAddressToViewerPos(Address *a, viewer_pos *p)
 	if (a && a->isValid()) {
 		clear_viewer_pos(p);
 		p->u.sub = analy_sub;
-		a->putIntoArray((byte*)&(p->u.line_id.id2));
-		p->u.line_id.id1 = 0;
+		uint64 u;
+		a->putIntoUInt64(u);
+		p->u.line_id.id1 = u >> 32;
+		p->u.line_id.id2 = u;
+		p->u.line_id.id3 = 0;
 		return true;
 	} else {
 		return false;
 	}
 }
 
-char *ht_aviewer::func(UINT i, bool execute)
+const char *ht_aviewer::func(uint i, bool execute)
 {
 	switch (i) {
-		case 8: {
-			if (execute) {
-				sendmsg(cmd_analyser_symbols);
-			}
-			return "symbols";
+	case 8:
+		if (execute) {
+			sendmsg(cmd_analyser_symbols);
 		}
-		default:
-			return ht_uformat_viewer::func(i, execute);
+		return "symbols";
+	default:
+		return ht_uformat_viewer::func(i, execute);
 	}
-	return 0;
+	return NULL;
 }
 
 static int aviewer_func_addr(eval_scalar *result, eval_str *str)
@@ -607,53 +606,52 @@ static int aviewer_func_addr(eval_scalar *result, eval_str *str)
 	Address *addr = aviewer->analy->createAddress();
 	int l = addr->parseString(str->value, str->len, aviewer->analy);
 	if (l) {
-		// FIXNEW
-		qword q = to_qword(0);          
-		addr->putIntoArray((byte*)&q);
-		scalar_create_int_q(result, q);
-		return 1;
+		uint64 q;
+		if (addr->putIntoUInt64(q)) {
+			scalar_create_int_q(result, q);
+			return 1;
+		}
 	} else {
 		char buffer[1024];
-		bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
+		bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
 		set_eval_error("invalid address '%s'", buffer);
-		return 0;
 	}
+	return 0;
 }
 
 static int aviewer_func_address_of(eval_scalar *result, eval_str *str)
 {
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	char buffer[1024];
-	bin2str(buffer, str->value, MIN((UINT)str->len, sizeof buffer));
+	bin2str(buffer, str->value, MIN((uint)str->len, sizeof buffer));
 	Symbol *l;
 	if ((l = aviewer->analy->getSymbolByName(buffer))) {
-		// FIXNEW
-		qword q = to_qword(0);
-		l->location->addr->putIntoArray((byte*)&q);
-		scalar_create_int_q(result, q);
-		return 1;
+		uint64 q;
+		if (l->location->addr->putIntoUInt64(q)) {
+			scalar_create_int_q(result, q);
+			return 1;
+		}
 	} else {
 		set_eval_error("invalid label '%s'", buffer);
-		return 0;
 	}
+	return 0;
 }
 
 static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 {
-	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)eval_get_context();
 	viewer_pos p;
-	if (aviewer->offset_to_pos(QWORD_GET_INT(i->value), &p)) {
+	if (aviewer->offset_to_pos(i->value, &p)) {
 		Address *a;
-		qword q = to_qword(0);
+		uint64 q;
 		aviewer->convertViewerPosToAddress(p, &a);
-		a->putIntoArray((byte*)&q);
-		delete a;
-		scalar_create_int_q(result, q);
-		return 1;
+		std::auto_ptr<Address> blub(a);
+		if (a->putIntoUInt64(q)) {
+			scalar_create_int_q(result, q);
+			return 1;
+		}
 	} else {
 		set_eval_error("invalid file offset or no corresponding address for '0%xh'", i->value);
-		return 0;
 	}
 	return 0;
 }
@@ -661,56 +659,44 @@ static int aviewer_func_fileofs(eval_scalar *result, eval_int *i)
 /*
  *	for assembler
  */
-static int ht_aviewer_symbol_to_addr(void *Aviewer, char **s, dword *v)
+static int ht_aviewer_symbol_to_addr(void *Aviewer, const char *s, uint64 &v)
 {
 	// FIXNEW
 	ht_aviewer *aviewer = (ht_aviewer*)Aviewer;
 	Address *a;
-	if (**s == '@') {
-		(*s)++;
-		if (bnstr(s, v, 10)) {
+	if (*s == '@') {
+		s++;
+		if (str2int(s, v, 10)) {
 			viewer_pos vp;
-			if (!aviewer->offset_to_pos(*v, &vp)) {
-				set_eval_error("invalid offset: %08x", v);
+			if (!aviewer->offset_to_pos(v, &vp)) {
+				set_eval_error("invalid offset: %08qx", v);
 				return false;
 			}
 			aviewer->convertViewerPosToAddress(vp, &a);
-			a->putIntoArray((byte*)v);
-			delete a;
-			return true;
+			std::auto_ptr<Address> blub(a);
+			if (a->putIntoUInt64(v)) {
+				return true;
+			}
 		}
 		// invalid number after @
 		return false;
-	} else {
-		char *k=ht_strdup(*s);
-		char *t=k;
-		while (!strchr("+/-* \t[]", *t) && *t) t++;
-		char temp=*t;
-		*t=0;
-		if ((*k == '$') && (k[1] == 0)) {
-			*t=temp;
-			*s+= t-k;
-			free(k);
-			if (aviewer->getCurrentAddress(&a)) {
-				a->putIntoArray((byte*)v);
-				delete a;
-				return true;
-			} else {
-				delete a;
-				return false;
-			}
+	} else if (strcmp(s, "&") ==0) {
+		if (aviewer->getCurrentAddress(&a)) {
+			a->putIntoUInt64(v);
+			delete a;
+			return true;
+		} else {
+			return false;
 		}
-		Symbol *l = aviewer->analy->getSymbolByName(k);
-		*t=temp;
+	} else {
+		Symbol *l = aviewer->analy->getSymbolByName(s);
 		if (l) {
 			// Label
-			*s+=t-k;
-			a=l->location->addr;               
-			a->putIntoArray((byte*)v);
-			free(k);
-			return true;
+			a = l->location->addr;
+			if (a->putIntoUInt64(v)) {
+				return true;
+			}
 		}
-		free(k);
 	}
 	return false;
 }
@@ -744,44 +730,39 @@ void ht_aviewer::generateOutputDialog()
 		if (analy->active) return;
 	}
 
-	bounds b;
+	Bounds b;
 	b.w=50;
 	b.h=15;
 	center_bounds(&b);
 	ht_dialog *dialog;
 	NEW_OBJECT(dialog, ht_dialog, &b, "generate analyser output", FS_KILLER | FS_TITLE | FS_MOVE);
 	ht_view *v1, *v2;
-	BOUNDS_ASSIGN(b, 2, 2, 25, 1);
+	b.assign(2, 2, 25, 1);
 	NEW_OBJECT(v1, ht_strinputfield, &b, 260);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 2, 1, 25, 1);
+	b.assign(2, 1, 25, 1);
 	NEW_OBJECT(v2, ht_label, &b, "output ~filename:", v1);
 	dialog->insert(v2);
 
-	char pname[HT_NAME_MAX+16];
-	const char *filename = file->get_filename();
-	if (filename) {
-		pname[HT_NAME_MAX-1] = 0;
-		strncpy(pname, filename, HT_NAME_MAX-1);
-		char *suffix = sys_filename_suffix(pname);
-		if (suffix) {
-			strcpy(suffix, "out");
-			setdatastr(v1, pname);
-		}
-	}
+	String filename, basename, basename2, suffix;
+	file->getFilename(filename);
+	filename.rightSplit('/', suffix, basename2);
+	basename2.rightSplit('.', basename, suffix);
+	basename += ".out";
+	setdatastr(v1, basename.contentChar());
 
-	BOUNDS_ASSIGN(b, 29, 2, 15, 1);
+	b.assign(29, 2, 15, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);
 	((ht_listpopup*)v1)->insertstring("HTML");
 	((ht_listpopup*)v1)->insertstring("plain text");
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 29, 1, 15, 1);
+	b.assign(29, 1, 15, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~output format:", v1);
 	dialog->insert(v2);
-	BOUNDS_ASSIGN(b, 2, 5, 35, 1);
+	b.assign(2, 5, 35, 1);
 	NEW_OBJECT(v1, ht_strinputfield, &b, 260);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 2, 4, 35, 1);
+	b.assign(2, 4, 35, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~start address:", v1);
 	viewer_pos cur;
 	if (get_current_pos(&cur)) {
@@ -790,11 +771,11 @@ void ht_aviewer::generateOutputDialog()
 		setdatastr(v1, str);
 	}
 	dialog->insert(v2);
-	BOUNDS_ASSIGN(b, 2, 8, 35, 1);
+	b.assign(2, 8, 35, 1);
 	NEW_OBJECT(v1, ht_strinputfield, &b, 260);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 2, 7, 35, 1);
-	NEW_OBJECT(v2, ht_label, &b, "~end address (or #numberoflines):", v1);
+	b.assign(2, 7, 35, 1);
+	NEW_OBJECT(v2, ht_label, &b, "~end address:", v1);
 	dialog->insert(v2);
 //	setdatastr(v1, "#1000");
 	if (get_current_pos(&cur)) {
@@ -803,19 +784,19 @@ void ht_aviewer::generateOutputDialog()
 		strcat(str, "+20");
 		setdatastr(v1, str);
 	}
-	BOUNDS_ASSIGN(b, 13, 11, 9, 2);
+	b.assign(13, 11, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "O~k", button_ok);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 27, 11, 9, 2);
+	b.assign(27, 11, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "~Cancel", button_cancel);
 	dialog->insert(v1);
-	while (dialog->run(false)==button_ok) {
+	while (dialog->run(false) == button_ok) {
 		char filename[260];
 		char start_str[1024], end_str[1024];
 		viewer_pos start, end;
 		bool by_lines;
 		output_dialog_data odd;
-		dialog->databuf_get(&odd, sizeof odd);
+		ViewDataBuf vdb(dialog, &odd, sizeof odd);
 		getdatastr(&odd.id1, filename);
 		getdatastr(&odd.id2, start_str);
 		getdatastr(&odd.id3, end_str);
@@ -823,45 +804,43 @@ void ht_aviewer::generateOutputDialog()
 			errorbox(globalerror);
 			continue;
 		}
-		UINT end_by_lines;
+/*		uint64 end_by_lines;
 		if ((by_lines = end_str[0]=='#')) {
 			char *pend = &end_str[1];
-			bnstr(&pend, &end_by_lines, 10);
-		} else {
+			parseIntStr(pend, end_by_lines, 10);
+		} else {*/
 			if (!string_to_pos(end_str, &end)) {
 				errorbox(globalerror);
 				continue;
 			}
-		}
+//		}
 		Address *start_addr, *end_addr;
 		if (!convertViewerPosToAddress(start, &start_addr) || !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
 			continue;
 		}
 		
-		ht_file *s = new ht_file();
-		s->init(filename, FAM_WRITE, FOM_CREATE);
-		if (s->get_error()) {
-			infobox("couldnt create file '%s'.", filename);
-			continue;
-		} else {
+		try {
+			String name(filename);
+			LocalFile s(name, IOAM_WRITE, FOM_CREATE);
 			AnalyserOutput *out;
 			switch (odd.lp.cursor_pos) {
-				case 0:
-					out = new AnalyserTxtOutput();
-					((AnalyserTxtOutput*)out)->init(analy, s);
-					break;
-				case 1:
-					out = new AnalyserTxtOutput();
-					((AnalyserTxtOutput*)out)->init(analy, s);
-					break;
+			case 0:
+				out = new AnalyserHTMLOutput();
+				((AnalyserHTMLOutput*)out)->init(analy, &s);
+				break;
+			case 1:
+				out = new AnalyserTxtOutput();
+				((AnalyserTxtOutput*)out)->init(analy, &s);
+				break;
 			}
 			out->generateFile(start_addr, end_addr);
 			out->done();
 			delete out;
+		} catch (const IOException &e) {
+			infobox("couldnt create file '%y': %y.", &filename, &e);
+			continue;
 		}
-		s->done();
-		delete s;
 		break;
 	}
 	dialog->done();
@@ -871,7 +850,7 @@ void ht_aviewer::generateOutputDialog()
 bool ht_aviewer::canCreateAddress(Address *addr, bool error_msg)
 {
 	Location *ctx = analy->getLocationContextByAddress(addr);
-	if (ctx && ctx->addr->compareTo(addr)!=0) {
+	if (ctx && ctx->addr->compareTo(addr) != 0) {
 		if (error_msg) {
 			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 			errorbox("Can't create new symbol: Address %y belongs to %y (%s)", addr, ctx->addr, ctx->label ? ctx->label->name : "unnamed");
@@ -907,7 +886,7 @@ void ht_aviewer::dataStringDialog()
 		return;
 	}
 /*
-	bounds b;
+	Bounds b;
 	b.w=50;
 	b.h=15;
 	center_bounds(&b);
@@ -924,7 +903,7 @@ void ht_aviewer::dataStringDialog()
 		Location *a = analy->enumLocations(current_address);
 		int d = sizeof buffer;
 		if (a) a->addr->difference(d, current_address);
-		UINT bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (UINT)d));
+		uint bz = analy->bufPtr(current_address, buffer, MIN(sizeof buffer, (uint)d));
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -957,66 +936,58 @@ void ht_aviewer::exportFileDialog()
 		if (analy->active) return;
 	}
 
-	bounds b;
+	Bounds b;
 	b.w=50;
 	b.h=12;
 	center_bounds(&b);
 	ht_dialog *dialog;
 	NEW_OBJECT(dialog, ht_dialog, &b, "export analyser information", FS_KILLER | FS_TITLE | FS_MOVE);
 	ht_view *v1, *v2;
-	BOUNDS_ASSIGN(b, 2, 2, 35, 1);
+	b.assign(2, 2, 35, 1);
 	NEW_OBJECT(v1, ht_strinputfield, &b, 260);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 2, 1, 35, 1);
+	b.assign(2, 1, 35, 1);
 	NEW_OBJECT(v2, ht_label, &b, "output ~filename:", v1);
 	dialog->insert(v2);
 
-	char pname[HT_NAME_MAX+16];
-	const char *filename = file->get_filename();
-	if (filename) {
-		pname[HT_NAME_MAX-1] = 0;
-		strncpy(pname, filename, HT_NAME_MAX-1);
-		char *suffix = sys_filename_suffix(pname);
-		if (suffix) {
-			strcpy(suffix, "exp");
-			setdatastr(v1, pname);
-		}
-	}
+	String filename, basename, suffix;
+	file->getFilename(filename);
+	filename.rightSplit('.', basename, suffix);
+	basename += ".exp";
+	setdatastr(v1, basename.contentChar());
 
-	BOUNDS_ASSIGN(b, 2, 5, 25, 1);
+	b.assign(2, 5, 25, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);
 	((ht_listpopup*)v1)->insertstring(".sym symbol file");
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 2, 4, 25, 1);
+	b.assign(2, 4, 25, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~export format:", v1);
 	dialog->insert(v2);
 	
-	BOUNDS_ASSIGN(b, 13, 8, 9, 2);
+	b.assign(13, 8, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "O~k", button_ok);
 	dialog->insert(v1);
-	BOUNDS_ASSIGN(b, 27, 8, 9, 2);
+	b.assign(27, 8, 9, 2);
 	NEW_OBJECT(v1, ht_button, &b, "~Cancel", button_cancel);
 	dialog->insert(v1);
-	while (dialog->run(false)==button_ok) {
+	while (dialog->run(false) == button_ok) {
 		char filename[260];
 		export_dialog_data edd;
-		dialog->databuf_get(&edd, sizeof edd);
+		ViewDataBuf vdb(dialog, &edd, sizeof edd);
 		getdatastr(&edd.id1, filename);
 		
-		ht_file *s = new ht_file();
-		s->init(filename, FAM_WRITE, FOM_CREATE);
-		if (s->get_error()) {
+		String name(filename);
+		LocalFile s(name, IOAM_WRITE, FOM_CREATE);
+		try {
+			switch (edd.lp.cursor_pos) {
+			case 0:
+				export_to_sym(analy, &s);
+				break;
+			}
+		} catch (const IOException &) {
 			infobox("couldnt create file '%s'.", filename);
 			continue;
-		} else {
-			switch (edd.lp.cursor_pos) {
-				case 0:
-					export_to_sym(analy, s);
-					break;
-			}
 		}
-		s->done();
-		delete s;
 		break;
 	}
 	dialog->done();
@@ -1030,7 +1001,7 @@ bool ht_aviewer::getCurrentAddress(Address **a)
 	return convertViewerPosToAddress(vp, a);
 }
 
-bool ht_aviewer::get_current_offset(FILEOFS *ofs)
+bool ht_aviewer::get_current_offset(FileOfs *ofs)
 {
 	if (ht_uformat_viewer::get_current_offset(ofs)) {
 		return true;
@@ -1055,20 +1026,20 @@ bool ht_aviewer::get_hscrollbar_pos(int *pstart, int *psize)
 	return false;
 }
 
-void ht_aviewer::get_pindicator_str(char *buf)
+int ht_aviewer::get_pindicator_str(char *buf, int max_len)
 {
 	Address *addr;
 	if (analy && getCurrentAddress(&addr)) {
-		FILEOFS o;
+		std::auto_ptr<Address> blub(addr);
+		FileOfs o;
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 		if (get_current_offset(&o)) {
-			ht_snprintf(buf, 1024, " %y/@%08x%s ", addr, o, (analy->isDirty())?" dirty":"");
+			return ht_snprintf(buf, max_len, " %y/@%08qx%s ", addr, o, (analy->isDirty())?" dirty":"");
 		} else {
-			ht_snprintf(buf, 1024, " %y%s ", addr, (analy->isDirty())?" dirty":"");
+			return ht_snprintf(buf, max_len, " %y%s ", addr, (analy->isDirty())?" dirty":"");
 		}
-		delete addr;
 	} else {
-		strcpy(buf, "?");
+		return ht_snprintf(buf, max_len, " ? ");
 	}
 }
 
@@ -1087,10 +1058,9 @@ bool ht_aviewer::gotoAddress(Address *a, ht_view *source_object)
 
 void ht_aviewer::handlemsg(htmsg *msg)
 {
-	char str[1024];
 	switch (msg->msg) {
 	case msg_contextmenuquery: {
-		ht_static_context_menu *m=new ht_static_context_menu();
+		ht_static_context_menu *m = new ht_static_context_menu();
 		m->init("~Analyser");
 		m->insert_entry("~Assemble...", "Ctrl-A", cmd_analyser_call_assembler, K_Control_A, 1);
 		m->insert_separator();
@@ -1099,7 +1069,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		sub->insert_entry("~Information...", 0, cmd_analyser_info, 0, 1);
 		sub->insert_separator();
 		sub->insert_entry("~Save state", 0, cmd_analyser_save, 0, 1);
-		sub->insert_entry("~Export to file...", NULL, cmd_analyser_export_file, 0, 1);
+		sub->insert_entry("~Export to file...", NULL, cmd_analyser_generate_output, 0, 1);
 		sub->insert_separator();
 		sub->insert_entry("~Continue at address", "c", cmd_analyser_continue, 0, 1);
 		sub->insert_entry("~Pause / resume", "p", cmd_analyser_pause_resume, 0, 1);
@@ -1126,8 +1096,8 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		sub->insert_entry("Data ~halfword 16", "h", cmd_analyser_data_half, 0, 1);
 		sub->insert_entry("Data ~byte 8", "b", cmd_analyser_data_byte, 0, 1);
 		m->insert_submenu(sub);
-		m->insert_separator();
-		m->insert_entry("Symbol reg trace (exp!)", "Alt-Q", cmd_analyser_srt, K_Alt_Q, 1);
+//		m->insert_separator();
+//		m->insert_entry("Symbol reg trace (exp!)", "Alt-Q", cmd_analyser_srt, K_Meta_Q, 1);
 
 		msg->msg = msg_retval;
 		msg->data1.ptr = m;
@@ -1155,7 +1125,6 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			}
 			break;
 		case '#':
-		case ':':
 			sendmsg(cmd_analyser_comments);
 			clearmsg(msg);
 			return;
@@ -1228,7 +1197,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		viewer_pos current_pos;
 		Address *current_address;
 		if (get_current_pos(&current_pos) && getCurrentAddress(&current_address)) {
-			a->set_imm_eval_proc((int(*)(void *context, char **s, dword *v))ht_aviewer_symbol_to_addr, (void*)this);
+			a->set_imm_eval_proc(ht_aviewer_symbol_to_addr, (void*)this);
 			int want_length;
 			analy->getDisasmStr(current_address, want_length);
 			dialog_assemble(this, current_pos, analy->mapAddr(current_address), a, analy->disasm, analy->getDisasmStrFormatted(current_address), want_length);
@@ -1301,9 +1270,9 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		if (analy->validAddress(addr, scvalid)) {
 			char n[255];
+			char str[1024];
 			Symbol *l = analy->getSymbolByAddress(addr);
-			// FIXME strncpy
-			if (l) ht_snprintf(n, sizeof n, "%s", l->name); else n[0] = 0;
+			if (l) ht_strlcpy(n, l->name, sizeof n); else n[0] = 0;
 			ht_snprintf(str, sizeof str, "name for address %y", addr);
 			while (inputbox(str, "~label name:", n, 255, HISTATOM_NAME_ADDR)) {
 				if (n[0]) {
@@ -1362,9 +1331,9 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		Address *c, *b;
 		if (!getCurrentAddress(&c)) break;
 		b = analy->createAddress();
-		UINT bz = b->byteSize();
+		uint bz = b->byteSize();
 		if (!bz) break;
-		byte *buf = (byte*)smalloc(bz);
+		byte *buf = ht_malloc(bz);
 		if (analy->bufPtr(c, buf, bz) != bz) break;
 		b->getFromArray(buf);
 		if (analy->validAddress(b, scvalid)) {
@@ -1487,7 +1456,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		return;
 	}
 	/* FIXME: srt-experimental */
-	case cmd_analyser_srt: {
+/*	case cmd_analyser_srt: {
 		Address *current_addr;
 		if (getCurrentAddress(&current_addr)) {
 			test_srt(analy, current_addr);
@@ -1495,7 +1464,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		}
 		clearmsg(msg);
 		return;
-	}
+	}*/
 	case msg_get_analyser: {
 		msg->msg=msg_retval;
 		msg->data1.ptr=analy;
@@ -1527,7 +1496,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 	case msg_draw:
 		if (infoline) {
-			FILEOFS a;
+			FileOfs a;
 			Address *addr;
 			if (!getCurrentAddress(&addr)) {
 				addr = new InvalidAddress();
@@ -1542,10 +1511,11 @@ void ht_aviewer::handlemsg(htmsg *msg)
 bool ht_aviewer::idle()
 {
 	if (!analy) return false;
-	last_active=analy->active;
+	last_active = analy->active;
 	if (!pause) analy->continueAnalysis();
 	if (last_active && !analy->active) {
-		LOG("%s: analyser finished after %d ops.", analy->getName(), analy->ops_parsed);
+		String name;
+		LOG("%y: analyser finished after %d ops.", &analy->getName(name), analy->ops_parsed);
 		dirtyview();
 		app->sendmsg(msg_draw, 0);
 	}
@@ -1565,7 +1535,7 @@ bool ht_aviewer::idle()
 	return last_active && !pause;
 }
 
-bool ht_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	if (!analy) return false;
 	Address *a = analy->fileofsToAddress(ofs);
@@ -1574,30 +1544,30 @@ bool ht_aviewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return res;
 }
 
-int ht_aviewer::ref_sel(LINE_ID *id)
+bool ht_aviewer::ref_sel(LINE_ID *id)
 {
-	if ((id->id1 | id->id2 |  id->id3 |id->id4) == 0) return 0;
+	if (!id->id1 && !id->id2 && !id->id3 && !id->id4) return 0;
 	switch (id->id4) {
 	case 0:
 		if (analy) {
 			Address *a = analy->createAddress();
-			a->getFromArray((byte*)&id->id1);
+			a->getFromUInt64((uint64(id->id1) << 32) + id->id2);
 			bool res = gotoAddress(a, this);
 			delete a;
 			return res;
 		} else {
-			return 0;
+			return false;
 		}
 	case 1:
 		if (analy) {
 			Address *a = analy->createAddress();
-			a->getFromArray((byte*)&id->id1);
+			a->getFromUInt64((uint64(id->id1) << 32) + id->id2);
 			showXRefs(a);
 			delete a;
 		}
-		return 0;
+		return false;
 	}
-	return 0;
+	return false;
 }
 
 void ht_aviewer::reloadpalette()
@@ -1640,7 +1610,7 @@ void ht_aviewer::showCallChain(Address *Addr)
 {
 	Location *a = analy->getFunctionByAddress(Addr);
 	if (!a) return;
-	bounds b;
+	Bounds b;
 	b.w = 60;
 	b.h = 16;
 	center_bounds(&b);
@@ -1649,7 +1619,7 @@ void ht_aviewer::showCallChain(Address *Addr)
 	ht_snprintf(str, sizeof str, "call chain of address %y", Addr);
 	ht_dialog *dialog = new ht_dialog();
 	dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE);
-	BOUNDS_ASSIGN(b, 1, 0, 56, 10);
+	b.assign(1, 0, 56, 10);
 	ht_statictext *text = new ht_statictext();
 	if (a->label) {
 		ht_snprintf(str, sizeof str, "function %s %s", a->label->name, "is referenced by ..");
@@ -1658,22 +1628,22 @@ void ht_aviewer::showCallChain(Address *Addr)
 	}
 	text->init(&b, str, align_left);
 	dialog->insert(text);
-	BOUNDS_ASSIGN(b, 1, 1, 56, 10);
+	b.assign(1, 1, 56, 10);
 	CallChain *cc;
 	NEW_OBJECT(cc, CallChain, &b, analy, Addr, NULL);
 	cc->adjust(cc->get_root(), true);
 	dialog->insert(cc);
-	BOUNDS_ASSIGN(b, 15, 12, 9, 2);
+	b.assign(15, 12, 9, 2);
 	ht_button *bt;
 	NEW_OBJECT(bt, ht_button, &b, "O~k", button_ok);
 	dialog->insert(bt);
-	BOUNDS_ASSIGN(b, 35, 12, 9, 2);
+	b.assign(35, 12, 9, 2);
 	NEW_OBJECT(bt, ht_button, &b, "~Cancel", button_cancel);
 	dialog->insert(bt);
 	int r = dialog->run(false);
 	if (r == button_ok) {
 		ht_treeview_data tvd;
-		dialog->databuf_get(&tvd, sizeof tvd);
+		ViewDataBuf vdb(dialog, &tvd, sizeof tvd);
 		gotoAddress(((CallChainNode*)tvd.selected)->xa, this);
 	}
 	dialog->done();
@@ -1689,8 +1659,7 @@ void ht_aviewer::showComments(Address *Addr)
 	CommentList *comment = analy->getComments(Addr);
 
 	// prepare mem_file
-	ht_mem_file *mem_file = new ht_mem_file();
-	mem_file->init();
+	MemoryFile *mem_file = new MemoryFile();
 	if (comment) {
 		int c1 = comment->count();
 		for (int i=0; i < c1; i++) {
@@ -1705,20 +1674,19 @@ void ht_aviewer::showComments(Address *Addr)
 	lexer->init();*/
 	
 	// prepare textfile
-	ht_ltextfile *text_file = new ht_ltextfile();
-	text_file->init(mem_file, true, NULL);
+	ht_ltextfile text_file(mem_file, true, NULL);
 
 	// create dialog
-	bounds b;
+	Bounds b;
 	b.w = 60;
 	b.h = 16;
 	center_bounds(&b);
 	ht_dialog *dialog = new ht_dialog();
 	dialog->init(&b, "edit comments", FS_KILLER | FS_TITLE | FS_MOVE);
 
-	BOUNDS_ASSIGN(b, 1, 1, 55, 10);
+	b.assign(1, 1, 55, 10);
 	ht_text_editor *text_editor = new ht_text_editor();
-	text_editor->init(&b, false, text_file, NULL, TEXTEDITOPT_UNDO);
+	text_editor->init(&b, false, &text_file, NULL, TEXTEDITOPT_UNDO);
 	dialog->insert(text_editor);
 
 	/* FIXME: scrollbar
@@ -1726,28 +1694,28 @@ void ht_aviewer::showComments(Address *Addr)
 	*/
 	
 	ht_button *b1;
-	BOUNDS_ASSIGN(b, 18, 12, 9, 2);
+	b.assign(18, 12, 9, 2);
 	NEW_OBJECT(b1, ht_button, &b, "O~k", button_ok);
 	dialog->insert(b1);
-	BOUNDS_ASSIGN(b, 32, 12, 9, 2);
+	b.assign(32, 12, 9, 2);
 	NEW_OBJECT(b1, ht_button, &b, "~Cancel", button_cancel);
 	dialog->insert(b1);
 
-	if (dialog->run(false)==button_ok) {
+	if (dialog->run(false) == button_ok) {
 		Location *a = analy->getLocationByAddress(Addr);
 		if (a) analy->freeComments(a);
-		UINT c = text_file->linecount();
+		uint c = text_file.linecount();
 		char buf[1024];
 		bool empty=false;
 		if (c == 1) {
-			UINT l = 0;
-			text_file->getline(0, 0, buf, 1024, &l, NULL);
-			empty = (l==0);
+			uint l = 0;
+			text_file.getline(0, 0, buf, 1024, &l, NULL);
+			empty=(l==0);
 		}
 		if (!empty) {
-			for (UINT i=0; i < c; i++) {
-				UINT l;
-				if (text_file->getline(i, 0, buf, 1024, &l, NULL)) {
+			for (uint i=0; i<c; i++) {
+				uint l;
+				if (text_file.getline(i, 0, buf, 1024, &l, NULL)) {
 					buf[l]=0;
 					analy->addComment(Addr, 0, buf);
 				}
@@ -1759,13 +1727,11 @@ void ht_aviewer::showComments(Address *Addr)
 
 	dialog->done();
 	delete dialog;
-	text_file->done();
-	delete text_file;
 }
 
 void ht_aviewer::showInfo(Address *Addr)
 {
-	bounds c, b;
+	Bounds c, b;
 	app->getbounds(&c);
 	b.w=c.w*5/6;
 	b.h=c.h*5/6;
@@ -1774,7 +1740,7 @@ void ht_aviewer::showInfo(Address *Addr)
 	strcpy(str, "Analyser information");
 	ht_dialog *dialog = new ht_dialog();
 	dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE);
-	BOUNDS_ASSIGN(b, 1, 0, b.w-4, 10);
+	b.assign(1, 0, b.w-4, 10);
 	AnalyserInformation *text = new AnalyserInformation();
 	text->init(&b, this);
 	dialog->insert(text);
@@ -1791,14 +1757,14 @@ void ht_aviewer::showSymbols(Address *addr)
 	
 	Location *loc = analy->getPreviousSymbolByAddress(addr);
 				
-	bounds b;
+	Bounds b;
 	b.w = 60;
 	b.h = 15;
 	center_bounds(&b);
 	ht_dialog *dialog = new ht_dialog();
 	dialog->init(&b, "symbols", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	/* pull down */
-	BOUNDS_ASSIGN(b, 30, 0, 20, 1);
+	b.assign(30, 0, 20, 1);
 /*				ht_listpopup *lp = new ht_listpopup();
 				lp->init(&b);
 				lp->insertstring("show all");
@@ -1808,12 +1774,12 @@ void ht_aviewer::showSymbols(Address *addr)
 				lp->insertstring("only data");
 				dialog->insert(lp);*/
 	/* text */
-	BOUNDS_ASSIGN(b, 1, 0, 56, 1);
+	b.assign(1, 0, 56, 1);
 	ht_listbox_title *text = new ht_listbox_title();
 	text->init(&b);
 	text->setText(3, "Address", "Type", "Name");
 	/* list */
-	BOUNDS_ASSIGN(b, 1, 1, 56, 12);
+	b.assign(1, 1, 56, 12);
 	SymbolBox *sym = new SymbolBox();
 	sym->init(&b, analy);
 	if (loc && loc->label) {
@@ -1828,8 +1794,8 @@ void ht_aviewer::showSymbols(Address *addr)
 	if (r == button_ok) {
 		// goto selected symbol
 		ht_listbox_data d;
-		sym->databuf_get(&d, sizeof d);
-		if (d.cursor_ptr) gotoAddress(((Symbol *)d.cursor_ptr)->location->addr, this);
+		ViewDataBuf vdb(sym, &d, sizeof d);
+		if (d.data->cursor_ptr) gotoAddress(((Symbol *)d.data->cursor_ptr)->location->addr, this);
 	}
 	dialog->done();
 	delete dialog;
@@ -1837,23 +1803,28 @@ void ht_aviewer::showSymbols(Address *addr)
 
 void ht_aviewer::showXRefs(Address *Addr)
 {
-	ht_tree *x_tree = analy->getXRefs(Addr);
-	if (x_tree) {
-restart2:
-		bounds c, b;
-		app->getbounds(&c);
-		b.w = c.w*5/6;
-		b.h = c.h*5/6;
-		center_bounds(&b);
-restart:
-		UINT bw = b.w;
-		UINT bh = b.h;
+	if (!analy->getXRefs(Addr)) {
+		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr) == button_yes) {
+			searchForXRefs(Addr);
+		}
+	}
+
+	Bounds c, b;
+	app->getbounds(&c);
+	b.w = c.w*5/6;
+	b.h = c.h*5/6;
+	center_bounds(&b);
+	int result;
+	do {
+		Container *x_tree = analy->getXRefs(Addr);
+		uint bw = b.w;
+		uint bh = b.h;
 		char str[256];
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
 		ht_dialog *dialog = new ht_dialog();
 		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
-		BOUNDS_ASSIGN(b, 1, 0, bw-4, 1);
+		b.assign(1, 0, bw-4, 1);
 		ht_listbox_title *text = new ht_listbox_title();
 		text->init(&b);
 		text->setText(3, "xref to", "type", "from function");
@@ -1861,31 +1832,29 @@ restart:
 		b.h = bh-6;
 		ht_text_listbox *list;
 		NEW_OBJECT(list, ht_text_listbox, &b, 3, 2);
-		BOUNDS_ASSIGN(b, 2, bh-4, 26, 2);
+		b.assign(2, bh-4, 26, 2);
 		ht_button *search_for_xrefs;
 		NEW_OBJECT(search_for_xrefs, ht_button, &b, "~Search for more XRefs", 666);
 		search_for_xrefs->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
-		BOUNDS_ASSIGN(b, 29, bh-4, 11, 2);
+		b.assign(29, bh-4, 11, 2);
 		ht_button *delete_xref;
 		NEW_OBJECT(delete_xref, ht_button, &b, "~Delete", 667);
 		delete_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		// FIXME: disable button when possible
-		BOUNDS_ASSIGN(b, 41, bh-4, 10, 2);
+		b.assign(41, bh-4, 10, 2);
 		ht_button *new_xref;
 		NEW_OBJECT(new_xref, ht_button, &b, "~Add", 668);
 		new_xref->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 		char str2[1024];
-		AddrXRef *x;
-		Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
 		int xcount=0;
-		while (xa) {
+		if (x_tree) foreach(AddrXRef, x, *x_tree, {
 			xcount++;
-			ht_snprintf(str, sizeof str, "%y", xa);
-			Location *a = analy->getFunctionByAddress(xa);
+			ht_snprintf(str, sizeof str, "%y", x->addr);
+			Location *a = analy->getFunctionByAddress(x->addr);
 			const char *func = analy->getSymbolNameByLocation(a);
 			if (func) {
 				int d=0;
-				xa->difference(d, a->addr);
+				x->addr->difference(d, a->addr);
 				char sign='+';
 				if (d<0) {
 					d=-d;
@@ -1895,9 +1864,8 @@ restart:
 			} else {
 				strcpy(str2, "?");
 			}
-			list->insert_str(reinterpret_cast<long>(xa), str, xref_type(x->type), str2);
-			xa = (Address*)x_tree->enum_next((ht_data**)&x, xa);
-		}
+			list->insert_str_extra(xcount, x->addr, str, xref_type(x->type), str2);
+		});
 		list->attachTitle(text);
 		list->update();
 		dialog->insert(text);
@@ -1905,133 +1873,119 @@ restart:
 		dialog->insert(search_for_xrefs);
 		dialog->insert(delete_xref);
 		dialog->insert(new_xref);
-		int r = dialog->run(false);
+		result = dialog->run(false);
 		ht_listbox_data data;
-		list->databuf_get(&data, sizeof data);
-		switch (r) {
-			case 666:
-				searchForXRefs(Addr);
-				break;
-			case 667:
-				if (xcount) {
-					analy->deleteXRef(Addr, (Address*)list->getID(data.cursor_ptr));
-					analy->makeDirty();
-					analy_sub->output->invalidateCache();
+		ViewDataBuf vdb(list, &data, sizeof data);
+		switch (result) {
+		case 666:
+			searchForXRefs(Addr);
+			break;
+		case 667:
+			if (xcount) {
+				analy->deleteXRef(Addr, (Address*)list->getExtra(data.data->cursor_ptr));
+				analy->makeDirty();
+				analy_sub->output->invalidateCache();
+			}
+			break;
+		case 668: {
+			char result[256];
+			ht_snprintf(str, sizeof str, "add xref from %y", Addr);
+			result[0] = 0;
+			while (inputbox(str, "to ~address: ", result, 255, HISTATOM_GOTO)) {
+				viewer_pos res_pos;
+				if (!string_to_pos(result, &res_pos)) {
+					errorbox(globalerror);
+					continue;
 				}
-				break;
-			case 668: {
-				char result[256];
-				ht_snprintf(str, sizeof str, "add xref from %y", Addr);
-				result[0] = 0;
-				while (inputbox(str, "to ~address: ", result, 255, HISTATOM_GOTO)) {
-					viewer_pos res_pos;
-					if (!string_to_pos(result, &res_pos)) {
-						errorbox(globalerror);
-						continue;
-					}
-					Address *a;
-					if (!convertViewerPosToAddress(res_pos, &a)) {
-						errorbox("invalid address");
-						delete a;
-						continue;
-					}
-					if (!analy->addXRef(Addr, a, xrefoffset)) {
-						// FIXME: some error msg
-					}
+				Address *a;
+				if (!convertViewerPosToAddress(res_pos, &a)) {
+					errorbox("invalid address");
 					delete a;
-					analy->makeDirty();
-					analy_sub->output->invalidateCache();
-					break;
+					continue;
 				}
+				if (!analy->addXRef(Addr, a, xrefoffset)) {
+					// FIXME: some error msg
+				}
+				delete a;
+				analy->makeDirty();
+				analy_sub->output->invalidateCache();
 				break;
 			}
-			case button_ok:
-				if (xcount) gotoAddress((Address*)list->getID(data.cursor_ptr), this);
-				break;
+			break;
+		}
+		case button_ok:
+			if (xcount) gotoAddress((Address*)list->getExtra(data.data->cursor_ptr), this);
+			break;
 		}
 		dialog->getbounds(&b);
 		dialog->done();
 		delete dialog;
-		if (r >= 666 && r <= 668) goto restart;
-	} else {
-		if (confirmbox("No xrefs for address %y!\nSearch for xrefs?", Addr)==button_yes) {
-			searchForXRefs(Addr);
-			x_tree = analy->getXRefs(Addr);
-			if (x_tree) goto restart2;
-		}
-	}
+	} while (result >= 666 && result <= 668);
 }
 
-int ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+bool ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
 {
 	eval_func myfuncs[] = {
-		{"addressOf", (void*)&aviewer_func_address_of, {SCALAR_STR}},
-		{"fileofs", (void*)&aviewer_func_fileofs, {SCALAR_INT}},
-		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}},
+		{"addressOf", (void*)&aviewer_func_address_of, {SCALAR_STR}, "return address of symbol"},
+		{"fileofs", (void*)&aviewer_func_fileofs, {SCALAR_INT}, "convert file offset to address"},
+//		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}}, "",
 		{NULL}
 	};
-	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;
+	if (std_eval_func_handler(result, name, params, myfuncs)) return true;
 	return ht_uformat_viewer::func_handler(result, name, params);
 }
 
-int ht_aviewer::symbol_handler(eval_scalar *result, char *name)
+bool ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 {
-	qword v;
+	uint64 v;
 	viewer_pos vp;
 	Address *w;
 	if (*name == '@') {
 		name++;
-		if (bnstr(&name, &v, 10)) {
-			if (*name) return 0;
-			// FIXME: no QWORD_GET_LO
-			if (!offset_to_pos(QWORD_GET_LO(v), &vp)) {
-				set_eval_error("invalid offset: %08x", v);
-				return 0;
+		if (parseIntStr(name, v, 10)) {
+			if (*name) return false;
+			if (!offset_to_pos(v, &vp)) {
+				set_eval_error("invalid offset: %08qx", v);
+				return false;
 			}
 			convertViewerPosToAddress(vp, &w);
-			qword b = to_qword(0);
-			w->putIntoArray((byte*)&b);
+			uint64 b = 0;
+			w->putIntoUInt64(b);
 			delete w;
 			scalar_create_int_q(result, b);
-			return 1;
+			return true;
 		}
 		// invalid number after @
 	} else {
 		if (strcmp(name, "$")==0) {
 			if (getCurrentAddress(&w)) {
-				qword b = to_qword(0);
-				w->putIntoArray((byte*)&b);
+				uint64 b = 0;
+				w->putIntoUInt64(b);
 				scalar_create_int_q(result, b);
 				delete w;
-				return 1;
+				return true;
 			} else {
 				delete w;
-				return 0;
+				return false;
 			}
 		}
 		Symbol *l = analy->getSymbolByName(name);
 		if (l) {
 			w=l->location->addr;
-			qword b;
-			w->putIntoArray((byte*)&b);
+			uint64 b;
+			w->putIntoUInt64(b);
 			scalar_create_int_q(result, b);
-			return 1;
+			return true;
 		}
 	}
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 	
-bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
+bool ht_aviewer::qword_to_pos(uint64 q, viewer_pos *pos)
 {
 	if (!analy) return false;
-	Address *a = analy->createAddress();
-	// FIXME: this is just plain wrong!!
-	if (a->byteSize() == 8) {
-		a->getFromArray((byte*)&q);
-	} else {
-		dword ii = QWORD_GET_INT(q);
-		a->getFromArray((byte*)&ii);
-	}
+	Address *a=analy->createAddress();
+	a->getFromUInt64(q);
 	if (analy->validAddress(a, scvalid)) {
 		bool res = convertAddressToViewerPos(a, pos);
 		delete a;
@@ -2048,15 +2002,15 @@ bool ht_aviewer::qword_to_pos(qword q, viewer_pos *pos)
  *	CLASS ht_analy_sub
  */
 
-void ht_analy_sub::init(ht_streamfile *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
+void ht_analy_sub::init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress)
 {
 	ht_sub::init(file);
 	aviewer = A;
 	analy = analyser;
 	output = new AnalyserHTOutput();
 	((AnalyserHTOutput*)output)->init(analy);
-	lowestaddress = (Address *)Lowestaddress->duplicate();
-	highestaddress = (Address *)Highestaddress->duplicate();
+	lowestaddress = Lowestaddress->clone();
+	highestaddress = Highestaddress->clone();
 }
 
 void ht_analy_sub::done()
@@ -2078,7 +2032,7 @@ bool ht_analy_sub::closest_line_id(LINE_ID *line_id)
 	return true;
 }
 
-bool ht_analy_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+bool ht_analy_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	viewer_pos a;
 	if (!uformat_viewer->offset_to_pos(offset, &a)) return false;
@@ -2089,15 +2043,18 @@ bool ht_analy_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 void	ht_analy_sub::first_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
-	lowestaddress->putIntoArray((byte*)&(line_id->id2));
+	uint64 u;
+	lowestaddress->putIntoUInt64(u);
+	line_id->id1 = u >> 32;
+	line_id->id2 = u;
 }
 
 bool ht_analy_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (!analy) return false;
 	Address *a = analy->createAddress();
-	a->getFromArray((byte*)&(line_id.id2));
-	bool res = output->getLineString(line, 1024, a, (int)line_id.id1);
+	a->getFromUInt64((uint64(line_id.id1) << 32) + line_id.id2);
+	bool res = output->getLineString(line, 1024, a, (int)line_id.id3);
 	delete a;
 	return res;
 }
@@ -2105,40 +2062,49 @@ bool ht_analy_sub::getline(char *line, const LINE_ID line_id)
 void	ht_analy_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
-	highestaddress->putIntoArray((byte*)&(line_id->id2));
+	uint64 u;
+	highestaddress->putIntoUInt64(u);
+	line_id->id1 = u >> 32;
+	line_id->id2 = u;
 }
 
 int ht_analy_sub::next_line_id(LINE_ID *line_id, int n)
 {
 	if (!analy) return false;
 	Address *a = analy->createAddress();
-	a->getFromArray((byte*)&(line_id->id2));
-	int line = line_id->id1;
+	a->getFromUInt64((uint64(line_id->id1) << 32) + line_id->id2);
+	int line = line_id->id3;
 	int res = output->nextLine(a, line, n, highestaddress);
 	if (res) {
-		line_id->id1 = line;
-		a->putIntoArray((byte*)&(line_id->id2));
+		line_id->id3 = line;
+		uint64 u;
+		a->putIntoUInt64(u);
+		line_id->id1 = u >> 32;
+		line_id->id2 = u;
 	}
 	delete a;
 	return res;
 }
 
-int	ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
+int ht_analy_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	if (!analy) return false;
 	Address *a = analy->createAddress();
-	a->getFromArray((byte*)&(line_id->id2));
-	int line = line_id->id1;
+	a->getFromUInt64((uint64(line_id->id1) << 32) + line_id->id2);
+	int line = line_id->id3;
 	int res = output->prevLine(a, line, n, lowestaddress);
 	if (res) {
-		line_id->id1 = line;
-		a->putIntoArray((byte*)&(line_id->id2));
+		line_id->id3 = line;
+		uint64 u;
+		a->putIntoUInt64(u);
+		line_id->id1 = u >> 32;
+		line_id->id2 = u;
 	}
 	delete a;
 	return res;
 }
 
-ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start, FILEOFS end)
+ht_search_result *ht_analy_sub::search(ht_search_request *search, FileOfs start, FileOfs end)
 {
 	// FIXME: viewer pos     
 	Address *st = NULL;
@@ -2149,20 +2115,20 @@ ht_search_result *ht_analy_sub::search(ht_search_request *search, FILEOFS start,
 		area_s *s = analy->initialized->getArea(st);
 		if (!s) break;
 		st = (Address *)s->end;
-		FILEOFS fstart, fend;
-		dword fsize;
+		FileOfs fstart, fend;
+		FileOfs fsize;
 		viewer_pos vp_start, vp_end;
 		aviewer->convertAddressToViewerPos((Address *)s->start, &vp_start);
 		if (!aviewer->pos_to_offset(vp_start, &fstart)) assert(0);
-		Address *send = (Address *)s->end->duplicate();
+		Address *send = (Address*)s->end->clone();
 		send->add(-1);
 		aviewer->convertAddressToViewerPos(send, &vp_end);
 		delete send;
 		if (!aviewer->pos_to_offset(vp_end, &fend)) assert(0);
-		fsize = fend-fstart;
-		if ((search->search_class==SC_PHYSICAL) && (search->type==ST_EXPR)) {
+		fsize = fend - fstart;
+		if (search->search_class == SC_PHYSICAL && search->type == ST_EXPR) {
 			r = linear_expr_search(search, start, end, this, uformat_viewer, fstart, fsize);
-		} else if ((search->search_class==SC_PHYSICAL) && (search->type==ST_FXBIN)) {
+		} else if (search->search_class == SC_PHYSICAL && search->type == ST_FXBIN) {
 			r = linear_bin_search(search, start, end, file, fstart, fsize);
 		}
 	}

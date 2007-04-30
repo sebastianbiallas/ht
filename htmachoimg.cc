@@ -21,7 +21,7 @@
 #include "log.h"
 #include "htmachoimg.h"
 #include "htpal.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "snprintf.h"
 #include "tools.h"
@@ -29,17 +29,19 @@
 #include "machostruc.h"
 #include "macho_analy.h"
 
-static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
 
 //	if (macho_shared->ident.e_ident[MACHO_EI_CLASS]!=MACHOCLASS32) return 0;
 
-	LOG("%s: Mach-O: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	file->getFilename(fn);
+	LOG("%y: Mach-O: loading image (starting analyser)...", &fn);
 	MachoAnalyser *p = new MachoAnalyser();
 	p->init(macho_shared, file);
 
-	bounds c=*b;
+	Bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_MACHO_IMAGE"-g");
 	AnalyInfoline *head;
@@ -61,10 +63,10 @@ static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_grou
 	Address *high = NULL;
 
 	MACHOAddress l, h;
-	l = (dword)-1;
+	l = (uint32)-1;
 	h = 0;
 	MACHO_SECTION *s = macho_shared->sections.sections;
-	for (UINT i=0; i < macho_shared->sections.count; i++) {
+	for (uint i=0; i < macho_shared->sections.count; i++) {
 		if (macho_valid_section(s, 0)) {
 			if (s->vmaddr < l) l = s->vmaddr;
 			if ((s->vmaddr + s->vmsize > h) && s->vmsize) h=s->vmaddr + s->vmsize - 1;
@@ -114,7 +116,7 @@ static ht_view *htmachoimage_init(bounds *b, ht_streamfile *file, ht_format_grou
 //	v->gotoAddress(tmpaddr, NULL);
 //	delete tmpaddr;
 	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
-	for (UINT i=0; i < macho_shared->cmds.count; i++) {
+	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
 			Address *entry;
@@ -151,7 +153,7 @@ format_viewer_if htmachoimage_if = {
 /*
  *	CLASS ht_macho_aviewer
  */
-void ht_macho_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_macho_shared_data *MACHO_shared)
+void ht_macho_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_macho_shared_data *MACHO_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	macho_shared = MACHO_shared;

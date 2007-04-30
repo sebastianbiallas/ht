@@ -2472,7 +2472,7 @@ d_substitution (struct d_info *di, int prefix)
   c = d_next_char (di);
   if (c == '_' || IS_DIGIT (c) || IS_UPPER (c))
     {
-      int id;
+      unsigned int id;
 
       id = 0;
       if (c != '_')

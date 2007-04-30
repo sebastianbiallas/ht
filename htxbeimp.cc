@@ -21,15 +21,15 @@
 #include "formats.h"
 #include "htanaly.h"
 #include "htctrl.h"
-#include "htdata.h"
-#include "htendian.h"
+#include "data.h"
+#include "endianess.h"
 #include "htiobox.h"
 #include "htpal.h"
 #include "xbestruct.h"
 #include "htxbe.h"
 #include "htxbeimp.h"
 #include "stream.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "httag.h"
 #include "log.h"
 #include "xbe_analy.h"
@@ -409,7 +409,7 @@ static const char *xbox_exports[] = {
 	"HalWriteSMCScratchRegister"                     // 366  8000016E
 };
 
-static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htxbeimports_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)group->get_shared_data();
 
@@ -417,7 +417,7 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	start_timer(h0);
 
 	ht_group *g;
-	bounds c;
+	Bounds c;
 
 	c=*b;
 	g=new ht_group();
@@ -434,9 +434,9 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	c.y--;
 	c.h=1;
 
-	FILEOFS ofs;
-	UINT thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
-	UINT *thunktable = (UINT *)malloc(sizeof(xbox_exports));
+	FileOfs ofs;
+	uint thunktablerva = xbe_shared->header.kernel_image_thunk_address - xbe_shared->header.base_address;
+	uint *thunktable = ht_malloc(sizeof (xbox_exports));
 	if (!thunktable) goto xbe_read_error;
 	memset(thunktable, 0, sizeof(xbox_exports));
 
@@ -448,9 +448,9 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 		goto xbe_read_error;
 
 	for (; *thunktable; thunktable++, thunktablerva+=4) {
-		UINT ordinal;
+		uint ordinal;
 
-		ordinal = create_host_int(thunktable, 4, little_endian);
+		ordinal = createHostInt(thunktable, 4, little_endian);
 		ht_xbe_import_function *func = new ht_xbe_import_function(thunktablerva, (char *)xbox_exports[ordinal & 0xfff], ordinal);
     		xbe_shared->imports.funcs->insert(func);
 		function_count++;
@@ -458,7 +458,7 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	
 
 	stop_timer(h0);
-//	LOG("%s: PE: %d ticks (%d msec) to read imports", file->get_name(), get_timer_tick(h0), get_timer_msec(h0));
+//	LOG("%y: PE: %d ticks (%d msec) to read imports", file->get_name(), get_timer_tick(h0), get_timer_msec(h0));
 	delete_timer(h0);
 
 	char iline[256];
@@ -469,8 +469,8 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	g->insert(head);
 	g->insert(v);
 	//
-	for (UINT i=0; i<xbe_shared->imports.funcs->count(); i++) {
-		ht_xbe_import_function *func = (ht_xbe_import_function*)xbe_shared->imports.funcs->get(i);
+	for (uint i=0; i<xbe_shared->imports.funcs->count(); i++) {
+		ht_xbe_import_function *func = (ht_xbe_import_function*)(*xbe_shared->imports.funcs)[i];
 		assert(func);
 		char addr[32], name[256];
 		ht_snprintf(addr, sizeof addr, "%08x", func->address);
@@ -490,7 +490,8 @@ static ht_view *htxbeimports_init(bounds *b, ht_streamfile *file, ht_format_grou
 	return g;
 xbe_read_error:
 	delete_timer(h0);
-	errorbox("%s: XBE import section seems to be corrupted.", file->get_filename());
+	String fn;
+	errorbox("%y: XBE import section seems to be corrupted.", &file->getFilename(fn));
 	g->done();
 	delete g;
 	v->done();
@@ -506,14 +507,14 @@ format_viewer_if htxbeimports_if = {
 /*
  *	ht_xbe_import_function
  */
-ht_xbe_import_function::ht_xbe_import_function(RVA a, UINT o)
+ht_xbe_import_function::ht_xbe_import_function(RVA a, uint o)
 {
 	ordinal = o;
 	address = a;
 	byname = false;
 }
 
-ht_xbe_import_function::ht_xbe_import_function(RVA a, char *n, UINT h)
+ht_xbe_import_function::ht_xbe_import_function(RVA a, char *n, uint h)
 {
 	name.name = ht_strdup(n);
 	name.hint = h;
@@ -523,13 +524,13 @@ ht_xbe_import_function::ht_xbe_import_function(RVA a, char *n, UINT h)
 
 ht_xbe_import_function::~ht_xbe_import_function()
 {
-	if ((byname) && (name.name)) free(name.name);
+	if (byname) free(name.name);
 }
 
 /*
  *	ht_xbe_import_viewer
  */
-void ht_xbe_import_viewer::init(bounds *b, char *Desc, ht_format_group *fg)
+void ht_xbe_import_viewer::init(Bounds *b, const char *Desc, ht_format_group *fg)
 {
 	ht_text_listbox::init(b, 3, 2, LISTBOX_QUICKFIND);
 	options |= VO_BROWSABLE;
@@ -548,7 +549,7 @@ void ht_xbe_import_viewer::done()
 void ht_xbe_import_viewer::dosort()
 {
 	ht_text_listbox_sort_order sortord[2];
-	UINT l, s;
+	uint l, s;
 	if (grouplib) {
 		l = 0;
 		s = 1;
@@ -563,7 +564,7 @@ void ht_xbe_import_viewer::dosort()
 	sort(2, sortord);
 }
 
-char *ht_xbe_import_viewer::func(UINT i, bool execute)
+const char *ht_xbe_import_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 		case 2:
@@ -595,36 +596,27 @@ char *ht_xbe_import_viewer::func(UINT i, bool execute)
 void ht_xbe_import_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_funcexec:
-			if (func(msg->data1.integer, 1)) {
-				clearmsg(msg);
-				return;
-			}
-			break;
-		case msg_funcquery: {
-			char *s=func(msg->data1.integer, 0);
-			if (s) {
-				msg->msg=msg_retval;
-				msg->data1.str=s;
-			}
-			break;
+	case msg_funcexec:
+		if (func(msg->data1.integer, 1)) {
+			clearmsg(msg);
+			return;
 		}
-/*		case msg_get_scrollinfo:
-			switch (msg->data1.integer) {
-				case gsi_pindicator: {
-					strcpy((char*)msg->data2.ptr, " Enter to view, Backspace to return here");
-					clearmsg(msg);
-					return;
-				}
-			}
-			break;*/
-		case msg_keypressed: {
-			if (msg->data1.integer == K_Return) {
-				select_entry(e_cursor);
-				clearmsg(msg);
-			}
-			break;
+		break;
+	case msg_funcquery: {
+		const char *s=func(msg->data1.integer, 0);
+		if (s) {
+			msg->msg=msg_retval;
+			msg->data1.cstr=s;
 		}
+		break;
+	}
+	case msg_keypressed: {
+		if (msg->data1.integer == K_Return) {
+			select_entry(e_cursor);
+			clearmsg(msg);
+		}
+		break;
+	}
 	}
 	ht_text_listbox::handlemsg(msg);
 }
@@ -635,7 +627,7 @@ bool ht_xbe_import_viewer::select_entry(void *entry)
 
 	ht_xbe_shared_data *xbe_shared=(ht_xbe_shared_data *)format_group->get_shared_data();
 
-	ht_xbe_import_function *e = (ht_xbe_import_function*)xbe_shared->imports.funcs->get(i->id);
+	ht_xbe_import_function *e = (ht_xbe_import_function*)(*xbe_shared->imports.funcs)[i->id];
 	if (!e) return true;
 	if (xbe_shared->v_image) {
 		ht_aviewer *av = (ht_aviewer*)xbe_shared->v_image;

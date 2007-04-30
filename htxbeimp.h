@@ -30,27 +30,27 @@ extern format_viewer_if htxbeimports_if;
 /*
  *	ht_xbe_import_function
  */
-class ht_xbe_import_function: public ht_data {
+class ht_xbe_import_function: public Object {
 public:
-	UINT libidx;
+	uint libidx;
 	bool byname;
 	union {
-		UINT ordinal;
+		uint ordinal;
 		struct {
 			char *name;
-			UINT hint;
+			uint hint;
 		} name;
 	};
 	RVA address;
 
-	ht_xbe_import_function(RVA address, UINT ordinal);
-	ht_xbe_import_function(RVA address, char *name, UINT hint);
+	ht_xbe_import_function(RVA address, uint ordinal);
+	ht_xbe_import_function(RVA address, char *name, uint hint);
 	~ht_xbe_import_function();
 };
 
 struct ht_xbe_import {
-	ht_clist *funcs;
-	ht_clist *libs;
+	Container *funcs;
+	Container *libs;
 };
 
 /*
@@ -60,17 +60,17 @@ class ht_xbe_import_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 	bool grouplib;
-	UINT sortby;
+	uint sortby;
 	/* new */
-			void dosort();
+		void dosort();
 public:
-			void	init(bounds *b, char *desc, ht_format_group *fg);
-	virtual	void	done();
+		void init(Bounds *b, const char *desc, ht_format_group *fg);
+	virtual	void done();
 	/* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 	/* new */
-			char *func(UINT i, bool execute);
+		const char *func(uint i, bool execute);
 };
 
 #endif /* !__HTXBEIMP_H__ */

@@ -18,6 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if 0
 #include <stdlib.h>
 #include <string.h>
 // #include <sys/select.h>
@@ -25,7 +26,7 @@
 #include "htctrl.h"
 #include "htidle.h"
 #include "htiobox.h"
-#include "htsys.h"
+#include "sys.h"
 #include "terminal.h"
 #include <unistd.h>
 
@@ -33,34 +34,28 @@
  *	CLASS Terminal
  */
 
-void Terminal::init(ht_streamfile *_in, ht_streamfile *_out, ht_streamfile *_err, int _sys_ipc_handle)
+Terminal::Terminal(File *_in, File *_out, File *_err, int _sys_ipc_handle)
+	: ht_ltextfile(new MemoryFile(), true, NULL)
 {
-	ht_mem_file *m = new ht_mem_file();
-	m->init();
-	ht_ltextfile::init(m, true, NULL);
 	in = _in;
 	out = _out;
 	err = _err;
 	sys_ipc_handle = _sys_ipc_handle;
 }
 
-void Terminal::done()
+Terminal::~Terminal()
 {
-	in->done();
 	delete in;
-	out->done();
 	delete out;
-	err->done();
 	delete err;
 	sys_ipc_terminate(sys_ipc_handle);
-	ht_ltextfile::done();
 }
 
-bool Terminal::append(ht_streamfile *file)
+bool Terminal::append(File *file)
 {
 #define STREAM_COPYBUF_SIZE	(128)
 	const int bufsize=STREAM_COPYBUF_SIZE;
-	byte *buf=(byte*)malloc(bufsize);
+	byte *buf = ht_malloc(bufsize);
 	int r, w = 0;
 	do {
 		r = file->read(buf, bufsize);
@@ -77,10 +72,10 @@ bool Terminal::connected()
 	return sys_ipc_is_valid(sys_ipc_handle);
 }
 
-UINT Terminal::write(const void *buf, UINT size)
+uint Terminal::write(const void *buf, uint size)
 {
 	if (connected()) {
-		UINT r = ht_ltextfile::write(buf, size);
+		uint r = ht_ltextfile::write(buf, size);
 		in->write(buf, size);
 		return r;
 	}
@@ -120,7 +115,7 @@ bool Terminal::update()
  *	CLASS TerminalViewer
  */
 
-void TerminalViewer::init(bounds *b, Terminal *t, bool ot)
+void TerminalViewer::init(Bounds *b, Terminal *t, bool ot)
 {
 	ht_text_viewer::init(b, ot, t, NULL);
 	term = t;
@@ -135,7 +130,7 @@ void TerminalViewer::done()
 
 void TerminalViewer::do_update()
 {
-	UINT l = term->linecount();
+	uint l = term->linecount();
 	if (l) {
 		goto_line(l-1);
 		cursor_end();
@@ -210,3 +205,4 @@ void TerminalViewer::get_pindicator_str(char *buf)
 	sprintf(buf, term->connected() ? " connected " : " disconnected ");
 }
 
+#endif

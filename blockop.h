@@ -35,11 +35,11 @@ protected:
 	ht_listpopup *mode;
 	ht_strinputfield *action;
 public:
-			void init(bounds *b, FILEOFS pstart, FILEOFS pend, ht_list *history=0);
+		void init(Bounds *b, FileOfs pstart, FileOfs pend, List *history = NULL);
 	virtual	void done();
 };
 
-void blockop_dialog(ht_format_viewer *format, FILEOFS pstart, FILEOFS pend);
+void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend);
 
 #endif /* __BLOCKOP_H__ */
 

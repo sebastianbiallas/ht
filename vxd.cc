@@ -30,7 +30,7 @@ vxd_t *find_vxd(vxd_desc *table, int key)
 	return 0;
 }
 
-char *find_vxd_service(vxd_service_desc *table, int key)
+const char *find_vxd_service(vxd_service_desc *table, int key)
 {
 	while (table->key!=-1) {
 		if (table->key==key) return table->name;

@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <string.h>
+#include <cstring>
 
 #include "cmds.h"
 #include "htctrl.h"
@@ -27,6 +27,7 @@
 #include "htiobox.h"
 #include "htmenu.h"
 #include "httag.h"
+#include "snprintf.h"
 #include "x86asm.h"
 #include "x86dis.h"
 #include "ppcdis.h"
@@ -36,7 +37,7 @@ extern "C" {
 #include "regex.h"
 }
 
-ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+ht_view *htdisasm_init(Bounds *b, File *file, ht_format_group *group)
 {
 	int t1632;
 #if 1
@@ -44,7 +45,7 @@ ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	x86dis *disassembler=new x86dis(X86_OPSIZE32, X86_ADDRSIZE32);
 #else
 	Assembler *assembler = NULL;
-	Disassembler *disassembler = new PPCDisassembler();
+	Disassembler *disassembler = new PPCDisassembler(PPC_MODE_32);
 #endif
 	t1632 = 0;
 
@@ -52,7 +53,7 @@ ht_view *htdisasm_init(bounds *b, ht_streamfile *file, ht_format_group *group)
 	v->init(b, DESC_DISASM, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, assembler, disassembler, t1632);
 
 	ht_disasm_sub *d=new ht_disasm_sub();
-	d->init(file, 0, file->get_size(),
+	d->init(file, 0, file->getSize(),
 		disassembler, false, X86DIS_STYLE_OPTIMIZE_ADDR);
 
 	v->insertsub(d);
@@ -75,7 +76,7 @@ static int opcode_compare(const char *a, const char *b)
 	if (al > bl) return 1; else if (al < bl) return -1; else return strcmp(a, b);
 }
 
-void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, UINT want_length)
+void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, Assembler *a, Disassembler *disasm, const char *default_str, int want_length)
 {
 	char instr[257] = "";
 	if (default_str) strcpy(instr, default_str);
@@ -93,39 +94,40 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 		asm_code *chosen_ac = ac;
 		if (ac->next) {
 			// choose from list if ambigous
-			bounds b;
+			Bounds b;
 			b.w = 60;
 			b.h = 15;
 			center_bounds(&b);
 			ht_dialog *dialog = new ht_dialog();
 			dialog->init(&b, "choose opcode", FS_KILLER | FS_TITLE | FS_MOVE);
-			BOUNDS_ASSIGN(b, 1, 0, 56, 1);
+			b.assign(1, 0, 56, 1);
 			ht_listbox_title *text = new ht_listbox_title();
 			text->init(&b);
 			text->setText(2, "opcode", "disassembly");
 			dialog->insert(text);
-			BOUNDS_ASSIGN(b, 1, 1, 56, 12);
+			b.assign(1, 1, 56, 12);
 			ht_text_listbox *list=new ht_text_listbox();
 			list->init(&b, 2, 0);
 			list->attachTitle(text);
 			asm_code *ac2 = ac;
-			UINT aci = 0;
+			uint aci = 0;
 			int best = 0;
 			while (ac2) {
-				char s[1024]="", *tmp = s;
-				for (UINT i=0; i<ac2->size; i++) {
+				char s[1024], *tmp = s;
+				for (int i=0; i < ac2->size; i++) {
 					tmp += sprintf(tmp, "%02x ", ac2->data[i]);
 				}
-				if ((best == 0) && (want_length == ac2->size)) {
-					   best = aci+1;
+				if (best == 0 && want_length == ac2->size) {
+					best = aci+1;
 				}
+				const char *tmp2;
 				if (disasm) {
 					dis_insn *o=disasm->decode((byte *)ac2->data, ac2->size, cpuaddr);
-					tmp = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+					tmp2 = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 				} else {
-					tmp = "<no disassembler>";
+					tmp2 = "<no disassembler>";
 				}
-				list->insert_str(aci, s, tmp);
+				list->insert_str(aci, s, tmp2);
 				ac2 = ac2->next;
 				aci++;
 			}
@@ -145,16 +147,16 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 			ok = r;
 			if (r == button_ok) {
 				ht_listbox_data d;
-				list->databuf_get(&d, sizeof d);
-				ht_text_listbox_item *i=(ht_text_listbox_item *)d.cursor_ptr;
+				ViewDataBuf vdb(list, &d, sizeof d);
+				ht_text_listbox_item *i = (ht_text_listbox_item *)d.data->cursor_ptr;
 				asm_code *ac3 = ac;
-				int ac3i=0;
+				int ac3i = 0;
 				while (ac3) {
-					if (ac3i==i->id) {
-						chosen_ac=ac3;
+					if (ac3i == i->id) {
+						chosen_ac = ac3;
 						break;
 					}
-					ac3=ac3->next;
+					ac3 = ac3->next;
 					ac3i++;
 				}
 			}
@@ -163,7 +165,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 		}
 		if (ok) {
 			baseview->sendmsg(cmd_edit_mode_i, f->get_file(), NULL);
-			if (f->get_file() && (f->get_file()->get_access_mode() & FAM_WRITE)) {
+			if (f->get_file() && (f->get_file()->getAccessMode() & IOAM_WRITE)) {
 				f->vwrite(vaddr, chosen_ac->data, chosen_ac->size);
 			}
 		}
@@ -175,7 +177,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
  *	CLASS ht_disasm_viewer
  */
 
-void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t)
+void ht_disasm_viewer::init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group, Assembler *a, Disassembler *d, int t)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, format_group);
 	assem = a;
@@ -186,25 +188,25 @@ void ht_disasm_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file
 void ht_disasm_viewer::done()
 {
 	ht_uformat_viewer::done();
-	if (assem) delete assem;
-	if (disasm) delete disasm;
+	delete assem;
+	delete disasm;
 }
 
-void ht_disasm_viewer::get_pindicator_str(char *buf)
+int ht_disasm_viewer::get_pindicator_str(char *buf, int max_len)
 {
-	FILEOFS o;
+	FileOfs o;
 	if (get_current_offset(&o)) {
-		sprintf(buf, " %s %08x/%u ", edit() ? "edit" : "view", o, o);
+		return ht_snprintf(buf, max_len, " %s 0x%08qx/%qu ", edit() ? "edit" : "view", o, o);
 	} else {
-		strcpy(buf, "?");
+		return ht_snprintf(buf, max_len, " ? ");
 	}
 }
 	
 bool ht_disasm_viewer::get_vscrollbar_pos(int *pstart, int *psize)
 {
-	int s=file->get_size();
+	FileOfs s=file->getSize();
 	if (s) {
-		int z=MIN(size.h*16, s-(int)top.line_id.id1);
+		int z = MIN(size.h*16, s-(int)top.line_id.id1);
 		return scrollbar_pos(top.line_id.id1, z, s, pstart, psize);
 	}
 	return false;
@@ -226,11 +228,6 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 		}
 		case msg_get_scrollinfo: {
 			switch (msg->data1.integer) {
-				case gsi_pindicator: {
-					get_pindicator_str((char*)msg->data2.ptr);
-					clearmsg(msg);
-					return;
-				}
 				case gsi_hscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
 					if (!get_hscrollbar_pos(&p->pstart, &p->psize)) {
@@ -258,7 +255,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			m.type=mt_broadcast;
 			sendsubmsg(&m);
 			
-// FIXME: hack
+			// FIXME: hack
 			uf_initialized=false;
 			complete_init();
 			
@@ -278,7 +275,7 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			byte data[32];
 			int datalen = vread(current_pos, data, sizeof data);
 			dis_insn *o = disasm->decode(data, datalen, cpuaddr);
-			char *curinsn = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+			const char *curinsn = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 			int want_length = disasm->getSize(o);
 
 			dialog_assemble(this, current_pos, cpuaddr, assem, disasm, curinsn, want_length);
@@ -287,18 +284,18 @@ void ht_disasm_viewer::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_disasm_toggle1632: {
-// FIXME: very beautiful...
+			// FIXME: very beautiful...
 			op1632 ^= 1;
 			if (op1632) {
 				((x86asm *)assem)->opsize = X86_OPSIZE16;
-				((x86asm *)assem)->addrsize = X86_OPSIZE16;
+				((x86asm *)assem)->addrsize = X86_ADDRSIZE16;
 				((x86dis *)disasm)->opsize = X86_OPSIZE16;
-				((x86dis *)disasm)->addrsize = X86_OPSIZE16;
+				((x86dis *)disasm)->addrsize = X86_ADDRSIZE16;
 			} else {
 				((x86asm *)assem)->opsize = X86_OPSIZE32;
-				((x86asm *)assem)->addrsize = X86_OPSIZE32;
+				((x86asm *)assem)->addrsize = X86_ADDRSIZE32;
 				((x86dis *)disasm)->opsize = X86_OPSIZE32;
-				((x86dis *)disasm)->addrsize = X86_OPSIZE32;
+				((x86dis *)disasm)->addrsize = X86_ADDRSIZE32;
 			}
 			dirtyview();
 			clearmsg(msg);
@@ -313,7 +310,7 @@ ht_disasm_sub *ht_disasm_viewer::get_disasm_sub()
 	return (ht_disasm_sub*)cursor.sub;
 }
 
-bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
+bool ht_disasm_viewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 {
 	p->u.sub = get_disasm_sub();
 	p->u.line_id.id1 = ofs;
@@ -322,39 +319,39 @@ bool ht_disasm_viewer::offset_to_pos(FILEOFS ofs, viewer_pos *p)
 	return true;
 }
 
-bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FILEOFS *ofs)
+bool ht_disasm_viewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	*ofs = p.u.line_id.id1;
 	return true;
 }
 
-int ht_disasm_viewer::ref_sel(LINE_ID *id)
+bool ht_disasm_viewer::ref_sel(LINE_ID *id)
 {
 	return goto_offset(id->id1, true);
 }
 
-bool ht_disasm_viewer::qword_to_pos(qword q, viewer_pos *p)
+bool ht_disasm_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 {
 	ht_linear_sub *s = get_disasm_sub();
-	FILEOFS ofs = QWORD_GET_INT(q);
+	FileOfs ofs = q;
 	clear_viewer_pos(p);
 	p->u.sub = s;
 	p->u.tag_idx = 0;
 	return s->convert_ofs_to_id(ofs, &p->u.line_id);
 }
 
-int ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
+bool ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 {
 	if (strcmp(name, "$") == 0) {
-		FILEOFS ofs;
+		FileOfs ofs;
 		if (!pos_to_offset(*(viewer_pos*)&cursor, &ofs)) return 0;
-		scalar_create_int_c(result, ofs);
-		return 1;
+		scalar_create_int_q(result, ofs);
+		return true;
 	}
 	return ht_uformat_viewer::symbol_handler(result, name);
 }
 
-char *ht_disasm_viewer::func(UINT i, bool execute)
+const char *ht_disasm_viewer::func(uint i, bool execute)
 {
 	switch (i) {
 // FIXME: wrong implementation
@@ -369,7 +366,7 @@ char *ht_disasm_viewer::func(UINT i, bool execute)
  *	CLASS ht_disasm_sub
  */
 
-void ht_disasm_sub::init(ht_streamfile *f, FILEOFS ofs, int size, Disassembler *u, bool own_u, int ds)
+void ht_disasm_sub::init(File *f, FileOfs ofs, int size, Disassembler *u, bool own_u, int ds)
 {
 	ht_linear_sub::init(f, ofs, size);
 	disasm = u;
@@ -385,7 +382,7 @@ void ht_disasm_sub::done()
 	ht_linear_sub::done();
 }
 
-bool ht_disasm_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
+bool ht_disasm_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	if ((offset >= fofs) && (offset < fofs+fsize)) {
 		line_id->id1=offset;
@@ -395,7 +392,7 @@ bool ht_disasm_sub::convert_ofs_to_id(const FILEOFS offset, LINE_ID *line_id)
 	return false;
 }
 
-bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FILEOFS *offset)
+bool ht_disasm_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
 {
 	*offset = line_id.id1;
 	return true;
@@ -424,16 +421,16 @@ static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 {
 	if (line_id.id2) return false;
-	dword ofs = line_id.id1;
-	byte buf[15];
-	int c = MIN(16, (int)(fofs+fsize-ofs));
+	uint64 ofs = line_id.id1;
+	byte buf[16];
+	int c = MIN(16, sint64(fofs+fsize-ofs));
 	if (c <= 0) return false;
 	file->seek(ofs);
 	c = file->read(buf, c);
 	CPU_ADDR caddr;
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = ofs;
-	char *s;
+	const char *s;
 	char *l = line;
 	if (c) {
 		dis_insn *insn = disasm->decode(buf, c, caddr);
@@ -446,7 +443,7 @@ bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
 		s = "db ?";
 		c = 0;
 	}
-	l=mkhexd(l, ofs);
+	l += ht_snprintf(l, 17, "%08qx", ofs);
 	*l++=' ';
 	for (int i=0; i<15; i++) {
 		if (i<c) {
@@ -476,7 +473,7 @@ void ht_disasm_sub::last_line_id(LINE_ID *line_id)
 int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	dword *ofs=&line_id->id1;
+	uint32 *ofs=&line_id->id1;
 	int min_length;
 	int max_length;
 	int min_look_ahead;
@@ -489,7 +486,7 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 	int *of=offsets;
 	int r=n<6 ? 6*avg_look_ahead : n*avg_look_ahead;
 	if (r > (int)sizeof buf) r = sizeof buf;
-	dword o=*ofs-r;
+	uint32 o=*ofs-r;
 	int c=r, d;
 	int s;
 	if (*ofs<fofs+r) {
@@ -533,15 +530,15 @@ int ht_disasm_sub::prev_line_id(LINE_ID *line_id, int n)
 int ht_disasm_sub::next_line_id(LINE_ID *line_id, int n)
 {
 	if (line_id->id2) return 0;
-	dword *ofs = &line_id->id1;
+	uint32 *ofs = &line_id->id1;
 	unsigned char buf[15];
 	int c=0, s;
-	UINT z;
+	uint z;
 	CPU_ADDR caddr;
 	caddr.addr32.seg = 0;
 	caddr.addr32.offset = 0;
 	while (n--) {
-		z=MIN(15, (UINT)(fofs+fsize-*ofs));
+		z=MIN(15, (uint)(fofs+fsize-*ofs));
 		file->seek(*ofs);
 		z=file->read(buf, z);
 		if (z) {

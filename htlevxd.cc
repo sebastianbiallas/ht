@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htnewexe.h"
 #include "htle.h"
 #include "htlevxd.h"
@@ -55,11 +55,11 @@ static ht_mask_ptable le_vxd_header[]=
 	{ NULL, NULL }
 };
 
-static ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htlevxd_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_le_shared_data *le_shared=(ht_le_shared_data *)group->get_shared_data();
 	if (!le_shared->is_vxd) return NULL;
-	ht_streamfile *myfile = le_shared->reloc_file;
+	File *myfile = le_shared->reloc_file;
 
 	/* FIXME: */
 	bool le_bigendian = false;
@@ -70,7 +70,7 @@ static ht_view *htlevxd_init(bounds *b, ht_streamfile *file, ht_format_group *gr
 	m->init(myfile, 0);
 
 	char info[128];
-	ht_snprintf(info, sizeof info, "* LE VXD descriptor in section 1, offset %08x", le_shared->vxd_desc_linear_ofs);
+	ht_snprintf(info, sizeof info, "* LE VXD descriptor in section 1, offset %08qx", le_shared->vxd_desc_linear_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(le_vxd_header, le_shared->vxd_desc_linear_ofs, le_bigendian);
 	v->insertsub(m);

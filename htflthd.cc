@@ -19,7 +19,7 @@
  */
 
 #include "fltstruc.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htflt.h"
 #include "htflthd.h"
 #include "httag.h"
@@ -40,7 +40,7 @@ static ht_mask_ptable fltheader[]=
 	{0, 0}
 };
 
-static ht_view *htfltheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htfltheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)group->get_shared_data();
 	
@@ -49,7 +49,7 @@ static ht_view *htfltheader_init(bounds *b, ht_streamfile *file, ht_format_group
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
 	char info[128];
-	sprintf(info, "* FLAT header at offset %08x", flt_shared->header_ofs);
+	ht_snprintf(info, sizeof info, "* FLAT header at offset %08qx", flt_shared->header_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(fltheader, flt_shared->header_ofs, true);
 

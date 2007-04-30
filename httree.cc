@@ -24,12 +24,12 @@
 
 #include "htdialog.h"
 #include "htpal.h"
-#include "htkeyb.h"
-#include "htstring.h"
+#include "keyb.h"
+#include "strtools.h"
 #include "httree.h"
 #include "stream.h"
 
-void ht_treeview::init(bounds *b, char *d)
+void ht_treeview::init(Bounds *b, const char *d)
 {
 	ht_view::init(b, VO_SELECTABLE | VO_BROWSABLE/* <- FIXME */ | VO_RESIZE, d);
 	VIEW_DEBUG_NAME("ht_treeview");
@@ -55,10 +55,10 @@ void ht_treeview::adjust_focus(int Focus)
 		else if ((Focus - size.h) >= delta_y) scroll_to(delta_x, Focus - size.h + 1);
 }
 
-int  ht_treeview::create_graph(int *s, void *node, int level, int lines, int width, int endwidth, int *Chars)
+int  ht_treeview::create_graph(AbstractChar *s, void *node, int level, int lines, int width, int endwidth, const AbstractChar *Chars)
 {
 // Chars: space, vbar, T, last L,hbar,+,-,[,]
-	for (int i=0; i<(level); i++) {
+	for (int i=0; i < level; i++) {
 		s[i*width] = (lines&(1<<i)) ? Chars[1] : Chars[0];
 		for (int j=1; j<(width); j++) s[i*width+j] = Chars[0];
 	}
@@ -73,11 +73,15 @@ int  ht_treeview::create_graph(int *s, void *node, int level, int lines, int wid
 		s[p+2] = Chars[4];
 		s[p+3] = Chars[4];
 	}
-	s[p+4] = 32;
+	s[p+4].codepage = CP_DEVICE;
+	s[p+4].chr = ' ';
 	p += 5;
 	char *text=get_text(node);
-	while (*text) s[p++] = *(text++);
-	s[p] = 0;
+	while (*text) {
+		s[p].codepage = CP_DEVICE;
+		s[p++].chr = *(text++);
+	}
+	s[p].codepage = CP_INVALID;
 	return p;
 }
 
@@ -106,13 +110,13 @@ void ht_treeview::collapse_all(void *node)
 	}
 }
 
-void ht_treeview::draw_r(void *node, int level, int *pos, dword lines)
+void ht_treeview::draw_r(void *node, int level, int *pos, uint32 lines)
 {
-	int normal_color, sel_color, foc_color, color;
+	vcp normal_color, sel_color, foc_color, color;
 	normal_color = getcolor(palidx_generic_list_unfocused_unselected);
 	foc_color = getcolor(palidx_generic_list_focused_selected);
 	sel_color = getcolor(palidx_generic_list_unfocused_selected);
-	int s[1024];
+	AbstractChar s[1024];
 
 	while (node) {
 		if (*pos >= delta_y) {
@@ -123,7 +127,7 @@ void ht_treeview::draw_r(void *node, int level, int *pos, dword lines)
 				fill(0, *pos-delta_y, size.w, 1, color, ' ');
 			} else color = normal_color;
 			if (get_graph(s, node, level, lines) > delta_x)
-				buf_lprintw(0, *pos-delta_y, color, size.w, &s[delta_x]);
+				buf->nprintW(0, *pos-delta_y, color, &s[delta_x], size.w);
 		}
 		(*pos)++;
 		if (has_children(node) && is_expanded(node)) {
@@ -156,9 +160,9 @@ void ht_treeview::expand_all(void *node)
 /*
  *	stub
  */
-void ht_treeview::getdata(ht_object_stream *s)
+void ht_treeview::getdata(ObjectStream &s)
 {
-	s->putIntHex(reinterpret_cast<long>(selected), 4, NULL);
+	PUT_INT32D(s, (long)selected);
 }
 
 /*
@@ -166,19 +170,20 @@ void ht_treeview::getdata(ht_object_stream *s)
  *	get i. child of node
  */
 
-int  ht_treeview::get_graph(int *s, void *node, int level, int lines)
+int  ht_treeview::get_graph(AbstractChar *s, void *node, int level, int lines)
 {
-    int graph[10];
-    graph[0]=' ';
-    graph[1]=CHAR_LINEV;
-    graph[2]=CHAR_BORDERTL;
-    graph[3]=CHAR_CORNERLL;
-    graph[4]=CHAR_LINEH;
-    graph[5]='+';
-    graph[6]='-';
-    graph[7]='[';
-    graph[8]=']';
-    return create_graph(s, node, level, lines, 5, 5, graph);
+	static const AbstractChar graph[10] = {
+		{CP_DEVICE, ' '},
+		{CP_GRAPHICAL, GC_1VLINE},
+		{CP_GRAPHICAL, GC_1RTEE},
+		{CP_GRAPHICAL, GC_1CORNER2},
+		{CP_GRAPHICAL, GC_1HLINE},
+		{CP_DEVICE, '+'},
+		{CP_DEVICE, '-'},
+		{CP_DEVICE, '['},
+		{CP_DEVICE, ']'},
+	};
+	return create_graph(s, node, level, lines, 5, 5, graph);
 }
 
 void *ht_treeview::get_node_r(void *node, int *i)
@@ -199,7 +204,7 @@ void *ht_treeview::get_node_r(void *node, int *i)
  */
 void *ht_treeview::get_node(int i)
 {
-	if (i<=0) return 0;
+	if (i <= 0) return 0;
 	void *Node = get_root();
 	return get_node_r(Node, &i);
 }
@@ -210,71 +215,71 @@ void	ht_treeview::handlemsg(htmsg *msg)
 	if (msg->msg==msg_keypressed) {
 		int Foc = foc;
 		switch (msg->data1.integer) {
-			case K_Up:
-				Foc--;
-				break;
-			case K_Down:
-				Foc++;
-				break;
-			case K_Control_Right:
-				if (delta_x < maxsize_x-1) delta_x++;
-				break;
-			case K_Control_Left:
-				if (delta_x > 0) delta_x--;
-				break;
-			case K_PageUp:
-				Foc -= size.h-1;
-				break;
-			case K_PageDown:
-				Foc += size.h-1;
-				break;
-			case K_Control_PageUp:
-				Foc = 0;
-				break;
-			case K_Control_PageDown:
-				Foc = maxsize_y - 1;
-				break;
-			case '+':
-			case K_Right: {
-				void *p = get_node(Foc+1);
-				if (has_children(p)) adjust(p, true);
-				break;
-			}
-			case '-':
-				adjust(get_node(Foc+1), false);
-				break;
-			case K_Left: {
-				void *n = get_node(Foc+1);
-				if (is_expanded(n)) {
-					adjust(n, false);
-				} else {
-					if (Foc) {
-						do {
-							Foc-=count_children(n)+1;
-							n = get_prev_node(n);
-						} while (n);
-						adjust(get_node(Foc+1), false);
-					}
+		case K_Up:
+			Foc--;
+			break;
+		case K_Down:
+			Foc++;
+			break;
+		case K_Control_Right:
+			if (delta_x < maxsize_x-1) delta_x++;
+			break;
+		case K_Control_Left:
+			if (delta_x > 0) delta_x--;
+			break;
+		case K_PageUp:
+			Foc -= size.h-1;
+			break;
+		case K_PageDown:
+			Foc += size.h-1;
+			break;
+		case K_Control_PageUp:
+			Foc = 0;
+			break;
+		case K_Control_PageDown:
+			Foc = maxsize_y - 1;
+			break;
+		case '+':
+		case K_Right: {
+			void *p = get_node(Foc+1);
+			if (has_children(p)) adjust(p, true);
+			break;
+		}
+		case '-':
+			adjust(get_node(Foc+1), false);
+			break;
+		case K_Left: {
+			void *n = get_node(Foc+1);
+			if (is_expanded(n)) {
+				adjust(n, false);
+			} else {
+				if (Foc) {
+					do {
+						Foc-=count_children(n)+1;
+						n = get_prev_node(n);
+					} while (n);
+					adjust(get_node(Foc+1), false);
 				}
-				break;
 			}
-			case '*':
-				expand_all(get_node(Foc+1));
-				break;
-			case '/':
-				collapse_all(get_node(Foc+1));
-				break;
-			case K_Return: {
-				void *n = get_node(Foc+1);
-				if (has_children(n)) {
-					adjust(n, !is_expanded(n));
-				} else {
-					select_node(n);
-				}
-				break;
+			break;
+		}
+		case '*':
+			expand_all(get_node(Foc+1));
+			break;
+		case '/':
+			collapse_all(get_node(Foc+1));
+			break;
+		case K_Return: {
+			void *n = get_node(Foc+1);
+			if (has_children(n)) {
+				adjust(n, !is_expanded(n));
+			} else {
+				select_node(n);
 			}
-			default:
-				return;
+			break;
+		}
+		default:
+			return;
 		}
 		update();
 		adjust_focus(Foc);
@@ -305,7 +310,7 @@ void	ht_treeview::scroll_to(int x, int y)
 /*
  *	stub
  */
-void ht_treeview::setdata(ht_object_stream *s)
+void ht_treeview::setdata(ObjectStream &s)
 {
 }
 
@@ -325,7 +330,7 @@ void	ht_treeview::set_limit(int x, int y)
 
 void	ht_treeview::update_r(void *node, int level, int *pos, int *x)
 {
-	int *s = (int *)malloc(2048);
+	AbstractChar s[2048];
 
 	while (node) {
 		int l = get_graph(s, node, level, 0);
@@ -336,8 +341,6 @@ void	ht_treeview::update_r(void *node, int level, int *pos, int *x)
 		}
 		node = get_next_node(node);
 	}
-	free(s);
-
 }
 
 /*
@@ -353,7 +356,7 @@ void	ht_treeview::update()
 
 /****************************************************************************/
 
-void ht_static_treeview::init(bounds *b, char *desc)
+void ht_static_treeview::init(Bounds *b, const char *desc)
 {
 	ht_treeview::init(b, desc);
 	VIEW_DEBUG_NAME("ht_static_treeview");
@@ -364,7 +367,7 @@ void ht_static_treeviewdone_r(static_node *node)
 {
 	while (node) {
 		ht_static_treeviewdone_r(node->child);
-		if (node->text) free(node->text);
+		free(node->text);
 		if (node->data) {
 			node->data->done();
 			delete node->data;
@@ -381,7 +384,7 @@ void ht_static_treeview::done()
 	ht_treeview::done();
 }
 
-void *ht_static_treeview::add_child(void *node, char *text, ht_data *Data)
+void *ht_static_treeview::add_child(void *node, const char *text, Object *Data)
 {
 	if (node) {
 		return add_node(&((static_node *)node)->child, text, Data);
@@ -395,7 +398,7 @@ void *ht_static_treeview::add_child(void *node, char *text, ht_data *Data)
 	}
 }
 
-void	*ht_static_treeview::add_node(static_node **node, char *text, ht_data *Data)
+void	*ht_static_treeview::add_node(static_node **node, const char *text, Object *Data)
 {
 	static_node **p = node;
 	static_node *prev = NULL;
@@ -414,9 +417,9 @@ void	ht_static_treeview::adjust(void *node, bool expand)
 	((static_node *)node)->expanded = expand;
 }
 
-static_node *ht_static_treeview::create_node(char *text, static_node *prev, ht_data *Data)
+static_node *ht_static_treeview::create_node(const char *text, static_node *prev, Object *Data)
 {
-	static_node *node = (static_node *)malloc(sizeof(static_node));
+	static_node *node = ht_malloc(sizeof(static_node));
 	node->text = ht_strdup(text);
 	node->next = NULL;
 	node->prev = prev;

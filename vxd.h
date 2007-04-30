@@ -23,11 +23,11 @@
 
 struct vxd_service_desc {
 	int key;
-	char	*name;
+	const char *name;
 };
 
 struct vxd_t {
-	char *name;
+	const char *name;
 	vxd_service_desc *services;
 };
 
@@ -39,7 +39,7 @@ struct vxd_desc {
 extern vxd_desc vxds[];
 
 vxd_t *find_vxd(vxd_desc *table, int key);
-char *find_vxd_service(vxd_service_desc *table, int key);
+const char *find_vxd_service(vxd_service_desc *table, int key);
 
 #endif /* __VXD_H_ */
 

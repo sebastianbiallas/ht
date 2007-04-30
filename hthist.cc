@@ -18,123 +18,106 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
-#include "htdata.h"
+#include "atom.h"
+#include "data.h"
+#include "htdebug.h"
 #include "hthist.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "tools.h"
 
 #include <string.h>
 
-#define ATOM_HT_HISTORY_ENTRY				MAGICD("HIS\0")
-#define ATOM_COMPARE_KEYS_HISTORY_ENTRY		MAGICD("HIS\1")
+#define ATOM_HT_HISTORY_ENTRY			MAGIC32("HIS\0")
+#define ATOM_COMPARE_KEYS_HISTORY_ENTRY		MAGIC32("HIS\1")
 
-#define MAX_HISTORY_ENTRY_COUNT		40
+#define MAX_HISTORY_ENTRY_COUNT			40
 
-bool insert_history_entry(ht_list *history, char *name, ht_view *view)
+bool insert_history_entry(List *history, char *name, ht_view *view)
 {
 	if (name && *name) {
-		ht_object_stream_bin *os=0;
-		ht_mem_file *file=0;
+		ObjectStreamBin *os = NULL;
+		MemoryFile *file = NULL;
 		if (view) {
-				file=new ht_mem_file();
-				file->init();
-
-				os=new ht_object_stream_bin();
-				os->init(file);
-
-				view->getdata(os);
+			file = new MemoryFile();
+			os = new ObjectStreamBin(file, false);
+			view->getdata(*os);
 		}
 
-		ht_history_entry *e=new ht_history_entry(name, os, file);
-		UINT li=history->find(e);
-		int r=0;
-		if (li==LIST_UNDEFINED) {
+		ht_history_entry *e = new ht_history_entry(name, os, file);
+		ObjHandle li = history->find(e);
+		if (li == invObjHandle) {
 			history->prepend(e);
-			r=1;
 		} else {
 			delete e;
-			history->move(li, 0);
+			history->moveTo(li, history->findFirst());
 		}
-/* limit number of history entries to MAX_HISTORY_ENTRY_COUNT */
-		if (history->count() > MAX_HISTORY_ENTRY_COUNT) {
-			history->del_multiple(MAX_HISTORY_ENTRY_COUNT, history->count() - MAX_HISTORY_ENTRY_COUNT);
+		/* limit number of history entries to MAX_HISTORY_ENTRY_COUNT */
+		while (history->count() > MAX_HISTORY_ENTRY_COUNT) {
+			history->del(history->findLast());			
 		}
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 /*
  *	CLASS ht_history_entry
  */
 
-ht_history_entry::ht_history_entry(char *s, ht_object_stream_bin *d, ht_mem_file *df)
+ht_history_entry::ht_history_entry(char *s, ObjectStreamBin *d, MemoryFile *file)
 {
-	if (s) desc=ht_strdup(s);
-	data=d;
-	datafile=df;
+	desc = ht_strdup(s);
+	assert(desc);
+	data = d;
+	datafile = file;
 }
 
 ht_history_entry::~ht_history_entry()
 {
-	if (desc) free(desc);
-	if (data) {
-		data->done();
-		delete data;
-	}
-	if (datafile) {
-		datafile->done();
-		delete datafile;
-	}
+	free(desc);
+	delete data;
+	delete datafile;
 }
 
-int ht_history_entry::load(ht_object_stream *s)
+int ht_history_entry::compareTo(const Object *o) const
 {
-	desc=s->getString(NULL);
+	return strcmp(desc, ((ht_history_entry*)o)->desc);
+}
 
-	UINT size=s->getInt(4, NULL);
+void ht_history_entry::load(ObjectStream &s)
+{
+	GET_STRING(s, desc);
+	uint size;
+	GET_INT32D(s, size);
 
 	if (size) {
-		datafile=new ht_mem_file();
-		datafile->init();
+		datafile = new MemoryFile();
+		data = new ObjectStreamBin(datafile, false);
 
-		data=new ht_object_stream_bin();
-		data->init(datafile);
-
-		void *d=s->getBinary(size, NULL);
+		byte d[size];
+		GETX_BINARY(s, d, size, "data");
 		datafile->write(d, size);
-		free(d);
 	} else {
-		datafile=0;
-		data=0;
+		datafile = NULL;
+		data = NULL;
 	}
-
-	return 0;
 }
 
-void ht_history_entry::store(ht_object_stream *s)
+void ht_history_entry::store(ObjectStream &s) const
 {
-	s->putString(desc, NULL);
-
+	PUT_STRING(s, desc);
 	if (datafile) {
-		UINT size=datafile->get_size();
-	
-		s->putInt(size, 4, NULL);
-		s->putBinary(datafile->bufptr(), size, NULL);
+		uint size = datafile->getSize();
+		PUT_INT32D(s, size);
+		PUTX_BINARY(s, datafile->getBufPtr(), size, "data");
 	} else {
-		s->putInt(0, 4, NULL);
+		PUTX_INT32D(s, 0, "size");
 	}
 }
 
-OBJECT_ID ht_history_entry::object_id() const
+ObjectID ht_history_entry::getObjectID() const
 {
 	return ATOM_HT_HISTORY_ENTRY;
-}
-
-int compare_keys_history_entry(ht_data *key_a, ht_data *key_b)
-{
-    return strcmp(((ht_history_entry*)key_a)->desc, ((ht_history_entry*)key_b)->desc);
 }
 
 /*
@@ -153,61 +136,59 @@ int hist_atoms[]={
 	HISTATOM_EVAL_EXPR
 };
 
-void create_hist_atom(UINT atom)
+void create_hist_atom(uint atom)
 {
-	ht_clist *c=new ht_clist();
-	c->init(compare_keys_history_entry);
-	register_atom(atom, c);
+	List *c = new Array(true);
+	registerAtom(atom, c);
 }
 
-void destroy_hist_atom(UINT atom)
+void destroy_hist_atom(uint atom)
 {
-	ht_clist *c=(ht_clist*)find_atom(atom);
+	List *c = (List*)getAtomValue(atom);
 	if (c) {
-		unregister_atom(atom);
-		c->destroy();
+		unregisterAtom(atom);
 		delete c;
 	}
 }
 
-void store_history(ht_object_stream *s)
+void store_history(ObjectStream &s)
 {
-	UINT count=sizeof hist_atoms / sizeof hist_atoms[0];
-	s->putIntDec(count, 4, NULL);
-	for (UINT i=0; i<count; i++) {
-		s->putIntHex(hist_atoms[i], 4, NULL);
-		ht_clist *c=(ht_clist*)find_atom(hist_atoms[i]);
-		s->putObject(c, NULL);
+	uint count=sizeof hist_atoms / sizeof hist_atoms[0];
+	PUT_INT32D(s, count);
+	for (uint i=0; i < count; i++) {
+		PUTX_INT32X(s, hist_atoms[i], "atom");
+		List *c = (List*)getAtomValue(hist_atoms[i]);
+		PUTX_OBJECT(s, c, "list");
 	}
 }
 
-bool load_history(ht_object_stream *s)
+bool load_history(ObjectStream &s)
 {
-	UINT count=s->getIntDec(4, NULL);
-	for (UINT i=0; i<count; i++) {
-		int atom=s->getIntHex(4, NULL);
+	uint count;
+	GET_INT32D(s, count);
+	for (uint i=0; i < count; i++) {
+		int atom;
+		GET_INT32X(s, atom);
 		destroy_hist_atom(atom);
-		ht_clist *c=(ht_clist*)s->getObject(NULL);
-		register_atom(atom, c);
+		List *c = GETX_OBJECT(s, "list");
+		registerAtom(atom, c);
 	}
-	return 1;
+	return true;
 }
 
 /*
  *	INIT
  */
 
-BUILDER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
+BUILDER(ATOM_HT_HISTORY_ENTRY, ht_history_entry, Object);
 
 bool init_hist()
 {
-	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (uint i=0; i < sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		create_hist_atom(hist_atoms[i]);
 	}
-	
+
 	REGISTER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
-	
-	register_atom(ATOM_COMPARE_KEYS_HISTORY_ENTRY, (void*)compare_keys_history_entry);
 
 	return true;
 }
@@ -217,13 +198,10 @@ bool init_hist()
  */
 
 void done_hist()
-{
-
-	unregister_atom(ATOM_COMPARE_KEYS_HISTORY_ENTRY);
-	
+{	
 	UNREGISTER(ATOM_HT_HISTORY_ENTRY, ht_history_entry);
 
-	for (UINT i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
+	for (uint i=0; i<sizeof hist_atoms / sizeof hist_atoms[0]; i++) {
 		destroy_hist_atom(hist_atoms[i]);
 	}
 }

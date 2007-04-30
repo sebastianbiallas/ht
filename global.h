@@ -31,6 +31,7 @@
 #define HTPACKED __attribute__ ((packed))
 #else
 #error "you're not using the GNU C compiler :-) please add the macro and conditionals for your compiler"
+#define HTPACKED blabla
 #endif /* !__GNUC__ */
 #endif /* __cplusplus */
 
@@ -88,7 +89,7 @@ typedef unsigned int OBJECT_ID;
  *	steves strucs
  */
 
-struct bounds {
+struct Bounds {
 	int x, y, w, h;
 };
 

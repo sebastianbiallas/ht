@@ -25,20 +25,20 @@
 #include "formats.h"
 #include "snprintf.h"
 
-static int htmzrel_detect(ht_streamfile *file)
+static int htmzrel_detect(File *file)
 {
-	word rcount;
+	uint16 rcount;
 	file->seek(6);
 	file->read(&rcount, 2);
 	return rcount;
 }
 
-static ht_view *htmzrel_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htmzrel_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_MZ_REL, VC_EDIT | VC_SEARCH, file, group);
-	dword r=0;
-	dword rc=0;
+	uint32 r = 0;
+	uint32 rc = 0;
 	file->seek(6);
 	file->read(&rc, 2);
 	file->seek(24);

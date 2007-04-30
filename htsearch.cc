@@ -18,15 +18,15 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "cmds.h"
 #include "htctrl.h"
 #include "hthist.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htsearch.h"
-#include "htstring.h"
-#include "process.h"
+#include "strtools.h"
+#include "htprocess.h"
 #include "snprintf.h"
 
 extern "C" {
@@ -34,31 +34,31 @@ extern "C" {
 }
 
 union search_pos {
-	FILEOFS offset;
+	FileOfs offset;
 	viewer_pos pos;
 };
 
 /* FIXME: get rid of global vars */
-UINT lastsearchmodeid=0;
-UINT lastreplacemodeid=0;
+uint lastsearchmodeid = 0;
+uint lastreplacemodeid = 0;
 
-typedef ht_search_request* (*create_request_func)(search_pos *ret_start, search_pos *ret_end, ht_view *form, ht_format_viewer *format, UINT search_class);
+typedef ht_search_request* (*create_request_func)(search_pos *ret_start, search_pos *ret_end, ht_view *form, ht_format_viewer *format, uint search_class);
 
-typedef ht_data* (*create_replace_context_func)(ht_streamfile *file, FILEOFS ofs, UINT len, ht_view *form, UINT *return_repllen);
+typedef Object* (*create_replace_context_func)(File *file, FileOfs ofs, FileOfs len, ht_view *form, FileOfs *return_repllen);
 
 struct ht_search_method {
-	char *name;
-	UINT search_class;			// SC_*
-	UINT search_mode_mask;		// SEARCHMODE_*
-	HT_ATOM histid;
+	const char *name;
+	uint search_class;			// SC_*
+	uint search_mode_mask;		// SEARCHMODE_*
+	uint histid;
 	create_form_func create_form;
 	create_request_func create_request;
 	create_desc_func create_desc;
 };
 
 struct ht_replace_method {
-	char *name;
-	HT_ATOM histid;
+	const char *name;
+	uint histid;
 	create_form_func create_form;
 	create_replace_context_func create_replace_context;
 	process_func replace_process;
@@ -67,37 +67,35 @@ struct ht_replace_method {
 #include <stdlib.h>
 #include <string.h>
 
-bool test_str_to_ofs(FILEOFS *ofs, byte *str, UINT strlen, ht_format_viewer *format, char *desc)
+static bool test_str_to_ofs(FileOfs *ofs, byte *str, uint strlen, ht_format_viewer *format, const char *desc)
 {
 #define TEST_STR_TO_OFS_MAXSTRLEN       128
-	if (strlen>TEST_STR_TO_OFS_MAXSTRLEN) {
-		throw ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_OFS_MAXSTRLEN);
+	if (strlen > TEST_STR_TO_OFS_MAXSTRLEN) {
+		throw MsgfException("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_OFS_MAXSTRLEN);
 		return false;
 	}
-	if (strlen>0) {
+	if (strlen > 0) {
 		char s[TEST_STR_TO_OFS_MAXSTRLEN+1];
 		bin2str(s, str, strlen);
 		if (!format->string_to_offset(s, ofs)) {
-			throw ht_io_exception("%s: invalid expression: '%s'", desc, s);
+			throw MsgfException("%s: invalid expression: '%s'", desc, s);
 			return false;
 		}
 	}
 	return true;
 }
 
-bool test_str_to_pos(viewer_pos *pos, byte *str, UINT strlen, ht_format_viewer *format, char *desc)
+static bool test_str_to_pos(viewer_pos *pos, byte *str, uint strlen, ht_format_viewer *format, const char *desc)
 {
 #define TEST_STR_TO_POS_MAXSTRLEN      128
-	if (strlen>TEST_STR_TO_POS_MAXSTRLEN) {
-		throw ht_io_exception("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_POS_MAXSTRLEN);
-		return false;
+	if (strlen > TEST_STR_TO_POS_MAXSTRLEN) {
+		throw MsgfException("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_POS_MAXSTRLEN);
 	}
-	if (strlen>0) {
+	if (strlen > 0) {
 		char s[TEST_STR_TO_POS_MAXSTRLEN+1];
 		bin2str(s, str, strlen);
 		if (!format->string_to_pos(s, pos)) {
-			throw ht_io_exception("%s: invalid expression: '%s'", desc, s);
-			return false;
+			throw MsgfException("%s: invalid expression: '%s'", desc, s);
 		}
 	}
 	return true;
@@ -107,23 +105,23 @@ bool test_str_to_pos(viewer_pos *pos, byte *str, UINT strlen, ht_format_viewer *
  *	CLASS ht_fxbin_search_request
  */
 
-ht_view* create_form_hexascii(bounds *b, HT_ATOM histid)
+ht_view* create_form_hexascii(Bounds *b, uint histid)
 {
-	ht_hexascii_search_form *form=new ht_hexascii_search_form();
-	form->init(b, 0, (ht_list*)find_atom(histid));
+	ht_hexascii_search_form *form = new ht_hexascii_search_form();
+	form->init(b, 0, (List*)getAtomValue(histid));
 	return form;
 }
 
-ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
+ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
 {
-	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
+	ht_hexascii_search_form *form = (ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 	
 	ht_fxbin_search_request *request;
 	
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "hex/ascii");
+		throw MsgfException("%s: string is empty", "hex/ascii");
 	}
 	if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
 	&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {
@@ -140,10 +138,10 @@ void create_desc_hexascii(char *buf, int buflen, ht_view *f)
 {
 	ht_hexascii_search_form *form=(ht_hexascii_search_form*)f;
 	ht_hexascii_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "hex/ascii");
+		throw MsgfException("%s: string is empty", "hex/ascii");
 	}
 
 	char *b = buf;
@@ -157,36 +155,36 @@ void create_desc_hexascii(char *buf, int buflen, ht_view *f)
 	if (d.start.textlen) {
 		strncat(b, ", start=", buflen-(b-buf));
 		if (b-buf<buflen) b+=strlen(b);
-		b+=escape_special(b, buflen-(b-buf), d.start.text, d.start.textlen);
+		b += escape_special(b, buflen-(b-buf), d.start.text, d.start.textlen);
 	}
 	if (d.end.textlen) {
 		strncat(b, ", end=", buflen-(b-buf));
 		if (b-buf<buflen) b+=strlen(b);
-		b+=escape_special(b, buflen-(b-buf), d.end.text, d.end.textlen);
+		b += escape_special(b, buflen-(b-buf), d.end.text, d.end.textlen);
 	}
 	strncat(b, ")", buflen-(b-buf));
 }
 
 /***/
 
-ht_view* create_form_evalstr(bounds *b, HT_ATOM histid)
+ht_view* create_form_evalstr(Bounds *b, uint histid)
 {
 	ht_evalstr_search_form *form=new ht_evalstr_search_form();
-	form->init(b, 0, (ht_list*)find_atom(histid));
+	form->init(b, 0, (List*)getAtomValue(histid));
 	return form;
 }
 
-ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
+ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
 {
 #define EVALSTR_MAXSTRLEN		256
 	ht_evalstr_search_form *form=(ht_evalstr_search_form*)f;
 	ht_evalstr_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 	
 	ht_fxbin_search_request *request = NULL;
 		
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "eval str");
+		throw MsgfException("%s: string is empty", "eval str");
 	} else if (d.str.textlen<=EVALSTR_MAXSTRLEN) {
 		char strbuf[EVALSTR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -203,13 +201,13 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 					s.len, (byte*)s.value);
 			}
 		} else {
-			char *str;
+			const char *str;
 			int pos;
 			get_eval_error(&str, &pos);
-			throw ht_io_exception("eval error at pos %d: %s", pos, str);
+			throw MsgfException("eval error at pos %d: %s", pos, str);
 		}
 	} else {
-		throw ht_io_exception("%s: expression too long (len %d, max %d)", "eval str", d.str.textlen, EVALSTR_MAXSTRLEN);
+		throw MsgfException("%s: expression too long (len %d, max %d)", "eval str", d.str.textlen, EVALSTR_MAXSTRLEN);
 	}
 	return request;
 }
@@ -218,10 +216,10 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 {
 	ht_evalstr_search_form *form=(ht_evalstr_search_form*)f;
 	ht_evalstr_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "eval str");
+		throw MsgfException("%s: string is empty", "eval str");
 	}
 
 	char *b = buf;
@@ -247,12 +245,12 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_fxbin_search_request::ht_fxbin_search_request(UINT search_class, UINT flags, UINT ds, byte *d) :
+ht_fxbin_search_request::ht_fxbin_search_request(uint search_class, uint flags, uint ds, byte *d) :
 	ht_search_request(search_class, ST_FXBIN, flags)
 {
 	data_size = ds;
-	data = (byte*)malloc(data_size);
-	memmove(data, d, data_size);
+	data = ht_malloc(data_size);
+	memcpy(data, d, data_size);
 }
 
 ht_fxbin_search_request::~ht_fxbin_search_request()
@@ -260,7 +258,7 @@ ht_fxbin_search_request::~ht_fxbin_search_request()
 	free(data);
 }
 
-Object *ht_fxbin_search_request::duplicate()
+ht_fxbin_search_request *ht_fxbin_search_request::clone() const
 {
 	return new ht_fxbin_search_request(search_class, flags, data_size, data);
 }
@@ -269,24 +267,24 @@ Object *ht_fxbin_search_request::duplicate()
  *	CLASS ht_regex_search_request
  */
  
-ht_view* create_form_vregex(bounds *b, HT_ATOM histid)
+ht_view* create_form_vregex(Bounds *b, uint histid)
 {
 	ht_vregex_search_form *form=new ht_vregex_search_form();
-	form->init(b, 0, (ht_list*)find_atom(histid));
+	form->init(b, 0, (List*)getAtomValue(histid));
 	return form;
 }
 
-ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
+ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
 {
 #define VREGEX_MAXSTRLEN		256
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 
 	ht_regex_search_request *request=NULL;
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "regex");
+		throw MsgfException("%s: string is empty", "regex");
 	} else if (d.str.textlen <= VREGEX_MAXSTRLEN) {
 		char strbuf[VREGEX_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -296,7 +294,7 @@ ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_
 			request = new ht_regex_search_request(search_class, d.options.state & 1 ? SF_REGEX_CASEINSENSITIVE : 0, strbuf);
 		}
 	} else {
-		throw ht_io_exception("%s: expression too long (size %d, max %d)", "regex", strlen, VREGEX_MAXSTRLEN);
+		throw MsgfException("%s: expression too long (size %d, max %d)", "regex", strlen, VREGEX_MAXSTRLEN);
 	}
 	return request;
 }
@@ -305,10 +303,10 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 {
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "regex");
+		throw MsgfException("%s: string is empty", "regex");
 	}
 
 	char *b = buf;
@@ -334,7 +332,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_regex_search_request::ht_regex_search_request(UINT search_class, UINT flags, char *regex) :
+ht_regex_search_request::ht_regex_search_request(uint search_class, uint flags, char *regex) :
 	ht_search_request(search_class, ST_REGEX, flags)
 {
 	rx_str = ht_strdup(regex);
@@ -348,7 +346,7 @@ ht_regex_search_request::~ht_regex_search_request()
 	free(rx_str);
 }
 
-Object *ht_regex_search_request::duplicate()
+ht_regex_search_request *ht_regex_search_request::clone() const
 {
 	return new ht_regex_search_request(search_class, flags, rx_str);
 }
@@ -364,33 +362,33 @@ ht_regex_search_exception::ht_regex_search_exception(int e, regex_t *r)
 	ht_snprintf(rxerr, sizeof rxerr, "error compiling regex: %s", s);
 }
 	
-const char* ht_regex_search_exception::what() const
+String &ht_regex_search_exception::reason(String &s) const
 {
-	return rxerr;
+	return s = rxerr;
 }
 
 /*
  *	CLASS ht_expr_search_request
  */
 
-ht_view* create_form_expr(bounds *b, HT_ATOM histid)
+ht_view* create_form_expr(Bounds *b, uint histid)
 {
 	ht_expr_search_form *form = new ht_expr_search_form();
-	form->init(b, 0, (ht_list*)find_atom(histid));
+	form->init(b, 0, (List*)getAtomValue(histid));
 	return form;
 }
 
-ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, UINT search_class)
+ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_view *f, ht_format_viewer *format, uint search_class)
 {
 #define EXPR_MAXSTRLEN		256
 	ht_expr_search_form *form=(ht_expr_search_form*)f;
 	ht_expr_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 	
 	ht_expr_search_request *request = NULL;
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "expr");
+		throw MsgfException("%s: string is empty", "expr");
 	} else if (d.str.textlen <= EXPR_MAXSTRLEN) {
 		char strbuf[EXPR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
@@ -400,7 +398,7 @@ ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_vi
 			request = new ht_expr_search_request(search_class, 0, strbuf);
 		}
 	} else {
-		throw ht_io_exception("%s: expression too long (size %d, max %d)", "expr", strlen, EXPR_MAXSTRLEN);
+		throw MsgfException("%s: expression too long (size %d, max %d)", "expr", strlen, EXPR_MAXSTRLEN);
 	}
 	return request;
 }
@@ -409,10 +407,10 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 {
 	ht_vregex_search_form *form=(ht_vregex_search_form*)f;
 	ht_vregex_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 
 	if (!d.str.textlen) {
-		throw ht_io_exception("%s: string is empty", "expr");
+		throw MsgfException("%s: string is empty", "expr");
 	}
 
 	char *b = buf;
@@ -438,7 +436,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_expr_search_request::ht_expr_search_request(UINT search_class, UINT flags, char *Expr) :
+ht_expr_search_request::ht_expr_search_request(uint search_class, uint flags, char *Expr) :
 	ht_search_request(search_class, ST_EXPR, flags)
 {
 	expr = ht_strdup(Expr);
@@ -446,10 +444,10 @@ ht_expr_search_request::ht_expr_search_request(UINT search_class, UINT flags, ch
 
 ht_expr_search_request::~ht_expr_search_request()
 {
-	if (expr) delete expr;
+	free(expr);
 }
 
-Object *ht_expr_search_request::duplicate()
+ht_expr_search_request *ht_expr_search_request::clone() const
 {
 	return new ht_expr_search_request(search_class, flags, expr);
 }
@@ -459,10 +457,10 @@ Object *ht_expr_search_request::duplicate()
  */
 
 /* FIXME: put somewhere else */
-void bufdowncase(byte *buf, dword len)
+void bufdowncase(byte *buf, uint32 len)
 {
-	for (dword i=0; i<len; i++) {
-		if ((buf[i]>='A') && (buf[i]<='Z')) buf[i]+=32;
+	for (uint32 i=0; i<len; i++) {
+		if (buf[i] >= 'A' && buf[i] <= 'Z') buf[i] += 32;
 	}
 }
 
@@ -474,7 +472,7 @@ ht_search_bin_context::~ht_search_bin_context()
 	free(pat);
 }
 
-ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *pat, UINT patlen, UINT flags, UINT *return_ofs, bool *return_success)
+Object* create_search_bin_context(File *file, FileOfs ofs, FileOfs len, byte *pat, uint patlen, uint flags, FileOfs *return_ofs, bool *return_success)
 {
 	if (patlen > SEARCH_BUF_SIZE) return NULL;
 	
@@ -484,15 +482,15 @@ ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, b
 	ctx->ofs = ofs;
 	ctx->flags = flags;
 	ctx->len = len;
-	ctx->pat = (byte*)malloc(patlen);
-	memmove(ctx->pat, pat, patlen);
+	ctx->pat = ht_malloc(patlen);
+	memcpy(ctx->pat, pat, patlen);
 	ctx->patlen = patlen;
 
 	ctx->o = ofs;
 
 	if (ctx->flags & SFBIN_CASEINSENSITIVE) bufdowncase(ctx->pat, ctx->patlen);
 
-	ctx->buf = (byte*)malloc(SEARCH_BUF_SIZE);
+	ctx->buf = ht_malloc(SEARCH_BUF_SIZE);
 
 	ctx->return_ofs = return_ofs;
 	ctx->return_success = return_success;
@@ -506,7 +504,7 @@ ht_data* create_search_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, b
 	return ctx;
 }
 
-bool search_bin_process(ht_data *context, ht_text *progress_indicator)
+bool search_bin_process(Object *context, ht_text *progress_indicator)
 {
 	ht_search_bin_context *ctx = (ht_search_bin_context*)context;
 
@@ -545,12 +543,12 @@ bool search_bin_process(ht_data *context, ht_text *progress_indicator)
 /*
  *	CLASS ht_hexascii_search_form
  */
-void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
+void ht_hexascii_search_form::init(Bounds *b, int options, List *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_hexascii_search_form");
 
-	bounds c;
+	Bounds c;
 	/* ascii string */
 	c.x=6;
 	c.y=0;
@@ -633,12 +631,12 @@ void ht_hexascii_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_evalstr_search_form
  */
-void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
+void ht_evalstr_search_form::init(Bounds *b, int options, List *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_evalstr_search_form");
 
-	bounds c;
+	Bounds c;
 	/* string */
 	c.x=0;
 	c.y=1;
@@ -713,12 +711,12 @@ void ht_evalstr_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_vregex_search_form
  */
-void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
+void ht_vregex_search_form::init(Bounds *b, int options, List *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_text_search_form");
 
-	bounds c;
+	Bounds c;
 	/* string */
 	c.x=0;
 	c.y=1;
@@ -785,12 +783,12 @@ void ht_vregex_search_form::init(bounds *b, int options, ht_list *history)
 /*
  *	CLASS ht_expr_search_form
  */
-void	ht_expr_search_form::init(bounds *b, int options, ht_list *history)
+void	ht_expr_search_form::init(Bounds *b, int options, List *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_expr_search_form");
 
-	bounds c;
+	Bounds c;
 	/* string */
 	c.x=0;
 	c.y=1;
@@ -869,17 +867,17 @@ ht_replace_bin_context::~ht_replace_bin_context()
 	free(repl);
 }
 
-ht_view* create_form_replace_hexascii(bounds *b, HT_ATOM histid)
+ht_view* create_form_replace_hexascii(Bounds *b, uint histid)
 {
 	ht_replace_hexascii_search_form *form=new ht_replace_hexascii_search_form();
-	form->init(b, 0, (ht_list*)find_atom(histid));
+	form->init(b, 0, (List*)getAtomValue(histid));
 	return form;
 }
 
-ht_data* create_replace_hexascii_context(ht_streamfile *file, FILEOFS ofs, UINT len, ht_view *form, UINT *return_repllen)
+Object* create_replace_hexascii_context(File *file, FileOfs ofs, FileOfs len, ht_view *form, FileOfs *return_repllen)
 {
 	ht_replace_hexascii_search_form_data d;
-	form->databuf_get(&d, sizeof d);
+	ViewDataBuf vdb(form, &d, sizeof d);
 	
 	ht_replace_bin_context *ctx = (ht_replace_bin_context*)
 	create_replace_bin_context(file, ofs, len, d.str.text, d.str.textlen, return_repllen);
@@ -887,12 +885,12 @@ ht_data* create_replace_hexascii_context(ht_streamfile *file, FILEOFS ofs, UINT 
 	return ctx;
 }
 
-void ht_replace_hexascii_search_form::init(bounds *b, int options, ht_list *history)
+void ht_replace_hexascii_search_form::init(Bounds *b, int options, List *history)
 {
 	ht_group::init(b, VO_SELECTABLE, NULL);
 	VIEW_DEBUG_NAME("ht_replace_hexascii_search_form");
 
-	bounds c;
+	Bounds c;
 	/* ascii string */
 	c.x=6;
 	c.y=0;
@@ -944,18 +942,18 @@ static ht_search_method search_methods[] =
 	{ NULL }
 };
 
-ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, viewer_pos *start, viewer_pos *end)
+ht_search_request *search_dialog(ht_format_viewer *format, uint searchmodes, viewer_pos *start, viewer_pos *end)
 {
 	ht_search_request *result = NULL;
-	bounds b;
+	Bounds b;
 	b.w = 50;
 	b.h = 15;
-	b.x = (screen->size.w-b.w)/2;
-	b.y = (screen->size.h-b.h)/2;
+	b.x = (screen->w - b.w)/2;
+	b.y = (screen->h - b.h)/2;
 	ht_search_dialog *dialog = new ht_search_dialog();
 	dialog->init(&b, "search");
 
-	bounds k;
+	Bounds k;
 	dialog->search_mode_xgroup->getbounds(&k);
 
 	k.x = 0;
@@ -966,7 +964,7 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 	ht_search_method *q = search_methods;
 	while (q->name) {
 		if (q->search_mode_mask & searchmodes) {
-			bounds v = k;
+			Bounds v = k;
 			ht_view *form = q->create_form(&v, q->histid);
 			dialog->insert_search_mode(i, q->name, form);
 			modes++;
@@ -991,36 +989,40 @@ ht_search_request *search_dialog(ht_format_viewer *format, UINT searchmodes, vie
 			if (s->create_desc) {
 				char hist_desc[1024];
 				s->create_desc(hist_desc, sizeof hist_desc, form);
-				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, form);
+				insert_history_entry((List*)getAtomValue(s->histid), hist_desc, form);
 			}
 			/* create request */
 			switch (s->search_class) {
-				case SC_PHYSICAL:
-					if (!format->pos_to_offset(*start, &sstart.offset)
-						|| !format->pos_to_offset(*end, &send.offset)) {
-						throw ht_io_exception("Internal error: can't convert viewer_pos to offset");
-					}
-					break;
-				case SC_VISUAL:
-					sstart.pos = *start;
-					send.pos = *end;
-					break;
+			case SC_PHYSICAL:
+				if (!format->pos_to_offset(*start, &sstart.offset)) {
+					throw MsgfException("Internal error: can't convert viewer_pos to offset");
+				}
+				if (!format->pos_to_offset(*end, &send.offset)) {
+					send.offset = -1;
+				}
+				break;
+			case SC_VISUAL:
+				sstart.pos = *start;
+				send.pos = *end;
+				break;
 			}
 			result = s->create_request(&sstart, &send, form, format, s->search_class);
 			switch (s->search_class) {
-				case SC_PHYSICAL:
-					if (!format->offset_to_pos(sstart.offset, start)
-					|| !format->offset_to_pos(send.offset, end)) {
-						throw ht_io_exception("Internal error: can't convert offset to viewer_pos");
-					}
-					break;
-				case SC_VISUAL:
-					*start = sstart.pos;
-					*end = send.pos;
-					break;
+			case SC_PHYSICAL:
+				if (!format->offset_to_pos(sstart.offset, start)) {
+					throw MsgfException("Internal error: can't convert offset to viewer_pos");
+				}
+				if (!format->pos_to_offset(*end, &send.offset)) {
+					send.offset = -1;
+				}
+				break;
+			case SC_VISUAL:
+				*start = sstart.pos;
+				*end = send.pos;
+				break;
 			}
-		} catch (const ht_exception &e) {
-			errorbox("error: %s", e.what());
+		} catch (const Exception &e) {
+			errorbox("error: %y", &e);
 		}
 	}
 	dialog->done();
@@ -1035,18 +1037,18 @@ static ht_replace_method replace_methods[] =
 	{ NULL }
 };
 
-UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
+uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 {
 	*cancelled = false;
-	bounds b;
+	Bounds b;
 	b.w = 50;
 	b.h = 22;
-	b.x = (screen->size.w-b.w)/2;
-	b.y = (screen->size.h-b.h)/2;
+	b.x = (screen->w - b.w)/2;
+	b.y = (screen->h - b.h)/2;
 	ht_replace_dialog *dialog = new ht_replace_dialog();
 	dialog->init(&b);
 
-	bounds k;
+	Bounds k;
 	dialog->search_mode_xgroup->getbounds(&k);
 
 	k.x = 0;
@@ -1059,7 +1061,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 	while (q->name) {
 		if ((q->search_mode_mask & searchmodes) &&
 		(q->search_class == SC_PHYSICAL)) {
-			bounds v = k;
+			Bounds v = k;
 			ht_view *form = q->create_form(&v, q->histid);
 			dialog->insert_search_mode(i, q->name, form);
 		}
@@ -1074,7 +1076,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 	i = 0;
 	ht_replace_method *w = replace_methods;
 	while (w->name) {
-		bounds v = k;
+		Bounds v = k;
 		ht_view *form = w->create_form(&v, w->histid);
 		dialog->insert_replace_mode(i, w->name, form);
 		w++;
@@ -1084,7 +1086,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 	dialog->select_search_mode(lastsearchmodeid);
 	dialog->select_replace_mode(lastreplacemodeid);
 
-	UINT repl_count = 0;
+	uint repl_count = 0;
 	if (dialog->run(false)) {
 		int smodeid = dialog->get_search_modeid();
 		int rmodeid = dialog->get_replace_modeid();
@@ -1105,7 +1107,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 			if (s->create_desc) {
 				char hist_desc[1024];
 				s->create_desc(hist_desc, sizeof hist_desc, sform);
-				insert_history_entry((ht_list*)find_atom(s->histid), hist_desc, sform);
+				insert_history_entry((List*)getAtomValue(s->histid), hist_desc, sform);
 			}
 			/* search */
 			start.offset=0;
@@ -1113,12 +1115,12 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 			format->get_current_offset(&start.offset);
 
 			request = s->create_request(&start, &end, sform, format, s->search_class);
-		} catch (const ht_exception &e) {
-			errorbox("error: %s", e.what());
+		} catch (const Exception &e) {
+			errorbox("error: %y", &e);
 		}
 		
 		if (request) {
-			FILEOFS so = start.offset, eo = end.offset;
+			FileOfs so = start.offset, eo = end.offset;
 			ht_physical_search_result *result;
 
 			format->vstate_save();
@@ -1126,7 +1128,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 			try {
 				bool replace_all = false;
 				while ((result = (ht_physical_search_result*)format->psearch(request, so, eo))) {
-					UINT irepllen = 0;
+					FileOfs irepllen = 0;
 					bool do_replace = false;
 
 					if (!replace_all) {
@@ -1151,7 +1153,7 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 					}
 
 					if (replace_all || do_replace) {
-						ht_data *rctx = r->create_replace_context(format->get_file(), result->offset, result->size, rform, &irepllen);
+						Object *rctx = r->create_replace_context(format->get_file(), result->offset, result->size, rform, &irepllen);
 						bool p = execute_process(r->replace_process, rctx);
 						delete rctx;
 						if (!p) {
@@ -1169,14 +1171,14 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 					}
 					delete result;
 				}
-			} catch (const ht_exception &e) {
-				errorbox("error: %s", e.what());
+			} catch (const Exception &e) {
+				errorbox("error: %y", &e);
 			}
 
 			app->sendmsg(cmd_vstate_restore);
 		}
 				
-		if (request) delete request;
+		delete request;
 	}
 	dialog->done();
 	delete dialog;
@@ -1184,35 +1186,35 @@ UINT replace_dialog(ht_format_viewer *format, UINT searchmodes, bool *cancelled)
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
-ht_data* create_replace_bin_context(ht_streamfile *file, FILEOFS ofs, UINT len, byte *repl, UINT repllen, UINT *return_repllen)
+Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, byte *repl, FileOfs repllen, FileOfs *return_repllen)
 {
 	ht_replace_bin_context *ctx = new ht_replace_bin_context();
 	ctx->file = file;
 	ctx->ofs = ofs;
 	ctx->len = len;
-	ctx->repl = (byte*)malloc(repllen);
-	memmove(ctx->repl, repl, repllen);
+	ctx->repl = ht_malloc(repllen);
+	memcpy(ctx->repl, repl, repllen);
 	ctx->repllen = repllen;
 	if (repllen > len) {
-		ctx->o = file->get_size();
+		ctx->o = file->getSize();
 	} else if (len > repllen) {
-		ctx->o = ofs+len;
+		ctx->o = ofs + len;
 	}
 	ctx->z = REPLACE_COPY_BUF_SIZE;
 	if (len != repllen)
-		ctx->buf = (byte*)malloc(REPLACE_COPY_BUF_SIZE);
+		ctx->buf = ht_malloc(REPLACE_COPY_BUF_SIZE);
 	ctx->return_repllen = return_repllen;
 	return ctx;
 }
 
-bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
+bool replace_bin_process(Object *context, ht_text *progress_indicator)
 {
 	progress_indicator->settext("replacing...\n");
 	
 	ht_replace_bin_context *c = (ht_replace_bin_context*)context;
 	if (c->repllen > c->len) {
 		/* grow */
-		UINT size = c->file->get_size();
+		uint size = c->file->getSize();
 		c->file->extend(size + c->repllen - c->len);
 		
 		if (c->o > c->z) {
@@ -1226,36 +1228,31 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 			c->o = c->ofs + c->len;
 		}
 		c->file->seek(c->o);
-		if (c->file->read(c->buf, c->z) != c->z)
-			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
-		c->file->seek(c->o+c->repllen-c->len);
-		if (c->file->write(c->buf, c->z) != c->z)
-			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+		c->file->readx(c->buf, c->z);
+		c->file->seek(c->o + c->repllen - c->len);
+		c->file->writex(c->buf, c->z);
 			
 		if (c->o > c->ofs + c->len) return true;
 		
 		c->file->seek(c->ofs);
-		if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+		c->file->writex(c->repl, c->repllen);
+
 		free(c->buf);
 	} else if (c->repllen < c->len) {
 		/* shrink */
-		UINT size = c->file->get_size();
+		uint size = c->file->getSize();
 		if (c->o == c->ofs + c->len) {
 			c->file->seek(c->ofs);
-			if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+			c->file->writex(c->repl, c->repllen);
 		}
 		
 		if (c->z > size - c->o) {
 			c->z = size - c->o;
 		}
 		c->file->seek(c->o);
-		if (c->file->read(c->buf, c->z) != c->z)
-			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+		c->file->readx(c->buf, c->z);
 		c->file->seek(c->o - (c->len - c->repllen));
-		if (c->file->write(c->buf, c->z) != c->z)
-			throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+		c->file->writex(c->buf, c->z);
 		c->o += REPLACE_COPY_BUF_SIZE;
 		
 		if (c->z == REPLACE_COPY_BUF_SIZE) return true;
@@ -1264,8 +1261,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 		free(c->buf);
 	} else {
 		c->file->seek(c->ofs);
-		if (c->file->write(c->repl, c->repllen) != c->repllen)
-				throw ht_io_exception("cant replace, write error (ofs=%08x)", c->ofs);
+		c->file->writex(c->repl, c->repllen);
 	}
 	if (c->return_repllen) *c->return_repllen = c->repllen;
 	return false;
@@ -1274,7 +1270,7 @@ bool replace_bin_process(ht_data *context, ht_text *progress_indicator)
 /*
  *	CLASS ht_search_dialog
  */
-void ht_search_dialog::init(bounds *b, const char *title)
+void ht_search_dialog::init(Bounds *b, const char *title)
 {
 	ht_dialog::init(b, title, FS_KILLER | FS_TITLE | FS_MOVE);
 	VIEW_DEBUG_NAME("ht_search_dialog");
@@ -1282,7 +1278,7 @@ void ht_search_dialog::init(bounds *b, const char *title)
 	smodecount = 0;
 	smodeidx = -1;
 
-	bounds c;
+	Bounds c;
 	c.x=1;
 	c.y=1;
 	c.w=20;
@@ -1329,7 +1325,7 @@ void ht_search_dialog::handlemsg(htmsg *msg)
 	if (msg->msg==msg_keypressed) {
 		ht_dialog::handlemsg(msg);
 		ht_listpopup_data data;
-		search_mode_popup->databuf_get(&data, sizeof data);
+		ViewDataBuf vdb(search_mode_popup, &data, sizeof data);
 		if ((int)data.cursor_pos != smodeidx) {
 			smodeidx = data.cursor_pos;
 			select_search_mode_bymodeidx();
@@ -1347,9 +1343,9 @@ ht_view *ht_search_dialog::get_search_modeform()
 	return smodes[smodeidx].view;
 }
 
-void ht_search_dialog::insert_search_mode(int id, char *desc, ht_view *v)
+void ht_search_dialog::insert_search_mode(int id, const char *desc, ht_view *v)
 {
-	if (smodecount<MAX_SEARCH_DIALOG_MODES) {
+	if (smodecount < MAX_SEARCH_DIALOG_MODES) {
 		search_mode_xgroup->insert(v);
 		search_mode_popup->insertstring(desc);
 		smodes[smodecount].id=id;
@@ -1372,6 +1368,7 @@ void ht_search_dialog::select_search_mode_bymodeidx()
 {
 	ht_listpopup_data d;
 	d.cursor_pos = smodeidx;
+	d.cursor_string = NULL;
 	search_mode_popup->databuf_set(&d, sizeof d);
 	focus(smodes[smodeidx].view);
 	sendmsg(msg_dirtyview, 0);
@@ -1380,13 +1377,13 @@ void ht_search_dialog::select_search_mode_bymodeidx()
 /*
  *	CLASS ht_replace_dialog
  */
-void ht_replace_dialog::init(bounds *b)
+void ht_replace_dialog::init(Bounds *b)
 {
 	ht_search_dialog::init(b, "replace");
 
 	rmodecount=0;
 
-	bounds c;
+	Bounds c;
 	c.x=1;
 	c.y=15;
 	c.w=20;
@@ -1441,7 +1438,7 @@ void ht_replace_dialog::handlemsg(htmsg *msg)
 	if (msg->msg == msg_keypressed) {
 		ht_search_dialog::handlemsg(msg);
 		ht_listpopup_data data;
-		replace_mode_popup->databuf_get(&data, sizeof data);
+		ViewDataBuf vdb(replace_mode_popup, &data, sizeof data);
 		if ((int)data.cursor_pos != rmodeidx) {
 			rmodeidx=data.cursor_pos;
 			select_replace_mode_bymodeidx();
@@ -1459,9 +1456,9 @@ ht_view *ht_replace_dialog::get_replace_modeform()
 	return rmodes[rmodeidx].view;
 }
 
-void ht_replace_dialog::insert_replace_mode(int id, char *desc, ht_view *v)
+void ht_replace_dialog::insert_replace_mode(int id, const char *desc, ht_view *v)
 {
-	if (rmodecount<MAX_REPLACE_DIALOG_MODES) {
+	if (rmodecount < MAX_REPLACE_DIALOG_MODES) {
 		replace_mode_xgroup->insert(v);
 		replace_mode_popup->insertstring(desc);
 		rmodes[rmodecount].id=id;
@@ -1484,6 +1481,7 @@ void ht_replace_dialog::select_replace_mode_bymodeidx()
 {
 	ht_listpopup_data d;
 	d.cursor_pos = rmodeidx;
+	d.cursor_string = NULL;
 	replace_mode_popup->databuf_set(&d, sizeof d);
 //	focus(rmodes[rmodeidx].view);
 	sendmsg(msg_dirtyview, 0);
@@ -1493,18 +1491,18 @@ void ht_replace_dialog::select_replace_mode_bymodeidx()
  *
  */
  
-ht_search_result *linear_bin_search(ht_search_request *search, FILEOFS start, FILEOFS end, ht_streamfile *file, FILEOFS fofs, dword fsize)
+ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, FileOfs end, File *file, FileOfs fofs, FileOfs fsize)
 {
-	ht_fxbin_search_request *s=(ht_fxbin_search_request*)search;
+	ht_fxbin_search_request *s = (ht_fxbin_search_request*)search;
 		
-	int fl=(search->flags & SFBIN_CASEINSENSITIVE) ? SFBIN_CASEINSENSITIVE : 0;
-	if (start<fofs) start=fofs;
-	if (end>fofs+fsize) end=fofs+fsize;
-	if ((fsize) && (start<end)) {
+	int fl = (search->flags & SFBIN_CASEINSENSITIVE) ? SFBIN_CASEINSENSITIVE : 0;
+	if (start < fofs) start = fofs;
+	if (end > fofs+fsize) end = fofs+fsize;
+	if (fsize && start < end) {
 		/* create result */
 		bool search_success = false;
-		FILEOFS search_ofs;
-		ht_data *ctx = create_search_bin_context(file, start, end-start, s->data, s->data_size, fl, &search_ofs, &search_success);
+		FileOfs search_ofs;
+		Object *ctx = create_search_bin_context(file, start, end-start, s->data, s->data_size, fl, &search_ofs, &search_success);
 		if (execute_process(search_bin_process, ctx)) {
 			delete ctx;
 			if (search_success) {

@@ -21,82 +21,83 @@
 #include "log.h"
 #include "htelfimg.h"
 #include "htpal.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "tools.h"
 
 #include "elfstruc.h"
 #include "elf_analy.h"
 
-static ht_view *htelfimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
 //	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) return 0;
 
-	LOG("%s: ELF: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: ELF: loading image (starting analyser)...", &file->getFilename(fn));
 	ElfAnalyser *p = new ElfAnalyser();
 	p->init(elf_shared, file);
 
-	bounds c=*b;
-	ht_group *g=new ht_group();
+	Bounds c = *b;
+	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_ELF_IMAGE"-g");
 	AnalyInfoline *head;
 
-	c.y+=2;
-	c.h-=2;
-	ht_elf_aviewer *v=new ht_elf_aviewer();
+	c.y += 2;
+	c.h -= 2;
+	ht_elf_aviewer *v = new ht_elf_aviewer();
 	v->init(&c, DESC_ELF_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, p, elf_shared);
 
-	c.y-=2;
-	c.h=2;
-	head=new AnalyInfoline();
+	c.y -= 2;
+	c.h = 2;
+	head = new AnalyInfoline();
 	head->init(&c, v, ANALY_STATUS_DEFAULT);
 
 	v->attachInfoline(head);
 
 	/* find lowest/highest address */
-	Address *low=NULL;
-	Address *high=NULL;
+	Address *low = NULL;
+	Address *high = NULL;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
-		case ELFCLASS32: {
-			ELFAddress l, h;
-			l.a32 = (dword)-1;
-			h.a32 = 0;
-			ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
-			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
-					if (s->sh_addr < l.a32) l.a32=s->sh_addr;
-					if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
-				}
-				s++;
+	case ELFCLASS32: {
+		ELFAddress l, h;
+		l.a32 = (uint32)-1;
+		h.a32 = 0;
+		ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
+		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+			if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
+				if (s->sh_addr < l.a32) l.a32=s->sh_addr;
+				if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
 			}
-			low = p->createAddress32(l.a32);
-			high = p->createAddress32(h.a32);
-			break;
+			s++;
 		}
-		case ELFCLASS64: {
-			ELFAddress l, h;
-			l.a64 = to_uint64(to_sint64(-1));
-			h.a64 = to_uint64(0);
-			ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
-			for (UINT i=0; i<elf_shared->sheaders.count; i++) {
-				if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
-					if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
-					if ((s->sh_addr + s->sh_size > h.a64)
-					&& s->sh_size != to_qword(0)) {
-						h.a64 = s->sh_addr + s->sh_size - to_qword(1);
-					}
+		low = p->createAddress32(l.a32);
+		high = p->createAddress32(h.a32);
+		break;
+	}
+	case ELFCLASS64: {
+		ELFAddress l, h;
+		l.a64 = (uint64)-1;
+		h.a64 = 0;
+		ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
+		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+			if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
+				if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
+				if ((s->sh_addr + s->sh_size > h.a64)
+				&& s->sh_size != 0) {
+					h.a64 = s->sh_addr + s->sh_size - 1;
 				}
-				s++;
 			}
-			low = p->createAddress64(l.a64);
-			high = p->createAddress64(h.a64);
-			break;
+			s++;
 		}
+		low = p->createAddress64(l.a64);
+		high = p->createAddress64(h.a64);
+		break;
+	}
 	}
 
-	ht_analy_sub *analy=new ht_analy_sub();
+	ht_analy_sub *analy = new ht_analy_sub();
 
 	if (low->compareTo(high) < 0) {
 		analy->init(file, v, p, low, high);
@@ -152,7 +153,7 @@ format_viewer_if htelfimage_if = {
 /*
  *	CLASS ht_elf_aviewer
  */
-void ht_elf_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_elf_shared_data *ELF_shared)
+void ht_elf_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_elf_shared_data *ELF_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	elf_shared = ELF_shared;

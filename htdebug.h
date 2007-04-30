@@ -23,18 +23,18 @@
 
 #include <stdio.h>
 
-#include "global.h"
+#include "io/types.h"
 
 /****************************************************************************/
 #define HTDEBUG
 /****************************************************************************/
 
-void ht_assert_failed(char *file, int line, char *assertion);
-void ht_error(char *file, int line, char *format,...);
-void ht_trace(char *file, int line, char *format,...);
-void ht_warn(char *file, int line, char *format,...);
+void ht_assert_failed(const char *file, int line, const char *assertion);
+void ht_error(const char *file, int line, const char *format,...);
+void ht_trace(const char *file, int line, const char *format,...);
+void ht_warn(const char *file, int line, const char *format,...);
 
-typedef qword timepoint;
+typedef uint64 timepoint;
 
 typedef int timer_handle;
 
@@ -43,9 +43,9 @@ void start_timer(timer_handle handle);
 void stop_timer(timer_handle handle);
 void delete_timer(timer_handle handle);
 
-dword get_timer_sec(timer_handle handle);
-dword get_timer_msec(timer_handle handle);
-dword get_timer_tick(timer_handle h);
+uint get_timer_sec(timer_handle handle);
+uint get_timer_msec(timer_handle handle);
+uint get_timer_tick(timer_handle h);
 
 #define HT_ERROR(a...) ht_error(__FILE__, __LINE__, a)
 #define HT_WARN(a...) ht_warn(__FILE__, __LINE__, a)
@@ -56,11 +56,19 @@ dword get_timer_tick(timer_handle h);
 #define HT_TRACE(a...) ((void)0)
 #endif
 
+#ifdef assert
+#undef assert
+#endif
+
 #ifdef HTDEBUG
 #	define assert(a) if (!(a)) ht_assert_failed(__FILE__, __LINE__, (#a));
 #else
 #	define assert(a) ((void)0)
 #endif
+
+#define ASSERT(a) assert(a)
+
+#define HERE __FILE__, __LINE__
 
 #endif /* !__HTDEBUG_H__ */
 

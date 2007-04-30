@@ -18,17 +18,17 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "cmds.h"
 #include "htapp.h"
 #include "htctrl.h"
 #include "htdebug.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htmenu.h"
 #include "htobj.h"
 #include "htpal.h"
 #include "htreg.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "store.h"
 #include "tools.h"
@@ -37,44 +37,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ATOM_HT_VIEW		MAGICD("OBJ\0")
-#define ATOM_HT_GROUP		MAGICD("OBJ\1")
-#define ATOM_HT_XGROUP		MAGICD("OBJ\2")
-#define ATOM_HT_WINDOW		MAGICD("OBJ\3")
-#define ATOM_HT_FRAME		MAGICD("OBJ\4")
-#define ATOM_HT_SCROLLBAR	MAGICD("OBJ\5")
+#define ATOM_HT_VIEW		MAGIC32("OBJ\0")
+#define ATOM_HT_GROUP		MAGIC32("OBJ\1")
+#define ATOM_HT_XGROUP		MAGIC32("OBJ\2")
+#define ATOM_HT_WINDOW		MAGIC32("OBJ\3")
+#define ATOM_HT_FRAME		MAGIC32("OBJ\4")
+#define ATOM_HT_SCROLLBAR	MAGIC32("OBJ\5")
 
 #define DEFAULT_VIEW_MIN_WIDTH 	25
 #define DEFAULT_VIEW_MIN_HEIGHT	6
 
-void bounds_and(bounds *a, bounds *b)
+static void bounds_and(Bounds *a, Bounds *b)
 {
-	if (b->x>a->x) {
-		a->w-=b->x-a->x;
-		a->x=b->x;
+	if (b->x > a->x) {
+		a->w -= b->x-a->x;
+		a->x = b->x;
 	}
-	if (b->y>a->y) {
-		a->h-=b->y-a->y;
-		a->y=b->y;
+	if (b->y > a->y) {
+		a->h -= b->y-a->y;
+		a->y = b->y;
 	}
-	if (a->x+a->w>b->x+b->w) a->w-=a->x+a->w-b->x-b->w;
-	if (a->y+a->h>b->y+b->h) a->h-=a->y+a->h-b->y-b->h;
-	if (a->w<0) a->w=0;
-	if (a->h<0) a->h=0;
-}
-
-void put_bounds(ht_object_stream *s, bounds *b)
-{
-	s->putIntDec(b->x, 4, NULL);
-	s->putIntDec(b->y, 4, NULL);
-	s->putIntDec(b->w, 4, NULL);
-	s->putIntDec(b->h, 4, NULL);
+	if (a->x + a->w > b->x+b->w) a->w -= a->x + a->w - b->x - b->w;
+	if (a->y + a->h > b->y+b->h) a->h -= a->y + a->h - b->y - b->h;
+	if (a->w < 0) a->w = 0;
+	if (a->h < 0) a->h = 0;
 }
 
 void clearmsg(htmsg *msg)
 {
-	msg->msg=msg_empty;
-	msg->type=mt_empty;
+	msg->msg = msg_empty;
+	msg->type = mt_empty;
 }
 
 /*
@@ -89,33 +81,29 @@ void ht_text::settext(const char *text)
  *	CLASS ht_view
  */
 
-void ht_view::init(bounds *b, int o, const char *d)
+void ht_view::init(Bounds *b, int o, const char *d)
 {
 	Object::init();
 	VIEW_DEBUG_NAME("ht_view");
 	desc = ht_strdup(d);
-	group = 0;
-	focused = 0;
+	group = NULL;
+	focused = false;
 	browse_idx = 0;
 	view_is_dirty = true;
-	size.x = 0;
-	size.y = 0;
-	size.w = 0;
-	size.h = 0;
+	size = *b;
 	prev = NULL;
 	next = NULL;
 	setoptions(o);
-	buf = 0;
+	buf = NULL;
 	enabled = true;
 
 	growmode = MK_GM(GMH_LEFT, GMV_TOP);
 	
+//	Bounds rel(0, 0, b->w, b->h);
 	if (options & VO_OWNBUFFER) {
-		buf = new drawbuf(&size);
-		enable_buffering();
+		buf = new BufferedRDisplay(size);
 	} else {
-		buf = screen;
-		disable_buffering();
+		buf = new SystemRDisplay(screen, size);
 	}
 
 	g_hdist = 0;
@@ -134,54 +122,55 @@ void ht_view::init(bounds *b, int o, const char *d)
 
 void ht_view::done()
 {
-	if (desc) free(desc);
-	if (pal.data) free(pal.data);
-	if (options & VO_OWNBUFFER) delete buf;
+	free(desc);
+	free(pal.data);
+	delete buf;
 	Object::done();
 }
 
-int ht_view::alone()
+int ht_view::aclone()
 {
-	return (group && group->isalone(this));
+	return (group && group->isaclone(this));
 }
 
-int ht_view::buf_lprint(int x, int y, int c, int l, char *text)
+#if 0
+int ht_view::buf_lprint(int aX, int aY, int c, int l, const char *text, Codepage cp)
 {
-	if ((size.y+y>=vsize.y) && (size.y+y<vsize.y+vsize.h)) {
-		if (size.x+x+l>vsize.x+vsize.w) l=vsize.x+vsize.w-size.x-x;
-		if (size.x+x-vsize.x<0) {
-			int kqx=-size.x-x+vsize.x;
-			for (int i=0; i<kqx; i++) {
+	if (y+aY >= vsize.y && y+aY < vsize.y+vsize.h) {
+		if (x+aX+l > vsize.x+vsize.w) l = vsize.x+vsize.w-size.x-aX;
+		if (x+aX-vsize.x < 0) {
+			int kqx = -x-aX+vsize.x;
+			for (int i=0; i < kqx; i++) {
+				if (!*text) return 0;
+				text++;
+				aX++;
+				l--;
+			}
+		}
+		return (l > 0) ? buf->b_lprint(x+aX, y+aY, c, l, text) : 0;
+	}
+	return 0;
+}
+
+int ht_view::buf_lprintw(int aX, int aY, int c, int l, const AbstractChar *text, Codepage cp)
+{
+	if (size.y+aY >= vsize.y && size.y+aY < vsize.y+vsize.h)) {
+		if (x+aX+l > vsize.x+vsize.w) l=vsize.x+vsize.w-x-aX;
+		if (x+aX-vsize.x < 0) {
+			int kqx = -x-aX+vsize.x;
+			for (int i=0; i < kqx; i++) {
 				if (!*text) return 0;
 				text++;
 				x++;
 				l--;
 			}
 		}
-		return (l>0) ? buf->b_lprint(size.x+x, size.y+y, c, l, text) : 0;
+		return (l>0) ? buf->lprintw(size.x+x, size.y+y, c, l, text) : 0;
 	}
 	return 0;
 }
 
-int ht_view::buf_lprintw(int x, int y, int c, int l, int *text)
-{
-	if ((size.y+y>=vsize.y) && (size.y+y<vsize.y+vsize.h)) {
-		if (size.x+x+l>vsize.x+vsize.w) l=vsize.x+vsize.w-size.x-x;
-		if (size.x+x-vsize.x<0) {
-			int kqx=-size.x-x+vsize.x;
-			for (int i=0; i<kqx; i++) {
-				if (!*text) return 0;
-				text++;
-				x++;
-				l--;
-			}
-		}
-		return (l>0) ? buf->b_lprintw(size.x+x, size.y+y, c, l, text) : 0;
-	}
-	return 0;
-}
-
-int ht_view::buf_print(int x, int y, int c, char *text)
+int ht_view::buf_print(int x, int y, int c, const char *text, Codepage cp)
 {
 	if ((size.y+y>=vsize.y) && (size.y+y<vsize.y+vsize.h)) {
 		int l=vsize.x+vsize.w-x-size.x;
@@ -199,22 +188,22 @@ int ht_view::buf_print(int x, int y, int c, char *text)
 	return 0;
 }
 
-void ht_view::buf_printchar(int x, int y, int c, int ch)
+void ht_view::buf_printchar(int x, int y, int c, int ch, Codepage cp)
 {
-	if (pointvisible(size.x+x, size.y+y)) buf->b_printchar(size.x+x, size.y+y, c, ch);
+	if (pointvisible(size.x+x, size.y+y)) buf->b_printchar(size.x+x, size.y+y, c, ch, cp);
 }
 
-int ht_view::buf_printf(int x, int y, int c, char *format, ...)
+int ht_view::buf_printf(int x, int y, int c, CodePage cp, const char *format, ...)
 {
 	char buf[256];	/* secure */
 	va_list arg;
 	va_start(arg, format);
 	ht_vsnprintf(buf, sizeof buf, format, arg);
 	va_end(arg);
-	return buf_print(x, y, c, buf);
+	return buf_print(x, y, c, buf, cp);
 }
 
-int ht_view::buf_printw(int x, int y, int c, int *text)
+int ht_view::buf_printw(int x, int y, int c, const AbstractChar *text, Codepage cp)
 {
 	if ((size.y+y>=vsize.y) && (size.y+y<vsize.y+vsize.h)) {
 		int l=vsize.x+vsize.w-x-size.x;
@@ -231,8 +220,9 @@ int ht_view::buf_printw(int x, int y, int c, int *text)
 	}
 	return 0;
 }
+#endif
 
-int ht_view::childcount()
+int ht_view::childcount() const
 {
 	return 1;
 }
@@ -244,12 +234,12 @@ void ht_view::cleanview()
 
 void ht_view::clear(int c)
 {
-	buf->b_fill(vsize.x, vsize.y, vsize.w, vsize.h, c, ' ');
+	buf->fill(0, 0, size.w, size.h, c, ' ');
 }
 
-void ht_view::clipbounds(bounds *b)
+void ht_view::clipbounds(Bounds *b)
 {
-	bounds c;
+	Bounds c;
 	getbounds(&c);
 	bounds_and(b, &c);
 	bounds_and(b, &vsize);
@@ -271,12 +261,12 @@ int ht_view::datasize()
 	return 0;
 }
 
-char *ht_view::defaultpalette()
+const char *ht_view::defaultpalette()
 {
 	return palkey_generic_window_default;
 }
 
-char *ht_view::defaultpaletteclass()
+const char *ht_view::defaultpaletteclass()
 {
 	return palclasskey_generic;
 }
@@ -294,9 +284,10 @@ void ht_view::disable()
 void ht_view::disable_buffering()
 {
 	if (options & VO_OWNBUFFER) {
-		if (buf) delete buf;
-		buf=screen;
-		setoptions(options&(~VO_OWNBUFFER));
+		delete buf;
+//		Bounds rel(0, 0, size.w, size.h);
+		buf = new SystemRDisplay(screen, size);
+		setoptions(options & ~VO_OWNBUFFER);
 	}
 }
 
@@ -312,19 +303,21 @@ void ht_view::enable()
 void ht_view::enable_buffering()
 {
 	if (!(options & VO_OWNBUFFER)) {
-		buf=new drawbuf(&size);
+		delete buf;
+//		Bounds rel(0, 0, size.w, size.h);
+		buf = new BufferedRDisplay(size);
 		setoptions(options | VO_OWNBUFFER);
 	}
 }
 
-bool view_line_exposed(ht_view *v, int y, int x1, int x2)
+static bool view_line_exposed(ht_view *v, int y, int x1, int x2)
 {
 	ht_group *g=v->group;
 	while (g) {
-		if ((y>=g->size.y) && (y<g->size.y+g->size.h)) {
-			if (x1<g->size.x) x1=g->size.x;
-			if (x2>g->size.x+g->size.w) x2=g->size.x+g->size.w;
-			ht_view *n=g->first;
+		if (y >= g->size.y && y < g->size.y+g->size.h) {
+			if (x1 < g->size.x) x1 = g->size.x;
+			if (x2 > g->size.x + g->size.w) x2 = g->size.x+g->size.w;
+			ht_view *n = g->first;
 			while (n && n!=v) n=n->next;
 			if (n) {
 				n=n->next;
@@ -371,7 +364,7 @@ ht_view *ht_view::enum_next(int *handle)
 bool ht_view::exposed()
 {
 #if 1
-	for (int y=0; y<size.h; y++) {
+	for (int y=0; y < size.h; y++) {
 		if (view_line_exposed(this, size.y+y, size.x, size.x+size.w)) return 1;
 	}
 	return 0;
@@ -380,32 +373,28 @@ bool ht_view::exposed()
 #endif
 }
 
-void ht_view::fill(int x, int y, int w, int h, int c, int chr)
+void ht_view::fill(int x, int y, int w, int h, int c, char chr, Codepage cp)
 {
-	bounds b;
-	b.x=size.x+x;
-	b.y=size.y+y;
-	b.w=w;
-	b.h=h;
+	Bounds b(x+size.x, y+size.y, w, h);
 	bounds_and(&b, &vsize);
-	buf->b_fill(b.x, b.y, b.w, b.h, c, chr);
+	buf->fill(b.x-size.x, b.y-size.y, b.w, b.h, c, chr, cp);
 }
 
-int ht_view::focus(ht_view *view)
+bool ht_view::focus(ht_view *view)
 {
-	if (view==this) {
+	if (view == this) {
 		if (!focused) receivefocus();
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-void ht_view::getbounds(bounds *b)
+void ht_view::getbounds(Bounds *b)
 {
-	*b=size;
+	*b = size;
 }
 
-vcp ht_view::getcolor(UINT index)
+vcp ht_view::getcolor(uint index)
 {
 	return getcolorv(&pal, index);
 }
@@ -417,74 +406,39 @@ void ht_view::getminbounds(int *width, int *height)
 }
 
 struct databufdup_s {
-	ht_memmap_file *f;
-	ht_object_stream_memmap *s;
+	MemMapFile *f;
+	ObjectStreamNative *s;
 };
 
-void ht_view::databuf_freedup(void *handle)
+void ht_view::databuf_free(void *handle)
 {
-	databufdup_s *s=(databufdup_s*)handle;
-	
-	s->s->done();
+	databufdup_s *s = (databufdup_s*)handle;	
 	delete s->s;
-	
-	s->f->done();
 	delete s->f;
-
-	free(s);
-}
-
-void ht_view::databuf_get(void *buf, int bufsize)
-{
-	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf, bufsize);
-	
-	ht_object_stream_memmap *s=new ht_object_stream_memmap();
-	s->init(f, false);
-	
-	getdata(s);
-
-	s->done();
 	delete s;
-
-	f->done();
-	delete f;
 }
 
-void *ht_view::databuf_getdup(void *buf, int bufsize)
+void *ht_view::databuf_get(void *buf, int bufsize)
 {
-	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf, bufsize);
+	MemMapFile *f = new MemMapFile(buf, bufsize);	
+	ObjectStreamNative *s = new ObjectStreamNative(f, false, true);
 	
-	ht_object_stream_memmap *s=new ht_object_stream_memmap();
-	s->init(f, true);
-	
-	getdata(s);
+	getdata(*s);
 
-	databufdup_s *q=(databufdup_s*)malloc(sizeof (databufdup_s));
-	q->f=f;
-	q->s=s;
+	databufdup_s *q = new databufdup_s;
+	q->f = f;
+	q->s = s;
 	return q;
 }
 
 void ht_view::databuf_set(void *buf, int bufsize)
 {
-	ht_memmap_file *f=new ht_memmap_file();
-	f->init((byte*)buf, bufsize);
-	
-	ht_object_stream_memmap *s=new ht_object_stream_memmap();
-	s->init(f, false);
-	
-	setdata(s);
-	
-	s->done();
-	delete s;
-	
-	f->done();
-	delete f;
+	ConstMemMapFile f(buf, bufsize);
+	ObjectStreamNative s(&f, false, true);
+	setdata(s);	
 }
 
-void ht_view::getdata(ht_object_stream *s)
+void ht_view::getdata(ObjectStream &s)
 {
 }
 
@@ -493,12 +447,12 @@ ht_view *ht_view::getfirstchild()
 	return 0;
 }
 
-UINT ht_view::getnumber()
+uint ht_view::getnumber()
 {
 	return 0;
 }
 
-char *ht_view::getpalette()
+const char *ht_view::getpalette()
 {
 	return pal_name;
 }
@@ -511,26 +465,27 @@ ht_view *ht_view::getselected()
 void ht_view::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_draw:
-			redraw();
-			return;
-		case msg_dirtyview:
-			dirtyview();
-			if (msg->type & mt_broadcast==0) clearmsg(msg);
-			return;
-		case msg_config_changed:
-			config_changed();
-//          	clearmsg(msg);
-			return;
+	case msg_draw:
+		redraw();
+		return;
+	case msg_dirtyview:
+		dirtyview();
+		if (msg->type & mt_broadcast == 0) clearmsg(msg);
+		return;
+	case msg_config_changed:
+		config_changed();
+//		clearmsg(msg);
+		return;
 	}
 }
 
 void ht_view::hidecursor()
 {
-	screen->hidecursor();
+	buf->setCursorMode(CURSOR_OFF);
+	screen->setCursorMode(CURSOR_OFF);
 }
 
-int ht_view::isalone(ht_view *view)
+int ht_view::isaclone(ht_view *view)
 {
 	return (view==this) && (countselectables()==1);
 }
@@ -540,7 +495,7 @@ int ht_view::isviewdirty()
 	return view_is_dirty;
 }
 
-int ht_view::load(ht_object_stream *s)
+void ht_view::load(ObjectStream &s)
 {
 /*     s->get_bool(enabled, NULL);
 	s->get_bool(focused, NULL);
@@ -552,33 +507,34 @@ int ht_view::load(ht_object_stream *s)
 	s->get_string(pal_class, NULL);
 	s->get_string(pal_name, NULL);
 	s->get_int_dec(growmode, 4, NULL);*/
-	return 1;
 }
 
 void ht_view::move(int rx, int ry)
 {
-	size.x+=rx;
-	size.y+=ry;
-	buf->b_rmove(rx, ry);
-	vsize=size;
+	size.x += rx;
+	size.y += ry;
+	buf->move(rx, ry);
+	vsize = size;
 	if (group) group->clipbounds(&vsize);
 	app->clipbounds(&vsize);
 }
 
-OBJECT_ID ht_view::object_id() const
+ObjectID ht_view::getObjectID() const
 {
 	return ATOM_HT_VIEW;
 }
 
-int ht_view::pointvisible(int x, int y)
+bool ht_view::pointvisible(int x, int y)
 {
-	return ((x>=vsize.x) && (y>=vsize.y) && (x<vsize.x+vsize.w) && (y<vsize.y+vsize.h));
+	x += size.x;
+	y += size.y;
+	return (x >= vsize.x && y >= vsize.y && x < vsize.x+vsize.w && y < vsize.y+vsize.h);
 }
 
 void ht_view::receivefocus()
 {
 	dirtyview();
-	focused=1;
+	focused = true;
 }
 
 void ht_view::redraw()
@@ -589,7 +545,7 @@ void ht_view::redraw()
 				draw();
 				cleanview();
 			}
-			screen->drawbuffer((drawbuf*)buf, size.x, size.y, &vsize);
+			screen->copyFromDisplay(*buf, size.x, size.y, vsize);
 		} else {
 			draw();
 			cleanview();
@@ -600,11 +556,13 @@ void ht_view::redraw()
 void ht_view::resize(int sx, int sy)
 {
 	if (options & VO_RESIZE) {
-		if (size.w+sx <= 0) sx=-size.w+1;
-		if (size.h+sy <= 0) sy=-size.h+1;
-		size.w+=sx;
-		size.h+=sy;
-		buf->b_resize(sx, sy);
+		int min_width, min_height;
+		getminbounds(&min_width, &min_height);
+		if (size.w+sx <= min_width) sx = min_width - size.w;
+		if (size.h+sy <= min_height) sy = min_height - size.h;
+		size.w += sx;
+		size.h += sy;
+		buf->resize(sx, sy);
 	}
 	vsize = size;
 	if (group) group->clipbounds(&vsize);
@@ -629,7 +587,7 @@ void ht_view::reloadpalette()
 
 void ht_view::relocate_to(ht_view *view)
 {
-	bounds b;
+	Bounds b;
 	view->getbounds(&b);
 	move(b.x, b.y);
 }
@@ -666,57 +624,50 @@ void ht_view::sendmsg(int msg, int data1, int data2)
 {
 	htmsg m;
 	switch (msg) {
-		case msg_empty:
-			return;
-		case msg_draw:
-		case msg_dirtyview:
-			m.msg=msg;
-			m.type=mt_broadcast;
-			m.data1.integer=data1;
-			m.data2.integer=data2;
-			break;
-		default:
-			m.msg=msg;
-			m.type=mt_empty;
-			m.data1.integer=data1;
-			m.data2.integer=data2;
-			break;
+	case msg_empty:
+		return;
+	case msg_draw:
+	case msg_dirtyview:
+		m.msg = msg;
+		m.type = mt_broadcast;
+		m.data1.integer = data1;
+		m.data2.integer = data2;
+		break;
+	default:
+		m.msg = msg;
+		m.type = mt_empty;
+		m.data1.integer = data1;
+		m.data2.integer = data2;
+		break;
 	}
 	sendmsg(&m);
 }
 
-void ht_view::setbounds(bounds *b)
+void ht_view::setbounds(Bounds *b)
 {
-	size=*b;
-	setvisualbounds(&size);
+	size = *b;
+	setvisualbounds(b);
 }
 
-void ht_view::setvisualbounds(bounds *b)
+void ht_view::setvisualbounds(Bounds *b)
 {
-	vsize=*b;
-	if (options & VO_OWNBUFFER) {
-		buf->b_setbounds(b);
-	}
+	vsize = *b;
+//	Bounds rel(0, 0, b->w, b->h);
+	buf->setBounds(*b);
 }
 
-void ht_view::setcursor(int x, int y, cursor_mode c)
+void ht_view::setcursor(int x, int y, CursorMode c)
 {
-	if (pointvisible(size.x+x, size.y+y)) {
-		screen->setcursor(size.x+x, size.y+y);
-		switch (c) {
-			case cm_normal:
-				screen->setcursormode(0);
-				break;
-			case cm_overwrite:
-				screen->setcursormode(1);
-				break;
-		}
+	if (pointvisible(x, y)) {
+		buf->setCursor(x, y, c);
+		screen->setCursor(size.x+x, size.y+y, c);
 	} else {
-		screen->hidecursor();
+		buf->setCursorMode(CURSOR_OFF);
+		screen->setCursorMode(CURSOR_OFF);
 	}
 }
 
-void ht_view::setdata(ht_object_stream *s)
+void ht_view::setdata(ObjectStream &s)
 {
 }
 
@@ -725,7 +676,7 @@ void ht_view::setgroup(ht_group *_group)
 	group=_group;
 }
 
-void ht_view::setnumber(UINT number)
+void ht_view::setnumber(uint number)
 {
 }
 
@@ -734,19 +685,19 @@ void ht_view::setoptions(int Options)
 	options = Options;
 }
 
-void ht_view::setpalette(char *Pal_name)
+void ht_view::setpalette(const char *Pal_name)
 {
 	pal_name = Pal_name;
 	reloadpalette();
 }
 
-void ht_view::setpalettefull(char *_pal_name, char *_pal_class)
+void ht_view::setpalettefull(const char *_pal_name, const char *_pal_class)
 {
 	pal_class=_pal_class;
 	setpalette(pal_name);
 }
 
-void	ht_view::store(ht_object_stream *s)
+void	ht_view::store(ObjectStream &s) const
 {
 /*	s->putBool(enabled, NULL);
 	s->putBool(focused, NULL);
@@ -762,7 +713,7 @@ void	ht_view::store(ht_object_stream *s)
 
 void ht_view::unrelocate_to(ht_view *view)
 {
-	bounds b;
+	Bounds b;
 	view->getbounds(&b);
 	b.x=-b.x;
 	b.y=-b.y;
@@ -773,7 +724,7 @@ void ht_view::unrelocate_to(ht_view *view)
  *	CLASS ht_group
  */
 
-void ht_group::init(bounds *b, int options, const char *desc)
+void ht_group::init(Bounds *b, int options, const char *desc)
 {
 	first=0;
 	current=0;
@@ -799,7 +750,7 @@ void ht_group::done()
 	ht_view::done();
 }
 
-int ht_group::childcount()
+int ht_group::childcount() const
 {
 	return view_count;
 }
@@ -817,7 +768,7 @@ int ht_group::countselectables()
 
 int ht_group::datasize()
 {
-	UINT size=0;
+	uint size=0;
 	ht_view *v=first;
 	while (v) {
 		size+=v->datasize();
@@ -833,71 +784,71 @@ int ht_group::enum_start()
 
 ht_view *ht_group::enum_next(int *handle)
 {
-	int lowest=0x7fffffff;
-	ht_view *view=0;
+	int lowest = 0x7fffffff;
+	ht_view *view = 0;
 
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
-		if ((v->browse_idx > *handle) && (v->browse_idx < lowest)) {
-			lowest=v->browse_idx;
-			view=v;
+		if (v->browse_idx > *handle && v->browse_idx < lowest) {
+			lowest = v->browse_idx;
+			view = v;
 		}
-		v=v->next;
+		v = v->next;
 	}
-	*handle=lowest;
+	*handle = lowest;
 	return view;
 }
 
-int ht_group::focus(ht_view *view)
+bool ht_group::focus(ht_view *view)
 {
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
 		if (v->focus(view)) {
 			releasefocus();
-			current=v;
+			current = v;
 			putontop(v);
 			receivefocus();
-			return 1;
+			return true;
 		}
-		v=v->next;
+		v = v->next;
 	}
 	return ht_view::focus(view);
 }
 
-int ht_group::focusnext()
+bool ht_group::focusnext()
 {
-	int i=current->browse_idx;
-	int r=(options & VO_SELBOUND);
-	ht_view *x=NULL;
-	while (1) {
+	int i = current->browse_idx;
+	bool r = (options & VO_SELBOUND);
+	ht_view *x = NULL;
+	while (true) {
 		i++;
-		if (i>view_count-1) i=0;
-		if (i==current->browse_idx) break;
-		ht_view *v=get_by_browse_idx(i);
-		if (v && (v->options & VO_SELECTABLE)) {
-			x=v;
+		if (i > view_count-1) i=0;
+		if (i == current->browse_idx) break;
+		ht_view *y = get_by_browse_idx(i);
+		if (y && (y->options & VO_SELECTABLE)) {
+			x = y;
 			break;
 		}
 	}
-	if ((i < current->browse_idx) && !alone() && !r) {
-		return 0;
+	if (i < current->browse_idx && !aclone() && !r) {
+		return false;
 	}
 	if (x) {
 		x->selectfirst();
 		focus(x);
-		return 1;
+		return true;
 	}
 	return r;
 }
 
-int ht_group::focusprev()
+bool ht_group::focusprev()
 {
-	int i=current->browse_idx;
-	int r=(options & VO_SELBOUND);
-	if (!i && !alone() && !r) {
-		return 0;
+	int i = current->browse_idx;
+	bool r = (options & VO_SELBOUND);
+	if (!i && !aclone() && !r) {
+		return false;
 	}
-	while (1) {
+	while (true) {
 		i--;
 		if (i<0) i=view_count-1;
 		if (i==current->browse_idx) break;
@@ -905,7 +856,7 @@ int ht_group::focusprev()
 		if (v && (v->options & VO_SELECTABLE)) {
 			v->selectlast();
 			focus(v);
-			return 1;
+			return true;
 		}
 	}
 	return r;
@@ -921,11 +872,11 @@ ht_view *ht_group::get_by_browse_idx(int i)
 	return 0;
 }
 
-void ht_group::getdata(ht_object_stream *s)
+void ht_group::getdata(ObjectStream &s)
 {
 	ht_view *v;
-	int h=enum_start();
-	while ((v=enum_next(&h))) {
+	int h = enum_start();
+	while ((v = enum_next(&h))) {
 		v->getdata(s);
 	}
 }
@@ -940,18 +891,37 @@ ht_view *ht_group::getfirstchild()
 	return first;
 }
 
+void ht_group::getminbounds(int *width, int *height)
+{
+	ht_view::getminbounds(width, height);
+	ht_view *v = first;
+	while (v) {
+		if (v->options & VO_RESIZE) {
+			int w, h;
+			v->getminbounds(&w, &h);
+			w += v->size.x + size.w - (v->size.x + v->size.w);
+			h += v->size.y + size.h - (v->size.y + v->size.h);
+			uint gmh = GET_GM_H(v->growmode);
+			uint gmv = GET_GM_V(v->growmode);
+			if (gmh == GMH_FIT && w > *width) *width = w;
+			if (gmv == GMV_FIT && h > *height) *height = h;
+		}
+		v = v->next;
+	}
+}
+
 void ht_group::handlemsg(htmsg *msg)
 {
 	if (!enabled) return;
-	if (msg->type==mt_broadcast) {
+	if (msg->type == mt_broadcast) {
 		ht_view::handlemsg(msg);
 		ht_view *v=first;
 		while (v) {
 			v->handlemsg(msg);
-			v=v->next;
+			v = v->next;
 		}
-	} else if (msg->type==mt_empty) {
-		int msgtype=msg->type;
+	} else if (msg->type == mt_empty) {
+		int msgtype = msg->type;
 		ht_view *v;
 
 		msg->type=mt_preprocess;
@@ -977,7 +947,7 @@ void ht_group::handlemsg(htmsg *msg)
 
 		msg->type=msgtype;
 		ht_view::handlemsg(msg);
-	} else if (msg->type==mt_preprocess) {
+	} else if (msg->type == mt_preprocess) {
 		ht_view *v;
 
 		v=first;
@@ -987,7 +957,7 @@ void ht_group::handlemsg(htmsg *msg)
 			}
 			v=v->next;
 		}
-	} else if (msg->type==mt_postprocess) {
+	} else if (msg->type == mt_postprocess) {
 		ht_view *v;
 
 		v=first;
@@ -999,26 +969,26 @@ void ht_group::handlemsg(htmsg *msg)
 		}
 	}
 
-	if (((msg->type==mt_empty) || (msg->type==mt_broadcast)) && (msg->msg==msg_keypressed)) {
+	if ((msg->type==mt_empty || msg->type==mt_broadcast) && (msg->msg == msg_keypressed)) {
 		switch (msg->data1.integer) {
-			case K_Left:
-			case K_BackTab: {
-				if (focusprev()) {
-					clearmsg(msg);
-					dirtyview();
-					return;
-				}
-				break;
+		case K_Left:
+		case K_Shift_Tab: {
+			if (focusprev()) {
+				clearmsg(msg);
+				dirtyview();
+				return;
 			}
-			case K_Right:
-			case K_Tab: {
-				if (focusnext()) {
-					clearmsg(msg);
-					dirtyview();
-					return;
-				}
-				break;
+			break;
+		}
+		case K_Right:
+		case K_Tab: {
+			if (focusnext()) {
+				clearmsg(msg);
+				dirtyview();
+				return;
 			}
+			break;
+		}
 		}
 	}
 }
@@ -1033,21 +1003,21 @@ void ht_group::insert(ht_view *view)
 	view->g_hdist=size.w - (view->size.x+view->size.w);
 	view->g_vdist=size.h - (view->size.y+view->size.h);
 
-	bounds c;
+	Bounds c;
 	getbounds(&c);
 	view->move(c.x, c.y);
 
 	if (last) last->next=view;
-	view->prev=last;
-	view->next=0;
-	last=view;
-	if (!first) first=view;
+	view->prev = last;
+	view->next = NULL;
+	last = view;
+	if (!first) first = view;
 	view->setgroup(this);
-	view->browse_idx=view_count++;
-	if ((!current) || ((current) && (!(current->options & VO_SELECTABLE)) && (view->options & VO_SELECTABLE))) {
-		current=view;
+	view->browse_idx = view_count++;
+	if (!current || (current && (!(current->options & VO_SELECTABLE)) && (view->options & VO_SELECTABLE))) {
+		current = view;
 	}
-	if ((current) && (current->options & VO_SELECTABLE)) {
+	if (current && (current->options & VO_SELECTABLE)) {
 		if (focused) {
 			focus(current);
 		} else {
@@ -1056,42 +1026,41 @@ void ht_group::insert(ht_view *view)
 	}
 }
 
-int ht_group::isalone(ht_view *view)
+int ht_group::isaclone(ht_view *view)
 {
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
-		if ((v!=view) && (v->countselectables())) return 0;
-		v=v->next;
+		if (v != view && v->countselectables()) return 0;
+		v = v->next;
 	}
 	return 1;
 }
 
 int ht_group::isviewdirty()
 {
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
 		if (v->isviewdirty()) return 1;
-		v=v->next;
+		v = v->next;
 	}
 	return 0;
 }
 
-int ht_group::load(ht_object_stream *f)
+void ht_group::load(ObjectStream &f)
 {
-	return 1;
 }
 
 void ht_group::move(int rx, int ry)
 {
 	ht_view::move(rx, ry);
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
 		v->move(rx, ry);
-		v=v->next;
+		v = v->next;
 	}
 }
 
-OBJECT_ID ht_group::object_id() const
+ObjectID ht_group::getObjectID() const
 {
 	return ATOM_HT_GROUP;
 }
@@ -1123,74 +1092,81 @@ void ht_group::releasefocus()
 
 void ht_group::remove(ht_view *view)
 {
-	ht_view *n=view->next ? view->next : view->prev;
-	if (n) focus(n); else {
+	ht_view *n = view->next ? view->next : view->prev;
+	if (n) {
+		focus(n);
+	} else {
 		releasefocus();
-		current=0;
+		current = NULL;
 	}
 	
-	bounds c;
+	Bounds c;
 	getbounds(&c);
 	view->move(-c.x, -c.y);
 	
-	if (view->prev) view->prev->next=view->next;
-	if (view->next) view->next->prev=view->prev;
-	if (first==view) first=first->next;
-	if (last==view) last=last->prev;
+	if (view->prev) view->prev->next = view->next;
+	if (view->next) view->next->prev = view->prev;
+	if (first == view) first = first->next;
+	if (last == view) last = last->prev;
 }
 
 void ht_group::reorder_view(ht_view *v, int rx, int ry)
 {
-	int px=0, py=0;
-	int sx=0, sy=0;
+	int px = 0, py = 0;
+	int sx = 0, sy = 0;
 
 	int gmv = GET_GM_V(v->growmode);
 	int gmh = GET_GM_H(v->growmode);
 	switch (gmh) {
-		case GMH_LEFT:
-			/* do nothing */
-			break;
-		case GMH_RIGHT:
-			px = rx;
-			break;
-		case GMH_FIT:
-			sx = rx;
-			break;
+	case GMH_LEFT:
+		/* do nothing */
+		break;
+	case GMH_RIGHT:
+		px = rx;
+		break;
+	case GMH_FIT:
+		sx = rx;
+		break;
 	}
 	
 	switch (gmv) {
-		case GMV_TOP:
-			/* do nothing */
-			break;
-		case GMV_BOTTOM:
-			py = ry;
-			break;
-		case GMV_FIT:
-			sy = ry;
-			break;
+	case GMV_TOP:
+		/* do nothing */
+		break;
+	case GMV_BOTTOM:
+		py = ry;
+		break;
+	case GMV_FIT:
+		sy = ry;
+		break;
 	}
 
 	v->move(px, py);
 	v->resize(sx, sy);
 }
 
-void ht_group::resize(int rx, int ry)
+void ht_group::resize(int sx, int sy)
 {
-	ht_view::resize(rx, ry);
+	int min_width, min_height;
+	getminbounds(&min_width, &min_height);
+	if (size.w+sx <= min_width) sx = min_width - size.w;
+	if (size.h+sy <= min_height) sy = min_height - size.h;
+
+	ht_view::resize(sx, sy);
 	
 	ht_view *v = first;
 	while (v) {
-		reorder_view(v, rx, ry);
+		reorder_view(v, sx, sy);
 		v = v->next;
 	}
 }
 
 int ht_group::select(ht_view *view)
 {
-	ht_view *v=first;
+	ht_view *v = first;
 	while (v) {
 		if (v->select(view)) {
-			current=v;
+			current = v;
 			putontop(v);
 			return 1;
 		}
@@ -1227,7 +1203,7 @@ void ht_group::selectlast()
 	}
 }
 
-void ht_group::setdata(ht_object_stream *s)
+void ht_group::setdata(ObjectStream &s)
 {
 	ht_view *v;
 	int h=enum_start();
@@ -1236,7 +1212,7 @@ void ht_group::setdata(ht_object_stream *s)
 	}
 }
 
-void ht_group::setpalette(char *pal_name)
+void ht_group::setpalette(const char *pal_name)
 {
 	ht_view *v=first;
 	while (v) {
@@ -1246,13 +1222,13 @@ void ht_group::setpalette(char *pal_name)
 	ht_view::setpalette(pal_name);
 }
 
-void ht_group::store(ht_object_stream *s)
+void ht_group::store(ObjectStream &s) const
 {
 	ht_view::store(s);
-	s->putIntDec(childcount(), 4, NULL);
+	PUTX_INT32D(s, childcount(), "childcount");
 	ht_view *v=first;
 	while (v) {
-		s->putObject(v, NULL);
+		PUTX_OBJECT(s, v, "obj");
 		v=v->next;
 	}
 }
@@ -1261,7 +1237,7 @@ void ht_group::store(ht_object_stream *s)
  *	CLASS ht_xgroup
  */
 
-void ht_xgroup::init(bounds *b, int options, const char *desc)
+void ht_xgroup::init(Bounds *b, int options, const char *desc)
 {
 	ht_group::init(b, options, desc);
 	VIEW_DEBUG_NAME("ht_xgroup");
@@ -1291,18 +1267,18 @@ void ht_xgroup::handlemsg(htmsg *msg)
 	}
 }
 
-int ht_xgroup::isalone(ht_view *view)
+int ht_xgroup::isaclone(ht_view *view)
 {
-	if (group) return group->isalone(this);
+	if (group) return group->isaclone(this);
 	return 0;
 }
 
-int ht_xgroup::load(ht_object_stream *s)
+void ht_xgroup::load(ObjectStream &s)
 {
-	return ht_group::load(s);
+	ht_group::load(s);
 }
 
-OBJECT_ID ht_xgroup::object_id() const
+ObjectID ht_xgroup::getObjectID() const
 {
 	return ATOM_HT_XGROUP;
 }
@@ -1324,7 +1300,7 @@ void ht_xgroup::selectlast()
 	current->selectlast();
 }
 
-void	ht_xgroup::store(ht_object_stream *s)
+void	ht_xgroup::store(ObjectStream &s) const
 {
 	ht_group::store(s);
 }
@@ -1333,13 +1309,13 @@ void	ht_xgroup::store(ht_object_stream *s)
  *	CLASS ht_scrollbar
  */
 
-bool scrollbar_pos(int start, int size, int all, int *pstart, int *psize)
+bool scrollbar_pos(sint64 start, sint64 size, sint64 all, int *pstart, int *psize)
 {
 	if (!all) return false;
 	if (start+size >= all) {
 		if (size >= all) return false;
 		*psize = (int)(((double)size)*100/all);
-		*pstart = 100-*psize;
+		*pstart = 100 - *psize;
 	} else {
 		*psize = (int)(((double)size)*100/all);
 		*pstart = (int)(((double)start)*100/all);
@@ -1347,7 +1323,7 @@ bool scrollbar_pos(int start, int size, int all, int *pstart, int *psize)
 	return true;
 }
 
-void	ht_scrollbar::init(bounds *b, palette *p, bool isv)
+void ht_scrollbar::init(Bounds *b, palette *p, bool isv)
 {
 	ht_view::init(b, VO_RESIZE, 0);
 	VIEW_DEBUG_NAME("ht_scrollbar");
@@ -1405,40 +1381,37 @@ void ht_scrollbar::draw()
 				if (s==size.h-2) s--;
 				e=1;
 			}
-			fill(0, s+1, 1, e, color, CHAR_FILLED_M);
-			buf_printchar(0, 0, color, CHAR_ARROWBIG_UP);
-			buf_printchar(0, size.h-1, color, CHAR_ARROWBIG_DOWN);
+			fill(0, s+1, 1, e, color, GC_MEDIUM, CP_GRAPHICAL);
+			buf->printChar(0, 0, color, GC_ARROW_UP, CP_GRAPHICAL);
+			buf->printChar(0, size.h-1, color, GC_ARROW_DOWN, CP_GRAPHICAL);
 		} else {
 		}
 	}
 }
 
-int ht_scrollbar::load(ht_object_stream *s)
+void ht_scrollbar::getminbounds(int *width, int *height)
 {
-	return 1;
+	*width = 1;
+	*height = 1;
 }
 
-OBJECT_ID ht_scrollbar::object_id() const
+ObjectID ht_scrollbar::getObjectID() const
 {
 	return ATOM_HT_SCROLLBAR;
 }
 
 void ht_scrollbar::setpos(int ps, int pz)
 {
-	pstart=ps;
-	psize=pz;
+	pstart = ps;
+	psize = pz;
 	dirtyview();
-}
-
-void	ht_scrollbar::store(ht_object_stream *s)
-{
 }
 
 /*
  *	CLASS ht_frame
  */
 
-void ht_frame::init(bounds *b, const char *desc, UINT s, UINT n)
+void ht_frame::init(Bounds *b, const char *desc, uint s, uint n)
 {
 	ht_view::init(b, VO_RESIZE, desc);
 	VIEW_DEBUG_NAME("ht_frame");
@@ -1459,49 +1432,48 @@ void ht_frame::draw()
 {
 	int cornerul, cornerur, cornerll, cornerlr;
 	int lineh, linev;
-	ht_window *w=(ht_window*)group;
-	if ((framestate!=FST_MOVE) && (framestate!=FST_RESIZE)) {
-		if (w->focused) setframestate(FST_FOCUSED); else
-			setframestate(FST_UNFOCUSED);
+	ht_window *w = (ht_window*)group;
+	if (framestate != FST_MOVE && framestate != FST_RESIZE) {
+		setframestate(w->focused ? FST_FOCUSED : FST_UNFOCUSED); 
 	}
 	if (style & FS_THICK) {
-		cornerul=CHAR_CORNERUL_DBL;
-		cornerur=CHAR_CORNERUR_DBL;
-		cornerll=CHAR_CORNERLL_DBL;
-		cornerlr=CHAR_CORNERLR_DBL;
-		lineh=CHAR_LINEH_DBL;
-		linev=CHAR_LINEV_DBL;
+		cornerul = GC_2CORNER3;
+		cornerur = GC_2CORNER0;
+		cornerll = GC_2CORNER2;
+		cornerlr = GC_2CORNER1;
+		lineh = GC_2HLINE;
+		linev = GC_2VLINE;
 	} else {
-		cornerul=CHAR_CORNERUL;
-		cornerur=CHAR_CORNERUR;
-		cornerll=CHAR_CORNERLL;
-		cornerlr=CHAR_CORNERLR;
-		lineh=CHAR_LINEH;
-		linev=CHAR_LINEV;
+		cornerul = GC_1CORNER3;
+		cornerur = GC_1CORNER0;
+		cornerll = GC_1CORNER2;
+		cornerlr = GC_1CORNER1;
+		lineh = GC_1HLINE;
+		linev = GC_1VLINE;
 	}
-	
-	vcp c=getcurcol_normal();
+
+	vcp c = getcurcol_normal();
 /* "ÚÄÄ...ÄÄ¿" */
-	buf_printchar(0, 0, c, cornerul);
-	for (int i=1; i<size.w-1; i++) buf_printchar(i, 0, c, lineh);
-	buf_printchar(0+size.w-1, 0, c, cornerur);
+	buf->printChar(0, 0, c, cornerul, CP_GRAPHICAL);
+	for (int i=1; i < size.w-1; i++) buf->printChar(i, 0, c, lineh, CP_GRAPHICAL);
+	buf->printChar(0+size.w-1, 0, c, cornerur, CP_GRAPHICAL);
 /* "ÀÄÄ...ÄÄÙ" */
-	buf_printchar(0, size.h-1, c, cornerll);
-	for (int i=1; i<size.w-1; i++) buf_printchar(i, size.h-1, c, lineh);
+	buf->printChar(0, size.h-1, c, cornerll, CP_GRAPHICAL);
+	for (int i=1; i < size.w-1; i++) buf->printChar(i, size.h-1, c, lineh, CP_GRAPHICAL);
 /*	if (style & FS_RESIZE) {
-		buf_printchar(size.w-1, size.h-1, getcurcol_killer(), CHAR_CORNERLR);
+		buf->printChar(size.w-1, size.h-1, getcurcol_killer(), GC_1CORNER1, CP_GRAPHICAL);
 	} else {*/
-		buf_printchar(size.w-1, size.h-1, c, cornerlr);
+		buf->printChar(size.w-1, size.h-1, c, cornerlr, CP_GRAPHICAL);
 //     }
 /* "³", "³" */
-	for (int i=1; i<size.h-1; i++) {
-		buf_printchar(0, i, c, linev);
-		buf_printchar(size.w-1, i, c, linev);
+	for (int i=1; i < size.h-1; i++) {
+		buf->printChar(0, i, c, linev, CP_GRAPHICAL);
+		buf->printChar(size.w-1, i, c, linev, CP_GRAPHICAL);
 	}
 /* "[x]" */
 	if (style & FS_KILLER) {
-		buf_print(2, 0, c, "[ ]");
-		buf_printchar(3, 0, getcurcol_killer(), CHAR_QUAD_SMALL);
+		buf->print(2, 0, c, "[ ]");
+		buf->printChar(3, 0, getcurcol_killer(), GC_FILLED_QUAD, CP_GRAPHICAL);
 	}
 /* e.g. "1" */
 	int ns=0;
@@ -1511,33 +1483,33 @@ void ht_frame::draw()
 			l=l/10;
 			ns++;
 		} while (l);
-		buf_printf(size.w-4-ns, 0, c, "%d", number);
+		buf->printf(size.w-4-ns, 0, c, CP_DEVICE, "%d", number);
 		ns+=4;
 	}
 /* <title> */
-	char *d;
+	const char *d;
 	switch (framestate) {
-		case FST_MOVE:
-			d = (char*)((style & FS_RESIZE) ? "(moving) - hit space to resize" : "(moving)");
-			break;
-		case FST_RESIZE:
-			d = (char*)((style & FS_MOVE) ? "(resizing) - hit space to move" : "(resizing)");
-			break;
-		default:
-			d = desc;
+	case FST_MOVE:
+		d = (char*)((style & FS_RESIZE) ? "(moving) - hit space to resize" : "(moving)");
+		break;
+	case FST_RESIZE:
+		d = (char*)((style & FS_MOVE) ? "(resizing) - hit space to move" : "(resizing)");
+		break;
+	default:
+		d = desc;
 	}
 	int ks = (style & FS_KILLER) ? 4 : 0;
 	ns++;
-	if ((d) && (style & FS_TITLE)) {
+	if (d && (style & FS_TITLE)) {
 		int l = strlen(d), k = 0;
 		if (l > size.w-(5+ks+ns)) {
 			k = l-(size.w-(6+ks+ns+2));
 			if (size.w > 6+ks+ns+2) {
 				d+=k;
 			} else d="";
-			buf_printf(2+ks, 0, c, " ...%s ",  d);
+			buf->printf(2+ks, 0, c, CP_DEVICE, " ...%s ", d);
 		} else {
-			buf_printf((size.w-l-2)/2, 0, c, " %s ", d);
+			buf->printf((size.w-l-2)/2, 0, c, CP_DEVICE, " %s ", d);
 		}
 	}
 }
@@ -1545,13 +1517,13 @@ void ht_frame::draw()
 vcp ht_frame::getcurcol_normal()
 {
 	switch (framestate) {
-		case FST_FOCUSED:
-			return getcolor(palidx_generic_frame_focused);
-		case FST_UNFOCUSED:
-			return getcolor(palidx_generic_frame_unfocused);
-		case FST_MOVE:
-		case FST_RESIZE:
-			return getcolor(palidx_generic_frame_move_resize);
+	case FST_FOCUSED:
+		return getcolor(palidx_generic_frame_focused);
+	case FST_UNFOCUSED:
+		return getcolor(palidx_generic_frame_unfocused);
+	case FST_MOVE:
+	case FST_RESIZE:
+		return getcolor(palidx_generic_frame_move_resize);
 	}
 	return 0;
 }
@@ -1561,60 +1533,50 @@ vcp ht_frame::getcurcol_killer()
 	return getcolor(palidx_generic_frame_killer);
 }
 
-UINT ht_frame::getnumber()
+uint ht_frame::getnumber()
 {
 	return number;
 }
 
-UINT ht_frame::getstyle()
+uint ht_frame::getstyle()
 {
 	return style;
 }
 
-int ht_frame::load(ht_object_stream *s)
-{
-	return ht_view::load(s);
-}
-
-OBJECT_ID ht_frame::object_id() const
+ObjectID ht_frame::getObjectID() const
 {
 	return ATOM_HT_FRAME;
 }
 
-void ht_frame::setframestate(UINT _framestate)
+void ht_frame::setframestate(uint _framestate)
 {
 	framestate=_framestate;
 	dirtyview();
 }
 
-void ht_frame::setnumber(UINT _number)
+void ht_frame::setnumber(uint _number)
 {
 	number=_number;
 	dirtyview();
 }
 
-void ht_frame::setstyle(UINT s)
+void ht_frame::setstyle(uint s)
 {
 	style=s;
 }
 
 void ht_frame::settext(const char *text)
 {
-	if (desc) free(desc);
+	free(desc);
 	desc = ht_strdup(text);
 	dirtyview();
-}
-
-void ht_frame::store(ht_object_stream *s)
-{
-	ht_view::store(s);
 }
 
 /*
  *	CLASS ht_window
  */
 
-void	ht_window::init(bounds *b, const char *desc, UINT framestyle, UINT num)
+void	ht_window::init(Bounds *b, const char *desc, uint framestyle, uint num)
 {
 	ht_group::init(b, VO_SELECTABLE | VO_SELBOUND | VO_BROWSABLE, desc);
 	VIEW_DEBUG_NAME("ht_window");
@@ -1622,7 +1584,7 @@ void	ht_window::init(bounds *b, const char *desc, UINT framestyle, UINT num)
 	hscrollbar=NULL;
 	vscrollbar=NULL;
 	pindicator=NULL;
-	bounds c=*b;
+	Bounds c=*b;
 	c.x=0;
 	c.y=0;
 	frame=0;
@@ -1646,7 +1608,7 @@ void ht_window::draw()
 	clear(c);
 }
 
-void ht_window::getclientarea(bounds *b)
+void ht_window::getclientarea(Bounds *b)
 {
 	getbounds(b);
 	if (frame) {
@@ -1657,7 +1619,7 @@ void ht_window::getclientarea(bounds *b)
 	}
 }
 
-UINT ht_window::getnumber()
+uint ht_window::getnumber()
 {
 	return number;
 }
@@ -1704,23 +1666,23 @@ void ht_window::handlemsg(htmsg *msg)
 							break;
 					}
 				}
-			} else if (action_state==WAC_RESIZE) {
+			} else if (action_state == WAC_RESIZE) {
 				if (options & VO_RESIZE) {
 					int min_width, min_height;
 					getminbounds(&min_width, &min_height);
 					switch (msg->data1.integer) {
-						case K_Up:
-							if (size.h > min_height) resize(0, -1);
-							break;
-						case K_Down:
-							if (size.h < group->size.h) resize(0, 1);
-							break;
-						case K_Left:
-							if ((size.x+size.w>1) && (size.w > min_width)) resize(-1, 0);
-							break;
-						case K_Right:
-							if (size.w<group->size.w) resize(1, 0);
-							break;
+					case K_Up:
+						if (size.h > min_height) resize(0, -1);
+						break;
+					case K_Down:
+						if (size.h < group->size.h) resize(0, 1);
+						break;
+					case K_Left:
+						if (size.x+size.w > 1 && size.w > min_width) resize(-1, 0);
+						break;
+					case K_Right:
+						if (size.w < group->size.w) resize(1, 0);
+						break;
 					}
 				}
 			} else {
@@ -1769,10 +1731,9 @@ void ht_window::insert(ht_view *view)
 	ht_group::insert(view);
 }
 
-int ht_window::load(ht_object_stream *s)
+void ht_window::load(ObjectStream &s)
 {
-	if (ht_group::load(s)!=0) return 1;
-	return s->get_error();
+	ht_group::load(s);
 }
 
 bool ht_window::next_action_state()
@@ -1802,7 +1763,7 @@ bool ht_window::next_action_state()
 	return false;
 }
 
-OBJECT_ID ht_window::object_id() const
+ObjectID ht_window::getObjectID() const
 {
 	return ATOM_HT_WINDOW;
 }
@@ -1813,8 +1774,8 @@ void ht_window::receivefocus()
 	m.msg = msg_contextmenuquery;
 	m.type = mt_empty;
 	sendmsg(&m);
-	ht_menu *q = (ht_menu*)((ht_app*)app)->menu;
 	if (m.msg == msg_retval) {
+		ht_menu *q = (ht_menu*)((ht_app*)app)->menu;
 		ht_context_menu *n = (ht_context_menu*)m.data1.ptr;
 		if (q) {
 			if (!q->set_local_menu(n)) {
@@ -1827,7 +1788,6 @@ void ht_window::receivefocus()
 			delete n;
 		}
 	}
-
 	ht_group::receivefocus();
 	if (frame) frame->setstyle(frame->getstyle() | FS_THICK);
 }
@@ -1836,28 +1796,30 @@ void ht_window::redraw()
 {
 	htmsg m;
 	
-	char buf[256];
-	buf[0]=0;
+	if (pindicator) {
+		char buf[256];
+		buf[0]=0;
 	
-	m.msg = msg_get_scrollinfo;
-	m.type = mt_empty;
-	m.data1.integer = gsi_pindicator;
-	m.data2.ptr = buf;
-	sendmsg(&m);
+		m.msg = msg_get_pindicator;
+		m.type = mt_empty;
+		m.data1.integer = sizeof buf;
+		m.data2.ptr = buf;
+		sendmsg(&m);
 
-	if (pindicator) pindicator->settext(buf);
+		pindicator->settext(buf);
+	}
 
 	gsi_scrollbar_t p;
 
-	p.pstart = 0;
-	p.psize = 200;
-	m.msg = msg_get_scrollinfo;
-	m.type = mt_empty;
-	m.data1.integer = gsi_hscrollbar;
-	m.data2.ptr = &p;
-	sendmsg(&m);
-
 	if (hscrollbar) {
+		p.pstart = 0;
+		p.psize = 200;
+		m.msg = msg_get_scrollinfo;
+		m.type = mt_empty;
+		m.data1.integer = gsi_hscrollbar;
+		m.data2.ptr = &p;
+		sendmsg(&m);
+
 		if (p.psize>=100) {
 			hscrollbar->disable();
 		} else {
@@ -1866,15 +1828,15 @@ void ht_window::redraw()
 		}
 	}
 
-	p.pstart = 0;
-	p.psize = 200;
-	m.msg = msg_get_scrollinfo;
-	m.type = mt_empty;
-	m.data1.integer = gsi_vscrollbar;
-	m.data2.ptr = &p;
-	sendmsg(&m);
-
 	if (vscrollbar) {
+		p.pstart = 0;
+		p.psize = 200;
+		m.msg = msg_get_scrollinfo;
+		m.type = mt_empty;
+		m.data1.integer = gsi_vscrollbar;
+		m.data2.ptr = &p;
+		sendmsg(&m);
+
 		if (p.psize>=100) {
 			vscrollbar->disable();
 		} else {
@@ -1898,11 +1860,6 @@ void ht_window::releasefocus()
 	ht_group::releasefocus();
 }
 
-void ht_window::resize(int rw, int rh)
-{
-	ht_group::resize(rw, rh);
-}
-
 void ht_window::setframe(ht_frame *newframe)
 {
 	if (frame) {
@@ -1912,7 +1869,7 @@ void ht_window::setframe(ht_frame *newframe)
 		frame=NULL;
 	}
 	if (newframe) {
-		UINT style=newframe->getstyle();
+		uint style=newframe->getstyle();
 		if (style & FS_MOVE) options|=VO_MOVE; else options&=~VO_MOVE;
 		if (style & FS_RESIZE) options|=VO_RESIZE; else options&=~VO_RESIZE;
 		insert(newframe);
@@ -1923,7 +1880,7 @@ void ht_window::setframe(ht_frame *newframe)
 	frame=newframe;
 }
 
-void ht_window::setnumber(UINT _number)
+void ht_window::setnumber(uint _number)
 {
 	if (frame) frame->setnumber(_number);
 	number=_number;
@@ -1948,8 +1905,8 @@ void ht_window::setpindicator(ht_text *p)
 
 void ht_window::settitle(char *title)
 {
-	if (desc) free(desc);
-	desc=ht_strdup(title);
+	free(desc);
+	desc = ht_strdup(title);
 	if (frame) frame->settext(title);
 }
 
@@ -1961,7 +1918,7 @@ void ht_window::setvscrollbar(ht_scrollbar *s)
 	putontop(vscrollbar);
 }
 
-void	ht_window::store(ht_object_stream *s)
+void	ht_window::store(ObjectStream &s) const
 {
 	ht_group::store(s);
 }
@@ -1972,7 +1929,7 @@ void	ht_window::store(ht_object_stream *s)
 
 void ht_vbar::draw()
 {
-	fill(0, 0, 1, size.h, getcolor(palidx_generic_body), CHAR_LINEV);
+	fill(0, 0, 1, size.h, getcolor(palidx_generic_body), GC_1VLINE, CP_GRAPHICAL);
 }
 
 /*
@@ -1981,16 +1938,15 @@ void ht_vbar::draw()
 
 void ht_hbar::draw()
 {
-	fill(0, 0, size.w, 1, getcolor(palidx_generic_body), CHAR_LINEH);
+	fill(0, 0, size.w, 1, getcolor(palidx_generic_body), GC_1HLINE, CP_GRAPHICAL);
 }
 
 /***/
-BUILDER(ATOM_HT_VIEW, ht_view);
-BUILDER(ATOM_HT_GROUP, ht_group);
-BUILDER(ATOM_HT_XGROUP, ht_xgroup);
-BUILDER(ATOM_HT_WINDOW, ht_window);
-BUILDER(ATOM_HT_FRAME, ht_frame);
-BUILDER(ATOM_HT_SCROLLBAR, ht_scrollbar);
+BUILDER(ATOM_HT_VIEW, ht_view, Object);
+BUILDER(ATOM_HT_GROUP, ht_group, ht_view);
+BUILDER(ATOM_HT_XGROUP, ht_xgroup, ht_group);
+BUILDER(ATOM_HT_WINDOW, ht_window, ht_group);
+BUILDER(ATOM_HT_SCROLLBAR, ht_scrollbar, ht_view);
 
 /*
  *	INIT
@@ -2002,7 +1958,6 @@ bool init_obj()
 	REGISTER(ATOM_HT_GROUP, ht_group);
 	REGISTER(ATOM_HT_XGROUP, ht_xgroup);
 	REGISTER(ATOM_HT_WINDOW, ht_window);
-	REGISTER(ATOM_HT_FRAME, ht_frame);
 	REGISTER(ATOM_HT_SCROLLBAR, ht_scrollbar);
 	return true;
 }

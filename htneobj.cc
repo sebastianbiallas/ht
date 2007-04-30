@@ -18,13 +18,13 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
-#include "htendian.h"
+#include "atom.h"
+#include "endianess.h"
 #include "htnewexe.h"
 #include "htne.h"
 #include "htneobj.h"
 #include "httag.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "snprintf.h"
 
@@ -63,29 +63,29 @@ static ht_tag_flags_s ne_segflags[] =
 	{0, 0}
 };
 
-static ht_view *htnesegments_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htnesegments_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
-	dword h=ne_shared->hdr_ofs;
+	uint32 h=ne_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_NE_SEGMENTS, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 
-	register_atom(ATOM_NE_SEGFLAGS, ne_segflags);
+	registerAtom(ATOM_NE_SEGFLAGS, ne_segflags);
 
 	char t[64];
 
-	ht_snprintf(t, sizeof t, "* NE segment table at offset %08x", h+ne_shared->hdr.segtab);
+	ht_snprintf(t, sizeof t, "* NE segment table at offset 0x%08qx", h+ne_shared->hdr.segtab);
 	m->add_mask(t);
 	m->add_mask("note: 0 means 65536 for segment size and minalloc");
 
 	file->seek(h+ne_shared->hdr.segtab);
-	for (dword i=0; i<ne_shared->hdr.cseg; i++) {
+	for (uint32 i=0; i<ne_shared->hdr.cseg; i++) {
 		NE_SEGMENT s;
 		file->read(&s, sizeof s);
-		create_host_struct(&s, NE_SEGMENT_struct, little_endian);
+		createHostStruct(&s, NE_SEGMENT_struct, little_endian);
 		ht_snprintf(t, sizeof t, "--- segment %d (%s) ---", i+1, (s.flags & NE_DATA) ? "data" : "code");
 		m->add_mask(t);
 		m->add_staticmask_ptable(neobj, h+ne_shared->hdr.segtab+i*8, false);

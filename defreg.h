@@ -5,6 +5,6 @@ extern
 #ifdef __cplusplus
 "C"
 #endif
-char default_reg[7580];
+char default_reg[1591];
 
 #endif /* __DEFREG_H */

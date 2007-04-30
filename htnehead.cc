@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htne.h"
 #include "httag.h"
 #include "formats.h"
@@ -90,7 +90,7 @@ static ht_tag_flags_s ne_flags[] =
 	{0, 0}
 };
 
-static ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htneheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
@@ -100,11 +100,11 @@ static ht_view *htneheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	ht_mask_sub *m=new ht_mask_sub();
 	m->init(file, 0);
 
-	register_atom(ATOM_NE_OS, ne_os);
-	register_atom(ATOM_NE_FLAGS, ne_flags);
+	registerAtom(ATOM_NE_OS, ne_os);
+	registerAtom(ATOM_NE_FLAGS, ne_flags);
 
 	char info[128];
-	ht_snprintf(info, sizeof info, "* NE header at offset %08x", ne_shared->hdr_ofs);
+	ht_snprintf(info, sizeof info, "* NE header at offset 0x%08qx", ne_shared->hdr_ofs);
 	m->add_mask(info);
 	m->add_staticmask_ptable(neheader, h, false);
 	v->insertsub(m);

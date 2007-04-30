@@ -18,10 +18,9 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htdebug.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "stream.h"
 #include "tools.h"
@@ -31,9 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ATOM_HT_DATA_STRING			MAGICD("STR\x00")
-#define ATOM_COMPARE_KEYS_STRING		MAGICD("STR\x10")
-#define ATOM_ICOMPARE_KEYS_STRING		MAGICD("STR\x11")
+#define ATOM_HT_DATA_STRING			MAGIC32("STR\x00")
+#define ATOM_COMPARE_KEYS_STRING		MAGIC32("STR\x10")
+#define ATOM_ICOMPARE_KEYS_STRING		MAGIC32("STR\x11")
 
 char hexchars[17]="0123456789abcdef";
 
@@ -41,7 +40,7 @@ char *ht_strdup(const char *str)
 {
 	if (str) {
 		int len = strlen(str)+1;
-		char *s = (char*)smalloc(len);
+		char *s = ht_malloc(len);
 		memmove(s, str, len);
 		return s;
 	} else {
@@ -53,13 +52,13 @@ char *ht_strdup(const char *str)
  *	Like ht_strdup but dups a maximum of |maxlen| characters of |str|.
  *	@returns new string
  */
-char *ht_strndup(const char *str, size_t maxlen)
+char *ht_strndup(const char *str, int maxlen)
 {
 	maxlen ++;
 	if (str) {
 		int len = strlen(str)+1;
 		len = MIN(len, maxlen);
-		char *s = (char*)smalloc(len);
+		char *s = ht_malloc(len);
 		memmove(s, str, len);
 		return s;
 	} else {
@@ -74,12 +73,14 @@ char *ht_strndup(const char *str, size_t maxlen)
  *	is always written if maxlen is > 0.
  *	@returns number of characters copied (without trailing zero)
  */
-int ht_strncpy(char *s1, const char *s2, size_t maxlen)
+int ht_strncpy(char *s1, const char *s2, int maxlen)
 {
 	if (maxlen <= 0) return 0;
 	char *os1 = s1;
-	while (maxlen-- && *s2) {
-		*s1++ = *s2++;
+	while (maxlen && *s2) {
+		*s1 = *s2;
+		maxlen--;
+		s1++;
 	}
 	s1[-1] = 0;
 	return s1-os1-1;
@@ -139,39 +140,20 @@ int ht_stricmp(const char *s1, const char *s2)
 	return 0;
 }
 
-int ht_strccomm(const char *s1, const char *s2)
+int strccomm(const char *s1, const char *s2)
 {
 	if (!s1 || !s2) return 0;
 	int r=0;
-	while (*s1 && *s2 && *s1 == *s2) { s1++; s2++; r++; }
+	while (*s1 && *s2 && (*s1==*s2)) { s1++; s2++; r++; }
 	return r;
 }
 
-int ht_strcicomm(const char *s1, const char *s2)
+int strcicomm(const char *s1, const char *s2)
 {
 	if (!s1 || !s2) return 0;
 	int r=0;
-	while (*s1 && *s2 && tolower(*s1) == tolower(*s2)) { s1++; s2++; r++; }
+	while (*s1 && *s2 && (tolower(*s1)==tolower(*s2))) { s1++; s2++; r++; }
 	return r;
-}
-
-int ht_memicmp(const void *p1, const void *p2, size_t n)
-{
-	const char *s1 = static_cast<const char *>(p1);
-	const char *s2 = static_cast<const char *>(p2);
-	if (!s1) return s2 ? -1 : 0;
-	if (!s2) return s1 ? 1 : 0;
-	while (n--) {
-		char c1 = tolower(*s1), c2 = tolower(*s2);
-		if (c1 > c2) {
-			return 1;
-		} else if (c1 < c2) {
-			return -1;
-		}
-		s1++;
-		s2++;
-	}
-	return 0;
 }
 
 int escape_special_str(char *result, int resultmaxlen, const char *s, const char *specialchars, bool bit7)
@@ -371,7 +353,7 @@ bool waitforchar(char **str, char b)
 }
 
 /*
-static bool bnstr2bin(char *str, char *p, int base, dword *v)
+static bool bnstr2bin(char *str, char *p, int base, uint32 *v)
 {
 	*v=0;
 	do {
@@ -385,10 +367,10 @@ static bool bnstr2bin(char *str, char *p, int base, dword *v)
 }
 */
 
-static bool bnstr2bin(char *str, char *p, int base, qword *q)
+static bool bnstr2bin(char *str, char *p, int base, uint64 *q)
 {
 	*q = to_qword(0);
-	qword qbase = to_qword(base);
+	uint64 qbase = to_qword(base);
 	do {
 		int c = hexdigit(*str);
 		if ((c == -1) || (c >= base)) return false;
@@ -399,7 +381,7 @@ static bool bnstr2bin(char *str, char *p, int base, qword *q)
 	return true;
 }
 
-bool bnstr(char **str, qword *q, int defaultbase)
+bool bnstr(char **str, uint64 *q, int defaultbase)
 {
 	int base=defaultbase;
 	int t=0;
@@ -450,9 +432,9 @@ bool bnstr(char **str, qword *q, int defaultbase)
 	return false;
 }
 
-bool bnstr(char **str, dword *v, int defaultbase)
+bool bnstr(char **str, uint32 *v, int defaultbase)
 {
-	qword q;
+	uint64 q;
 	bool res = bnstr(str, &q, defaultbase);
 	*v = QWORD_GET_LO(q);
 	return res;
@@ -505,7 +487,7 @@ char *mkhexb(char *buf, byte d)
 	return buf;
 }
 
-char *mkhexw(char *buf, word d)
+char *mkhexw(char *buf, uint16 d)
 {
 	*buf++=hexchars[(d>>12)&0xf];
 	*buf++=hexchars[(d>>8)&0xf];
@@ -514,7 +496,7 @@ char *mkhexw(char *buf, word d)
 	return buf;
 }
 
-char *mkhexd(char *buf, dword d)
+char *mkhexd(char *buf, uint32 d)
 {
 	*buf++=hexchars[(d>>28)&0xf];
 	*buf++=hexchars[(d>>24)&0xf];
@@ -527,7 +509,7 @@ char *mkhexd(char *buf, dword d)
 	return buf;
 }
 
-char *mkhexq(char *buf, qword q)
+char *mkhexq(char *buf, uint64 q)
 {
 	*buf++=hexchars[(q.hi>>28)&0xf];
 	*buf++=hexchars[(q.hi>>24)&0xf];
@@ -561,13 +543,13 @@ ht_data_string::~ht_data_string()
 	if (value) free(value);
 }
 
-int ht_data_string::load(ht_object_stream *f)
+int ht_data_string::load(ObjectStream &f)
 {
 	value = f->getString(NULL);
 	return f->get_error();
 }
 
-void ht_data_string::store(ht_object_stream *f)
+void ht_data_string::store(ObjectStream &f)
 {
 	f->putString(value, NULL);
 }
@@ -577,7 +559,7 @@ int ht_data_string::toString(char *s, int maxlen)
 	return ht_snprintf(s, maxlen, "%s", value);
 }
 
-OBJECT_ID ht_data_string::object_id() const
+ObjectID ht_data_string::getObjectID() const
 {
 	return ATOM_HT_DATA_STRING;
 }
@@ -590,7 +572,7 @@ void ht_string_list::init()
 	ht_clist::init(compare_keys_string);
 }
 
-char *ht_string_list::get_string(UINT i)
+char *ht_string_list::get_string(uint i)
 {
 	ht_data_string *s=(ht_data_string*)get(i);
 	if (s) return s->value;
@@ -605,18 +587,18 @@ void ht_string_list::insert_string(char *s)
 /*
  *	ht_sorted_string_list
  */
-void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, ht_data *key_b))
+void ht_sorted_string_list::init(int (*compare_keys_proc)(ht_data *key_a, Object *key_b))
 {
 	ht_sorted_list::init(compare_keys_proc);
 }
 
 char *ht_sorted_string_list::get_string(char *s)
 {
-	ht_data *d = new ht_data_string(s);
-	UINT i=find(d);
+	Object *d = new ht_data_string(s);
+	uint i=find(d);
 	char *ret=NULL;
-	if (i!=LIST_UNDEFINED) {
-		ht_data *r=get(i);
+	if (i != LIST_UNDEFINED) {
+		Object *r=get(i);
 		if (r) ret=((ht_data_string *)r)->value;
 	}
 	delete d;
@@ -632,7 +614,7 @@ void ht_sorted_string_list::insert_string(char *s)
  *	compare_keys_string
  */
 
-int compare_keys_string(ht_data *key_a, ht_data *key_b)
+int compare_keys_string(ht_data *key_a, Object *key_b)
 {
 	// FIXME:
 	if (((ht_data_string*)key_a)->value && ((ht_data_string*)key_b)->value) {
@@ -644,7 +626,7 @@ int compare_keys_string(ht_data *key_a, ht_data *key_b)
  *	icompare_keys_string
  */
 
-int icompare_keys_string(ht_data *key_a, ht_data *key_b)
+int icompare_keys_string(ht_data *key_a, Object *key_b)
 {
 	return ht_stricmp(((ht_data_string*)key_a)->value, ((ht_data_string*)key_b)->value);
 }

@@ -21,7 +21,7 @@
 #ifndef __HTPEEXP_H__
 #define __HTPEEXP_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htdialog.h"
 #include "formats.h"
 
@@ -35,34 +35,34 @@ class ht_pe_export_viewer: public ht_itext_listbox {
 protected:
 	ht_format_group *format_group;
 public:
-		void	init(bounds *b, ht_format_group *fg);
+			void	init(Bounds *b, ht_format_group *fg);
 	virtual	void	done();
 /* overwritten */
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool select_entry(void *entry);
 /* new */
-		char *func(UINT i, bool execute);
+		const char *func(uint i, bool execute);
 };
 
 /*
  *	CLASS ht_pe_export_function
  */
 
-class ht_pe_export_function: public ht_data {
+class ht_pe_export_function: public Object {
 public:
-	UINT ordinal;
+	uint ordinal;
 
 	bool byname;
 	char *name;
 	RVA address;
 
-	ht_pe_export_function(RVA address, UINT ordinal);
-	ht_pe_export_function(RVA address, UINT ordinal, char *name);
-	virtual ~ht_pe_export_function();
+	ht_pe_export_function(RVA address, uint ordinal);
+	ht_pe_export_function(RVA address, uint ordinal, const char *name);
+	~ht_pe_export_function();
 };
 
 struct ht_pe_export {
-	ht_clist *funcs;
+	Container *funcs;
 };
 
 #endif /* !__HTPEEXP_H__ */

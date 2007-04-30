@@ -22,7 +22,7 @@
 #include "htnewexe.h"
 #include "htpal.h"
 #include "htcoffimg.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 
 #include "coff_s.h"
@@ -30,22 +30,23 @@
 #include "htanaly.h"
 #include "coff_analy.h"
 
-static ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htcoffimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 
-	LOG("%s: COFF: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: COFF: loading image (starting analyser)...", &file->getFilename(fn));
 	CoffAnalyser *p = new CoffAnalyser();
 	p->init(coff_shared, file);
 
-	bounds c = *b;
+	Bounds c = *b;
 	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_COFF_IMAGE"-g");
 	AnalyInfoline *head;
 
 	c.y+=2;
 	c.h-=2;
-	ht_coff_aviewer *v=new ht_coff_aviewer();
+	ht_coff_aviewer *v = new ht_coff_aviewer();
 	v->init(&c, DESC_COFF_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, p, coff_shared);
 
 	c.y-=2;
@@ -58,7 +59,7 @@ static ht_view *htcoffimage_init(bounds *b, ht_streamfile *file, ht_format_group
 /* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=coff_shared->sections.sections;
-	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
+	for (uint i=0; i<coff_shared->sections.section_count; i++) {
 		if (s->data_address < l) l = s->data_address;
 		if ((s->data_address + s->data_size > h) && s->data_size) {
 			h = s->data_address + s->data_size - 1;
@@ -107,7 +108,7 @@ format_viewer_if htcoffimage_if = {
  *	CLASS ht_coff_aviewer
  */
 
-void ht_coff_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_coff_shared_data *Coff_shared)
+void ht_coff_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_coff_shared_data *Coff_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	coff_shared = Coff_shared;

@@ -21,7 +21,7 @@
 #include "log.h"
 #include "htfltimg.h"
 #include "htpal.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "snprintf.h"
 #include "tools.h"
@@ -29,15 +29,16 @@
 #include "fltstruc.h"
 #include "flt_analy.h"
 
-static ht_view *htfltimage_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htfltimage_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_flt_shared_data *flt_shared=(ht_flt_shared_data *)group->get_shared_data();
 
-	LOG("%s: FLAT: loading image (starting analyser)...", file->get_filename());
+	String fn;
+	LOG("%y: FLAT: loading image (starting analyser)...", &file->getFilename(fn));
 	FLTAnalyser *p = new FLTAnalyser();
 	p->init(flt_shared, file);
 
-	bounds c=*b;
+	Bounds c=*b;
 	ht_group *g=new ht_group();
 	g->init(&c, VO_RESIZE, DESC_FLT_IMAGE"-g");
 	AnalyInfoline *head;
@@ -106,7 +107,7 @@ format_viewer_if htfltimage_if = {
 /*
  *	CLASS ht_flt_aviewer
  */
-void ht_flt_aviewer::init(bounds *b, char *desc, int caps, ht_streamfile *File, ht_format_group *format_group, Analyser *Analy, ht_flt_shared_data *FLT_shared)
+void ht_flt_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_format_group *format_group, Analyser *Analy, ht_flt_shared_data *FLT_shared)
 {
 	ht_aviewer::init(b, desc, caps, File, format_group, Analy);
 	flt_shared = FLT_shared;

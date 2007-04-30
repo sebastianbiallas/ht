@@ -23,7 +23,8 @@
 #include "log.h"
 #include "mfile.h"
 #include "htapp.h"
-#include "htatom.h"
+#include "atom.h"
+#include "display.h"
 #include "htcfg.h"
 #include "htclipboard.h"
 #include "htdialog.h"
@@ -32,12 +33,12 @@
 #include "htidle.h"
 #include "htinfo.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htmenu.h"
 #include "htpal.h"
 #include "htsearch.h"
-#include "htstring.h"
-#include "htsys.h"
+#include "strtools.h"
+#include "sys.h"
 #include "httree.h"
 #include "infoview.h"
 #include "snprintf.h"
@@ -59,15 +60,16 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <exception>
 
 extern "C" {
 #include "regex.h"
 }
 
-#define ATOM_HT_APP			MAGICD("APP\x00")
-#define ATOM_HT_PROJECT			MAGICD("APP\x01")
-#define ATOM_HT_PROJECT_ITEM		MAGICD("APP\x02")
-#define ATOM_COMPARE_KEYS_PROJECT_ITEM	MAGICD("APP\x10")
+#define ATOM_HT_APP			MAGIC32("APP\x00")
+#define ATOM_HT_PROJECT			MAGIC32("APP\x01")
+#define ATOM_HT_PROJECT_ITEM		MAGIC32("APP\x02")
+#define ATOM_COMPARE_KEYS_PROJECT_ITEM	MAGIC32("APP\x10")
 
 #define HT_PROJECT_CONFIG_SUFFIX     	".htprj"
 #define HT_FILE_CONFIG_SUFFIX 		".htcfg"
@@ -89,20 +91,21 @@ void ht_help_window::handlemsg(htmsg *msg)
 	ht_window::handlemsg(msg);
 	if (msg->msg == msg_keypressed) {
 		switch (msg->data1.integer) {
-			case K_Escape: {
-				htmsg m;
-				m.msg = cmd_window_close;
-				((ht_app*)app)->queuemsg(app, &m);
-				clearmsg(msg);
-				return;
-			}				
+		case K_Escape: {
+			htmsg m;
+			m.type = mt_empty;
+			m.msg = cmd_window_close;
+			((ht_app*)app)->queuemsg(app, m);
+			clearmsg(msg);
+			return;
+		}				
 		}				
 	}
 }
 
-bool file_new_dialog(UINT *mode)
+bool file_new_dialog(uint *mode)
 {
-	bounds b, c;
+	Bounds b, c;
 	
 	app->getbounds(&b);
 
@@ -111,7 +114,7 @@ bool file_new_dialog(UINT *mode)
 	b.w = 40;
 	b.h = 8;
 	
-	ht_dialog *d = new ht_dialog();
+	ht_dialog *d=new ht_dialog();
 	d->init(&b, "create new file", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	
 	b.x=0;
@@ -147,13 +150,11 @@ bool file_new_dialog(UINT *mode)
 
 	bool retval = false;
 	if (d->run(false)) {
-		struct {
-			ht_listbox_data type;
-		} data;
+		ht_listbox_data type;
 
-		d->databuf_get(&data, sizeof data);
+		ViewDataBuf vdb(mode_input, &type, sizeof type);
 
-		*mode = mode_input->getID(data.type.cursor_ptr);
+		*mode = mode_input->getID(type.data->cursor_ptr);
 		
 		retval = true;
 	}
@@ -175,7 +176,7 @@ class FileBrowserVfsListbox: public VfsListbox {
 protected:
 	FileBrowser *file_browser;
 public:
-			void	init(bounds *b, ht_list *vfs_list, ht_text *show_pos, FileBrowser *file_browser);
+		void init(Bounds *b, List *vfs_list, ht_text *show_pos, FileBrowser *file_browser);
 /* overwritten */
 	virtual	void stateChanged();
 };
@@ -194,14 +195,14 @@ protected:
 	ht_strinputfield *name_input;
 	FileBrowserVfsListbox *listbox;
 public:
-	virtual	void init(bounds *b, bounds *clientarea, const char *title, const char *starturl);
-/* new */
+	virtual	void init(Bounds *b, Bounds *clientarea, const char *title, const char *starturl);
+	virtual void setstate(int state, int return_val);
 	virtual	bool extract_url(char *buf);
 	virtual	void listbox_changed();
 };
 
 /**/
-void	FileBrowserVfsListbox::init(bounds *b, ht_list *vfs_list, ht_text *show_pos, FileBrowser *fb)
+void	FileBrowserVfsListbox::init(Bounds *b, List *vfs_list, ht_text *show_pos, FileBrowser *fb)
 {
 	file_browser = NULL;
 	VfsListbox::init(b, vfs_list, show_pos);
@@ -215,10 +216,10 @@ void FileBrowserVfsListbox::stateChanged()
 }
 
 /**/
-void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const char *starturl)
+void FileBrowser::init(Bounds *n, Bounds *clientarea, const char *title, const char *starturl)
 {
 	ht_dialog::init(n, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
-	bounds b = *clientarea, c;
+	Bounds b = *clientarea, c;
 
 	/* name (input) */
 	c = b;
@@ -227,9 +228,9 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 	c.w -= 2;
 	c.h = 1;
 
-	ht_list *hist=(ht_list*)find_atom(HISTATOM_FILE);
+	List *hist = (List*)getAtomValue(HISTATOM_FILE);
 	
-	name_input=new ht_strinputfield();
+	name_input = new ht_strinputfield();
 	name_input->init(&c, 128, hist);
 
 	insert(name_input);
@@ -241,7 +242,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 	c.w = 9;
 	c.h = 1;
 
-	ht_label *name_text=new ht_label();
+	ht_label *name_text = new ht_label();
 	name_text->init(&c, "~name", name_input);
 
 	insert(name_text);
@@ -259,13 +260,9 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 	insert(listbox);
 
 	/* vfslistbox (text) */
-	c = b;
-	c.x = 1;
-	c.y = 3;
-	c.w = 9;
-	c.h = 1;
+	c.assign(1, 3, 9, 1);
 
-	ht_label *name_listbox=new ht_label();
+	ht_label *name_listbox = new ht_label();
 	name_listbox->init(&c, "~files", listbox);
 
 	insert(name_listbox);
@@ -274,7 +271,7 @@ void FileBrowser::init(bounds *n, bounds *clientarea, const char *title, const c
 bool FileBrowser::extract_url(char *buf)
 {
 	ht_strinputfield_data i;
-	name_input->databuf_get(&i, sizeof i);
+	ViewDataBuf vdb(name_input, &i, sizeof i);
 /*	ht_text_listbox_item *t = (ht_text_listbox_item*)listbox->getbyid(d.listbox.cursor_id);
 	vfs_extra *x = (vfs_extra*)t->extra_data;*/
 	Vfs *vfs = listbox->getCurVfs();
@@ -291,8 +288,8 @@ bool FileBrowser::extract_url(char *buf)
 void FileBrowser::listbox_changed()
 {
 	FileBrowserVfsListboxData l;
-	listbox->databuf_get(&l, sizeof l);
-	ht_text_listbox_item *t = (ht_text_listbox_item*)l.cursor_ptr;
+	ViewDataBuf vdb(listbox, &l, sizeof l);
+	ht_text_listbox_item *t = (ht_text_listbox_item*)l.data->cursor_ptr;
 	if (t) {
 		vfs_extra *x = (vfs_extra*)t->extra_data;
 		ht_strinputfield_data i;
@@ -301,11 +298,29 @@ void FileBrowser::listbox_changed()
 		name_input->databuf_set(&i, sizeof i);
 	}
 }
+
+void FileBrowser::setstate(int state, int return_val)
+{
+	if (state == ds_term_ok) {
+		ht_strinputfield_data i;
+		ViewDataBuf vdb(name_input, &i, sizeof i);
+		pstat_t s;
+		String fn(i.text, i.textlen);
+		int e = sys_pstat(s, fn.contentChar());
+		if (e == 0 && (s.caps & pstat_mode_type) && (s.mode & HT_S_IFDIR)) {
+			fn.prepend("local:");
+			listbox->changeURL(fn.contentChar());
+			return;
+		}
+	} 
+	ht_dialog::setstate(state, return_val);
+}
+
 /**/
 
 bool file_chooser(const char *title, char *buf, int bufsize)
 {
-	bounds b, c;
+	Bounds b, c;
 	
 	app->getbounds(&b);
 
@@ -331,7 +346,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 	FileBrowser *d = new FileBrowser();
 	d->init(&b, &c, title, cwd);
 
-	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
+	List *hist = (List*)getAtomValue(HISTATOM_FILE);
 
 	/* go! */
 	if (d->run(false)) {
@@ -339,9 +354,8 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 		d->extract_url(b);
 
 		// FIXME: urls not fully supported...
-		if (strncmp(b, "local:", 6) == 0) {
-			ht_snprintf(buf, bufsize, "%s", b+6);
-
+		if (ht_strncmp(b, "local:", 6) == 0) {
+			ht_strlcpy(buf, b+6, bufsize);
 			if (hist) insert_history_entry(hist, buf, 0);
 
 			d->done();
@@ -355,9 +369,9 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 }
 /**/
 
-bool file_open_dialog(char **name, UINT *mode)
+bool file_open_dialog(char **name, uint *mode)
 {
-	bounds b, c;
+	Bounds b, c;
 	
 	app->getbounds(&b);
 
@@ -383,16 +397,16 @@ bool file_open_dialog(char **name, UINT *mode)
 	FileBrowser *d = new FileBrowser();
 	d->init(&b, &c, "open file", cwd);
 	
-	ht_list *hist = (ht_list*)find_atom(HISTATOM_FILE);
+	List *hist = (List*)getAtomValue(HISTATOM_FILE);
 	
 	/* mode (input) */
-	c=b;
-	c.x=6;
-	c.y=b.h-4;
-	c.w=12;
-	c.h=1;
+	c = b;
+	c.x = 6;
+	c.y = b.h-4;
+	c.w = 12;
+	c.h = 1;
 
-	ht_listpopup *mode_input=new ht_listpopup();
+	ht_listpopup *mode_input = new ht_listpopup();
 	mode_input->init(&c);
 	
 	mode_input->insertstring("autodetect");
@@ -408,7 +422,7 @@ bool file_open_dialog(char **name, UINT *mode)
 	c.w=9;
 	c.h=1;
 
-	ht_label *mode_text=new ht_label();
+	ht_label *mode_text = new ht_label();
 	mode_text->init(&c, "~mode", mode_input);
 
 	d->insert(mode_text);
@@ -420,14 +434,14 @@ bool file_open_dialog(char **name, UINT *mode)
 			ht_listpopup_data mode;
 		} data;
 
-		d->databuf_get(&data, sizeof data);
+		ViewDataBuf vdb(d, &data, sizeof data);
 
 		char buf[VFS_URL_MAX];
 		d->extract_url(buf);
 
 		// FIXME: urls not fully supported...
-		if (strncmp(buf, "local:", 6) == 0) {
-			*name = strdup(buf+6);
+		if (ht_strncmp(buf, "local:", 6) == 0) {
+			*name = ht_strdup(buf+6);
 
 			if (hist) insert_history_entry(hist, *name, 0);
 
@@ -447,18 +461,18 @@ bool file_open_dialog(char **name, UINT *mode)
 	return false;
 }
 
-UINT autodetect_file_open_mode(char *filename)
+static uint autodetect_file_open_mode(const char *filename)
 {
 #define AUTODETECT_SIZE	128
 	FILE *f=fopen(filename, "rb");
-	UINT r=FOM_BIN;
+	uint r=FOM_BIN;
 	if (f) {
 		byte buf[AUTODETECT_SIZE];
 		int c=fread(buf, 1, AUTODETECT_SIZE, f);
 		/* empty files are text files */
 		if (!c) return FOM_TEXT;
 		bool is_bin=false;
-		UINT prob_bin_chars=0;
+		uint prob_bin_chars=0;
 		for (int i=0; i<c; i++) {
 			if (buf[i]==0) {
 				is_bin=true;
@@ -479,82 +493,82 @@ UINT autodetect_file_open_mode(char *filename)
 	return FOM_BIN;
 }
 
-int file_window_load_fcfg_func(ht_object_stream *f, void *context)
+void file_window_load_fcfg_func(ObjectStream &f, void *context)
 {
-	ht_file_window *w=(ht_file_window*)context;
+	ht_file_window *w = (ht_file_window*)context;
 
 	pstat_t p;
-	dword oldsize = f->getIntDec(4, "filesize");
-	dword oldtime = f->getIntDec(4, "filetime");
-	dword newsize = w->file->get_size();
-	w->file->pstat(&p);
-	dword newtime = (p.caps & pstat_mtime) ? p.mtime : 0;
 	
-	if (f->get_error()) return f->get_error();
+	FileOfs oldsize = GETX_INT64D(f, "filesize");
+	uint32 oldtime = GETX_INT32X(f, "filetime");
+	FileOfs newsize = w->file->getSize();
+	w->file->pstat(p);
+	uint32 newtime = (p.caps & pstat_mtime) ? p.mtime : 0;
 	
-	if ((newsize != oldsize) || (newtime != oldtime)) {
+	if (newsize != oldsize || newtime != oldtime) {
 		char s_oldtime[64], s_newtime[64];
 		struct tm *t;
-
-		t=gmtime((time_t*)&newtime);
+		time_t tt = newtime;
+		t = localtime(&tt);
 		strftime(s_newtime, sizeof s_newtime, "%X %d %b %Y", t);
 
-		t=gmtime((time_t*)&oldtime);
+		tt = oldtime;
+		t = localtime(&tt);
 		strftime(s_oldtime, sizeof s_oldtime, "%X %d %b %Y", t);
 
-		if (confirmbox_c("\ecconfig file applies to different version of file '%s'.\n\n\elcurrent: %10d %s\n\elold:     %10d %s\n\n\ecload config file?", w->file->get_desc(), newsize, s_newtime, oldsize, s_oldtime) != button_yes) {
-			return f->get_error();
+		String fn;
+		if (confirmbox_c("\ecconfig file applies to different version of file '%y'.\n\n"
+		    "\elcurrent: %10qd %s\n\elold:     %10qd %s\n\n"
+		    "\ecload config file?", &w->file->getDesc(fn), newsize, s_newtime, oldsize, s_oldtime) != button_yes) {
+			return;
 		}
 	}
 
-	Analyser *a=(Analyser*)f->getObject("analyser");
-
-	if (f->get_error()) return f->get_error();
+	Analyser *a = f.getObject("analyser");
 
 	htmsg m;
-	m.msg=msg_set_analyser;
-	m.type=mt_broadcast;
-	m.data1.ptr=a;
+	m.msg = msg_set_analyser;
+	m.type = mt_broadcast;
+	m.data1.ptr = a;
 	w->sendmsg(&m);
-
-	return f->get_error();
 }
 
-void file_window_store_fcfg_func(ht_object_stream *f, void *context)
+void file_window_store_fcfg_func(ObjectStream &f, void *context)
 {
-	ht_file_window *w=(ht_file_window*)context;
+	ht_file_window *w = (ht_file_window*)context;
 	htmsg m;
-	m.msg=msg_get_analyser;
-	m.type=mt_broadcast;
-	m.data1.ptr=NULL;
+	m.msg = msg_get_analyser;
+	m.type = mt_broadcast;
+	m.data1.ptr = NULL;
 	w->sendmsg(&m);
-	if ((m.msg==msg_retval) && (m.data1.ptr)) {
+	if (m.msg == msg_retval && m.data1.ptr) {
 		pstat_t s;
-		w->file->pstat(&s);
-		dword t = (s.caps & pstat_mtime) ? s.mtime : 0;;
-		f->putIntDec(w->file->get_size(), 4, "filesize");
-		f->putIntDec(t, 4, "filetime");
+		w->file->pstat(s);
+		uint32 t = (s.caps & pstat_mtime) ? s.mtime : 0;
+		PUTX_INT64D(f, w->file->getSize(), "filesize");
+		PUTX_INT32X(f, t, "filetime");
 		
-		Analyser *a=(Analyser*)m.data1.ptr;
-		f->putObject(a, "analyser");
+		Analyser *a = (Analyser*)m.data1.ptr;
+		f.putObject(a, "analyser");
 	}
 }
 
-void file_project_store_fcfg_func(ht_object_stream *f, void *context)
+void file_project_store_fcfg_func(ObjectStream &f, void *context)
 {
-	f->putObject((ht_project*)project, NULL);
+	PUT_OBJECT(f, (Object*)project);
 }
 
-int file_project_load_fcfg_func(ht_object_stream *f, void *context)
+void file_project_load_fcfg_func(ObjectStream &f, void *context)
 {
-	project = f->getObject(NULL);
-	return f->get_error();
+	Object *p;
+	GET_OBJECT(f, p);
+	project = p;
 }
 
 /*
  *   app_stream_error_func()
  */
-
+#if 0
 int app_stream_error_func(ht_stream *stream)
 {
 	int err=stream->get_error();
@@ -596,11 +610,12 @@ int app_stream_error_func(ht_stream *stream)
 	}
 	return SERR_FAIL;
 }
+#endif
 
 /*
  *   app_out_of_memory_proc()
  */
-void *app_memory_reserve=0;
+void *app_memory_reserve = NULL;
 
 int app_out_of_memory_proc(int size)
 {
@@ -618,97 +633,95 @@ int app_out_of_memory_proc(int size)
  *	CLASS ht_project
  */
 
-static int compare_keys_project_item(ht_data *key_a, ht_data *key_b)
+ht_project::ht_project(const char *fn)
+	: AVLTree(true)
 {
-	ht_project_item *a=(ht_project_item *)key_a;
-	ht_project_item *b=(ht_project_item *)key_b;
-	int c = sys_filename_cmp(a->get_path(), b->get_path());
-	return (c == 0) ? sys_filename_cmp(a->get_filename(), b->get_filename()) : c;
+	filename = ht_strdup(fn);
 }
 
-void ht_project::init(char *fn)
-{
-	ht_sorted_list::init(compare_keys_project_item);
-	filename = strdup(fn);
-}
-
-void ht_project::done()
+ht_project::~ht_project()
 {
 	free(filename);
-	ht_sorted_list::done();
 }
 
-char *ht_project::get_filename()
+const char *ht_project::get_filename()
 {
 	return filename;
 }
 
-int ht_project::load(ht_object_stream *s)
+void ht_project::load(ObjectStream &s)
 {
 // FIXME: probably not The Right Thing
-	filename = strdup(s->get_desc());
-	return ht_sorted_list::load(s);
+	String fn;
+	filename = ht_strdup(s.getDesc(fn).contentChar());
+	AVLTree::load(s);
 }
 
-OBJECT_ID ht_project::object_id() const
+ObjectID ht_project::getObjectID() const
 {
 	return ATOM_HT_PROJECT;
 }
 
-void ht_project::store(ht_object_stream *s)
+void ht_project::store(ObjectStream &s) const
 {
-	return ht_sorted_list::store(s);
+	AVLTree::store(s);
 }
 
 /*
  *	CLASS ht_project_item
  */
 
-void ht_project_item::init(char *f, char *p)
+ht_project_item::ht_project_item(const char *f, const char *p)
 {
-	filename = strdup(f);
-	path = strdup(p);
+	filename = ht_strdup(f);
+	path = ht_strdup(p);
 }
 
-void ht_project_item::done()
+ht_project_item::~ht_project_item()
 {
 	free(filename);
 	free(path);
 }
 
-const char *ht_project_item::get_filename()
+const char *ht_project_item::get_filename() const
 {
 	return filename;
 }
 
-const char *ht_project_item::get_path()
+const char *ht_project_item::get_path() const
 {
 	return path;
 }
 
-int ht_project_item::load(ht_object_stream *s)
+int ht_project_item::compareTo(const Object *obj) const
 {
-	filename = s->getString(NULL);
-	path = s->getString(NULL);
-	return s->get_error();
+	ht_project_item *b = (ht_project_item *)obj;
+	int c = sys_filename_cmp(get_path(), b->get_path());
+	return (c == 0) ? sys_filename_cmp(get_filename(), b->get_filename()) : c;
 }
 
-OBJECT_ID ht_project_item::object_id() const
+void ht_project_item::load(ObjectStream &s)
+{
+	GET_STRING(s, path);
+	GET_STRING(s, filename);
+}
+
+ObjectID ht_project_item::getObjectID() const
 {
 	return ATOM_HT_PROJECT_ITEM;
 }
 
-void ht_project_item::store(ht_object_stream *s)
+void ht_project_item::store(ObjectStream &s) const
 {
-	s->putString(filename, NULL);
-	s->putString(path, NULL);
+	PUT_STRING(s, path);
+	PUT_STRING(s, filename);
 }
 
 /*
  *	CLASS ht_project_list
  */
 
-void	ht_project_listbox::init(bounds *b, ht_project *p)
+void	ht_project_listbox::init(Bounds *b, ht_project *p)
 {
 	project = p;
 	ht_listbox::init(b);
@@ -731,11 +744,11 @@ void ht_project_listbox::draw()
 			getcolor(palidx_generic_list_unfocused_unselected);
 
 		clear(fc);
-		buf_print(0, 0, fc, "<no project>");
+		buf->print(0, 0, fc, "<no project>");
 	}
 }
 
-char *ht_project_listbox::func(UINT i, bool execute)
+const char *ht_project_listbox::func(uint i, bool execute)
 {
 	return NULL;
 }
@@ -760,7 +773,7 @@ void *ht_project_listbox::getLast()
 
 void *ht_project_listbox::getNext(void *entry)
 {
-	unsigned long e = reinterpret_cast<unsigned long>(entry);
+	unsigned long e=(unsigned long)entry;
 	if (!e) return NULL;
 	if (project && (e < project->count())) {
 		return (void*)(e+1);
@@ -771,7 +784,7 @@ void *ht_project_listbox::getNext(void *entry)
 
 void *ht_project_listbox::getPrev(void *entry)
 {
-	unsigned long e = reinterpret_cast<unsigned long>(entry);
+	unsigned long e=(unsigned long)entry;
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -779,17 +792,15 @@ void *ht_project_listbox::getPrev(void *entry)
 	}
 }
 
-char *ht_project_listbox::getStr(int col, void *entry)
+const char *ht_project_listbox::getStr(int col, void *entry)
 {
 	static char mybuf[32];
 	if (project) switch (col) {
 		case 0:
-			ht_snprintf(mybuf, sizeof mybuf, "%s",
-((ht_project_item*)project->get((long)entry-1))->get_filename());
+			ht_snprintf(mybuf, sizeof mybuf, "%s", ((ht_project_item*)(*project)[(long)entry-1])->get_filename());
 			break;
 		case 1:
-			ht_snprintf(mybuf, sizeof mybuf, "%s",
-((ht_project_item*)project->get((long)entry-1))->get_path());
+			ht_snprintf(mybuf, sizeof mybuf, "%s", ((ht_project_item*)(*project)[(long)entry-1])->get_path());
 			break;
 		default:
 			strcpy(mybuf, "?");
@@ -811,8 +822,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 					if ((sys_common_canonicalize(ffn, fn, NULL, sys_is_path_delim) == 0)
 					&& (sys_basename(fn, ffn) == 0)
 					&& (sys_dirname(dir, ffn) == 0)) {
-						ht_project_item *p = new ht_project_item();
-						p->init(fn, dir);
+						ht_project_item *p = new ht_project_item(fn, dir);
 						((ht_project*)project)->insert(p);
 						app->sendmsg(msg_project_changed);
 					}
@@ -823,9 +833,10 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 		}
 		case cmd_project_remove_item: {
 			int p = pos;
-			if (calcCount() && confirmbox("Really remove item '%s'?", ((ht_project_item*)project->get(p))->get_filename()) == button_ok) {
+			ht_project_item *pi = (ht_project_item*)(*project)[p];
+			if (calcCount() && confirmbox("Really remove item '%s'?", pi->get_filename()) == button_ok) {
 				cursorUp(1);
-				project->del(p);
+				project->delObj(pi);
 				update();
 				if (p) cursorDown(1);
 				dirtyview();
@@ -854,7 +865,7 @@ int ht_project_listbox::numColumns()
 	return 2;
 }
 
-void *ht_project_listbox::quickfind(char *s)
+void *ht_project_listbox::quickfind(const char *s)
 {
 	void *item = getFirst();
 	int slen = strlen(s);
@@ -864,7 +875,7 @@ void *ht_project_listbox::quickfind(char *s)
 	return item;
 }
 
-char	*ht_project_listbox::quickfindCompletition(char *s)
+char	*ht_project_listbox::quickfindCompletition(const char *s)
 {
 	void *item = getFirst();
 	char *res = NULL;
@@ -886,7 +897,7 @@ char	*ht_project_listbox::quickfindCompletition(char *s)
 bool ht_project_listbox::selectEntry(void *entry)
 {
 	int p = pos;
-	ht_project_item *i = (ht_project_item *)project->get(p);
+	ht_project_item *i = (ht_project_item *)(*project)[p];
 	char fn[HT_NAME_MAX];
 	if (sys_common_canonicalize(fn, i->get_filename(), i->get_path(), sys_is_path_delim)==0) {
 		((ht_app*)app)->create_window_file(fn, FOM_AUTO, false);
@@ -904,12 +915,12 @@ void ht_project_listbox::set_project(ht_project *p)
  *	CLASS ht_project_window
  */
 
-void	ht_project_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_project **p)
+void ht_project_window::init(Bounds *b, const char *desc, uint framestyle, uint number, ht_project **p)
 {
 	ht_window::init(b, desc, framestyle, number);
 	project = p;
 
-	bounds c = *b;
+	Bounds c = *b;
 	c.x = 0;
 	c.y = 0;
 	c.w -= 2;
@@ -930,14 +941,18 @@ void ht_project_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_project_changed: {
-			char *t = *project ? (*project)->get_filename() : NULL;
-			if (t) ht_snprintf(wtitle, sizeof wtitle, "project '%s'", t); else strcpy(wtitle, "project window");
+			const char *t = *project ? (*project)->get_filename() : NULL;
+			if (t) {
+				ht_snprintf(wtitle, sizeof wtitle, "project '%s'", t); 
+			} else {
+				strcpy(wtitle, "project window");
+			}
 			settitle(wtitle);
 			plb->set_project(*project);
 			break;
 		}
 		case msg_contextmenuquery: {
-			ht_static_context_menu *projects=new ht_static_context_menu();
+			ht_static_context_menu *projects = new ht_static_context_menu();
 			projects->init("~Project");
 			projects->insert_entry("~Add item", "Insert", cmd_project_add_item, K_Insert, 1);
 			projects->insert_entry("~Remove item", "Delete", cmd_project_remove_item, K_Delete, 1);
@@ -955,10 +970,11 @@ void ht_project_window::handlemsg(htmsg *msg)
  *	CLASS ht_status
  */
 
-void ht_status::init(bounds *b)
+void ht_status::init(Bounds *b)
 {
-	ht_view::init(b, VO_TRANSPARENT_CHARS, 0);
+	ht_view::init(b, VO_TRANSPARENT_CHARS | VO_RESIZE, 0);
 	VIEW_DEBUG_NAME("ht_status");
+	growmode = MK_GM(GMH_FIT, GMV_TOP);
 	idle_count = 0;
 	analy_ani = 0;
 	clear_len = 0;
@@ -975,11 +991,11 @@ void ht_status::init(bounds *b)
 void ht_status::done()
 {
 	unregister_idle_object(this);
-	if (format) free(format);
+	free(format);
 	ht_view::done();
 }
 
-char *ht_status::defaultpalette()
+const char *ht_status::defaultpalette()
 {
 	return palkey_generic_menu_default;
 }
@@ -987,26 +1003,32 @@ char *ht_status::defaultpalette()
 void ht_status::draw()
 {
 	fill(size.w-clear_len, 0, clear_len, 1, getcolor(palidx_generic_text_focused), ' ');
-	int len=strlen(workbuf);
+	int len = strlen(workbuf);
 	clear_len = len;
-	buf_print(size.w-len, 0, getcolor(palidx_generic_text_focused), workbuf);
+	buf->print(size.w-len, 0, getcolor(palidx_generic_text_focused), workbuf);
 }
 
 void ht_status::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_config_changed:
-			if (format) free(format);
-			format = get_config_string("misc/statusline");
-			break;
+	case msg_config_changed:
+		free(format);
+		format = get_config_string("misc/statusline");
+		break;
 	}
 	ht_view::handlemsg(msg);
+}
+
+void ht_status::getminbounds(int *width, int *height)
+{
+	*width = 1;
+	*height = 1;
 }
 
 bool ht_status::idle()
 {
 	if (idle_count % 100 == 0) {
-		char *oldstatus=ht_strdup(workbuf);
+		char *oldstatus = ht_strdup(workbuf);
 		render();
 		if (strcmp(oldstatus, workbuf)) {
 			dirtyview();
@@ -1028,37 +1050,37 @@ void ht_status::render()
 	char *buf = workbuf;
 	if (f)
 	while (*f) {
-		if (*f==STATUS_ESCAPE) {
+		if (*f == STATUS_ESCAPE) {
 			switch (*(++f)) {
-				case STATUS_ESCAPE:
-					*(buf++) = STATUS_ESCAPE;
-					break;
-				case STATUS_ANALY_ACTIVE:
-					if (some_analyser_active) {
-						char *analysers[] = {"Analy", "aNaly", "anAly", "anaLy", "analY", "anaLy", "anAly", "aNaly"};
-						strcpy(buf, analysers[analy_ani]);
-						buf += 5;
-					}
-					break;
-				case STATUS_ANALY_LINES:
-					if (some_analyser_active) {
-						buf += sprintf(buf, "(%d)", num_ops_parsed);
-					}
-					break;
-				case STATUS_TIME: {
-					time_t Time;
-					time(&Time);
-					tm *t=localtime(&Time);
-					buf += sprintf(buf, "%02d:%02d", t->tm_hour, t->tm_min);
-					break;
+			case STATUS_ESCAPE:
+				*(buf++) = STATUS_ESCAPE;
+				break;
+			case STATUS_ANALY_ACTIVE:
+				if (some_analyser_active) {
+					const char *analysers[] = {"Analy", "aNaly", "anAly", "anaLy", "analY", "anaLy", "anAly", "aNaly"};
+					strcpy(buf, analysers[analy_ani]);
+					buf += 5;
 				}
-				case STATUS_DATE: {
-					time_t Time;
-					time(&Time);
-					tm *t=localtime(&Time);
-					buf += sprintf(buf, "%02d.%02d.%04d", t->tm_mday, t->tm_mon+1, t->tm_year+1900);
-					break;
+				break;
+			case STATUS_ANALY_LINES:
+				if (some_analyser_active) {
+					buf += sprintf(buf, "(%d)", num_ops_parsed);
 				}
+				break;
+			case STATUS_TIME: {
+				time_t Time;
+				time(&Time);
+				tm *t = localtime(&Time);
+				buf += sprintf(buf, "%02d:%02d", t->tm_hour, t->tm_min);
+				break;
+			}
+			case STATUS_DATE: {
+				time_t Time;
+				time(&Time);
+				tm *t = localtime(&Time);
+				buf += sprintf(buf, "%02d.%02d.%04d", t->tm_mday, t->tm_mon+1, t->tm_year+1900);
+				break;
+			}
 			}
 		} else {
 			*(buf++) = *f;
@@ -1073,10 +1095,11 @@ void ht_status::render()
  *	CLASS ht_keyline
  */
 
-void ht_keyline::init(bounds *b)
+void ht_keyline::init(Bounds *b)
 {
-	ht_view::init(b, 0, 0);
+	ht_view::init(b, VO_RESIZE, 0);
 	VIEW_DEBUG_NAME("ht_keyline");
+	growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
 }
 
 void ht_keyline::done()
@@ -1084,7 +1107,7 @@ void ht_keyline::done()
 	ht_view::done();
 }
 
-char *ht_keyline::defaultpalette()
+const char *ht_keyline::defaultpalette()
 {
 	return palkey_generic_keys_default;
 }
@@ -1092,59 +1115,56 @@ char *ht_keyline::defaultpalette()
 void ht_keyline::draw()
 {
 	clear(getcolor(palidx_generic_text_disabled));
-	int x=0;
-	for (int i=1; i<=10; i++) {
+	int x = 0;
+	for (int i = 1; i <= 10; i++) {
 		htmsg msg;
-		msg.type=mt_empty;
-		msg.msg=msg_funcquery;
-		msg.data1.integer=i;
+		msg.type = mt_empty;
+		msg.msg = msg_funcquery;
+		msg.data1.integer = i;
 		baseview->sendmsg(&msg);
-		buf_printchar(x, 0, getcolor(palidx_generic_text_shortcut), '0'+i%10);
-		if (msg.msg==msg_retval) {
-			char *s=msg.data1.str;
+		buf->printChar(x, 0, getcolor(palidx_generic_text_shortcut), '0'+i%10);
+		if (msg.msg == msg_retval) {
+			char *s = msg.data1.str;
 			if (s) {
 				if (s[0]=='~') {
-					buf_printf(x+1, 0, getcolor(palidx_generic_text_disabled), s+1);
+					buf->print(x+1, 0, getcolor(palidx_generic_text_disabled), s+1);
 				} else {
 					for (int j=0; j<size.w/10-1; j++) {
-						buf_printf(x+j+1, 0, getcolor(palidx_generic_text_focused), " ");
+						buf->print(x+j+1, 0, getcolor(palidx_generic_text_focused), " ");
 					}
-					buf_printf(x+1, 0, getcolor(palidx_generic_text_focused), s);
+					buf->print(x+1, 0, getcolor(palidx_generic_text_focused), s);
 				}
 			}
 		}
-		x+=size.w/10;
+		x += size.w / 10;
 	}
 }
 
-void ht_keyline::handlemsg(htmsg *msg)
+void ht_keyline::getminbounds(int *width, int *height)
 {
-	ht_view::handlemsg(msg);
+	*width = 1;
+	*height = 1;
 }
 
 /*
  *	CLASS ht_desktop
  */
 
-void ht_desktop::init(bounds *b)
+void ht_desktop::init(Bounds *b)
 {
-	ht_view::init(b, VO_OWNBUFFER, 0);
+	ht_view::init(b, VO_OWNBUFFER | VO_RESIZE, 0);
 	VIEW_DEBUG_NAME("ht_desktop");
+	growmode = MK_GM(GMV_FIT, GMH_FIT);
 }
 
-void ht_desktop::done()
-{
-	ht_view::done();
-}
-
-char *ht_desktop::defaultpalette()
+const char *ht_desktop::defaultpalette()
 {
 	return palkey_generic_desktop_default;
 }
 
 void ht_desktop::draw()
 {
-	fill(0, 0, size.w, size.h, getcolor(palidx_generic_body), CHAR_FILLED_M);
+	fill(0, 0, size.w, size.h, getcolor(palidx_generic_body), GC_MEDIUM, CP_GRAPHICAL);
 }
 
 /*
@@ -1166,9 +1186,9 @@ ht_log_msg::~ht_log_msg()
  *	CLASS ht_log
  */
 
-void ht_log::init(compare_keys_func_ptr compare_keys)
+ht_log::ht_log()
+	: Array(true)
 {
-	ht_clist::init(compare_keys);
 	maxlinecount = 128;
 }
 
@@ -1199,7 +1219,7 @@ void ht_log::log(LogColor c, char *line)
  *	CLASS ht_logviewer
  */
 
-void ht_logviewer::init(bounds *b, ht_window *w, ht_log *l, bool ol)
+void ht_logviewer::init(Bounds *b, ht_window *w, ht_log *l, bool ol)
 {
 	ht_viewer::init(b, "log", 0);
 	VIEW_DEBUG_NAME("ht_logviewer");
@@ -1214,10 +1234,8 @@ void ht_logviewer::init(bounds *b, ht_window *w, ht_log *l, bool ol)
 void ht_logviewer::done()
 {
 	if (own_lines) {
-		lines->destroy();
 		delete lines;
 	}
-
 	ht_viewer::done();
 }
 
@@ -1244,9 +1262,9 @@ void ht_logviewer::draw()
 	int c = lines->count();
 	for (int i=0; i < size.h; i++) {
 		if (i+ofs >= c) break;
-		ht_log_msg *msg = (ht_log_msg*)lines->get(i+ofs);
+		ht_log_msg *msg = (ht_log_msg*)(*lines)[i+ofs];
 		int l = strlen(msg->msg);
-		if (xofs<l) buf_print(0, i, /*getcolor(palidx_generic_body)*/msg->color, msg->msg+xofs);
+		if (xofs < l) buf->print(0, i, /*getcolor(palidx_generic_body)*/msg->color, msg->msg+xofs);
 	}
 }
 
@@ -1261,18 +1279,6 @@ void ht_logviewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_get_scrollinfo:
 			switch (msg->data1.integer) {
-/*				case gsi_pindicator: {
-					get_pindicator_str((char*)msg->data2.ptr);
-					break;
-				}*/
-/*				case gsi_hscrollbar: {
-					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
-					if (!get_hscrollbar_pos(&p->pstart, &p->psize)) {
-						p->pstart = 0;
-						p->psize = 100;
-					}
-					break;
-				}*/
 				case gsi_vscrollbar: {
 					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
 					if (!get_vscrollbar_pos(&p->pstart, &p->psize)) {
@@ -1294,46 +1300,46 @@ void ht_logviewer::handlemsg(htmsg *msg)
 		case msg_keypressed:
 			switch (msg->data1.integer) {
 				case K_Up:
-					cursor_up(1);
-					update();
-					clearmsg(msg);
-					return;
-				case K_Down:
-					cursor_down(1);
-					update();
-					clearmsg(msg);
-					return;
-				case K_PageUp:
-					cursor_up(size.h);
-					update();
-					clearmsg(msg);
-					return;
-				case K_PageDown:
-					cursor_down(size.h);
-					update();
-					clearmsg(msg);
-					return;
-				case K_Right: case K_Control_Right:
-					xofs += 2;
-					update();
-					clearmsg(msg);
-					return;
-				case K_Left: case K_Control_Left:
-					if (xofs-2 >= 0) xofs -= 2;
-					update();
-					clearmsg(msg);
-					return;
-				case K_Control_PageUp:
-					ofs = 0;
-					update();
-					clearmsg(msg);
-					return;
-				case K_Control_PageDown:
-					ofs = lines->count()-size.h;
-					if (ofs < 0) ofs = 0;
-					update();
-					clearmsg(msg);
-					return;
+				cursor_up(1);
+				update();
+				clearmsg(msg);
+				return;
+			case K_Down:
+				cursor_down(1);
+				update();
+				clearmsg(msg);
+				return;
+			case K_PageUp:
+				cursor_up(size.h);
+				update();
+				clearmsg(msg);
+				return;
+			case K_PageDown:
+				cursor_down(size.h);
+				update();
+				clearmsg(msg);
+				return;
+			case K_Right: case K_Control_Right:
+				xofs += 2;
+				update();
+				clearmsg(msg);
+				return;
+			case K_Left: case K_Control_Left:
+				if (xofs-2 >= 0) xofs -= 2;
+				update();
+				clearmsg(msg);
+				return;
+			case K_Control_PageUp:
+				ofs = 0;
+				update();
+				clearmsg(msg);
+				return;
+			case K_Control_PageDown:
+				ofs = lines->count()-size.h;
+				if (ofs < 0) ofs = 0;
+				update();
+				clearmsg(msg);
+				return;
 			}
 			break;
 	}
@@ -1349,25 +1355,21 @@ void ht_logviewer::update()
  *	CLASS ht_app_window_entry
  */
 
-ht_app_window_entry::ht_app_window_entry(ht_window *w, UINT n, UINT t, bool m, bool isf, ht_layer_streamfile *l)
+ht_app_window_entry::ht_app_window_entry(ht_window *w, uint n, uint t, bool m, bool isf, FileLayer *l)
 {
-	window=w;
-	number=n;
-	type=t;
-	minimized=m;
-	isfile=isf;
-	layer=l;
+	window = w;
+	number = n;
+	type = t;
+	minimized = m;
+	isfile = isf;
+	layer = l;
 }
 
-ht_app_window_entry::~ht_app_window_entry()
+int ht_app_window_entry::compareTo(const Object *obj) const
 {
-}
-
-static int compare_keys_app_window_entry(ht_data *key_a, ht_data *key_b)
-{
-	UINT a=((ht_app_window_entry*)key_a)->number;
-	UINT b=((ht_app_window_entry*)key_b)->number;
-	if (a>b) return 1; else if (a<b) return -1;
+	uint a = number;
+	uint b = ((ht_app_window_entry*)obj)->number;
+	if (a > b) return 1; else if (a < b) return -1;
 	return 0;
 }
 
@@ -1375,12 +1377,12 @@ static int compare_keys_app_window_entry(ht_data *key_a, ht_data *key_b)
  *	CLASS ht_app
  */
 
-static bool doFileChecks(ht_file *file)
+static bool doFileChecks(File *file)
 {
 // FIXME: this is notify-user-only. should actually also take the actions it claims to...
 //        (its done in stream.cc in ht_file::set_access_mode_internal()
 	pstat_t s;
-	file->pstat(&s);
+	file->pstat(s);
 	if (s.caps & pstat_mode_type) {
 		switch (s.mode & HT_S_IFMT) {
 			case HT_S_IFREG: return true;
@@ -1407,21 +1409,20 @@ int cur_timing=0, max_timing=0;
 int h0;
 /**/
 
-void ht_app::init(bounds *pq)
+void ht_app::init(Bounds *pq)
 {
 	ht_dialog::init(pq, 0, 0);
 	menu = NULL;
 	setframe(NULL);
+	options |= VO_RESIZE;
 	VIEW_DEBUG_NAME("ht_app");
 	exit_program = false;
 	focused = true;
-	bounds b;
+	Bounds b;
 
-	windows = new ht_sorted_list();
-	windows->init(compare_keys_app_window_entry);
+	windows = new AVLTree(true);
 	
-	syntax_lexers = new ht_clist();
-	((ht_clist*)syntax_lexers)->init();
+	syntax_lexers = new Array(true);
 
 	ht_c_syntax_lexer *c_lexer = new ht_c_syntax_lexer();
 	c_lexer->init();
@@ -1454,7 +1455,7 @@ void ht_app::init(bounds *pq)
 	file->insert_entry("Open/Create ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
 	file->insert_separator();
-	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Alt_Z, 1);
+	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Meta_Z, 1);
 	file->insert_entry("~Quit", "F10", cmd_quit, 0, 1);
 	m->insert_menu(file);
 
@@ -1469,21 +1470,29 @@ void ht_app::init(bounds *pq)
 	edit->insert_separator();
 	edit->insert_entry("Copy ~from file...", 0, cmd_edit_copy_from_file, 0, 1);
 	edit->insert_entry("Paste ~into file...", 0, cmd_edit_paste_into_file, 0, 1);
-#ifdef SYS_SUPPORT_NATIVE_CLIPBOARD
-	edit->insert_separator();
-	edit->insert_entry("Copy from "SYS_NATIVE_CLIPBOARD_NAME, 0, cmd_edit_copy_native, 0, 1);
-	edit->insert_entry("Paste into "SYS_NATIVE_CLIPBOARD_NAME, 0, cmd_edit_paste_native, 0, 1);
-#endif
+	if (sys_get_caps() & SYSCAP_NATIVE_CLIPBOARD) {
+		char s[100];
+		edit->insert_separator();
+		ht_snprintf(s, sizeof s, "Copy from %s", sys_native_clipboard_name());
+		edit->insert_entry(s, 0, cmd_edit_copy_native, 0, 1);
+		ht_snprintf(s, sizeof s, "Paste into %s", sys_native_clipboard_name());
+		edit->insert_entry(s, 0, cmd_edit_paste_native, 0, 1);
+	}
 	edit->insert_separator();
 	edit->insert_entry("~Evaluate...", 0, cmd_popup_dialog_eval, 0, 1);
 	m->insert_menu(edit);
 
 	ht_static_context_menu *windows=new ht_static_context_menu();
 	windows->init("~Windows");
-	windows->insert_entry("~Size/Move", "Alt+F5", cmd_window_resizemove, K_Alt_F5, 1);
-	windows->insert_entry("~Close", "Alt+F3", cmd_window_close, K_Alt_F3, 1);
+	windows->insert_entry("~Size/Move", "Alt+F5", cmd_window_resizemove, K_Meta_F5, 1);
+	windows->insert_entry("~Close", "Alt+F3", cmd_window_close, K_Meta_F3, 1);
 	windows->insert_entry("~Close (alt)", "Ctrl+W", cmd_window_close, K_Control_W, 1);
-	windows->insert_entry("~List", "Alt+0", cmd_popup_dialog_window_list, K_Alt_0, 1);
+	windows->insert_entry("~List", "Alt+0", cmd_popup_dialog_window_list, K_Meta_0, 1);
+	ht_static_context_menu *tile=new ht_static_context_menu();
+	tile->init("~Tile");
+	tile->insert_entry("~Vertically", NULL, cmd_window_tile_vertical, 0, 1);
+	tile->insert_entry("~Horizontally", NULL, cmd_window_tile_horizontal, 0, 1);
+	windows->insert_submenu(tile);
 	windows->insert_separator();
 	windows->insert_entry("Lo~g window", NULL, cmd_popup_window_log, 0, 1);
 	windows->insert_entry("~Options", NULL, cmd_popup_window_options, 0, 1);
@@ -1500,11 +1509,11 @@ void ht_app::init(bounds *pq)
 
 	m->insert_local_menu();
 
-	menu=m;
+	menu = m;
 	insert(menu);
 	
 	/* create status */
-	/* the status should have the same bounds as the menu */
+	/* the status should have the same Bounds as the menu */
 	ht_status *status = new ht_status();
 	status->init(&b);
 	status->setpalette(menu->getpalette());
@@ -1512,30 +1521,31 @@ void ht_app::init(bounds *pq)
 	
 	/* create desktop */
 	getbounds(&b);
-	b.x=0;
-	b.y=1;
-	b.h-=2;
-	desktop=new ht_desktop();
+	b.x = 0;
+	b.y = 1;
+	b.h -= 2;
+	desktop = new ht_desktop();
 	desktop->init(&b);
 	insert(desktop);
 	
 	/* create keyline */
 	getbounds(&b);
-	b.x=0;
-	b.y=b.h-1;
-	b.h=1;
-	keyline=new ht_keyline();
+	b.x = 0;
+	b.y = b.h-1;
+	b.h = 1;
+	keyline = new ht_keyline();
 	keyline->init(&b);
 	insert(keyline);
 
 	/* create battlefield */
 	getbounds(&b);
-	b.x=0;
-	b.y=1;
-	b.h-=2;
+	b.x = 0;
+	b.y = 1;
+	b.h -= 2;
 
-	battlefield=new ht_group();
-	battlefield->init(&b, VO_TRANSPARENT_CHARS, "battlefield");
+	battlefield = new ht_group();
+	battlefield->init(&b, VO_TRANSPARENT_CHARS | VO_RESIZE, "battlefield");
+	battlefield->growmode = MK_GM(GMH_FIT, GMV_FIT);
 	insert(battlefield);
 
 	create_window_log();
@@ -1545,29 +1555,21 @@ void ht_app::done()
 {
 	delete_timer(h0);
 
-	syntax_lexers->destroy();
 	delete syntax_lexers;
-
-	if (windows) {
-		windows->destroy();
-		delete windows;
-	}
+	delete windows;
 
 	ht_dialog::done();
 }
 
 bool ht_app::accept_close_all_windows()
 {
-	UINT wc=windows->count();
-	ht_app_window_entry *e;
-	for (UINT i=0; i<wc; i++) {
-		e=(ht_app_window_entry*)windows->get(i);
+	foreach(ht_app_window_entry, e, *windows, {
 		htmsg m;
-		m.msg=msg_accept_close;
-		m.type=mt_empty;
+		m.msg = msg_accept_close;
+		m.type = mt_empty;
 		e->window->sendmsg(&m);
-		if (m.msg!=msg_accept_close) return false;
-	}
+		if (m.msg != msg_accept_close) return false;
+	});
 	return true;
 }
 
@@ -1577,7 +1579,7 @@ ht_window *ht_app::create_window_log()
 	if (w) {
 		focus(w);
 	} else {
-		bounds b;
+		Bounds b;
 /*		battlefield->getbounds(&b);
 		b.x = 0;
 		b.y = 0;*/
@@ -1586,7 +1588,7 @@ ht_window *ht_app::create_window_log()
 		ht_window *logwindow=new ht_window();
 		logwindow->init(&b, "log window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
 		
-		bounds k=b;
+		Bounds k=b;
 		k.x=b.w-2;
 		k.y=0;
 		k.w=1;
@@ -1615,13 +1617,13 @@ ht_window *ht_app::create_window_term(const char *cmd)
 	if (w) {
 		focus(w);
 	} else {
-		bounds b;
+		Bounds b;
 		get_stdbounds_file(&b);
 
 		ht_window *termwindow=new ht_window();
 		termwindow->init(&b, "terminal", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
 		
-		bounds k=b;
+		Bounds k=b;
 		k.x=3;
 		k.y=k.h-2;
 		k.w-=7;
@@ -1643,7 +1645,8 @@ ht_window *ht_app::create_window_term(const char *cmd)
 
 		termwindow->setvscrollbar(hs);
 
-		ht_streamfile *in, *out, *err;
+/*FIXPORT
+		File *in, *out, *err;
 		int handle;
 		int e;
 		if ((e = sys_ipc_exec(&in, &out, &err, &handle, cmd, 0)) == 0) {
@@ -1662,26 +1665,26 @@ ht_window *ht_app::create_window_term(const char *cmd)
 		} else {
 			errorbox("couldn't create child-process (%d)", e);
 			return NULL;
-		}
+		}*/
 	}
 	return w;
 }
 
 ht_window *ht_app::create_window_clipboard()
 {
-	ht_window *w=get_window_by_type(AWT_CLIPBOARD);
+	ht_window *w = get_window_by_type(AWT_CLIPBOARD);
 	if (w) {
 		focus(w);
 		return w;
 	} else {
-		bounds b;
+		Bounds b;
 		get_stdbounds_file(&b);
 /*		ht_file_window *window=new ht_file_window();
 		window->init(&b, "clipboard", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, clipboard);*/
-		ht_window *window=new ht_window();
+		ht_window *window = new ht_window();
 		window->init(&b, "clipboard", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
 		
-/*		bounds k=b;
+/*		Bounds k=b;
 		k.x=b.w-2;
 		k.y=0;
 		k.w=1;
@@ -1691,13 +1694,13 @@ ht_window *ht_app::create_window_clipboard()
 
 		window->setvscrollbar(hs);*/
 
-		bounds k;
+		Bounds k;
 		k = b;
 		k.x=3;
 		k.y=k.h-2;
 		k.w-=7;
 		k.h=1;
-		ht_statictext *ind=new ht_statictext();
+		ht_statictext *ind = new ht_statictext();
 		ind->init(&k, NULL, align_left, false, true);
 		ind->disable_buffering();
 		ind->growmode = MK_GM(GMH_FIT, GMV_BOTTOM);
@@ -1708,7 +1711,7 @@ ht_window *ht_app::create_window_clipboard()
 		b.y=0;
 		b.w-=2;
 		b.h-=2;
-		ht_clipboard_viewer *v=new ht_clipboard_viewer();
+		ht_clipboard_viewer *v = new ht_clipboard_viewer();
 		v->init(&b, "clipboard", VC_EDIT | VC_GOTO | VC_SEARCH, clipboard, 0);
 
 		window->insert(v);
@@ -1719,9 +1722,9 @@ ht_window *ht_app::create_window_clipboard()
 	return NULL;
 }
 
-ht_window *ht_app::create_window_file(char *filename, UINT mode, bool allow_duplicates)
+ht_window *ht_app::create_window_file(const char *filename, uint mode, bool allow_duplicates)
 {
-	if (mode==FOM_AUTO) mode=autodetect_file_open_mode(filename);
+	if (mode == FOM_AUTO) mode = autodetect_file_open_mode(filename);
 	switch (mode) {
 		case FOM_BIN: return create_window_file_bin(filename, allow_duplicates);
 		case FOM_TEXT: return create_window_file_text(filename, allow_duplicates);
@@ -1729,55 +1732,55 @@ ht_window *ht_app::create_window_file(char *filename, UINT mode, bool allow_dupl
 	return NULL;
 }
 
-ht_window *ht_app::create_window_file_bin(char *filename, bool allow_duplicates)
+ht_window *ht_app::create_window_file_bin(const char *filename, bool allow_duplicates)
 {
-	bounds b;
+	Bounds b;
 	get_stdbounds_file(&b);
 	int e;
-	char fullfilename[FILENAME_MAX];
-	if ((e=sys_canonicalize(fullfilename, filename))) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
+	char *fullfilename;
+	if ((e = sys_canonicalize(&fullfilename, filename))) {
+		LOG_EX(LOG_ERROR, "error loading file %s: %s", filename, strerror(e));
 		return NULL;
 	}
+	String f(fullfilename);
+	free(fullfilename);
 
 	ht_window *w;
-	if (!allow_duplicates && ((w = get_window_by_filename(fullfilename)))) {
+	if (!allow_duplicates && ((w = get_window_by_filename(f.contentChar())))) {
 		focus(w);
 		return w;
 	}
 
-	ht_file *emfile = new ht_file();
-	emfile->init(fullfilename, FAM_READ, FOM_EXISTS);
-
-	if ((e = emfile->get_error())) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
+	File *emfile = NULL;
+	FileModificator *mfile = NULL;
+	FileLayer *file = NULL;
+	try {
+		emfile = new LocalFile(f, IOAM_READ, FOM_EXISTS);
+	    	if (!doFileChecks(emfile)) {
+			delete emfile;
+			return NULL;
+		}
+		mfile = new FileModificator(emfile, true);
+		file = new FileLayer(mfile, true);
+	} catch (const IOException &e) {
+		LOG_EX(LOG_ERROR, "error loading file %y: %y", &f, &e);
+		if (file) delete file;
+		else if (mfile) delete mfile;
+		else delete emfile;
 		return NULL;
 	}
 
-	if (!doFileChecks(emfile)) return NULL;
+	LOG("loading binary file %y...", &f);
 
-	ht_streamfile_modifier *mfile = new ht_streamfile_modifier();
-	mfile->init(emfile, true, 8*1024);
-
-	ht_layer_streamfile *file = new ht_layer_streamfile();
-	file->init(mfile, true);
-			 
-	if ((e=file->get_error())) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return NULL;
-	}
-	LOG("loading binary file %s...", fullfilename);
-	file->set_error_func(app_stream_error_func);
-
-	return create_window_file_bin(&b, file, fullfilename, true);
+	return create_window_file_bin(&b, file, f.contentChar(), true);
 }
 
-ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, char *title, bool isfile)
+ht_window *ht_app::create_window_file_bin(Bounds *b, FileLayer *file, const char *title, bool isfile)
 {
 	ht_file_window *window = new ht_file_window();
 	window->init(b, title, FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, file);
 
-	bounds k=*b;
+	Bounds k=*b;
 	k.x=b->w-2;
 	k.y=0;
 	k.w=1;
@@ -1815,12 +1818,12 @@ ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, 
 		strcpy(cfgfilename, title);
 		strcat(cfgfilename, HT_FILE_CONFIG_SUFFIX);
 
-		int einfo;
+		String einfo;
 		LOG("%s: loading config file...", cfgfilename);
-		loadstore_result lsr = load_fileconfig(cfgfilename, ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_load_fcfg_func, window, &einfo);
+		loadstore_result lsr = load_fileconfig(cfgfilename, ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_load_fcfg_func, window, einfo);
 		if (lsr == LS_ERROR_CORRUPTED) {
-			LOG_EX(LOG_ERROR, "%s: error in line %d", cfgfilename, einfo);
-			errorbox("%s: error in line %d",cfgfilename,  einfo);
+			LOG_EX(LOG_ERROR, "%s: error: ", cfgfilename, &einfo);
+			errorbox("%s: error: %y", cfgfilename, &einfo);
 		} else if (lsr == LS_ERROR_MAGIC || lsr == LS_ERROR_FORMAT) {
 			LOG_EX(LOG_ERROR, "%s: wrong magic/format", cfgfilename);
 			errorbox("%s: wrong magic/format", cfgfilename);
@@ -1830,8 +1833,8 @@ ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, 
 		} else if (lsr == LS_ERROR_NOT_FOUND) {
 			LOG("%s: not found", cfgfilename);
 		} else if (lsr != LS_OK) {
-			LOG_EX(LOG_ERROR, "%s: some error", cfgfilename);
-			errorbox("%s: some error", cfgfilename);
+			LOG_EX(LOG_ERROR, "%s: error: %y", cfgfilename, &einfo);
+			errorbox("%s: error: %y", cfgfilename, &einfo);
 		} else {
 			LOG("%s: ok", cfgfilename);
 		}
@@ -1849,54 +1852,54 @@ ht_window *ht_app::create_window_file_bin(bounds *b, ht_layer_streamfile *file, 
 	return window;
 }
 
-ht_window *ht_app::create_window_file_text(char *filename, bool allow_duplicates)
+ht_window *ht_app::create_window_file_text(const char *filename, bool allow_duplicates)
 {
-	bounds b, c;
+	Bounds b, c;
 	get_stdbounds_file(&c);
 	b = c;
 	int e;
-	char fullfilename[FILENAME_MAX];
-	if ((e=sys_canonicalize(fullfilename, filename))) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
+	char *fullfilename;
+	if ((e = sys_canonicalize(&fullfilename, filename))) {
+		LOG_EX(LOG_ERROR, "error loading file %s: %s", filename, strerror(e));
 		return NULL;
 	}
-
+	String f(fullfilename);
+	free(fullfilename);
+	
 	ht_window *w;
-	if (!allow_duplicates && ((w = get_window_by_filename(fullfilename)))) {
+	if (!allow_duplicates && ((w = get_window_by_filename(f.contentChar())))) {
 		focus(w);
 		return w;
 	}
 
-	ht_file *emfile = new ht_file();
-	emfile->init(fullfilename, FAM_READ, FOM_EXISTS);
+	File *emfile = NULL;
+	ht_ltextfile *tfile = NULL;
+	FileLayer *file = NULL;
+	try {
+		File *emfile = new LocalFile(f, IOAM_READ, FOM_EXISTS);
 
-	if ((e=emfile->get_error())) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
+		if (!doFileChecks(emfile)) {
+			delete emfile;
+			return NULL;
+		}
+		tfile = new ht_ltextfile(emfile, true, NULL);
+		file = new ht_layer_textfile(tfile, true);
+	} catch (const IOException &e) {
+		LOG_EX(LOG_ERROR, "error loading file %y: %y", &f, &e);
+		if (file) delete file;
+		else if (tfile) delete tfile;
+		else delete emfile;
 		return NULL;
 	}
 
-	if (!doFileChecks(emfile)) return NULL;
+	LOG("loading text file %y...", &f);
 
-	ht_ltextfile *tfile = new ht_ltextfile();
-	tfile->init(emfile, true, NULL);
-
-	ht_layer_textfile *file=new ht_layer_textfile();
-	file->init(tfile, true);
-
-	if ((e=file->get_error())) {
-		LOG_EX(LOG_ERROR, "error loading file %s: %s", fullfilename, strerror(e & ~STERR_SYSTEM));
-		return NULL;
-	}
-
-	LOG("loading text file %s...", fullfilename);
-	file->set_error_func(app_stream_error_func);
-
-	return create_window_file_text(&b, file, fullfilename, true);
+	return create_window_file_text(&b, file, f.contentChar(), true);
 }
 
-ht_window *ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, char *title, bool isfile)
+ht_window *ht_app::create_window_file_text(Bounds *c, FileLayer *f, const char *title, bool isfile)
 {
-	bounds b=*c;
+	Bounds b=*c;
 
 	ht_layer_textfile *file = (ht_layer_textfile *)f;
 	
@@ -1910,22 +1913,22 @@ ht_window *ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, ch
 	ht_text_editor *text_editor=new ht_text_editor();
 	text_editor->init(&b, true, file, syntax_lexers, TEXTEDITOPT_INPUTTABS|TEXTEDITOPT_UNDO);
 
-	char *fn_suf = sys_filename_suffix(file->get_filename());
-
-	if (fn_suf) {
-		if ((ht_stricmp(fn_suf, "c") == 0) || (ht_stricmp(fn_suf, "cc") == 0)
-		|| (ht_stricmp(fn_suf, "cpp") == 0)
-		|| (ht_stricmp(fn_suf, "h") == 0) || (ht_stricmp(fn_suf, "hpp") == 0)) {
-			text_editor->set_lexer((ht_syntax_lexer*)syntax_lexers->get(0), false);
+	IString fn, base, fn_suf;
+	file->getFilename(fn);
+	if (fn.rightSplit('.', base, fn_suf)) {
+		if (fn_suf == "c" || fn_suf == "cc"
+		 || fn_suf == "cpp"
+		 || fn_suf == "h" || fn_suf == "hpp") {
+			text_editor->set_lexer((ht_syntax_lexer*)(*syntax_lexers)[0], false);
 		}
 #ifdef HT_HTML_SYNTAX_LEXER
-		if (ht_stricmp(fn_suf, "htm") == 0 || ht_stricmp(fn_suf, "html") == 0) {
-			text_editor->set_lexer((ht_syntax_lexer*)syntax_lexers->get(1), false);
+		if (fn_suf == "htm" || fn_suf == "html") {
+			text_editor->set_lexer((ht_syntax_lexer*)(*syntax_lexers)[1], false);
 		}
 #endif
 	}
 
-	bounds k=*c;
+	Bounds k=*c;
 	k.x=k.w-2;
 	k.y=0;
 	k.w=1;
@@ -1955,20 +1958,20 @@ ht_window *ht_app::create_window_file_text(bounds *c, ht_layer_streamfile *f, ch
 	return window;
 }
 
-ht_window *ht_app::create_window_help(char *file, char *node)
+ht_window *ht_app::create_window_help(const char *file, const char *node)
 {
 	ht_window *w = get_window_by_type(AWT_HELP);
 	if (w) {
 		focus(w);
 		return w;
 	} else {
-		bounds b, c;
+		Bounds b, c;
 		battlefield->getbounds(&c);
 		b.w=c.w*7/8;
 		b.h=c.h*7/8;
 		b.x=(c.w-b.w)/2;
 		b.y=(c.h-b.h)/2;
-		bounds k = b;
+		Bounds k = b;
 
 		ht_help_window *window=new ht_help_window();
 		window->init(&b, "help", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0);
@@ -2027,18 +2030,20 @@ ht_window *ht_app::create_window_help(char *file, char *node)
 
 ht_window *ht_app::create_window_project()
 {
-	ht_window *w=get_window_by_type(AWT_PROJECT);
+	ht_window *w = get_window_by_type(AWT_PROJECT);
 	if (w) {
 		focus(w);
 		return w;
 	} else {
-		bounds b;
+		Bounds b;
 		get_stdbounds_tool(&b);
 
 		ht_project_window *project_window=new ht_project_window();
-		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, (ht_project**)&project);
+		ht_project *p = (ht_project *)project;
+		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, &p);
+		project = p;
 
-		bounds k = b;
+		Bounds k = b;
 		k.x = b.w-2;
 		k.y = 0;
 		k.w = 1;
@@ -2064,14 +2069,14 @@ ht_window *ht_app::create_window_project()
 }
 
 #if 0
-ht_view *create_ofm_single(bounds *c, char *url, ht_vfs_viewer **x)
+ht_view *create_ofm_single(Bounds *c, char *url, ht_vfs_viewer **x)
 {
-	bounds b=*c;
+	Bounds b=*c;
 	b.h-=2;
 	ht_group *g=new ht_group();
 	g->init(&b, VO_SELECTABLE, 0);
 
-	bounds d=b;
+	Bounds d=b;
 	
 	b.x=0;
 	b.y=0;
@@ -2101,9 +2106,9 @@ ht_view *create_ofm_single(bounds *c, char *url, ht_vfs_viewer **x)
 }
 #endif
 
-ht_window *ht_app::create_window_ofm(char *url1, char *url2)
+ht_window *ht_app::create_window_ofm(const char *url1, const char *url2)
 {
-	bounds b;
+	Bounds b;
 	get_stdbounds_file(&b);
 
 	ht_window *window=new ht_window();
@@ -2120,7 +2125,7 @@ ht_window *ht_app::create_window_ofm(char *url1, char *url2)
 
 	window->insert(l);
 #else
-	bounds b1, b2, b3;
+	Bounds b1, b2, b3;
 
 	ht_vfs_viewer *v1, *v2=NULL;
 
@@ -2156,12 +2161,12 @@ ht_window *ht_app::create_window_ofm(char *url1, char *url2)
 	return window;
 }
 
-char *ht_app::defaultpalette()
+const char *ht_app::defaultpalette()
 {
 	return NULL;
 }
 
-char *ht_app::defaultpaletteclass()
+const char *ht_app::defaultpaletteclass()
 {
 	return NULL;
 }
@@ -2187,36 +2192,33 @@ void ht_app::draw()
 
 void ht_app::delete_window(ht_window *window)
 {
-	UINT i=get_window_listindex(window);
-	if (i!=LIST_UNDEFINED) {
+	ObjHandle oh = get_window_listindex(window);
+	if (oh != invObjHandle) {
 		battlefield->remove(window);
 
-		windows->del(i);
+		windows->del(oh);
 
 		window->done();
 		delete window;
 	}
 }
 
-UINT ht_app::find_free_window_number()
+uint ht_app::find_free_window_number()
 {
-	UINT c=windows->count();
-	UINT k=0;
-repeat:
-	k++;
-	for (UINT i=0; i<c; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-		if (e->number==k) goto repeat;
+	ht_app_window_entry e(NULL, 1, 0, false, false, NULL);
+	ObjHandle oh;
+	while ((oh = windows->find(&e)) != invObjHandle) {
+		e.number++;
 	}
-	return k;
+	return e.number;
 }
 
-int ht_app::focus(ht_view *view)
+bool ht_app::focus(ht_view *view)
 {
 	return ht_dialog::focus(view);
 }
 
-char *ht_app::func(UINT i, bool execute)
+const char *ht_app::func(uint i, bool execute)
 {
 	switch (i) {
 		case 1:
@@ -2241,10 +2243,10 @@ char *ht_app::func(UINT i, bool execute)
 	return 0;
 }
 
-void ht_app::get_stdbounds_file(bounds *b)
+void ht_app::get_stdbounds_file(Bounds *b)
 {
 	if (project) {
-		bounds c;
+		Bounds c;
 		get_stdbounds_tool(&c);
 		battlefield->getbounds(b);
 		b->x = 0;
@@ -2257,73 +2259,66 @@ void ht_app::get_stdbounds_file(bounds *b)
 	}
 }
 
-void ht_app::get_stdbounds_tool(bounds *b)
+void ht_app::get_stdbounds_tool(Bounds *b)
 {
-	UINT h = MAX(size.h/4, 3);
+	uint h = MAX(size.h/4, 3);
 	battlefield->getbounds(b);
 	b->x = 0;
 	b->y = b->h - h;
 	b->h = h;
 }
 
-ht_window *ht_app::get_window_by_filename(char *filename)
+ht_window *ht_app::get_window_by_filename(const char *filename)
 {
-	UINT c=windows->count();
-	for (UINT i=0; i<c; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-// FIXME: filename_compare (taking into account slash/backslash, and case)
+	foreach(ht_app_window_entry, e, *windows, {
+		// FIXME: filename_compare (taking into account slash/backslash, and case)
 		if (strcmp(e->window->desc, filename) == 0) return e->window;
-	}
+	});
 	return NULL;
 }
 
-ht_window *ht_app::get_window_by_number(UINT number)
+ht_window *ht_app::get_window_by_number(uint number)
 {
-	UINT c=windows->count();
-	for (UINT i=0; i<c; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-		if (e->number==number) return e->window;
+	ht_app_window_entry *e;
+	firstThat(ht_app_window_entry, e, *windows, e->number==number);
+	return e ? e->window : NULL;
+}
+
+ht_window *ht_app::get_window_by_type(uint type)
+{
+	ht_app_window_entry *e;
+	firstThat(ht_app_window_entry, e, *windows, e->type==type);
+	return e ? e->window : NULL;
+}
+
+uint ht_app::get_window_number(ht_window *window)
+{
+	ht_app_window_entry *e;
+	firstThat(ht_app_window_entry, e, *windows, e->window==window);
+	return e ? e->number : 0;
+}
+
+ObjHandle ht_app::get_window_listindex(ht_window *window)
+{
+	ObjHandle oh;
+	for (oh = windows->findFirst(); oh != invObjHandle; ) {
+		ht_app_window_entry *e = (ht_app_window_entry*)windows->get(oh);
+		if (e->window == window) break;
+		oh = windows->findNext(oh);
 	}
-	return NULL;
+	return oh;
 }
 
-ht_window *ht_app::get_window_by_type(UINT type)
-{
-	UINT c=windows->count();
-	for (UINT i=0; i<c; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-		if (e->type==type) return e->window;
-	}
-	return NULL;
-}
-
-UINT ht_app::get_window_number(ht_window *window)
-{
-	ht_app_window_entry *e=(ht_app_window_entry*)windows->get(get_window_listindex(window));
-	if (e) return e->number; else return 0;
-}
-
-UINT ht_app::get_window_listindex(ht_window *window)
-{
-	UINT c=windows->count();
-	for (UINT i=0; i<c; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-		if (e->window==window) return i;
-	}
-	return LIST_UNDEFINED;
-}
-
+#include "cstream.h"
 void ht_app::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-#ifdef SYS_SUPPORT_NATIVE_CLIPBOARD
 		case cmd_edit_copy_native: {
-			int dz = sys_get_native_clipboard_data_size();
+			int dz = sys_native_clipboard_get_size();
 			if (dz) {
-				void *data = smalloc(dz);
-				if (sys_read_data_from_native_clipboard(data, dz)) {
-					dz = strlen((char*)data);
-					clipboard_copy(SYS_NATIVE_CLIPBOARD_NAME, data, dz);
+				void *data = ht_malloc(dz);
+				if ((dz = sys_native_clipboard_read(data, dz))) {
+					clipboard_copy(sys_native_clipboard_name(), data, dz);
 				}
 				free(data);
 			}
@@ -2331,28 +2326,28 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_edit_paste_native: {
 			int maxsize = clipboard_getsize();
-			byte *buf = (byte*)smalloc(maxsize);
-			int r = clipboard_paste(buf, maxsize);
-			if (r) {
-				sys_write_data_to_native_clipboard(buf, r);
+			if (maxsize) {
+				byte *buf = ht_malloc(maxsize);
+				int r = clipboard_paste(buf, maxsize);
+				if (r) {
+					sys_native_clipboard_write(buf, r);
+				}
+				free(buf);
 			}
-			free(buf);
 			break;
 		}
-#endif
 		case cmd_file_save: {
-			UINT i = get_window_listindex((ht_window*)battlefield->current);
-			ht_app_window_entry *e = (ht_app_window_entry*)windows->get(i);
-			if ((e) && (e->layer) && (e->isfile)) break;
+			ObjHandle oh = get_window_listindex((ht_window*)battlefield->current);
+			ht_app_window_entry *e = (ht_app_window_entry*)windows->get(oh);
+			if (e && e->layer && e->isfile) break;
 		}
 		case cmd_file_saveas: {
-			UINT i=get_window_listindex((ht_window*)battlefield->current);
-			ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
-			if ((e) && (e->layer)) {
+			ObjHandle oh = get_window_listindex((ht_window*)battlefield->current);
+			ht_app_window_entry *e = (ht_app_window_entry*)windows->get(oh);
+			if (e && e->layer) {
 				char fn[HT_NAME_MAX];
 				fn[0] = 0;
 				if (file_chooser("Save as", fn, sizeof fn)) {
-					int err;
 					bool work = true;
 
 					if (access(fn, F_OK) == 0) {
@@ -2360,34 +2355,47 @@ void ht_app::handlemsg(htmsg *msg)
 					}
 
 					if (work) {
-						ht_file *f = new ht_file();
-						f->init(fn, FAM_WRITE, FOM_CREATE);
-
-						if ((err = f->get_error())) {
-							f->done();
+						LocalFile *f = NULL;
+						try {
+							String n(fn);
+							f = new LocalFile(n, IOAM_WRITE, FOM_CREATE);
+							e->layer->seek(0);
+							e->layer->copyAllTo(f);
+						} catch (const IOException &e) {
+							LOG_EX(LOG_ERROR, "error saving file %s: %y", fn, &e);
+							errorbox("error saving file %s: %y", fn, &e);
 							delete f;
-							LOG_EX(LOG_ERROR, "error saving file %s: %s", fn, strerror(err & ~STERR_SYSTEM));
-							errorbox("error saving file %s: %s", fn, strerror(err & ~STERR_SYSTEM));
 							return;
 						}
+//						asm(".byte 0xcc");
 
-						e->layer->seek(0);
-						e->layer->copy_to(f);
+						File *old = e->layer->getLayered();
 
-						ht_streamfile *old = e->layer->get_layered();
-
-						if (f->set_access_mode(old->get_access_mode()) == 0) {
-							e->layer->set_layered(f);
+						if (f->setAccessMode(old->getAccessMode()) == 0) {
+							FileLayer *l;
+							// FIXME: UGLY hack
+							if (dynamic_cast<ht_ltextfile *>(old)) {
+								l = new ht_ltextfile(f, true, NULL);
+							} else {
+								l = new FileModificator(f, true);
+							}
+							e->layer->setLayered(l, true);
 							e->isfile = true;
 
-							old->done();
 							delete old;
 
-							char fullfn[FILENAME_MAX], *ff=fullfn;
-							if (sys_canonicalize(fullfn, fn)!=0) ff=fn;
-							e->window->settitle(ff);
+							char *fullfn;
+							if (sys_canonicalize(&fullfn, fn)==0) {
+								e->window->settitle(fullfn);
+								free(fullfn);
+							} else {
+								e->window->settitle(fn);
+							}
 							clearmsg(msg);
-						} else errorbox("couldn't inherit access_mode from '%s' to '%s'", old->get_desc(), f->get_desc());
+						} else {
+							String s1, s2;
+							errorbox("couldn't inherit access_mode from '%y' to '%y'", &old->getDesc(s1), &f->getDesc(s2));
+						}
 					}
 				}
 			}
@@ -2395,24 +2403,24 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case msg_kill: {
 			htmsg m;
-			ht_window *w=(ht_window*)msg->data1.ptr;
-			m.msg=msg_accept_close;
-			m.type=mt_broadcast;
-			m.data1.ptr=NULL;
-			m.data2.ptr=NULL;
+			ht_window *w = (ht_window*)msg->data1.ptr;
+			m.msg = msg_accept_close;
+			m.type = mt_broadcast;
+			m.data1.ptr = NULL;
+			m.data2.ptr = NULL;
 			w->sendmsg(&m);
-			if (m.msg==msg_accept_close) delete_window(w);
+			if (m.msg == msg_accept_close) delete_window(w);
 			clearmsg(msg);
 			return;
 		}
 	}
-	if (msg->msg==msg_draw) {
+	if (msg->msg == msg_draw) {
 		start_timer(h0);
-		if (msg->type==mt_broadcast) {
-			ht_view *v=first;
+		if (msg->type == mt_broadcast) {
+			ht_view *v = first;
 			while (v) {
 				v->handlemsg(msg);
-				v=v->next;
+				v = v->next;
 			}
 		} else {
 			current->handlemsg(msg);
@@ -2427,15 +2435,15 @@ void ht_app::handlemsg(htmsg *msg)
 		case msg_keypressed: {
 			int i=0;
 			switch (msg->data1.integer) {
-				case K_Alt_9: i++;
-				case K_Alt_8: i++;
-				case K_Alt_7: i++;
-				case K_Alt_6: i++;
-				case K_Alt_5: i++;
-				case K_Alt_4: i++;
-				case K_Alt_3: i++;
-				case K_Alt_2: i++;
-				case K_Alt_1: i++;
+				case K_Meta_9: i++;
+				case K_Meta_8: i++;
+				case K_Meta_7: i++;
+				case K_Meta_6: i++;
+				case K_Meta_5: i++;
+				case K_Meta_4: i++;
+				case K_Meta_3: i++;
+				case K_Meta_2: i++;
+				case K_Meta_1: i++;
 					focus(get_window_by_number(i));
 					clearmsg(msg);
 					return;
@@ -2463,34 +2471,27 @@ void ht_app::handlemsg(htmsg *msg)
 						return;
 					}
 					break;
-#if 0
-				/* FIXME: experimental */
-				case K_Control_F9:
-					((ht_app*)app)->create_window_term("main.exe");
-					clearmsg(msg);
-					return;
-				case K_Alt_R: {
-					char *n = "./ht.reg";
-					ht_file *f = new ht_file();
-					f->init(n, FAM_WRITE, FOM_CREATE);
+				case K_Meta_R: {
+					const char *n = "ht.reg";
+					LocalFile f(n, IOAM_WRITE, FOM_CREATE);
+					CompressedStream c(&f, false);
+//					StreamLayer c(&f, false);
+					ObjectStreamBin b(&c, false);
 
-					ht_object_stream_bin *b = new ht_object_stream_bin();
-					b->init(f);
-
-					b->putObject(registry, NULL);
-
-					b->done();
-					delete b;
-					
-					f->done();
-					delete f;
+					b.putObject(registry, NULL);
 
 					infobox("registry dumped to '%s'", n);
 					
 					clearmsg(msg);
 					return;
 				}
-				case K_Alt_T:
+#if 0
+				/* FIXME: experimental */
+				case K_Control_F9:
+					((ht_app*)app)->create_window_term("main.exe");
+					clearmsg(msg);
+					return;
+				case K_Meta_T:
 					create_window_ofm("reg:/", "local:/");
 					clearmsg(msg);
 					return;*/
@@ -2505,24 +2506,14 @@ void ht_app::handlemsg(htmsg *msg)
 					sendmsg(cmd_popup_dialog_view_list);
 					clearmsg(msg);
 					return;
-/*				case K_Space: {
-				msgbox(0, "title", 0, align_custom, "test, baby ! aaaaaaaaaaaarghssssssssssssssssssssssssssssssssssssssssssssssss,bf\n\n"
-"Was willst DU Ich komm   nicht dahinter Ich zaehm dir das  Feuer      Du schenkst mir "
-"nur Winter Wenn du nicht bald anf„ngst mir Antwort zu geben faengt es ohne "
-"dich an das richtige Leben Ich hab lange gewartet bin nicht durchgeknallt "
-"aber wenn du jetzt nicht \n\n\ecaufspringst wirst du ohne mich alt Erklaer mir ich "
-"warte Wohin geht die Reise \n\n\erich kenn doch die Karte Nimm mich nicht als "
-"Vorwand nimm mich nicht auf die Schippe sonst kuess ich dich luftleer und "
-"zerbeiss dir die Lippe ich kann ohne dich leben auch wenn du nicht glaubst     \n"
-"da ist mehr an mir dran als was du mir raubst ");
-					clearmsg(msg);
-					break;
-				}*/
 			}
 			break;
 		}
 		case cmd_about:
-			msgbox(btmask_ok, "About "ht_name, 0, align_custom, "\n\ec"ht_name" "ht_version" ("HT_SYS_NAME")\n\n\el"ht_copyright1"\n"ht_copyright2"\n\nThis program is GPL'd. See Help for more information.");
+			msgbox(btmask_ok, "About "ht_name, 0, align_custom, "\n"
+				"\ec"ht_name" "ht_version" (%s)\n\n"
+				"\el"ht_copyright1"\n"ht_copyright2"\n\n"
+				"This program is GPL'd. See Help for more information.", sys_get_name());
 			break;
 		case msg_funcexec:
 			if (func(msg->data1.integer, 1)) {
@@ -2531,10 +2522,10 @@ void ht_app::handlemsg(htmsg *msg)
 			}
 			break;
 		case msg_funcquery: {
-			char *s=func(msg->data1.integer, 0);
+			const char *s = func(msg->data1.integer, 0);
 			if (s) {
-				msg->msg=msg_retval;
-				msg->data1.str=s;
+				msg->msg = msg_retval;
+				msg->data1.cstr = s;
 			} else clearmsg(msg);
 			return;
 		}
@@ -2542,40 +2533,44 @@ void ht_app::handlemsg(htmsg *msg)
 			char cmd[HT_NAME_MAX];
 			cmd[0] = 0;
 			if (inputbox("execute shell command (experimental!)",
-			(sys_get_caps() & SYSCAP_NONBLOCKING_IPC) ? "command"
-			: "non-interactive (!) command",
-			cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
+			    (sys_get_caps() & SYSCAP_NBIPC) ? "command"
+			    : "non-interactive (!) command",
+			    cmd, sizeof cmd, HISTATOM_FILE) == button_ok) {
 				if (cmd[0]) create_window_term(cmd);
 			}
 			clearmsg(msg);
 			return;
 		}
 		case cmd_file_extend: {
-			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			UINT s = (UINT)msg->data2.integer;
+			File *f = (File *)msg->data1.ptr;
+			FileOfs s = msg->data2.q;
 			// don't ask. only for truncates
-//			if (confirmbox("really extend %s to offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
-				int oam = f->get_access_mode();
-				if (!(oam & FAM_WRITE)) f->set_access_mode(oam | FAM_WRITE);
-				int e = f->extend(s);
-				if (!(oam & FAM_WRITE)) f->set_access_mode(oam);
-				if (e) errorbox("couldn't extend file to offset %08x/%d: %s", s, s, strerror(e));
+//			if (confirmbox("really extend %s to offset %08qx/%qd?", f->get_filename(), s, s) == button_ok) {
+				IOAccessMode oam = f->getAccessMode();
+				if (!(oam & IOAM_WRITE)) f->setAccessMode(oam | IOAM_WRITE);
+				try {
+					f->extend(s);
+				} catch (const IOException &e) {
+					errorbox("couldn't extend file to offset 0x%08qx/%qd: %y", s, s, &e);
+				}
+				if (!(oam & IOAM_WRITE)) f->setAccessMode(oam);
 //			}
 			clearmsg(msg);
 			return;
 		}
 		case cmd_file_truncate: {
-			ht_streamfile *f = (ht_streamfile *)msg->data1.ptr;
-			UINT s = (UINT)msg->data2.integer;
-/*               ht_app_window_entry *e;
+			File *f = (File *)msg->data1.ptr;
+			FileOfs s = msg->data2.q;
+/*			ht_app_window_entry *e;
 			if ((e=windows->enum_first())) {
 				do {
-					if ((e->type==AWT_FILE) && ((ht_streamfile*)e->data==f)) {
+					if ((e->type==AWT_FILE) && ((File*)e->data==f)) {
 						check_collide();
 					}
 				} while ((e=windows->enum_first()));
 			}*/
-			if (confirmbox("really truncate %s at offset %08x/%d?", f->get_filename(), s, s) == button_ok) {
+			String fn;
+			if (confirmbox("really truncate %y at offset 0x%08qx/%qd?", &f->getFilename(fn), s, s) == button_ok) {
 				f->truncate(s);
 			}
 			clearmsg(msg);
@@ -2591,7 +2586,7 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		case cmd_file_open: {
 			char *name;
-			UINT mode;
+			uint mode;
 			if (file_open_dialog(&name, &mode)) {
 				if (name[0]) create_window_file(name, mode, true);
 				free(name);
@@ -2600,40 +2595,33 @@ void ht_app::handlemsg(htmsg *msg)
 			return;
 		}
 		case cmd_file_new: {
-			bounds b;
+			Bounds b;
 			get_stdbounds_file(&b);
 			
-			UINT mode;
+			uint mode;
 			
 			if (file_new_dialog(&mode)) {
-				ht_mem_file *mfile = new ht_mem_file();
-				mfile->init();
+				MemoryFile *mfile = new MemoryFile();
 				switch (mode) {
-					case FOM_TEXT: {
-						ht_syntax_lexer *lexer = NULL;
+				case FOM_TEXT: {
+					ht_syntax_lexer *lexer = NULL;
 
-						ht_ltextfile *tfile = new ht_ltextfile();
-						tfile->init(mfile, true, lexer);
+					ht_ltextfile *tfile = new ht_ltextfile(mfile, true, lexer);
+					ht_layer_textfile *file = new ht_layer_textfile(tfile, true);
 
-						ht_layer_textfile *file = new ht_layer_textfile();
-						file->init(tfile, true);
+					create_window_file_text(&b, file, "Untitled", false/* because mem_file is underlying, not ht_file, etc.*/);
+					break;
+				}
+				case FOM_BIN: {
+					FileModificator *modfile = new FileModificator(mfile, true);
+					FileLayer *file = new FileLayer(modfile, true);
 
-						create_window_file_text(&b, file, "Untitled", false/* because mem_file is underlying, not ht_file, etc.*/);
-						break;
-					}
-					case FOM_BIN: {
-						ht_streamfile_modifier *modfile = new ht_streamfile_modifier();
-						modfile->init(mfile, true, 8*1024);
-
-						ht_layer_streamfile *file = new ht_layer_streamfile();
-						file->init(modfile, true);
-
-						ht_window *w = create_window_file_bin(&b, file, "Untitled", false);
-						htmsg m;
-						m.msg = cmd_file_resize;
-						m.type = mt_empty;
-						w->sendmsg(&m);
-					}
+					ht_window *w = create_window_file_bin(&b, file, "Untitled", false);
+					htmsg m;
+					m.msg = cmd_file_resize;
+					m.type = mt_empty;
+					w->sendmsg(&m);
+				}
 				}
 			}
 			clearmsg(msg);
@@ -2655,13 +2643,13 @@ void ht_app::handlemsg(htmsg *msg)
 			char filename[HT_NAME_MAX];
 			filename[0] = 0;
 			if (file_chooser("clipboard - paste into file", filename, sizeof filename)) {
-				ht_file *f = new ht_file();
-				f->init(filename, FAM_WRITE, FOM_CREATE);
-				if (!f->get_error()) {
-					clipboard_paste(f, 0);
-				} else errorbox("can't open file '%s'", filename);
-				f->done();
-				delete f;
+				try {
+					String fn(filename);
+					LocalFile f(fn, IOAM_WRITE, FOM_CREATE);
+					clipboard_paste(&f, 0);
+				} catch (const IOException &e) {
+					errorbox("error writing: '%s': '%y'", filename, &e);
+				}
 			}
 			clearmsg(msg);
 			return;
@@ -2671,14 +2659,14 @@ void ht_app::handlemsg(htmsg *msg)
 			filename[0] = 0;
 			if (file_chooser("clipboard - copy from file", filename, sizeof filename)) {
 				char desc[HT_NAME_MAX+5];
-				ht_file *f = new ht_file();
-				f->init(filename, FAM_READ, FOM_EXISTS);
-				if (!f->get_error()) {
-					ht_snprintf(desc, sizeof desc, "file %s", f->get_filename());
-					clipboard_copy(desc, f, 0, f->get_size());
-				} else errorbox("can't open file '%s'", filename);
-				f->done();
-				delete f;
+				try {
+					String fn(filename);
+					LocalFile f(fn, IOAM_READ, FOM_EXISTS);
+					ht_snprintf(desc, sizeof desc, "file %s", filename);
+					clipboard_copy(desc, &f, 0, f.getSize());
+				} catch (const IOException &e) {
+					errorbox("error reading: '%s': '%y'", filename, &e);
+				}
 			}
 			clearmsg(msg);
 			return;
@@ -2695,11 +2683,23 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_project_close: {
 			if (project) {
-				char *fn = ((ht_project*)project)->get_filename();
+				const char *fn = ((ht_project*)project)->get_filename();
 				LOG("%s: saving project", fn);
-				save_fileconfig(fn, ht_projectconfig_magic, ht_projectconfig_fileversion, file_project_store_fcfg_func, NULL);
-				LOG("%s: done", fn);
-				((ht_project*)project)->destroy();
+				do {
+					String err;
+					if (save_fileconfig(fn, ht_projectconfig_magic, ht_projectconfig_fileversion, file_project_store_fcfg_func, NULL, err) != LS_OK) {
+						String e;
+						e.assignFormat("Couldn't save '%y': %y\n\nRetry?", &fn, &err);
+						switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, e.contentChar())) {
+						case button_ok: continue;
+						case button_cancel: return;
+						}
+						LOG("%s: failed", fn);
+					} else {
+						LOG("%s: done", fn);
+					}
+					break;
+				} while (1);
 				delete ((ht_project*)project);
 				project = NULL;
 				htmsg m;
@@ -2712,6 +2712,14 @@ void ht_app::handlemsg(htmsg *msg)
 		}
 		case cmd_window_close:
 			if (battlefield->current) sendmsg(msg_kill, battlefield->current);
+			clearmsg(msg);
+			return;
+		case cmd_window_tile_vertical:
+			tile(true);
+			clearmsg(msg);
+			return;
+		case cmd_window_tile_horizontal:
+			tile(false);
 			clearmsg(msg);
 			return;
 		case cmd_popup_dialog_eval: {
@@ -2770,9 +2778,9 @@ void ht_app::handlemsg(htmsg *msg)
 	}
 }
 
-void	ht_app::insert_window(ht_window *window, UINT type, bool minimized, bool isfile, ht_layer_streamfile *layer)
+void	ht_app::insert_window(ht_window *window, uint type, bool minimized, bool isfile, FileLayer *layer)
 {
-	UINT n=find_free_window_number();
+	uint n=find_free_window_number();
 	ht_app_window_entry *e=new ht_app_window_entry(window, n, type, minimized, isfile, layer);
 	windows->insert(e);
 	window->setnumber(n);
@@ -2780,28 +2788,25 @@ void	ht_app::insert_window(ht_window *window, UINT type, bool minimized, bool is
 	focus(window);
 }
 
-int ht_app::load(ht_object_stream *f)
+void ht_app::load(ObjectStream &f)
 {
-	ht_registry *temp;
-	
-	if (!(temp=(ht_registry*)f->getObject(NULL))) return 1;
+	ht_registry *tmp = registry;
+	GET_OBJECT(f, registry);
 
-	if (registry) {
-		registry->done();
-		delete registry;
+	if (tmp) {
+		tmp->done();
+		delete tmp;
 	}
-	registry=temp;
 	
 	load_history(f);
 	
 	htmsg m;
-	m.msg=msg_config_changed;
-	m.type=mt_broadcast;
+	m.msg = msg_config_changed;
+	m.type = mt_broadcast;
 	app->sendmsg(&m);
-	return f->get_error();
 }
 
-OBJECT_ID ht_app::object_id() const
+ObjectID ht_app::getObjectID() const
 {
 	return ATOM_HT_APP;
 }
@@ -2811,10 +2816,10 @@ static int my_compare_func(const char *a, const char *b)
 	return strcmp(a, b);
 }
 
-ht_view *ht_app::popup_view_list(char *dialog_title)
+ht_view *ht_app::popup_view_list(const char *dialog_title)
 {
 	if (!battlefield->current) return NULL;
-	bounds b, c;
+	Bounds b, c;
 	getbounds(&b);
 	b.x=b.w/4;
 	b.y=b.h/4;
@@ -2833,10 +2838,10 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	listbox->init(&c, 1, 0, LISTBOX_NORMAL);
 
 	/* insert all browsable views */
-	ht_clist *structure=new ht_clist();
-	((ht_clist*)structure)->init();
+	Array structure(false);
+
 	int index=0;
-/*	int count=*/popup_view_list_dump(battlefield->current, listbox, structure, 0, &index, battlefield->getselected());
+/*	int count=*/popup_view_list_dump(battlefield->current, listbox, &structure, 0, &index, battlefield->getselected());
 /* and seek to the currently selected one */
 	listbox->update();
 	listbox->gotoItemByPosition(index);
@@ -2855,20 +2860,16 @@ ht_view *ht_app::popup_view_list(char *dialog_title)
 	ht_view *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
-		listbox->databuf_get(&data, sizeof data);
-		ht_data_ptr *p=(ht_data_ptr*)structure->get(listbox->getID(data.cursor_ptr));
-		if (p) result = (ht_view*)p->value;
+		ViewDataBuf vdb(listbox, &data, sizeof data);
+		result = (ht_view*)structure[listbox->getID(data.data->cursor_ptr)];
 	}
-
-	structure->destroy();
-	delete structure;
 
 	dialog->done();
 	delete dialog;
 	return result;
 }
 
-int ht_app::popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, ht_list *structure, int depth, int *currenti, ht_view *currentv)
+int ht_app::popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, List *structure, int depth, int *currenti, ht_view *currentv)
 {
 	if (!view) return 0;
 	char str[256];	/* secure */
@@ -2883,30 +2884,30 @@ int ht_app::popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, ht_lis
 	int c=view->childcount();
 	int count=0;
 	for (int i=0; i<c; i++) {
-		ht_view *v=view->getfirstchild();
+		ht_view *v = view->getfirstchild();
 		while (v) {
-			if (v->browse_idx==i) break;
-			v=v->next;
+			if (v->browse_idx == i) break;
+			v = v->next;
 		}
 		if (!v) return count;
 
 // FIXME: "viewergroup": dirty hack !!!
-		if ((v->desc) && (strcmp(v->desc, VIEWERGROUP_NAME)) && (v->options & VO_BROWSABLE)) {
+		if (v->desc && (strcmp(v->desc, VIEWERGROUP_NAME)) && (v->options & VO_BROWSABLE)) {
 			ht_snprintf(s, sizeof str-(s-str), "- %s", v->desc);
-			structure->insert(new ht_data_ptr(v));
+			structure->insert(v);
 			if (v==currentv)
 				*currenti=structure->count()-1;
 			listbox->insert_str(structure->count()-1, str);
 			count++;
 		}
-		count+=popup_view_list_dump(v, listbox, structure, depth+1, currenti, currentv);
+		count += popup_view_list_dump(v, listbox, structure, depth+1, currenti, currentv);
 	}
 	return count;
 }
 
-ht_window *ht_app::popup_window_list(char *dialog_title)
+ht_window *ht_app::popup_window_list(const char *dialog_title)
 {
-	bounds b, c;
+	Bounds b, c;
 	getbounds(&b);
 	c=b;
 	b.w=b.w*2/3;
@@ -2925,13 +2926,11 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	ht_text_listbox *listbox=new ht_itext_listbox();
 	listbox->init(&c, 2, 1);
 
-	UINT vc=windows->count();
-	for (UINT i=0; i<vc; i++) {
-		ht_app_window_entry *e=(ht_app_window_entry*)windows->get(i);
+	foreach(ht_app_window_entry, e, *windows, {
 		char l[16];	/* secure */
 		ht_snprintf(l, sizeof l, " %2d", e->number);
-		listbox->insert_str(e->number, l, e->window->desc);
-	}
+		listbox->insert_str(e->number, l, e->window->desc);		
+	});
 	listbox->update();
 	if (battlefield->current) listbox->gotoItemByPosition(battlefield->current->getnumber()-1);
 
@@ -2941,15 +2940,15 @@ ht_window *ht_app::popup_window_list(char *dialog_title)
 	ht_window *result = NULL;
 	if (dialog->run(false)) {
 		ht_listbox_data data;
-		listbox->databuf_get(&data, sizeof data);
-		result = get_window_by_number(listbox->getID(data.cursor_ptr));
+		ViewDataBuf vdb(listbox, &data, sizeof data);
+		result = get_window_by_number(listbox->getID(data.data->cursor_ptr));
 	}
 	dialog->done();
 	delete dialog;
 	return result;
 }
 
-void ht_app::project_opencreate(char *filename)
+void ht_app::project_opencreate(const char *filename)
 {
 	char fn[HT_NAME_MAX];
 	char cwd[HT_NAME_MAX];
@@ -2966,23 +2965,23 @@ void ht_app::project_opencreate(char *filename)
 
 	void *old_project = project;
 	project = NULL;
-	int einfo;
+
+	String einfo;
 	LOG("%s: loading project file...", fn);
 	bool error = true;
-	loadstore_result lsr = load_fileconfig(fn, ht_projectconfig_magic, ht_projectconfig_fileversion, file_project_load_fcfg_func, NULL, &einfo);
+	loadstore_result lsr = load_fileconfig(fn, ht_projectconfig_magic, ht_projectconfig_fileversion, file_project_load_fcfg_func, NULL, einfo);
 	if (lsr == LS_ERROR_CORRUPTED) {
-		LOG_EX(LOG_ERROR, "%s: error in line %d", fn, einfo);
-		errorbox("%s: error in line %d", fn,  einfo);
+		LOG_EX(LOG_ERROR, "%s: error: %y", fn, &einfo);
+		errorbox("%s: error: %y", fn, &einfo);
 	} else if (lsr == LS_ERROR_NOT_FOUND) {
 		if (confirmbox("%s: no such project.\nDo you want to create this project?", fn) == button_yes) {
-			project = new ht_project();
-			((ht_project*)project)->init(fn);
+			project = new ht_project(fn);
 			LOG("%s: new project created", fn);
 			error = false;
 		}
 	} else if (lsr != LS_OK) {
-		LOG_EX(LOG_ERROR, "%s: some error", fn);
-		errorbox("%s: some error", fn);
+		LOG_EX(LOG_ERROR, "%s: error: %y", fn, &einfo);
+		errorbox("%s: error: %y", fn, &einfo);
 	} else {
 		LOG("%s: done", fn);
 		error = false;
@@ -2999,31 +2998,150 @@ void ht_app::project_opencreate(char *filename)
 	}
 }
 
+void ht_app::modal_resize()
+{
+	sys_set_winch_flag(0);
+	int w, h;
+	if (sys_get_screen_size(w, h)) {
+		screen->resize(w - screen->w, h - screen->h);
+		resize(w - size.w, h - size.h);
+		sendmsg(msg_dirtyview);
+		sendmsg(msg_draw);
+	}
+}
+
+void do_modal_resize()
+{
+	((ht_app*)app)->modal_resize();
+}
+
+static uint isqr(uint u)
+{
+	uint a = 2;
+	uint b = u/a;
+	while (abs(a - b) > 1) {
+		a = (a+b)/2;
+		b = u/a;
+        }
+	return MIN(a, b);
+}
+
+static void mostEqualDivisors(int n, int &x, int &y)
+{
+	int i;
+
+	i = isqr(n);
+	if (n%i && n%(i+1)==0) {
+		i++;
+	}
+	if (i < (n/i)) {
+		i = n/i;
+	}
+	x = n/i;
+	y = i;
+}
+
+static int dividerLoc(int lo, int hi, int num, int pos)
+{
+	return int(long(hi-lo)*pos/long(num)+lo);
+}
+
+static void calcTileRect(int pos, int numRows, int numCols, int leftOver, const Bounds &b, Bounds &nB)
+{
+	int x, y;
+
+	int d = (numCols - leftOver) * numRows;
+	if (pos <  d) {
+		x = pos / numRows;
+		y = pos % numRows;
+	} else {
+		x = (pos-d)/(numRows+1) + (numCols-leftOver);
+		y = (pos-d)%(numRows+1);
+	}
+	nB.x = dividerLoc(b.x, b.x+b.w, numCols, x);
+	nB.w = dividerLoc(b.x, b.x+b.w, numCols, x+1) - nB.x;
+	if (pos >= d) {
+		nB.y = dividerLoc(b.y, b.y+b.h, numRows+1, y);
+		nB.h = dividerLoc(b.y, b.y+b.h, numRows+1, y+1) - nB.y;
+	} else {
+		nB.y = dividerLoc(b.y, b.y+b.h, numRows, y);
+		nB.h = dividerLoc(b.y, b.y+b.h, numRows, y+1) - nB.y;
+	}
+}
+
+void ht_app::tile(bool vertical)
+{
+	Bounds b, bf;
+	get_stdbounds_file(&b);
+	battlefield->getbounds(&bf);
+	int numTileable = 0;
+	foreach(ht_app_window_entry, e, *windows, {
+		if (e->isfile) numTileable++;
+	});
+	// count
+	if (numTileable > 0) {
+		int numRows, numCols;
+		if (vertical) {
+			mostEqualDivisors(numTileable, numRows, numCols);
+		} else {
+			mostEqualDivisors(numTileable, numCols, numRows);
+		}
+		if (b.w/numCols==0 || b.h/numRows==0) {
+			return;
+		} else {
+			int leftOver = numTileable % numCols;
+			int tileNum = numTileable - 1;
+			
+			foreachbwd(ht_app_window_entry, e, *windows, {
+				if (e->isfile) {
+					Bounds nb, ob;
+					calcTileRect(tileNum, numRows, numCols, leftOver, b, nb);
+					e->window->getbounds(&ob);
+					e->window->move(nb.x-(ob.x-bf.x), nb.y-(ob.y-bf.y));
+					e->window->resize(nb.w-ob.w, nb.h-ob.h);
+					tileNum--;
+				}
+			});
+		}
+	}
+	sendmsg(msg_dirtyview);
+}
+
 int ht_app::run(bool modal)
 {
 	sendmsg(msg_draw, 0);
 	while (!exit_program) {
-		if (ht_keypressed()) {
-			int k = ht_getkey();
-			sendmsg(msg_keypressed, k);
-			sendmsg(msg_draw);
+		try {
+			if (keyb_keypressed()) {
+				ht_key k = keyb_getkey();
+				sendmsg(msg_keypressed, k);
+				sendmsg(msg_draw);
+			}
+			if (sys_get_winch_flag()) {
+				modal_resize();
+			}
+			ht_queued_msg *q;
+			while ((q = dequeuemsg())) {
+				htmsg m = q->msg;
+				q->target->sendmsg(&m);
+				sendmsg(msg_draw);
+				delete q;
+			}
+			do_idle();
+		} catch (const Exception &x) {
+			errorbox("unhandled exception: %y", &x);
+		} catch (const std::exception &x) {
+			errorbox("unhandled exception: %s", x.what());
+		} catch (...) {
+			errorbox("unhandled exception: unknown");
 		}
-		ht_queued_msg *q;
-		while ((q = dequeuemsg())) {
-			htmsg m = q->msg;
-			q->target->sendmsg(&m);
-			sendmsg(msg_draw);
-			delete q;
-		}
-		do_idle();
 	}
 	return 0;
 }
 
-void ht_app::store(ht_object_stream *f)
+void ht_app::store(ObjectStream &f) const
 {
-	f->putObject(registry, NULL);
-
+	PUT_OBJECT(f, registry);
 	store_history(f);
 }
 
@@ -3046,133 +3164,145 @@ ht_vstate_history_entry::~ht_vstate_history_entry()
 /*
  *	CLASS ht_file_window
  */
+ht_file_window::ht_file_window()
+	: vstate_history(true)
+{
+}
 
-void ht_file_window::init(bounds *b, char *desc, UINT framestyle, UINT number, ht_streamfile *f)
+void ht_file_window::init(Bounds *b, const char *desc, uint framestyle, uint number, File *f)
 {
 	ht_window::init(b, desc, framestyle, number);
 	file = f;
-	vstate_history = new ht_clist();
-	((ht_clist*)vstate_history)->init();
 	vstate_history_pos = 0;
 }
 
 void ht_file_window::done()
 {
-	vstate_history->destroy();
-	delete vstate_history;
 	ht_window::done();
 }
 
 void ht_file_window::add_vstate_history(ht_vstate_history_entry *e)
 {
-	int c = vstate_history->count();
+	int c = vstate_history.count();
 	if (c > vstate_history_pos) {
-		vstate_history->del_multiple(vstate_history_pos, c-vstate_history_pos);
+		vstate_history.delRange(vstate_history_pos, c);
 	}
-	vstate_history->insert(e);
+	vstate_history += e;
 	vstate_history_pos++;
 }
 
 void ht_file_window::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case cmd_vstate_restore: {
-			if (vstate_history_pos) {
-				vstate_history_pos--;
-				ht_vstate_history_entry *e = (ht_vstate_history_entry*)
-					vstate_history->get(vstate_history_pos);
-				htmsg m;
-				m.msg = msg_vstate_restore;
-				m.type = mt_empty;
-				m.data1.ptr = e->data;
-				e->view->sendmsg(&m);
-				focus(e->view);
-			}
-			clearmsg(msg);
-			return;
-		}
-		case msg_vstate_save: {
-			Object *data = (Object*)msg->data1.ptr;
-			ht_view *view = (ht_view*)msg->data2.ptr;
-			add_vstate_history(new ht_vstate_history_entry(data, view));
-			break;
-		}
-		case msg_accept_close: if (file) {
-			bool modified=false;
-			if (file->get_filename() != NULL) {
-				file->cntl(FCNTL_MODS_IS_DIRTY, 0, file->get_size(), &modified);
-			} else {
-				modified = true;
-			}
-			if (modified) {
-				char q[1024];
-				if (file->get_filename()) {
-					ht_snprintf(q, sizeof q, "file %s has been modified, save?", file->get_filename());
-				} else {
-					ht_snprintf(q, sizeof q, "untitled file has been modified, save?");
-				}
-				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, q)) {
-					case button_yes: {
-						app->focus(this);
-						htmsg msg;
-						msg.msg = cmd_file_save;
-						msg.type = mt_empty;
-						app->sendmsg(&msg);
-						if ((UINT)msg.msg != cmd_file_save) break;
-					}
-					case button_cancel:
-						clearmsg(msg);
-						return;
-				}
-			}
-
-			// flush so that cmd_analyser_save get correct mtime
-			file->cntl(FCNTL_FLUSH_STAT);
-
-			Analyser *a;
+	case cmd_vstate_restore:
+		if (vstate_history_pos) {
+			vstate_history_pos--;
+			ht_vstate_history_entry *e = (ht_vstate_history_entry*)
+				vstate_history[vstate_history_pos];
 			htmsg m;
-			m.msg=msg_get_analyser;
-			m.type=mt_broadcast;
-			m.data1.ptr=NULL;
-			sendmsg(&m);
-			a = (Analyser*)m.data1.ptr;
-			if ((m.msg==msg_retval) && (a) && (a->isDirty())) {
-				sendmsg(cmd_analyser_save);
+			m.msg = msg_vstate_restore;
+			m.type = mt_empty;
+			m.data1.ptr = e->data;
+			e->view->sendmsg(&m);
+			focus(e->view);
+		}
+		clearmsg(msg);
+		return;
+	case msg_vstate_save: {
+		Object *data = (Object*)msg->data1.ptr;
+		ht_view *view = (ht_view*)msg->data2.ptr;
+		add_vstate_history(new ht_vstate_history_entry(data, view));
+		break;
+	}
+	case msg_accept_close: if (file) {
+		bool modified = false;
+		String fn;
+		if (file->getFilename(fn).isEmpty()) {
+			modified = true;
+		} else {			
+			FileOfs start = 0;
+			file->cntl(FCNTL_MODS_IS_DIRTY, start, file->getSize(), &modified);
+		}
+		if (modified) {
+			char q[1024];
+			if (fn.isEmpty()) {
+				ht_snprintf(q, sizeof q, "untitled file has been modified, save?");
+			} else {
+				ht_snprintf(q, sizeof q, "file %y has been modified, save?", &fn);
 			}
+			switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, q)) {
+			case button_yes: {
+				app->focus(this);
+				htmsg msg;
+				msg.msg = cmd_file_save;
+				msg.type = mt_empty;
+				app->sendmsg(&msg);
+				if ((uint)msg.msg != cmd_file_save) break;
+			}
+			case button_cancel:
+				clearmsg(msg);
+				return;
+			}
+		}
+		// flush so that cmd_analyser_save get correct mtime
+		file->cntl(FCNTL_FLUSH_STAT);
+
+		Analyser *a;
+		htmsg m;
+		m.msg = msg_get_analyser;
+		m.type = mt_broadcast;
+		m.data1.ptr = NULL;
+		sendmsg(&m);
+		a = (Analyser*)m.data1.ptr;
+		if (m.msg == msg_retval && a && a->isDirty()) {
+			sendmsg(cmd_analyser_save);
+		}
 		}
 		break;
-		case cmd_analyser_save: {
-			char filename[1024];
-			ht_snprintf(filename, sizeof filename, "%s%s", file->get_filename(), HT_FILE_CONFIG_SUFFIX);
-			LOG("%s: saving config", filename);
-			save_fileconfig(filename, ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_store_fcfg_func, this);
-			LOG("%s: done", filename);
-			clearmsg(msg);
+	case cmd_analyser_save: {
+		String filename;
+		file->getFilename(filename);
+		filename += HT_FILE_CONFIG_SUFFIX;
+		LOG("%y: saving config", &filename);
+		do {
+			String err;
+			if (save_fileconfig(filename.contentChar(), ht_fileconfig_magic, ht_fileconfig_fileversion, file_window_store_fcfg_func, this, err) != LS_OK) {
+				String e;
+				e.assignFormat("Couldn't save '%y': %y\n\nRetry?", &filename, &err);
+				switch (msgbox(btmask_yes+btmask_no+btmask_cancel, "confirmation", 0, align_center, e.contentChar())) {
+				case button_ok: continue;
+				case button_cancel: return;
+				}
+				LOG("%y: failed", &filename);
+			} else {
+				LOG("%y: done", &filename);
+			}
 			break;
-		}
+		} while (1);
+		clearmsg(msg);
+		break;
+	}
 	}
 	ht_window::handlemsg(msg);
 	switch (msg->msg) {
-		case msg_keypressed:
-			switch (msg->data1.integer) {
-				case K_Alt_Backspace:
-				case K_Backspace: {
-					sendmsg(cmd_vstate_restore);
-					clearmsg(msg);
-					return;
-				}
-			}
-			break;
+	case msg_keypressed:
+		switch (msg->data1.integer) {
+		case K_Meta_Backspace:
+		case K_Backspace:
+			sendmsg(cmd_vstate_restore);
+			clearmsg(msg);
+			return;
+		}
+		break;
 	}
 }
 
 /**/
 
-ht_list *build_vfs_list()
+List *build_vfs_list()
 {
-/* build vfs list */
-	ht_clist *vfslist=new ht_clist();
-	vfslist->init();
+	/* build vfs list */
+	List *vfslist = new Array(true);
 
 #if 1
 	/* LocalFS */
@@ -3198,13 +3328,13 @@ ht_list *build_vfs_list()
 	vfslist->insert(reg_vfs);
 #endif
 
-/**/
+	/**/
 	return vfslist;
 }
 
-BUILDER(ATOM_HT_APP, ht_app);
-BUILDER(ATOM_HT_PROJECT, ht_project);
-BUILDER(ATOM_HT_PROJECT_ITEM, ht_project_item);
+BUILDER(ATOM_HT_APP, ht_app, ht_dialog);
+BUILDER(ATOM_HT_PROJECT, ht_project, AVLTree);
+BUILDER(ATOM_HT_PROJECT_ITEM, ht_project_item, Object);
 
 /*
  *	INIT
@@ -3212,8 +3342,8 @@ BUILDER(ATOM_HT_PROJECT_ITEM, ht_project_item);
 
 bool init_app()
 {
-	bounds b;
-	screen = new screendrawbuf(ht_name" "ht_version);
+	Bounds b;
+	screen = allocSystemDisplay(ht_name" "ht_version);
 
 	loglines = new ht_log();
 	loglines->init();
@@ -3224,8 +3354,8 @@ bool init_app()
 
 	b.x = 0;
 	b.y = 0;
-	b.w = screen->size.w;
-	b.h = screen->size.h;
+	b.w = screen->w;
+	b.h = screen->h;
 	app = new ht_app();
 	((ht_app*)app)->init(&b);
 	baseview = app;
@@ -3236,7 +3366,6 @@ bool init_app()
 	REGISTER(ATOM_HT_APP, ht_app);
 	REGISTER(ATOM_HT_PROJECT, ht_project);
 	REGISTER(ATOM_HT_PROJECT_ITEM, ht_project_item);
-	register_atom(ATOM_COMPARE_KEYS_PROJECT_ITEM, (void*)compare_keys_project_item);
 
 	return true;
 }
@@ -3250,20 +3379,13 @@ void done_app()
 	UNREGISTER(ATOM_HT_APP, ht_app);
 	UNREGISTER(ATOM_HT_PROJECT, ht_project);
 	UNREGISTER(ATOM_HT_PROJECT_ITEM, ht_project_item);
-	unregister_atom(ATOM_COMPARE_KEYS_PROJECT_ITEM);
 	
 	out_of_memory_func = &out_of_memory;
-	if (app_memory_reserve) free(app_memory_reserve);
+	free(app_memory_reserve);
 
-	if (project) {
-		((ht_project*)project)->destroy();
-		delete ((ht_project*)project);
-	}
-
-	virtual_fs_list->destroy();
+	delete (Object*)project;
 	delete virtual_fs_list;
 
-	loglines->destroy();
 	delete loglines;
 
 	if (app) {
@@ -3271,6 +3393,6 @@ void done_app()
 		delete app;
 	}
 	
-	if (screen) delete screen;
+	delete screen;
 }
 

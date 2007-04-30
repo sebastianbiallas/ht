@@ -23,7 +23,7 @@
 #ifndef __PEFFSTRUC_H__
 #define __PEFFSTRUC_H__
 
-#include "global.h"
+#include "io/types.h"
 
 enum PEF_ARCH {
 	PEFARCH_PowerPC,
@@ -42,7 +42,7 @@ struct PEF_CONTAINER_HEADER {
 	uint16	sectionCount;
 	uint16	instSectionCount;
 	uint32	reservedA;
-} HTPACKED;
+} PACKED;
 
 struct PEF_SECTION_HEADER {
 	sint32	nameOffset;	// 0xffffffff for no name
@@ -55,7 +55,7 @@ struct PEF_SECTION_HEADER {
 	byte	shareKind;
 	byte	alignment;
 	byte	reservedA;
-} HTPACKED;
+} PACKED;
 
 // sectionKind
 #define PEF_SK_Code		0	// R-x
@@ -88,11 +88,11 @@ struct PEF_LOADER_INFO_HEADER {
 	uint32	exportHashOffset;
 	uint32	exportHashTablePower;
 	uint32	exportedSymbolCount;
-} HTPACKED;
+} PACKED;
 
 struct PEFAddress {
 	uint32 a32;
-};
+} PACKED;
 
 struct PEF_ImportedLibrary {
 	uint32	nameOffset;
@@ -103,7 +103,7 @@ struct PEF_ImportedLibrary {
 	uint8	options;
 	uint8	reservedA;
 	uint16	reservedB;
-} HTPACKED;
+} PACKED;
 
 #define PEF_CODE_SYMBOL		0	// code address
 #define PEF_DATA_SYMBOL		1	// data address
@@ -116,7 +116,7 @@ struct PEF_LoaderRelocationHeader {
 	uint16	reservedA;
 	uint32	relocCount;
 	uint32	firstRelocOffset;
-};
+} PACKED;
 
 //#define	PEF_
 

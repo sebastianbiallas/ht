@@ -20,29 +20,27 @@
 
 #include "tools.h"
 
+#include "data.h"
 #include "htdebug.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-dword delinearize(dword d)
+uint32 delinearize(uint32 d)
 {
 	return d*0x8088405+1;	/* there's magic in here... */
 }
 
-int compare_keys_int_delinear(ht_data *key_a, ht_data *key_b)
+uint64 delinearize64(uint64 d)
 {
-	int a = delinearize(((ht_data_uint*)key_a)->value);
-	int b = delinearize(((ht_data_uint*)key_b)->value);
-	if (a>b) return 1; else if (a<b) return -1;
-	return 0;
+	return (uint64(delinearize(d))<<32)| delinearize(d>>32); /* there's less magic in here... */
 }
 
-int compare_keys_uint_delinear(ht_data *key_a, ht_data *key_b)
+int compare_keys_uint_delinear(Object *key_a, Object *key_b)
 {
-	UINT a = delinearize(((ht_data_uint*)key_a)->value);
-	UINT b = delinearize(((ht_data_uint*)key_b)->value);
+	uint a = delinearize(((UInt*)key_a)->value);
+	uint b = delinearize(((UInt*)key_b)->value);
 	if (a>b) return 1; else if (a<b) return -1;
 	return 0;
 }
@@ -50,7 +48,7 @@ int compare_keys_uint_delinear(ht_data *key_a, ht_data *key_b)
 int *random_permutation(int max)
 {
 	if (!max) return NULL;
-	int *table= (int *)smalloc(max * sizeof(int));
+	int *table= ht_malloc(max * sizeof(int));
 	int i,j,k,l,m;
 	for (i=0; i<max; i++) table[i] = i;
 	for (i=0; i<max; i++) {

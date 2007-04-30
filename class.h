@@ -57,18 +57,17 @@ static const u1 CONSTANT_Methodref          = 10;
 static const u1 CONSTANT_InterfaceMethodref = 11;
 static const u1 CONSTANT_NameAndType        = 12;
 
-typedef struct _cp_info {
+struct cp_info {
 	u4 offset;
 	u1 tag;
 	union {
 		char   *string;
 		double dval;
 		float  fval;
-		long   lval;
-		int    ival;
-		long   llval[2];
+		sint32 ival;
+		uint32 llval[2];
 	} value;
-} cp_info;
+};
 
 static const u2 ATTRIB_ConstantValue      =  1;
 static const u2 ATTRIB_Code               =  2;
@@ -79,8 +78,16 @@ static const u2 ATTRIB_SourceFile         =  6;
 static const u2 ATTRIB_LineNumberTable    =  7;
 static const u2 ATTRIB_LocalVariableTable =  8;
 static const u2 ATTRIB_Deprecated         =  9;
+static const u2 ATTRIB_Signature          =  10;
 
-typedef struct _attrib_info {
+struct exception_info {
+	u2 start_pc;
+	u2 end_pc;
+	u2 handler_pc;
+	u2 catch_type;
+};
+
+struct attrib_info {
 	u4 offset;
 	u2 tag;
 	u2 name;
@@ -91,22 +98,25 @@ typedef struct _attrib_info {
 			u2 max_locals;
 			u4 len;
 			u4 start;
+			u2 exctbl_len;
+			exception_info *exctbl;
 		} code;
+		u2 signature;
 	};
-} attrib_info;
+};
 
 /* mf_info */
-typedef struct _mf_info {
-        u4 offset;
-        u2 flags;
-        const char *name;
-        const char *desc;
-        u2 attribs_count;
+struct mf_info {
+	u4 offset;
+	u2 flags;
+	char *name;
+	char *desc;
+	u2 attribs_count;
 	attrib_info **attribs;
-} mf_info;
+};
 
 /* classfile */
-typedef struct _classfile {
+struct classfile {
 	u4 offset;
 	u4 magic;
 	u2 minor_version;
@@ -128,52 +138,67 @@ typedef struct _classfile {
 	u4 aoffset;
 	u2 attribs_count;
 	attrib_info **attribs;
-} classfile;
+};
 
 struct ht_class_shared_data {
-	ht_stree	*methods;
+	Container	*methods;
+	Container	*fields;
 	classfile	*file;
-	Area *valid;
-	Area *initialized;
-	int flags;
+	Area		*valid;
+	Area		*initialized;
+	int		flags;
 	struct {
-		const char *thisclass;
-		const char *superclass;
-		ht_list *interfaces;
+		char *thisclass;
+		char *superclass;
+		Container *interfaces;
 	} classinfo;
 };
 
-extern ht_class_shared_data *class_read(ht_streamfile *);
+extern ht_class_shared_data *class_read(File *);
 extern void class_unread(ht_class_shared_data *);
-extern attrib_info *attribute_read(ht_stream *, classfile *);
+extern attrib_info *attribute_read(Stream *, classfile *);
 
-int token_translate(char *buf, int maxlen, dword token, ht_class_shared_data *shared);
+int token_translate(char *buf, int maxlen, uint32 token, ht_class_shared_data *shared);
 void java_demangle(char *result, const char *classname, const char *name, const char *type, int flags);
+void java_demangle_field(char *result, const char *name, const char *type, int flags);
 char *java_demangle_flags(char *result, int flags);
 
-class cview : public ht_format_group {
+class cview: public ht_format_group {
 public:
-	void init(bounds *, ht_streamfile *, format_viewer_if **,
-		    ht_format_group *, FILEOFS, void *shared);
+	void init(Bounds *, File *, format_viewer_if **, ht_format_group *, FileOfs, void *shared);
 	virtual void done();
 };
 
-#define ClassAddress dword
+#define ClassAddress uint32
 
-class ClassMethod: public ht_data {
+class ClassMethod: public Object {
 public:
-	char *name;
+	const char *name;
 	const char *type;
 	ClassAddress start;
-	UINT length;
+	uint length;
 	int flags;
-			ClassMethod(const char *name, const char *type, ClassAddress start, UINT length, int flags);
-	virtual		~ClassMethod();
+	int exctbl_len;
+	exception_info *exctbl;
+
+			ClassMethod(char *name, char *type, ClassAddress start, uint length, int flags,
+				int exctbl_len, exception_info *exctbl);
 	virtual int	compareTo(const Object *obj) const;
+		void	addsig(const char *s) { type = s; } 
+};
+
+class ClassField: public Object {
+public:
+	const char *name;
+	const char *type;
+	int flags;
+
+			ClassField(char *name, char *type, int flags);
+		void	addsig(const char *s) { type = s; } 
 };
 
 
-#define DESC_JAVA			"java - class file"
+#define DESC_JAVA		"java - class file"
 #define DESC_JAVA_HEADERS	"java/headers"
 #define DESC_JAVA_IMAGE		"java/image"
 

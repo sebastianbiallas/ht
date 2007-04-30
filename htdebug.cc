@@ -18,7 +18,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
 #include "htdebug.h"
 
 #include <signal.h>
@@ -29,7 +28,7 @@
 // FIXME: auto-detect ?
 #define CPU_CLOCK 500000000
 
-void ht_assert_failed(char *file, int line, char *assertion)
+void ht_assert_failed(const char *file, int line, const char *assertion)
 {
 	fprintf(stderr, "in file %s, line %d: assertion failed: %s\n", file, line, assertion);
 #ifndef WIN32
@@ -41,7 +40,7 @@ void ht_assert_failed(char *file, int line, char *assertion)
 	exit(1);
 }
 
-void ht_error(char *file, int line, char *format,...)
+void ht_error(const char *file, int line, const char *format,...)
 {
 	va_list arg;
 	va_start(arg, format);
@@ -108,7 +107,7 @@ timer_handle new_timer()
 void start_timer(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return;
-	dword s0, s1;
+	uint32 s0, s1;
 	asm("rdtsc" : "=a" (s0), "=d" (s1));
 	timer_start[h].hi=s1;
 	timer_start[h].lo=s0;
@@ -117,7 +116,7 @@ void start_timer(timer_handle h)
 void stop_timer(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return;
-	dword e0, e1;
+	uint32 e0, e1;
 	asm("rdtsc" : "=a" (e0), "=d" (e1));
 	timer_end[h].hi=e1;
 	timer_end[h].lo=e0;
@@ -138,7 +137,7 @@ void get_timer_tick_internal(timer_handle h, timepoint *p)
 	*p = timer_end[h] - timer_start[h];
 }
 
-dword get_timer_sec(timer_handle h)
+uint32 get_timer_sec(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
@@ -147,7 +146,7 @@ dword get_timer_sec(timer_handle h)
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 
-dword get_timer_msec(timer_handle h)
+uint32 get_timer_msec(timer_handle h)
 {
 	if ((h<0) || (h>handle_count)) return 0;
 	timepoint t;
@@ -156,7 +155,7 @@ dword get_timer_msec(timer_handle h)
 	if (t.hi) return 0xffffffff; else return t.lo;
 }
 
-dword get_timer_tick(timer_handle h)
+uint32 get_timer_tick(timer_handle h)
 {
 	timepoint t;
 	get_timer_tick_internal(h, &t);
@@ -182,17 +181,17 @@ void delete_timer(timer_handle handle)
 {
 }
 
-dword get_timer_sec(timer_handle handle)
+uint32 get_timer_sec(timer_handle handle)
 {
 	return 0;
 }
 
-dword get_timer_msec(timer_handle handle)
+uint32 get_timer_msec(timer_handle handle)
 {
 	return 0;
 }
 
-dword get_timer_tick(timer_handle h)
+uint32 get_timer_tick(timer_handle h)
 {
 	return 0;
 }

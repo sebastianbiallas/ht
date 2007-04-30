@@ -23,25 +23,25 @@
 #ifndef __ELFSTRUC_H__
 #define __ELFSTRUC_H__
 
-#include "global.h"
+#include "io/types.h"
 
 /* all architectures */
 typedef unsigned char elf_unsigned_char;
 
 /* 32bit architectures */
-typedef dword elf32_addr;
-typedef word elf32_half;
-typedef dword elf32_off;
-typedef dword elf32_sword;
-typedef dword elf32_word;
+typedef uint32 elf32_addr;
+typedef uint16 elf32_half;
+typedef uint32 elf32_off;
+typedef uint32 elf32_sword;
+typedef uint32 elf32_word;
 
 /* 64bit architectures */
-typedef qword elf64_addr;
-typedef qword elf64_off;
-typedef qword elf64_sword;
-typedef qword elf64_word;
-typedef dword elf64_half;
-typedef word elf64_quarter;
+typedef uint64 elf64_addr;
+typedef uint64 elf64_off;
+typedef uint64 elf64_sword;
+typedef uint64 elf64_word;
+typedef uint32 elf64_half;
+typedef uint16 elf64_quarter;
 
 /*
  *	ELF header
@@ -52,11 +52,11 @@ typedef word elf64_quarter;
 #define ELF_EI_MAG1			1
 #define ELF_EI_MAG2			2
 #define ELF_EI_MAG3			3
-#define ELF_EI_CLASS		4
+#define ELF_EI_CLASS			4
 #define ELF_EI_DATA			5
-#define ELF_EI_VERSION		6
-#define ELF_EI_OSABI		7
-#define ELF_EI_ABIVERSION	8
+#define ELF_EI_VERSION			6
+#define ELF_EI_OSABI			7
+#define ELF_EI_ABIVERSION		8
 #define ELF_EI_PAD			9
 
 #define EI_NIDENT			16
@@ -66,7 +66,7 @@ typedef word elf64_quarter;
 #define ELFMAG2 'L'
 #define ELFMAG3 'F'
 
-#define ELFCLASSNONE		0
+#define ELFCLASSNONE			0
 #define ELFCLASS32			1
 #define ELFCLASS64			2
 
@@ -74,21 +74,21 @@ typedef word elf64_quarter;
 #define ELFDATA2LSB			1
 #define ELFDATA2MSB			2
 
-#define ELFOSABI_SYSV		0
-#define ELFOSABI_HPUX		1
-#define ELFOSABI_NETBSD		2
-#define ELFOSABI_LINUX		3
-#define ELFOSABI_HURD		4
-#define ELFOSABI_86OPEN		5
+#define ELFOSABI_SYSV			0
+#define ELFOSABI_HPUX			1
+#define ELFOSABI_NETBSD			2
+#define ELFOSABI_LINUX			3
+#define ELFOSABI_HURD			4
+#define ELFOSABI_86OPEN			5
 #define ELFOSABI_SOLARIS		6
-#define ELFOSABI_MONTEREY	7
-#define ELFOSABI_IRIX		8
+#define ELFOSABI_MONTEREY		7
+#define ELFOSABI_IRIX			8
 #define ELFOSABI_FREEBSD		9
-#define ELFOSABI_TRU64		10
+#define ELFOSABI_TRU64			10
 #define ELFOSABI_MODESTO		11
 #define ELFOSABI_OPENBSD		12
-#define ELFOSABI_ARM		97
-#define ELFOSABI_STANDALONE	255
+#define ELFOSABI_ARM			97
+#define ELFOSABI_STANDALONE		255
 
 /* e_type */
 #define ELF_ET_NONE			0
@@ -98,8 +98,8 @@ typedef word elf64_quarter;
 #define ELF_ET_CORE			4
 #define ELF_ET_LOOS			0xFE00
 #define ELF_ET_HIOS			0xFEFF
-#define ELF_ET_LOPROC		0xFF00
-#define ELF_ET_HIPROC		0xFFFF
+#define ELF_ET_LOPROC			0xFF00
+#define ELF_ET_HIPROC			0xFFFF
 
 /* e_machine */
 #define ELF_EM_NONE			0
@@ -309,6 +309,12 @@ struct ELF_PROGRAM_HEADER64 {
 	elf64_word p_align;
 };
 
+struct ELF_NHEADER32 {
+	elf32_word n_descsz;
+	elf32_word n_namesz;
+	elf32_word n_type;
+};
+
 /*
  *	ELF symbol
  */
@@ -409,7 +415,7 @@ extern byte ELF_RELA64_struct[];
 struct ELFAddress {
 	union {
 		uint32 a32;
-		qword a64;
+		uint64 a64;
 	};
 };
 

@@ -25,27 +25,28 @@
 #include "analy_register.h"
 #include "asm.h"
 #include "htapp.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htcfg.h"
 #include "htclipboard.h"
-#include "htcurses.h"
-#include "htexcept.h"
+#include "display.h"
+#include "except.h"
 #include "hthist.h"
 #include "htiobox.h"
-#include "htkeyb.h"
+#include "keyb.h"
 #include "htidle.h"
 #include "htmenu.h"
 #include "htpal.h"
 #include "htinfo.h"
 #include "htreg.h"
-#include "htsys.h"
+#include "sys.h"
+#include "snprintf.h"
 #include "info/infoview.h"
 #include "log.h"
 #include "stddata.h"
 
-char *htcopyrights[]=
+const char *htcopyrights[]=
 {
-	ht_name" "ht_version" ("HT_SYS_NAME") "__TIME__" on "__DATE__,
+	ht_name" "ht_version" (%s) "__TIME__" on "__DATE__,
 	ht_copyright1,
 	ht_copyright2,
 	NULL
@@ -53,7 +54,7 @@ char *htcopyrights[]=
 
 static void add_file_history_entry(char *n)
 {
-	ht_clist *hist=(ht_clist*)find_atom(HISTATOM_FILE);
+	List *hist=(List*)getAtomValue(HISTATOM_FILE);
 	if (hist) insert_history_entry(hist, n, 0);
 }
 
@@ -63,7 +64,7 @@ typedef void (*donefunc)();
 struct initdonefunc {
 	initfunc i;
 	donefunc d;
-	char *name;
+	const char *name;
 };
 
 #define INITDONE(name) { init_##name, done_##name, #name }
@@ -71,7 +72,6 @@ struct initdonefunc {
 initdonefunc initdone[] = {
 	INITDONE(system),
 	INITDONE(atom),
-	INITDONE(string),
 	INITDONE(data),
 	INITDONE(pal),
 	INITDONE(registry),
@@ -105,7 +105,7 @@ static void done()
 	}
 }
 
-static void load_file(char *fn, UINT mode)
+static void load_file(char *fn, uint mode)
 {
 	char cfn[HT_NAME_MAX];
 	char cwd[HT_NAME_MAX];
@@ -128,7 +128,7 @@ static void load_file(char *fn, UINT mode)
 static void show_help()
 {
 #ifdef SPLINE_TEST
-	bounds b;
+	Bounds b;
 	b.x = 0; b.y = 0; b.w = 80; b.h = 23;
 	ht_window *s=new ht_window();
 	s->init(&b, "spline", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE, 0);
@@ -148,9 +148,9 @@ static void show_help()
 
 static void show_version()
 {
-	char **copyrights=htcopyrights;
-		while (*copyrights) {
-		printf("%s\n", *copyrights);
+	const char **copyrights = htcopyrights;
+	while (*copyrights) {
+		printf(*copyrights, sys_get_name());
 		copyrights++;
 	}
 	exit(0);
@@ -279,13 +279,14 @@ static void params(int argc, char *argv[], bool started)
 #include <windows.h>
 #endif
 
+
 int main(int argc, char *argv[])
 {
 #if defined(WIN32) || defined(__WIN32__)
 	HMODULE h = GetModuleHandle(NULL);
 	GetModuleFileName(h, appname, sizeof appname-1);
 #else
-	strncpy(appname, argv[0], sizeof appname-1);
+	ht_strlcpy(appname, argv[0], sizeof appname);
 #endif
 
 	params(argc, argv, false);
@@ -299,9 +300,9 @@ int main(int argc, char *argv[])
 
 	((ht_app*)app)->sendmsg(msg_draw);
 
-	char **copyrights=htcopyrights;
+	const char **copyrights = htcopyrights;
 	while (*copyrights) {
-		LOG(*copyrights);
+		LOG(*copyrights, sys_get_name());
 		copyrights++;
 	}
 	LOG("appname = %s", appname);
@@ -337,7 +338,7 @@ int main(int argc, char *argv[])
 				break;
 			case LS_ERROR_CORRUPTED:
 //				done();
-				if (screen) delete screen;
+				delete screen;
 				printf("\n\n\nfatal error loading configuration file (%s)", systemconfig_file);
 				if (error_info) {
 					printf(":\nerror near line %d\n", error_info);
@@ -350,29 +351,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	params(argc, argv, true);
-
 	try {
-		((ht_app*)app)->run(false);
-	} catch (const ht_io_exception &x) {
+		params(argc, argv, true);
+		ht_app *a = ((ht_app*)app);
+		a->run(false);
+	} catch (const Exception &x) {
 		done();
-		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x.what());
-		return 1;
-	} catch (ht_io_exception *x) {
-		done();
-		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x->what());
-		return 1;
-	} catch (const std::exception &x) {
-		done();
-		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x.what());
-		return 1;
-	} catch (std::exception *x) {
-		done();
-		fprintf(stderr, "FATAL: %s: %s\n", "unhandled exception", x->what());
+		ht_fprintf(stderr, "\n\nFATAL: %s: %y\n", "unhandled exception", &x);
 		return 1;
 	} catch (...) {
 		done();
-		fprintf(stderr, "FATAL: unknown %s!?\n", "unhandled exception");
+		fprintf(stderr, "\n\nFATAL: unknown %s!?\n", "unhandled exception");
 		return 1;
 	}
 
@@ -395,14 +384,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	String err;
 	if (save_config) {
 		LOG("saving config...");
-		save = save_systemconfig();
+		save = save_systemconfig(err);
 	}
 	LOG("exit.");
 	done();
 	if (save != LS_OK) {
-		printf("save_systemconfig(): error\n");
+		ht_printf("save_systemconfig(): error: %y\n", &err);
 		return 1;
 	}
 	return 0;

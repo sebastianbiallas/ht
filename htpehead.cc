@@ -20,17 +20,17 @@
 
 #include "formats.h"
 #include "htapp.h"
-#include "htatom.h"
+#include "atom.h"
 #include "htcoff.h"
 #include "htctrl.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "hthex.h"
 #include "htiobox.h"
 #include "htnewexe.h"
 #include "htpe.h"
 #include "htpehead.h"
 #include "httag.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 
 #include "pestruct.h"
@@ -61,20 +61,20 @@ static int_hash pe_subsystems[] =
 };
 
 static ht_mask_ptable pemagic[] = {
-	{"magic",						STATICTAG_EDIT_DWORD_LE("00000000")},
+	{"magic",				STATICTAG_EDIT_DWORD_LE("00000000")},
 	{0, 0}
 };
 
 static ht_mask_ptable pe32header[] = {
-	{"optional magic",				STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_PE_OPTIONAL_MAGICS_STR)},
-	{"major linker version",			STATICTAG_EDIT_BYTE("00000016")},
-	{"minor linker version",			STATICTAG_EDIT_BYTE("00000017")},
-	{"size of code",				STATICTAG_EDIT_DWORD_LE("00000018")},
-	{"size of data",				STATICTAG_EDIT_DWORD_LE("0000001c")},
+	{"optional magic",			STATICTAG_EDIT_WORD_LE("00000014")" "STATICTAG_DESC_WORD_LE("00000014", ATOM_PE_OPTIONAL_MAGICS_STR)},
+	{"major linker version",		STATICTAG_EDIT_BYTE("00000016")},
+	{"minor linker version",		STATICTAG_EDIT_BYTE("00000017")},
+	{"size of code",			STATICTAG_EDIT_DWORD_LE("00000018")},
+	{"size of data",			STATICTAG_EDIT_DWORD_LE("0000001c")},
 	{"size of bss",				STATICTAG_EDIT_DWORD_LE("00000020")},
 	{"entry point",				STATICTAG_EDIT_DWORD_LE("00000024")},
-	{"code base",					STATICTAG_EDIT_DWORD_LE("00000028")},
-	{"data base",					STATICTAG_EDIT_DWORD_LE("0000002c")},
+	{"code base",				STATICTAG_EDIT_DWORD_LE("00000028")},
+	{"data base",				STATICTAG_EDIT_DWORD_LE("0000002c")},
 	{0, 0}
 };
 
@@ -92,27 +92,27 @@ static ht_tag_flags_s pe_dll_characteristics[] =
 };
 
 static ht_mask_ptable pe32header_nt[] = {
-	{"image base",					STATICTAG_EDIT_DWORD_LE("00000030")},
+	{"image base",				STATICTAG_EDIT_DWORD_LE("00000030")},
 	{"section alignment",			STATICTAG_EDIT_DWORD_LE("00000034")},
-	{"file alignment",				STATICTAG_EDIT_DWORD_LE("00000038")},
+	{"file alignment",			STATICTAG_EDIT_DWORD_LE("00000038")},
 	{"major OS version",			STATICTAG_EDIT_WORD_LE("0000003c")},
 	{"minor OS version",			STATICTAG_EDIT_WORD_LE("0000003e")},
 	{"major image version",			STATICTAG_EDIT_WORD_LE("00000040")},
 	{"minor image version",			STATICTAG_EDIT_WORD_LE("00000042")},
 	{"major subsystem version",		STATICTAG_EDIT_WORD_LE("00000044")},
 	{"minor subsystem version",		STATICTAG_EDIT_WORD_LE("00000046")},
-	{"Win32 version",				STATICTAG_EDIT_DWORD_LE("00000048")},
-	{"size of image",				STATICTAG_EDIT_DWORD_LE("0000004c")},
-	{"size of headers",				STATICTAG_EDIT_DWORD_LE("00000050")},
-	{"checksum",					STATICTAG_EDIT_DWORD_LE("00000054")},
-	{"subsystem",					STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
+	{"Win32 version",			STATICTAG_EDIT_DWORD_LE("00000048")},
+	{"size of image",			STATICTAG_EDIT_DWORD_LE("0000004c")},
+	{"size of headers",			STATICTAG_EDIT_DWORD_LE("00000050")},
+	{"checksum",				STATICTAG_EDIT_DWORD_LE("00000054")},
+	{"subsystem",				STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
 	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")" "STATICTAG_FLAGS("0000005a", ATOM_PE_DLL_CHARACTERISTICS_STR)},
-	{"stack reserve",				STATICTAG_EDIT_DWORD_LE("0000005c")},
-	{"stack commit",				STATICTAG_EDIT_DWORD_LE("00000060")},
-	{"heap reserve",				STATICTAG_EDIT_DWORD_LE("00000064")},
+	{"stack reserve",			STATICTAG_EDIT_DWORD_LE("0000005c")},
+	{"stack commit",			STATICTAG_EDIT_DWORD_LE("00000060")},
+	{"heap reserve",			STATICTAG_EDIT_DWORD_LE("00000064")},
 	{"heap commit",				STATICTAG_EDIT_DWORD_LE("00000068")},
-	{"loader flags",				STATICTAG_EDIT_DWORD_LE("0000006c")},
-	{"number of directory entries",	STATICTAG_EDIT_DWORD_LE("00000070")},
+	{"loader flags",			STATICTAG_EDIT_DWORD_LE("0000006c")},
+	{"number of directory entries",		STATICTAG_EDIT_DWORD_LE("00000070")},
 	{0, 0}
 };
 
@@ -161,19 +161,19 @@ static ht_mask_ptable pe32header_nt_dirs[] = {
 	{0, 0}
 };
 
-static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htpeheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)group->get_shared_data();
 
-	FILEOFS h=pe_shared->header_ofs;
+	FileOfs h=pe_shared->header_ofs;
 	ht_pe_header_viewer *v=new ht_pe_header_viewer();
 	v->init(b, DESC_PE_HEADER, VC_EDIT | VC_SEARCH, file, group);
-	register_atom(ATOM_COFF_MACHINES, coff_machines);
-	register_atom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
-	register_atom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
-	register_atom(ATOM_PE_OPTIONAL_MAGICS, pe_optional_magics);
-	register_atom(ATOM_PE_SUBSYSTEMS, pe_subsystems);
-	register_atom(ATOM_PE_DLL_CHARACTERISTICS, pe_dll_characteristics);
+	registerAtom(ATOM_COFF_MACHINES, coff_machines);
+	registerAtom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
+	registerAtom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
+	registerAtom(ATOM_PE_OPTIONAL_MAGICS, pe_optional_magics);
+	registerAtom(ATOM_PE_SUBSYSTEMS, pe_subsystems);
+	registerAtom(ATOM_PE_DLL_CHARACTERISTICS, pe_dll_characteristics);
 
 	ht_mask_sub *s;
 	ht_collapsable_sub *cs;
@@ -181,7 +181,7 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	s=new ht_mask_sub();
 	s->init(file, 0);
 	char info[128];
-	ht_snprintf(info, sizeof info, "* PE header at offset %08x", h);
+	ht_snprintf(info, sizeof info, "* PE header at offset 0x%08qx", h);
 	s->add_mask(info);
 	v->insertsub(s);
 
@@ -201,10 +201,10 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	/* optional header */
 	s=new ht_mask_sub();
 	s->init(file, 2);
-	word opt;
+	uint16 opt;
 	file->seek(h+24);
 	file->read(&opt, 2);
-	opt = create_host_int(&opt, 2, little_endian);
+	opt = createHostInt(&opt, 2, little_endian);
 	switch (opt) {
 		case COFF_OPTMAGIC_PE32:
 		case COFF_OPTMAGIC_PE64: {
@@ -242,14 +242,14 @@ static ht_view *htpeheader_init(bounds *b, ht_streamfile *file, ht_format_group 
 	
 	/* section headers */
 	
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+	for (uint i=0; i<pe_shared->sections.section_count; i++) {
 		s=new ht_mask_sub();
 		s->init(file, 100+i);
 
 		s->add_staticmask_ptable(coff_section, h+24+pe_shared->coffheader.optional_header_size+i*COFF_SIZEOF_SECTION_HEADER, pe_bigendian);
 
 		char nm[9];
-		memmove(nm, pe_shared->sections.sections[i].name, 8);
+		memcpy(nm, pe_shared->sections.sections[i].name, 8);
 		nm[8]=0;
 
 		char t[256];
@@ -272,7 +272,7 @@ format_viewer_if htpeheader_if = {
  *	CLASS ht_pe_header_viewer
  */
 
-void ht_pe_header_viewer::init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *group)
+void ht_pe_header_viewer::init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *group)
 {
 	ht_uformat_viewer::init(b, desc, caps, file, group);
 	VIEW_DEBUG_NAME("ht_pe_header_viewer");
@@ -293,15 +293,15 @@ static ht_format_viewer *find_hex_viewer(ht_group *group)
 	return NULL;
 }
 
-int ht_pe_header_viewer::ref_sel(LINE_ID *id)
+bool ht_pe_header_viewer::ref_sel(LINE_ID *id)
 {
 	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
 	switch (id->id1) {
 		case 0: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				UINT rva;
-				UINT size;
+				uint rva;
+				uint size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					rva = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;
@@ -309,7 +309,7 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					rva = pe_shared->pe64.header_nt.directory[id->id2].address;
 					size = pe_shared->pe64.header_nt.directory[id->id2].size;
 				}
-				FILEOFS ofs = 0;
+				FileOfs ofs = 0;
 				if (pe_rva_to_ofs(&pe_shared->sections, rva, &ofs)) {
 					vstate_save();
 					hexv->goto_offset(ofs, false);
@@ -340,8 +340,8 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 		case 4: {
 			ht_format_viewer *hexv = find_hex_viewer(group);
 			if (hexv) {
-				UINT ofs;
-				UINT size;
+				uint ofs;
+				uint size;
 				if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
 					ofs = pe_shared->pe32.header_nt.directory[id->id2].address;
 					size = pe_shared->pe32.header_nt.directory[id->id2].size;
@@ -366,5 +366,5 @@ int ht_pe_header_viewer::ref_sel(LINE_ID *id)
 			break;
 		}
 	}
-	return 1;
+	return true;
 }

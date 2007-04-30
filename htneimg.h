@@ -34,11 +34,11 @@ extern format_viewer_if htneimage_if;
 class ht_ne_aviewer: public ht_aviewer {
 public:
 	ht_ne_shared_data *ne_shared;
-	ht_streamfile *file;
+	File *file;
 	
-		   void init(bounds *b, char *desc, int caps, ht_streamfile *file, ht_format_group *format_group, Analyser *Analyser, ht_ne_shared_data *ne_shared);
+		void init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analyser, ht_ne_shared_data *ne_shared);
 /* overwritten */
-	virtual char *func(UINT i, bool execute);
+	virtual const char *func(uint i, bool execute);
 	virtual void setAnalyser(Analyser *a);
 };
 

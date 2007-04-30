@@ -18,8 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
-#include "htendian.h"
+#include "atom.h"
+#include "endianess.h"
 #include "htne.h"
 #include "htnenms.h"
 #include "httag.h"
@@ -29,21 +29,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, UINT i, char *name)
+static void assign_entrypoint_name(ht_ne_shared_data *ne_shared, uint i, char *name)
 {
 	if (ne_shared->entrypoints) {
-		ht_ne_entrypoint *e = (ht_ne_entrypoint*)ne_shared->entrypoints->get(i);
+		ht_ne_entrypoint *e = (ht_ne_entrypoint*)(*ne_shared->entrypoints)[i];
 		if (e) {
 			e->name = strdup(name);
 		} /*else fprintf(stderr, "entry %d not available\n", i);*/
 	} /* else trouble :-) */
 }
 
-static ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htnenames_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_ne_shared_data *ne_shared=(ht_ne_shared_data *)group->get_shared_data();
 
-	dword h=ne_shared->hdr_ofs;
+	uint32 h=ne_shared->hdr_ofs;
 	ht_uformat_viewer *v=new ht_uformat_viewer();
 	v->init(b, DESC_NE_NAMES, VC_EDIT | VC_SEARCH, file, group);
 	ht_mask_sub *m=new ht_mask_sub();
@@ -53,15 +53,15 @@ static ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *
 	char *n;
 	int i;
 
-	ht_snprintf(line, sizeof line, "* NE resident names table at offset %08x", h+ne_shared->hdr.restab);
+	ht_snprintf(line, sizeof line, "* NE resident names table at offset 0x%08qx", h+ne_shared->hdr.restab);
 	m->add_mask(line);
 
 	file->seek(h+ne_shared->hdr.restab);
 	i=0;
-	while (*(n=getstrp(file))) {
+	while (*(n = file->readstrp())) {
 		char buf[2];
 		file->read(buf, 2);
-		word ent = create_host_int(buf, 2, little_endian);
+		uint16 ent = createHostInt(buf, 2, little_endian);
 		if (!i) {
 			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {
@@ -80,10 +80,10 @@ static ht_view *htnenames_init(bounds *b, ht_streamfile *file, ht_format_group *
 
 	file->seek(ne_shared->hdr.nrestab);
 	i=0;
-	while (*(n=getstrp(file))) {
+	while (*(n = file->readstrp())) {
 		char buf[2];
 		file->read(buf, 2);
-		word ent = create_host_int(buf, 2, little_endian);
+		uint16 ent = createHostInt(buf, 2, little_endian);
 		if (!i) {
 			ht_snprintf(line, sizeof line, "description: %s", n);
 		} else {

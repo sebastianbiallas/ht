@@ -36,13 +36,13 @@ class ht_hex_viewer: public ht_uformat_viewer {
 public:
 	ht_hex_file_sub *h;
 protected:
-	virtual	void get_pindicator_str(char *buf);
+	virtual	int get_pindicator_str(char *buf, int max_len);
 	virtual	bool get_vscrollbar_pos(int *pstart, int *psize);
 	virtual	void handlemsg(htmsg *msg);
-	virtual	bool offset_to_pos(FILEOFS ofs, viewer_pos *p);
-	virtual	bool pos_to_offset(viewer_pos p, FILEOFS *ofs);
-	virtual	bool qword_to_pos(qword q, viewer_pos *pos);
-	virtual	int symbol_handler(eval_scalar *result, char *name);
+	virtual	bool offset_to_pos(FileOfs ofs, viewer_pos *p);
+	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
+	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
+	virtual	bool symbol_handler(eval_scalar *result, char *name);
 };
 
 /*

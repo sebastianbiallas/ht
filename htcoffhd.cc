@@ -18,11 +18,11 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htcoff.h"
 #include "htcoffhd.h"
 #include "httag.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "formats.h"
 #include "snprintf.h"
 
@@ -43,15 +43,16 @@ int_hash coff_machines[] =
 	{COFF_MACHINE_SH4, "Hitachi SH4"},
 	{COFF_MACHINE_ARM, "ARM"},
 	{COFF_MACHINE_THUMB, "THUMB"},
-	{COFF_MACHINE_POWERPC_LE, "Power PC (little-endian)"},
-	{COFF_MACHINE_POWERPC_BE, "Power PC (big-endian)"},
+	{COFF_MACHINE_POWERPC_LE, "PowerPC (little-endian)"},
+	{COFF_MACHINE_POWERPC_BE, "PowerPC (big-endian)"},
+	{COFF_MACHINE_POWERPC64_BE, "PowerPC64 (big-endian)"},
 	{COFF_MACHINE_IA64, "Intel IA64"},
 	{COFF_MACHINE_MIPS16, "MIPS16"},
 	{COFF_MACHINE_68k, "Motorola 68k"},
 	{COFF_MACHINE_ALPHA_AXP_64, "Alpha AXP 64"},
 	{COFF_MACHINE_MIPSf, "MIPSf"},
 	{COFF_MACHINE_MIPS16f, "MIPS16f"},
-	{COFF_MACHINE_AMD_HAMMER, "x86-64 (AMD Opteron)"},
+	{COFF_MACHINE_AMD64, "x86-64 (AMD Opteron)"},
 	{0, 0}
 };
 
@@ -77,9 +78,9 @@ ht_tag_flags_s coff_characteristics[] =
 	{2,  "[02] line numbers stripped"},
 	{3,  "[03] local symbols stripped"},
 	{4,  "[04] aggressively trim working set"},
-	{5,  "[05] * reserved"},
+	{5,  "[05] >2 GiB addresses aware"},
 	{6,  "[06] * reserved"},
-	{7,  "[07] low bytes of machine word are reversed"},
+	{7,  "[07] low bytes of machine uint16 are reversed"},
 	{8,  "[08] 32 bit machine"},
 	{9,  "[09] debugging information stripped"},
 	{10, "[10] run from swap if image on removable media"},
@@ -87,7 +88,7 @@ ht_tag_flags_s coff_characteristics[] =
 	{12, "[12] system file"},
 	{13, "[13] file is dynamic link library (dll)"},
 	{14, "[14] single processor (UP) only"},
-	{15, "[15] high bytes of machine word are reversed"},
+	{15, "[15] high bytes of machine uint16 are reversed"},
 	{0, 0}
 };
 
@@ -133,7 +134,7 @@ ht_mask_ptable coffheader[]=
 {
 	{"machine",			STATICTAG_EDIT_WORD_VE("00000000")" "STATICTAG_DESC_WORD_VE("00000000", ATOM_COFF_MACHINES_STR)},
 	{"number of sections",		STATICTAG_EDIT_WORD_VE("00000002")},
-	{"time-date stamp",		STATICTAG_EDIT_TIME("00000004")},
+	{"time-date stamp",		STATICTAG_EDIT_TIME_VE("00000004")},
 	{"pointer to symbol table",	STATICTAG_EDIT_DWORD_VE("00000008")},
 	{"number of symbols",		STATICTAG_EDIT_DWORD_VE("0000000c")},
 	{"size of optional header",	STATICTAG_EDIT_WORD_VE("00000010")" "STATICTAG_DESC_WORD_VE("00000010", ATOM_COFF_OPTIONAL_SIZES_STR)},
@@ -198,22 +199,22 @@ ht_mask_ptable coff_section[] = {
 	{0, 0}
 };
 
-static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_group *group)
+static ht_view *htcoffheader_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_coff_shared_data *coff_shared = (ht_coff_shared_data *)group->get_shared_data();
 	bool coff_bigendian = coff_shared->endian == big_endian;
 
-	dword h = coff_shared->hdr_ofs;
+	uint32 h = coff_shared->hdr_ofs;
 	ht_uformat_viewer *v = new ht_uformat_viewer();
 	v->init(b, DESC_COFF_HEADER, VC_EDIT, file, group);
 
 	ht_mask_sub *m = new ht_mask_sub();
 	m->init(file, 0);
-	register_atom(ATOM_COFF_MACHINES, coff_machines);
-	register_atom(ATOM_COFF_OPTIONAL_MAGICS, coff_optional_magics);
-	register_atom(ATOM_COFF_OPTIONAL_SIZES, coff_optional_sizes);
-	register_atom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
-	register_atom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
+	registerAtom(ATOM_COFF_MACHINES, coff_machines);
+	registerAtom(ATOM_COFF_OPTIONAL_MAGICS, coff_optional_magics);
+	registerAtom(ATOM_COFF_OPTIONAL_SIZES, coff_optional_sizes);
+	registerAtom(ATOM_COFF_CHARACTERISTICS, coff_characteristics);
+	registerAtom(ATOM_COFF_SECTION_CHARACTERISTICS, coff_section_characteristics);
 	char info[128];
 	ht_snprintf(info, sizeof info, "* COFF header at offset %08x", h);
 	m->add_mask(info);
@@ -224,7 +225,7 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 	/* optional header */
 	if (coff_shared->coffheader.optional_header_size >= 2) {
 		m->add_mask("--- optional header ---");
-		word opt = coff_shared->opt_magic;
+		uint16 opt = coff_shared->opt_magic;
 /*		file->seek(h+20);
 		file->read(&opt, 2);*/
 		switch (opt) {
@@ -241,7 +242,7 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 			default: {
 				m->add_staticmask("optional magic                                   "STATICTAG_EDIT_WORD_VE("00000018")" "STATICTAG_DESC_WORD_VE("00000018", ATOM_COFF_OPTIONAL_MAGICS_STR), h+20, coff_bigendian);
 				m->add_mask("-------------------------------------------------------------------------");
-				m->add_mask("Unsupported optional magic ! If you get this message in an original");
+				m->add_mask("Unsupported optional magic! If you get this message in an original");
 				m->add_mask("(unmodified) file, please contact us (see help).");
 			}
 		}
@@ -261,7 +262,7 @@ static ht_view *htcoffheader_init(bounds *b, ht_streamfile *file, ht_format_grou
 		n->add_staticmask_ptable(coff_section, h+20+os+i*40, coff_bigendian);
 
 		char nm[9];
-		memmove(nm, coff_shared->sections.sections[i].name, 8);
+		memcpy(nm, coff_shared->sections.sections[i].name, 8);
 		nm[8] = 0;
 
 		char t[32];

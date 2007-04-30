@@ -21,7 +21,7 @@
 #ifndef __HTCTRL_H__
 #define __HTCTRL_H__
 
-#include "htdata.h"
+#include "data.h"
 #include "htobj.h"
 
 #define GLOBAL_ERROR_SIZE 1024
@@ -29,8 +29,8 @@ extern char *globalerror;
 
 extern ht_view *app;
 extern ht_view *baseview;
-extern screendrawbuf *screen;
-extern ht_list *virtual_fs_list;
+extern SystemDisplay *screen;
+extern List *virtual_fs_list;
 extern void *project;
 extern char appname[HT_NAME_MAX+1];
 extern int some_analyser_active;
