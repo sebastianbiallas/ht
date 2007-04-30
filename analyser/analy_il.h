@@ -26,14 +26,16 @@
 
 class AnalyILDisassembler: public AnalyDisassembler {
 public:
-			void			init(Analyser *A, char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
-	virtual   void	     	done();
-	virtual	OBJECT_ID		object_id() const;
+					AnalyILDisassembler() {};
+					AnalyILDisassembler(BuildCtorArg&a): AnalyDisassembler(a) {};
 
-	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-			Address		*createAddress(dword offset);
+		void			init(Analyser *A, char* (*string_func)(uint32 string_ofs, void *context), char* (*token_func)(uint32 token, void *context), void *context);
+	virtual	ObjectID		getObjectID() const;
+
+	virtual	Address			*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
+		Address			*createAddress(uint32 offset);
 	virtual	void			examineOpcode(OPCODE *opcode);
-	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
+	virtual	branch_enum_t 		isBranch(OPCODE *opcode);
 };
 
 #endif

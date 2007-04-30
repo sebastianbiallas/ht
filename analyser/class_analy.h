@@ -28,29 +28,29 @@
 class ClassAnalyser: public Analyser {
 public:
 	ht_class_shared_data 	*class_shared;
-	ht_streamfile			*file;
+	File			*file;
 
-			void			init(ht_class_shared_data *Class_shared, ht_streamfile *File);
-			int 			load(ht_object_stream *f);
-	virtual	void			done();
-	virtual	OBJECT_ID		object_id() const;
+				ClassAnalyser() {};
+				ClassAnalyser(BuildCtorArg&a): Analyser(a) {};
+		void		init(ht_class_shared_data *Class_shared, File *File);
+	virtual	ObjectID	getObjectID() const;
 
-	virtual	void			beginAnalysis();
-	virtual	UINT			bufPtr(Address *Addr, byte *buf, int size);
+	virtual	void		beginAnalysis();
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size);
 	virtual	Address		*createAddress();
-			Address		*createAddress32(ClassAddress addr);
-	virtual   Assembler 	*createAssembler();
-	virtual	const char	*getName();
-	virtual   const char	*getType();
+		Address		*createAddress32(ClassAddress addr);
+	virtual Assembler 	*createAssembler();
+	virtual	String &	getName(String &res);
+	virtual const char	*getType();
 	virtual	void 		initCodeAnalyser();
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void			store(ht_object_stream *f);
-	virtual	int			queryConfig(int mode);
+	virtual	void		store(ObjectStream &f) const;
+	virtual	int		queryConfig(int mode);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
-	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-	virtual	FILEOFS		addressToFileofs(Address *Addr);
+	virtual	Address		*fileofsToAddress(FileOfs fileofs);
+	virtual	FileOfs		addressToFileofs(Address *Addr);
 	virtual	const char	*getSegmentNameByAddress(Address *Addr);
 };
 

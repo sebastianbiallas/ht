@@ -41,23 +41,23 @@ static int parse_float(eval_scalar *f, char *fpn)
 	char *end;
 	double d;
 	d=strtod(fpn, &end);
-	if (*end==0) {
-		f->type=SCALAR_FLOAT;
-		f->scalar.floatnum.value=d;
+	if (*end == 0) {
+        	f->type=SCALAR_FLOAT;
+        	f->scalar.floatnum.value=d;
 		return 1;
 	}
-	return 0;		
+	return 0;
 }
 
 static int parse_integer(eval_scalar *i, char *num, int base, int lenmod)
 {
-	qword k=int_to_qword(0);
-	int l=strlen(num)+lenmod;
+	uint64 k = 0;
+	int l = strlen(num) + lenmod;
 	while (l--) {
 		int c=char2int(*num, base);
 		if (c==-1) return 0;
-		k=qword_mul(k, int_to_qword(base));
-		k=qword_add(k, int_to_qword(c));
+		k *= base;
+		k += c;
 		num++;
 	}
 	i->type=SCALAR_INT;
@@ -192,7 +192,7 @@ void *lex_scan_string_buffer(const char *str)
 %%
 
 [ \t]+				/* nop */
-\"(\\\"|[^"])*\"		if (parse_cstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
+\"(\\\"|[^"])*\"			if (parse_cstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
 '[^']*'				if (parse_pstring(&YY_LVALP->scalar, yytext+1, strlen(yytext+1)-1)) return EVAL_STR;
 lt				return EVAL_STR_LT;
 le				return EVAL_STR_LE;

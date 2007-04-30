@@ -28,33 +28,35 @@
 class PEAnalyser: public Analyser {
 public:
 	ht_pe_shared_data 	*pe_shared;
-	ht_streamfile 		*file;
+	File 			*file;
 	Area			*validarea;
 
-			void	init(ht_pe_shared_data *Pe_shared, ht_streamfile *File);
-			int 	load(ht_object_stream *f);
-			void	reinit(ht_pe_shared_data *Pe_shared, ht_streamfile *File);
+				PEAnalyser() {};
+				PEAnalyser(BuildCtorArg&a): Analyser(a) {};
+		void		init(ht_pe_shared_data *Pe_shared, File *File);
+		void 		load(ObjectStream &f);
+		void		reinit(ht_pe_shared_data *Pe_shared, File *File);
 	virtual	void		done();
-	virtual	OBJECT_ID	object_id() const;
+	virtual	ObjectID	getObjectID() const;
 
 	virtual	void		beginAnalysis();
-	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size);
 		bool		convertAddressToRVA(Address *addr, RVA *r);
 	virtual	Address		*createAddress();
-		Address		*createAddress32(dword addr);
-		Address		*createAddress64(qword high_addr);
+		Address		*createAddress32(uint32 addr);
+		Address		*createAddress64(uint64 high_addr);
 	virtual Assembler 	*createAssembler();
-	virtual	const char	*getName();
+	virtual	String &	getName(String &res);
 	virtual const char	*getType();
 	virtual	void 		initCodeAnalyser();
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &f) const;
 	virtual	int		queryConfig(int mode);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
-	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-	virtual	FILEOFS		addressToFileofs(Address *Addr);
+	virtual	Address		*fileofsToAddress(FileOfs fileofs);
+	virtual	FileOfs		addressToFileofs(Address *Addr);
 	virtual	const char	*getSegmentNameByAddress(Address *Addr);
 };
 

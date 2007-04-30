@@ -20,9 +20,9 @@
 
 #include <stdlib.h>
 
-#include "analy_register.h"
+#include "analy.h"
 
-#include "htatom.h"
+#include "atom.h"
 #include "stddata.h"
 #include "stream.h"
 #include "tools.h"
@@ -35,33 +35,32 @@ void Area::init()
 	a = NULL;
 }
 
-static void areaload(ht_object_stream *st, area_s *&p, int level, int &left)
+static void areaload(ObjectStream &st, area_s *&p, int level, int &left)
 {
-	if (left<=0) {
+	if (left <= 0) {
 		p = NULL;
 		return;
 	}
-	p = (area_s *) smalloc0(sizeof(area_s));
-	if ((level<=1) || (left<=1)) {
-		st->getObject(p->start, "start");
-		st->getObject(p->end, "end");
+	p = new area_s;
+	if (level <= 1 || left <= 1) {
+		p->start = st.getObject("start");
+		p->end = st.getObject("end");
 		p->left = p->right = NULL;
 		left--;
 	} else {
 		areaload(st, p->left, level / 2, left);
-		st->getObject(p->start, "start");
-		st->getObject(p->end, "end");
+		p->start = st.getObject("start");
+		p->end = st.getObject("end");
 		left--;
 		areaload(st, p->right, level / 2 -1, left);
 	}
 }
 
-int	Area::load(ht_object_stream *st)
+void	Area::load(ObjectStream &st)
 {
 	int count;
-	GET_INT_DEC(st, count);
+	GET_INT32D(st, count);
 	areaload(st, a, count, count);
-	return st->get_error();
 }
 
 void Area::done()
@@ -69,7 +68,7 @@ void Area::done()
 	freeRecursive(a);
 }
 
-OBJECT_ID	Area::object_id() const
+ObjectID Area::getObjectID() const
 {
 	return ATOM_AREA;
 }
@@ -91,23 +90,23 @@ area_s *Area::getArea(Object *at)
 static void areaadd(area_s *&p, Object *Start, Object *End)
 {
 	if (p) {
-		if ((Start->compareTo(p->start) >= 0) && (Start->compareTo(p->end)<=0)) {
+		if (Start->compareTo(p->start) >= 0 && Start->compareTo(p->end)<=0) {
 			if (p->end->compareTo(End) < 0) {
 				delete p->end;
-				p->end = End->duplicate();
+				p->end = End->clone();
 			}
 			if ((End->compareTo(p->start) >= 0) && (End->compareTo(p->end)<=0)) {
 				if (p->start->compareTo(Start) > 0) {
 					delete p->start;
-					p->start = Start->duplicate();
+					p->start = Start->clone();
 				}
 			}
 			return;
 		}
-		if ((End->compareTo(p->start) >= 0) && (End->compareTo(p->end) <= 0)) {
+		if (End->compareTo(p->start) >= 0 && End->compareTo(p->end) <= 0) {
 			if (p->start->compareTo(Start) > 0) {
 				delete p->start;
-				p->start = Start->duplicate();
+				p->start = Start->clone();
 			}
 			return;
 		}
@@ -115,10 +114,10 @@ static void areaadd(area_s *&p, Object *Start, Object *End)
 					  else  areaadd(p->left, Start, End);
 	} else {
 		// new p
-		area_s *tmp = (area_s *) smalloc(sizeof(area_s));
+		area_s *tmp = new area_s;
 		p = tmp;
-		p->start = Start->duplicate();
-		p->end = End->duplicate();
+		p->start = Start->clone();
+		p->end = End->clone();
 		p->left = NULL;
 		p->right = NULL;
 	}
@@ -140,7 +139,7 @@ static bool areacontains(area_s *p, Object *V)
 
 bool Area::contains(Object *v)
 {
-	if (v->instanceOf(ATOM_ADDRESS_INVALID)) return false;
+	if (instanceOf<InvalidAddress>(v)) return false;
 	return areacontains(a, v);
 }
 
@@ -188,7 +187,7 @@ void Area::freeRecursive(area_s *p)
 		freeRecursive(p->right);
 		delete p->start;
 		delete p->end;
-		free(p);
+		delete p;
 	}
 }
 
@@ -202,16 +201,16 @@ static void areacount(area_s *p, int &c, Object **startend)
 	}
 }
 
-static void areastore(ht_object_stream *f, area_s *p, Object **startend)
+static void areastore(ObjectStream &f, area_s *p, Object **startend)
 {
 	if (p) {
 		areastore(f, p->left, startend);
 		if (!*startend) {
-			f->putObject(p->start, "start");
+			f.putObject(p->start, "start");
 		} else {
 			if ((*startend)->compareTo(p->start) != 0) {
-				f->putObject(*startend, "end");
-				f->putObject(p->start, "start");
+				f.putObject(*startend, "end");
+				f.putObject(p->start, "start");
 			}
 		}
 		*startend = p->end;
@@ -219,15 +218,15 @@ static void areastore(ht_object_stream *f, area_s *p, Object **startend)
 	}
 }
 
-void Area::store(ht_object_stream *f)
+void Area::store(ObjectStream &f) const
 {
 	int count = 0;
 	Object *start = NULL;
 	areacount(a, count, &start);
-	PUT_INT_DEC(f, count);
+	PUT_INT32D(f, count);
 	start = NULL;
 	areastore(f, a, &start);
-	if (start!=NULL) f->putObject(start, "end");
+	if (start != NULL) f.putObject(start, "end");
 }
 
 #ifdef DEBUG_FIXNEW
@@ -250,11 +249,7 @@ void Area::dump()
 }
 #endif
 
-/*
- *  BUILDER etc.
- */
-
-BUILDER(ATOM_AREA, Area)
+BUILDER(ATOM_AREA, Area, Object)
 
 bool init_stddata()
 {

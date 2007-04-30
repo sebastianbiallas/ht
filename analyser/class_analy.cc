@@ -23,14 +23,13 @@
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_java.h"
-#include "global.h"
 #include "class.h"
 #include "class_analy.h"
 
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "pestruct.h"
 
@@ -41,7 +40,7 @@
 /*
  *
  */
-void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File)
+void	ClassAnalyser::init(ht_class_shared_data *Class_shared, File *File)
 {
 	class_shared = Class_shared;
 	file = File;
@@ -57,56 +56,52 @@ void	ClassAnalyser::init(ht_class_shared_data *Class_shared, ht_streamfile *File
 	setSymbolTreeOptimizeThreshold(100);
 }
 
-
-/*
- *
- */
-int	ClassAnalyser::load(ht_object_stream *f)
-{
-	return Analyser::load(f);
-}
-
-/*
- *
- */
-void	ClassAnalyser::done()
-{
-	Analyser::done();
-}
-
 /*
  *
  */
 void ClassAnalyser::beginAnalysis()
 {
 	char buffer[1024];
-	char *b = buffer;
 	
-	*(b++) = ';';  *(b++) = ' ';
-	b = java_demangle_flags(b, class_shared->flags);
-	b += ht_snprintf(b, 1024, "%s %s", (class_shared->flags & jACC_INTERFACE)?"interface":"class", class_shared->classinfo.thisclass);
+	String b;
+	*java_demangle_flags(buffer, class_shared->flags) = 0;
+	b.assignFormat("; %s%s %s", buffer, (class_shared->flags & jACC_INTERFACE)?"interface":"class", class_shared->classinfo.thisclass);
 	if (class_shared->classinfo.superclass) {
-		b += ht_snprintf(b, 1024, " extends %s", class_shared->classinfo.superclass);
+		String b2;
+		b2.assignFormat(" extends %s", class_shared->classinfo.superclass);
+		b += b2;
 	}
 	if (class_shared->classinfo.interfaces) {
-		b += ht_snprintf(b, 1024, " implements");
+		b += " implements";
 		int count = class_shared->classinfo.interfaces->count();
-		for (int i=0; i<count; i++) {
-			b += ht_snprintf(b, 1024, " %y%c", class_shared->classinfo.interfaces->get(i), (i+1<count)?',':' ');
+		for (int i=0; i < count; i++) {
+			String b2;
+			b2.assignFormat("%y%c", (*class_shared->classinfo.interfaces)[i], (i+1<count)?',':' ');
+			b += b2;
 		}
 	}
-	b += ht_snprintf(b, 1024, " {");
+	b += " {";
 
 	Address *a = createAddress32(0);
 	addComment(a, 0, "");
 	addComment(a, 0, ";********************************************************");
-	addComment(a, 0, buffer);
+	addComment(a, 0, b.contentChar());
 	addComment(a, 0, ";********************************************************");
+	if (class_shared->fields && class_shared->fields->count()) {
+		addComment(a, 0, "");
+ 		addComment(a, 0, ";  Fields: ");
+		addComment(a, 0, "; =========");
+		foreach (ClassField, cf, *class_shared->fields, {
+			char buffer2[1024];
+			java_demangle_field(buffer2, cf->name, cf->type, cf->flags);
+			ht_snprintf(buffer, 1024, ";  %s", buffer2);
+			addComment(a, 0, buffer);
+		});
+		addComment(a, 0, "");
+	}
 	delete a;
 	if (class_shared->methods) {
-		ClassMethod *cm = NULL;
-		ht_data *value;
-		while ((cm = (ClassMethod*)class_shared->methods->enum_next(&value, cm))) {
+		foreach (ClassMethod, cm, *class_shared->methods, {
 			Address *a = createAddress32(cm->start);
 			char buffer2[1024];
 			java_demangle(buffer2, class_shared->classinfo.thisclass, cm->name, cm->type, cm->flags);
@@ -117,9 +112,36 @@ void ClassAnalyser::beginAnalysis()
 			addComment(a, 0, ";----------------------------------------------");
 			addAddressSymbol(a, cm->name, label_func);
 			pushAddress(a, a);
+			if (cm->length) {
+				Address *b = createAddress32(cm->start + cm->length - 1);
+				initialized->add(a, b);
+				delete b;
+			}
 			delete a;
-		}
-	}
+			for (int i=0; i < cm->exctbl_len; i++) {
+				exception_info *ei = cm->exctbl + i;
+				if (ei->catch_type) {
+					token_translate(buffer2, sizeof buffer2, ei->catch_type, class_shared);
+				} else {
+					ht_strlcpy(buffer2, "...", sizeof buffer2);
+				}
+				ht_snprintf(buffer, sizeof buffer, "catch (%s)", buffer2);
+				Address *b = createAddress32(cm->start + ei->start_pc);
+				ht_snprintf(buffer2, sizeof buffer2, "[%d] try { // %s", i, buffer);
+				addComment(b, 0, buffer2);
+				delete b;
+				b = createAddress32(cm->start + ei->end_pc);
+				ht_snprintf(buffer2, sizeof buffer2, "[%d] } // %s", i, buffer);
+				addComment(b, 0, buffer2);
+				delete b;
+				b = createAddress32(cm->start + ei->handler_pc);
+				ht_snprintf(buffer2, sizeof buffer2, "[%d] %s:", i, buffer);
+				addComment(b, 0, buffer2);
+				pushAddress(b, b);
+				delete b;
+			}
+		});
+ 	}
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 
@@ -129,7 +151,7 @@ void ClassAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	ClassAnalyser::object_id() const
+ObjectID ClassAnalyser::getObjectID() const
 {
 	return ATOM_CLASS_ANALYSER;
 }
@@ -137,9 +159,9 @@ OBJECT_ID	ClassAnalyser::object_id() const
 /*
  *
  */
-UINT ClassAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint ClassAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
 	return file->read(buf, size);
@@ -158,7 +180,7 @@ Address *ClassAnalyser::createAddress()
  */
 Address *ClassAnalyser::createAddress32(ClassAddress addr)
 {
-	return new AddressFlat32((dword)addr);
+	return new AddressFlat32((uint32)addr);
 }
 
 /*
@@ -172,7 +194,7 @@ Assembler *ClassAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS ClassAnalyser::addressToFileofs(Address *Addr)
+FileOfs ClassAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
 		return ((AddressFlat32*)Addr)->addr;
@@ -186,17 +208,22 @@ FILEOFS ClassAnalyser::addressToFileofs(Address *Addr)
  */
 const char *ClassAnalyser::getSegmentNameByAddress(Address *Addr)
 {
-	static char sectionname[9];
-	strcpy(sectionname, "test");
-	return sectionname;
+	static char sectionname[1];
+	Location *loc = getFunctionByAddress(Addr);
+	if (loc && loc->label && loc->label->name) {
+		return loc->label->name;
+	} else {
+		sectionname[0] = 0;
+		return sectionname;
+	}
 }
 
 /*
  *
  */
-const char *ClassAnalyser::getName()
+String &ClassAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -216,7 +243,7 @@ void ClassAnalyser::initCodeAnalyser()
 }
 
 
-int class_token_func(char *result, int maxlen, dword token, void *context)
+int class_token_func(char *result, int maxlen, uint32 token, void *context)
 {
 	return token_translate(result, maxlen, token, (ht_class_shared_data *)context);
 }
@@ -255,7 +282,7 @@ Address *ClassAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void ClassAnalyser::store(ht_object_stream *st)
+void ClassAnalyser::store(ObjectStream &st) const
 {
 	Analyser::store(st);
 }
@@ -278,7 +305,7 @@ int	ClassAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *ClassAnalyser::fileofsToAddress(FILEOFS fileaddr)
+Address *ClassAnalyser::fileofsToAddress(FileOfs fileaddr)
 {
 	Address *a = createAddress32(fileaddr);
 	if (validAddress(a, scvalid)) {

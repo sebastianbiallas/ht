@@ -21,15 +21,15 @@
 #ifndef ALPHAOPC_H
 #define ALPHAOPC_H
 
-#include "global.h"
+#include "io/types.h"
 
 struct alpha_opcode_tab_entry {
-	word	fcode;
-	char	*name;
+	uint16	fcode;
+	const char *name;
 	byte	type;
 };
 
-extern char *alpha_reg_names[];
+extern const char *alpha_reg_names[];
 extern alpha_opcode_tab_entry alpha_instr_tbl[];
 extern alpha_opcode_tab_entry alpha_instr_tbl_ext10[];
 extern alpha_opcode_tab_entry alpha_instr_tbl_ext11[];

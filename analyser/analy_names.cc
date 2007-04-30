@@ -20,7 +20,7 @@
 
 #include "analy_names.h"
 #include "htdebug.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "language.h"
 #include "snprintf.h"
 #include "stdio.h"
@@ -50,25 +50,25 @@ char *export_func_name(const char *funcname, int ordinal)
 	return ht_strdup(res);
 }
 
-char *label_types[] = {"unknown", "function", "location ", "data"};
-char *label_types_short[] = {"?   ", "func", "loc ", "data"};
+const char *label_types[] = {"unknown", "function", "location ", "data"};
+const char *label_types_short[] = {"?   ", "func", "loc ", "data"};
 
-char *label_type(int lt)
+const char *label_type(int lt)
 {
 	assert(lt < 4);
 	return label_types[lt];
 }
 
-char *label_type_short(int lt)
+const char *label_type_short(int lt)
 {
 	assert(lt < 4);
 	return label_types_short[lt];
 }
 
-char	*xref_types[] = {"read", "write", "offset", "jump", "call", "ijump", "icall"};
-char	xref_types_short[] = "rwojcJC";
+const char *xref_types[] = {"read", "write", "offset", "jump", "call", "ijump", "icall"};
+const char *xref_types_short = "rwojcJC";
 
-char *xref_type(int xt)
+const char *xref_type(int xt)
 {
 	assert(xt < 7);
 	return xref_types[xt];
@@ -83,11 +83,11 @@ char xref_type_short(int xt)
 bool valid_name(const char *str)
 {
 	if (!str || !*str) return false;
-	char mc = mapchar[(unsigned)*str];
+	char mc = mapchar[(uint8)*str];
 	if (mc == '_' || mc == '?' || mc == 'A' || mc == '@') {
 		str++;
 		while (*str) {
-			mc = mapchar[(unsigned)*str];
+			mc = mapchar[(uint8)*str];
 			if (mc == '_' || mc == '?' || mc == 'A' || mc == '0' || mc == ':' || mc == '.' || mc == '@') {
 				str++;
 			} else return false;
@@ -105,13 +105,13 @@ void make_valid_name(char *result, const char *str)
 		*result = '\0';
 		return;
 	}
-	char mc = mapchar[(unsigned)*str];
+	char mc = mapchar[(uint8)*str];
 	if (!(mc == '_' || mc == '?' || mc == 'A' || mc == '@')) {
 		*result++ = '_';
 		str++;
 	}
 	while (*str) {
-		mc = mapchar[(unsigned)*str];
+		mc = mapchar[(uint8)*str];
 		if (mc == '_' || mc == '?' || mc == 'A' || mc == '0' || mc == ':' || mc == '.' || mc == '@') {
 			*result++ = *str;
 		} else {

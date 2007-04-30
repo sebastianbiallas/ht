@@ -59,18 +59,10 @@
 #define MAKE_PAL(opcode)		(opcode & 0x3ffffff)
 #define MAKE_HINT(opcode)	(opcode & 0x3fff)
 
-Alphadis::Alphadis():Disassembler()
+Alphadis::Alphadis()
+	:Disassembler()
 {
 	insn.valid = false;
-}
-
-Alphadis::~Alphadis()
-{
-}
-
-int Alphadis::load(ht_object_stream *f)
-{
-	return Disassembler::load(f);
 }
 
 int find_alpha_instruction(alpha_opcode_tab_entry *table, int f)
@@ -89,12 +81,12 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 		insn.size = maxlen;
 		insn.table = 0;
 		// FIXME: this reads to much bytes!
-		UNALIGNED_MOVE(insn.data, *(dword *)code);
+		UNALIGNED_MOVE(insn.data, *(uint32 *)code);
 	} else {
 		insn.valid = true;
 		insn.size = 4;
 		insn.table = &alpha_instr_tbl[0];
-		dword opcode = *((dword *)code);
+		uint32 opcode = *((uint32 *)code);
 		int idx = BITS_OPC(opcode);
 		switch (alpha_instr_tbl[idx].type) {
 			case ALPHA_EXTENSION_10:
@@ -237,7 +229,7 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 				break;
 			default:
 				insn.valid = false;
-				insn.data = *(dword *)code;
+				insn.data = *(uint32 *)code;
 				break;
 		}
 	}
@@ -246,7 +238,7 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 
 dis_insn *Alphadis::duplicateInsn(dis_insn *disasm_insn)
 {
-	alphadis_insn *insn = (alphadis_insn *)malloc(sizeof (alphadis_insn));
+	alphadis_insn *insn = ht_malloc(sizeof (alphadis_insn));
 	*insn = *(alphadis_insn *)disasm_insn;
 	return insn;
 }
@@ -260,7 +252,7 @@ void Alphadis::getOpcodeMetrics(int &min_length, int &max_length, int &min_look_
 	addr_align = 4;
 }
 
-char *Alphadis::getName()
+const char *Alphadis::getName()
 {
 	return "alpha/disassembler";
 }
@@ -270,17 +262,12 @@ byte	Alphadis::getSize(dis_insn *disasm_insn)
 	return ((alphadis_insn*)disasm_insn)->size;
 }
 
-OBJECT_ID Alphadis::object_id() const
+ObjectID Alphadis::getObjectID() const
 {
 	return ATOM_DISASM_ALPHA;
 }
 
-void	Alphadis::store(ht_object_stream *f)
-{
-	Disassembler::store(f);
-}
-
-char	*Alphadis::str(dis_insn *disasm_insn, int style)
+const char *Alphadis::str(dis_insn *disasm_insn, int style)
 {
 	return strf(disasm_insn, style, "");
 }
@@ -290,7 +277,7 @@ char	*Alphadis::str(dis_insn *disasm_insn, int style)
 #define A_REG_C alpha_reg_names[alpha_insn->regC]
 #define A_NAME (alpha_insn->table+alpha_insn->code)->name
 
-char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
+const char *Alphadis::strf(dis_insn *disasm_insn, int style, const char *format)
 {
 	if (style & DIS_STYLE_HIGHLIGHT) enable_highlighting();
 	
@@ -313,7 +300,7 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 				strcpy(insnstr, "db         ? * 3");
 				break;
 			case 4:
-				sprintf(insnstr, "dd         %s0x%08lx", cs_number, alpha_insn->data);
+				sprintf(insnstr, "dd         %s0x%08x", cs_number, alpha_insn->data);
 				break;
 			default: { /* braces for empty assert */
 				assert(0);
@@ -325,7 +312,7 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 			if (alpha_insn->regB != REG_LIT)
 				sprintf(insnstr, "%-10s %s%s,%s %s%s,%s %s", A_NAME, A_REG_A, cs_symbol, cs_default, A_REG_B, cs_symbol, cs_default, A_REG_C);
 			else
-				sprintf(insnstr, "%-10s %s%s,%s %s0x%lx%s,%s %s", A_NAME, A_REG_A, cs_symbol, cs_default, cs_number, alpha_insn->data, cs_symbol, cs_default, A_REG_C);
+				sprintf(insnstr, "%-10s %s%s,%s %s0x%x%s,%s %s", A_NAME, A_REG_A, cs_symbol, cs_default, cs_number, alpha_insn->data, cs_symbol, cs_default, A_REG_C);
 			break;
 		case ALPHA_GROUP3:
 		case ALPHA_GROUP_FLD:
@@ -349,7 +336,7 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 		case ALPHA_GROUP_BRA:
 		case ALPHA_GROUP_FBR: {
 			CPU_ADDR caddr;
-			caddr.addr32.offset = (dword)alpha_insn->data;
+			caddr.addr32.offset = (uint32)alpha_insn->data;
 			int slen;
 			char *p;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : 0;
@@ -358,13 +345,13 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
-				sprintf(insnstr, "%-10s %s%s, %s0x%x", A_NAME, A_REG_A, cs_symbol, cs_number, (dword)alpha_insn->data);
+				sprintf(insnstr, "%-10s %s%s, %s0x%x", A_NAME, A_REG_A, cs_symbol, cs_number, (uint32)alpha_insn->data);
 			}
 			break;
 		}
 		case ALPHA_GROUP_JMP: {
 			CPU_ADDR caddr;
-			caddr.addr32.offset = (dword)alpha_insn->data;
+			caddr.addr32.offset = (uint32)alpha_insn->data;
 			int slen;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : 0;
 			if (s) {
@@ -372,12 +359,12 @@ char	*Alphadis::strf(dis_insn *disasm_insn, int style, char *format)
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
-				sprintf(insnstr, "%-10s %s %s(%s%s%s), %s0x%x", A_NAME, A_REG_A, cs_symbol, cs_default, A_REG_B, cs_symbol, cs_number, (dword)alpha_insn->data);
+				sprintf(insnstr, "%-10s %s %s(%s%s%s), %s0x%x", A_NAME, A_REG_A, cs_symbol, cs_default, A_REG_B, cs_symbol, cs_number, (uint32)alpha_insn->data);
 			}
 			break;
 		}
 		case ALPHA_GROUP_PAL:
-			sprintf(insnstr, "%-10s %s0x%08lx", A_NAME, cs_number, alpha_insn->data);
+			sprintf(insnstr, "%-10s %s0x%08x", A_NAME, cs_number, alpha_insn->data);
 			break;
 		default:
 			goto is_invalid;

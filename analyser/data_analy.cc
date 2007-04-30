@@ -23,94 +23,85 @@
 #include "analy.h"
 #include "analy_register.h"
 #include "data_analy.h"
-#include "global.h"
+#include "io/types.h"
 #include "snprintf.h"
 
 //#undef DPRINTF
 //#define DPRINTF(msg...) {global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;char buf[1024]; ht_snprintf(buf, sizeof buf, ##msg); fprintf(stdout, buf);}
 #define DPRINTF(msg...)
 
-void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at)
+void analyser_put_addrtype(ObjectStream &f, const taddr_type *at)
 {
 	byte t = (taddr_typetype)at->type;
-	f->putIntDec(t, 1, "type");
+	f.putInt(t, 1, "type");
 	switch (t) {
 		case dt_unknown:
 			break;
 		case dt_code:
-			f->putIntDec(at->code_subtype, 1, "type");
+			f.putInt(at->code_subtype, 1, "type");
 			break;
 		case dt_unknown_data:
 			break;
 		case dt_int:
-			f->putIntDec(at->int_subtype, 1, "type");
-			f->putIntDec(at->length, 1, "length");
+			f.putInt(at->int_subtype, 1, "type");
+			f.putInt(at->length, 1, "length");
 			break;
 		case dt_float:
-			f->putIntDec(at->float_subtype, 1, "type");
-			f->putIntDec(at->length, 1, "length");
+			f.putInt(at->float_subtype, 1, "type");
+			f.putInt(at->length, 1, "length");
 			break;
 		case dt_array:
-			f->putIntDec(at->array_subtype, 1, "type");
-			f->putIntDec(at->length, 1, "length");
+			f.putInt(at->array_subtype, 1, "type");
+			f.putInt(at->length, 1, "length");
 			break;
 	}     
 }
 
-int analyser_get_addrtype(ht_object_stream *f, taddr_type *at)
+void analyser_get_addrtype(ObjectStream &f, taddr_type *at)
 {
-	at->type = (taddr_typetype)f->getIntDec(1, "type");
+	at->type = (taddr_typetype)f.getInt(1, "type");
 	at->length = 0;
 	switch (at->type) {
 		case dt_unknown:
 			break;
 		case dt_code:
-			at->code_subtype = (taddr_code_subtype)f->getIntDec(1, "type");
+			at->code_subtype = (taddr_code_subtype)f.getInt(1, "type");
 			break;
 		case dt_unknown_data:
 			break;
 		case dt_int:
-			at->int_subtype = (taddr_int_subtype)f->getIntDec(1, "type");
-			at->length = f->getIntDec(1, "length");
+			at->int_subtype = (taddr_int_subtype)f.getInt(1, "type");
+			at->length = f.getInt(1, "length");
 			break;
 		case dt_float:
-			at->float_subtype = (taddr_float_subtype)f->getIntDec(1, "type");
-			at->length = f->getIntDec(1, "length");
+			at->float_subtype = (taddr_float_subtype)f.getInt(1, "type");
+			at->length = f.getInt(1, "length");
 			break;
 		case dt_array:
-			at->array_subtype = (taddr_array_subtype)f->getIntDec(1, "type");
-			at->length = f->getIntDec(1, "length");
+			at->array_subtype = (taddr_array_subtype)f.getInt(1, "type");
+			at->length = f.getInt(1, "length");
 			break;
 	}
-	return f->get_error();
 }
 
-/*
- *
- *	types to recognize:
- *		- bytes/words/dwords (by access)
- *		- strings (by examinating)
- *			- pascal
- *			- c
- *             - unicode
- *		- arrays (by access)
- *        - records (partially)
- */
+DataAnalyser::DataAnalyser()
+{
+}
+
 void	DataAnalyser::init(Analyser *Analy)
 {
 	analy = Analy;
 }
 
-int 	DataAnalyser::load(ht_object_stream *f)
+void	DataAnalyser::load(ObjectStream &f)
 {
-	return 0;
 }
 
 void	DataAnalyser::done()
 {
 }
 
-OBJECT_ID	DataAnalyser::object_id() const
+ObjectID DataAnalyser::getObjectID() const
 {
 	return ATOM_DATA_ANALYSER;
 }
@@ -172,7 +163,7 @@ void	DataAnalyser::setArrayAddressType(Location *Addr, taddr_array_subtype subty
 	setAddressType(Addr, dt_array, subtype, length);
 }
 
-void	DataAnalyser::store(ht_object_stream *f)
+void	DataAnalyser::store(ObjectStream &f) const
 {
 }
 

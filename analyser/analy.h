@@ -22,11 +22,9 @@
 #define analy_h
 
 #include "asm.h"
-#include "global.h"
-#include "common.h"
+#include "data.h"
 #include "code_analy.h"
 #include "data_analy.h"
-#include "htdata.h"
 #include "stddata.h"
 
 extern int num_ops_parsed;
@@ -42,43 +40,48 @@ class Analyser;
 #define ADDRESS_STRING_FORMAT_ADD_0X		    8
 #define ADDRESS_STRING_FORMAT_ADD_H		   16
 
-#define DUP_ADDR(a) ((a)->duplicate())
-class Address: public ht_data {
+class Address: public Object {
 public:
+				Address() {};
+				Address(BuildCtorArg&a): Object(a) {};
 	virtual	bool		add(int offset) = 0;
 	virtual	int		byteSize() = 0;
-	virtual	int		compareTo(const Object *obj) const = 0;
+	virtual Address	*	clone() const = 0;
 	virtual	int		compareDelinear(Address *to);
 	virtual	bool 		difference(int &result, Address *to) = 0;
-	virtual	Address *	duplicate() = 0;
 	virtual	void 		getFromArray(const byte *array) = 0;
 	virtual	void 		getFromCPUAddress(CPU_ADDR *ca) = 0;
+	virtual	bool		getFromUInt64(uint64 u) = 0;
 	virtual	bool 		isValid();
 	virtual	int		parseString(const char *s, int length, Analyser *a) = 0;
-	virtual	void		putIntoArray(byte *array) = 0;
-	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) = 0;
-	virtual	int		stringify(char *s, int max_length, int format) = 0;
-	virtual	int		stringSize() = 0;
-	virtual	int		toString(char *s, int maxlen);
+	virtual	void		putIntoArray(byte *array) const = 0;
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) const = 0;
+	virtual	bool		putIntoUInt64(uint64 &u) const = 0;
+	virtual	int		stringify(char *s, int max_length, int format) const = 0;
+	virtual	int		stringSize() const = 0;
+	virtual	int		toString(char *buf, int buflen) const;
 };
 
 class InvalidAddress: public Address {
 public:
 				InvalidAddress() {};
+				InvalidAddress(BuildCtorArg&a): Address(a) {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	bool		difference(int &result, Address *to);
-	virtual	InvalidAddress *duplicate();
+	virtual	InvalidAddress *clone() const;
 	virtual	void 		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		getFromUInt64(uint64 u);
 	virtual	bool		isValid();
-	virtual	OBJECT_ID 	object_id() const;
+	virtual	ObjectID	getObjectID() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
-	virtual	void 		putIntoArray(byte *array);
-	virtual	void 		putIntoCPUAddress(CPU_ADDR *ca);
-	virtual	int		stringify(char *s, int max_length, int format);
-	virtual	int		stringSize();
+	virtual	void 		putIntoArray(byte *array) const;
+	virtual	void 		putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool		putIntoUInt64(uint64 &u) const;
+	virtual	int		stringify(char *s, int max_length, int format) const;
+	virtual	int		stringSize() const;
 };
 
 /*
@@ -86,61 +89,66 @@ public:
  */
 class AddressFlat32: public Address {
 public:
-	dword addr;
-				AddressFlat32(dword a = 0) : addr(a) {};
+	uint32 addr;
+				AddressFlat32(BuildCtorArg&a): Address(a) {};
+				AddressFlat32(uint32 a=0): addr(a) {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
+	virtual	AddressFlat32 *	clone() const;
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	int		compareDelinear(Address *to);
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		getFromUInt64(uint64 u);
 	virtual	bool		difference(int &result, Address *to);
-	virtual	AddressFlat32 *	duplicate();
-	virtual	int		load(ht_object_stream *s);
-	virtual	OBJECT_ID	object_id() const;
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
-	virtual	void		putIntoArray(byte *array);
-	virtual	void		putIntoCPUAddress(CPU_ADDR *ca);
-	virtual	void		store(ht_object_stream *s);
-	virtual	int		stringify(char *s, int max_length, int format);
-	virtual	int		stringSize();
+	virtual	void		putIntoArray(byte *array) const;
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool		putIntoUInt64(uint64 &u) const;
+	virtual	void		store(ObjectStream &s) const;
+	virtual	int		stringify(char *s, int max_length, int format) const;
+	virtual	int		stringSize() const;
 };
 
 class AddressFlat64: public Address {
 public:
-	qword addr;
-				AddressFlat64() {}
-				AddressFlat64(qword a) : addr(a) {};
+	uint64 addr;
+				AddressFlat64(BuildCtorArg&a): Address(a) {};
+				AddressFlat64(uint64 a=0): addr(a) {};
 	virtual	bool		add(int offset);
 	virtual	int		byteSize();
 	virtual	int		compareTo(const Object *obj) const;
 	virtual	int		compareDelinear(Address *to);
 	virtual	void		getFromArray(const byte *array);
 	virtual	void		getFromCPUAddress(CPU_ADDR *ca);
+	virtual	bool		getFromUInt64(uint64 u);
 	virtual	bool		difference(int &result, Address *to);
-	virtual	AddressFlat64 *	duplicate();
-	virtual	int		load(ht_object_stream *s);
-	virtual	OBJECT_ID	object_id() const;
+	virtual	AddressFlat64 *	clone() const;
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
 	virtual	int		parseString(const char *s, int length, Analyser *a);
-	virtual	void		putIntoArray(byte *array);
-	virtual	void		putIntoCPUAddress(CPU_ADDR *ca);
-	virtual	void		store(ht_object_stream *s);
-	virtual	int		stringify(char *s, int max_length, int format);
-	virtual	int		stringSize();
+	virtual	void		putIntoArray(byte *array) const;
+	virtual	void		putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool		putIntoUInt64(uint64 &u) const;
+	virtual	void		store(ObjectStream &s) const;
+	virtual	int		stringify(char *s, int max_length, int format) const;
+	virtual	int		stringSize() const;
 };
 
 #define ANALY_SEGMENT_CAP_WRITE 1
 #define ANALY_SEGMENT_CAP_INITIALIZED 2
 // other caps can be defined locally
 
-class Segment: public ht_data {
+class Segment: public Object {
 	Address *start, *end;
 	char *name;
 	int caps;
 	
 					Segment(const char *n, Address *s, Address *e, int c, int address_size);
 	virtual	bool			containsAddress(Address *addr) = 0;
-	virtual	const char *		getName();
+	virtual	String &		getName(String &res);
 	virtual	int			getAddressSize();
 	virtual	int			getCapability(int cap);
 };
@@ -149,13 +157,13 @@ class Segment: public ht_data {
  *	these are the different possibilities of a branch
  *	to support further processors other types can be added
  */
-typedef enum {
+enum branch_enum_t {
 			br_nobranch,					// straight exec. flow
 			br_jump,
 			br_return,
 			br_call,
 			br_jXX
-} branch_enum_t;
+};
 
 /*
  *   internal opcodes are interchanged in this format
@@ -170,8 +178,9 @@ public:
 	Analyser		*analy;
 	Disassembler		*disasm;
 					AnalyDisassembler();
-			void		init(Analyser *A);
-	virtual	void			done();
+					AnalyDisassembler(BuildCtorArg &a): Object(a) {};
+
+		void			init(Analyser *A);
 
 	virtual	Address *		branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine) = 0;
 	virtual	void			examineOpcode(OPCODE *opcode) = 0;
@@ -181,7 +190,7 @@ public:
 
 /***************************************************************************/
 
-typedef enum {
+enum xref_enum_t {
 	xrefread,
 	xrefwrite,
 	xrefoffset,
@@ -189,24 +198,29 @@ typedef enum {
 	xrefcall,
 	xrefijump,
 	xreficall
-} xref_enum_t;
-
-class AddrXRef: public ht_data {
-public:
-	xref_enum_t	type;
-						AddrXRef();
-						AddrXRef(xref_enum_t Type);
-			int 			load(ht_object_stream *f);
-	virtual	OBJECT_ID		object_id() const;
-	virtual	void			store(ht_object_stream *f);
 };
 
-class CommentList: public ht_clist {
+class AddrXRef: public Object {
 public:
-	void			init();
+	Address		*addr;
+	xref_enum_t	type;
+				AddrXRef(Address *a, xref_enum_t aType = xrefread);
+				AddrXRef(BuildCtorArg&a): Object(a) {};
+	virtual			~AddrXRef();
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
+	virtual	void		store(ObjectStream &s) const;
+	virtual int		compareTo(const Object *) const;
+};
+
+class CommentList: public Array {
+public:
+				CommentList();
 	void			appendPreComment(const char *s);
+	void			appendPreComment(int special);
 	void			appendPostComment(const char *s);
-	const char *	getName(UINT i);
+	void			appendPostComment(int special);
+	const char *		getName(uint i);
 };
 
 struct Symbol;
@@ -219,7 +233,7 @@ struct Location {
 	// attached label
 	Symbol		*label;
 	// attached xrefs
-	ht_tree		*xrefs;
+	Container	*xrefs;
 	// attached comments
 	CommentList	*comments;
 	// for data types
@@ -237,20 +251,20 @@ struct Location {
 #define AF_FUNCTION_SET 2
 #define AF_FUNCTION_END 4
 
-typedef enum {
+enum tsectype {
 	scvalid,
 	scread,
 	scwrite,
 	screadwrite,
 	sccode,
 	scinitialized
-} tsectype;
+};
 
-typedef enum {
+enum taccesstype {
 	acread,
 	acwrite,
 	acoffset
-} taccesstype;
+};
 
 struct taccess	{
 	bool		indexed;
@@ -258,12 +272,12 @@ struct taccess	{
 	taccesstype 	type;
 };
 
-typedef enum {
+enum labeltype {
 	label_unknown = 0,
 	label_func,
 	label_loc,
 	label_data
-} labeltype;
+};
 
 struct Symbol {
 	labeltype	type;
@@ -272,16 +286,16 @@ struct Symbol {
 	Symbol		*left, *right;
 };
 
-class AddressQueueItem: public ht_data {
+class AddressQueueItem: public Object {
 public:
 	Address	*addr;
 	Address	*func;
-				AddressQueueItem();
+				AddressQueueItem(BuildCtorArg&a): Object(a) {};
 				AddressQueueItem(Address *Addr, Address *Func);
 				~AddressQueueItem();
-		OBJECT_ID	object_id() const;
-		int		load(ht_object_stream *f);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		load(ObjectStream &s);
+	virtual	ObjectID	getObjectID() const;
+	virtual	void		store(ObjectStream &s) const;
 };
 
 class CodeAnalyser;
@@ -291,7 +305,7 @@ class Analyser: public Object	{
 public:
 	Address *		addr;
 	Address *		invalid_addr;
-	ht_queue *		addr_queue;
+	Queue *			addr_queue;
 	int			ops_parsed;							// for continuing
 	bool			active;
 	Address			*next_explored, *first_explored, *last_explored;
@@ -308,25 +322,28 @@ public:
 	int			cur_addr_ops, cur_label_ops;                 // for threshold
 	int			max_opcode_length;
 	Location		*cur_func;
-	bool			dirty;
+	mutable bool		dirty;
 
 	int			symbol_count;
 	int			location_count;
 
+				Analyser() {};
+				Analyser(BuildCtorArg&a): Object(a) {};
+
 		void		init();
-		int		load(ht_object_stream *f);
+	virtual	void		load(ObjectStream &s);
 	virtual	void		done();
 
 		bool		addAddressSymbol(Address *Addr, const char *Prefix, labeltype type, Location *infunc=NULL);
 		void	 	addComment(Address *Addr, int line, const char *c);
 		bool		addSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
-	virtual	FILEOFS		addressToFileofs(Address *Addr) = 0;
+	virtual	FileOfs		addressToFileofs(Address *Addr) = 0;
 		bool		addXRef(Address *from, Address *to, xref_enum_t action);
 		void	 	assignComment(Address *Addr, int line, const char *c);
 		bool		assignSymbol(Address *Addr, const char *label, labeltype type, Location *infunc=NULL);
 		void		assignXRef(Address *from, Address *to, xref_enum_t action);
 	virtual	void		beginAnalysis();
-	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size) = 0;
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size) = 0;
 		bool	  	continueAnalysis();
 		void		continueAnalysisAt(Address *Addr);
 	virtual	Address *	createAddress() = 0;
@@ -352,14 +369,14 @@ public:
 		void		freeSymbols(Symbol *syms);
 		Location *	getLocationByAddress(Address *Addr);
 		Location *	getLocationContextByAddress(Address *Addr);
-		int		getLocationCount();
+		int		getLocationCount() const;
 		Location *	getFunctionByAddress(Address *Addr);
 		Location *	getPreviousSymbolByAddress(Address *Addr);
 	virtual	const char *	getSegmentNameByAddress(Address *Addr);
 		Symbol *	getSymbolByAddress(Address *Addr);
 		Symbol *	getSymbolByName(const char *label);
 		const char *	getSymbolNameByLocation(Location *loc);
-		int		getSymbolCount();
+		int		getSymbolCount() const;
 		bool		gotoAddress(Address *Addr, Address *func);
 	virtual	void 		initCodeAnalyser();
 	virtual	void		initDataAnalyser();
@@ -381,7 +398,7 @@ public:
 		void		setLocationTreeOptimizeThreshold(int threshold);
 		void		setDisasm(Disassembler *d);
 		void		setSymbolTreeOptimizeThreshold(int threshold);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &s) const;
 	virtual	bool		validAddress(Address *addr, tsectype action) = 0;
 		bool		validCodeAddress(Address *addr);
 		bool		validReadAddress(Address *addr);
@@ -391,14 +408,14 @@ public:
 		int	mode;
 
 	virtual	Assembler *	createAssembler();
-	virtual	Address *	fileofsToAddress(FILEOFS fileofs);
+	virtual	Address *	fileofsToAddress(FileOfs fileofs);
 		CommentList *	getComments(Address *Addr);
 		const char *	getDisasmStr(Address *Addr, int &length);
 		const char *	getDisasmStrFormatted(Address *Addr);
 		int		getDisplayMode();
-	virtual	const char *	getName();
+	virtual	String &	getName(String &res);
 	virtual	const char *	getType();
-		ht_tree *	getXRefs(Address *Addr);
+		Container *	getXRefs(Address *Addr);
 		bool		isDirty();
 		void		makeDirty();
 		void		setDisplayMode(int enable, int disable);
@@ -421,16 +438,11 @@ public:
 #define Q_ENGAGE_DATA_ANALYSER 3
 
 /* interesting constants */
-#define INVALID_FILE_OFS ((dword)-1)
+#define INVALID_FILE_OFS ((FileOfs)-1)
 
 /* analyser system constants */
 #define MAX_OPS_PER_CONTINUE 10
 
 extern int global_analyser_address_string_format;
  
-/*
- * test;
- */
-extern Analyser *testanaly;
-
 #endif

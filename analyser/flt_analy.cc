@@ -25,14 +25,13 @@
 #include "analy_ppc.h"
 #include "analy_register.h"
 #include "analy_x86.h"
-#include "global.h"
 #include "flt_analy.h"
 
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htflt.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "pestruct.h"
 #include "snprintf.h"
 //#include "x86asm.h"
@@ -44,8 +43,7 @@
 /*
  *
  */
- 
-void FLTAnalyser::init(ht_flt_shared_data *Flt_shared, ht_streamfile *File)
+void FLTAnalyser::init(ht_flt_shared_data *Flt_shared, File *File)
 {
 	flt_shared = Flt_shared;
 	file = File;
@@ -120,10 +118,10 @@ void FLTAnalyser::beginAnalysis()
 /*
  *
  */
-int FLTAnalyser::load(ht_object_stream *f)
+void FLTAnalyser::load(ObjectStream &f)
 {
 	GET_OBJECT(f, validarea);
-	return Analyser::load(f);
+	Analyser::load(f);
 }
 
 /*
@@ -136,7 +134,7 @@ void FLTAnalyser::done()
 	Analyser::done();
 }
 
-OBJECT_ID FLTAnalyser::object_id() const
+ObjectID FLTAnalyser::getObjectID() const
 {
 	return ATOM_FLT_ANALYSER;
 }
@@ -144,9 +142,9 @@ OBJECT_ID FLTAnalyser::object_id() const
 /*
  *
  */
-UINT FLTAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint FLTAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 /*     if (ofs == INVALID_FILE_OFS) {
 		int as = 1;
 	}*/
@@ -157,7 +155,7 @@ UINT FLTAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool FLTAnalyser::convertAddressToFLTAddress(Address *addr, FLTAddress *r)
 {
-	if (addr->object_id()==ATOM_ADDRESS_FLAT_32) {
+	if (addr->getObjectID()==ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr;
 		return true;
 	} else {
@@ -170,7 +168,7 @@ Address *FLTAnalyser::createAddress()
 	return new AddressFlat32();
 }
 
-Address *FLTAnalyser::createAddress32(dword addr)
+Address *FLTAnalyser::createAddress32(uint32 addr)
 {
 	return new AddressFlat32(addr);
 }
@@ -186,12 +184,12 @@ Assembler *FLTAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS FLTAnalyser::addressToFileofs(Address *Addr)
+FileOfs FLTAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
 		FLTAddress ea;
 		if (!convertAddressToFLTAddress(Addr, &ea)) return INVALID_FILE_OFS;
-		return (FILEOFS)ea;
+		return (FileOfs)ea;
 	} else {
 		return INVALID_FILE_OFS;
 	}
@@ -222,9 +220,9 @@ const char *FLTAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-const char *FLTAnalyser::getName()
+String &FLTAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -278,7 +276,7 @@ Address *FLTAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void FLTAnalyser::store(ht_object_stream *f)
+void FLTAnalyser::store(ObjectStream &f) const
 {
 	PUT_OBJECT(f, validarea);
 	Analyser::store(f);
@@ -302,7 +300,7 @@ int FLTAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *FLTAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *FLTAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	FLTAddress ea = (FLTAddress)fileofs;
 	if (ea >= flt_shared->code_start && ea < flt_shared->data_end) {

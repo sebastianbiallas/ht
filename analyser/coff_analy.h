@@ -28,31 +28,33 @@
 class CoffAnalyser: public Analyser {
 public:
 	ht_coff_shared_data 	*coff_shared;
-	ht_streamfile 		*file;
+	File			*file;
 	Area			*validarea;
 
-		void		init(ht_coff_shared_data *Coff_shared, ht_streamfile *File);
-		int 		load(ht_object_stream *f);
+				CoffAnalyser() {};
+				CoffAnalyser(BuildCtorArg&a): Analyser(a) {};
+		void		init(ht_coff_shared_data *Coff_shared, File *File);
+		void 		load(ObjectStream &f);
 	virtual	void		done();
-	virtual	OBJECT_ID	object_id() const;
+	virtual	ObjectID	getObjectID() const;
 
 	virtual	void		beginAnalysis();
-	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size);
 		bool		convertAddressToRVA(Address *addr, RVA *r);
 	virtual	Address		*createAddress();
-		Address		*createAddress32(dword addr);
+		Address		*createAddress32(uint32 addr);
 	virtual Assembler 	*createAssembler();
-	virtual	const char	*getName();
+	virtual	String &	getName(String &res);
 	virtual	const char	*getSegmentNameByAddress(Address *Addr);
 	virtual   const char	*getType();
 	virtual	void 		initCodeAnalyser();
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &f) const;
 	virtual	int		queryConfig(int mode);
-	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-	virtual	FILEOFS		addressToFileofs(Address *Addr);
+	virtual	Address		*fileofsToAddress(FileOfs fileofs);
+	virtual	FileOfs		addressToFileofs(Address *Addr);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
 };
 

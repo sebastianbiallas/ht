@@ -17,10 +17,8 @@
  *	along with this program; if not, write to the Free Software
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
- 
+
 #include "analy_register.h"
-#include "common.h"
-#include "global.h"
 
 #include "analy_alpha.h"
 #include "analy_java.h"
@@ -28,6 +26,7 @@
 #include "analy_il.h"
 #include "analy_ppc.h"
 #include "analy_x86.h"
+#include "analy_arm.h"
 #include "class_analy.h"
 #include "code_analy.h"
 #include "coff_analy.h"
@@ -40,38 +39,41 @@
 #include "macho_analy.h"
 #include "xbe_analy.h"
 #include "pef_analy.h"
+#include "xex_analy.h"
 
-#include "htatom.h"
+#include "atom.h"
 
-BUILDER(ATOM_ANALY_ALPHA, AnalyAlphaDisassembler)
-BUILDER(ATOM_ANALY_X86, AnalyX86Disassembler)
-BUILDER(ATOM_ANALY_IA64, AnalyIA64Disassembler)
-BUILDER(ATOM_ANALY_IL, AnalyILDisassembler)
-BUILDER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
-BUILDER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
+BUILDER(ATOM_ANALY_ALPHA, AnalyAlphaDisassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_X86, AnalyX86Disassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_IA64, AnalyIA64Disassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_IL, AnalyILDisassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_JAVA, AnalyJavaDisassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_PPC, AnalyPPCDisassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_ARM, AnalyArmDisassembler, AnalyDisassembler)
 
-BUILDER(ATOM_CODE_ANALYSER, CodeAnalyser)
-BUILDER(ATOM_DATA_ANALYSER, DataAnalyser)
-BUILDER(ATOM_ADDR_QUEUE_ITEM, AddressQueueItem)
-BUILDER(ATOM_ADDR_XREF, AddrXRef)
+BUILDER(ATOM_CODE_ANALYSER, CodeAnalyser, Object)
+BUILDER(ATOM_DATA_ANALYSER, DataAnalyser, Object)
+BUILDER(ATOM_ADDR_QUEUE_ITEM, AddressQueueItem, Object)
+BUILDER(ATOM_ADDR_XREF, AddrXRef, Object)
 
-BUILDER(ATOM_PE_ANALYSER, PEAnalyser)
-BUILDER(ATOM_ELF_ANALYSER, ElfAnalyser)
-BUILDER(ATOM_COFF_ANALYSER, CoffAnalyser)
-BUILDER(ATOM_NE_ANALYSER, NEAnalyser)
-BUILDER(ATOM_CLASS_ANALYSER, ClassAnalyser)
-BUILDER(ATOM_LE_ANALYSER, LEAnalyser)
-BUILDER(ATOM_MACHO_ANALYSER, MachoAnalyser)
-BUILDER(ATOM_FLT_ANALYSER, FLTAnalyser)
-BUILDER(ATOM_XBE_ANALYSER, XBEAnalyser)
-BUILDER(ATOM_PEF_ANALYSER, PEFAnalyser)
+BUILDER(ATOM_PE_ANALYSER, PEAnalyser, Analyser)
+BUILDER(ATOM_ELF_ANALYSER, ElfAnalyser, Analyser)
+BUILDER(ATOM_COFF_ANALYSER, CoffAnalyser, Analyser)
+BUILDER(ATOM_NE_ANALYSER, NEAnalyser, Analyser)
+BUILDER(ATOM_CLASS_ANALYSER, ClassAnalyser, Analyser)
+BUILDER(ATOM_LE_ANALYSER, LEAnalyser, Analyser)
+BUILDER(ATOM_MACHO_ANALYSER, MachoAnalyser, Analyser)
+BUILDER(ATOM_FLT_ANALYSER, FLTAnalyser, Analyser)
+BUILDER(ATOM_XBE_ANALYSER, XBEAnalyser, Analyser)
+BUILDER(ATOM_PEF_ANALYSER, PEFAnalyser, Analyser)
+BUILDER(ATOM_XEX_ANALYSER, XEXAnalyser, Analyser)
 
-BUILDER(ATOM_ADDRESS_INVALID, InvalidAddress)
-BUILDER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
-BUILDER(ATOM_ADDRESS_FLAT_64, AddressFlat64)
-BUILDER(ATOM_ADDRESS_X86_FLAT_32, AddressX86Flat32)
-BUILDER(ATOM_ADDRESS_X86_1616, AddressX86_1616)
-BUILDER(ATOM_ADDRESS_X86_1632, AddressX86_1632)
+BUILDER(ATOM_ADDRESS_INVALID, InvalidAddress, Address)
+BUILDER(ATOM_ADDRESS_FLAT_32, AddressFlat32, Address)
+BUILDER(ATOM_ADDRESS_FLAT_64, AddressFlat64, Address)
+BUILDER(ATOM_ADDRESS_X86_FLAT_32, AddressX86Flat32, Address)
+BUILDER(ATOM_ADDRESS_X86_1616, AddressX86_1616, Address)
+BUILDER(ATOM_ADDRESS_X86_1632, AddressX86_1632, Address)
 
 bool init_analyser()
 {
@@ -81,6 +83,7 @@ bool init_analyser()
 	REGISTER(ATOM_ANALY_IL, AnalyILDisassembler)
 	REGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
 	REGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
+	REGISTER(ATOM_ANALY_ARM, AnalyArmDisassembler)
 
 	REGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	REGISTER(ATOM_DATA_ANALYSER, DataAnalyser)
@@ -97,6 +100,7 @@ bool init_analyser()
 	REGISTER(ATOM_FLT_ANALYSER, FLTAnalyser)
 	REGISTER(ATOM_XBE_ANALYSER, XBEAnalyser)
 	REGISTER(ATOM_PEF_ANALYSER, PEFAnalyser)
+	REGISTER(ATOM_XEX_ANALYSER, XEXAnalyser)
 
 	REGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	REGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)
@@ -115,6 +119,7 @@ void done_analyser()
 	UNREGISTER(ATOM_ANALY_IL, AnalyILDisassembler)
 	UNREGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
 	UNREGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
+	UNREGISTER(ATOM_ANALY_ARM, AnalyArmDisassembler)
 
 	UNREGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	UNREGISTER(ATOM_DATA_ANALYSER, DataAnalyser)
@@ -131,6 +136,7 @@ void done_analyser()
 	UNREGISTER(ATOM_FLT_ANALYSER, FLTAnalyser)
 	UNREGISTER(ATOM_XBE_ANALYSER, XBEAnalyser)
 	UNREGISTER(ATOM_PEF_ANALYSER, PEFAnalyser)
+	UNREGISTER(ATOM_XEX_ANALYSER, XEXAnalyser)
 
 	UNREGISTER(ATOM_ADDRESS_INVALID, InvalidAddress)
 	UNREGISTER(ATOM_ADDRESS_FLAT_32, AddressFlat32)

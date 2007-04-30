@@ -21,7 +21,7 @@
 #ifndef ILOPC_H
 #define ILOPC_H
 
-#include "global.h"
+#include "io/types.h"
 
 #define MAX_IL_OPCODE 256
 #define MAX_IL_OPCODE_PREFIX 36
@@ -104,9 +104,9 @@
 
 
 struct ILOpcodeTabEntry {
-	char	*name;
-	byte	op;
-	byte	size;
+	const char	*name;
+	byte		op;
+	byte		size;
 };
 								
 extern ILOpcodeTabEntry il_opcode_table[MAX_IL_OPCODE];

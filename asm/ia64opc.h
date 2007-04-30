@@ -21,7 +21,7 @@
 #ifndef IA64OPC_H
 #define IA64OPC_H
 
-#include "global.h"
+#include "io/types.h"
 
 #define IA64_SLOT_INVALID 0x00
 #define IA64_SLOT_M_UNIT  0x01
@@ -38,7 +38,7 @@
 #define IA64_INST_ROLE_LONG  0x40
 #define IA64_INST_ROLE_COUNT 5
 
-typedef enum IA64EnumOpcode1 {
+enum IA64EnumOpcode1 {
 	IA64_OPCODE_INST_NONE = 0,
 	IA64_OPCODE_ILLOP = IA64_OPCODE_INST_NONE,
 	IA64_OPCODE_IGNOP,
@@ -837,7 +837,7 @@ typedef enum IA64EnumOpcode1 {
 	IA64_OPCODE_INST1_LAST
 };
 
-typedef enum IA64EnumOpcode2 {
+enum IA64EnumOpcode2 {
 	IA64_OPCODE_LDFS_C_CLR_NT1_F1_R3_IMM9 = 	IA64_OPCODE_INST1_LAST,
 	IA64_OPCODE_LDFS_C_CLR_NTA_F1_R3_IMM9,
 	IA64_OPCODE_LDFD_C_CLR_F1_R3_IMM9,
@@ -1636,7 +1636,7 @@ typedef enum IA64EnumOpcode2 {
 	IA64_OPCODE_INST_LAST
 };
 
-typedef enum IA64EnumOperandRole {
+enum IA64EnumOperandRole {
     IA64_OPROLE_NONE = 0,
     IA64_OPROLE_SRC,
     IA64_OPROLE_DST,
@@ -1645,7 +1645,7 @@ typedef enum IA64EnumOperandRole {
     OPROLE_LAST
 };
 
-typedef enum IA64EnumOperandType {
+enum IA64EnumOperandType {
 IA64_OPTYPE_NONE = 0,
 IA64_OPTYPE_REG_FIRST,      /* The following types are registers */
 IA64_OPTYPE_IREG,           /* Integer register */
@@ -1726,7 +1726,7 @@ IA64_OPTYPE_MEM,            /* memory address */
 IA64_OPTYPE_LAST
 };
 
-typedef enum IA64EnumOpcodeFormat {
+enum IA64EnumOpcodeFormat {
 	 IA64_FORMAT_NONE = 0,
 	 IA64_FORMAT_A1,
 	 IA64_FORMAT_A2,
@@ -1883,7 +1883,7 @@ typedef enum IA64EnumOpcodeFormat {
 	 IA64_FORMAT_LAST
 };
 
-typedef enum IA64EnumOpcodeTemplateRole {
+enum IA64EnumOpcodeTemplateRole {
     IA64_TROLE_NONE = 0,
     IA64_TROLE_ALU,
     IA64_TROLE_BR,
@@ -1903,7 +1903,7 @@ struct IA64Template {
 };
 
 struct IA64DecisionTreeEntry {
-	word next_node;
+	uint16 next_node;
 	char pos;
 	char size;
 };
@@ -1914,15 +1914,15 @@ struct IA64Operand {
 };
 
 struct IA64OpcodeEntry {
-	char						*name;
+	const char			*name;
 	IA64EnumOpcodeFormat		format;
 	IA64EnumOpcodeTemplateRole   	role;
-	IA64Operand				op1; // FIXME make array
-	IA64Operand				op2;
-	IA64Operand				op3;
-	IA64Operand				op4;
-	IA64Operand				op5;
-	IA64Operand				op6;
+	IA64Operand			op1; // FIXME make array
+	IA64Operand			op2;
+	IA64Operand			op3;
+	IA64Operand			op4;
+	IA64Operand			op5;
+	IA64Operand			op6;
 };
 																						  
 extern IA64Template IA64Templates[];

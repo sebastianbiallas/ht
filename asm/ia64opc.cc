@@ -18,7 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
+#include <cstdio>
+#include "io/types.h"
 #include "ia64opc.h"
 
 IA64Template IA64Templates[] = {

@@ -21,7 +21,7 @@
 #ifndef __JAVAOPC_H__
 #define __JAVAOPC_H__
 
-#include "common.h"
+#include "io/types.h"
 
 #define JAVA_OPTYPE_EMPTY	0
 #define JAVA_OPTYPE_IMM		1
@@ -29,36 +29,40 @@
 #define JAVA_OPTYPE_REF		3
 #define JAVA_OPTYPE_LABEL	4
 #define JAVA_OPTYPE_CONST	5
+#define JAVA_OPTYPE_ATYPE	6
 
-#define JOPC_TYPE(t)		((t) & 0x0f)
+#define JOPC_TYPE(t)		((t) & 0x1f)
 #define JOPC_TYPE_EMPTY		0
 #define JOPC_TYPE_BYTE		1
 #define JOPC_TYPE_SHORT		2
-#define JOPC_TYPE_INT		3
+#define JOPC_TYPE_SIMM		3
 #define JOPC_TYPE_CHAR		4
 #define JOPC_TYPE_CONST		5
 #define JOPC_TYPE_LOCAL		6
 #define JOPC_TYPE_LABEL		7
+#define JOPC_TYPE_ATYPE		8
 
-#define JOPC_SIZE(t)		((t) & 0xf0)
+#define JOPC_SIZE(t)		((t) & 0xe0)
 #define JOPC_SIZE_VAR		0x00
 #define JOPC_SIZE_SMALL		0x40
 #define JOPC_SIZE_WIDE		0x80
+
+#define JAVAINSN_MAX_PARAM_COUNT	3
 
 struct java_insn_op {
 	int type;
 	int size;
 	union {
-		dword imm;
-		dword label;
+		uint32 imm;
+		uint32 label;
 		double dbl;
-		dword ref;
+		uint32 ref;
 	};
 };
 
 struct javaopc_insn {
-	char *name;
-	int optype[2];
+	const char *name;
+	int optype[JAVAINSN_MAX_PARAM_COUNT];
 };
 
 #define JAVA_WIDE_OPCODE 0xc4

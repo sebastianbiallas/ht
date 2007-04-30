@@ -29,13 +29,16 @@
 #include "code_analy.h"
 #include "htdebug.h"
 
+CodeAnalyser::CodeAnalyser()
+{
+}
+
 void CodeAnalyser::init(Analyser *A)
 {
 }
 
-int  CodeAnalyser::load(ht_object_stream *f)
+void CodeAnalyser::load(ObjectStream &f)
 {
-	return 0;
 }
 
 void CodeAnalyser::done()
@@ -43,12 +46,12 @@ void CodeAnalyser::done()
 }
 
 
-OBJECT_ID	CodeAnalyser::object_id() const
+ObjectID CodeAnalyser::getObjectID() const
 {
 	return ATOM_CODE_ANALYSER;
 }
 
-void CodeAnalyser::store(ht_object_stream *f)
+void CodeAnalyser::store(ObjectStream &f) const
 {
 }
 

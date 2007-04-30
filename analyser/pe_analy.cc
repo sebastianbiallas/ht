@@ -30,22 +30,19 @@
 #include "analy_register.h"
 #include "analy_ppc.h"
 #include "analy_x86.h"
-#include "global.h"
+#include "analy_arm.h"
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htpe.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "ilopc.h"
 #include "pe_analy.h"
 #include "pestruct.h"
 #include "snprintf.h"
 #include "x86asm.h"
 
-/*
- *
- */
-void	PEAnalyser::init(ht_pe_shared_data *Pe_shared, ht_streamfile *File)
+void	PEAnalyser::init(ht_pe_shared_data *Pe_shared, File *File)
 {
 	pe_shared = Pe_shared;
 	file = File;
@@ -57,21 +54,16 @@ void	PEAnalyser::init(ht_pe_shared_data *Pe_shared, ht_streamfile *File)
 }
 
 
-static char *string_func(dword ofs, void *context);
-static char *token_func(dword token, void *context);
+static char *string_func(uint32 ofs, void *context);
+static char *token_func(uint32 token, void *context);
 
 /*
  *
  */
-int	PEAnalyser::load(ht_object_stream *f)
+void	PEAnalyser::load(ObjectStream &f)
 {
-	/*
-	ht_pe_shared_data 	*pe_shared;
-	ht_stream 		*file;
-	area				*validarea;
-	*/
 	GET_OBJECT(f, validarea);
-	return Analyser::load(f);
+	Analyser::load(f);
 }
 
 /*
@@ -87,11 +79,11 @@ void	PEAnalyser::done()
 /*
  *
  */
-void	PEAnalyser::reinit(ht_pe_shared_data *Pe_shared, ht_streamfile *File)
+void	PEAnalyser::reinit(ht_pe_shared_data *Pe_shared, File *File)
 {
 	pe_shared = Pe_shared;
 	file = File;
-	if (disasm->object_id() == ATOM_DISASM_IL) {
+	if (disasm->getObjectID() == ATOM_DISASM_IL) {
 		((ILDisassembler *)disasm)->initialize(string_func, token_func, pe_shared);
 	}
 }
@@ -107,7 +99,7 @@ void PEAnalyser::beginAnalysis()
 	setSymbolTreeOptimizeThreshold(100);
 
 	bool pe32 = (pe_shared->opt_magic == COFF_OPTMAGIC_PE32);
-	
+
 	/*
 	 *	entrypoint
 	 */
@@ -115,34 +107,34 @@ void PEAnalyser::beginAnalysis()
 	if (pe32) {
 		entry = createAddress32(pe_shared->pe32.header.entrypoint_address+pe_shared->pe32.header_nt.image_base);
 	} else {
-		entry = createAddress64(to_qword(pe_shared->pe64.header.entrypoint_address)+pe_shared->pe64.header_nt.image_base);
+		entry = createAddress64(pe_shared->pe64.header.entrypoint_address+pe_shared->pe64.header_nt.image_base);
 	}
 	pushAddress(entry, entry);
-	
+
 	/*
 	 * give all sections a descriptive comment:
 	 */
 
 	/*struct PE_SECTION_HEADER {
 		byte name[PE_SIZEOF_SHORT_NAME] __attribute__ ((packed));
-		dword data_vsize __attribute__ ((packed));
-		dword data_address __attribute__ ((packed));
-		dword data_size __attribute__	((packed));
-		dword data_offset __attribute__ ((packed));
-		dword relocation_offset __attribute__ ((packed));
-		dword linenumber_offset __attribute__ ((packed));
-		word relocation_count __attribute__ ((packed));
-		word linenumber_count __attribute__ ((packed));
-		dword characteristics __attribute__ ((packed));
+		uint32 data_vsize __attribute__ ((packed));
+		uint32 data_address __attribute__ ((packed));
+		uint32 data_size __attribute__	((packed));
+		uint32 data_offset __attribute__ ((packed));
+		uint32 relocation_offset __attribute__ ((packed));
+		uint32 linenumber_offset __attribute__ ((packed));
+		uint16 relocation_count __attribute__ ((packed));
+		uint16 linenumber_count __attribute__ ((packed));
+		uint32 characteristics __attribute__ ((packed));
 	};*/
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
 	char blub[100];
-	for (UINT i=0; i<pe_shared->sections.section_count; i++) {
+	for (uint i=0; i<pe_shared->sections.section_count; i++) {
 		Address *secaddr;
 		if (pe32) {
-			secaddr = createAddress32(s->data_address+pe_shared->pe32.header_nt.image_base);
+			secaddr = createAddress32(s->data_address + pe_shared->pe32.header_nt.image_base);
 		} else {
-			secaddr = createAddress64(to_qword(s->data_address)+pe_shared->pe64.header_nt.image_base);
+			secaddr = createAddress64(s->data_address + pe_shared->pe64.header_nt.image_base);
 		}
 		ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 		addComment(secaddr, 0, "");
@@ -156,7 +148,7 @@ void PEAnalyser::beginAnalysis()
 
 		// mark end of sections
 		ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-		Address *secend_addr = (Address *)secaddr->duplicate();
+		Address *secend_addr = secaddr->clone();
 		secend_addr->add(MAX(s->data_size, s->data_vsize));
 		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 		addComment(secend_addr, 0, "");
@@ -165,7 +157,7 @@ void PEAnalyser::beginAnalysis()
 		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		Address *seciniaddr = (Address *)secaddr->duplicate();
+		Address *seciniaddr = secaddr->clone();
 		seciniaddr->add(MIN(s->data_size, s->data_vsize));
 		if (validAddress(secaddr, scinitialized) && validAddress(seciniaddr, scinitialized)) {
 			initialized->add(secaddr, seciniaddr);
@@ -181,12 +173,12 @@ void PEAnalyser::beginAnalysis()
 	int export_count=pe_shared->exports.funcs->count();
 	int *entropy = random_permutation(export_count);
 	for (int i=0; i<export_count; i++) {
-		ht_pe_export_function *f=(ht_pe_export_function *)pe_shared->exports.funcs->get(*(entropy+i));
+		ht_pe_export_function *f=(ht_pe_export_function *)(*pe_shared->exports.funcs)[entropy[i]];
 		Address *faddr;
 		if (pe32) {
-			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
+			faddr = createAddress32(f->address + pe_shared->pe32.header_nt.image_base);
 		} else {
-			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
+			faddr = createAddress64(f->address + pe_shared->pe64.header_nt.image_base);
 		}
 		if (validAddress(faddr, scvalid)) {
 			char *label;
@@ -211,21 +203,21 @@ void PEAnalyser::beginAnalysis()
 	int import_count=pe_shared->imports.funcs->count();
 	entropy = random_permutation(import_count);
 	for (int i=0; i<import_count; i++) {
-		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->imports.funcs->get(*(entropy+i));
-		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->imports.libs->get(f->libidx);
+		ht_pe_import_function *f = (ht_pe_import_function *)(*pe_shared->imports.funcs)[entropy[i]];
+		ht_pe_import_library *d = (ht_pe_import_library *)(*pe_shared->imports.libs)[f->libidx];
 		char *label;
 		label = import_func_name(d->name, (f->byname) ? f->name.name : NULL, f->ordinal);
 		Address *faddr;
 		if (pe32) {
-			faddr = createAddress32(f->address+pe_shared->pe32.header_nt.image_base);
+			faddr = createAddress32(f->address + pe_shared->pe32.header_nt.image_base);
 		} else {
-			faddr = createAddress64(to_qword(f->address)+pe_shared->pe64.header_nt.image_base);
+			faddr = createAddress64(f->address + pe_shared->pe64.header_nt.image_base);
 		}
 		addComment(faddr, 0, "");
 		if (!assignSymbol(faddr, label, label_func)) {
 			// multiple import of a function (duplicate labelname)
 			// -> mangle name a bit more
-			addComment(faddr, 0, "; duplicate import");               
+			addComment(faddr, 0, "; duplicate import");
 			ht_snprintf(buffer, sizeof buffer, "%s_%x", label, f->address);
 			assignSymbol(faddr, buffer, label_func);
 		}
@@ -243,8 +235,8 @@ void PEAnalyser::beginAnalysis()
 	entropy = random_permutation(dimport_count);
 	for (int i=0; i<dimport_count; i++) {
 		// FIXME: delay imports need work (push addr)
-		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->dimports.funcs->get(*(entropy+i));
-		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->dimports.libs->get(f->libidx);
+		ht_pe_import_function *f=(ht_pe_import_function *)(*pe_shared->dimports.funcs)[entropy[i]];
+		ht_pe_import_library *d=(ht_pe_import_library *)(*pe_shared->dimports.libs)[f->libidx];
 		if (f->byname) {
 			ht_snprintf(buffer, sizeof buffer, "; delay import function loader for %s, ordinal %04x", f->name.name, f->ordinal);
 		} else {
@@ -256,7 +248,7 @@ void PEAnalyser::beginAnalysis()
 		if (pe32) {
 			faddr = createAddress32(f->address);
 		} else {
-			faddr = createAddress64(to_qword(f->address));
+			faddr = createAddress64(f->address);
 		}
 		addComment(faddr, 0, "");
 		addComment(faddr, 0, ";********************************************************");
@@ -288,7 +280,7 @@ void PEAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	PEAnalyser::object_id() const
+ObjectID	PEAnalyser::getObjectID() const
 {
 	return ATOM_PE_ANALYSER;
 }
@@ -296,9 +288,9 @@ OBJECT_ID	PEAnalyser::object_id() const
 /*
  *
  */
-UINT PEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint PEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 /*	if (ofs == INVALID_FILE_OFS) {
 		int as=0;
 	}*/
@@ -309,17 +301,17 @@ UINT PEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 {
-	OBJECT_ID oid = addr->object_id();
-	if (oid==ATOM_ADDRESS_FLAT_32) {
+	ObjectID oid = addr->getObjectID();
+	if (oid == ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
 	} else if (oid == ATOM_ADDRESS_X86_FLAT_32) {
 		*r = ((AddressX86Flat32*)addr)->addr - pe_shared->pe32.header_nt.image_base;
 		return true;
 	} else if (oid == ATOM_ADDRESS_FLAT_64) {
-		qword q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
-		if (QWORD_GET_HI(q)) return false;
-		*r = QWORD_GET_LO(q);
+		uint64 q = ((AddressFlat64*)addr)->addr - pe_shared->pe64.header_nt.image_base;
+		if (q >> 32) return false;
+		*r = q;
 		return true;
 	}
 	return false;
@@ -328,7 +320,7 @@ bool PEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 /*
  *
  */
-Address *PEAnalyser::createAddress32(dword addr)
+Address *PEAnalyser::createAddress32(uint32 addr)
 {
 	switch (pe_shared->coffheader.machine) {
 		case COFF_MACHINE_I386:
@@ -343,7 +335,7 @@ Address *PEAnalyser::createAddress32(dword addr)
 /*
  *
  */
-Address *PEAnalyser::createAddress64(qword addr)
+Address *PEAnalyser::createAddress64(uint64 addr)
 {
 	return new AddressFlat64(addr);
 }
@@ -371,28 +363,33 @@ Address *PEAnalyser::createAddress()
  */
 Assembler *PEAnalyser::createAssembler()
 {
+	Assembler *a = NULL;
 	switch (pe_shared->coffheader.machine) {
-		case COFF_MACHINE_I386:
-		case COFF_MACHINE_I486:
-		case COFF_MACHINE_I586:
-			Assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
-			a->init();
-			return a;
+	case COFF_MACHINE_I386:
+	case COFF_MACHINE_I486:
+	case COFF_MACHINE_I586:
+		a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
+		a->init();
+		return a;
+	case COFF_MACHINE_AMD64:
+		a = new x86_64asm();
+		a->init();
+		return a;
 	}
-	return NULL;
+	return a;
 }
 
 /*
  *
  */
-FILEOFS PEAnalyser::addressToFileofs(Address *Addr)
+FileOfs PEAnalyser::addressToFileofs(Address *Addr)
 {
 /*     char tbuf[1024];
 	Addr->stringify(tbuf, 1024, 0);
 	printf("ADDR=%s", tbuf);*/
 	if (validAddress(Addr, scinitialized)) {
 //     	printf(" v1\n");
-		FILEOFS ofs;
+		FileOfs ofs;
 		RVA r;
 		if (!convertAddressToRVA(Addr, &r)) return INVALID_FILE_OFS;
 		if (!pe_rva_to_ofs(&pe_shared->sections, r, &ofs)) return INVALID_FILE_OFS;
@@ -417,17 +414,17 @@ const char *PEAnalyser::getSegmentNameByAddress(Address *Addr)
 	pe_rva_to_section(sections, r, &i);
 	COFF_SECTION_HEADER *s=sections->sections+i;
 	if (!pe_rva_is_valid(sections, r)) return NULL;
-	memmove(sectionname, s->name, 8);
-	sectionname[8]=0;
+	memcpy(sectionname, s->name, 8);
+	sectionname[8] = 0;
 	return sectionname;
 }
 
 /*
  *
  */
-const char *PEAnalyser::getName()
+String &PEAnalyser::getName(String &s)
 {
-	return file->get_desc();
+	return file->getDesc(s);
 }
 
 /*
@@ -446,14 +443,14 @@ void PEAnalyser::initCodeAnalyser()
 	Analyser::initCodeAnalyser();
 }
 
-static char *string_func(dword ofs, void *context)
+static char *string_func(uint32 ofs, void *context)
 {
 	char str[1024];
 	static char str2[1024];
 	ht_pe_shared_data *pe = (ht_pe_shared_data*)context;
 	if (ofs < pe->il->string_pool_size) {
-		dword length;
-		dword o = ILunpackDword(length, (byte*)&pe->il->string_pool[ofs], 10);
+		uint32 length;
+		uint32 o = ILunpackDword(length, (byte*)&pe->il->string_pool[ofs], 10);
 		wide_char_to_multi_byte(str, (byte*)&pe->il->string_pool[ofs+o], length/2+1);
 		escape_special_str(str2, sizeof str2, str, "\"");
 		return str2;
@@ -462,34 +459,34 @@ static char *string_func(dword ofs, void *context)
 	}
 }
 
-static char *token_func(dword token, void *context)
+static char *token_func(uint32 token, void *context)
 {
 	static char tokenstr[1024];
 //	ht_pe_shared_data *pe = (ht_pe_shared_data*)context;
 	switch (token & IL_META_TOKEN_MASK) {
-		case IL_META_TOKEN_TYPE_REF:
-		case IL_META_TOKEN_TYPE_DEF: {
-			sprintf(tokenstr, "typedef");
-			break;
-		}
-		case IL_META_TOKEN_FIELD_DEF: {
-			sprintf(tokenstr, "fielddef");
-			break;
-		}
-		case IL_META_TOKEN_METHOD_DEF: {
-			sprintf(tokenstr, "methoddef");
-			break;
-		}
-		case IL_META_TOKEN_MEMBER_REF: {
-			sprintf(tokenstr, "memberref");
-			break;
-		}
-		case IL_META_TOKEN_TYPE_SPEC: {
-			sprintf(tokenstr, "typespec");
-			break;
-		}
-		default:
-			return NULL;
+	case IL_META_TOKEN_TYPE_REF:
+	case IL_META_TOKEN_TYPE_DEF: {
+		sprintf(tokenstr, "typedef");
+		break;
+	}
+	case IL_META_TOKEN_FIELD_DEF: {
+		sprintf(tokenstr, "fielddef");
+		break;
+	}
+	case IL_META_TOKEN_METHOD_DEF: {
+		sprintf(tokenstr, "methoddef");
+		break;
+	}
+	case IL_META_TOKEN_MEMBER_REF: {
+		sprintf(tokenstr, "memberref");
+		break;
+	}
+	case IL_META_TOKEN_TYPE_SPEC: {
+		sprintf(tokenstr, "typespec");
+		break;
+	}
+	default:
+		return NULL;
 	}
 	return tokenstr;
 }
@@ -520,6 +517,14 @@ void PEAnalyser::initUnasm()
 				((AnalyX86Disassembler *)analy_disasm)->init(this, 0);
 			}
 			break;
+		case COFF_MACHINE_AMD64:
+			if (!pe64) {
+				errorbox("x86_64 cant be used in PE32 format.");
+			} else {
+				analy_disasm = new AnalyX86Disassembler();
+				((AnalyX86Disassembler *)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_AMD64);
+			}
+			break;
 		case COFF_MACHINE_R3000:	// MIPS little-endian, 0x160 big-endian
 			DPRINTF("no apropriate disassembler for MIPS\n");
 			warnbox("No disassembler for MIPS!");
@@ -539,12 +544,13 @@ void PEAnalyser::initUnasm()
 			break;
 		case COFF_MACHINE_POWERPC_LE:	// IBM PowerPC Little-Endian
 			DPRINTF("no apropriate disassembler for POWER PC\n");
-			warnbox("No disassembler for POWER PC!");
+			warnbox("No disassembler for little endian POWER PC!");
 			break;
 		case COFF_MACHINE_POWERPC_BE:
+		case COFF_MACHINE_POWERPC64_BE:
 			analy_disasm = new AnalyPPCDisassembler();
-			((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			break;          
+			((AnalyPPCDisassembler*)analy_disasm)->init(this, pe64 ? ANALY_PPC_64 : ANALY_PPC_32);
+			break;
 		case COFF_MACHINE_IA64:
 			if (!pe64) {
 				errorbox("Intel IA64 cant be used in PE32 format.");
@@ -552,7 +558,13 @@ void PEAnalyser::initUnasm()
 				analy_disasm = new AnalyIA64Disassembler();
 				((AnalyIA64Disassembler*)analy_disasm)->init(this);
 			}
-			break;          
+			break;
+		case COFF_MACHINE_ARM: // ARM
+		case COFF_MACHINE_THUMB: // Thumb
+			DPRINTF("initing arm_disassembler\n");
+			analy_disasm = new AnalyArmDisassembler();
+			((AnalyArmDisassembler *)analy_disasm)->init(this);
+                        break;
 		case COFF_MACHINE_UNKNOWN:
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", pe_shared->coffheader.machine);
@@ -585,13 +597,8 @@ Address *PEAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void PEAnalyser::store(ht_object_stream *st)
+void PEAnalyser::store(ObjectStream &st) const
 {
-	/*
-	ht_pe_shared_data 	*pe_shared;
-	ht_stream 		*file;
-	area			*validarea;
-	*/
 	PUT_OBJECT(st, validarea);
 	Analyser::store(st);
 }
@@ -602,26 +609,26 @@ void PEAnalyser::store(ht_object_stream *st)
 int	PEAnalyser::queryConfig(int mode)
 {
 	switch (mode) {
-		case Q_DO_ANALYSIS:
-		case Q_ENGAGE_CODE_ANALYSER:
-		case Q_ENGAGE_DATA_ANALYSER:
-			return true;
-		default:
-			return 0;
+	case Q_DO_ANALYSIS:
+	case Q_ENGAGE_CODE_ANALYSER:
+	case Q_ENGAGE_DATA_ANALYSER:
+		return true;
+	default:
+		return 0;
 	}
 }
 
 /*
  *
  */
-Address *PEAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *PEAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	RVA r;
 	if (pe_ofs_to_rva(&pe_shared->sections, fileofs, &r)) {
 		if (pe_shared->opt_magic == COFF_OPTMAGIC_PE32) {
-			return createAddress32(r+pe_shared->pe32.header_nt.image_base);
+			return createAddress32(r + pe_shared->pe32.header_nt.image_base);
 		} else {
-			return createAddress64(to_qword(r)+pe_shared->pe64.header_nt.image_base);
+			return createAddress64(r + pe_shared->pe64.header_nt.image_base);
 		}
 	} else {
 		return new InvalidAddress();
@@ -640,22 +647,22 @@ bool PEAnalyser::validAddress(Address *Addr, tsectype action)
 	if (!pe_rva_to_section(sections, r, &sec)) return false;
 	COFF_SECTION_HEADER *s=sections->sections+sec;
 	switch (action) {
-		case scvalid:
-			return true;
-		case scread:
-			return s->characteristics & COFF_SCN_MEM_READ;
-		case scwrite:
-			return s->characteristics & COFF_SCN_MEM_WRITE;
-		case screadwrite:
-			return s->characteristics & COFF_SCN_MEM_WRITE;
-		case sccode:
-			// FIXME: EXECUTE vs. CNT_CODE ?
-			if (!pe_rva_is_physical(sections, r)) return false;
-			return (s->characteristics & (COFF_SCN_MEM_EXECUTE | COFF_SCN_CNT_CODE));
-		case scinitialized:
-			if (!pe_rva_is_physical(sections, r)) return false;
-			return true;
-			// !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
+	case scvalid:
+		return true;
+	case scread:
+		return s->characteristics & COFF_SCN_MEM_READ;
+	case scwrite:
+		return s->characteristics & COFF_SCN_MEM_WRITE;
+	case screadwrite:
+		return s->characteristics & COFF_SCN_MEM_WRITE;
+	case sccode:
+		// FIXME: EXECUTE vs. CNT_CODE ?
+		if (!pe_rva_is_physical(sections, r)) return false;
+		return (s->characteristics & (COFF_SCN_MEM_EXECUTE | COFF_SCN_CNT_CODE));
+	case scinitialized:
+		if (!pe_rva_is_physical(sections, r)) return false;
+		return true;
+		// !(s->characteristics & COFF_SCN_CNT_UNINITIALIZED_DATA);
 	}
 	return false;
 }

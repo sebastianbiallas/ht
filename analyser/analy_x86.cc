@@ -45,10 +45,10 @@ int AddressX86Flat32::byteSize()
 
 int AddressX86Flat32::compareTo(const Object *obj) const
 {
-/*	if (object_id() != to->object_id()) {
+/*	if (getObjectID() != to->getObjectID()) {
 		int as=1;
 	}*/
-	assert(object_id() == obj->object_id());
+	assert(getObjectID() == obj->getObjectID());
 	if (addr > ((AddressX86Flat32 *)obj)->addr) return 1;
 	if (addr < ((AddressX86Flat32 *)obj)->addr) return -1;
 	return 0;
@@ -56,9 +56,9 @@ int AddressX86Flat32::compareTo(const Object *obj) const
 
 int AddressX86Flat32::compareDelinear(Address *to)
 {
-	assert(object_id() == to->object_id());
-	dword da = delinearize(addr);
-	dword db = delinearize(((AddressFlat32 *)to)->addr);
+	assert(getObjectID() == to->getObjectID());
+	uint32 da = delinearize(addr);
+	uint32 db = delinearize(((AddressFlat32 *)to)->addr);
 	if (da > db) return 1;
 	if (da < db) return -1;
 	return 0;
@@ -66,7 +66,7 @@ int AddressX86Flat32::compareDelinear(Address *to)
 
 bool AddressX86Flat32::difference(int &result, Address *to)
 {
-	if (object_id() == to->object_id()) {
+	if (getObjectID() == to->getObjectID()) {
 		result = addr-((AddressX86Flat32 *)to)->addr;
 		return true;
 	} else {
@@ -74,14 +74,14 @@ bool AddressX86Flat32::difference(int &result, Address *to)
 	}
 }
 
-AddressX86Flat32 *AddressX86Flat32::duplicate()
+AddressX86Flat32 *AddressX86Flat32::clone() const
 {
-	return new AddressX86Flat32(addr);
+	return new AddressX86Flat32(*this);
 }
 
 void AddressX86Flat32::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(dword*)array);
+	UNALIGNED_MOVE(addr, *(uint32*)array);
 }
 
 void AddressX86Flat32::getFromCPUAddress(CPU_ADDR *ca)
@@ -89,13 +89,22 @@ void AddressX86Flat32::getFromCPUAddress(CPU_ADDR *ca)
 	addr = ca->addr32.offset;
 }
 
-int AddressX86Flat32::load(ht_object_stream *s)
+bool AddressX86Flat32::getFromUInt64(uint64 u)
 {
-	addr = s->getIntHex(4, NULL);
-	return s->get_error();
+	if (u <= 0xffffffff) {
+		addr = u;
+		return true;
+	} else {
+		return false;
+	}
 }
 
-OBJECT_ID AddressX86Flat32::object_id() const
+void AddressX86Flat32::load(ObjectStream &s)
+{
+	GET_INT32X(s, addr);
+}
+
+ObjectID AddressX86Flat32::getObjectID() const
 {
 	return ATOM_ADDRESS_X86_FLAT_32;
 }
@@ -105,24 +114,30 @@ int AddressX86Flat32::parseString(const char *s, int length, Analyser *a)
 	return 0;
 }
 
-void AddressX86Flat32::putIntoArray(byte *array)
+void AddressX86Flat32::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(dword*)array, addr);
+	UNALIGNED_MOVE(*(uint32*)array, addr);
 }
 
-void AddressX86Flat32::putIntoCPUAddress(CPU_ADDR *ca)
+void AddressX86Flat32::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 	ca->addr32.offset = addr;
 }
 
-void AddressX86Flat32::store(ht_object_stream *s)
+bool AddressX86Flat32::putIntoUInt64(uint64 &u) const
 {
-	s->putIntHex(addr, 4, NULL);
+	u = addr;
+	return true;
 }
 
-int AddressX86Flat32::stringify(char *s, int max_length, int format)
+void AddressX86Flat32::store(ObjectStream &s) const
 {
-	char *formats[] = {
+	PUT_INT32X(s, addr);
+}
+
+int AddressX86Flat32::stringify(char *s, int max_length, int format) const
+{
+	const char *formats[] = {
 		"%s%x%s",
 		"%s%8x%s",
 		"%s%08x%s",
@@ -135,11 +150,17 @@ int AddressX86Flat32::stringify(char *s, int max_length, int format)
 	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
 }
 
-int AddressX86Flat32::stringSize()
+int AddressX86Flat32::stringSize() const
 {
 	return 8;
 }
 
+
+AddressX86_1632::AddressX86_1632(uint16 Seg, uint32 Addr)
+{
+	seg = Seg;
+	addr = Addr;
+}
 
 bool AddressX86_1632::add(int offset)
 {
@@ -160,7 +181,7 @@ int AddressX86_1632::byteSize()
 
 int AddressX86_1632::compareTo(const Object *obj) const
 {
-	assert(object_id() == obj->object_id());
+	assert(getObjectID() == obj->getObjectID());
 	if (seg > ((AddressX86_1632 *)obj)->seg) return 1;
 	if (seg < ((AddressX86_1632 *)obj)->seg) return -1;
 	if (addr > ((AddressX86_1632 *)obj)->addr) return 1;
@@ -170,13 +191,13 @@ int AddressX86_1632::compareTo(const Object *obj) const
 
 int AddressX86_1632::compareDelinear(Address *to)
 {
-	assert(object_id() == to->object_id());
-	dword s1 = delinearize(seg);
-	dword s2 = delinearize(((AddressX86_1632 *)to)->seg);
+	assert(getObjectID() == to->getObjectID());
+	uint32 s1 = delinearize(seg);
+	uint32 s2 = delinearize(((AddressX86_1632 *)to)->seg);
 	if (s1 > s2) return 1;
 	if (s1 < s2) return -1;
-	dword a1 = delinearize(addr);
-	dword a2 = delinearize(((AddressX86_1632 *)to)->addr);
+	uint32 a1 = delinearize(addr);
+	uint32 a2 = delinearize(((AddressX86_1632 *)to)->addr);
 	if (a1 > a2) return 1;
 	if (a1 < a2) return -1;
 	return 0;
@@ -184,7 +205,7 @@ int AddressX86_1632::compareDelinear(Address *to)
 
 bool AddressX86_1632::difference(int &result, Address *to)
 {
-	if ((object_id() == to->object_id()) && (seg == ((AddressX86_1632 *)to)->seg)) {
+	if ((getObjectID() == to->getObjectID()) && (seg == ((AddressX86_1632 *)to)->seg)) {
 		result = addr-((AddressX86_1632 *)to)->addr;
 		return true;
 	} else {
@@ -192,15 +213,15 @@ bool AddressX86_1632::difference(int &result, Address *to)
 	}
 }
 
-AddressX86_1632 *AddressX86_1632::duplicate()
+AddressX86_1632 *AddressX86_1632::clone() const
 {
-	return new AddressX86_1632(seg, addr);
+	return new AddressX86_1632(*this);
 }
 
 void AddressX86_1632::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(dword*)array);
-	UNALIGNED_MOVE(seg, *(word*)(array+sizeof addr));
+	UNALIGNED_MOVE(addr, *(uint32*)array);
+	UNALIGNED_MOVE(seg, *(uint16*)(array+sizeof addr));
 }
 
 void AddressX86_1632::getFromCPUAddress(CPU_ADDR *ca)
@@ -209,14 +230,18 @@ void AddressX86_1632::getFromCPUAddress(CPU_ADDR *ca)
 	addr = ca->addr32.offset;
 }
 
-int AddressX86_1632::load(ht_object_stream *s)
+bool AddressX86_1632::getFromUInt64(uint64 u)
 {
-	seg = s->getIntHex(2, NULL);
-	addr = s->getIntHex(4, NULL);
-	return s->get_error();
+	return false;
 }
 
-OBJECT_ID AddressX86_1632::object_id() const
+void AddressX86_1632::load(ObjectStream &s)
+{
+	GET_INT16X(s, seg);
+	GET_INT16X(s, addr);
+}
+
+ObjectID AddressX86_1632::getObjectID() const
 {
 	return ATOM_ADDRESS_X86_1632;
 }
@@ -226,27 +251,32 @@ int AddressX86_1632::parseString(const char *s, int length, Analyser *a)
 	return 0;
 }
 
-void AddressX86_1632::putIntoArray(byte *array)
+void AddressX86_1632::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(dword*)array, addr);
-	UNALIGNED_MOVE(*(word*)(array+sizeof addr), seg);
+	UNALIGNED_MOVE(*(uint32*)array, addr);
+	UNALIGNED_MOVE(*(uint16*)(array+sizeof addr), seg);
 }
 
-void AddressX86_1632::putIntoCPUAddress(CPU_ADDR *ca)
+void AddressX86_1632::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 	ca->addr32.seg = seg;
 	ca->addr32.offset = addr;
 }
 
-void AddressX86_1632::store(ht_object_stream *s)
+bool AddressX86_1632::putIntoUInt64(uint64 &u) const
 {
-	s->putIntHex(seg, 2, NULL);
-	s->putIntHex(addr, 4, NULL);
+	return false;
 }
 
-int AddressX86_1632::stringify(char *s, int max_length, int format)
+void AddressX86_1632::store(ObjectStream &s) const
 {
-	char *formats[] = {
+	PUT_INT16X(s, seg);
+	PUT_INT16X(s, addr);
+}
+
+int AddressX86_1632::stringify(char *s, int max_length, int format) const
+{
+	const char *formats[] = {
 		"%s%x%s:%s%x%s",
 		"%s%4x%s:%s%08x%s",
 		"%s%04x%s:%s%08x%s",
@@ -261,7 +291,7 @@ int AddressX86_1632::stringify(char *s, int max_length, int format)
 	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
 }
 
-int AddressX86_1632::stringSize()
+int AddressX86_1632::stringSize() const
 {
 	return 14;
 }
@@ -269,6 +299,12 @@ int AddressX86_1632::stringSize()
 /*
  *
  */
+AddressX86_1616::AddressX86_1616(uint16 Seg, uint16 Addr)
+{
+	seg = Seg;
+	addr = Addr;
+}
+
 bool AddressX86_1616::add(int offset)
 {
 	// check for overflow
@@ -288,7 +324,7 @@ int AddressX86_1616::byteSize()
 
 int AddressX86_1616::compareTo(const Object *obj) const
 {
-	assert(object_id() == obj->object_id());
+	assert(getObjectID() == obj->getObjectID());
 	if (seg > ((AddressX86_1616 *)obj)->seg) return 1;
 	if (seg < ((AddressX86_1616 *)obj)->seg) return -1;
 	if (addr > ((AddressX86_1616 *)obj)->addr) return 1;
@@ -298,13 +334,13 @@ int AddressX86_1616::compareTo(const Object *obj) const
 
 int AddressX86_1616::compareDelinear(Address *to)
 {
-	assert(object_id() == to->object_id());
-	dword s1 = delinearize(seg);
-	dword s2 = delinearize(((AddressX86_1616 *)to)->seg);
+	assert(getObjectID() == to->getObjectID());
+	uint32 s1 = delinearize(seg);
+	uint32 s2 = delinearize(((AddressX86_1616 *)to)->seg);
 	if (s1 > s2) return 1;
 	if (s1 < s2) return -1;
-	dword a1 = delinearize(addr);
-	dword a2 = delinearize(((AddressX86_1616 *)to)->addr);
+	uint32 a1 = delinearize(addr);
+	uint32 a2 = delinearize(((AddressX86_1616 *)to)->addr);
 	if (a1 > a2) return 1;
 	if (a1 < a2) return -1;
 	return 0;
@@ -312,7 +348,7 @@ int AddressX86_1616::compareDelinear(Address *to)
 
 bool AddressX86_1616::difference(int &result, Address *to)
 {
-	if ((object_id() == to->object_id()) && (seg == ((AddressX86_1616 *)to)->seg)) {
+	if ((getObjectID() == to->getObjectID()) && (seg == ((AddressX86_1616 *)to)->seg)) {
 		result = (int)addr-(int)((AddressX86_1616 *)to)->addr;
 		return true;
 	} else {
@@ -320,15 +356,20 @@ bool AddressX86_1616::difference(int &result, Address *to)
 	}
 }
 
-AddressX86_1616 *AddressX86_1616::duplicate()
+AddressX86_1616 *AddressX86_1616::clone() const
 {
-	return new AddressX86_1616(seg, addr);
+	return new AddressX86_1616(*this);
 }
 
 void AddressX86_1616::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(word*)array);
-	UNALIGNED_MOVE(seg, *(word*)(array+sizeof addr));
+	UNALIGNED_MOVE(addr, *(uint16*)array);
+	UNALIGNED_MOVE(seg, *(uint16*)(array+sizeof addr));
+}
+
+bool AddressX86_1616::getFromUInt64(uint64 u)
+{
+	return false;
 }
 
 void AddressX86_1616::getFromCPUAddress(CPU_ADDR *ca)
@@ -337,14 +378,13 @@ void AddressX86_1616::getFromCPUAddress(CPU_ADDR *ca)
 	addr = ca->addr32.offset;
 }
 
-int AddressX86_1616::load(ht_object_stream *s)
+void AddressX86_1616::load(ObjectStream &s)
 {
-	seg = s->getIntHex(2, NULL);
-	addr = s->getIntHex(2, NULL);
-	return s->get_error();
+	GET_INT16X(s, seg);
+	GET_INT16X(s, addr);
 }
 
-OBJECT_ID AddressX86_1616::object_id() const
+ObjectID AddressX86_1616::getObjectID() const
 {
 	return ATOM_ADDRESS_X86_1616;
 }
@@ -354,27 +394,32 @@ int AddressX86_1616::parseString(const char *s, int length, Analyser *a)
 	return 0;
 }
 
-void AddressX86_1616::putIntoArray(byte *array)
+void AddressX86_1616::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(word*)array, addr);
-	UNALIGNED_MOVE(*(word*)(array+sizeof seg), seg);
+	UNALIGNED_MOVE(*(uint16*)array, addr);
+	UNALIGNED_MOVE(*(uint16*)(array+sizeof seg), seg);
 }
 
-void AddressX86_1616::putIntoCPUAddress(CPU_ADDR *ca)
+void AddressX86_1616::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 	ca->addr32.seg = seg;
 	ca->addr32.offset = addr;
 }
 
-void AddressX86_1616::store(ht_object_stream *s)
+bool AddressX86_1616::putIntoUInt64(uint64 &u) const
 {
-	s->putIntHex(seg, 2, NULL);
-	s->putIntHex(addr, 2, NULL);
+	return false;
 }
 
-int AddressX86_1616::stringify(char *s, int max_length, int format)
+void AddressX86_1616::store(ObjectStream &s) const
 {
-	char *formats[] = {
+	PUT_INT16X(s, seg);
+	PUT_INT16X(s, addr);
+}
+
+int AddressX86_1616::stringify(char *s, int max_length, int format) const
+{
+	const char *formats[] = {
 		"%s%x%s:%s%04x%s",
 		"%s%4x%s:%s%04x%s",
 		"%s%04x%s:%s%04x%s",
@@ -389,14 +434,11 @@ int AddressX86_1616::stringify(char *s, int max_length, int format)
 	(format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
 }
 
-int AddressX86_1616::stringSize()
+int AddressX86_1616::stringSize() const
 {
 	return 9;
 }
 
-/*
- *
- */
 void AnalyX86Disassembler::init(Analyser *A, int f)
 {
 	flags = f;
@@ -407,32 +449,24 @@ void AnalyX86Disassembler::init(Analyser *A, int f)
 /*
  *
  */
-int  AnalyX86Disassembler::load(ht_object_stream *f)
+void AnalyX86Disassembler::load(ObjectStream &f)
 {
-	GET_INT_HEX(f, flags);
-	return AnalyDisassembler::load(f);
+	GET_INT32X(f, flags);
+	AnalyDisassembler::load(f);
 }
 
 /*
  *
  */
-void AnalyX86Disassembler::done()
-{
-	AnalyDisassembler::done();
-}
-
-/*
- *
- */
-OBJECT_ID	AnalyX86Disassembler::object_id() const
+ObjectID AnalyX86Disassembler::getObjectID() const
 {
 	return ATOM_ANALY_X86;
 }
 
-Address *AnalyX86Disassembler::createAddress(word segment, dword offset)
+Address *AnalyX86Disassembler::createAddress(uint16 segment, uint32 offset)
 {
-	if (flags & ANALYX86DISASSEMBLER_FLAGS_FLAT64) {
-		return new AddressFlat64(to_qword(offset));
+	if (flags & (ANALYX86DISASSEMBLER_FLAGS_FLAT64 | ANALYX86DISASSEMBLER_FLAGS_AMD64)) {
+		return new AddressFlat64(offset);
 	} else if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 		if (offset <= 0xffff) {
 			return new AddressX86_1616(segment, offset);
@@ -466,11 +500,11 @@ void AnalyX86Disassembler::createUnasm()
 		}
 	}
 }
-word AnalyX86Disassembler::getSegment(Address *addr)
+uint16 AnalyX86Disassembler::getSegment(Address *addr)
 {
-	if (addr->object_id() == ATOM_ADDRESS_X86_1616) {
+	if (addr->getObjectID() == ATOM_ADDRESS_X86_1616) {
 		return ((AddressX86_1616*)addr)->seg;
-	} else if (addr->object_id() == ATOM_ADDRESS_X86_1632) {
+	} else if (addr->getObjectID() == ATOM_ADDRESS_X86_1632) {
 		return ((AddressX86_1632*)addr)->seg;
 	} else {
 		assert(0);
@@ -492,7 +526,7 @@ Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 				int as=0;
 			}*/
 			
-			word seg = 0;
+			uint16 seg = 0;
 			if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 				seg = getSegment(analy->addr);
 			}
@@ -533,7 +567,7 @@ Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 				analy->addXRef(addr, analy->addr, xref);
 			}
 			if (examine) {
-				if (addr) delete addr;
+				delete addr;
 				break;
 			} else {
 				return addr;
@@ -555,31 +589,31 @@ void	AnalyX86Disassembler::examineOpcode(OPCODE *opcode)
 		taccess access;
 		xref_enum_t xref = xrefoffset;
 		switch (op->type) {
-			case X86_OPTYPE_IMM:
-				access.type = acoffset;
-				access.indexed = false;
-				addr = createAddress(0, op->imm);
-				break;
-			case X86_OPTYPE_FARPTR:
-				if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
-					addr = createAddress(op->farptr.seg, op->farptr.offset);
+		case X86_OPTYPE_IMM:
+			access.type = acoffset;
+			access.indexed = false;
+			addr = createAddress(0, op->imm);
+			break;
+		case X86_OPTYPE_FARPTR:
+			if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
+				addr = createAddress(op->farptr.seg, op->farptr.offset);
+			}
+			access.type = acoffset;
+			access.indexed = false;
+			break;
+		case X86_OPTYPE_MEM:
+			if (op->mem.hasdisp) {
+				addr = createAddress(0, op->mem.disp);
+				access.type = acread;
+				access.indexed = (op->mem.base != X86_REG_NO) || (op->mem.index != X86_REG_NO);
+				access.size = op->size;
+				if (strcmp(o->name, "cmp")==0 || strcmp(o->name, "test")==0 || strcmp(o->name, "push")==0) {
+					xref = xrefread;
+				} else {
+					xref = (i==0) ? xrefwrite : xrefread;
 				}
-				access.type = acoffset;
-				access.indexed = false;
-				break;
-			case X86_OPTYPE_MEM:
-				if (op->mem.hasdisp) {
-					addr = createAddress(0, op->mem.disp);
-					access.type = acread;
-					access.indexed = (op->mem.base != X86_REG_NO) || (op->mem.index != X86_REG_NO);
-					access.size = op->size;
-					if (strcmp(o->name, "cmp")==0 || strcmp(o->name, "test")==0 || strcmp(o->name, "push")==0) {
-						xref = xrefread;
-					} else {
-						xref = (i==0) ? xrefwrite : xrefread;
-					}
-				}
-				break;
+			}
+			break;
 		}
 		if (addr) {
 			if (analy->validAddress(addr, scvalid)) {
@@ -598,11 +632,13 @@ branch_enum_t AnalyX86Disassembler::isBranch(OPCODE *opcode)
 {
 	x86dis_insn *o = (x86dis_insn*)opcode;
 	const char *opcode_str = o->name;
+	if (opcode_str[0] == '~') {
+		opcode_str++;
+	}
 	if (opcode_str[0] == '|') {
 		opcode_str++;
 	}
-	
-	
+
 	if (opcode_str[0]=='j') {
 		if (opcode_str[1]=='m') return br_jump; else return br_jXX;
 	} else if ((opcode_str[0]=='l') && (opcode_str[1]=='o')  && (opcode_str[2]=='o')) {
@@ -618,10 +654,8 @@ branch_enum_t AnalyX86Disassembler::isBranch(OPCODE *opcode)
 /*
  *
  */
-void AnalyX86Disassembler::store(ht_object_stream *f)
+void AnalyX86Disassembler::store(ObjectStream &f) const
 {
-	PUT_INT_HEX(f, flags);
+	PUT_INT32X(f, flags);
 	AnalyDisassembler::store(f);
 }
-
-

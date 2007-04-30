@@ -21,7 +21,7 @@
 #ifndef STDDATA_H
 #define STDDATA_H
 
-#include "common.h"
+#include "data.h"
 
 struct area_s {
 	area_s	*left, *right;
@@ -32,24 +32,26 @@ class Area: public Object {
 public:
 	area_s			*a;
 
-			void     	init();
-			int 		load(ht_object_stream *f);
-	virtual	void 	done();
-			OBJECT_ID	object_id() const;
+				Area() {};
+				Area(BuildCtorArg &a): Object(a) {};
+		void		init();
+	virtual	void		load(ObjectStream &s);
+	virtual	void 		done();
+	virtual	ObjectID	getObjectID() const;
 
-			void		add(Object *Start, Object *End);
-			bool		contains(Object *V);
-			area_s	*getArea(Object *at);
-			Object	*findNext(Object *From);
-			Object	*findPrev(Object *From);
-			void		freeRecursive(area_s *p);
-	virtual	void		store(ht_object_stream *f);
+		void		add(Object *Start, Object *End);
+		bool		contains(Object *V);
+		area_s		*getArea(Object *at);
+		Object		*findNext(Object *From);
+		Object		*findPrev(Object *From);
+		void		freeRecursive(area_s *p);
+	virtual	void		store(ObjectStream &s) const;
 #ifdef DEBUG_FIXNEW
-			void		dump();
+		void		dump();
 #endif
 };
 
-#define ATOM_AREA MAGICD("AREA")
+#define ATOM_AREA MAGIC32("AREA")
 
 bool init_stddata();
 void done_stddata();

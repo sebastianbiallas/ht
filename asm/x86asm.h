@@ -24,6 +24,7 @@
 
 #include "asm.h"
 #include "x86opc.h"
+#include "x86dis.h"
 
 struct x86asm_insn {
 	char lockprefix;
@@ -50,28 +51,32 @@ struct x86addrcoding {
 
 class x86asm: public Assembler {
 public:
-	int opsize;
-	int addrsize;
+	X86OpSize opsize;
+	X86AddrSize addrsize;
 protected:
 	int esizes[3];
 
 	int modrmv;
 	int sibv;
-	int disp;
+	uint64 disp;
 	int dispsize;
-	int imm;
+	int disppos;
+	uint64 imm;
 	int imm2;
 	int immsize;
-	int address;
+	uint8 rexprefix; // 0 = no, 0x80 = forbid, 0x40 = yes
+	uint64 address;
 	bool ambiguous;
 	bool namefound;
 	bool addrsize_depend;
+	x86opc_insn (*x86_insns)[256];
 
-	void delete_nonsense();
-	int delete_nonsense_insn(asm_code *c);
-	void emitdisp(dword disp, int size);
-	void emitfarptr(dword s, dword o, bool big);
-	void emitimm(dword imm, int size);
+	virtual x86dis *createCompatibleDisassembler();
+	void delete_nonsense(CPU_ADDR addr);
+	bool delete_nonsense_insn(asm_code *c, x86dis *dis, CPU_ADDR addr);
+	void emitdisp(uint64 disp, int size);
+	void emitfarptr(uint32 s, uint32 o, bool big);
+	void emitimm(uint64 imm, int size);
 	void emitmodrm(int modrm);
 	void emitmodrm_mod(int mod);
 	void emitmodrm_reg(int reg);
@@ -79,43 +84,57 @@ protected:
 	void emitsib_base(int base);
 	void emitsib_index(int index);
 	void emitsib_scale(int scale);
-	int encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int additional_opcode, int prefix, int eopsize, int eaddrsize);
-	int encode_modrm(x86_insn_op *op, char size, int allow_reg, int allow_mem, int eopsize, int eaddrsize);
-	int encode_modrm_v(x86addrcoding (*modrmc)[3][8], x86_insn_op *op, int mindispsize, int *mod, int *rm, int *dispsize);
-	int encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eopsize, int eaddrsize);
-	int encode_sib_v(x86_insn_op *op, int mindispsize, int *ss, int *index, int *base, int *mod, int *dispsize, int *disp);
-	int esizeaddr(char c, int size);
-	int esizeop(char c, int size);
-	int fetch_number(char **s, dword *value);
+	bool encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int additional_opcode, int prefix, int eopsize, int eaddrsize);
+	bool encode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, int eopsize, int eaddrsize);
+	bool encode_modrm_v(const x86addrcoding (*modrmc)[3][8], x86_insn_op *op, int mindispsize, int *mod, int *rm, int *dispsize);
+	bool encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eopsize, int eaddrsize);
+	bool encode_sib_v(x86_insn_op *op, int mindispsize, int *ss, int *index, int *base, int *mod, int *dispsize, int *disp);
+	int esizeop(uint c, int size);
+	int esizeop_ex(uint c, int size);
 	char flsz2hsz(int size);
-	char *immlsz2hsz(int size, int opsize);
-	char *lsz2hsz(int size, int opsize);
+	const char *immlsz2hsz(int size, int opsize);
+	const char *lsz2hsz(int size, int opsize);
 	int match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int addrsize);
 	void match_fopcodes(x86asm_insn *insn);
-	void match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode);
-	int match_opcode_name(char *input_name, const char *opcodelist_name);
+	void match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int def_match);
+	int match_opcode_name(const char *input_name, const char *opcodelist_name, int def_match);
 	int match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int opsize, int addrsize, int match);
-	void match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix);
+	void match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix, int def_match);
 	bool match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize);
 	int match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize);
-	bool opfarptr(x86_insn_op *op, char *xop);
-	bool opimm(x86_insn_op *op, char *xop);
-	bool opplugimm(x86_insn_op *op, char *xop);
-	bool opmem(x86asm_insn *asm_insn, x86_insn_op *op, char *xop);
-	bool opreg(x86_insn_op *op, char *xop);
-	bool opmmx(x86_insn_op *op, char *xop);
-	bool opxmm(x86_insn_op *op, char *xop);
-	bool opseg(x86_insn_op *op, char *xop);
-	bool opspecialregs(x86_insn_op *op, char *xop);
-	int simmsize(dword imm, int immsize);
-	void splitstr(const char *s, char *name, char *op[3]);
+	bool opfarptr(x86_insn_op *op, const char *xop);
+	bool opimm(x86_insn_op *op, const char *xop);
+	bool opplugimm(x86_insn_op *op, const char *xop);
+	bool opmem(x86asm_insn *insn, x86_insn_op *op, const char *xop);
+	virtual bool opreg(x86_insn_op *op, const char *xop);
+	bool opmmx(x86_insn_op *op, const char *xop);
+	virtual bool opxmm(x86_insn_op *op, const char *xop);
+	bool opseg(x86_insn_op *op, const char *xop);
+	bool opspecialregs(x86_insn_op *op, const char *xop);
+	int simmsize(uint64 imm, int immsize);
+	void splitstr(const char *s, char *name, int size, char *op[3], int opsize);
+	void tok(const char **s, char *res, int reslen, const char *sep);
 public:
-			x86asm(int opsize, int addrsize);
+		x86asm(X86OpSize opsize, X86AddrSize addrsize);
 
 	virtual	asm_insn *alloc_insn();
 	virtual	asm_code *encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address);
-	virtual	char *get_name();
-	virtual	int translate_str(asm_insn *asm_insn, const char *s);
+	virtual	const char *get_name();
+	virtual	bool translate_str(asm_insn *asm_insn, const char *s);
 };
+
+
+class x86_64asm: public x86asm {
+	static x86opc_insn (*x86_64_insns)[256];
+public:
+	
+		x86_64asm();
+	virtual bool opreg(x86_insn_op *op, const char *xop);
+	virtual bool opxmm(x86_insn_op *op, const char *xop);
+		void prepInsns();
+protected:
+	virtual x86dis *createCompatibleDisassembler();
+};
+
 
 #endif /* __X86ASM_H__ */

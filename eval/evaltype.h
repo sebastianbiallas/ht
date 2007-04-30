@@ -3,9 +3,7 @@
 
 #define MAX_EVALFUNC_PARAMS	8
 
-//#ifdef HT_QWORD
-#include "qword.h"
-
+#include "io/types.h"
 /*
  *	Types
  */
@@ -18,7 +16,7 @@ typedef enum {
 } eval_inttype;
 
 typedef struct {
-	qword value;
+	uint64 value;
 	eval_inttype type;
 } eval_int;
 
@@ -57,10 +55,10 @@ typedef struct {
 } eval_scalarlist;
 
 typedef struct {
-	char *name;
+	const char *name;
 	void *func;
 	eval_scalartype ptype[MAX_EVALFUNC_PARAMS];
-	char *desc;
+	const char *desc;
 } eval_func;
 
 typedef enum {

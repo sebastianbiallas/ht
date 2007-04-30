@@ -21,15 +21,14 @@
 #ifndef ALPHADIS_H
 #define ALPHADIS_H
 
-#include "global.h"
 #include "asm.h"
 #include "alphaopc.h"
 
 struct alphadis_insn {
 	bool				valid;
 	int				size;       /* only useful if invalid (else 4) */
-	long				data;       /* must be signed */
-	word				code;
+	sint32				data;       /* must be signed */
+	uint16				code;
 	byte				regA;
 	byte				regB;
 	byte				regC;
@@ -45,19 +44,17 @@ protected:
 	char insnstr[256];
 	alphadis_insn	insn;
 public:
-			Alphadis();
-	virtual	~Alphadis();
+				Alphadis();
+				Alphadis(BuildCtorArg&a): Disassembler(a) {};
 
-			int 		load(ht_object_stream *f);
 	virtual	dis_insn	*decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
 	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
 	virtual	byte		getSize(dis_insn *disasm_insn);
-	virtual	char		*getName();
-	virtual	void		store(ht_object_stream *f);
-	virtual	char		*str(dis_insn *disasm_insn, int style);
-	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	OBJECT_ID object_id() const;
+	virtual	const char	*getName();
+	virtual	const char	*str(dis_insn *disasm_insn, int style);
+	virtual	const char	*strf(dis_insn *disasm_insn, int style, const char *format);
+	virtual	ObjectID	getObjectID() const;
 	virtual	bool		validInsn(dis_insn *disasm_insn);
 };
 

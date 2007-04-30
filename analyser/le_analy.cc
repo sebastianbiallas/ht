@@ -27,16 +27,15 @@
 #include "analy_names.h"
 #include "analy_register.h"
 #include "analy_x86.h"
-#include "global.h"
 #include "htanaly.h"		// FIXME: for ht_aviewer, to call gotoAddress(entrypoint)
 #include "le_analy.h"
 
 #include "htctrl.h"
 #include "htdebug.h"
-#include "htendian.h"
+#include "endianess.h"
 #include "htiobox.h"
 #include "htle.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "nestruct.h"
 #include "snprintf.h"
 #include "x86asm.h"
@@ -44,7 +43,7 @@
 /*
  *
  */
-void	LEAnalyser::init(ht_le_shared_data *LE_shared, ht_streamfile *File)
+void	LEAnalyser::init(ht_le_shared_data *LE_shared, File *File)
 {
 	le_shared = LE_shared;
 	file = File;
@@ -64,7 +63,7 @@ void	LEAnalyser::init(ht_le_shared_data *LE_shared, ht_streamfile *File)
 /*
  *
  */
-int	LEAnalyser::load(ht_object_stream *f)
+void	LEAnalyser::load(ObjectStream &f)
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -72,7 +71,7 @@ int	LEAnalyser::load(ht_object_stream *f)
 	area				*validarea;
 	*/
 	GET_OBJECT(f, validarea);
-	return Analyser::load(f);
+	Analyser::load(f);
 }
 
 /*
@@ -150,12 +149,12 @@ void LEAnalyser::beginAnalysis()
 
 	LE_OBJECT *s = le_shared->objmap.header;
 	char blub[100];
-	for (UINT i = 0; i < le_shared->objmap.count; i++) {
+	for (uint i = 0; i < le_shared->objmap.count; i++) {
 		LEAddress la = LE_get_seg_addr(le_shared, i);
 		Address *secaddr = createAddressFlat32(la);
 
-//		UINT psize = LE_get_seg_psize(le_shared, i);
-		UINT vsize = LE_get_seg_vsize(le_shared, i);
+//		uint psize = LE_get_seg_psize(le_shared, i);
+		uint vsize = LE_get_seg_vsize(le_shared, i);
 
 		sprintf(blub, ";  section %d <%s> USE%d", i+1, getSegmentNameByAddress(secaddr), (le_shared->objmap.header[i].flags & LE_OBJECT_FLAG_USE32) ? 32 : 16);
 		addComment(secaddr, 0, "");
@@ -169,7 +168,7 @@ void LEAnalyser::beginAnalysis()
 
 		// mark end of sections
 		sprintf(blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-		Address *secend_addr = (Address *)secaddr->duplicate();
+		Address *secend_addr = secaddr->clone();
 		secend_addr->add(vsize);
 		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 		addComment(secend_addr, 0, "");
@@ -178,7 +177,7 @@ void LEAnalyser::beginAnalysis()
 		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		Address *seciniaddr = (Address *)secaddr->duplicate();
+		Address *seciniaddr = secaddr->clone();
 		seciniaddr->add(vsize-1);
 		if (validAddress(secaddr, scinitialized) && validAddress(seciniaddr, scinitialized)) {
 			initialized->add(secaddr, seciniaddr);
@@ -222,9 +221,9 @@ void LEAnalyser::beginAnalysis()
 /*
 	if (le_shared->imports) {
 		ht_tree *t = le_shared->imports;
-		ht_data *v;
+		Object *v;
 		ne_import_rec *imp = NULL;
-		FILEOFS h = le_shared->hdr_ofs + le_shared->hdr.imptab;
+		FileOfs h = le_shared->hdr_ofs + le_shared->hdr.imptab;
 		while ((imp = (ne_import_rec*)t->enum_next(&v, imp))) {
 			char *name = NULL;
 			char *mod = (imp->module-1 < le_shared->modnames_count) ? le_shared->modnames[imp->module-1] : (char*)"invalid!";
@@ -244,7 +243,7 @@ void LEAnalyser::beginAnalysis()
 	}
 */
 
-/*	virtual ht_data *enum_next(ht_data **value, ht_data *prevkey);
+/*	virtual Object *enum_next(ht_data **value, Object *prevkey);
 	int import_count = le_shared->imports.funcs->count();
 	for (int i=0; i<import_count; i++) {
 		ht_pe_import_function *f=(ht_pe_import_function *)pe_shared->imports.funcs->get(*(entropy+i));
@@ -309,7 +308,7 @@ void LEAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	LEAnalyser::object_id() const
+ObjectID	LEAnalyser::getObjectID() const
 {
 	return ATOM_LE_ANALYSER;
 }
@@ -317,18 +316,18 @@ OBJECT_ID	LEAnalyser::object_id() const
 /*
  *
  */
-FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
+FileOfs LEAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		FILEOFS ofs;
+		FileOfs ofs;
 		LEAddress na;
 		if (!convertAddressToLEAddress(Addr, &na)) return INVALID_FILE_OFS;
 		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
 			return INVALID_FILE_OFS;
 		}
 		return ofs;
-/*          UINT m;
-		FILEOFS oo;
+/*          uint m;
+		FileOfs oo;
 		if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
 			le_shared->linear_file->map_ofs(ofs, &oo, &m);
 			return INVALID_FILE_OFS;
@@ -339,17 +338,17 @@ FILEOFS LEAnalyser::addressToFileofs(Address *Addr)
 	}
 }
 
-FILEOFS LEAnalyser::addressToRealFileofs(Address *Addr)
+FileOfs LEAnalyser::addressToRealFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		FILEOFS ofs;
+		FileOfs ofs;
 		LEAddress na;
 		if (!convertAddressToLEAddress(Addr, &na)) return INVALID_FILE_OFS;
 		if (!LE_addr_to_ofs(le_shared, na, &ofs)) {
 			return INVALID_FILE_OFS;
 		}
-		UINT m;
-		FILEOFS oo;
+		FileOfs m;
+		FileOfs oo;
 		if (!le_shared->linear_file->map_ofs(ofs, &oo, &m)) {
 			return INVALID_FILE_OFS;
 		}
@@ -362,9 +361,9 @@ FILEOFS LEAnalyser::addressToRealFileofs(Address *Addr)
 /*
  *
  */
-UINT LEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint LEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 /*     if (ofs == INVALID_FILE_OFS) {
 		ht_printf("%y", Addr);
 		int as=1;
@@ -376,7 +375,7 @@ UINT LEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool LEAnalyser::convertAddressToLEAddress(Address *addr, LEAddress *r)
 {
-	if (addr->object_id()==ATOM_ADDRESS_X86_FLAT_32) {
+	if (addr->getObjectID()==ATOM_ADDRESS_X86_FLAT_32) {
 //		*r = LE_MAKE_ADDR(le_shared, ((AddressX86Flat32*)addr)->seg, ((AddressX86_1632*)addr)->addr);
 		*r = ((AddressX86Flat32*)addr)->addr;
 		return true;
@@ -431,9 +430,9 @@ const char *LEAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-const char *LEAnalyser::getName()
+String &LEAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -487,7 +486,7 @@ Address *LEAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void LEAnalyser::store(ht_object_stream *st)
+void LEAnalyser::store(ObjectStream &st) const
 {
 	PUT_OBJECT(st, validarea);
 	Analyser::store(st);
@@ -511,7 +510,7 @@ int	LEAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *LEAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *LEAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	LEAddress a;
 	if (LE_ofs_to_addr(le_shared, fileofs, &a)) {
@@ -526,10 +525,10 @@ Address *LEAnalyser::fileofsToAddress(FILEOFS fileofs)
  */
 
 /* FIXME: fileofs chaos */
-Address *LEAnalyser::realFileofsToAddress(FILEOFS fileofs)
+Address *LEAnalyser::realFileofsToAddress(FileOfs fileofs)
 {
 	LEAddress a;
-	UINT lofs;
+	uint lofs;
 	if (le_shared->linear_file->unmap_ofs(fileofs, &lofs) &&
 	LE_ofs_to_addr(le_shared, lofs, &a)) {
 		return createAddressFlat32(a);
@@ -548,23 +547,23 @@ bool LEAnalyser::validAddress(Address *Addr, tsectype action)
 	LEAddress na;
 	if (!convertAddressToLEAddress(Addr, &na)) return false;
 	if (!LE_addr_to_segment(le_shared, na, &sec)) return false;
-	LEAddress temp;
+	FileOfs temp;
 	bool init = LE_addr_to_ofs(le_shared, na, &temp);
 	LE_OBJECT *s = objects->header + sec;
 
 	switch (action) {
-		case scvalid:
-			return true;
-		case scread:
-			return (s->flags & LE_OBJECT_FLAG_READABLE);
-		case scwrite:
-			return (s->flags & LE_OBJECT_FLAG_WRITEABLE);
-		case screadwrite:
-			return (s->flags & LE_OBJECT_FLAG_READABLE) && (s->flags & LE_OBJECT_FLAG_WRITEABLE);
-		case sccode:
-			return (s->flags & LE_OBJECT_FLAG_EXECUTABLE) && init;
-		case scinitialized:
-			return init;
+	case scvalid:
+		return true;
+	case scread:
+		return (s->flags & LE_OBJECT_FLAG_READABLE);
+	case scwrite:
+		return (s->flags & LE_OBJECT_FLAG_WRITEABLE);
+	case screadwrite:
+		return (s->flags & LE_OBJECT_FLAG_READABLE) && (s->flags & LE_OBJECT_FLAG_WRITEABLE);
+	case sccode:
+		return (s->flags & LE_OBJECT_FLAG_EXECUTABLE) && init;
+	case scinitialized:
+		return init;
 	}
 	return false;
 }

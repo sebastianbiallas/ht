@@ -18,7 +18,8 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "global.h"
+#include <cstdio>
+#include "io/types.h"
 #include "ilopc.h"
 
 ILOpcodeTabEntry il_opcode_table[MAX_IL_OPCODE] = {

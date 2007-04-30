@@ -22,8 +22,8 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-#include "global.h"
-#include "common.h"
+#include "io/types.h"
+#include "data.h"
 
 #define NL 10
 #define WHITESPACE ' '
@@ -37,40 +37,40 @@ protected:
 	byte *string;
 	int len;
 public:
-	void init(const byte *s, int Len);
+		void init(const byte *s, int Len);
 	virtual void done();
 	virtual void render_string(char *result, int maxlen) = 0;
-	void set_len(int Len);
-		   int  length();
-	virtual char *name() = 0;
+		void set_len(int Len);
+		int  length();
+	virtual const char *name() = 0;
 };
 
 class analy_raw_string: public analy_string {
 public:
-	virtual void render_string(char *result, int maxlen);
-	static int string_test(const byte *s, int testlen, int &foundlen);
-	virtual char *name();
+	virtual	void	render_string(char *result, int maxlen);
+	static	int	string_test(const byte *s, int testlen, int &foundlen);
+	virtual	const char *name();
 };
 
 class analy_c_string: public analy_string {
 public:
 	virtual void render_string(char *result, int maxlen);
-	static int string_test(const byte *s, int testlen, int &foundlen);
-	virtual char *name();
+	static	int string_test(const byte *s, int testlen, int &foundlen);
+	virtual const char *name();
 };
 
 class analy_unicode_string: public analy_string {
 public:
 	virtual void render_string(char *result, int maxlen);
-	static int string_test(const byte *s, int testlen, int &foundlen);
-	virtual char *name();
+	static	int string_test(const byte *s, int testlen, int &foundlen);
+	virtual const char *name();
 };
 
 class analy_pascal_string: public analy_string {
 public:
 	virtual void render_string(char *result, int maxlen);
-	static int string_test(const byte *s, int testlen, int &foundlen);
-	virtual char *name();
+	static	int string_test(const byte *s, int testlen, int &foundlen);
+	virtual const char *name();
 };
 
 

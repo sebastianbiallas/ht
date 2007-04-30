@@ -3,7 +3,7 @@
  *	x86opc.h
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2006 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -22,7 +22,7 @@
 #ifndef __X86OPC_H__
 #define __X86OPC_H__
 
-#include "common.h"
+#include "io/types.h"
 
 #define X86_PREFIX_NO		-1
 
@@ -39,14 +39,21 @@
 #define X86_PREFIX_REPZ		1	/* f3 */
 
 #define X86_PREFIX_OPSIZE	0	/* 66 */
+#define X86_PREFIX_NOOPSIZE	1	/* no 66 allowed */
 
-#define X86_OPSIZEUNKNOWN	-1
-#define X86_OPSIZE16		0
-#define X86_OPSIZE32		1
+enum X86OpSize {
+	X86_OPSIZEUNKNOWN = -1,
+	X86_OPSIZE16 = 0,
+	X86_OPSIZE32 = 1,
+	X86_OPSIZE64 = 2,
+};
 
-#define X86_ADDRSIZEUNKNOWN	-1
-#define X86_ADDRSIZE16		0
-#define X86_ADDRSIZE32		1
+enum X86AddrSize {
+	X86_ADDRSIZEUNKNOWN = -1,
+	X86_ADDRSIZE16 = 0,
+	X86_ADDRSIZE32 = 1,
+	X86_ADDRSIZE64 = 2,
+};
 
 #define X86_OPTYPE_EMPTY	0
 #define X86_OPTYPE_IMM		1
@@ -64,24 +71,21 @@
 // user defined types start here
 #define X86_OPTYPE_USER		32
 
-union int_or_ptr {
-	int i;
-	void *p;
-};
-
 struct x86_insn_op {
 	int type;
 	int size;
+	bool need_rex;
+	bool forbid_rex;
 	union {
 		struct {
-			dword seg;
-			dword offset;
+			uint32 seg;
+			uint32 offset;
 		} farptr;			
-		dword imm;
+		uint64 imm;
 		int reg;
 		int seg;
 		struct {
-			dword disp;
+			uint64 disp;
 			int base;
 			int index;
 			int scale;
@@ -96,36 +100,44 @@ struct x86_insn_op {
 		int stx;
 		int mmx;
 		int xmm;
-		int_or_ptr user[4];
+		union {
+			int i;
+			void *p;
+		} user[4];
 	};
 };
 
-#define TYPE_0		0
-#define TYPE_A		1		/* direct address without ModR/M (generally
-					   like imm, but can be 16:32 = 48 bit) */
-#define TYPE_C		2		/* reg of ModR/M picks control register */
-#define TYPE_D		3		/* reg of ModR/M picks debug register */
-#define TYPE_E		4		/* ModR/M (general reg or memory) */
-#define TYPE_G		5		/* reg of ModR/M picks general register */
-#define TYPE_Is		6		/* signed immediate */
-#define TYPE_I		7		/* unsigned immediate */
-#define TYPE_Ix		8		/* fixed immediate */
-#define TYPE_J		9		/* relative branch offset */
-#define TYPE_M		10		/* ModR/M (memory only) */
-#define TYPE_O		11		/* direct memory without ModR/M */
-#define TYPE_P		12		/* reg of ModR/M picks MMX register */
-#define TYPE_PR		13		/* reg of ModR/M picks MMX register */
-#define TYPE_Q		14		/* ModR/M (MMX reg or memory) */
-#define TYPE_R		15		/* rm of ModR/M picks general register */
-#define TYPE_Rx		16		/* extra picks register */
-#define TYPE_S		17		/* reg of ModR/M picks segment register */
-#define TYPE_Sx		18		/* extra picks segment register */
-#define TYPE_T		19		/* reg of ModR/M picks test register */
-#define TYPE_V		20		/* reg of ModR/M picks XMM register */
-#define TYPE_VR		21		/* reg of ModR/M picks XMM register */
-#define TYPE_W		22		/* ModR/M (XMM reg or memory) */
-#define TYPE_F		23		/* r/m of ModR/M picks a fpu register */
-#define TYPE_Fx		24		/* extra picks a fpu register */
+enum {
+	TYPE_0 = 0,		
+	TYPE_A,		/* direct address without ModR/M (generally */
+			/* like imm, but can be 16:32 = 48 bit) */
+	TYPE_C,		/* reg of ModR/M picks control register */
+	TYPE_D,		/* reg of ModR/M picks debug register */
+	TYPE_E,		/* ModR/M (general reg or memory) */
+	TYPE_G,		/* reg of ModR/M picks general register */
+	TYPE_Is,	/* signed immediate */
+	TYPE_I,		/* unsigned immediate */
+	TYPE_Ix,	/* fixed immediate */
+	TYPE_J,		/* relative branch offset */
+	TYPE_M,		/* ModR/M (memory only) */
+	TYPE_MR,	/* Same as E, but extra picks reg size */
+	TYPE_O,		/* direct memory without ModR/M */
+	TYPE_P,		/* reg of ModR/M picks MMX register */
+	TYPE_PR,	/* rm of ModR/M picks MMX register */
+	TYPE_Q,		/* ModR/M (MMX reg or memory) */
+	TYPE_R,		/* rm of ModR/M picks general register */
+	TYPE_Rx,	/* extra picks register */
+	TYPE_RXx,	/* extra picks register, no REX extension */
+	TYPE_S,		/* reg of ModR/M picks segment register */
+	TYPE_Sx,	/* extra picks segment register */
+	TYPE_T,		/* reg of ModR/M picks test register */
+	TYPE_V,		/* reg of ModR/M picks XMM register */
+	TYPE_Vx,	/* extra picks XMM register */
+	TYPE_VR,	/* rm of ModR/M picks XMM register */
+	TYPE_W,		/* ModR/M (XMM reg or memory) */
+	TYPE_F,		/* r/m of ModR/M picks a fpu register */
+	TYPE_Fx,	/* extra picks a fpu register */
+};
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
 #define SPECIAL_TYPE_INVALID		0
@@ -135,38 +147,44 @@ struct x86_insn_op {
 #define SPECIAL_TYPE_SGROUP 		4
 #define SPECIAL_TYPE_FGROUP 		5
 
-#define SIZE_0			'0'		/* size unimportant */
-#define SIZE_B			'b'		/* byte */
-#define SIZE_W			'w'		/* word */
-#define SIZE_D			'd'		/* dword */
-#define SIZE_Q			'q'		/* qword */
-#define SIZE_U			'u'		/* qword OR oword */
-#define SIZE_Z			'z'		/* dword OR qword */
-#define SIZE_O			'o'		/* oword */
-#define SIZE_V			'v'		/* word OR dword */
-#define SIZE_P			'p'		/* word:word OR word:dword, memory only ! */
-#define SIZE_S			's'		/* short/single real (32-bit) */
-#define SIZE_L			'l'		/* long/double real (64-bit) */
-#define SIZE_T			't'		/* temp/extended real (80-bit) */
-#define SIZE_A			'a'		/* packed decimal (80-bit BCD) */
-
-struct x86opc_insn_op {
-	char type;
-	char extra;
-	char size;
-	char extendedsize;
+enum {
+	SIZE_0 = '0',		/* size unimportant */
+	SIZE_B = 'b',		/* byte */
+	SIZE_BV = 'B',		/* byte, extended to SIZE_V */
+	SIZE_W = 'w',		/* word */
+	SIZE_D = 'd',		/* dword */
+	SIZE_Q = 'q',		/* qword */
+	SIZE_U = 'u',		/* qword OR oword (depending on 0x66 prefix) */
+	SIZE_Z = 'z',		/* dword OR qword (depending on 0x66 prefix) */
+	SIZE_O = 'o',		/* oword */
+	SIZE_V = 'v',		/* word OR dword OR qword */
+	SIZE_VV = 'V',		/* word OR dword OR sign extended dword */
+	SIZE_R = 'r',		/* dword OR qword (depending on rex size) */
+	SIZE_P = 'p',		/* word:word OR word:dword, memory only! */
+	SIZE_S = 's',		/* short/single real (32-bit) */
+	SIZE_L = 'l',		/* long/double real (64-bit) */
+	SIZE_T = 't',		/* temp/extended real (80-bit) */
+	SIZE_A = 'a',		/* packed decimal (80-bit BCD) */
 };
 
-struct x86opc_insn_op_special {
-	char type;
-	char data;
-	char res1;
-	char res2;
+#define INFO_PREFIX_66		0x66
+#define INFO_DEFAULT_64		0x80
+
+struct x86opc_insn_op {
+	byte type;
+	byte extra;
+	byte info;
+	byte size;
 };
 
 struct x86opc_insn {
-	char *name;
-	x86opc_insn_op op[3];
+	const char *name;
+	byte op[4];
+};
+
+struct x86_64_insn_patch {
+	int opc;
+	x86opc_insn insn;
 };
 
 /* this can be a group (group!=0), an insn (group==0) && (insn.name!=0) or
@@ -177,7 +195,7 @@ struct x86opc_finsn {
 };
 
 #define X86_REG_INVALID		-2
-#define X86_REG_NO		-1
+#define X86_REG_NO		(-1 & ~8)
 #define X86_REG_AX		0
 #define X86_REG_CX		1
 #define X86_REG_DX		2
@@ -186,19 +204,33 @@ struct x86opc_finsn {
 #define X86_REG_BP		5
 #define X86_REG_SI		6
 #define X86_REG_DI		7
+#define X86_REG_R8		8
+#define X86_REG_R9		9
+#define X86_REG_R10		10
+#define X86_REG_R11		11
+#define X86_REG_R12		12
+#define X86_REG_R13		13
+#define X86_REG_R14		14
+#define X86_REG_R15		15
+#define X86_REG_IP		66
 
-#define X86_OPC_GROUPS		2
-#define X86_GROUPS		26
+#define X86_OPC_GROUPS		5
+#define X86_GROUPS		27
 #define X86_SPECIAL_GROUPS	7
 
-extern char *x86_regs[3][8];
-extern char *x86_segs[8];
-extern x86opc_insn x86_insns[256];
+extern const char *x86_regs[4][8];
+extern const char *x86_64regs[4][16];
+extern const char *x86_ipregs[4];
+extern const char *x86_segs[8];
+extern x86opc_insn_op x86_op_type[];
+extern x86opc_insn x86_32_insns[256];
+extern x86_64_insn_patch x86_64_insn_patches[];
 extern x86opc_insn x86_insns_ext[256];
+extern x86opc_insn x86_insns_ext_66[256];
 extern x86opc_insn x86_insns_ext_f2[256];
 extern x86opc_insn x86_insns_ext_f3[256];
-extern x86opc_insn x86_group_insns[X86_GROUPS][8];
 extern x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256];
+extern x86opc_insn x86_group_insns[X86_GROUPS][8];
 extern x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9];
 
 extern x86opc_insn x86_modfloat_group_insns[8][8];

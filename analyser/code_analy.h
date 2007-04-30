@@ -22,22 +22,24 @@
 #ifndef CODE_ANALY_H
 #define CODE_ANALY_H
 
-#include "global.h"
-#include "common.h"
+#include "data.h"
 #include "stream.h"
 #include "analy.h"
 
 class Analyser;
 
 class CodeAnalyser: public Object {
-public:
-	Analyser		*a;
-			void      	init(Analyser *A);
-			int 			load(ht_object_stream *f);
+public:	
+	Analyser	*a;
+	
+				CodeAnalyser();
+				CodeAnalyser(BuildCtorArg&a): Object(a) {};
+		void      	init(Analyser *A);
+	virtual	void		load(ObjectStream &s);
 	virtual	void 		done();
-	virtual	OBJECT_ID		object_id() const;
+	virtual	ObjectID	getObjectID() const;
 
-	virtual	void			store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &s) const;
 };
 
 #endif

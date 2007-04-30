@@ -30,33 +30,35 @@
 class MachoAnalyser: public Analyser {
 public:
 	ht_macho_shared_data 	*macho_shared;
-	ht_streamfile		*file;
+	File		*file;
 	Area			*validarea;
 
-		void		init(ht_macho_shared_data *macho_shared, ht_streamfile *File);
-		int 		load(ht_object_stream *f);
+				MachoAnalyser() {};
+				MachoAnalyser(BuildCtorArg&a): Analyser(a) {};
+		void		init(ht_macho_shared_data *macho_shared, File *File);
+		void		load(ObjectStream &f);
 	virtual	void		done();
-	virtual	OBJECT_ID	object_id() const;
+	virtual	ObjectID	getObjectID() const;
 
 	virtual	void		beginAnalysis();
-	virtual	UINT		bufPtr(Address *Addr, byte *buf, int size);
+	virtual	uint		bufPtr(Address *Addr, byte *buf, int size);
 		bool		convertAddressToMACHOAddress(Address *addr, MACHOAddress *r);
 	virtual	Address		*createAddress();
-		Address		*createAddress32(dword addr);
-		Address		*createAddress64(qword addr);
+		Address		*createAddress32(uint32 addr);
+		Address		*createAddress64(uint64 addr);
 	virtual Assembler 	*createAssembler();
-	virtual	const char	*getName();
+	virtual	String &	getName(String &res);
 	virtual const char	*getType();
 	virtual	void 		initCodeAnalyser();
 		void		initInsertSymbols(int shidx);
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &f) const;
 	virtual	int		queryConfig(int mode);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
-	virtual	Address		*fileofsToAddress(FILEOFS fileofs);
-	virtual	FILEOFS		addressToFileofs(Address *Addr);
+	virtual	Address		*fileofsToAddress(FileOfs fileofs);
+	virtual	FileOfs		addressToFileofs(Address *Addr);
 	virtual	const char	*getSegmentNameByAddress(Address *Addr);
 };
 

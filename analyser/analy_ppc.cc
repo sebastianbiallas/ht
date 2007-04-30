@@ -26,13 +26,17 @@
 #include "htiobox.h"
 #include "snprintf.h"
 
-/*
- *
- */
-void AnalyPPCDisassembler::init(Analyser *A)
+void AnalyPPCDisassembler::init(Analyser *A, int aMode)
 {
-	disasm = new PPCDisassembler();
+	mode = aMode;
+	disasm = new PPCDisassembler((aMode == ANALY_PPC_32) ? PPC_MODE_32 : PPC_MODE_64);
 	AnalyDisassembler::init(A);
+}
+
+void AnalyPPCDisassembler::load(ObjectStream &f)
+{
+	GET_INT32X(f, mode);
+	AnalyDisassembler::load(f);
 }
 
 /*
@@ -43,7 +47,7 @@ void AnalyPPCDisassembler::done()
 	AnalyDisassembler::done();
 }
 
-OBJECT_ID AnalyPPCDisassembler::object_id() const
+ObjectID AnalyPPCDisassembler::getObjectID() const
 {
 	return ATOM_ANALY_PPC;
 }
@@ -62,9 +66,13 @@ Address *AnalyPPCDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 	return new InvalidAddress();
 }
 
-Address *AnalyPPCDisassembler::createAddress(dword offset)
+Address *AnalyPPCDisassembler::createAddress(uint64 offset)
 {
-	return new AddressFlat32(offset);
+	if (mode == ANALY_PPC_32) {
+		return new AddressFlat32(offset);
+	} else {
+		return new AddressFlat64(offset);
+	}
 }
 
 /*
@@ -98,38 +106,16 @@ branch_enum_t AnalyPPCDisassembler::isBranch(OPCODE *opcode)
 		if (ppc_insn->name[strlen(ppc_insn->name)] == 'l') {
 				return br_call;
 		}
-		if (ppc_insn->name[1]==0) {
+		if (ppc_insn->name[1] == 0 || strcmp(ppc_insn->name, "bctr") == 0) {
 				return br_jump;
 		}
 		return br_jXX;
 	}
-/*	alphadis_insn *alpha_insn = (alphadis_insn *) opcode;
-	if (alpha_insn->valid) {
-		switch ((alpha_insn->table+alpha_insn->code)->type) {
-			case ALPHA_GROUP_BRA:
-				if (alpha_insn->table == alpha_instr_tbl) {
-					switch (alpha_insn->code) {
-						case 0x30:
-							return br_jump;
-						case 0x34:
-							return br_call;
-						default:
-							if (alpha_insn->code > 0x30) return br_jXX;
-					}
-				}
-				return br_nobranch;
-			case ALPHA_GROUP_JMP: {
-				switch (alpha_insn->code) {
-					case 0:
-					case 3:
-					case 1:
-						return br_call;
-					case 2:
-						return br_return;
-				}
-			}
-		}
-	}*/
 	return br_nobranch;
 }
 
+void AnalyPPCDisassembler::store(ObjectStream &f) const
+{
+	PUT_INT32X(f, mode);
+	AnalyDisassembler::store(f);
+}

@@ -22,7 +22,7 @@
 #define __PPC_DIS_H__
 
 #include "asm.h"
-#include "global.h"
+#include "io/types.h"
 #include "ppcopc.h"
 
 struct ppcdis_operand {
@@ -33,45 +33,52 @@ struct ppcdis_operand {
 		int freg;   // float register
 		int creg;   // condition register
 		int vreg;   // vector register
-		uint32 imm;
+		uint64 imm;
 		struct {
-			uint32 disp;
+			uint64 disp;
 			int gr;
 		} mem;
 		struct {
-			uint32 mem;
+			uint64 mem;
 		} abs;
 		struct {
-			uint32 mem;
+			uint64 mem;
 		} rel;
 	};
 };
 
 struct ppcdis_insn {
-	bool				valid;
-	int				size;
+	bool			valid;
+	int			size;
 	const char *		name;
 	uint32			data;
-	int				ops;
+	int			ops;
 	ppcdis_operand		op[8];
 };
+
+#define PPC_MODE_32 0
+#define PPC_MODE_64 1
 
 class PPCDisassembler: public Disassembler {
 protected:
 	char insnstr[256];
 	ppcdis_insn insn;
+	int mode;
 public:
-			PPCDisassembler();
+			PPCDisassembler(int mode);
+			PPCDisassembler(BuildCtorArg&a): Disassembler(a) {};
 
+		void		load(ObjectStream &f);
 	virtual	dis_insn	*decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
 	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
 	virtual	byte		getSize(dis_insn *disasm_insn);
-	virtual	char		*getName();
-	virtual	char		*str(dis_insn *disasm_insn, int style);
-	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	OBJECT_ID object_id() const;
+	virtual	const char	*getName();
+	virtual	const char	*str(dis_insn *disasm_insn, int style);
+	virtual	const char	*strf(dis_insn *disasm_insn, int style, const char *format);
+	virtual	ObjectID	getObjectID() const;
 	virtual	bool		validInsn(dis_insn *disasm_insn);
+	virtual void		store(ObjectStream &f) const;
 };
 
 #endif

@@ -21,46 +21,47 @@
 #ifndef DATA_ANALY_H
 #define DATA_ANALY_H
 
-#include "global.h"
+#include "data.h"
 #include "analy.h"
 
 
-typedef enum {op_read, op_write, op_offset} OP;
+enum OP {op_read, op_write, op_offset};
 
 /*
  * general type of an address
  */
-typedef enum {
+enum taddr_typetype {
 	dt_unknown = 0,
 	dt_code,
 	dt_unknown_data,
 	dt_int,
 	dt_float,
 	dt_array
-} taddr_typetype;
+};
 
-typedef enum {
+enum taddr_code_subtype {
 	dst_cunknown = 0,
 	dst_location,
 	dst_function
-} taddr_code_subtype;
+};
 
-typedef enum {
+enum  taddr_int_subtype{
 	dst_iunknown = 0,
 	dst_ibyte,
 	dst_iword,
 	dst_idword,
 	dst_ipword,
 	dst_iqword
-} taddr_int_subtype;
+};
 
-typedef enum {
+enum taddr_float_subtype {
 	dst_funknown = 0,
+	dst_fsingle,
 	dst_fdouble,
 	dst_fextended
-} taddr_float_subtype;
+};
 
-typedef enum {
+enum taddr_array_subtype {
 	dst_aunknown = 0,
 	dst_abyte,
 	dst_aword,
@@ -69,7 +70,7 @@ typedef enum {
 	dst_aqword,
 	dst_string,
 	dst_unistring
-} taddr_array_subtype;
+};
 
 struct taddr_type {
 	taddr_typetype type;
@@ -86,9 +87,6 @@ struct taddr_type {
 	};
 };
 
-void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at);
-int analyser_get_addrtype(ht_object_stream *f, taddr_type *at);
-
 class Analyser;
 class Address;
 struct Location;
@@ -96,26 +94,29 @@ struct Location;
 class DataAnalyser: public Object	{
 public:
 	Analyser		*analy;
-			void		init(Analyser *Analy);
-			int		load(ht_object_stream *f);
+	
+				DataAnalyser();
+				DataAnalyser(BuildCtorArg&a): Object(a) {};
+		void		init(Analyser *Analy);
+	virtual	void		load(ObjectStream &s);
 	virtual	void		done();
-	virtual	OBJECT_ID	object_id() const;
+	virtual	ObjectID	getObjectID() const;
 
-			void		access(Address *Addr, OP op, int size);
-			void		setAddressType(Address *Addr, taddr_typetype type, int subtype, int length);
-			void		setAddressType(Location *Addr, taddr_typetype type, int subtype, int length);
-			void		setCodeAddressType(Address *Addr, taddr_code_subtype subtype);
-			void		setCodeAddressType(Location *Addr, taddr_code_subtype subtype);
-			void		setIntAddressType(Address *Addr, taddr_int_subtype subtype, int length);
-			void		setIntAddressType(Location *Addr, taddr_int_subtype subtype, int length);
-			void		setFloatAddressType(Address *Addr, taddr_float_subtype subtype, int length);
-			void		setFloatAddressType(Location *Addr, taddr_float_subtype subtype, int length);
-			void		setArrayAddressType(Address *Addr, taddr_array_subtype subtype, int length);
-			void		setArrayAddressType(Location *Addr, taddr_array_subtype subtype, int length);
-	virtual	void		store(ht_object_stream *f);
+		void		access(Address *Addr, OP op, int size);
+		void		setAddressType(Address *Addr, taddr_typetype type, int subtype, int length);
+		void		setAddressType(Location *Addr, taddr_typetype type, int subtype, int length);
+		void		setCodeAddressType(Address *Addr, taddr_code_subtype subtype);
+		void		setCodeAddressType(Location *Addr, taddr_code_subtype subtype);
+		void		setIntAddressType(Address *Addr, taddr_int_subtype subtype, int length);
+		void		setIntAddressType(Location *Addr, taddr_int_subtype subtype, int length);
+		void		setFloatAddressType(Address *Addr, taddr_float_subtype subtype, int length);
+		void		setFloatAddressType(Location *Addr, taddr_float_subtype subtype, int length);
+		void		setArrayAddressType(Address *Addr, taddr_array_subtype subtype, int length);
+		void		setArrayAddressType(Location *Addr, taddr_array_subtype subtype, int length);
+	virtual	void		store(ObjectStream &s) const;
 };
 
-void analyser_put_addrtype(ht_object_stream *f, const taddr_type *at);
-int analyser_get_addrtype(ht_object_stream *f, taddr_type *at);
+void analyser_put_addrtype(ObjectStream &s, const taddr_type *at);
+void analyser_get_addrtype(ObjectStream &s, taddr_type *at);
 
 #endif

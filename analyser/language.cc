@@ -21,7 +21,7 @@
 
 #include <string.h>
 #include "htdebug.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "language.h"
 #include "tools.h"
 
@@ -29,7 +29,7 @@
  *	' ' = separator -> skip
  *	INV = invalid char -> error
  */
-byte mapchar[]={
+byte mapchar[] = {
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', 10,' ',' ',' ',' ',' ', // 0-15
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', // 16-31
 	' ','!','"','#','$','%','&', 39,'(',')','*','+',',','-','.','/', // 32-47
@@ -59,26 +59,26 @@ int analy_string__raw_test(const byte *s, int len)
 	bool word_start=false;
 	for (int i=0; i<len; i++) {
 		byte mc = mapchar[s[i]];
-		if (s[i]=='\n' || s[i]=='\t') {
+		if (s[i] == '\n' || s[i] == '\t') {
 			if (word_start) {
 				words++;
 				word_start = false;
 			}
-		} else if (s[i]<32 || mc==INV) {
+		} else if (s[i] < 32 || mc == INV) {
 			if (word_start) {
 				words++;
 				word_start = false;
 			}
 			bad_chars++;
-			if (s[i]==0) {
+			if (s[i] == 0) {
 				bad_chars += 50;
 			}
-		} else if (s[i]==' ') {
+		} else if (s[i] == ' ') {
 			if (word_start) {
 				words++;
 				word_start = false;
 			}
-		} else if (mc=='A' || mc=='0') {
+		} else if (mc == 'A' || mc == '0') {
 			word_start = true;
 			all_word_len++;
 		} else {
@@ -100,9 +100,9 @@ int analy_string__raw_test(const byte *s, int len)
 	if (!words) return len/2-bad_chars*5+1;
 	int average_word_len = all_word_len / words;
 	int av_res[10] = {1, 2, 4, 8, 16, 16, 10, 8, 6, 3};
-	int av_plus=0;
-	if (average_word_len>1 && average_word_len<13) av_plus = av_res[average_word_len-2];
-	return words*2+av_plus-bad_chars*5+len/5+average_word_len;
+	int av_plus = 0;
+	if (average_word_len > 1 && average_word_len < 13) av_plus = av_res[average_word_len - 2];
+	return words*2 + av_plus - bad_chars*5 + len/5 + average_word_len;
 }
 
 /*
@@ -110,7 +110,7 @@ int analy_string__raw_test(const byte *s, int len)
  */
 void analy_string::init(const byte *s, int Len)
 {
-	string = (byte*)smalloc(Len);
+	string = ht_malloc(Len);
 	memcpy(string, s, Len);
 	len = Len;
 }
@@ -143,7 +143,7 @@ int analy_raw_string::string_test(const byte *s, int testlen, int &foundlen)
 	return 0;
 }
 
-char *analy_raw_string::name()
+const char *analy_raw_string::name()
 {
 	return "raw";
 }
@@ -171,7 +171,7 @@ int analy_c_string::string_test(const byte *s, int testlen, int &foundlen)
 	return analy_string__raw_test(s, len-1);
 }
 
-char *analy_c_string::name()
+const char *analy_c_string::name()
 {
 	return "strz";
 }
@@ -187,7 +187,7 @@ void analy_unicode_string::render_string(char *result, int maxlen)
 int analy_unicode_string::string_test(const byte *s, int testlen, int &foundlen)
 {
 	// this is not good
-	byte *a = (byte*)smalloc(testlen/2+1);
+	byte *a = ht_malloc(testlen/2+1);
 	wide_char_to_multi_byte((char*)a, s, testlen/2);
 	// search for \0
 	byte *np = (byte *)memchr(a, 0, testlen/2);
@@ -202,7 +202,7 @@ int analy_unicode_string::string_test(const byte *s, int testlen, int &foundlen)
 	return res;
 }
 
-char *analy_unicode_string::name()
+const char *analy_unicode_string::name()
 {
 	return "strw";
 }
@@ -227,7 +227,7 @@ int analy_pascal_string::string_test(const byte *s, int testlen, int &foundlen)
 	return analy_string__raw_test(s+1, len);
 }
 
-char *analy_pascal_string::name()
+const char *analy_pascal_string::name()
 {
 	return "strp";
 }
@@ -243,8 +243,8 @@ analy_string *string_test(const byte *s, int testlen)
 //	p[2] = analy_pascal_string::string_test(s, testlen, len[2]);
 	p[STRING_TESTS] = 5;
 	int j = STRING_TESTS;
-	for (int i=0;i<STRING_TESTS;i++) {
-		if (p[i]>p[j]) j = i;
+	for (int i=0; i < STRING_TESTS; i++) {
+		if (p[i] > p[j]) j = i;
 	}
 	analy_string *as = NULL;;
 	switch (j) {

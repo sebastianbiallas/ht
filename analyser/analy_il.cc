@@ -26,24 +26,13 @@
 #include "htiobox.h"
 #include "snprintf.h"
 
-/*
- *
- */
-void AnalyILDisassembler::init(Analyser *A, char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context)
+void AnalyILDisassembler::init(Analyser *A, char* (*string_func)(uint32 string_ofs, void *context), char* (*token_func)(uint32 token, void *context), void *context)
 {
 	disasm = new ILDisassembler(string_func, token_func, context);
 	AnalyDisassembler::init(A);
 }
 
-/*
- *
- */
-void AnalyILDisassembler::done()
-{
-	AnalyDisassembler::done();
-}
-
-OBJECT_ID AnalyILDisassembler::object_id() const
+ObjectID AnalyILDisassembler::getObjectID() const
 {
 	return ATOM_ANALY_IL;
 }
@@ -56,7 +45,7 @@ Address *AnalyILDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtyp
 	return new InvalidAddress();
 }
 
-Address *AnalyILDisassembler::createAddress(dword offset)
+Address *AnalyILDisassembler::createAddress(uint32 offset)
 {
 	return new AddressFlat32(offset);
 }

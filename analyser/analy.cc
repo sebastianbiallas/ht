@@ -27,11 +27,12 @@
 #include "analy_register.h"
 #include "code_analy.h"
 #include "data_analy.h"
-#include "global.h"
-#include "htatom.h"
+#include "io/types.h"
+#include "atom.h"
+#include "except.h"
 #include "htctrl.h"
 #include "htdebug.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "language.h"
 #include "snprintf.h"
 #include "tools.h"
@@ -52,7 +53,7 @@ bool Address::isValid()
 	return true;
 }
 
-int Address::toString(char *s, int maxlen)
+int Address::toString(char *s, int maxlen) const
 {
 	return stringify(s, maxlen, global_analyser_address_string_format);
 }
@@ -72,7 +73,7 @@ int InvalidAddress::compareTo(const Object *obj) const
 	return 0;
 }
 
-void InvalidAddress::putIntoCPUAddress(CPU_ADDR *ca)
+void InvalidAddress::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 }
 
@@ -81,9 +82,9 @@ bool InvalidAddress::difference(int &result, Address *to)
 	return false;
 }
 
-InvalidAddress *InvalidAddress::duplicate()
+InvalidAddress *InvalidAddress::clone() const
 {
-	return new InvalidAddress();
+	return new InvalidAddress(*this);
 }
 
 void InvalidAddress::getFromArray(const byte *array)
@@ -92,6 +93,11 @@ void InvalidAddress::getFromArray(const byte *array)
 
 void InvalidAddress::getFromCPUAddress(CPU_ADDR *ca)
 {
+}
+
+bool InvalidAddress::getFromUInt64(uint64 u)
+{
+	return false;
 }
 
 bool InvalidAddress::isValid()
@@ -104,21 +110,26 @@ int InvalidAddress::parseString(const char *s, int length, Analyser *a)
 	return 0;
 }
 
-OBJECT_ID InvalidAddress::object_id() const
+ObjectID InvalidAddress::getObjectID() const
 {
 	return ATOM_ADDRESS_INVALID;
 }
 
-void InvalidAddress::putIntoArray(byte *array)
+void InvalidAddress::putIntoArray(byte *array) const
 {
 }
 
-int InvalidAddress::stringify(char *s, int max_length, int format)
+bool InvalidAddress::putIntoUInt64(uint64 &u) const
+{
+	return false;
+}
+
+int InvalidAddress::stringify(char *s, int max_length, int format) const
 {
 	return ht_snprintf(s, max_length, "*INVALID");
 }
 
-int InvalidAddress::stringSize()
+int InvalidAddress::stringSize() const
 {
 	return 8;
 }
@@ -126,7 +137,6 @@ int InvalidAddress::stringSize()
 /*
  *
  */
-
 bool AddressFlat32::add(int offset)
 {
 	// check for overflow
@@ -146,7 +156,7 @@ int AddressFlat32::byteSize()
 
 int AddressFlat32::compareTo(const Object *obj) const
 {
-	assert(object_id() == obj->object_id());
+	assert(getObjectID() == obj->getObjectID());
 	if (addr > ((AddressFlat32 *)obj)->addr) return 1;
 	if (addr < ((AddressFlat32 *)obj)->addr) return -1;
 	return 0;
@@ -154,9 +164,9 @@ int AddressFlat32::compareTo(const Object *obj) const
 
 int AddressFlat32::compareDelinear(Address *to)
 {
-	assert(object_id() == to->object_id());
-	dword da = delinearize(addr);
-	dword db = delinearize(((AddressFlat32 *)to)->addr);
+	assert(getObjectID() == to->getObjectID());
+	uint32 da = delinearize(addr);
+	uint32 db = delinearize(((AddressFlat32 *)to)->addr);
 	if (da > db) return 1;
 	if (da < db) return -1;
 	return 0;
@@ -164,7 +174,7 @@ int AddressFlat32::compareDelinear(Address *to)
 
 bool AddressFlat32::difference(int &result, Address *to)
 {
-	if (object_id() == to->object_id()) {
+	if (getObjectID() == to->getObjectID()) {
 		result = addr - ((AddressFlat32 *)to)->addr;
 		return true;
 	} else {
@@ -172,14 +182,14 @@ bool AddressFlat32::difference(int &result, Address *to)
 	}
 }
 
-AddressFlat32 *AddressFlat32::duplicate()
+AddressFlat32 *AddressFlat32::clone() const
 {
-	return new AddressFlat32(addr);
+	return new AddressFlat32(*this);
 }
 
 void AddressFlat32::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(dword*)array);
+	UNALIGNED_MOVE(addr, *(uint32*)array);
 }
 
 void AddressFlat32::getFromCPUAddress(CPU_ADDR *ca)
@@ -187,13 +197,22 @@ void AddressFlat32::getFromCPUAddress(CPU_ADDR *ca)
 	addr = ca->addr32.offset;
 }
 
-int AddressFlat32::load(ht_object_stream *st)
+bool AddressFlat32::getFromUInt64(uint64 u)
 {
-	addr = st->getIntHex(4, NULL);
-	return st->get_error();
+	if (u <= 0xffffffff) {
+		addr = u;
+		return true;
+	} else {
+		return false;
+	}
 }
 
-OBJECT_ID AddressFlat32::object_id() const
+void AddressFlat32::load(ObjectStream &st)
+{
+	GET_INT32X(st, addr);
+}
+
+ObjectID AddressFlat32::getObjectID() const
 {
 	return ATOM_ADDRESS_FLAT_32;
 }
@@ -203,24 +222,30 @@ int AddressFlat32::parseString(const char *s, int length, Analyser *a)
 	return false;
 }
 
-void AddressFlat32::putIntoArray(byte *array)
+void AddressFlat32::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(dword*)array, addr);
+	UNALIGNED_MOVE(*(uint32*)array, addr);
 }
 
-void AddressFlat32::putIntoCPUAddress(CPU_ADDR *ca)
+void AddressFlat32::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 	ca->addr32.offset = addr;
 }
 
-void AddressFlat32::store(ht_object_stream *st)
+bool AddressFlat32::putIntoUInt64(uint64 &u) const
 {
-	st->putIntHex(addr, 4, NULL);
+	u = addr;
+	return true;
 }
 
-int AddressFlat32::stringify(char *s, int max_length, int format)
+void AddressFlat32::store(ObjectStream &st) const
 {
-	char *formats[] = {
+	PUT_INT32X(st, addr);
+}
+
+int AddressFlat32::stringify(char *s, int max_length, int format) const
+{
+	const char *formats[] = {
 		"%s%x%s",
 		"%s%8x%s",
 		"%s%08x%s",
@@ -233,7 +258,7 @@ int AddressFlat32::stringify(char *s, int max_length, int format)
 	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
 }
 
-int AddressFlat32::stringSize()
+int AddressFlat32::stringSize() const
 {
 	return 8;
 }
@@ -244,19 +269,8 @@ int AddressFlat32::stringSize()
 bool AddressFlat64::add(int offset)
 {
 	// check for overflow
-	// FIXME: reviewme
-	if ((int)offset < 0) {
-		if (addr.lo+offset > addr.lo) {
-			if (!addr.hi) return false;
-			addr.hi--;
-		}
-	} else {
-		if (addr.lo+offset < addr.lo) {
-			if (addr.hi+1==0) return false;
-			addr.hi++;
-		}
-	}
-	addr.lo+=offset;
+	// FIXME: XXXXXXXXXXXXX
+	addr += sint64(offset);
 	return true;
 }
 
@@ -267,43 +281,44 @@ int AddressFlat64::byteSize()
 
 int AddressFlat64::compareTo(const Object *obj) const
 {
-	assert(object_id() == obj->object_id());
-	return qword_cmp(addr, ((AddressFlat64 *)obj)->addr);
+	assert(getObjectID() == obj->getObjectID());
+	if (addr > ((AddressFlat64 *)obj)->addr) return 1;
+	if (addr < ((AddressFlat64 *)obj)->addr) return -1;
+	return 0;
 }
 
 int AddressFlat64::compareDelinear(Address *to)
 {
-	assert(object_id() == to->object_id());
-	qword da1, da2;
-	da1.hi = delinearize(addr.lo);
-	da1.lo = delinearize(addr.hi);
-	da2.hi = delinearize(((AddressFlat64 *)to)->addr.lo);
-	da2.lo = delinearize(((AddressFlat64 *)to)->addr.hi);
-	return qword_cmp(da1, da2);
+	assert(getObjectID() == to->getObjectID());
+	uint64 da1, da2;
+	da1 = delinearize64(addr);
+	da2 = delinearize64(((AddressFlat64 *)to)->addr);
+	if (da1 > da2) return 1;
+	if (da1 < da2) return -1;
+	return 0;
 }
 
 bool AddressFlat64::difference(int &result, Address *to)
 {
-	if (object_id() == to->object_id()) {
-		qword res = addr - ((AddressFlat64 *)to)->addr;
-		if (!res.hi || (res.hi==(dword)-1)) {
-			result = res.lo;
+	if (getObjectID() == to->getObjectID()) {
+		uint64 res = addr - ((AddressFlat64 *)to)->addr;
+		uint32 rh = res >> 32;
+		if (!rh || rh == 0xffffffff) {
+			result = res;
 			return true;
 		}
 	}
 	return false;
 }
 
-AddressFlat64 *AddressFlat64::duplicate()
+AddressFlat64 *AddressFlat64::clone() const
 {
-	return new AddressFlat64(addr);
+	return new AddressFlat64(*this);
 }
 
 void AddressFlat64::getFromArray(const byte *array)
 {
-	// FIXME: no .lo/.hi
-	UNALIGNED_MOVE(addr.lo, *(dword*)array);
-	UNALIGNED_MOVE(addr.hi, *(dword*)(array+sizeof addr.lo));
+	UNALIGNED_MOVE(addr, *(uint64*)array);
 }
 
 void AddressFlat64::getFromCPUAddress(CPU_ADDR *ca)
@@ -311,14 +326,18 @@ void AddressFlat64::getFromCPUAddress(CPU_ADDR *ca)
 	addr = ca->flat64.addr;
 }
 
-int AddressFlat64::load(ht_object_stream *st)
+bool AddressFlat64::getFromUInt64(uint64 u)
 {
-	addr.lo = st->getIntHex(4, NULL);
-	addr.hi = st->getIntHex(4, NULL);
-	return st->get_error();
+	addr = u;
+	return true;
 }
 
-OBJECT_ID AddressFlat64::object_id() const
+void AddressFlat64::load(ObjectStream &st)
+{
+	GET_INT64X(st, addr);
+}
+
+ObjectID AddressFlat64::getObjectID() const
 {
 	return ATOM_ADDRESS_FLAT_64;
 }
@@ -328,26 +347,30 @@ int AddressFlat64::parseString(const char *s, int length, Analyser *a)
 	return false;
 }
 
-void AddressFlat64::putIntoArray(byte *array)
+void AddressFlat64::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(dword*)array, addr.lo);
-	UNALIGNED_MOVE(*(dword*)(array+sizeof addr.lo), addr.hi);
+	UNALIGNED_MOVE(*(uint64*)array, addr);
 }
 
-void AddressFlat64::putIntoCPUAddress(CPU_ADDR *ca)
+void AddressFlat64::putIntoCPUAddress(CPU_ADDR *ca) const
 {
 	ca->flat64.addr = addr;
 }
 
-void AddressFlat64::store(ht_object_stream *st)
+bool AddressFlat64::putIntoUInt64(uint64 &u) const
 {
-	st->putIntHex(addr.lo, 4, NULL);
-	st->putIntHex(addr.hi, 4, NULL);
+	u = addr;
+	return true;
 }
 
-int AddressFlat64::stringify(char *s, int max_length, int format)
+void AddressFlat64::store(ObjectStream &st) const
 {
-	char *formats[] = {
+	PUT_INT64X(st, addr);
+}
+
+int AddressFlat64::stringify(char *s, int max_length, int format) const
+{
+	const char *formats[] = {
 		"%s%qx%s",
 		"%s%16qx%s",
 		"%s%016qx%s",
@@ -357,10 +380,10 @@ int AddressFlat64::stringify(char *s, int max_length, int format)
 		"%s%016qx%s",
 		"",
 	};
-	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", &addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
+	return ht_snprintf(s, max_length, formats[format&7], (format & ADDRESS_STRING_FORMAT_ADD_0X) ? "0x":"", addr, (format & ADDRESS_STRING_FORMAT_ADD_H) ? "h":"");
 }
 
-int AddressFlat64::stringSize()
+int AddressFlat64::stringSize() const
 {
 	return 16;
 }
@@ -370,38 +393,47 @@ int AddressFlat64::stringSize()
  *
  */
  
-AddrXRef::AddrXRef() {}
-
-AddrXRef::AddrXRef(xref_enum_t Type)
+AddrXRef::AddrXRef(Address *a, xref_enum_t Type)
 {
+	addr = a->clone();
 	type = Type;
 }
 
-int AddrXRef::load(ht_object_stream *f)
+AddrXRef::~AddrXRef()
 {
-	type = (xref_enum_t) f->getIntHex(1, "type");
-	return f->get_error();
+	delete addr;
 }
 
-OBJECT_ID AddrXRef::object_id() const
+void AddrXRef::load(ObjectStream &f)
+{
+	GET_OBJECT(f, addr);
+	type = (xref_enum_t)GETX_INTX(f, 1, "type");
+}
+
+ObjectID AddrXRef::getObjectID() const
 {
 	return ATOM_ADDR_XREF;
 }
 
-void AddrXRef::store(ht_object_stream *f)
+void AddrXRef::store(ObjectStream &f) const
 {
-	f->putIntHex((UINT)type, 1, "type");
+	PUT_OBJECT(f, addr);
+	PUT_INTX(f, type, 1);
+}
+
+int AddrXRef::compareTo(const Object *o) const
+{
+	Address *a = ((AddrXRef*)o)->addr;
+	return addr->compareTo(a);
 }
 
 /*
  *
  */
-AddressQueueItem::AddressQueueItem() {}
-
-AddressQueueItem::AddressQueueItem(Address *Addr, Address *Func)
+AddressQueueItem::AddressQueueItem(Address *aAddr, Address *aFunc)
 {
-	addr = DUP_ADDR(Addr);
-	func = DUP_ADDR(Func);
+	addr = aAddr->clone();
+	func = aFunc->clone();
 }
 
 AddressQueueItem::~AddressQueueItem()
@@ -410,19 +442,18 @@ AddressQueueItem::~AddressQueueItem()
 	delete func;
 }
 
-OBJECT_ID	AddressQueueItem::object_id() const
+ObjectID AddressQueueItem::getObjectID() const
 {
 	return ATOM_ADDR_QUEUE_ITEM;
 }
 
-int AddressQueueItem::load(ht_object_stream *f)
+void AddressQueueItem::load(ObjectStream &f)
 {
 	GET_OBJECT(f, addr);
 	GET_OBJECT(f, func);
-	return f->get_error();
 }
 
-void	AddressQueueItem::store(ht_object_stream *f)
+void	AddressQueueItem::store(ObjectStream &f) const
 {
 	PUT_OBJECT(f, addr);
 	PUT_OBJECT(f, func);
@@ -431,25 +462,36 @@ void	AddressQueueItem::store(ht_object_stream *f)
 /*
  *
  */
-void CommentList::init()
+CommentList::CommentList()
+	: Array(true)
 {
-	ht_clist::init();
 }
 
 void CommentList::appendPreComment(const char *s)
 {
-	append(new ht_data_string(s));
+	insert(new String(s));
 }
 
 void CommentList::appendPostComment(const char *s)
 {
-	append(new ht_data_string(s));
+	insert(new String(s));
 }
 
-const char *CommentList::getName(UINT i)
+void CommentList::appendPreComment(int special)
 {
-	ht_data *d = get(i);
-	return d ? ((ht_data_string*)d)->value : NULL;
+	insert(new UInt(special));
+}
+
+void CommentList::appendPostComment(int special)
+{
+	insert(new UInt(special+0x10000000));
+}
+
+const char *CommentList::getName(uint i)
+{
+	Object *d = get(findByIdx(i));
+//	return d ? ((d->getObjectID()==OBJID_UINT) ? comment_lookup(((UInt*)d)->value): 
+	return d ? ((String*)d)->contentChar() : NULL;
 }
 
 /*
@@ -462,8 +504,7 @@ void	Analyser::init()
 	next_address_is_invalid = false;
 	addr = new InvalidAddress();
 	invalid_addr = new InvalidAddress();
-	addr_queue = new ht_queue();
-	addr_queue->init();
+	addr_queue = new Queue(true);
 	locations = NULL;
 	symbols = NULL;
 	symbol_count = location_count = 0;
@@ -488,86 +529,57 @@ void	Analyser::init()
 	mode = ANALY_TRANSLATE_SYMBOLS;
 }
 
-static int loadlocations(ht_object_stream *st, Location *&loc, int l, int r)
+static void loadlocations(ObjectStream &st, Location *&loc, int l, int r)
 {
 	if (l > r) {
 		loc = NULL;
-		return st->get_error();
+		return;
 	}
 	int m = (l+r)/2;
-	loc = (Location *) smalloc0(sizeof(Location));
+	loc = new Location;
 
-	if (loadlocations(st, loc->left, l, m-1) != 0) {
-		return st->get_error();
-	}
+	loadlocations(st, loc->left, l, m-1);
 
-	loc->addr = (Address *)st->getObject("addr");
+	loc->addr = GETX_OBJECT(st , "addr");
 
 	// xrefs
-	loc->xrefs = (ht_tree *)st->getObject("xrefs");
+	loc->xrefs = GETX_OBJECT(st, "xrefs");
 	
 	// comments
-	loc->comments = (CommentList*)st->getObject("comments");
+	loc->comments = GETX_OBJECT(st, "comments");
 	
-	if (st->get_error()) {
-		free(loc);
-		loc = NULL;
-		return 1;
-	}
-
 	analyser_get_addrtype(st, &loc->type);
 
 	// must be resolved later (thisfunc is of type Location not Address)
-	loc->thisfunc = (Location *)st->getObject("func");
+	Address *a = GETX_OBJECT(st, "func");
+	loc->thisfunc = (Location *)a;
+	loc->flags = GETX_INT(st, 1, "flags");
+	loc->label = NULL;
 
-	loc->flags = st->getIntHex(4, "flags");
-	
-	if (st->get_error()) {
-		free(loc);
-		loc = NULL;
-		return 1;
-	}
-	if (loadlocations(st, loc->right, m+1, r) != 0) {
-		return st->get_error();
-	}
-	return st->get_error();
+	loadlocations(st, loc->right, m+1, r);
 }
 
-static int loadsymbols(Analyser *analy, ht_object_stream *st, Symbol *&symbol, int l, int r)
+static void loadsymbols(Analyser *analy, ObjectStream &st, Symbol *&symbol, int l, int r)
 {
 	if (l > r) {
 		symbol = NULL;
-		return st->get_error();
+		return;
 	}
 	int m = (l+r)/2;
-	symbol = (Symbol *) smalloc0(sizeof(Symbol));
+	symbol = new Symbol;
 
-	if (loadsymbols(analy, st, symbol->left, l, m-1) != 0) {
-		return st->get_error();
-	}
+	loadsymbols(analy, st, symbol->left, l, m-1);
 
-	Address *a;
-	a = (Address *)st->getObject("addr");
-	if (!a) {
-		// FIXME: exception bla..
-		return 1;
-	}
+	Address *a = GETX_OBJECT(st, "addr");
+
 	(symbol->location = analy->newLocation(a))->label = symbol;
 	delete a;
 	
-	symbol->name = st->getString("name");
+	symbol->name = st.getString("name");
 
-	symbol->type = (labeltype)st->getIntHex(1, "type");
+	symbol->type = (labeltype)GETX_INT(st, 1, "type");
 
-	if (st->get_error()) {
-		free(symbol);
-		symbol = NULL;
-		return st->get_error();
-	}
-	if (loadsymbols(analy, st, symbol->right, m+1, r) != 0) {
-		return st->get_error();
-	}
-	return st->get_error();
+	loadsymbols(analy, st, symbol->right, m+1, r);
 }
 
 static void resolveaddrs(Analyser *a, Location *loc)
@@ -588,14 +600,14 @@ static void resolveaddrs(Analyser *a, Location *loc)
 /*
  *
  */
-int Analyser::load(ht_object_stream *st)
+void Analyser::load(ObjectStream &st)
 {
 	cur_addr_ops = 0;
 	cur_label_ops = 0;
 	GET_OBJECT(st, addr);
 	invalid_addr = new InvalidAddress();
 	GET_OBJECT(st, addr_queue);
-	GET_INT_DEC(st, ops_parsed);
+	GET_INT32D(st, ops_parsed);
 	GET_BOOL(st, active);
 	if (active) {
 		some_analyser_active++;
@@ -605,7 +617,7 @@ int Analyser::load(ht_object_stream *st)
 	GET_OBJECT(st, first_explored);
 	GET_OBJECT(st, last_explored);
 
-	GET_INT_HEX(st, mode);
+	GET_INT32X(st, mode);
 
 	GET_OBJECT(st, explored);
 	GET_OBJECT(st, initialized);
@@ -614,17 +626,13 @@ int Analyser::load(ht_object_stream *st)
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 
-	GET_INT_DEC(st, location_count);
+	GET_INT32D(st, location_count);
 	loadlocations(st, locations, 0, location_count-1);
-
-	if (st->get_error()) return st->get_error();
 
 	resolveaddrs(this, locations);
 
-	GET_INT_DEC(st, symbol_count);
+	GET_INT32D(st, symbol_count);
 	loadsymbols(this, st, symbols, 0, symbol_count-1);
-
-	if (st->get_error()) return st->get_error();
 
 	GET_OBJECT(st, analy_disasm);
 	GET_OBJECT(st, disasm);     
@@ -637,23 +645,20 @@ int Analyser::load(ht_object_stream *st)
 	if (data) {
 		data->analy = this;
 	}
-	GET_INT_DEC(st, location_threshold);
-	GET_INT_DEC(st, symbol_threshold);
+	GET_INT32D(st, location_threshold);
+	GET_INT32D(st, symbol_threshold);
 
-	GET_INT_DEC(st, max_opcode_length);
+	GET_INT32D(st, max_opcode_length);
 
-	if (st->get_error()) return st->get_error();
-
-	Address *curfuncaddr = (Address *)st->getObject("cur_func");
+	Address *curfuncaddr = GETX_OBJECT(st, "cur_func");
 	if (curfuncaddr) {
 		cur_func = newLocation(curfuncaddr);
+		delete curfuncaddr;
 	} else {
 		cur_func = NULL;
 	}
-	delete curfuncaddr;
 	
 	dirty = false;
-	return st->get_error();
 }
 
 /*
@@ -664,10 +669,7 @@ void	Analyser::done()
 	setActive(false);
 	freeLocations(locations);
 	freeSymbols(symbols);
-	if (addr_queue) {
-		addr_queue->destroy();
-		delete addr_queue;
-	}
+	delete addr_queue;
 	if (explored) {
 		explored->done();
 		delete explored;
@@ -793,23 +795,19 @@ bool Analyser::addSymbol(Address *Addr, const char *label, labeltype type, Locat
  */
 bool Analyser::addXRef(Address *from, Address *to, xref_enum_t action)
 {
-	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return false;
+	if (!validAddress(from, scvalid) || !validAddress(to, scvalid)) return false;
 
 	Location *a = newLocation(from);
-	ht_tree	*x = a->xrefs;
+	Container *x = a->xrefs;
 
 	if (x) {
-		AddrXRef *xref;
-		if ((xref = (AddrXRef*)x->get(to))) {
-			// there's already a xref
-			return false;
-		}
+		AddrXRef tmp(to);
+		if (x->find(&tmp)) return false;
 	} else {
-		x = new ht_dtree();
-		((ht_dtree *)x)->init(compare_keys_ht_data);
+		x = new AVLTree(true);
+		a->xrefs = x;
 	}
-	x->insert(DUP_ADDR(to), new AddrXRef(action));
-	a->xrefs = x;
+	x->insert(new AddrXRef(to, action));
 	
 	DPRINTF("xref %y->%y\n", from, to);
 	return true;
@@ -876,27 +874,25 @@ bool Analyser::assignSymbol(Address *Addr, const char *label, labeltype type, Lo
  */
 void Analyser::assignXRef(Address *from, Address *to, xref_enum_t action)
 {
-	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return;
+	if (!validAddress(from, scvalid) || !validAddress(to, scvalid)) return;
 
-	Location	*a =	newLocation(from);
-	ht_tree	*x = a->xrefs;
+	Location	*a = newLocation(from);
+	Container	*x = a->xrefs;
 
 	if (x) {
 		AddrXRef *xref;
-		Address *tmp_to = DUP_ADDR(to);
-		if ((xref = (AddrXRef*)x->get(tmp_to))) {
+		AddrXRef tmp(to);
+		if ((xref = (AddrXRef*)x->get(x->find(&tmp)))) {
 			// update xref
 			xref->type = action;
 			DPRINTF("xref %y->%y updated\n", from, to);
 			return;
 		}
-		delete tmp_to;
 	} else {
-		x = new ht_dtree();
-		((ht_dtree *)x)->init(compare_keys_ht_data);
+		x = new AVLTree(true);
+		a->xrefs = x;
 	}
-	x->insert(DUP_ADDR(to), new AddrXRef(action));
-	a->xrefs = x;
+	x->insert(new AddrXRef(to, action));
 	
 	DPRINTF("xref %y->%y\n", from, to);
 }
@@ -927,19 +923,19 @@ bool	Analyser::continueAnalysis()
 	int			len;
 	branch_enum_t	branch;
 
-	assert((UINT)max_opcode_length <= sizeof buf);
+	assert((uint)max_opcode_length <= sizeof buf);
 
 	if (!active) return	false;
 	do {
 	
 		int diff;
 //		char tbuf[100];
-//	          char tbuf2[100];
+//		char tbuf2[100];
 //		addr->stringify(tbuf, 100, 0);
-/*          if (strcmp(tbuf, "200970ec") == 0) {
+/*		if (strcmp(tbuf, "200970ec") == 0) {
 			int as=0;
 		}*/
-//          printf("*** %s ***\n", tbuf);
+//		printf("*** %s ***\n", tbuf);
 		if ((addr->difference(diff, next_explored) && (diff >= 0)) || !validCodeAddress(addr)) {
 			if (!gotoAddress(addr, invalid_addr)) {
 				finish();
@@ -1037,7 +1033,7 @@ void	Analyser::dataAccess(Address *Addr, taccess access)
 	byte buffer[1024];
 
 	if (validAddress(Addr, scinitialized)) {
-		UINT bz = bufPtr(Addr, buffer, sizeof buffer);
+		uint bz = bufPtr(Addr, buffer, sizeof buffer);
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
@@ -1121,16 +1117,17 @@ void Analyser::deleteSymbol(Address *Addr)
  */
 bool Analyser::deleteXRef(Address *from, Address *to)
 {
-	if ((!validAddress(from, scvalid)) || (!validAddress(to, scvalid))) return false;
+	if (!validAddress(from, scvalid) || !validAddress(to, scvalid)) return false;
 
 	Location *a = getLocationByAddress(from);
 	if (!a) return false;
-	ht_tree *x = a->xrefs;
+	Container *x = a->xrefs;
 	if (!x) return false;
 
 	DPRINTF("deleted xref %y->%y\n", from, to);
 	
-	return x->del(to);
+	AddrXRef tmp(to);
+	return x->delObj(&tmp);
 }
 
 /*
@@ -1167,7 +1164,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 			add_comment(a->addr, 0, "");
 		}
 	}*/
-	Address *next_addr = DUP_ADDR(addr);
+	Address *next_addr = addr->clone();
 	if (!next_addr->add(len)) {
 		delete next_addr;
 		next_addr = new InvalidAddress();
@@ -1194,7 +1191,7 @@ void	Analyser::doBranch(branch_enum_t branch, OPCODE *opcode, int len)
 		case	br_call: {
 			addXRef(branch_addr, addr, xrefcall);
 			bool special_func = false;
-			char *lprfx = LPRFX_SUB;
+			const char *lprfx = LPRFX_SUB;
 			if (!getSymbolByAddress(branch_addr) && validCodeAddress(branch_addr)) {
 				// should be in code_analy
 				byte buf[16];
@@ -1284,7 +1281,7 @@ Location *Analyser::enumLocations(Address *Addr)
 {
 	Location *result = NULL;
 	if (locations) analyserenum_addrs(locations, Addr, result);
-	while ((result) && (result->flags & AF_DELETED)) {
+	while (result && (result->flags & AF_DELETED)) {
 		Address *a = result->addr;
 		result = NULL;
 		analyserenum_addrs(locations, a, result);
@@ -1440,7 +1437,7 @@ Location *Analyser::getLocationContextByAddress(Address *Addr)
 {
 	Location *res = enumLocationsReverse(Addr);
 	if (res && res->type.type != dt_unknown) {
-		Address *resaddr = DUP_ADDR(res->addr);
+		Address *resaddr = res->addr->clone();
 		resaddr->add(res->type.length);
 		if (resaddr->compareTo(Addr) > 0) {
 			delete resaddr;
@@ -1458,11 +1455,11 @@ Location *Analyser::getFunctionByAddress(Address *Addr)
 {
 	Location *loc = getLocationByAddress(Addr);
 	if (!loc) loc = enumLocationsReverse(Addr);
-	while ((loc) && (!(loc->flags & AF_FUNCTION_SET))) {
+	while (loc && !(loc->flags & AF_FUNCTION_SET)) {
 		if (loc->flags & AF_FUNCTION_END) return NULL;
 		loc = enumLocationsReverse(loc->addr);
 	}
-	return (loc) ? loc->thisfunc : NULL;
+	return loc ? loc->thisfunc : NULL;
 }
 
 /*
@@ -1472,11 +1469,11 @@ Location *Analyser::getPreviousSymbolByAddress(Address *Addr)
 {
 	Location *loc = getLocationByAddress(Addr);
 	if (!loc) loc = enumLocationsReverse(Addr);
-	while ((loc) && (!loc->label)) {
+	while (loc && !loc->label) {
 		if (loc->flags & AF_FUNCTION_END) return NULL;
 		loc = enumLocationsReverse(loc->addr);
 	}
-	return (loc) ? loc : NULL;
+	return loc ? loc : NULL;
 }
 
 /*
@@ -1485,7 +1482,7 @@ Location *Analyser::getPreviousSymbolByAddress(Address *Addr)
 static Symbol *analyserfindlabel(Symbol *labels, const char *label)
 {
 	if (labels) {
-		int i=strcmp(label, labels->name);
+		int i = strcmp(label, labels->name);
 		if (i < 0) return analyserfindlabel(labels->left, label);
 		if (i > 0) return analyserfindlabel(labels->right, label);
 		return labels->location ? labels : NULL;
@@ -1503,17 +1500,17 @@ Symbol *Analyser::getSymbolByName(const char *label)
 
 const char *Analyser::getSymbolNameByLocation(Location *loc)
 {
-	return (loc) ? ((loc->label) ? loc->label->name : NULL): NULL;
+	return loc ? (loc->label ? loc->label->name : NULL): NULL;
 }
 
 
 /**
- *	converts |FILEOFS fileaddr| to |Address|
+ *	converts |FileOfs fileofs| to |Address|
  */
-Address *Analyser::fileofsToAddress(FILEOFS fileaddr)
+Address *Analyser::fileofsToAddress(FileOfs fileaddr)
 {
 	// abstract / stub
-	return DUP_ADDR(invalid_addr);
+	return new InvalidAddress();
 }
 
 /**
@@ -1535,13 +1532,10 @@ void Analyser::freeLocation(Location *loc)
 {
 	if (loc) {
 		// label will be freed separatly
-		if (loc->xrefs) {
-			loc->xrefs->destroy();
-			delete loc->xrefs;
-		}		
+		delete loc->xrefs;
 		freeComments(loc);
 		delete loc->addr;
-		free(loc);
+		delete loc;
 	}
 }
 
@@ -1560,14 +1554,10 @@ void	Analyser::freeLocations(Location *addrs)
 /*
  *
  */
-void Analyser::freeComments(Location *Addr)
+void Analyser::freeComments(Location *aAddr)
 {
-	CommentList *c = Addr->comments;
-	if (c) {
-		c->destroy();
-		delete c;
-	}
-	Addr->comments = NULL;
+	delete aAddr->comments;
+	aAddr->comments = NULL;
 }
 
 /*
@@ -1576,8 +1566,8 @@ void Analyser::freeComments(Location *Addr)
 void Analyser::freeSymbol(Symbol *label)
 {
 	if (label) {
-		if (label->name) free(label->name);
-		free(label);
+		free(label->name);
+		delete label;
 	}
 }
 
@@ -1612,7 +1602,7 @@ static char *analy_addr_sym_func2(CPU_ADDR Addr, int *symstrlen, void *analy)
 	a->getFromCPUAddress(&Addr);
 	Location *loc = ((Analyser*)analy)->getLocationByAddress(a);
 	delete a;
-	if ((loc) && (loc->label)) {
+	if (loc && loc->label) {
 		if (symstrlen) *symstrlen = strlen(loc->label->name);
 		return loc->label->name;
 	}
@@ -1652,7 +1642,7 @@ const char *Analyser::getDisasmStrFormatted(Address *Addr)
 		byte buf[16];
 		int bz = bufPtr(Addr, buf, sizeof(buf));
 		OPCODE *o=disasm->decode(buf, MIN(bz, max_opcode_length), mapAddr(Addr));
-		char *res = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
+		const char *res = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 
 		addr_sym_func_context = NULL;
 		addr_sym_func = NULL;
@@ -1683,7 +1673,7 @@ static void analysergetlocationcount(Location *addr, int *c)
 /*
  *
  */
-int	Analyser::getLocationCount()
+int	Analyser::getLocationCount() const
 {
 	int c=0;
 	analysergetlocationcount(locations, &c);
@@ -1693,9 +1683,9 @@ int	Analyser::getLocationCount()
 /*
  *
  */
-const char *Analyser::getName()
+String & Analyser::getName(String &res)
 {
-	return "generic";
+	return res = "generic";
 }
 
 static void analysergetsymbolcount(Symbol *l, int *c)
@@ -1710,7 +1700,7 @@ static void analysergetsymbolcount(Symbol *l, int *c)
 /*
  *
  */
-int	Analyser::getSymbolCount()
+int	Analyser::getSymbolCount() const
 {
 	int c=0;
 	analysergetsymbolcount(symbols, &c);
@@ -1746,7 +1736,7 @@ const char *Analyser::getType()
 /*
  *
  */
-ht_tree *Analyser::getXRefs(Address *Addr)
+Container *Analyser::getXRefs(Address *Addr)
 {
 	Location *a = getLocationByAddress(Addr);
 	if (!a) return NULL;
@@ -1756,9 +1746,9 @@ ht_tree *Analyser::getXRefs(Address *Addr)
 /*
  *
  */
-bool	Analyser::gotoAddress(Address *Addr, Address *func)
+bool	Analyser::gotoAddress(Address *aAddr, Address *func)
 {
-	DPRINTF("goto(%y, %y)\n", Addr, func);
+	DPRINTF("goto(%y, %y)\n", aAddr, func);
 	int diff;
 	
 	if (first_explored->difference(diff, last_explored) && diff < 0) {
@@ -1769,9 +1759,9 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	delete first_explored;
 	delete last_explored;
 	delete next_explored;
-	func = DUP_ADDR(func);
+	func = func->clone();
 	
-	if (!validCodeAddress(Addr) || explored->contains(Addr)) {
+	if (!validCodeAddress(aAddr) || explored->contains(aAddr)) {
 		DPRINTF("Address: %y Valid: %d Explored: %d\n", addr, validCodeAddress(addr), explored->contains(addr));
 		do {
 			delete addr;
@@ -1787,9 +1777,9 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 			DPRINTF("pop %y   (Valid: %d  Explored: %d)\n", addr, validCodeAddress(addr), explored->contains(addr));
 		} while ((explored->contains(addr)) || (!validCodeAddress(addr)));          
 	} else {
-		if (addr != Addr) {
+		if (addr != aAddr) {
 			delete addr;
-			addr = DUP_ADDR(Addr);
+			addr = aAddr->clone();
 		}
 	}
 
@@ -1802,10 +1792,10 @@ bool	Analyser::gotoAddress(Address *Addr, Address *func)
 	if (!next_explored) {
 		next_explored = new InvalidAddress();
 	} else {
-		next_explored = DUP_ADDR(next_explored);
+		next_explored = next_explored->clone();
 	}
-	first_explored = DUP_ADDR(addr);
-	last_explored = DUP_ADDR(addr);
+	first_explored = addr->clone();
+	last_explored = addr->clone();
 	return true;
 }
 
@@ -1854,7 +1844,7 @@ void Analyser::makeDirty()
 /*
  *
  */
-CPU_ADDR Analyser::mapAddr(Address *Addr)
+CPU_ADDR Analyser::mapAddr(Address *aAddr)
 {
 	/*
 	 * 	this function should map the independent address Addr to a
@@ -1863,18 +1853,19 @@ CPU_ADDR Analyser::mapAddr(Address *Addr)
 	 *   it is only used for relativ calls/jumps
 	 */
 	CPU_ADDR a;
-	Addr->putIntoCPUAddress(&a);
+	aAddr->putIntoCPUAddress(&a);
 	return a;
 }
 
-Location *Analyser::newLocation(Location *&locs, Address *Addr)
+Location *Analyser::newLocation(Location *&locs, Address *aAddr)
 {
 	if (locs) {
-		if (Addr->compareTo(locs->addr) < 0) return newLocation(locs->left, Addr);
-		if (Addr->compareTo(locs->addr) > 0) return newLocation(locs->right, Addr);
+		if (aAddr->compareTo(locs->addr) < 0) return newLocation(locs->left, aAddr);
+		if (aAddr->compareTo(locs->addr) > 0) return newLocation(locs->right, aAddr);
 	} else {
-		locs = (Location *) smalloc0(sizeof(Location));
-		locs->addr = DUP_ADDR(Addr);
+		locs = new Location;
+		memset(locs, 0, sizeof *locs);
+		locs->addr = aAddr->clone();
 		location_count++;
 	}
 	locs->flags &= ~AF_DELETED;
@@ -1898,15 +1889,17 @@ Symbol *Analyser::newSymbol(Symbol *&labels, const char *label, Location *loc, l
 		int i = strcmp(label, labels->name);
 		if (i < 0) return newSymbol(labels->left, label, loc, type);
 		if (i > 0) return newSymbol(labels->right, label, loc, type);
-		if (!(labels->location)) {
+		if (!labels->location) {
 			labels->location = loc;
 			if (type != label_unknown) labels->type = type;
 		}
 	} else {
-		labels = (Symbol *) smalloc0(sizeof(Symbol));
+		labels = new Symbol;
 		labels->name = ht_strdup(label);
 		labels->location = loc;
 		labels->type = type;
+		labels->left = NULL;
+		labels->right = NULL;
 		symbol_count++;
 	}
 	return labels;
@@ -1948,13 +1941,12 @@ void Analyser::optimizeSymbolTree()
  */
 bool Analyser::popAddress(Address **Addr, Address **func)
 {
-	if (addr_queue->count()) {
-
-		AddressQueueItem *aqi = (AddressQueueItem *) addr_queue->dequeue();
-		*Addr = DUP_ADDR(aqi->addr);
-		*func = DUP_ADDR(aqi->func);
+	if (!addr_queue->isEmpty()) {
+		AddressQueueItem *aqi = (AddressQueueItem *) addr_queue->deQueue();
+		*Addr = aqi->addr->clone();
+		*func = aqi->func->clone();
 		delete aqi;
-		
+
 		DPRINTF("addr %y (from sub %y) poped\n", *Addr, *func);
 		return true;
 
@@ -1977,7 +1969,7 @@ void Analyser::pushAddress(Address *Addr, Address *func)
 		}
 		DPRINTF("addr %y (from func %y) pushed\n", Addr, func);
 		AddressQueueItem *aqi = new AddressQueueItem(Addr, func);
-		addr_queue->enqueue(aqi);
+		addr_queue->enQueue(aqi);
 	}
 }
 
@@ -1986,39 +1978,43 @@ void Analyser::pushAddress(Address *Addr, Address *func)
  */
 int	Analyser::queryConfig(int mode)
 {
-	// stub
-	return 0;
+	switch (mode) {
+	case Q_DO_ANALYSIS:
+	case Q_ENGAGE_CODE_ANALYSER:
+	case Q_ENGAGE_DATA_ANALYSER:
+		return true;
+	default:
+		return 0;
+	}
 }
 
-static void saveaddrs(ht_object_stream *st, Location *addr)
+static void saveaddrs(ObjectStream &st, Location *addr)
 {
 	if (addr) {
 		saveaddrs(st, addr->left);
 
 		if (!(addr->flags & AF_DELETED)) {
-			st->putObject(addr->addr, "addr");
-
-			st->putObject(addr->xrefs, "xrefs");
-			st->putObject(addr->comments, "comments");
-
+			PUTX_OBJECT(st, addr->addr, "addr");
+			PUTX_OBJECT(st, addr->xrefs, "xrefs");
+			PUTX_OBJECT(st, addr->comments, "comments");
+			
 			analyser_put_addrtype(st, &addr->type);
 			
 			if (addr->thisfunc) {
-				st->putObject(addr->thisfunc->addr, "func");
+				PUTX_OBJECT(st, addr->thisfunc->addr, "func");
 			} else {
 				Address *invalid_addr = new InvalidAddress();
-				st->putObject(invalid_addr, "func");
+				PUTX_OBJECT(st, invalid_addr, "func");
 				delete invalid_addr;
 			}
-
-			st->putIntHex(addr->flags, 4, "flags");
+			PUTX_INT8X(st, addr->flags, "flags");
 		}
 
 		saveaddrs(st, addr->right);
 	}
 }
 
-static void savelabels(ht_object_stream *st, Symbol *label)
+static void savelabels(ObjectStream &st, Symbol *label)
 {
 	if (label) {
 		savelabels(st, label->left);
@@ -2026,12 +2022,11 @@ static void savelabels(ht_object_stream *st, Symbol *label)
 		if (label->location) {
 			// label isn't deleted
 
-			st->putObject(label->location->addr, "addr");
-
-			st->putString(label->name, "name");
+			PUTX_OBJECT(st, label->location->addr, "addr");
+			PUTX_STRING(st, label->name, "name");
 
 			int a = (int)label->type;
-			st->putIntHex(a, 1, "type");
+			PUTX_INTX(st, a, 1, "type");
 		}
 
 		savelabels(st, label->right);
@@ -2041,26 +2036,26 @@ static void savelabels(ht_object_stream *st, Symbol *label)
 /*
  *
  */
-void Analyser::store(ht_object_stream *st)
+void Analyser::store(ObjectStream &st) const
 {
 	PUT_OBJECT(st, addr);
 	
 	PUT_OBJECT(st, addr_queue);
-	PUT_INT_DEC(st, ops_parsed);
+	PUT_INT32D(st, ops_parsed);
 	PUT_BOOL(st, active);
 	PUT_OBJECT(st, next_explored);
 	PUT_OBJECT(st, first_explored);
 	PUT_OBJECT(st, last_explored);
-	PUT_INT_HEX(st, mode);
+	PUT_INT32X(st, mode);
 	PUT_OBJECT(st, explored);
 	PUT_OBJECT(st, initialized);
 
-	st->putInfo("locations");
-	st->putIntDec(getLocationCount(), 4, "location_count");
+	st.putComment("locations");
+	PUTX_INT32D(st, getLocationCount(), "location_count");
 	saveaddrs(st, locations);
 
-	st->putInfo("symbols");
-	st->putIntDec(getSymbolCount(), 4, "symbol_count");
+	st.putComment("symbols");
+	PUTX_INT32D(st, getSymbolCount(), "symbol_count");
 	savelabels(st, symbols);
 
 	PUT_OBJECT(st, analy_disasm);
@@ -2068,15 +2063,15 @@ void Analyser::store(ht_object_stream *st)
 	PUT_OBJECT(st, code);
 	PUT_OBJECT(st, data);
 
-	PUT_INT_DEC(st, location_threshold);
-	PUT_INT_DEC(st, symbol_threshold);
+	PUT_INT32D(st, location_threshold);
+	PUT_INT32D(st, symbol_threshold);
 
-	PUT_INT_DEC(st, max_opcode_length);
+	PUT_INT32D(st, max_opcode_length);
 	
 	if (cur_func) {
-		st->putObject(cur_func->addr, "cur_func");
+		PUTX_OBJECT(st, cur_func->addr, "cur_func");
 	} else {
-		st->putObject(NULL, "cur_func");
+		PUTX_OBJECT(st, NULL, "cur_func");
 	}
 	
 	dirty = false;
@@ -2137,7 +2132,7 @@ void Analyser::setDisasm(Disassembler *d)
 
 /*
  *	sets addr_threshold. after threshold addr_tree ops the tree will
- *   be optimized
+ *	be optimized
  */
 void Analyser::setLocationTreeOptimizeThreshold(int threshold)
 {
@@ -2204,13 +2199,6 @@ void AnalyDisassembler::init(Analyser *A)
 {
 	analy = A;
 	initDisasm();
-}
-
-/*
- *
- */
-void AnalyDisassembler::done()
-{
 }
 
 /*

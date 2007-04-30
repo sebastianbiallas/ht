@@ -30,13 +30,13 @@
  *	CLASS info_node
  */
 
-class info_node: public ht_data {
+class info_node: public Object {
 public:
-	FILEOFS start;
-	UINT len;
-	ht_tree *xrefs;
+	FileOfs start;
+	uint len;
+	Container *xrefs;
 	
-	info_node(FILEOFS start);
+	info_node(FileOfs start);
 	~info_node();
 };
 
@@ -46,21 +46,21 @@ public:
 
 class ht_info_lexer: public ht_syntax_lexer {
 public:
-	ht_tree *xrefs;
-	UINT cx, cy;
+	Container *xrefs;
+	uint cx, cy;
 	ht_view *pal_from;
 	
-			void init(ht_view *pal_from);
+		void init(ht_view *pal_from);
 /* overwritten */
-	virtual	vcp getcolor_syntax(UINT pal_index);
+	virtual	vcp getcolor_syntax(uint pal_index);
 	virtual	lexer_state getinitstate();
 	virtual	lexer_token geterrortoken();
-	virtual	char *getname();
-	virtual	lexer_token gettoken(void *buf, UINT buflen, text_pos p, bool start_of_line, lexer_state *ret_state, UINT *ret_len);
+	virtual	const char *getname();
+	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len);
 	virtual	vcp gettoken_color(lexer_token t);
 /* new */
-			void set_xrefs(ht_tree *xrefs);
-			void set_cursor(UINT cx, UINT cy);
+		void set_xrefs(Container *xrefs);
+		void set_cursor(uint cx, uint cy);
 };
 
 /*
@@ -69,16 +69,15 @@ public:
  
 class ht_info_textfile: public ht_ltextfile {
 protected:
-	UINT start, end;
+	uint start, end;
 
-	virtual ht_ltextfile_line *fetch_line(UINT line);
+	virtual ht_ltextfile_line *fetch_line(uint line) const;
 public:
-			void	init(ht_streamfile *streamfile, bool own_streamfile, ht_syntax_lexer *lexer);
-	virtual	void done();
+		ht_info_textfile(File *streamfile, bool own_streamfile, ht_syntax_lexer *lexer);
 /* overwritten */
-	virtual	UINT linecount();
+	virtual	uint linecount() const;
 /* new */	
-			void set_node(UINT ofs, UINT len);
+			void set_node(uint ofs, uint len);
 };
 
 /*
@@ -90,23 +89,22 @@ protected:
 	char *cwd;
 	char *file;
 	char *node;
-	ht_tree *xrefs;
-	ht_list *history;
+	Container *xrefs;
+	Container *history;
 
-			int find_node(char *infofile, char *node);
-			ht_tree *get_xrefs();
-			bool igotonode(char *file, char *node, bool add2hist);
-			UINT readfile(char *fn, char **text);
+			int find_node(const char *infofile, const char *node);
+			bool igotonode(const char *file, const char *node, bool add2hist);
+			uint readfile(char *fn, char **text);
 public:
-			void init(bounds *b);
+			void init(Bounds *b);
 	virtual	void done();
 /* overwritten */
 	virtual	void draw();
-	virtual	char *defaultpalette();
-	virtual void get_pindicator_str(char *buf);
+	virtual	const char *defaultpalette();
+	virtual int get_pindicator_str(char *buf, int max_len);
 	virtual	void handlemsg(htmsg *msg);
 /* new */	
-	virtual	bool gotonode(char *file, char *node);
+	virtual	bool gotonode(const char *file, const char *node);
 };
 
-#endif /* __TEXTEDIT_H__ */
+#endif /* __INFOVIEW_H__ */

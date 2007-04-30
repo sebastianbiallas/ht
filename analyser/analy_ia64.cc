@@ -26,24 +26,13 @@
 #include "htiobox.h"
 #include "snprintf.h"
 
-/*
- *
- */
 void AnalyIA64Disassembler::init(Analyser *A)
 {
 	disasm = new IA64Disassembler();
 	AnalyDisassembler::init(A);
 }
 
-/*
- *
- */
-void AnalyIA64Disassembler::done()
-{
-	AnalyDisassembler::done();
-}
-
-OBJECT_ID AnalyIA64Disassembler::object_id() const
+ObjectID AnalyIA64Disassembler::getObjectID() const
 {
 	return ATOM_ANALY_IA64;
 }
@@ -64,7 +53,7 @@ Address *AnalyIA64Disassembler::branchAddr(OPCODE *opcode, branch_enum_t brancht
 	return new InvalidAddress();
 }
 
-Address *AnalyIA64Disassembler::createAddress(dword offset)
+Address *AnalyIA64Disassembler::createAddress(uint32 offset)
 {
 	return new AddressFlat32(offset);
 }
@@ -98,16 +87,18 @@ branch_enum_t AnalyIA64Disassembler::isBranch(OPCODE *opcode)
 {
 	IA64DisInsn *dis_insn = (IA64DisInsn *) opcode;
 	IA64SlotDisInsn *slot = &dis_insn->slot[dis_insn->selected];
-	if (strncmp(slot->opcode->name, "br.", 3)==0) {
-		if (strncmp(slot->opcode->name+3, "call", 4)==0) {
+	if (ht_strncmp(slot->opcode->name, "br.", 3)==0) {
+		if (ht_strncmp(slot->opcode->name+3, "call", 4)==0) {
 			return br_call;
-		} else if (strncmp(slot->opcode->name+3, "cond", 4)==0) {
+		} else if (ht_strncmp(slot->opcode->name+3, "cond", 4)==0) {
 			if (slot->qp) {
 				return br_jXX;
 			} else {
 				return br_jump;
 			}
-		} else if (strncmp(slot->opcode->name+3, "ret", 3)==0) {
+		} else if (ht_strncmp(slot->opcode->name+3, "cloop", 5)==0) {
+			return br_jXX;
+		} else if (ht_strncmp(slot->opcode->name+3, "ret", 3)==0) {
 			if (!slot->qp) return br_return;
 		}
 	}

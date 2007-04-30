@@ -28,22 +28,22 @@
 #include "analy_register.h"
 #include "analy_ppc.h"
 #include "analy_x86.h"
+#include "analy_arm.h"
 #include "coff_analy.h"
 #include "coff_s.h"
-#include "global.h"
 
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htcoff.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "x86asm.h"
 
 /*
  *
  */
-void	CoffAnalyser::init(ht_coff_shared_data *Coff_shared, ht_streamfile *File)
+void	CoffAnalyser::init(ht_coff_shared_data *Coff_shared, File *File)
 {
 	coff_shared = Coff_shared;
 	file = File;
@@ -63,7 +63,7 @@ void	CoffAnalyser::init(ht_coff_shared_data *Coff_shared, ht_streamfile *File)
 /*
  *
  */
-int	CoffAnalyser::load(ht_object_stream *f)
+void	CoffAnalyser::load(ObjectStream &f)
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -71,7 +71,7 @@ int	CoffAnalyser::load(ht_object_stream *f)
 	area				*validarea;
 	*/
 	GET_OBJECT(f, validarea);
-	return Analyser::load(f);
+	Analyser::load(f);
 }
 
 /*
@@ -96,26 +96,26 @@ void CoffAnalyser::beginAnalysis()
 	 */
 	Address *entry=createAddress32(coff_shared->coff32header.entrypoint_address);
 	pushAddress(entry, entry);
-	
+
 	/*
 	 * give all sections a descriptive comment:
 	 */
 
 	/*struct PE_SECTION_HEADER {
 		byte name[PE_SIZEOF_SHORT_NAME] __attribute__ ((packed));
-		dword data_vsize __attribute__ ((packed));
-		dword data_address __attribute__ ((packed));
-		dword data_size __attribute__	((packed));
-		dword data_offset __attribute__ ((packed));
-		dword relocation_offset __attribute__ ((packed));
-		dword linenumber_offset __attribute__ ((packed));
-		word relocation_count __attribute__ ((packed));
-		word linenumber_count __attribute__ ((packed));
-		dword characteristics __attribute__ ((packed));
+		uint32 data_vsize __attribute__ ((packed));
+		uint32 data_address __attribute__ ((packed));
+		uint32 data_size __attribute__	((packed));
+		uint32 data_offset __attribute__ ((packed));
+		uint32 relocation_offset __attribute__ ((packed));
+		uint32 linenumber_offset __attribute__ ((packed));
+		uint16 relocation_count __attribute__ ((packed));
+		uint16 linenumber_count __attribute__ ((packed));
+		uint32 characteristics __attribute__ ((packed));
 	};*/
 	COFF_SECTION_HEADER *s=coff_shared->sections.sections;
 	char blub[100];
-	for (UINT i=0; i<coff_shared->sections.section_count; i++) {
+	for (uint i=0; i<coff_shared->sections.section_count; i++) {
 		Address *secaddr = createAddress32(s->data_address);
 		sprintf(blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
 		addComment(secaddr, 0, "");
@@ -129,7 +129,7 @@ void CoffAnalyser::beginAnalysis()
 
 		// mark end of sections
 		sprintf(blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-		Address *secend_addr = (Address*)secaddr->duplicate();
+		Address *secend_addr = secaddr->clone();
 		secend_addr->add(MAX(s->data_size, s->data_vsize));
 		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 		addComment(secend_addr, 0, "");
@@ -138,7 +138,7 @@ void CoffAnalyser::beginAnalysis()
 		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		Address *secini_addr = (Address *)secaddr->duplicate();
+		Address *secini_addr = secaddr->clone();
 		secini_addr->add(MIN(s->data_size, s->data_vsize));
 		if (validAddress(secaddr, scinitialized) && validAddress(secini_addr, scinitialized)) {
 			initialized->add(secaddr, secini_addr);
@@ -223,7 +223,7 @@ void CoffAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	CoffAnalyser::object_id() const
+ObjectID	CoffAnalyser::getObjectID() const
 {
 	return ATOM_COFF_ANALYSER;
 }
@@ -231,9 +231,9 @@ OBJECT_ID	CoffAnalyser::object_id() const
 /*
  *
  */
-UINT CoffAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint CoffAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
 	return file->read(buf, size);
@@ -241,9 +241,9 @@ UINT CoffAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool CoffAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 {
-	if (addr->object_id()==ATOM_ADDRESS_X86_FLAT_32) {
+	if (addr->getObjectID()==ATOM_ADDRESS_X86_FLAT_32) {
 		*r = ((AddressX86Flat32*)addr)->addr;
-	} else if (addr->object_id()==ATOM_ADDRESS_FLAT_32) {
+	} else if (addr->getObjectID()==ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr;
 	} else {
 		return false;
@@ -263,7 +263,7 @@ Address *CoffAnalyser::createAddress()
 	}
 }
 
-Address *CoffAnalyser::createAddress32(dword addr)
+Address *CoffAnalyser::createAddress32(uint32 addr)
 {
 	switch (coff_shared->coffheader.machine) {
 		case COFF_MACHINE_I386:
@@ -295,10 +295,10 @@ Assembler *CoffAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS CoffAnalyser::addressToFileofs(Address *Addr)
+FileOfs CoffAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		FILEOFS ofs;
+		FileOfs ofs;
 //		Addr-=pe_shared->pe32.header_nt.image_base;
 		RVA rva;
 		if (!convertAddressToRVA(Addr, &rva)) return INVALID_FILE_OFS;
@@ -322,17 +322,17 @@ const char *CoffAnalyser::getSegmentNameByAddress(Address *Addr)
 	coff_rva_to_section(sections, rva, &i);
 	COFF_SECTION_HEADER *s=sections->sections+i;
 	if (!coff_rva_is_valid(sections, rva)) return NULL;
-	memmove(sectionname, s->name, 8);
-	sectionname[8]=0;
+	memcpy(sectionname, s->name, 8);
+	sectionname[8] = 0;
 	return sectionname;
 }
 
 /*
  *
  */
-const char *CoffAnalyser::getName()
+String &CoffAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -384,12 +384,17 @@ void CoffAnalyser::initUnasm()
 			break;
 		case COFF_MACHINE_POWERPC_LE:	// IBM PowerPC Little-Endian
 			DPRINTF("no apropriate disassembler for POWER PC\n");
-			warnbox("No disassembler for POWER PC!");
+			warnbox("No disassembler for little endian POWER PC!");
 			break;
 		case COFF_MACHINE_POWERPC_BE:
 			analy_disasm = new AnalyPPCDisassembler();
-			((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			break;          
+			((AnalyPPCDisassembler*)analy_disasm)->init(this, ANALY_PPC_32);
+			break;
+		case COFF_MACHINE_ARM:
+		case COFF_MACHINE_THUMB:
+			analy_disasm = new AnalyArmDisassembler();
+			((AnalyArmDisassembler*)analy_disasm)->init(this);
+			break;
 		case COFF_MACHINE_UNKNOWN:
 		default:
 			DPRINTF("no apropriate disassembler for machine %04x\n", coff_shared->coffheader.machine);
@@ -421,7 +426,7 @@ Address *CoffAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void CoffAnalyser::store(ht_object_stream *st)
+void CoffAnalyser::store(ObjectStream &st) const
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -450,7 +455,7 @@ int	CoffAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *CoffAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *CoffAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	RVA a;
 	if (coff_ofs_to_rva(&coff_shared->sections, fileofs, &a)) {

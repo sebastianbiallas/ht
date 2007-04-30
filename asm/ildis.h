@@ -22,19 +22,19 @@
 #define ILDIS_H
 
 #include "asm.h"
-#include "global.h"
+#include "data.h"
 #include "ilopc.h"
 
 struct ILDisInsn {
-	bool			valid;
-	int			size;
-	byte			op;
+	bool	valid;
+	int	size;
+	byte	op;
 	union {
-				dword			ui;
-				qword			q;
-				float			f;
-				double			df;
-				int			i;
+		uint32	ui;
+		uint64	q;
+		float	f;
+		double	df;
+		int	i;
 	} data;
 	ILOpcodeTabEntry	*prefix;
 	ILOpcodeTabEntry	*opcode;
@@ -49,22 +49,21 @@ protected:
 	char insnstr[256];
 	ILDisInsn	insn;
 	void *context;
-	char* (*string_func)(dword string_ofs, void *context);
-	char* (*token_func)(dword token, void *context);
+	char* (*string_func)(uint32 string_ofs, void *context);
+	char* (*token_func)(uint32 token, void *context);
 public:
-				ILDisassembler();
-				ILDisassembler(char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
-	virtual			~ILDisassembler();
+				ILDisassembler(char* (*string_func)(uint32 string_ofs, void *context), char* (*token_func)(uint32 token, void *context), void *context);
+				ILDisassembler(BuildCtorArg&a): Disassembler(a) {};
 
 	virtual	dis_insn	*decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual	dis_insn	*duplicateInsn(dis_insn *disasm_insn);
 	virtual	void		getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
 	virtual	byte		getSize(dis_insn *disasm_insn);
-	virtual	char		*getName();
-	virtual void		initialize(char* (*string_func)(dword string_ofs, void *context), char* (*token_func)(dword token, void *context), void *context);
-	virtual	char		*str(dis_insn *disasm_insn, int style);
-	virtual	char		*strf(dis_insn *disasm_insn, int style, char *format);
-	virtual	OBJECT_ID object_id() const;
+	virtual	const char	*getName();
+	virtual void		initialize(char* (*string_func)(uint32 string_ofs, void *context), char* (*token_func)(uint32 token, void *context), void *context);
+	virtual	const char	*str(dis_insn *disasm_insn, int style);
+	virtual	const char	*strf(dis_insn *disasm_insn, int style, const char *format);
+	virtual	ObjectID	getObjectID() const;
 	virtual	bool		validInsn(dis_insn *disasm_insn);
 };
 								

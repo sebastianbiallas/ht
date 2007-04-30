@@ -26,16 +26,18 @@
 
 class AnalyAlphaDisassembler: public AnalyDisassembler {
 public:
-			void			init(Analyser *A);
-			int 			load(ht_object_stream *f);
-	virtual   void	     	done();
-	virtual	OBJECT_ID		object_id() const;
+					AnalyAlphaDisassembler();
+					AnalyAlphaDisassembler(BuildCtorArg &a): AnalyDisassembler(a) {};
+		void			init(Analyser *A);
+		void			load(ObjectStream &f);
+	virtual void		     	done();
+	virtual	ObjectID		getObjectID() const;
 
-	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-			Address		*createAddress(dword offset);
+	virtual	Address			*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
+		Address			*createAddress(uint32 offset);
 	virtual	void			examineOpcode(OPCODE *opcode);
-	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
-	virtual	void			store(ht_object_stream *f);
+	virtual	branch_enum_t 		isBranch(OPCODE *opcode);
+	virtual	void			store(ObjectStream &f) const;
 };
 
 #endif

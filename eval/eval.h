@@ -39,8 +39,12 @@ extern "C" {
 
 #include "evaltype.h"
 
-typedef int (*eval_func_handler)(eval_scalar *result, char *name, eval_scalarlist *params);
-typedef int (*eval_symbol_handler)(eval_scalar *result, char *name);
+#ifndef __cplusplus
+#define bool int
+#endif
+
+typedef bool (*eval_func_handler)(eval_scalar *result, char *name, eval_scalarlist *params);
+typedef bool (*eval_symbol_handler)(eval_scalar *result, char *name);
 
 #include "lex.h"
 #include "evalx.h"
@@ -70,9 +74,9 @@ int bin2str(char *result, void *S, int len);
  */
 
 void clear_eval_error();
-int get_eval_error(char **str, int *pos);
-void set_eval_error(char *format,...);
-void set_eval_error_ex(int pos, char *format, ...);
+int get_eval_error(const char **str, int *pos);
+void set_eval_error(const char *format,...);
+void set_eval_error_ex(int pos, const char *format, ...);
 
 /*
  *
@@ -115,7 +119,7 @@ void scalar_dump(eval_scalar *s);
 
 void scalar_create_int(eval_scalar *result, const eval_int *t);
 void scalar_create_int_c(eval_scalar *result, const int i);
-void scalar_create_int_q(eval_scalar *result, const qword q);
+void scalar_create_int_q(eval_scalar *result, const uint64 q);
 void scalar_create_str(eval_scalar *result, const eval_str *t);
 void scalar_create_str_c(eval_scalar *result, const char *cstr);
 void scalar_create_float(eval_scalar *result, const eval_float *t);
@@ -138,7 +142,7 @@ void scalar_negset(eval_scalar *xr, eval_scalar *xa);
 void scalar_notset(eval_scalar *xr, eval_scalar *xa);
 void scalar_lnotset(eval_scalar *xr, eval_scalar *xa);
 void scalar_miniif(eval_scalar *xr, eval_scalar *xa, eval_scalar *xb, eval_scalar *xc);
-void sprintf_puts(char **b, char *blimit, char *buf);
+void sprintf_puts(char **b, char *blimit, const char *buf);
 int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *s);
 int func_sprintf(eval_scalar *r, const eval_str *format, const eval_scalarlist *scalars);
 

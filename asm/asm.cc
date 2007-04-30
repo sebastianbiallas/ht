@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	asm.cc
  *
@@ -18,15 +18,15 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "asm.h"
-#include "common.h"
-#include "global.h"
-#include "htatom.h"
-#include "htdebug.h"
-
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <stdarg.h>
+
+#include "asm.h"
+#include "data.h"
+#include "atom.h"
+#include "htdebug.h"
+#include "snprintf.h"
 
 #include "alphadis.h"
 #include "ia64dis.h"
@@ -34,6 +34,7 @@
 #include "javadis.h"
 #include "x86dis.h"
 #include "ppcdis.h"
+#include "armdis.h"
 
 /*
  *	CLASS Assembler
@@ -47,6 +48,7 @@ Assembler::Assembler(bool b)
 
 Assembler::~Assembler()
 {
+	free_asm_codes();
 }
 
 asm_insn *Assembler::alloc_insn()
@@ -87,7 +89,7 @@ void Assembler::emitbyte(byte b)
 	code.size++;
 }
 
-void Assembler::emitword(word w)
+void Assembler::emitword(uint16 w)
 {
 	if (bigendian) {
 		code.data[code.size+1] = (byte)w;
@@ -99,7 +101,7 @@ void Assembler::emitword(word w)
 	code.size += 2;
 }
 
-void Assembler::emitdword(dword d)
+void Assembler::emitdword(uint32 d)
 {
 	if (bigendian) {
 		code.data[code.size+3] = (byte)d;
@@ -115,6 +117,30 @@ void Assembler::emitdword(dword d)
 	code.size += 4;
 }
 
+void Assembler::emitqword(uint64 q)
+{
+	if (bigendian) {
+		code.data[code.size+7] = (byte)q;
+		code.data[code.size+6] = (byte)(q>>8);
+		code.data[code.size+5] = (byte)(q>>16);
+		code.data[code.size+4] = (byte)(q>>24);
+		code.data[code.size+3] = (byte)(q>>32);
+		code.data[code.size+2] = (byte)(q>>40);
+		code.data[code.size+1] = (byte)(q>>48);
+		code.data[code.size+0] = (byte)(q>>56);
+	} else {
+		code.data[code.size+0] = (byte)q;
+		code.data[code.size+1] = (byte)(q>>8);
+		code.data[code.size+2] = (byte)(q>>16);
+		code.data[code.size+3] = (byte)(q>>24);
+		code.data[code.size+4] = (byte)(q>>32);
+		code.data[code.size+5] = (byte)(q>>40);
+		code.data[code.size+6] = (byte)(q>>48);
+		code.data[code.size+7] = (byte)(q>>56);
+	}
+	code.size += 8;
+}
+
 void Assembler::free_asm_codes()
 {
 	while (codes) {
@@ -124,12 +150,12 @@ void Assembler::free_asm_codes()
 	}
 }
 
-char *Assembler::get_error_msg()
+const char *Assembler::get_error_msg()
 {
 	return error_msg;
 }
 
-char *Assembler::get_name()
+const char *Assembler::get_name()
 {
 	return "generic asm";
 }
@@ -142,7 +168,7 @@ void Assembler::newcode()
 asm_code *Assembler::shortest(asm_code *codes)
 {
 	asm_code *best=0;
-	dword bestv=0xffffffff;
+	uint32 bestv=0xffffffff;
 	while (codes) {
 		if (codes->size < bestv) {
 			best = codes;
@@ -165,12 +191,7 @@ void Assembler::pushcode()
 	(*t)->next = NULL;
 }
 
-int Assembler::translate_str(asm_insn *asm_insn, const char *s)
-{
-	return 0;
-}
-
-void Assembler::set_error_msg(char *format, ...)
+void Assembler::set_error_msg(const char *format, ...)
 {
 	va_list arg;
 	va_start(arg, format);
@@ -179,7 +200,7 @@ void Assembler::set_error_msg(char *format, ...)
 	error=1;
 }
 
-void Assembler::set_imm_eval_proc(int (*p)(void *context, char **s, dword *v), void *c)
+void Assembler::set_imm_eval_proc(int (*p)(void *context, const char *s, uint64 &v), void *c)
 {
 	imm_eval_proc = p;
 	imm_eval_context = c;
@@ -194,8 +215,9 @@ Disassembler::Disassembler()
 	disable_highlighting();
 }
 
-Disassembler::~Disassembler()
+void Disassembler::load(ObjectStream &f)
 {
+	disable_highlighting();
 }
 
 char* (*addr_sym_func)(CPU_ADDR addr, int *symstrlen, void *context) = NULL;
@@ -206,7 +228,7 @@ dis_insn *Disassembler::createInvalidInsn()
 	return NULL;
 }
 
-void Disassembler::hexd(char **s, int size, int options, int imm)
+void Disassembler::hexd(char **s, int size, int options, uint32 imm)
 {
 	char ff[16];
 	char *f = (char*)&ff;
@@ -235,12 +257,43 @@ void Disassembler::hexd(char **s, int size, int options, int imm)
 	}
 }
 
+void Disassembler::hexq(char **s, int size, int options, uint64 imm)
+{
+	char ff[32];
+	char *f = (char*)&ff;
+	char *t = *s;
+	*f++ = '%';
+	if (imm >= 0 && imm <= 9) {
+		*s += ht_snprintf(*s, 32, "%qd", imm);
+	} else if (options & DIS_STYLE_SIGNED) {
+		if (!(options & DIS_STYLE_HEX_NOZEROPAD)) f += sprintf(f, "0%d", size);
+		*f++ = 'q';
+		*f++ = 'd';
+		*f = 0;
+		*s += ht_snprintf(*s, 32, ff, imm);
+	} else {
+		if (options & DIS_STYLE_HEX_CSTYLE) *f++ = '#';
+		if (!(options & DIS_STYLE_HEX_NOZEROPAD)) f += sprintf(f, "0%d", size);
+		if (options & DIS_STYLE_HEX_UPPERCASE) *f++ = 'X'; else
+		*f++ = 'q';
+		*f++ = 'x';
+		if (options & DIS_STYLE_HEX_ASMSTYLE) *f++ = 'h';
+		*f = 0;
+		*s += ht_snprintf(*s, 32, ff, imm);
+		if ((options & DIS_STYLE_HEX_NOZEROPAD) && (*t-'0'>9)) {
+			memmove(t+1, t, strlen(t)+1);
+			*t = '0';
+			(*s)++;
+		}
+	}
+}
+
 bool Disassembler::selectNext(dis_insn *disasm_insn)
 {
 	return false;
 }
 
-char *Disassembler::str(dis_insn *disasm_insn, int style)
+const char *Disassembler::str(dis_insn *disasm_insn, int style)
 {
 	return strf(disasm_insn, style, DISASM_STRF_DEFAULT_FORMAT);
 }
@@ -254,7 +307,7 @@ const char *Disassembler::get_cs(AsmSyntaxHighlightEnum style)
 		ASM_SYNTAX_SYMBOL,
 		ASM_SYNTAX_STRING
 	};
-	return (highlight) ? highlights[(int)style] : "";
+	return highlight ? highlights[(int)style] : "";
 }
 
 void Disassembler::enable_highlighting()
@@ -267,13 +320,15 @@ void Disassembler::disable_highlighting()
 	highlight = false;
 }
 
-BUILDER(ATOM_DISASM_X86, x86dis)
-BUILDER(ATOM_DISASM_X86_VXD, x86dis_vxd)
-BUILDER(ATOM_DISASM_ALPHA, Alphadis)
-BUILDER(ATOM_DISASM_JAVA, javadis)
-BUILDER(ATOM_DISASM_IA64, IA64Disassembler)
-BUILDER(ATOM_DISASM_PPC, PPCDisassembler)
-BUILDER(ATOM_DISASM_IL, ILDisassembler)
+BUILDER(ATOM_DISASM_X86, x86dis, Disassembler)
+BUILDER(ATOM_DISASM_X86_64, x86_64dis, x86dis)
+BUILDER(ATOM_DISASM_X86_VXD, x86dis_vxd, x86dis)
+BUILDER(ATOM_DISASM_ALPHA, Alphadis, Disassembler)
+BUILDER(ATOM_DISASM_JAVA, javadis, Disassembler)
+BUILDER(ATOM_DISASM_IA64, IA64Disassembler, Disassembler)
+BUILDER(ATOM_DISASM_PPC, PPCDisassembler, Disassembler)
+BUILDER(ATOM_DISASM_IL, ILDisassembler, Disassembler)
+BUILDER(ATOM_DISASM_ARM, ArmDisassembler, Disassembler)
 
 bool init_asm()
 {
@@ -284,11 +339,15 @@ bool init_asm()
 	REGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	REGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	REGISTER(ATOM_DISASM_IL, ILDisassembler)
+	REGISTER(ATOM_DISASM_X86_64, x86_64dis)
+	REGISTER(ATOM_DISASM_ARM, ArmDisassembler)
 	return true;
 }
 
 void done_asm()
 {
+	UNREGISTER(ATOM_DISASM_ARM, ArmDisassembler)
+	UNREGISTER(ATOM_DISASM_X86_64, x86dis)
 	UNREGISTER(ATOM_DISASM_IL, ILDisassembler)
 	UNREGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	UNREGISTER(ATOM_DISASM_IA64, IA64Disassembler)

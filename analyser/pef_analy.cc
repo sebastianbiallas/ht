@@ -22,14 +22,13 @@
 #include "analy_names.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
-#include "global.h"
 #include "pef_analy.h"
 
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htpef.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "pestruct.h"
 #include "snprintf.h"
 #include "x86asm.h"
@@ -46,7 +45,11 @@ extern "C" {
  *
  */
 
-void PEFAnalyser::init(ht_pef_shared_data *Pef_shared, ht_streamfile *File)
+PEFAnalyser::PEFAnalyser()
+{
+}
+
+void PEFAnalyser::init(ht_pef_shared_data *Pef_shared, File *File)
 {
 	pef_shared = Pef_shared;
 	file = File;
@@ -77,7 +80,7 @@ void PEFAnalyser::beginAnalysis()
 
 	PEF_SECTION_HEADER *s32=pef_shared->sheaders.sheaders;
 	char blub[100];
-	for (UINT i=0; i < pef_shared->sheaders.count; i++) {
+	for (uint i=0; i < pef_shared->sheaders.count; i++) {
 		Address *secaddr;
 		secaddr = createAddress32(s32->defaultAddress);
 		if (validAddress(secaddr, scvalid)) {
@@ -93,7 +96,7 @@ void PEFAnalyser::beginAnalysis()
 
 			// mark end of sections
 			ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-			Address *secend_addr = (Address *)secaddr->duplicate();
+			Address *secend_addr = secaddr->clone();
 			secend_addr->add(s32->totalSize);
 			newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 			addComment(secend_addr, 0, "");
@@ -110,7 +113,7 @@ void PEFAnalyser::beginAnalysis()
 	}
 
 /* symbols */
-/*	for (UINT i=1; i<pef_shared->sheaders.count; i++) {
+/*	for (uint i=1; i<pef_shared->sheaders.count; i++) {
 		if ((pef_shared->sheaders.sheaders32[i].sh_type==PEF_SHT_SYMTAB) || (pef_shared->sheaders.sheaders32[i].sh_type==PEF_SHT_DYNSYM)) {
 			initInsertSymbols(i);
 		}
@@ -136,20 +139,20 @@ void PEFAnalyser::initInsertSymbols(int shidx)
 /*	char pef_buffer[1024];
 	if (pef_shared->ident.e_ident[PEF_EI_CLASS] == PEFCLASS32) {
 
-		FILEOFS h=pef_shared->sheaders.sheaders32[shidx].sh_offset;
-		FILEOFS sto=pef_shared->sheaders.sheaders32[pef_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
-		UINT symnum=pef_shared->sheaders.sheaders32[shidx].sh_size / sizeof (PEF_SYMBOL32);
+		FileOfs h=pef_shared->sheaders.sheaders32[shidx].sh_offset;
+		FileOfs sto=pef_shared->sheaders.sheaders32[pef_shared->sheaders.sheaders32[shidx].sh_link].sh_offset;
+		uint symnum=pef_shared->sheaders.sheaders32[shidx].sh_size / sizeof (PEF_SYMBOL32);
 
 		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
+		for (uint i=0; i<symnum; i++) {
 			PEF_SYMBOL32 sym;
 			if (entropy[i] == 0) continue;
 			file->seek(h+entropy[i]*sizeof (PEF_SYMBOL32));
 			file->read(&sym, sizeof sym);
-			create_host_struct(&sym, PEF_SYMBOL32_struct, pef_shared->byte_order);
+			createHostStruct(&sym, PEF_SYMBOL32_struct, pef_shared->byte_order);
 
 			file->seek(sto+sym.st_name);
-			char *name = fgetstrz(file);
+			char *name = fgetstrz(*file);
 			if (!name) continue;
 
 			switch (sym.st_shndx) {
@@ -240,17 +243,17 @@ void PEFAnalyser::initInsertSymbols(int shidx)
 		if (entropy) free(entropy);
 	} else {
 		// FIXME: 64 bit
-		FILEOFS h=pef_shared->sheaders.sheaders64[shidx].sh_offset.lo;
-		FILEOFS sto=pef_shared->sheaders.sheaders64[pef_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
-		UINT symnum=pef_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (PEF_SYMBOL64);
+		FileOfs h=pef_shared->sheaders.sheaders64[shidx].sh_offset.lo;
+		FileOfs sto=pef_shared->sheaders.sheaders64[pef_shared->sheaders.sheaders64[shidx].sh_link].sh_offset.lo;
+		uint symnum=pef_shared->sheaders.sheaders64[shidx].sh_size.lo / sizeof (PEF_SYMBOL64);
 
 		int *entropy = random_permutation(symnum);
-		for (UINT i=0; i<symnum; i++) {
+		for (uint i=0; i<symnum; i++) {
 			PEF_SYMBOL64 sym;
 			if (entropy[i] == 0) continue;
 			file->seek(h+entropy[i]*sizeof (PEF_SYMBOL64));
 			file->read(&sym, sizeof sym);
-			create_host_struct(&sym, PEF_SYMBOL64_struct, pef_shared->byte_order);
+			createHostStruct(&sym, PEF_SYMBOL64_struct, pef_shared->byte_order);
 
 			file->seek(sto+sym.st_name);
 			char *name = fgetstrz(file);
@@ -347,7 +350,7 @@ void PEFAnalyser::initInsertSymbols(int shidx)
 /*
  *
  */
-int PEFAnalyser::load(ht_object_stream *f)
+void PEFAnalyser::load(ObjectStream &f)
 {
 	GET_OBJECT(f, validarea);
 	return Analyser::load(f);
@@ -363,7 +366,7 @@ void PEFAnalyser::done()
 	Analyser::done();
 }
 
-OBJECT_ID PEFAnalyser::object_id() const
+ObjectID PEFAnalyser::getObjectID() const
 {
 	return ATOM_PEF_ANALYSER;
 }
@@ -371,9 +374,9 @@ OBJECT_ID PEFAnalyser::object_id() const
 /*
  *
  */
-UINT PEFAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint PEFAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 /*     if (ofs == INVALID_FILE_OFS) {
 		int as = 1;
 	}*/
@@ -384,7 +387,7 @@ UINT PEFAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool PEFAnalyser::convertAddressToPEFAddress(Address *addr, PEFAddress *r)
 {
-	if (addr->object_id()==ATOM_ADDRESS_FLAT_32) {
+	if (addr->getObjectID()==ATOM_ADDRESS_FLAT_32) {
 		r->a32 = ((AddressFlat32*)addr)->addr;
 		return true;
 	} else {
@@ -397,12 +400,12 @@ Address *PEFAnalyser::createAddress()
 	return new AddressFlat32();
 }
 
-Address *PEFAnalyser::createAddress32(dword addr)
+Address *PEFAnalyser::createAddress32(uint32 addr)
 {
 	return new AddressFlat32(addr);
 }
 
-Address *PEFAnalyser::createAddress64(qword addr)
+Address *PEFAnalyser::createAddress64(uint64 addr)
 {
 	return new AddressFlat64(addr);
 }
@@ -418,10 +421,10 @@ Assembler *PEFAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS PEFAnalyser::addressToFileofs(Address *Addr)
+FileOfs PEFAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		dword ofs;
+		uint32 ofs;
 		PEFAddress ea;
 		if (!convertAddressToPEFAddress(Addr, &ea)) return INVALID_FILE_OFS;
 		if (!pef_addr_to_ofs(&pef_shared->sheaders, ea, &ofs)) return INVALID_FILE_OFS;
@@ -445,8 +448,7 @@ const char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 	if (pef_shared->sheaders.sheaders[i].nameOffset == 0xffffffff) {
 		ht_snprintf(pef_sectionname, sizeof pef_sectionname, "unnamed%d", i);
 	} else {
-//		strncpy(pef_sectionname, pef_shared->shnames[i], 32);
-//		pef_sectionname[32]=0;
+//		ht_strlcpy(pef_sectionname, pef_shared->shnames[i], 32);
 		strcpy(pef_sectionname, "nyi");
 	}
 	return pef_sectionname;
@@ -455,9 +457,9 @@ const char *PEFAnalyser::getSegmentNameByAddress(Address *Addr)
 /*
  *
  */
-const char *PEFAnalyser::getName()
+String &PEFAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -483,17 +485,17 @@ void PEFAnalyser::initUnasm()
 {
 	DPRINTF("pef_analy: ");
 	switch (pef_shared->arch) {
-		case PEFARCH_PowerPC:
-			DPRINTF("initing analy_ppc_disassembler\n");
-			analy_disasm = new AnalyPPCDisassembler();
-			((AnalyPPCDisassembler*)analy_disasm)->init(this);
-			break;
-		case PEFARCH_M68K:
-			DPRINTF("no disassembler for machine 'm68k'\n");
-			warnbox("No disassembler for machine 'm68k'!");
-			break;
-		default:
-			break;
+	case PEFARCH_PowerPC:
+		DPRINTF("initing analy_ppc_disassembler\n");
+		analy_disasm = new AnalyPPCDisassembler();
+		((AnalyPPCDisassembler*)analy_disasm)->init(this, ANALY_PPC_32);
+		break;
+	case PEFARCH_M68K:
+		DPRINTF("no disassembler for machine 'm68k'\n");
+		warnbox("No disassembler for machine 'm68k'!");
+		break;
+	default:
+		break;
 	}
 }
 
@@ -521,7 +523,7 @@ Address *PEFAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void PEFAnalyser::store(ht_object_stream *f)
+void PEFAnalyser::store(ObjectStream &f) const
 {
 	PUT_OBJECT(f, validarea);
 	Analyser::store(f);
@@ -545,7 +547,7 @@ int PEFAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *PEFAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *PEFAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	PEFAddress ea;
 	if (pef_ofs_to_addr(&pef_shared->sheaders, fileofs, &ea)) {

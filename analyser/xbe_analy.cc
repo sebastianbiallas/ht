@@ -30,13 +30,12 @@
 #include "analy_register.h"
 #include "analy_ppc.h"
 #include "analy_x86.h"
-#include "global.h"
 #include "htctrl.h"
 #include "htdebug.h"
 #include "htiobox.h"
 #include "htxbeimp.h"
 #include "htxbe.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "ilopc.h"
 #include "xbe_analy.h"
 #include "xbestruct.h"
@@ -46,7 +45,7 @@
 /*
  *
  */
-void	XBEAnalyser::init(ht_xbe_shared_data *XBE_shared, ht_streamfile *File)
+void	XBEAnalyser::init(ht_xbe_shared_data *XBE_shared, File *File)
 {
 	xbe_shared = XBE_shared;
 	file = File;
@@ -61,10 +60,10 @@ void	XBEAnalyser::init(ht_xbe_shared_data *XBE_shared, ht_streamfile *File)
 /*
  *
  */
-int	XBEAnalyser::load(ht_object_stream *f)
+void	XBEAnalyser::load(ObjectStream &f)
 {
 	GET_OBJECT(f, validarea);
-	return Analyser::load(f);
+	Analyser::load(f);
 }
 
 /*
@@ -101,7 +100,7 @@ void XBEAnalyser::beginAnalysis()
 
 	XBE_SECTION_HEADER *s=xbe_shared->sections.sections;
 	char blub[100];
-	for (UINT i=0; i<xbe_shared->sections.number_of_sections; i++) {
+	for (uint i=0; i<xbe_shared->sections.number_of_sections; i++) {
 		Address *secaddr;
 
 		secaddr = createAddress32(s->virtual_address);
@@ -118,7 +117,7 @@ void XBEAnalyser::beginAnalysis()
 
 		// mark end of sections
 		ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-		Address *secend_addr = (Address *)secaddr->duplicate();
+		Address *secend_addr = secaddr->clone();
 		secend_addr->add(MAX(s->virtual_size, s->raw_size));
 		newLocation(secend_addr)->flags |= AF_FUNCTION_END;
 		addComment(secend_addr, 0, "");
@@ -127,7 +126,7 @@ void XBEAnalyser::beginAnalysis()
 		addComment(secend_addr, 0, ";******************************************************************");
 
 		validarea->add(secaddr, secend_addr);
-		Address *seciniaddr = (Address *)secaddr->duplicate();
+		Address *seciniaddr = secaddr->clone();
 		seciniaddr->add(MIN(s->virtual_size, s->raw_size));
 		if (validAddress(secaddr, scinitialized) && validAddress(seciniaddr, scinitialized)) {
 			initialized->add(secaddr, seciniaddr);
@@ -140,9 +139,9 @@ void XBEAnalyser::beginAnalysis()
 
 	int import_count=xbe_shared->imports.funcs->count();
 	int *entropy = random_permutation(import_count);
-	for (int i=0; i<import_count; i++) {
-		ht_xbe_import_function *f=(ht_xbe_import_function *)xbe_shared->imports.funcs->get(*(entropy+i));
-//		ht_pe_import_library *d=(ht_pe_import_library *)pe_shared->imports.libs->get(f->libidx);
+	for (int i = 0; i < import_count; i++) {
+		ht_xbe_import_function *f=(ht_xbe_import_function *) (*xbe_shared->imports.funcs)[entropy[i]];
+//		ht_pe_import_library *d=(ht_pe_import_library *)(*pe_shared->imports.libs)[f->libidx];
 		char *label;
 		label = import_func_name("NTOSKRNL.EXE", (f->byname) ? f->name.name : NULL, f->ordinal);
 		Address *faddr;
@@ -200,7 +199,7 @@ void XBEAnalyser::beginAnalysis()
 /*
  *
  */
-OBJECT_ID	XBEAnalyser::object_id() const
+ObjectID	XBEAnalyser::getObjectID() const
 {
 	return ATOM_XBE_ANALYSER;
 }
@@ -208,9 +207,9 @@ OBJECT_ID	XBEAnalyser::object_id() const
 /*
  *
  */
-UINT XBEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
+uint XBEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
-	FILEOFS ofs = addressToFileofs(Addr);
+	FileOfs ofs = addressToFileofs(Addr);
 /*	if (ofs == INVALID_FILE_OFS) {
 		int as=0;
 	}*/
@@ -221,7 +220,7 @@ UINT XBEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 
 bool XBEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 {
-	OBJECT_ID oid = addr->object_id();
+	ObjectID oid = addr->getObjectID();
 	if (oid==ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr - xbe_shared->header.base_address;
 		return true;
@@ -237,7 +236,7 @@ bool XBEAnalyser::convertAddressToRVA(Address *addr, RVA *r)
 /*
  *
  */
-Address *XBEAnalyser::createAddress32(dword addr)
+Address *XBEAnalyser::createAddress32(uint32 addr)
 {
 	return new AddressX86Flat32(addr);
 //	return new AddressFlat32(addr);
@@ -246,7 +245,7 @@ Address *XBEAnalyser::createAddress32(dword addr)
 /*
  *
  */
-Address *XBEAnalyser::createAddress64(qword addr)
+Address *XBEAnalyser::createAddress64(uint64 addr)
 {
 	return NULL;
 }
@@ -270,14 +269,14 @@ Assembler *XBEAnalyser::createAssembler()
 /*
  *
  */
-FILEOFS XBEAnalyser::addressToFileofs(Address *Addr)
+FileOfs XBEAnalyser::addressToFileofs(Address *Addr)
 {
 /*     char tbuf[1024];
 	Addr->stringify(tbuf, 1024, 0);
 	printf("ADDR=%s", tbuf);*/
 	if (validAddress(Addr, scinitialized)) {
 //     	printf(" v1\n");
-		FILEOFS ofs;
+		FileOfs ofs;
 		RVA r;
 		if (!convertAddressToRVA(Addr, &r)) return INVALID_FILE_OFS;
 		if (!xbe_rva_to_ofs(&xbe_shared->sections, r, &ofs)) return INVALID_FILE_OFS;
@@ -307,21 +306,20 @@ const char *XBEAnalyser::getSegmentNameByAddress(Address *Addr)
 	xbe_rva_to_section(sections, r, &i);
 //	XBE_SECTION_HEADER *s=sections->sections+i;
 	b = xbe_rva_is_valid(sections, r);
-//	{ FILE *f;f=fopen("/tmp/rva","a+");if (f){fprintf(f,"rva: %08x %u\n",r,(UINT)b);fclose(f);} }
+//	{ FILE *f;f=fopen("/tmp/rva","a+");if (f){fprintf(f,"rva: %08x %u\n",r,(uint)b);fclose(f);} }
 	
 	if (!b) return NULL;
 
-	memmove(sectionname, "<notyet>", 8);
-	sectionname[8]=0;
+	strcpy(sectionname, "<notyet>");
 	return sectionname;
 }
 
 /*
  *
  */
-const char *XBEAnalyser::getName()
+String &XBEAnalyser::getName(String &res)
 {
-	return file->get_desc();
+	return file->getDesc(res);
 }
 
 /*
@@ -340,14 +338,14 @@ void XBEAnalyser::initCodeAnalyser()
 	Analyser::initCodeAnalyser();
 }
 /*
-static char *string_func(dword ofs, void *context)
+static char *string_func(uint32 ofs, void *context)
 {
 	char str[1024];
 	static char str2[1024];
 	ht_pe_shared_data *pe = (ht_pe_shared_data*)context;
 	if (ofs < pe->il->string_pool_size) {
-		dword length;
-		dword o = ILunpackDword(length, (byte*)&pe->il->string_pool[ofs], 10);
+		uint32 length;
+		uint32 o = ILunpackDword(length, (byte*)&pe->il->string_pool[ofs], 10);
 		wide_char_to_multi_byte(str, (byte*)&pe->il->string_pool[ofs+o], length/2+1);
 		escape_special_str(str2, sizeof str2, str, "\"");
 		return str2;
@@ -356,7 +354,7 @@ static char *string_func(dword ofs, void *context)
 	}
 }
 
-static char *token_func(dword token, void *context)
+static char *token_func(uint32 token, void *context)
 {
 	static char tokenstr[1024];
 	switch (token & IL_META_TOKEN_MASK) {
@@ -424,7 +422,7 @@ Address *XBEAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void XBEAnalyser::store(ht_object_stream *st)
+void XBEAnalyser::store(ObjectStream &st) const
 {
 	/*
 	ht_pe_shared_data 	*pe_shared;
@@ -453,7 +451,7 @@ int	XBEAnalyser::queryConfig(int mode)
 /*
  *
  */
-Address *XBEAnalyser::fileofsToAddress(FILEOFS fileofs)
+Address *XBEAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	RVA r;
 	if (xbe_ofs_to_rva(&xbe_shared->sections, fileofs, &r)) {
@@ -475,20 +473,20 @@ bool XBEAnalyser::validAddress(Address *Addr, tsectype action)
 	if (!xbe_rva_to_section(sections, r, &sec)) return false;
 	XBE_SECTION_HEADER *s=sections->sections+sec;
 	switch (action) {
-		case scvalid:
-			return true;
-		case scread:
-			return true;
-		case scwrite:
-			return s->section_flags & XBE_SECTION_FLAGS_WRITABLE;
-		case screadwrite:
-			return s->section_flags & XBE_SECTION_FLAGS_WRITABLE;
-		case sccode:
-			if (!xbe_rva_is_physical(sections, r)) return false;
-			return s->section_flags & XBE_SECTION_FLAGS_EXECUTABLE;
-		case scinitialized:
-			if (!xbe_rva_is_physical(sections, r)) return false;
-			return true;
+	case scvalid:
+		return true;
+	case scread:
+		return true;
+	case scwrite:
+		return s->section_flags & XBE_SECTION_FLAGS_WRITABLE;
+	case screadwrite:
+		return s->section_flags & XBE_SECTION_FLAGS_WRITABLE;
+	case sccode:
+		if (!xbe_rva_is_physical(sections, r)) return false;
+		return s->section_flags & XBE_SECTION_FLAGS_EXECUTABLE;
+	case scinitialized:
+		if (!xbe_rva_is_physical(sections, r)) return false;
+		return true;
 	}
 	return false;
 }

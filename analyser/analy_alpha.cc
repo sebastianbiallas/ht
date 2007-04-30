@@ -29,6 +29,10 @@
 /*
  *
  */
+AnalyAlphaDisassembler::AnalyAlphaDisassembler()
+{
+}
+
 void AnalyAlphaDisassembler::init(Analyser *A)
 {
 	disasm = new Alphadis();
@@ -38,7 +42,7 @@ void AnalyAlphaDisassembler::init(Analyser *A)
 /*
  *
  */
-int  AnalyAlphaDisassembler::load(ht_object_stream *f)
+void AnalyAlphaDisassembler::load(ObjectStream &f)
 {
 	return AnalyDisassembler::load(f);
 }
@@ -51,7 +55,7 @@ void AnalyAlphaDisassembler::done()
 	AnalyDisassembler::done();
 }
 
-OBJECT_ID AnalyAlphaDisassembler::object_id() const
+ObjectID AnalyAlphaDisassembler::getObjectID() const
 {
 	return ATOM_ANALY_ALPHA;
 }
@@ -69,7 +73,7 @@ Address *AnalyAlphaDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branch
 	return new InvalidAddress();
 }
 
-Address *AnalyAlphaDisassembler::createAddress(dword offset)
+Address *AnalyAlphaDisassembler::createAddress(uint32 offset)
 {
 	return new AddressFlat32(offset);
 }
@@ -120,7 +124,7 @@ branch_enum_t AnalyAlphaDisassembler::isBranch(OPCODE *opcode)
 /*
  *
  */
-void AnalyAlphaDisassembler::store(ht_object_stream *f)
+void AnalyAlphaDisassembler::store(ObjectStream &f) const
 {
 	AnalyDisassembler::store(f);
 }

@@ -23,9 +23,9 @@
 
 char *import_func_name(const char *dllname, const char *funcname, int ordinal);
 char *export_func_name(const char *funcname, int ordinal);
-char *label_type(int lt);
-char *label_type_short(int lt);
-char *xref_type(int xt);
+const char *label_type(int lt);
+const char *label_type_short(int lt);
+const char *xref_type(int xt);
 char xref_type_short(int xt);
 
 #define LPRFX_LOC "loc"
@@ -51,11 +51,5 @@ void make_valid_name(char *result, const char *str);
 #define M_PREFIX_LABELs "l"
 #define QUOTED_STRING(s) M_PREFIX_DUPs##s
 #define REF_STRING(s) M_PREFIX_REFs##s
-
-char *addr_label1();
-char *real_name1(char *s);
-char *quote_string1(char *s);
-char *reference_string1(char *s);
-char *comment_lookup1(int special);
 
 #endif

@@ -24,14 +24,19 @@
 #include "asm.h"
 #include "javaopc.h"
 
-#define JAVAINSN_MAX_PARAM_COUNT	2
+/* x86-specific styles */
+//#define X86DIS_STYLE_EXPLICIT_MEMSIZE	0x00000001		/* IF SET: mov uint16 ptr [0000], ax 	ELSE: mov [0000], ax */
+//#define X86DIS_STYLE_OPTIMIZE_ADDR		0x00000002		/* IF SET: mov [eax*3], ax 			ELSE: mov [eax+eax*2+00000000], ax */
+/*#define X86DIS_STYLE_USE16			0x00000004
+#define X86DIS_STYLE_USE32			0x00000008*/
 
 struct javadis_insn {
 	bool invalid;
-	byte size;
+	int size;
 	int opcode;
+	uint32 addr;
 	bool wideopcode;
-	char *name;
+	const char *name;
 	java_insn_op op[JAVAINSN_MAX_PARAM_COUNT];
 };
 
@@ -39,43 +44,41 @@ struct javadis_insn {
  *	CLASS x86dis
  */
 
-typedef int (*java_token_func)(char *result, int maxlen, dword token, void *context);
+typedef int (*java_token_func)(char *result, int maxlen, uint32 token, void *context);
 
 class javadis: public Disassembler {
 protected:
 	javadis_insn insn;
 	char insnstr[1024];
-/* initme! */
+	/* initme! */
 	unsigned char *codep, *ocodep;
-	int addr;
 	int maxlen;
 	java_token_func token_func;
 	void *context;
-/* new */
-			void decode_insn(javaopc_insn *insn);
-			void decode_op(int optype, bool wideopc, java_insn_op *op);
-			byte getbyte();
-			word getword();
-			dword getdword();
-			void invalidate();
-			void str_format(char **str, char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print);
+	uint32 addr;
+	/* new */
+
+		void decode_insn(javaopc_insn *insn);
+		void decode_op(int optype, bool wideopc, java_insn_op *op);
+		byte getbyte();
+		uint16 getword();
+		uint32 getdword();
+		void invalidate();
+		void str_format(char **str, const char **format, const char *p, const char *n, char *op[3], int oplen[3], char stopchar, int print);
 	virtual	void str_op(char *opstr, int *opstrlen, javadis_insn *insn, java_insn_op *op);
 public:
-	javadis();
+	javadis(BuildCtorArg&a): Disassembler(a) {};
 	javadis(java_token_func token_func, void *context);
-	virtual ~javadis();
 
-/* overwritten */
+	/* overwritten */
 	virtual dis_insn *decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual dis_insn *duplicateInsn(dis_insn *disasm_insn);
 	virtual void getOpcodeMetrics(int &min_length, int &max_length, int &min_look_ahead, int &avg_look_ahead, int &addr_align);
-	virtual char *getName();
+	virtual const char *getName();
 	virtual byte getSize(dis_insn *disasm_insn);
-		   int load(ht_object_stream *f);
-	virtual OBJECT_ID object_id() const;
-	virtual char *str(dis_insn *disasm_insn, int options);
-	virtual char *strf(dis_insn *disasm_insn, int options, char *format);
-	virtual void store(ht_object_stream *f);
+	virtual ObjectID getObjectID() const;
+	virtual const char *str(dis_insn *disasm_insn, int options);
+	virtual const char *strf(dis_insn *disasm_insn, int options, const char *format);
 	virtual bool validInsn(dis_insn *disasm_insn);
 };
 

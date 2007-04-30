@@ -25,75 +25,81 @@
 
 class AddressX86Flat32: public Address {
 public:
-	dword addr;
-	AddressX86Flat32() {};
-	AddressX86Flat32(dword a) : addr(a) {};
+	uint32 addr;
+	AddressX86Flat32(BuildCtorArg&a): Address(a) {};
+	AddressX86Flat32(uint32 a=0): addr(a) {};
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
-	virtual AddressX86Flat32 *duplicate();
+	virtual AddressX86Flat32 *clone() const;
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
+	virtual	bool getFromUInt64(uint64 u);
+	virtual void load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
 	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+	virtual void putIntoArray(byte *array) const;
+	virtual void putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool putIntoUInt64(uint64 &u) const;
+	virtual void store(ObjectStream &s) const;
+	virtual int stringify(char *s, int max_length, int format) const;
+	virtual int stringSize() const;
 };
 
 class AddressX86_1616: public Address {
 public:
-	word seg;
-	word addr;
+	uint16 seg;
+	uint16 addr;
 public:
-	AddressX86_1616() {};
-	AddressX86_1616(word s, word a) : seg(s), addr(a) {};
+	AddressX86_1616(BuildCtorArg&a): Address(a) {};
+	AddressX86_1616(uint16 seg=0, uint16 addr=0);
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *to);
 	virtual bool difference(int &result, Address *to);
-	virtual AddressX86_1616 *duplicate();
+	virtual AddressX86_1616 *clone() const;
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
+	virtual	bool getFromUInt64(uint64 u);
+	virtual void load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
 	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+	virtual void putIntoArray(byte *array) const;
+	virtual void putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool putIntoUInt64(uint64 &u) const;
+	virtual void store(ObjectStream &s) const;
+	virtual int stringify(char *s, int max_length, int format) const;
+	virtual int stringSize() const;
 };
 
 class AddressX86_1632: public Address {
 public:
-	word seg;
-	dword addr;
+	uint16 seg;
+	uint32 addr;
 public:
-	AddressX86_1632() {};
-	AddressX86_1632(word s, dword a) : seg(s), addr(a) {};
+	AddressX86_1632(BuildCtorArg&a): Address(a) {};
+	AddressX86_1632(uint16 seg=0, uint32 addr=0);
 	virtual bool add(int offset);
 	virtual int byteSize();
 	virtual int compareTo(const Object *obj) const;
 	virtual int compareDelinear(Address *obj);
 	virtual bool difference(int &result, Address *to);
-	virtual AddressX86_1632 *duplicate();
+	virtual AddressX86_1632 *clone() const;
 	virtual void getFromArray(const byte *array);
 	virtual void getFromCPUAddress(CPU_ADDR *ca);
-	virtual int load(ht_object_stream *s);
-	virtual OBJECT_ID object_id() const;
+	virtual	bool getFromUInt64(uint64 u);
+	virtual void load(ObjectStream &s);
+	virtual ObjectID getObjectID() const;
 	virtual int parseString(const char *s, int length, Analyser *a);
-	virtual void putIntoArray(byte *array);
-	virtual void putIntoCPUAddress(CPU_ADDR *ca);
-	virtual void store(ht_object_stream *s);
-	virtual int stringify(char *s, int max_length, int format);
-	virtual int stringSize();
+	virtual void putIntoArray(byte *array) const;
+	virtual void putIntoCPUAddress(CPU_ADDR *ca) const;
+	virtual	bool putIntoUInt64(uint64 &u) const;
+	virtual void store(ObjectStream &s) const;
+	virtual int stringify(char *s, int max_length, int format) const;
+	virtual int stringSize() const;
 };
 
 #define ANALYX86DISASSEMBLER_FLAGS_16BIT		1
@@ -108,17 +114,18 @@ protected:
 public:
 	int flags;
 
+				AnalyX86Disassembler() {};
+				AnalyX86Disassembler(BuildCtorArg&a): AnalyDisassembler(a) {};
 		void		init(Analyser *A, int flags);
-		int 		load(ht_object_stream *f);
-	virtual	void    	done();
-	virtual	OBJECT_ID	object_id() const;
+		void 		load(ObjectStream &f);
+	virtual	ObjectID	getObjectID() const;
 
 	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-		Address		*createAddress(word segment, dword offset);
-		word		getSegment(Address *addr);
+		Address		*createAddress(uint16 segment, uint32 offset);
+		uint16		getSegment(Address *addr);
 	virtual	void		examineOpcode(OPCODE *opcode);
 	virtual	branch_enum_t 	isBranch(OPCODE *opcode);
-	virtual	void		store(ht_object_stream *f);
+	virtual	void		store(ObjectStream &f) const;
 };
 
 #endif
