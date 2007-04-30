@@ -36,9 +36,9 @@
 //
 
 typedef struct	PE_DATA_DIRECTORY {
-    dword	  address HTPACKED;
-    dword	  size HTPACKED;
-};
+    dword	  address;
+    dword	  size;
+} HTPACKED;
 
 #define PE_NUMBEROF_DIRECTORY_ENTRIES	  	16
 
@@ -48,55 +48,55 @@ typedef struct	PE_DATA_DIRECTORY {
 
 typedef struct	PE_OPTIONAL_HEADER32_NT {
 // NT additional fields.
-	dword image_base HTPACKED;
-	dword section_alignment HTPACKED;
-	dword file_alignment HTPACKED;
-	word major_os_version	HTPACKED;
-	word minor_os_version	HTPACKED;
-	word major_image_version	HTPACKED;
-	word minor_image_version	HTPACKED;
-	word major_subsystem_version HTPACKED;
-	word minor_subsystem_version HTPACKED;
-	dword win32_version HTPACKED;
-	dword image_size HTPACKED;
-	dword header_size HTPACKED;
-	dword checksum HTPACKED;
-	word	subsystem HTPACKED;
-	word dll_characteristics HTPACKED;
-	dword stack_reserve_size HTPACKED;
-	dword stack_commit_size HTPACKED;
-	dword heap_reserve_size HTPACKED;
-	dword heap_commit_size HTPACKED;
-	dword loader_flags HTPACKED;
-	dword directory_count HTPACKED;
-	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES] HTPACKED;
-};
+	dword image_base;
+	dword section_alignment;
+	dword file_alignment;
+	word major_os_version;
+	word minor_os_version;
+	word major_image_version;
+	word minor_image_version;
+	word major_subsystem_version;
+	word minor_subsystem_version;
+	dword win32_version;
+	dword image_size;
+	dword header_size;
+	dword checksum;
+	word	subsystem;
+	word dll_characteristics;
+	dword stack_reserve_size;
+	dword stack_commit_size;
+	dword heap_reserve_size;
+	dword heap_commit_size;
+	dword loader_flags;
+	dword directory_count;
+	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES];
+} HTPACKED;
 
 typedef struct	PE_OPTIONAL_HEADER64_NT {
 // NT additional fields.
-	qword image_base HTPACKED;
-	dword section_alignment HTPACKED;
-	dword file_alignment HTPACKED;
-	word major_os_version	HTPACKED;
-	word minor_os_version	HTPACKED;
-	word major_image_version	HTPACKED;
-	word minor_image_version	HTPACKED;
-	word major_subsystem_version HTPACKED;
-	word minor_subsystem_version HTPACKED;
-	dword win32_version HTPACKED;
-	dword image_size HTPACKED;
-	dword header_size HTPACKED;
-	dword checksum HTPACKED;
-	word	subsystem HTPACKED;
-	word dll_characteristics HTPACKED;
-	qword stack_reserve_size HTPACKED;
-	qword stack_commit_size HTPACKED;
-	qword heap_reserve_size HTPACKED;
-	qword heap_commit_size HTPACKED;
-	dword loader_flags HTPACKED;
-	dword directory_count HTPACKED;
-	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES] HTPACKED;
-};
+	qword image_base;
+	dword section_alignment;
+	dword file_alignment;
+	word major_os_version;
+	word minor_os_version;
+	word major_image_version;
+	word minor_image_version;
+	word major_subsystem_version;
+	word minor_subsystem_version;
+	dword win32_version;
+	dword image_size;
+	dword header_size;
+	dword checksum;
+	word	subsystem;
+	word dll_characteristics;
+	qword stack_reserve_size;
+	qword stack_commit_size;
+	qword heap_reserve_size;
+	qword heap_commit_size;
+	dword loader_flags;
+	dword directory_count;
+	PE_DATA_DIRECTORY directory[PE_NUMBEROF_DIRECTORY_ENTRIES];
+} HTPACKED;
 
 // Subsystem Values
 
@@ -134,18 +134,18 @@ typedef struct	PE_OPTIONAL_HEADER64_NT {
  */
 
 struct PE_EXPORT_DIRECTORY {
-	dword characteristics HTPACKED;
-	dword timestamp HTPACKED;
-	word major_version HTPACKED;
-	word minor_version HTPACKED;
-	dword name_address HTPACKED;
-	dword ordinal_base HTPACKED;
-	dword function_count HTPACKED;
-	dword name_count HTPACKED;
-	dword function_table_address HTPACKED;
-	dword name_table_address HTPACKED;
-	dword ordinal_table_address HTPACKED;
-};
+	dword characteristics;
+	dword timestamp;
+	word major_version;
+	word minor_version;
+	dword name_address;
+	dword ordinal_base;
+	dword function_count;
+	dword name_count;
+	dword function_table_address;
+	dword name_table_address;
+	dword ordinal_table_address;
+} HTPACKED;
 
 /*
  *	Import
@@ -153,73 +153,73 @@ struct PE_EXPORT_DIRECTORY {
 
 struct PE_THUNK_DATA {
 	union {
-		dword forwarder_string HTPACKED;
-		dword function_desc_address HTPACKED;
-		dword ordinal HTPACKED;
-		dword data_address HTPACKED;
-	};
-};
+		dword forwarder_string;
+		dword function_desc_address;
+		dword ordinal;
+		dword data_address;
+	} HTPACKED;
+} HTPACKED;
 
 struct PE_THUNK_DATA_64 {
 	union {
-		qword forwarder_string HTPACKED;
-		qword function_desc_address HTPACKED;
-		qword ordinal HTPACKED;
-		qword data_address HTPACKED;
-	};
-};
+		qword forwarder_string;
+		qword function_desc_address;
+		qword ordinal;
+		qword data_address;
+	} HTPACKED;
+} HTPACKED;
 
 struct PE_IMPORT_DESCRIPTOR {
 	union {
-		dword characteristics HTPACKED; 		// 0 for terminating null import descriptor
-		dword original_first_thunk HTPACKED;  	// rva to original unbound IAT
-	};
-	dword timestamp HTPACKED;		// 0 if not bound,
+		dword characteristics; 		// 0 for terminating null import descriptor
+		dword original_first_thunk;  	// rva to original unbound IAT
+	} HTPACKED;
+	dword timestamp;		// 0 if not bound,
 											// -1 if bound, and real date\time stamp
 											//     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
 											// O.W. date/time stamp of DLL bound to (Old BIND)
 
-	dword forwarder_chain HTPACKED;  	// -1 if no forwarders
-	dword name HTPACKED;
-	dword first_thunk HTPACKED; 		// rva to IAT (if bound this IAT has actual addresses)
-};
+	dword forwarder_chain;  	// -1 if no forwarders
+	dword name;
+	dword first_thunk; 		// rva to IAT (if bound this IAT has actual addresses)
+} HTPACKED;
 
 /*
  *	Delay Import
  */
 
 struct PE_DELAY_IMPORT_DESCRIPTOR {
-	dword attributes HTPACKED;
-	dword name HTPACKED;
-	dword module_handle HTPACKED;
-	dword delay_iat HTPACKED;
-	dword delay_int HTPACKED;
-	dword bound_delay_import_table HTPACKED;
-	dword unload_delay_import_table HTPACKED;
-	dword timestamp HTPACKED;
-};
+	dword attributes;
+	dword name;
+	dword module_handle;
+	dword delay_iat;
+	dword delay_int;
+	dword bound_delay_import_table;
+	dword unload_delay_import_table;
+	dword timestamp;
+} HTPACKED;
 
 /*
  *	Resource
  */
 
 struct PE_RESOURCE_DIRECTORY {
-	dword characteristics HTPACKED;
-	dword timedate_stamp HTPACKED;
-	word major_version HTPACKED;
-	word minor_version HTPACKED;
-	word name_count HTPACKED;
-	word id_count HTPACKED;
+	dword characteristics;
+	dword timedate_stamp;
+	word major_version;
+	word minor_version;
+	word name_count;
+	word id_count;
 //    PE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[];
-};
+} HTPACKED;
 
 #define PE_RESOURCE_NAME_IS_STRING			0x80000000
 #define PE_RESOURCE_DATA_IS_DIRECTORY		0x80000000
 
 struct PE_RESOURCE_DIRECTORY_ENTRY {
-	dword   name HTPACKED;				// or id
-	dword   offset_to_directory HTPACKED;	// or data
-};
+	dword   name;				// or id
+	dword   offset_to_directory;	// or data
+} HTPACKED;
 
 /*typedef struct PE_RESOURCE_DIRECTORY_STRING {
     word    Length;
@@ -233,11 +233,11 @@ typedef struct PE_RESOURCE_DIR_STRING_U {
 };*/
 
 struct PE_RESOURCE_DATA_ENTRY {
-    dword	  offset_to_data HTPACKED;
-    dword	  size HTPACKED;
-    dword	  codepage HTPACKED;
-    dword	  reserved HTPACKED;
-};
+    dword	  offset_to_data;
+    dword	  size;
+    dword	  codepage;
+    dword	  reserved;
+} HTPACKED;
 
 /*
  *   IL
@@ -247,13 +247,13 @@ struct PE_RESOURCE_DATA_ENTRY {
 #define PE_IL_DIRECTORY_ATTRIBUTES_INT64      0x2
 
 struct PE_IL_DIRECTORY {
-	dword size HTPACKED;
-	word major_version HTPACKED;
-	word minor_version HTPACKED;
-	dword metadata_section_rva HTPACKED;
-	dword metadata_section_size HTPACKED;
-	dword attributes HTPACKED;
-};
+	dword size;
+	word major_version;
+	word minor_version;
+	dword metadata_section_rva;
+	dword metadata_section_size;
+	dword attributes;
+} HTPACKED;
 
 extern byte PE_DATA_DIRECTORY_struct[];
 extern byte PE_OPTIONAL_HEADER32_NT_struct[];

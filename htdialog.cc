@@ -455,7 +455,7 @@ void *ht_history_listbox::getLast()
 
 void *ht_history_listbox::getNext(void *entry)
 {
-	UINT e=(UINT)entry;
+	unsigned long e = reinterpret_cast<unsigned long>(entry);
 	if (!e) return NULL;
 	if (e < history->count()) {
 		return (void*)(e+1);
@@ -466,7 +466,7 @@ void *ht_history_listbox::getNext(void *entry)
 
 void *ht_history_listbox::getPrev(void *entry)
 {
-	UINT e=(UINT)entry;
+	unsigned long e = reinterpret_cast<unsigned long>(entry);
 	if (e > 1) {
 		return (void*)(e-1);
 	} else {
@@ -476,7 +476,7 @@ void *ht_history_listbox::getPrev(void *entry)
 
 char *ht_history_listbox::getStr(int col, void *entry)
 {
-	return ((ht_history_entry*)history->get((int)entry-1))->desc;
+	return ((ht_history_entry*)history->get(reinterpret_cast<long>(entry) - 1))->desc;
 }
 
 void ht_history_listbox::handlemsg(htmsg *msg)

@@ -31,7 +31,6 @@
 #define HTPACKED __attribute__ ((packed))
 #else
 #error "you're not using the GNU C compiler :-) please add the macro and conditionals for your compiler"
-#define HTPACKED blabla
 #endif /* !__GNUC__ */
 #endif /* __cplusplus */
 

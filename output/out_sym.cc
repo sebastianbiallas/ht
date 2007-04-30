@@ -69,30 +69,30 @@
  */
 
 struct ImageSymHeader {
-	dword file_size HTPACKED;		// in 16-byte blocks
-	word entry_seg HTPACKED;
-	word u0 HTPACKED;				// 0000
-	word u1 HTPACKED;				// 0015 (some flags ?, 0014 for 16-bit .SYM ?)
-	word seg_count HTPACKED;
-	dword u2 HTPACKED;				// 04020002 (some flags ?)
-	byte	module_name[16] HTPACKED;
-};
+	dword file_size;		// in 16-byte blocks
+	word entry_seg;
+	word u0;				// 0000
+	word u1;				// 0015 (some flags ?, 0014 for 16-bit .SYM ?)
+	word seg_count;
+	dword u2;				// 04020002 (some flags ?)
+	byte	module_name[16];
+} HTPACKED;
 
 struct ImageSymSegHeader {
-	word next_rec_ofs HTPACKED;		// in 16-byte blocks (ring list, last points to first)
-	word sym_count HTPACKED;
-	word sym_ptr_table_ptr HTPACKED;
-	word seg_idx HTPACKED;
-	dword seg_start HTPACKED;
-	dword seg_size HTPACKED;
-};
+	word next_rec_ofs;		// in 16-byte blocks (ring list, last points to first)
+	word sym_count;
+	word sym_ptr_table_ptr;
+	word seg_idx;
+	dword seg_start;
+	dword seg_size;
+} HTPACKED;
 
 struct ImageSymDescriptor {
-	dword address HTPACKED;
-//	byte  name_len HTPACKED;
+	dword address;
+//	byte  name_len;
 //   name;
 //   ^^^^ pascal string
-};
+} HTPACKED;
 
 /*
  *

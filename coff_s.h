@@ -27,14 +27,14 @@
 typedef unsigned int RVA;
 
 typedef struct	COFF_HEADER {
-	word machine HTPACKED;
-	word section_count HTPACKED;
-	dword timestamp HTPACKED;
-	dword symbol_table_offset HTPACKED;
-	dword symbol_count HTPACKED;
-	word optional_header_size HTPACKED;
-	word characteristics HTPACKED;
-};
+	word machine;
+	word section_count;
+	dword timestamp;
+	dword symbol_table_offset;
+	dword symbol_count;
+	word optional_header_size;
+	word characteristics;
+} HTPACKED;
 
 #define COFF_RELOCS_STRIPPED		   	0x0001  // Relocation info stripped from file.
 #define COFF_EXECUTABLE_IMAGE		   	0x0002  // File is executable  (i.e. no unresolved externel references).
@@ -97,30 +97,30 @@ typedef struct	COFF_HEADER {
 #define COFF_OPTMAGIC_PE64			0x20b
 
 typedef struct	COFF_OPTIONAL_HEADER32 {
-	word magic HTPACKED;
-	byte major_linker_version HTPACKED;
-	byte minor_linker_version HTPACKED;
-	dword code_size HTPACKED;
-	dword data_size HTPACKED;
-	dword bss_size HTPACKED;
-	dword entrypoint_address HTPACKED;
-	dword code_base HTPACKED;
-	dword data_base HTPACKED;
-};
+	word magic;
+	byte major_linker_version;
+	byte minor_linker_version;
+	dword code_size;
+	dword data_size;
+	dword bss_size;
+	dword entrypoint_address;
+	dword code_base;
+	dword data_base;
+} HTPACKED;
 
 /*
  *	same as COFF_OPTIONAL_HEADER32 but no data_base
  */
 typedef struct	COFF_OPTIONAL_HEADER64 {
-	word magic HTPACKED;
-	byte major_linker_version HTPACKED;
-	byte minor_linker_version HTPACKED;
-	dword code_size HTPACKED;
-	dword data_size HTPACKED;
-	dword bss_size HTPACKED;
-	dword entrypoint_address HTPACKED;
-	dword code_base HTPACKED;
-};
+	word magic;
+	byte major_linker_version;
+	byte minor_linker_version;
+	dword code_size;
+	dword data_size;
+	dword bss_size;
+	dword entrypoint_address;
+	dword code_base;
+} HTPACKED;
 
 /*
  *	Section header
@@ -129,17 +129,17 @@ typedef struct	COFF_OPTIONAL_HEADER64 {
 #define COFF_SIZEOF_SHORT_NAME			8
 
 struct COFF_SECTION_HEADER {
-	byte name[COFF_SIZEOF_SHORT_NAME] HTPACKED;
-	dword data_vsize HTPACKED;	// or data_phys_address !
-	dword data_address HTPACKED;
-	dword data_size HTPACKED;
-	dword data_offset HTPACKED;
-	dword relocation_offset HTPACKED;
-	dword linenumber_offset HTPACKED;
-	word relocation_count HTPACKED;
-	word linenumber_count HTPACKED;
-	dword characteristics HTPACKED;
-};
+	byte name[COFF_SIZEOF_SHORT_NAME];
+	dword data_vsize;	// or data_phys_address !
+	dword data_address;
+	dword data_size;
+	dword data_offset;
+	dword relocation_offset;
+	dword linenumber_offset;
+	word relocation_count;
+	word linenumber_count;
+	dword characteristics;
+} HTPACKED;
 
 #define COFF_SIZEOF_SECTION_HEADER		40
 

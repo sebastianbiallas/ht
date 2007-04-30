@@ -73,10 +73,10 @@ ht_object_stream *create_object_stream(ht_stream *f, int object_stream_type)
 }
 
 struct config_header {
-	char magic[4] HTPACKED;
-	char version[4] HTPACKED;
-	char stream_type[2] HTPACKED;
-};
+	char magic[4];
+	char version[4];
+	char stream_type[2];
+} HTPACKED;
 
 /*
  *	system configs

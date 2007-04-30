@@ -84,11 +84,11 @@ struct NE_HEADER {
  */
 
 struct NE_SEGMENT {
-	word offset HTPACKED;
-	word size HTPACKED;
-	word flags HTPACKED;
-	word minalloc HTPACKED;
-};
+	word offset;
+	word size;
+	word flags;
+	word minalloc;
+} HTPACKED;
 
 #define NE_DATA		0x0001
 
@@ -109,9 +109,9 @@ struct NE_SEGMENT {
  */
 
 struct NE_ENTRYPOINT_HEADER {
-	byte entry_count HTPACKED;
-	byte seg_index HTPACKED;
-};
+	byte entry_count;
+	byte seg_index;
+} HTPACKED;
 
 /*  00H	     1	       Entry point flags
 			  Bit(s)	  Significance
@@ -132,27 +132,27 @@ struct NE_ENTRYPOINT_HEADER {
 #define NE_ENT_FLAGS_PARAM_WORDS	0xf8
 
 struct NE_ENTRYPOINT_MOVABLE {
-	byte flags HTPACKED;
-	word int3f HTPACKED;
-	byte seg HTPACKED;
-	word offset HTPACKED;
-};
+	byte flags;
+	word int3f;
+	byte seg;
+	word offset;
+} HTPACKED;
 
 /*  00H	     1	       Entry point flags (See above)
     01H	     2	       Offset of entry point within segment*/
 
 struct NE_ENTRYPOINT_FIXED {
-	byte flags HTPACKED;
-	word offset HTPACKED;
-};
+	byte flags;
+	word offset;
+} HTPACKED;
 
 /* relocations */
 
 struct NE_RELOC_HEADER {
-	byte type HTPACKED;
-	byte flags HTPACKED;
-	word src_ofs HTPACKED;
-};
+	byte type;
+	byte flags;
+	word src_ofs;
+} HTPACKED;
 
 #define NE_RF_ADD			0x04		  /* Additive fixup */
 

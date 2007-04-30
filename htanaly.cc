@@ -1895,7 +1895,7 @@ restart:
 			} else {
 				strcpy(str2, "?");
 			}
-			list->insert_str((int)xa, str, xref_type(x->type), str2);
+			list->insert_str(reinterpret_cast<long>(xa), str, xref_type(x->type), str2);
 			xa = (Address*)x_tree->enum_next((ht_data**)&x, xa);
 		}
 		list->attachTitle(text);

@@ -44,58 +44,58 @@
 #define LE_SIZEOF_HEADER				196
 
 struct LE_HEADER {
-	word		magic HTPACKED;				// Magic number
-	byte		border HTPACKED;				// The byte ordering for the VXD
-	byte		worder HTPACKED;				// The word ordering for the VXD
-	dword	level HTPACKED;				// The EXE format level for now = 0
-	word		cpu HTPACKED;					// The CPU type
-	word		os HTPACKED;					// The OS type
-	dword	ver HTPACKED;					// Module version
-	dword	mflags HTPACKED;				// Module flags
-	dword	pagecnt HTPACKED;				// Module # pages
-	dword	startobj HTPACKED;				// Object # for instruction pointer
-	dword	eip HTPACKED;					// Extended instruction pointer
-	dword	stackobj HTPACKED;				// Object # for stack pointer
-	dword	esp HTPACKED;					// Extended stack pointer
-	dword	pagesize HTPACKED;				// VXD page size
-	dword	lastpagesize HTPACKED;			// Last page size in VXD
-	dword	fixupsize HTPACKED;				// Fixup section size
-	dword	fixupsum HTPACKED;				// Fixup section checksum
-	dword	ldrsize HTPACKED;				// Loader section size
-	dword	ldrsum HTPACKED;				// Loader section checksum
-	dword	objtab HTPACKED;				// Object table offset
-	dword	objcnt HTPACKED;				// Number of objects in module
-	dword	pagemap HTPACKED;				// Object page map offset
-	dword	itermap HTPACKED;				// Object iterated data map offset
-	dword	rsrctab HTPACKED;				// Offset of Resource Table
-	dword	rsrccnt HTPACKED;				// Number of resource entries
-	dword	restab HTPACKED;				// Offset of resident name table
-	dword	enttab HTPACKED;				// Offset of Entry Table
-	dword	dirtab HTPACKED;				// Offset of Module Directive Table
-	dword	dircnt HTPACKED;				// Number of module directives
-	dword	fpagetab HTPACKED;				// Offset of Fixup Page Table
-	dword	frectab HTPACKED;				// Offset of Fixup Record Table
-	dword	impmod HTPACKED;				// Offset of Import Module Name Table
-	dword	impmodcnt HTPACKED;				// Number of entries in Import Module Name Table
-	dword	impproc HTPACKED;				// Offset of Import Procedure Name Table
-	dword	pagesum HTPACKED;				// Offset of Per-Page Checksum Table
-	dword	datapage HTPACKED;				// Offset of Enumerated Data Pages
-	dword	preload HTPACKED;				// Number of preload pages
-	dword	nrestab HTPACKED;				// Offset of Non-resident Names Table
-	dword	cbnrestab HTPACKED;				// Size of Non-resident Name Table
-	dword	nressum HTPACKED;				// Non-resident Name Table Checksum
-	dword	autodata HTPACKED;				// Object # for automatic data object
-	dword	debuginfo HTPACKED;				// Offset of the debugging information
-	dword	debuglen HTPACKED;				// The length of the debugging info. in bytes
-	dword	instpreload HTPACKED;			// Number of instance pages in preload section of VXD file
-	dword	instdemand HTPACKED;			// Number of instance pages in demand load section of VXD file
-	dword	heapsize HTPACKED;				// Size of heap - for 16-bit apps
-	byte		res3[12] HTPACKED;				// Reserved words
-	dword	winresoff HTPACKED;
-	dword	winreslen HTPACKED;
-	word		devid HTPACKED;				// Device ID for VxD
-	word		ddkver HTPACKED;				// DDK version for VxD
-  };
+	word		magic;				// Magic number
+	byte		border;				// The byte ordering for the VXD
+	byte		worder;				// The word ordering for the VXD
+	dword	level;				// The EXE format level for now = 0
+	word		cpu;					// The CPU type
+	word		os;					// The OS type
+	dword	ver;					// Module version
+	dword	mflags;				// Module flags
+	dword	pagecnt;				// Module # pages
+	dword	startobj;				// Object # for instruction pointer
+	dword	eip;					// Extended instruction pointer
+	dword	stackobj;				// Object # for stack pointer
+	dword	esp;					// Extended stack pointer
+	dword	pagesize;				// VXD page size
+	dword	lastpagesize;			// Last page size in VXD
+	dword	fixupsize;				// Fixup section size
+	dword	fixupsum;				// Fixup section checksum
+	dword	ldrsize;				// Loader section size
+	dword	ldrsum;				// Loader section checksum
+	dword	objtab;				// Object table offset
+	dword	objcnt;				// Number of objects in module
+	dword	pagemap;				// Object page map offset
+	dword	itermap;				// Object iterated data map offset
+	dword	rsrctab;				// Offset of Resource Table
+	dword	rsrccnt;				// Number of resource entries
+	dword	restab;				// Offset of resident name table
+	dword	enttab;				// Offset of Entry Table
+	dword	dirtab;				// Offset of Module Directive Table
+	dword	dircnt;				// Number of module directives
+	dword	fpagetab;				// Offset of Fixup Page Table
+	dword	frectab;				// Offset of Fixup Record Table
+	dword	impmod;				// Offset of Import Module Name Table
+	dword	impmodcnt;				// Number of entries in Import Module Name Table
+	dword	impproc;				// Offset of Import Procedure Name Table
+	dword	pagesum;				// Offset of Per-Page Checksum Table
+	dword	datapage;				// Offset of Enumerated Data Pages
+	dword	preload;				// Number of preload pages
+	dword	nrestab;				// Offset of Non-resident Names Table
+	dword	cbnrestab;				// Size of Non-resident Name Table
+	dword	nressum;				// Non-resident Name Table Checksum
+	dword	autodata;				// Object # for automatic data object
+	dword	debuginfo;				// Offset of the debugging information
+	dword	debuglen;				// The length of the debugging info. in bytes
+	dword	instpreload;			// Number of instance pages in preload section of VXD file
+	dword	instdemand;			// Number of instance pages in demand load section of VXD file
+	dword	heapsize;				// Size of heap - for 16-bit apps
+	byte		res3[12];				// Reserved words
+	dword	winresoff;
+	dword	winreslen;
+	word		devid;				// Device ID for VxD
+	word		ddkver;				// DDK version for VxD
+  } HTPACKED;
 
 /*
  1 1 1 1  1 1
@@ -165,19 +165,19 @@ struct LE_HEADER {
 #define LE_SIZEOF_OBJECT				24
 
 struct LE_OBJECT	{
-	dword	vsize HTPACKED;
-	dword	base_reloc_addr HTPACKED;
-	dword	flags HTPACKED;
-	dword	page_map_index HTPACKED;
-	dword	page_map_count HTPACKED;
-	byte		name[4] HTPACKED;
-};
+	dword	vsize;
+	dword	base_reloc_addr;
+	dword	flags;
+	dword	page_map_index;
+	dword	page_map_count;
+	byte		name[4];
+} HTPACKED;
 
 struct LE_PAGE_MAP_ENTRY {
-	word high HTPACKED;
-	byte	low HTPACKED;
-	byte	flags HTPACKED;
-};
+	word high;
+	byte	low;
+	byte	flags;
+} HTPACKED;
 
 /*
  *	ENTRYPOINTS
@@ -187,23 +187,23 @@ struct LE_PAGE_MAP_ENTRY {
 #define LE_ENTRYPOINT_BUNDLE_32BIT		(1<<1)
 
 struct LE_ENTRYPOINT_BUNDLE {
-	byte entry_count HTPACKED;
-	byte flags HTPACKED;
-	word obj_index HTPACKED;
-};
+	byte entry_count;
+	byte flags;
+	word obj_index;
+} HTPACKED;
 
 #define LE_ENTRYPOINT_EXPORTED	(1<<0)
 #define LE_ENTRYPOINT_SHARED		(1<<1)
 
 struct LE_ENTRYPOINT16 {
-	byte flags HTPACKED;
-	word offset HTPACKED;
-};
+	byte flags;
+	word offset;
+} HTPACKED;
 
 struct LE_ENTRYPOINT32 {
-	byte flags HTPACKED;
-	dword offset HTPACKED;
-};
+	byte flags;
+	dword offset;
+} HTPACKED;
 
 /*
  *	FIXUPS
@@ -232,49 +232,49 @@ struct LE_ENTRYPOINT32 {
 #define   LE_FIXUP_RELOC_IORD8		(1<<7)
 
 struct LE_FIXUP {
-	uint8	address_type HTPACKED;
-	uint8	reloc_type HTPACKED;
-};
+	uint8	address_type;
+	uint8	reloc_type;
+} HTPACKED;
 
 // if address_type == 8, reloc_type = 0
 struct LE_FIXUP_INTERNAL16 {
-	uint8	seg HTPACKED;
-	uint16	ofs HTPACKED;
-};
+	uint8	seg;
+	uint16	ofs;
+} HTPACKED;
 
 struct LE_FIXUP_INTERNAL32 {
-	uint8	seg HTPACKED;
-	uint32	ofs HTPACKED;
-};
+	uint8	seg;
+	uint32	ofs;
+} HTPACKED;
 
 /*
  *	VxD specific
  */
 
 struct LE_VXD_DESCRIPTOR {
-	uint32	next HTPACKED;
-	uint16	sdk_version HTPACKED;
-	uint16	device_number HTPACKED;
-	uint8	version_major HTPACKED;
-	uint8	version_minor HTPACKED;
-	uint16	flags HTPACKED;
-	uint8	name[8] HTPACKED;		// not (null-)terminated, fill with spaces
-	uint32	init_order HTPACKED;
-	uint32    ctrl_ofs HTPACKED;
-	uint32    v86_ctrl_ofs HTPACKED;
-	uint32    pm_ctrl_ofs HTPACKED;
-	uint32    v86_ctrl_csip HTPACKED;
-	uint32    pm_ctrl_csip HTPACKED;
-	uint32	rm_ref_data HTPACKED;	// "Reference data from real mode"
-	uint32	service_table_ofs HTPACKED;
-	uint32	service_table_size HTPACKED;
-	uint32	win32_service_table_ofs HTPACKED;
-	uint32	prev HTPACKED;			// normally 'verP' (Prev)
-	uint32	size HTPACKED;			// size of this structure (0x50 = 80)
-	uint32	reserved0 HTPACKED;		// normally '1vsR' (Rsv1)
-	uint32	reserved1 HTPACKED;		// normally '2vsR' (Rsv2)
-	uint32	reserved2 HTPACKED;		// normally '3vsR' (Rsv3)
-};
+	uint32	next;
+	uint16	sdk_version;
+	uint16	device_number;
+	uint8	version_major;
+	uint8	version_minor;
+	uint16	flags;
+	uint8	name[8];		// not (null-)terminated, fill with spaces
+	uint32	init_order;
+	uint32    ctrl_ofs;
+	uint32    v86_ctrl_ofs;
+	uint32    pm_ctrl_ofs;
+	uint32    v86_ctrl_csip;
+	uint32    pm_ctrl_csip;
+	uint32	rm_ref_data;	// "Reference data from real mode"
+	uint32	service_table_ofs;
+	uint32	service_table_size;
+	uint32	win32_service_table_ofs;
+	uint32	prev;			// normally 'verP' (Prev)
+	uint32	size;			// size of this structure (0x50 = 80)
+	uint32	reserved0;		// normally '1vsR' (Rsv1)
+	uint32	reserved1;		// normally '2vsR' (Rsv2)
+	uint32	reserved2;		// normally '3vsR' (Rsv3)
+} HTPACKED;
 
 /*
  *	internal

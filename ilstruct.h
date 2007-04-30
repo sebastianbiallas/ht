@@ -34,9 +34,9 @@
 #define IL_MAGIC1_3	'+'
 
 struct IL_METADATA_SECTION {
-	dword magic HTPACKED;
-	word major_version HTPACKED;
-	word minor_version HTPACKED;
+	dword magic;
+	word major_version;
+	word minor_version;
 	// if (minor_version==1) {
 	//    dword unkown HTPACKED;
 	//    dword version_string_length HTPACKED;	
@@ -44,15 +44,15 @@ struct IL_METADATA_SECTION {
 	// }
 	// byte zero1, zero2; 
 	// word number_of_entries; 
-};
+} HTPACKED;
 
 struct IL_METADATA_SECTION_ENTRY {
-	dword offset HTPACKED;
-	dword size HTPACKED;
+	dword offset;
+	dword size;
 	//char name[]; // zero_terminated
 	// align(4)
 	// dword ref ?;
-};
+} HTPACKED;
 
 extern byte IL_METADATA_SECTION_struct[];
 extern byte IL_METADATA_SECTION_ENTRY_struct[];

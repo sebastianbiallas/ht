@@ -158,7 +158,7 @@ void ht_treeview::expand_all(void *node)
  */
 void ht_treeview::getdata(ht_object_stream *s)
 {
-	s->putIntHex((int)selected, 4, NULL);
+	s->putIntHex(reinterpret_cast<long>(selected), 4, NULL);
 }
 
 /*

@@ -119,7 +119,7 @@ void ht_xbe::init(bounds *b, ht_streamfile *file, format_viewer_if **ifs, ht_for
 		create_host_struct(&xbe_shared->sections.sections[i], XBE_SECTION_HEADER_struct, little_endian);
 		
 		// XXX: this is crashable!!!
-		xbe_shared->sections.sections[i].section_name_address += (UINT) xbe_shared->headerspace - xbe_shared->header.base_address;
+		xbe_shared->sections.sections[i].section_name_address += reinterpret_cast<unsigned long>(xbe_shared->headerspace) - xbe_shared->header.base_address;
 		xbe_shared->sections.sections[i].virtual_address -= xbe_shared->header.base_address;
 	}
 
