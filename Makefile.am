@@ -27,7 +27,7 @@ ht_SOURCES	= atom.cc atom.h except.cc except.h data.cc data.h \
 str.cc str.h strtools.cc strtools.h endianess.h endianess.cc \
 htdoc.c htdoc.h blockop.cc blockop.h coff_s.h \
 config.h cstream.cc cstream.h demangle.h elfstruc.h \
-formats.cc formats.h global.h htanaly.cc htanaly.h htapp.cc \
+formats.cc formats.h htanaly.cc htanaly.h htapp.cc \
 htapp.h htcfg.cc htcfg.h htclipboard.cc htclipboard.h \
 htcoff.cc htcoff.h htcoffhd.cc htcoffhd.h htctrl.cc htctrl.h \
 htdebug.cc htdebug.h htdialog.cc htdialog.h htelf.cc htelf.h htelfhd.cc \

@@ -18,7 +18,7 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "htatom.h"
+#include "atom.h"
 #include "htiobox.h"
 #include "srt.h"
 #include "symmath.h"
@@ -26,8 +26,8 @@
 /* FIXME: ... find a better way ... */
 #include "srt_x86.h"
 
-#define ATOM_SYM_INT_REG		MAGICD("SRT\x00")
-#define ATOM_SYM_INT_MEM		MAGICD("SRT\x01")
+#define ATOM_SYM_INT_REG		MAGIC32("SRT\x00")
+#define ATOM_SYM_INT_MEM		MAGIC32("SRT\x01")
 
 /*
  *	CLASS state_mod
@@ -52,7 +52,7 @@ state_mod::~state_mod()
  *	CLASS sym_int_reg
  */
  
-sym_int_reg::sym_int_reg(UINT r)
+sym_int_reg::sym_int_reg(uint r)
 {
 	regidx = r;
 }
@@ -63,12 +63,12 @@ bool sym_int_reg::compare_eq(sym_int_token *t)
 	return (regidx == s->regidx);
 }
 
-Object *sym_int_reg::duplicate()
+Object *sym_int_reg::clone() const
 {
 	return new sym_int_reg(regidx);
 }
 
-bool sym_int_reg::evaluate(bool *i)
+bool sym_int_reg::evaluate(uint *i)
 {
 	return false;
 }
@@ -78,7 +78,7 @@ int sym_int_reg::nstrfy(char *buf, int n)
 	return sprintf(buf, "reg%d", regidx);
 }
 
-OBJECT_ID sym_int_reg::object_id() const
+ObjectID sym_int_reg::getObjectID() const
 {
 	return ATOM_SYM_INT_REG;
 }
@@ -88,7 +88,7 @@ OBJECT_ID sym_int_reg::object_id() const
  */
  
 
-sym_int_mem::sym_int_mem(sym_int_token *a, UINT s, srt_endian e)
+sym_int_mem::sym_int_mem(sym_int_token *a, uint s, srt_endian e)
 {
 	addr = a;
 	size = s;
@@ -100,12 +100,12 @@ bool sym_int_mem::compare_eq(sym_int_token *t)
 	return false;
 }
 
-Object *sym_int_mem::duplicate()
+Object *sym_int_mem::clone() const
 {
-	return new sym_int_mem((sym_int*)addr->duplicate(), size, endian);
+	return new sym_int_mem((sym_int*)addr->clone(), size, endian);
 }
 
-bool sym_int_mem::evaluate(bool *i)
+bool sym_int_mem::evaluate(uint *i)
 {
 	return false;
 }
@@ -120,7 +120,7 @@ int sym_int_mem::nstrfy(char *buf, int n)
 	return l;
 }
 
-OBJECT_ID sym_int_mem::object_id() const
+ObjectID sym_int_mem::getObjectID() const
 {
 	return ATOM_SYM_INT_MEM;
 }
@@ -139,7 +139,7 @@ char *srt_endian_to_str(srt_endian endian)
 void test_srt(Analyser *analy, Address *addr)
 {
 /* FIXME: ... find a better way ... */
-	OBJECT_ID a = analy->disasm->object_id();
+	ObjectID a = analy->disasm->getObjectID();
 	if (a == ATOM_DISASM_X86) {
 		srt_x86(analy, addr);
 	}

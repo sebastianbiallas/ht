@@ -18,19 +18,29 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef out_html_h
-#define out_html_h
+#ifndef OUT_HTML_H
+#define OUT_HTML_H
 
 #include "analy.h"
-#include "common.h"
-#include "global.h"
+#include "io/types.h"
 #include "stream.h"
+#include "out.h"
 
-#define HTML_OUTPUT_OK 0
-#define HTML_OUTPUT_ERR_GENERIC 1
-#define HTML_OUTPUT_ERR_STREAM 2
-#define HTML_OUTPUT_ERR_ANALY_NOT_FINISHED 3
-
-int generate_html_output(Analyser *analy, ht_stream *stream, Address *from, Address *to);
+class AnalyserHTMLOutput: public AnalyserOutput {
+	Stream *stream;
+	char tmpbuf[1024];
+	int last;
+public:
+		void init(Analyser *analy, Stream *stream);
+	virtual	void beginLine();
+	virtual	void endLine();
+	virtual	Stream *getGenerateStream();
+	virtual	int  elementLength(const char *s);
+	virtual	void footer();
+	virtual	void header();
+	virtual	void putElement(int element_type, const char *element);
+	virtual	char *link(char *s, Address *Addr);
+	virtual	char *externalLink(char *s, uint32 type1, uint32 type2, uint32 type3, uint32 type4, void *special);
+};
 
 #endif

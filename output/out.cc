@@ -20,9 +20,8 @@
 
 #include "analy.h"
 #include "analy_names.h"
-#include "global.h"
 #include "htdebug.h"
-#include "htstring.h"
+#include "strtools.h"
 #include "snprintf.h"
 #include "tools.h"
 #include "out.h"
@@ -38,7 +37,7 @@
 //#define DPRINTF(msg...) printf(##msg)
 //#define DPRINTF2(msg...) printf(##msg)
 
-int compare_keys_addresses_delinear(ht_data *key_a, ht_data *key_b)
+int compare_keys_addresses_delinear(Object *key_a, Object *key_b)
 {
 	return ((Address*)key_a)->compareDelinear((Address*)key_b);
 }
@@ -49,7 +48,7 @@ int compare_keys_addresses_delinear(ht_data *key_a, ht_data *key_b)
 OutLine::OutLine(byte *Text, int Textlen, int Bytes)
 {
 	textlen = Textlen;
-	text = (byte*)malloc(Textlen);
+	text = ht_malloc(Textlen);
 	memcpy(text, Text, textlen);
 	bytes = Bytes;
 }
@@ -63,21 +62,18 @@ OutLine::~OutLine()
 /*
  *
  */
-OutAddr::OutAddr(Address *Addr, UINT Time)
+OutAddr::OutAddr(Address *aAddr, uint aTime)
 {
-	addr = DUP_ADDR(Addr);
-	updateTime(Time);
-	lines = new ht_clist();
-	lines->init();
+	addr = aAddr->clone();
+	updateTime(aTime);
+	lines = new Array(true);
 	size = 0;
-	bytes = 0;
-	
+	bytes = 0;	
 }
 
 OutAddr::~OutAddr()
 {
 	delete addr;
-	lines->destroy();
 	delete lines;
 }
 
@@ -90,17 +86,23 @@ void OutAddr::appendLine(OutLine *l)
 
 void OutAddr::clear()
 {
-	lines->empty();
+	lines->delAll();
 	bytes = 0;
 	size = 0;
 }
 
 OutLine *OutAddr::getLine(int i)
 {
-	return (OutLine*)lines->get(i);
+	return (OutLine*) (*lines)[i];
 }
 
-void OutAddr::updateTime(UINT Time)
+int OutAddr::compareTo(const Object *o) const
+{
+//	uint oo = o->getObjectID();
+	return addr->compareTo(((OutAddr*)o)->addr);
+}
+
+void OutAddr::updateTime(uint Time)
 {
 	time = Time;
 }
@@ -114,22 +116,20 @@ void	AnalyserOutput::init(Analyser *Analy)
 	addr = new InvalidAddress();
 	cur_addr = NULL;
 	cur_out_addr = NULL;
-	out_addrs = new ht_dtree();
-	out_addrs->init(compare_keys_addresses_delinear);
+	out_addrs = new AVLTree(true);
 	bytes_addr = 0;
 	bytes_line = 0;
 	size = 0;
 	current_time = 0;
-	work_buffer_start = (byte*)malloc(WORKBUF_LEN);
+	work_buffer_start = ht_malloc(WORKBUF_LEN);
 	work_buffer = work_buffer_start;
-	temp_buffer = (byte*)malloc(WORKBUF_LEN);
+	temp_buffer = ht_malloc(WORKBUF_LEN);
 	dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
 	changeConfig();
 }
 
 void AnalyserOutput::done()
 {
-	out_addrs->destroy();
 	delete out_addrs;
 	delete addr;
 	free(work_buffer_start);
@@ -183,7 +183,7 @@ static char *analyser_output_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *
 	}*/
 	addr->getFromCPUAddress(&Addr);
 	Location *loc = output->analy->getLocationByAddress(addr);
-	
+
 	if (loc && loc->label) {
 		buf = output->link(loc->label->name, addr);
 		if (symstrlen) *symstrlen = output->elementLength(buf);
@@ -208,15 +208,18 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 #define LABELINDENT 32
 #define MAX_XREF_COLS 3
 #define MAX_XREF_LINES 7
-/*               char tbuf[1024];
-			Addr->stringify(tbuf, 1024, 0);
-	printf("generate_addr(%s, ", tbuf);
-			addr->stringify(tbuf, 1024, 0);
-			printf("%s)\n", tbuf);*/
+	
+	char tbuf[1024];
+	Addr->stringify(tbuf, 1024, 0);
+//	printf("generate_addr(%s, ", tbuf);
+	char tbuf2[1024];
+	addr->stringify(tbuf2, 1024, 0);
+//	printf("%s)\n", tbuf2);
+
 	cur_addr = analy->getLocationByAddress(addr);
 	cur_out_addr = oa;
 	cur_out_addr->clear();
-	
+
 	beginAddr();
 
 	if (cur_addr) {
@@ -259,30 +262,24 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				char b[32];
 				sprintf(b, "<< show xrefs (%d) >>", xref_count);
 				char *t;
-				if (Addr->byteSize()==4) {
-					dword d;
-					Addr->putIntoArray((byte*)&d);
-					t = externalLink(b, d, 0, 0, 1, NULL);
-				} else {
-					qword d;
-					Addr->putIntoArray((byte*)&d);
-					t = externalLink(b, d.hi, d.lo, 0, 1, NULL);
-				}
+				uint64 u;
+				Addr->putIntoUInt64(u);
+				t = externalLink(b, u >> 32, u, 0, 1, NULL);				
 				write(t);
 			} else {
-				ht_tree *x_tree = cur_addr->xrefs;
-				if (x_tree) {
+				Container *xr = cur_addr->xrefs;
+				if (xr) {
 					int i=0;
-					AddrXRef *x;
-					Address *xa = (Address*)x_tree->enum_next((ht_data**)&x, NULL);
-					while (xa) {
+					ObjHandle xh = xr->findFirst();
+					while (xh != invObjHandle) {
 						if ((i % (MAX_XREF_COLS+1))!=0) {
+							AddrXRef *x = (AddrXRef *)xr->get(xh);
 							char buf3[90];
 							sprintf(buf3, " %c", xref_type_short(x->type));
 							write(buf3);
-							xa->stringify(buf3, 1024, ADDRESS_STRING_FORMAT_COMPACT);
-							write(link(buf3, xa));
-							xa = (Address*)x_tree->enum_next((ht_data**)&x, xa);
+							x->addr->stringify(buf3, 1024, ADDRESS_STRING_FORMAT_COMPACT);
+							write(link(buf3, x->addr));
+							xh = xr->findNext(xh);
 						} else {
 							if (i!=0) {
 								endLine();
@@ -305,17 +302,34 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	bool is_valid_ini_addr = analy->validAddress(addr, scinitialized);
 	bool is_valid_code_addr = analy->validCodeAddress(addr);
 	
-	if (is_valid_ini_addr && ((cur_addr && ((cur_addr->type.type == dt_code) || ((cur_addr->type.type == dt_unknown) && (is_valid_code_addr))))
-	|| (!cur_addr && is_valid_code_addr))) {
+	if (
+		is_valid_ini_addr 
+		&& (
+			(
+				cur_addr 
+				&& (
+					cur_addr->type.type == dt_code
+					|| (
+						cur_addr->type.type == dt_unknown 
+						&& is_valid_code_addr
+					)
+				)
+			)			
+			|| (
+				!cur_addr 
+				&& is_valid_code_addr
+			)
+		)
+	) {	
 		// code
 		Location *next_addr = analy->enumLocations(addr);
 		int op_len;
 		
 		// max. length of current opcode
 		if (next_addr) {
-			int d=255;
+			int d = 255;
 			next_addr->addr->difference(d, addr);
-			op_len = MIN((dword)analy->max_opcode_length, (UINT)d);
+			op_len = MIN(uint32(analy->max_opcode_length), uint(d));
 		} else {
 			op_len = analy->max_opcode_length;
 		}
@@ -323,7 +337,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 		byte buf[16];
 		int buffer_size = analy->bufPtr(addr, buf, sizeof(buf));
 		if (analy->disasm && buffer_size) {
-			OPCODE *o=analy->disasm->decode(buf, MIN(buffer_size, op_len), analy->mapAddr(Addr));
+			OPCODE *o = analy->disasm->decode(buf, MIN(buffer_size, op_len), analy->mapAddr(Addr));
 			/* inits for addr-sym transformations */
 			addr_sym_func_context = this;
 			if (analy->mode & ANALY_TRANSLATE_SYMBOLS) addr_sym_func = &analyser_output_addr_sym_func;
@@ -332,19 +346,20 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			bool s = true;
 			do {
 				if (s) {
-					char *x = analy->disasm->str(o, dis_style);
+					const char *x = analy->disasm->str(o, dis_style);
 					putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, x);
 				}
-				if (analy->mode & ANALY_EDIT_BYTES) {
-					want_bytes_line = MIN(complete_bytes_line, 16);
-				} else {
-					want_bytes_line = complete_bytes_line;
-				}
-				bytes_line += want_bytes_line;
-				complete_bytes_line -= want_bytes_line;
-				if ((s = analy->disasm->selectNext(o)) || complete_bytes_line) {
+				if ((s = analy->disasm->selectNext(o))/* || complete_bytes_line*/) {
 					endLine();
 					beginLine();
+				} else {
+					if (analy->mode & ANALY_EDIT_BYTES) {
+						want_bytes_line = MIN(complete_bytes_line, 16);
+					} else {
+						want_bytes_line = complete_bytes_line;
+					}					
+					bytes_line += want_bytes_line;
+					complete_bytes_line -= want_bytes_line;
 				}
 			} while (s || complete_bytes_line);
 			
@@ -362,7 +377,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			} else {
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 			}
-			bytes_line++;
+			bytes_line = want_bytes_line = 1;
 		}
 		
 	} else {
@@ -373,29 +388,29 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 			&& (cur_addr->type.type != dt_code)) {
 				switch (cur_addr->type.type) {
 					case dt_int: {
-						bytes_line += cur_addr->type.length;
+						bytes_line = want_bytes_line = cur_addr->type.length;
 						assert(cur_addr->type.length);
 						if (analy->validAddress(addr, scinitialized)) {
 							char buf[50];
 							switch (cur_addr->type.int_subtype) {
 								case dst_iword: {
-									word c;
+									uint16 c;
 									analy->bufPtr(addr, (byte *)&c, 2);
 									sprintf(buf, "dw          \\@n%04xh", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
 								case dst_idword: {
-									dword c;
+									uint32 c;
 									analy->bufPtr(addr, (byte *)&c, 4);
 									sprintf(buf, "dd          \\@n%08xh", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
 								case dst_iqword: {
-									qword c;
+									uint64 c;
 									analy->bufPtr(addr, (byte *)&c, 8);
-									ht_snprintf(buf, sizeof buf, "dq          \\@n%016qxh", &c);
+									ht_snprintf(buf, sizeof buf, "dq          \\@n%016qxh", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 									break;
 								}
@@ -421,6 +436,9 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 								case dst_idword:
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dd          ????????");
 									break;
+								case dst_iqword:
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dq          ????????????????");
+									break;
 								case dst_ibyte:
 								default:
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
@@ -431,19 +449,19 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 					case dt_array: {
 						if (analy->validAddress(addr, scinitialized)) {
 							switch (cur_addr->type.array_subtype) {
-								case dst_string: {
-									char buf[1024];
-									byte bufread[1024];
-									char *b;
-									int r = analy->bufPtr(addr, bufread, MIN(cur_addr->type.length, 1024));
-									strcpy(buf, "db          \\@s\"");
-									b = buf + 12 + escape_special(buf+12, 100, bufread, r, "\"", false);
-									*b = '\"'; b++; *b = 0;
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
-									bytes_line += cur_addr->type.length;
-									break;                                             
-								}
-								default: {assert(0);}
+							case dst_string: {
+								char buf[1024];
+								byte bufread[1024];
+								char *b;
+								int r = analy->bufPtr(addr, bufread, MIN(cur_addr->type.length, 1024));
+								strcpy(buf, "db          \\@s\"");
+								b = buf + 16 + escape_special(buf+16, 100, bufread, r, "\"", false);
+								*b = '\"'; b++; *b = 0;
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
+								bytes_line = want_bytes_line = cur_addr->type.length;
+								break;
+							}
+							default: {assert(0);}
 							}
 						} else {
 							putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ?");
@@ -456,7 +474,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				}
 			} else {
 				// not a known address
-				bytes_line++;
+				bytes_line = want_bytes_line = 1;
 				byte c;
 				if (analy->validAddress(addr, scinitialized) && (analy->bufPtr(addr, &c, 1)==1)) {
 					char buf[20];
@@ -478,7 +496,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				sprintf(buf, "db          ?? * %d", d);
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 			} else {
-				bytes_line += 1;
+				bytes_line = want_bytes_line = 1;
 				putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 			}
 		}
@@ -488,7 +506,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 	endAddr();
 }
 
-ht_stream *AnalyserOutput::getGenerateStream()
+Stream *AnalyserOutput::getGenerateStream()
 {
 	return NULL;
 }
@@ -497,26 +515,25 @@ int	AnalyserOutput::generateFile(Address *from, Address *to)
 {
 	if (analy->active) return OUTPUT_GENERATE_ERR_ANALYSER_NOT_FINISHED;
 	if (!from->isValid() || !to->isValid()) return OUTPUT_GENERATE_ERR_INVAL;
-	ht_stream *out = getGenerateStream();
+	Stream *out = getGenerateStream();
 	if (!out) return OUTPUT_GENERATE_ERR_INVAL;
 	header();
 	int line = 0;
+	int len = 0;
 	while (from->compareTo(to) <= 0) {
 		char buffer[1024];
 		if (getLineString(buffer, sizeof buffer, from, line)) {
-			// write buffer
 			// FIXME: remove strlen
-			UINT wr = strlen(buffer);
+			uint wr = strlen(buffer);
 			if (out->write(buffer, wr) != wr) return OUTPUT_GENERATE_ERR_STREAM;
 			
-			// update address
-			int len;
-			if (getLineByteLength(len, from, line)) {
-				from->add(len);
+			int tmplen;
+			if (getLineByteLength(tmplen, from, line)) {
+				len += tmplen;
 			}
-			// update line
 			line++;
 		} else {
+			from->add(len);
 			line = 0;
 		}
 	}
@@ -538,17 +555,19 @@ OutAddr *AnalyserOutput::getAddr(Address *Addr)
 		assert(addr != Addr);
 		DPRINTF("not cached1 --");
 		delete addr;
-		addr = DUP_ADDR(Addr);
-		OutAddr *oa = (OutAddr*)out_addrs->get(Addr);
+		addr = Addr->clone();
+		OutAddr oatmp(addr, 0);
+		OutAddr *oa = (OutAddr*)out_addrs->get(out_addrs->find(&oatmp));
 		if (!oa) {
 			DPRINTF("generate\n");
 			if (out_addrs->count() > 1024) {
 				reset();
-				addr = DUP_ADDR(Addr);
+				delete addr;
+				addr = Addr->clone();
 			}
 			oa = new OutAddr(Addr, current_time);
 			generateAddr(Addr, oa);
-			out_addrs->insert(DUP_ADDR(Addr), oa);
+			out_addrs->insert(oa);
 		} else {
 			DPRINTF("but cached2 ");
 			if (oa->time != current_time) {
@@ -624,7 +643,7 @@ char *AnalyserOutput::link(char *s, Address *Addr)
 	return (char*)temp_buffer;
 }
 
-char *AnalyserOutput::externalLink(char *s, int type1, int type2, int type3, int type4, void *special)
+char *AnalyserOutput::externalLink(char *s, uint32 type1, uint32 type2, uint32 type3, uint32 type4, void *special)
 {
 	strcpy((char*)temp_buffer, s);
 	return (char*)temp_buffer;
@@ -662,7 +681,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 {
 //	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
 //#undef DPRINTF2
-//#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, ##msg); fprintf(stderr, "%s", tbuf);}
+//#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, msg); fprintf(stderr, "%s", tbuf);}
 //	char tbuf[1024];
 	DPRINTF2("prev_line(%y, %d, %d, %y)\n", Addr, line, n, min);
 
@@ -673,7 +692,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	/*
 	 *	If we have reached |min| and line==0, we're on top
 	 */
-	if (cmp<0 || (cmp == 0 && line==0)) {
+	if (cmp < 0 || (cmp == 0 && line == 0)) {
 		DPRINTF2("geht nicht\n");
 		return 0;
 	}
@@ -700,8 +719,8 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	if (analy->disasm) {
 		analy->disasm->getOpcodeMetrics(min_length, max_length, min_look_ahead, avg_look_ahead, addr_align);
 	} else {
-		min_look_ahead=1;
-		avg_look_ahead=1;
+		min_look_ahead = 1;
+		avg_look_ahead = 1;
 	}
 	
 	int l = n*avg_look_ahead;
@@ -711,14 +730,15 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	 *	The disassember whats us to go |l| bytes back
 	 */
 	 
-	Address *search_addr = DUP_ADDR(Addr);
-	if (!search_addr->add(-l) || search_addr->compareTo(min)<0) {
+	Address *search_addr = Addr->clone();
+	if (!search_addr->add(-l) || search_addr->compareTo(min) < 0) {
 		/*
 		 *	It isnt possible, to go |l| bytes back. So we start at |min|.
 		 */
 		delete search_addr;
-		search_addr = DUP_ADDR(min);
+		search_addr = min->clone();
 	}
+	DPRINTF2("search-start: %y\n", search_addr);
 
 	/*
 	 *	|prev| contains the previous "logical" location.
@@ -726,13 +746,14 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	 */
 	Location *prev = analy->enumLocationsReverse(Addr);
 	if (prev) {
+		DPRINTF2("prev: %y\n", prev->addr);
 		/*
 		 *	|prevnext| contains the "end address" of |prev|.
 		 *	So we know how long (how much bytes) prev is.
 		 */
-		Address *prevnext = DUP_ADDR(prev->addr);
+		Address *prevnext = prev->addr->clone();
 		if (prevnext->add(getAddrByteLength(prev->addr))) {
-			DPRINTF2("mid-test\n");
+			DPRINTF2("mid-test: prevnext %y\n", prevnext);
 			if (prevnext->compareTo(Addr) > 0) {
 				/*
 				 *   We were in the middle of a location.
@@ -742,7 +763,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 				delete Addr;
 				delete search_addr;
 				delete prevnext;
-				Addr = DUP_ADDR(prev->addr);
+				Addr = prev->addr->clone();
 				line = 0;
 				res++;
 				DPRINTF2("mid\n");
@@ -752,14 +773,14 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 				delete Addr;
 				delete search_addr;
 				delete prevnext;
-				Addr = DUP_ADDR(prev->addr);
+				Addr = prev->addr->clone();
 				line = getLineCount(prev->addr)-1;
 				res++;
 				DPRINTF2("mid2\n");
 				return prevLine(Addr, line, n-1, min)+res;
 			}
 			DPRINTF2("prev: %y prevnext: %y search_addr: %y\n", prev->addr, prevnext, search_addr);
-			Address *oldprevnext = DUP_ADDR(prevnext);
+			Address *oldprevnext = prevnext->clone();
 			if (prevnext->add(l) && prevnext->compareTo(Addr) >= 0) {
 				delete search_addr;
 				search_addr = oldprevnext;
@@ -780,7 +801,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 		 */
 		DPRINTF2("search_addr < min\n");
 		delete search_addr;
-		search_addr = DUP_ADDR(min);
+		search_addr = min->clone();
 	}
 
 	Address *addrbuf[1024];
@@ -788,7 +809,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	int i = 0;
 	int len;
 
-	Address *next_addr = DUP_ADDR(search_addr);
+	Address *next_addr = search_addr->clone();
 	while (1) {
 		DPRINTF2("search_addr: (%y, %d) ", search_addr, search_line);
 		DPRINTF2("next_addr: %y \n", next_addr);
@@ -800,11 +821,11 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 			search_line++;
 		} else {
 			delete search_addr;
-			search_addr = DUP_ADDR(next_addr);
+			search_addr = next_addr->clone();
 			search_line = 0;
 			continue;
 		}
-		addrbuf[i & 1023] = DUP_ADDR(search_addr);
+		addrbuf[i & 1023] = search_addr->clone();
 		linebuf[i & 1023] = search_line-1;
 		i++;
 		if (i >= 1023) break;
@@ -819,20 +840,20 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 	}
 	delete Addr;
 	if (i >= n) {
-		Addr = DUP_ADDR(addrbuf[(i-n) & 1023]);
+		Addr = addrbuf[(i-n) & 1023]->clone();
 		line = linebuf[(i-n) & 1023];
 		res += n;
 		n = 0;
 	} else {
-		Addr = DUP_ADDR(addrbuf[0]);
+		Addr = addrbuf[0]->clone();
 		line = linebuf[0];
 		res += i;
 		n -= i;
 	}
 
-	for (int j=0; j<i; j++) delete addrbuf[j];
+	for (int j=0; j < i; j++) delete addrbuf[j];
 
-	if (n) return prevLine(Addr, line, n, min)+res;
+	if (n) return prevLine(Addr, line, n, min) + res;
 	return res;
 }
 
@@ -841,15 +862,15 @@ void AnalyserOutput::putElement(int element_type, const char *element)
 	write(element);
 }
 
-void	AnalyserOutput::reset()
+void AnalyserOutput::reset()
 {
 	delete addr;
 	addr = new InvalidAddress;
 	cur_out_addr = NULL;
-	out_addrs->empty();
+	out_addrs->delAll();
 }
 
-void	AnalyserOutput::write(const char *s)
+void AnalyserOutput::write(const char *s)
 {
 	int len = elementLength(s);
 	len = MIN(len, WORKBUF_LEN-(work_buffer-work_buffer_start));
@@ -863,5 +884,3 @@ void AnalyserOutput::write(const char *s, int n)
 	memcpy(work_buffer, s, n);
 	work_buffer += n;
 }
-
-

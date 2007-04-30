@@ -23,7 +23,7 @@ END-INFO-DIR-ENTRY
 This file documents the HT Editor.
 
 @c 
-Copyright @copyright{} 1999-2005 The HT authors. @*
+Copyright @copyright{} 1999-2007 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -51,14 +51,14 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 0.9trunk, Nov 2005}
+@subtitle{Edition 2.0.6, December 2006}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999-2005 The HT authors. @*
+Copyright @copyright{} 1999-2007 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-0.9trunk
+2.0.6
 @end macro
 
 @macro hturl
@@ -100,8 +100,7 @@ be registered in certain jurisdictions.
 
 @noindent
 This is HT @htversion{};
-please note that this is a beta version of the program.
-Therefore HT is incomplete and sometimes buggy. Enjoy anyway@dots{}
+Have fun@dots{}
 
 @menu
 * About::
@@ -196,16 +195,16 @@ Window key bindings
 Analyser key bindings
 
 @multitable @columnfractions .25 .75
-@item c
+@item c                    
 @tab continue code analysis at cursor
-@item f
+@item f                    
 @tab follow dword ptr at address
-@item n
+@item n                    
 @tab name current address 
 (empty string to delete)
-@item x
+@item x                    
 @tab show xrefs (search for xrefs)
-@item #
+@item #                    
 @tab edit comments
 @item s
 @tab define a string
@@ -215,12 +214,12 @@ Analyser key bindings
 @tab define a halfword (16bit)
 @item b
 @tab define a byte (8bit)
-@item Ctrl+A
+@item Ctrl+A               
 @tab call assembler
-@item Ctrl+F
+@item Ctrl+F               
 @tab goto start of current function@*
 (indicated in the 2nd line)
-@item Ctrl+L
+@item Ctrl+L               
 @tab goto previous label
 @item Ctrl+T               
 @tab show recursive function references
@@ -247,8 +246,8 @@ instead of Control or something...
 @node Features, , Top, Top
 @unnumberedsec Features
 
-HT is beta software and should not always regarded as stable, but
-nevertheless contains some very advanced and useful features:
+HT contains some very advanced and useful features, which you
+should carefully inspect:
 
 @menu
 * General features::
@@ -283,7 +282,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, IA-64, Alpha, PowerPC) and relocations
+- image with code/data analyser (x86, AMD64, IA-64, Alpha, PowerPC, ARM) and relocations
 @end itemize
 @item 
 linear executables (LE)
@@ -324,7 +323,7 @@ portable executables (PE32, PE64)
 - delay-import section @*
 - export section @*
 - resources @*
-- image with code/data analyser (x86, IA-64, Alpha) @*
+- image with code/data analyser (x86, AMD64, IA-64, Alpha, ARM) @*
 - preliminary support for .net executables
 @end itemize
 @item 
@@ -559,7 +558,7 @@ one please let us know!
 @tab
 
 @tab
-thread all additional parameters as file names
+treat all additional parameters as file names
 
 @item 
 @code{-v}
@@ -575,6 +574,27 @@ show version and copyright on console
 @tab
 show help
 
+@item
+@code{-t}
+@tab
+@code{--text}
+@tab
+load file(s) in text editor mode
+
+@item
+@code{-b}
+@tab
+@code{--bin}
+@tab
+load file(s) in hex editor mode
+
+
+@item
+@code{-a}
+@tab
+@code{--auto}
+@tab
+try to guess file type
 @end multitable
 
 @node Where to download?, , Top, Top

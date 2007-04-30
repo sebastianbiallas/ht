@@ -22,11 +22,10 @@
 #define OUT_H
 
 #include "analy.h"
-#include "common.h"
-#include "global.h"
-#include "htdata.h"
+#include "io/types.h"
+#include "data.h"
 
-class OutLine: public ht_data {
+class OutLine: public Object {
 public:
 	int		textlen;
 	byte		*text;
@@ -36,20 +35,22 @@ public:
 };
 
 
-class OutAddr: public ht_data {
+class OutAddr: public Object {
 public:
 	Address		*addr;
-	UINT		time;
-	ht_clist	*lines;
+	uint		time;
+	Container	*lines;
 	int		size;                     // size in memory
 	int		bytes;                    // bytes of address in file
 	
-			OutAddr(Address *Addr, UINT Time);
+			OutAddr(Address *Addr, uint Time);
 			~OutAddr();
 	void     	appendLine(OutLine *l);
 	void		clear();
 	OutLine		*getLine(int i);
-	void		updateTime(UINT Time);
+	void		updateTime(uint Time);
+
+	virtual int	compareTo(const Object *) const;
 };
 
 /*
@@ -87,14 +88,14 @@ public:
 	int		want_bytes_line;
 	int		bytes_addr;               // bytes of current addr in file
 		
-	ht_dtree	*out_addrs;
+	Container	*out_addrs;
 
 	byte		*work_buffer_start;
 	byte		*work_buffer;
 
 	byte		*temp_buffer;
 		
-	UINT		current_time;
+	uint		current_time;
 	int		size;
 		
 	int		dis_style;
@@ -107,11 +108,11 @@ public:
 	virtual	int			elementLength(const char *s);
 	virtual	void			endAddr();
 	virtual	void			endLine();
-	virtual	char *			externalLink(char *s, int type1, int type2, int type3, int type4, void *special);
+	virtual	char *			externalLink(char *s, uint32 type1, uint32 type2, uint32 type3, uint32 type4, void *special);
 	virtual	void			footer();
 			void		generateAddr(Address *Addr, OutAddr *oa);
 			int		generateFile(Address *from, Address *to);
-	virtual	ht_stream *		getGenerateStream();
+	virtual	Stream *		getGenerateStream();
 			void		generatePage(Address *from, int lines);
 			OutAddr *	getAddr(Address *Addr);
 			OutLine *	getLine(Address *Addr, int line);

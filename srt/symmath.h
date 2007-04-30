@@ -21,7 +21,7 @@
 #ifndef __SYMMATH_H__
 #define __SYMMATH_H__
 
-#include "htdata.h"
+#include "data.h"
 
 enum c_op {
     c_invalid,
@@ -80,11 +80,11 @@ extern b_op *c_op_prec[];
  *	CLASS sym_int_token
  */
 
-class sym_int_token: public ht_data {
+class sym_int_token: public Object {
 public:
 /* new */
 	virtual bool compare_eq(sym_int_token *t)=0;
-	virtual bool evaluate(UINT *i);
+	virtual bool evaluate(uint *i);
 	virtual void simplify();
 	virtual int nstrfy(char *buf, int n)=0;
 };
@@ -101,16 +101,16 @@ protected:
 	bool simplify_reduce_inverse(b_op oa, sym_int_token *a, b_op ob, sym_int_token *b, sym_int_token **repl);
 	bool simplify_reduce_neutral(b_op o, sym_int_token *x);
 public:
-	ht_list *tokens;
+	Container *tokens;
 
 	sym_int();
 	~sym_int();
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual Object *duplicate();
-	virtual bool evaluate(UINT *i);
+	virtual Object *clone() const;
+	virtual bool evaluate(uint *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 	virtual void simplify();
 /* new */
 		   void b_operate(b_op bop, sym_int_token *t);
@@ -132,10 +132,10 @@ public:
 	~sym_int_symbol();
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual Object *duplicate();
-	virtual bool evaluate(UINT *i);
+	virtual Object *clone() const;
+	virtual bool evaluate(uint *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 };
 
 /*
@@ -144,22 +144,22 @@ public:
 
 class sym_int_const: public sym_int_token {
 public:
-	UINT value;
+	uint value;
 
-	sym_int_const(UINT value);
+	sym_int_const(uint value);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual Object *duplicate();
-	virtual bool evaluate(UINT *i);
+	virtual Object *clone() const;
+	virtual bool evaluate(uint *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 };
 
 /*
  *	CLASS sym_bool_token
  */
 
-class sym_bool_token: public ht_data {
+class sym_bool_token: public Object {
 public:
 /* new */
 	virtual bool compare_eq(sym_bool_token *t)=0;
@@ -180,10 +180,10 @@ public:
 	~sym_bool_symbol();
 /* overwritten */
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual Object *duplicate();
+	virtual Object *clone() const;
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 };
 
 /*
@@ -214,10 +214,10 @@ public:
 	sym_bool_intcmp(sym_int_token *int1, c_op cop, sym_int_token *int2);
 /* overwritten */	
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual Object *duplicate();
+	virtual Object *clone() const;
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 	virtual void simplify();
 };
 
@@ -227,7 +227,7 @@ public:
 
 class sym_bool: public sym_bool_token {
 protected:
-	ht_list *tokens;
+	Container *tokens;
 
 	void clear();
 public:
@@ -235,10 +235,10 @@ public:
 	~sym_bool();
 /* overwritten */
 	virtual bool compare_eq(sym_bool_token *t);
-	virtual Object *duplicate();
+	virtual Object *clone() const;
 	virtual bool evaluate(bool *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 	virtual void simplify();
 /* new */
 		   void l_operate(l_op l, sym_bool_token *t);

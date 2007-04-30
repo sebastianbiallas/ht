@@ -23,10 +23,9 @@
 #define __OUT_SYM_H__
 
 #include "analy.h"
-#include "common.h"
-#include "global.h"
+#include "io/types.h"
 #include "stream.h"
 
-int export_to_sym(Analyser *analy, ht_streamfile *file);
+int export_to_sym(Analyser *analy, File *file);
 
 #endif /* __OUT_SYM_H__ */

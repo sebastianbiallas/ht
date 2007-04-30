@@ -23,13 +23,13 @@
 #include "tools.h"
 #include "symmath.h"
 
-#define ATOM_SYM_INT		MAGICD("SMA\x00")
-#define ATOM_SYM_INT_SYMBOL	MAGICD("SMA\x01")
-#define ATOM_SYM_INT_CONST	MAGICD("SMA\x02")
+#define ATOM_SYM_INT		MAGIC32("SMA\x00")
+#define ATOM_SYM_INT_SYMBOL	MAGIC32("SMA\x01")
+#define ATOM_SYM_INT_CONST	MAGIC32("SMA\x02")
 
-#define ATOM_SYM_BOOL		MAGICD("SMA\x10")
-#define ATOM_SYM_BOOL_SYMBOL	MAGICD("SMA\x11")
-#define ATOM_SYM_BOOL_INTCMP	MAGICD("SMA\x12")
+#define ATOM_SYM_BOOL		MAGIC32("SMA\x10")
+#define ATOM_SYM_BOOL_SYMBOL	MAGIC32("SMA\x11")
+#define ATOM_SYM_BOOL_INTCMP	MAGIC32("SMA\x12")
 
 /* C operator precedence (for output) */
 
@@ -60,9 +60,9 @@ b_op *c_op_prec[] = {
 	NULL
 };
 
-UINT get_op_prec(b_op bop, b_op **op_prec)
+uint get_op_prec(b_op bop, b_op **op_prec)
 {
-	UINT k = 0;
+	uint k = 0;
 	while (*op_prec) {
 		b_op *l = *op_prec;
 		while (*l != b_invalid) {
@@ -79,7 +79,7 @@ UINT get_op_prec(b_op bop, b_op **op_prec)
  *	CLASS sym_int_token
  */
 
-bool sym_int_token::evaluate(UINT *i)
+bool sym_int_token::evaluate(uint *i)
 {
 	return false;
 }
@@ -108,13 +108,13 @@ bool sym_int_symbol::compare_eq(sym_int_token *t)
 	return (strcmp(name, s->name) == 0);
 }
 
-Object *sym_int_symbol::duplicate()
+Object *sym_int_symbol::clone() const
 {
 	sym_int_symbol *p = new sym_int_symbol(name);
 	return p;
 }
 
-bool sym_int_symbol::evaluate(UINT *i)
+bool sym_int_symbol::evaluate(uint *i)
 {
 	return false;
 }
@@ -127,7 +127,7 @@ int sym_int_symbol::nstrfy(char *buf, int n)
 	return q-1;
 }
 
-OBJECT_ID sym_int_symbol::object_id() const
+ObjectID sym_int_symbol::getObjectID() const
 {
 	return ATOM_SYM_INT_SYMBOL;
 }
@@ -136,7 +136,7 @@ OBJECT_ID sym_int_symbol::object_id() const
  *	CLASS sym_int_const
  */
 
-sym_int_const::sym_int_const(UINT v)
+sym_int_const::sym_int_const(uint v)
 {
 	value = v;
 }
@@ -147,12 +147,12 @@ bool sym_int_const::compare_eq(sym_int_token *t)
 	return (value == s->value);
 }
 
-Object *sym_int_const::duplicate()
+Object *sym_int_const::clone() const
 {
 	return new sym_int_const(value);
 }
 
-bool sym_int_const::evaluate(UINT *i)
+bool sym_int_const::evaluate(uint *i)
 {
 	*i = value;
 	return true;	
@@ -165,7 +165,7 @@ int sym_int_const::nstrfy(char *buf, int n)
 	return sprintf(buf, "0x%x", value);
 }
  
-OBJECT_ID sym_int_const::object_id() const
+ObjectID sym_int_const::getObjectID() const
 {
 	return ATOM_SYM_INT_CONST;
 }
@@ -174,7 +174,7 @@ OBJECT_ID sym_int_const::object_id() const
  *	CLASS sym_int_token_rec
  */
  
-class sym_int_token_rec: public ht_data {
+class sym_int_token_rec: public Object {
 public:
 	u_op uop;
 	b_op bop;
@@ -193,9 +193,9 @@ public:
 		delete token;
 	}
 
-	Object *duplicate()
+	Object *clone() const
 	{
-		return new sym_int_token_rec(uop, bop, (sym_int_token*)token->duplicate());
+		return new sym_int_token_rec(uop, bop, (sym_int_token*)token->clone());
 	}
 }; 
 
@@ -207,13 +207,13 @@ static b_op **output_op_prec = c_op_prec;
 
 struct op_int_prop {
 	bool has_prop;
-	UINT value;
+	uint value;
 };
 
 struct op_int_int_prop {
 	bool has_prop;
-	UINT value1;
-	UINT value2;
+	uint value1;
+	uint value2;
 };
 
 op_int_prop op_neutrals[NUM_VALID_BOPS] = {
@@ -275,19 +275,17 @@ op_int_int_prop op_destructive[NUM_VALID_BOPS] = {
 
 sym_int::sym_int()
 {
-	tokens = new ht_clist();
-	((ht_clist*)tokens)->init();
+	tokens = new Array(true);
 }
 
 sym_int::~sym_int()
 {
-	tokens->destroy();
 	delete tokens;
 }
 
 void sym_int::b_operate(b_op bop, sym_int_token *t)
 {
-	if (t->object_id() == ATOM_SYM_INT) {
+	if (t->getObjectID() == ATOM_SYM_INT) {
 		sym_int *i = (sym_int*)t;
 		if (i->tokens->count() == 1) {
 			sym_int_token_rec *r = (sym_int_token_rec*)i->tokens->get(0);
@@ -300,11 +298,7 @@ void sym_int::b_operate(b_op bop, sym_int_token *t)
 
 void sym_int::clear()
 {
-	tokens->destroy();
-	delete tokens;
-
-	tokens = new ht_clist();
-	((ht_clist*)tokens)->init();
+	tokens->delAll();
 }
 
 bool sym_int::compare_eq(sym_int_token *t)
@@ -315,26 +309,26 @@ bool sym_int::compare_eq(sym_int_token *t)
 
 bool sym_int::comp_eq(sym_int_token *a, sym_int_token *b)
 {
-	if (a->object_id() == b->object_id()) {
+	if (a->getObjectID() == b->getObjectID()) {
 		return a->compare_eq(b);
 	}
 	return false;
 }
 
-Object *sym_int::duplicate()
+Object *sym_int::clone() const
 {
 	sym_int *p = new sym_int();
-	p->tokens = (ht_list*)tokens->duplicate();
+	p->tokens = (Container*)tokens->clone();
 	return p;
 }
 
-bool sym_int::evaluate(UINT *i)
+bool sym_int::evaluate(uint *i)
 {
 	int c = tokens->count();
-	UINT l;
+	uint l;
 	for (int j = 0; j < c; j++) {
-		UINT k;
-		sym_int_token_rec *r = (sym_int_token_rec*)tokens->get(j);
+		uint k;
+		sym_int_token_rec *r = (sym_int_token_rec*)(*tokens)[j];
 		if (!r->token->evaluate(&k)) return false;
 		if (j == 0) l = k;
 		switch (r->uop) {
@@ -364,19 +358,19 @@ int sym_int::nstrfy(char *buf, int n)
 	int l = 0;
 	int c = tokens->count();
 	lbop = b_invalid;
-	UINT para_count = 0;
+	uint para_count = 0;
 	for (int i = 0; i < c; i++) {
-		sym_int_token_rec *r = (sym_int_token_rec*)tokens->get(i);
+		sym_int_token_rec *r = (sym_int_token_rec*)(*tokens)[i];
 		bool para = ((lbop != b_invalid) && (r->bop != b_invalid) &&
 			(get_op_prec(r->bop, output_op_prec) > get_op_prec(lbop,
 			output_op_prec)));
 		if (para) para_count++;
 		lbop = r->bop;
 	}
-	for (UINT i = 0; i < para_count; i++) buf[l++] = '(';
+	for (uint i = 0; i < para_count; i++) buf[l++] = '(';
 	lbop = b_invalid;
 	for (int i = 0; i < c; i++) {
-		sym_int_token_rec *r = (sym_int_token_rec*)tokens->get(i);
+		sym_int_token_rec *r = (sym_int_token_rec*)(*tokens)[i];
 		bool para = ((lbop != b_invalid) && (r->bop != b_invalid) &&
 			(get_op_prec(r->bop, output_op_prec) > get_op_prec(lbop,
 			output_op_prec)));
@@ -410,7 +404,7 @@ int sym_int::nstrfy(char *buf, int n)
 	return l;
 }
 
-OBJECT_ID sym_int::object_id() const
+ObjectID sym_int::getObjectID() const
 {
 	return ATOM_SYM_INT;
 }
@@ -419,13 +413,13 @@ void sym_int::replace(sym_int_token *token, sym_int_token *by)
 {
 	int c = tokens->count();
 	for (int i = 0; i < c; i++) {
-		sym_int_token_rec *r = (sym_int_token_rec*)tokens->get(i);
-		if (r->token->object_id() == object_id()) {
+		sym_int_token_rec *r = (sym_int_token_rec*)(*tokens)[i];
+		if (r->token->getObjectID() == getObjectID()) {
 			((sym_int*)r->token)->replace(token, by);
 		} else if (comp_eq(r->token, token)) {
 			r->token->done();
 			delete r->token;
-			r->token = (sym_int_token*)by->duplicate();
+			r->token = (sym_int_token*)by->clone();
 		}
 	}		
 }
@@ -433,12 +427,12 @@ void sym_int::replace(sym_int_token *token, sym_int_token *by)
 void sym_int::set(sym_int_token *t)
 {
 	clear();
-	if (t->object_id() == ATOM_SYM_INT) {
+	if (t->getObjectID() == ATOM_SYM_INT) {
 		sym_int *i = (sym_int*)t;
 		int c = i->tokens->count();
 		for (int k=0; k<c; k++) {
-			sym_int_token_rec *r = (sym_int_token_rec*)i->tokens->get(k);
-			tokens->append(new sym_int_token_rec(r->uop, r->bop, (sym_int_token*)r->token->duplicate()));
+			sym_int_token_rec *r = (sym_int_token_rec*)(*i->tokens)[k];
+			tokens->insert(new sym_int_token_rec(r->uop, r->bop, (sym_int_token*)r->token->clone()));
 		}
 		t->done();
 		delete t;
@@ -449,8 +443,8 @@ void sym_int::set(sym_int_token *t)
 
 void sym_int::simplify()
 {
-	UINT c = tokens->count();
-	UINT d;
+	uint c = tokens->count();
+	uint d;
 
 	do {
 	d = c;
@@ -459,28 +453,29 @@ void sym_int::simplify()
 /* step I.1: "c$d..." (front) */
 	while (c>=2) {
 		sym_int_token_rec *a = (sym_int_token_rec*)tokens->get(0);
-		sym_int_token_rec *b = (sym_int_token_rec*)tokens->get(1);
+		sym_int_token_rec *b = (sym_int_token_rec*)(*tokens)[1];
 		b_op rop;
 		sym_int_token *rtoken;
 		if (!simplify_reduce_const(b_invalid, a->token, b->bop, b->token, &rop, &rtoken)) break;
 		tokens->del(0);
 		tokens->del(0);
-		tokens->prepend(new sym_int_token_rec(u_null, b_invalid, rtoken));
+// FIXME: wrongwrong
+		tokens->insert(new sym_int_token_rec(u_null, b_invalid, rtoken));
 		c--;
 	}
 
 /* step I.2: reduce all "...$c%d..." where allowed
    (c,d constant, $,% operators) */
-	for (UINT i=1; i<c-1; i++) {
+	for (uint i=1; i<c-1; i++) {
 		do {
 			if (i >= c-1) break;
-			sym_int_token_rec *a = (sym_int_token_rec*)tokens->get(i);
-			sym_int_token_rec *b = (sym_int_token_rec*)tokens->get(i+1);
+			sym_int_token_rec *a = (sym_int_token_rec*)(*tokens)[i];
+			sym_int_token_rec *b = (sym_int_token_rec*)(*tokens)[i+1];
 			b_op rop;
 			sym_int_token *rtoken;
 			if (!simplify_reduce_const(a->bop, a->token, b->bop, b->token, &rop, &rtoken)) break;
-			tokens->del(i);
-			tokens->del(i);
+			tokens->del(tokens->findByIdx(i));
+			tokens->del(tokens->findByIdx(i));
 			tokens->insert_before(new sym_int_token_rec(u_null, rop, rtoken), i);
 			c--;
 		} while (c>=2);
@@ -503,7 +498,7 @@ void sym_int::simplify()
 	}
 
 /* step II.2: "...x$N..." (everywhere) */
-	for (UINT i=0; i<c-1; i++) {
+	for (uint i=0; i<c-1; i++) {
 		do {
 			if (i >= c-1) break;
 			sym_int_token_rec *a = (sym_int_token_rec*)tokens->get(i);
@@ -533,13 +528,13 @@ void sym_int::simplify()
 	}
 
 /* step III.2: "...x$y..." (tail) */
-	for (UINT i=1; i<c; i++) {
+	for (uint i=1; i<c; i++) {
 		do {
 			if (i >= c) break;
 			sym_int_token_rec *a = (sym_int_token_rec*)tokens->get(i);
 			sym_int_token *repl = simplify_reduce_destructive(a->bop, a->token);
 			if (!repl) break;
-			UINT dc = i+1;
+			uint dc = i+1;
 			tokens->del_multiple(0, dc);
 			tokens->prepend(new sym_int_token_rec(u_null, b_invalid, repl));
 			c -= dc-1;
@@ -550,7 +545,7 @@ void sym_int::simplify()
    e.g. "...-x+x", "...^x^x", etc. */
 
 /* step IV.1: "...$x$xi..." (everywhere) */
-	for (UINT i=0; i<c-1; i++) {
+	for (uint i=0; i<c-1; i++) {
 		do {
 			if (i >= c-1) break;
 			sym_int_token_rec *a = (sym_int_token_rec*)tokens->get(i);
@@ -574,7 +569,7 @@ void sym_int::simplify()
 bool sym_int::simplify_reduce_inverse(b_op oa, sym_int_token *a, b_op ob, sym_int_token *b, sym_int_token **repl)
 {
 	*repl = NULL;
-	bool eq = (a->object_id() == b->object_id()) ? a->compare_eq(b) : false;
+	bool eq = (a->getObjectID() == b->getObjectID()) ? a->compare_eq(b) : false;
 	if (eq) {
 		if (oa == b_invalid) {
 			if ((ob == b_sub) || (ob == b_xor)) {
@@ -583,7 +578,7 @@ bool sym_int::simplify_reduce_inverse(b_op oa, sym_int_token *a, b_op ob, sym_in
 				return true;
 			} else if ((ob == b_and) || (ob == b_or)) {
 			// a & a, a | a -> a
-				*repl = (sym_int_token*)a->duplicate();
+				*repl = (sym_int_token*)a->clone();
 				return true;
 			}
 		} else if ((oa == b_add) && (ob == b_sub)) {
@@ -602,7 +597,7 @@ sym_int_token *sym_int::simplify_reduce_destructive(b_op o, sym_int_token *x)
 /* e.g. "x*0", "x&0" */
 	op_int_int_prop *k = &op_destructive[o];
 	if (k->has_prop) {
-		UINT X;
+		uint X;
 		if ((x->evaluate(&X)) && (X == k->value1)) {
 			return new sym_int_const(k->value2);
 		}
@@ -615,7 +610,7 @@ bool sym_int::simplify_reduce_neutral(b_op o, sym_int_token *x)
 /* reduce "x$N" case ($ operator, N neutral element for $) */
 	op_int_prop *k = &op_neutrals[o];
 	if (k->has_prop) {
-		UINT i;
+		uint i;
 		if ((x->evaluate(&i)) && (k->value == i)) {
 				return true;
 		}
@@ -625,7 +620,7 @@ bool sym_int::simplify_reduce_neutral(b_op o, sym_int_token *x)
 
 bool sym_int::simplify_reduce_const(b_op oa, sym_int_token *a, b_op ob, sym_int_token *b, b_op *res_op, sym_int_token **res_token)
 {
-	UINT A, B, C;
+	uint A, B, C;
 	if (!a->evaluate(&A)) return false;
 	if (!b->evaluate(&B)) return false;
 	if (oa == b_invalid) {
@@ -696,7 +691,7 @@ bool sym_bool_symbol::compare_eq(sym_bool_token *t)
 	return (strcmp(name, s->name) == 0);
 }
 
-Object *sym_bool_symbol::duplicate()
+Object *sym_bool_symbol::clone() const
 {
 	sym_bool_symbol *p = new sym_bool_symbol(name);
 	return p;
@@ -717,7 +712,7 @@ int sym_bool_symbol::nstrfy(char *buf, int n)
 //	return sprintf(buf, "%s", name);
 }
 
-OBJECT_ID sym_bool_symbol::object_id() const
+ObjectID sym_bool_symbol::getObjectID() const
 {
 	return ATOM_SYM_BOOL_SYMBOL;
 }
@@ -784,14 +779,14 @@ bool sym_bool_intcmp::compare_eq(sym_bool_token *t)
 	return (int1->compare_eq(s->int1) && int2->compare_eq(s->int2) && cop == s->cop);
 }
 
-Object *sym_bool_intcmp::duplicate()
+Object *sym_bool_intcmp::clone() const
 {
-	return new sym_bool_intcmp((sym_int_token*)int1->duplicate(), cop, (sym_int_token*)int2->duplicate());
+	return new sym_bool_intcmp((sym_int_token*)int1->clone(), cop, (sym_int_token*)int2->clone());
 }
 
 bool sym_bool_intcmp::evaluate(bool *i)
 {
-	UINT e1, e2;
+	uint e1, e2;
 	bool e = false;
 	if (!int1->evaluate(&e1)) return false;
 	if (!int2->evaluate(&e2)) return false;
@@ -811,7 +806,7 @@ bool sym_bool_intcmp::evaluate(bool *i)
 int sym_bool_intcmp::nstrfy(char *buf, int n)
 {
 	int i = 0;
-	dword C1, C2;
+	uint32 C1, C2;
 	if (int1->evaluate(&C1) && int2->evaluate(&C2)) {
 		bool r;
 		bool handled = true;
@@ -843,7 +838,7 @@ int sym_bool_intcmp::nstrfy(char *buf, int n)
 	return i;
 }
 
-OBJECT_ID sym_bool_intcmp::object_id() const
+ObjectID sym_bool_intcmp::getObjectID() const
 {
 	return ATOM_SYM_BOOL_INTCMP;
 }
@@ -858,7 +853,7 @@ void sym_bool_intcmp::simplify()
  *	CLASS sym_bool_token_rec
  */
  
-class sym_bool_token_rec: public ht_data {
+class sym_bool_token_rec: public Object {
 public:
 	n_op nop;
 	l_op lop;
@@ -898,9 +893,9 @@ public:
 		return i + token->nstrfy(buf+i, n-i);
 	}
 	
-	Object *duplicate()
+	Object *clone() const
 	{
-		return new sym_bool_token_rec(nop, lop, (sym_bool_token*)token->duplicate());
+		return new sym_bool_token_rec(nop, lop, (sym_bool_token*)token->clone());
 	}
 };
 
@@ -926,10 +921,10 @@ bool sym_bool::compare_eq(sym_bool_token *t)
 	return false;
 }
 
-Object *sym_bool::duplicate()
+Object *sym_bool::clone() const
 {
 	sym_bool *p = new sym_bool();
-	p->tokens = (ht_list*)tokens->duplicate();
+	p->tokens = (ht_list*)tokens->clone();
 	return p;
 }
 
@@ -1006,7 +1001,7 @@ void sym_bool::n_operate(n_op n)
 {
 }
 
-OBJECT_ID sym_bool::object_id() const
+ObjectID sym_bool::getObjectID() const
 {
 	return ATOM_SYM_BOOL;
 }

@@ -45,7 +45,7 @@ struct CPU {
 	sym_bool *flags[X86_FLAGS];
 };
 
-char *srt_x86_idx2reg(UINT idx)
+char *srt_x86_idx2reg(uint idx)
 {
 	if (idx >= 8) {
 		return srt_x86_flags[(idx-8) % X86_FLAGS];
@@ -53,7 +53,7 @@ char *srt_x86_idx2reg(UINT idx)
 	return x86_regs[2][idx & 7];
 }
 
-void srt_x86_setreg(CPU *cpu, UINT idx, Object *o)
+void srt_x86_setreg(CPU *cpu, uint idx, Object *o)
 {
 	if (idx >= 8) {
 		sym_bool **k;
@@ -76,11 +76,11 @@ void srt_x86_setreg(CPU *cpu, UINT idx, Object *o)
 
 class sym_int_reg_x86: public sym_int_reg {
 public:
-	sym_int_reg_x86(UINT r): sym_int_reg(r)
+	sym_int_reg_x86(uint r): sym_int_reg(r)
 	{
 	}
 
-	Object *duplicate()
+	Object *clone() const
 	{
 		return new sym_int_reg_x86(regidx);
 	}
@@ -95,7 +95,7 @@ public:
  *	srt_x86
  */
 
-state_mod *srt_x86_flag(UINT flagidx, sym_bool_token *value)
+state_mod *srt_x86_flag(uint flagidx, sym_bool_token *value)
 {
 	state_mod *f = new state_mod();
 	f->ismem = false;
@@ -105,7 +105,7 @@ state_mod *srt_x86_flag(UINT flagidx, sym_bool_token *value)
 	return f;
 }
 
-state_mod *srt_x86_reg(UINT regidx, sym_int_token *value)
+state_mod *srt_x86_reg(uint regidx, sym_int_token *value)
 {
 	state_mod *r = new state_mod();
 	r->ismem = false;
@@ -115,7 +115,7 @@ state_mod *srt_x86_reg(UINT regidx, sym_int_token *value)
 	return r;
 }
 
-void srt_x86_flags_std(ht_list *rm, x86dis_insn *insn, sym_int *cond)
+void srt_x86_flags_std(Container *rm, x86dis_insn *insn, sym_int *cond)
 {
 	state_mod *zf = new state_mod();
 	zf->ismem = false;
@@ -132,38 +132,38 @@ void srt_x86_flags_std(ht_list *rm, x86dis_insn *insn, sym_int *cond)
 
 	switch (insn->op[0].size) {
 		case 1:
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0xff));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_eq, new sym_int_const(0)));
 			zf->value.boolean = b;
 
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0x80));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_ne, new sym_int_const(0)));
 			sf->value.boolean = b;
 			break;
 		case 2:
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0xffff));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_eq, new sym_int_const(0)));
 			zf->value.boolean = b;
 
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0x8000));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_ne, new sym_int_const(0)));
 			sf->value.boolean = b;
 			break;
 		case 4:
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_eq, new sym_int_const(0)));
 			zf->value.boolean = b;
 
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0x80000000));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_ne, new sym_int_const(0)));
@@ -174,7 +174,7 @@ void srt_x86_flags_std(ht_list *rm, x86dis_insn *insn, sym_int *cond)
 	rm->insert(sf);
 }
 
-void srt_x86_flags_carry(ht_list *rm, x86dis_insn *insn, sym_int *cond, sym_bool *carry)
+void srt_x86_flags_carry(Container *rm, x86dis_insn *insn, sym_int *cond, sym_bool *carry)
 {
 	state_mod *cf = new state_mod();
 	cf->ismem = false;
@@ -186,27 +186,27 @@ void srt_x86_flags_carry(ht_list *rm, x86dis_insn *insn, sym_int *cond, sym_bool
 
 	switch (insn->op[0].size) {
 		case 1:
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0x100));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_ne, new sym_int_const(0)));
 			cf->value.boolean = b;
 			break;
 		case 2:
-			i = (sym_int*)cond->duplicate();
+			i = (sym_int*)cond->clone();
 			i->b_operate(b_and, new sym_int_const(0x10000));
 			b = new sym_bool();
 			b->set(new sym_bool_intcmp(i, c_ne, new sym_int_const(0)));
 			cf->value.boolean = b;
 			break;
 		case 4:
-			cf->value.boolean = (sym_bool_token*)carry->duplicate();
+			cf->value.boolean = (sym_bool_token*)carry->clone();
 			break;
 	}
 	rm->insert(cf);
 }
 
-/*void srt_x86_flags_overflow(cpu *CPU, x86dis_insn *insn, dword a, dword b, dword c)
+/*void srt_x86_flags_overflow(cpu *CPU, x86dis_insn *insn, uint32 a, uint32 b, uint32 c)
 {
 	bool overflow_on = false;
 	switch (insn->op[0].size) {
@@ -235,9 +235,9 @@ void srt_x86_flags_carry(ht_list *rm, x86dis_insn *insn, sym_int *cond, sym_bool
 	}
 }*/
 
-sym_int *srt_x86_mkreg(CPU *cpu, UINT regidx)
+sym_int *srt_x86_mkreg(CPU *cpu, uint regidx)
 {
-	return (sym_int*)cpu->regs[regidx]->duplicate();
+	return (sym_int*)cpu->regs[regidx]->clone();
 }
 
 sym_int_token *srt_x86_mkaddr(CPU *cpu, x86_insn_op *o)
@@ -255,7 +255,7 @@ sym_int_token *srt_x86_mkaddr(CPU *cpu, x86_insn_op *o)
 		first = false;
 	}
 	if (o->mem.hasdisp && o->mem.disp) {
-		dword D = o->mem.disp;
+		uint32 D = o->mem.disp;
 		b_op op = first ? b_invalid : ((D&0x80000000) ? b_sub : b_add);
 		if (D&0x80000000) D = -D;
 		a->b_operate(op, new sym_int_const(D));
@@ -303,7 +303,7 @@ sym_int *srt_x86_mkvalue(CPU *cpu, x86_insn_op *o)
 	return r;
 }
 
-void srt_x86_destmod(CPU *cpu, ht_list *rm, x86_insn_op *op, sym_int_token *value)
+void srt_x86_destmod(CPU *cpu, Container *rm, x86_insn_op *op, sym_int_token *value)
 {
 	state_mod *m = new state_mod();
 	srt_x86_mkdest(cpu, m, op);
@@ -316,7 +316,7 @@ void srt_x86_destmod(CPU *cpu, ht_list *rm, x86_insn_op *op, sym_int_token *valu
  *	COMMANDS
  */
 
-void srt_x86_add(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_add(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_add, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -326,14 +326,14 @@ void srt_x86_add(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	srt_x86_flags_std(rm, insn, v);
 	sym_bool *carry = new sym_bool();
 	carry->set(new sym_bool_intcmp(
-		(sym_int*)v->duplicate(), c_lt,
+		(sym_int*)v->clone(), c_lt,
 		srt_x86_mkvalue(cpu, &insn->op[1])));
 	srt_x86_flags_carry(rm, insn, v, carry);
 	delete carry;
 // FIXME: overflow flag
 }
 
-void srt_x86_and(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_and(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_and, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -343,7 +343,7 @@ void srt_x86_and(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	srt_x86_flags_std(rm, insn, v);
 }
 
-void srt_x86_cmp(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_cmp(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_sub, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -358,7 +358,7 @@ void srt_x86_cmp(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: overflow flag
 }
 
-void srt_x86_dec(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_dec(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_sub, new sym_int_const(1));
@@ -368,7 +368,7 @@ void srt_x86_dec(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	srt_x86_flags_std(rm, insn, v);
 }
 
-void srt_x86_div(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_div(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 // FIXME: DX:AX / op -> EAX, DX:AX % op -> EDX
 	sym_int *q = srt_x86_mkvalue(cpu, &insn->op[0]);
@@ -390,13 +390,13 @@ void srt_x86_div(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: flags
 /*	sym_bool *carry = new sym_bool();
 	carry->set(new sym_bool_intcmp(
-		(sym_int*)v->duplicate(), c_lt,
+		(sym_int*)v->clone(), c_lt,
 		srt_x86_mkvalue(cpu, &insn->op[1])));
 	srt_x86_flags_carry(rm, insn, v, carry);
 	delete carry;*/
 }
 
-void srt_x86_inc(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_inc(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_add, new sym_int_const(1));
@@ -406,7 +406,7 @@ void srt_x86_inc(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	srt_x86_flags_std(rm, insn, v);
 }
 
-void srt_x86_lea(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_lea(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	state_mod *m = new state_mod();
 	srt_x86_mkdest(cpu, m, &insn->op[0]);
@@ -416,7 +416,7 @@ void srt_x86_lea(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	rm->insert(m);
 }
 
-void srt_x86_mov(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_mov(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	state_mod *m = new state_mod();
 	srt_x86_mkdest(cpu, m, &insn->op[0]);
@@ -425,7 +425,7 @@ void srt_x86_mov(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	rm->insert(m);
 }
 
-void srt_x86_mul(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_mul(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 // FIXME: op * AX = DX:AX
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
@@ -444,13 +444,13 @@ void srt_x86_mul(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: flags
 /*	sym_bool *carry = new sym_bool();
 	carry->set(new sym_bool_intcmp(
-		(sym_int*)v->duplicate(), c_lt,
+		(sym_int*)v->clone(), c_lt,
 		srt_x86_mkvalue(cpu, &insn->op[1])));
 	srt_x86_flags_carry(rm, insn, v, carry);
 	delete carry;*/
 }
 
-void srt_x86_or(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_or(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_or, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -460,9 +460,9 @@ void srt_x86_or(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	srt_x86_flags_std(rm, insn, v);
 }
 
-void srt_x86_pop(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_pop(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
-/*	dword a;
+/*	uint32 a;
 	read(context.w.ss, context.d.esp, &a, 4);
 	context.d.esp += 4;
 	return a;*/
@@ -486,7 +486,7 @@ void srt_x86_pop(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	rm->insert(m);
 }
 
-void srt_x86_push(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_push(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 /*	context.d.esp -= 4;
 	write(context.w.ss, context.d.esp, &a, 4);*/
@@ -505,7 +505,7 @@ void srt_x86_push(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	
 	m = new state_mod();
 	m->ismem = true;
-	m->dest.mem.addr = (sym_int*)sp->duplicate();
+	m->dest.mem.addr = (sym_int*)sp->clone();
 	m->dest.mem.size = size;
 	m->dest.mem.endian = srte_le;
 	m->isbool = false;
@@ -513,7 +513,7 @@ void srt_x86_push(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	rm->insert(m);
 }
 
-void srt_x86_sub(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_sub(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_sub, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -530,11 +530,11 @@ void srt_x86_sub(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: overflow flag
 }
 
-void srt_x86_shl(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_shl(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	sym_int *s = srt_x86_mkvalue(cpu, &insn->op[1]);
-	UINT S;
+	uint S;
 	if (!s->evaluate(&S)) throw ht_io_exception("shl/shr with non-constant operand not supported");
 	delete s;
 	v->b_operate(b_mul, new sym_int_const(1 << S));
@@ -545,11 +545,11 @@ void srt_x86_shl(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: flags
 }
 
-void srt_x86_shr(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_shr(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	sym_int *s = srt_x86_mkvalue(cpu, &insn->op[1]);
-	UINT S;
+	uint S;
 	if (!s->evaluate(&S)) throw ht_io_exception("shl/shr with non-constant operand not supported");
 	delete s;
 	v->b_operate(b_div, new sym_int_const(1 << S));
@@ -560,14 +560,14 @@ void srt_x86_shr(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 // FIXME: flags
 }
 
-void srt_x86_test(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_test(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_and, srt_x86_mkvalue(cpu, &insn->op[1]));
 	srt_x86_flags_std(rm, insn, v);
 }
 
-void srt_x86_xor(CPU *cpu, ht_list *rm, x86dis_insn *insn)
+void srt_x86_xor(CPU *cpu, Container *rm, x86dis_insn *insn)
 {
 	sym_int *v = srt_x86_mkvalue(cpu, &insn->op[0]);
 	v->b_operate(b_xor, srt_x86_mkvalue(cpu, &insn->op[1]));
@@ -579,7 +579,7 @@ void srt_x86_xor(CPU *cpu, ht_list *rm, x86dis_insn *insn)
 	rm->insert(srt_x86_flag(X86_FLAG_OVERFLOW, new sym_bool_const(false)));
 }
 
-typedef void (*ecmd_handler)(CPU *cpu, ht_list *rm, x86dis_insn *insn);
+typedef void (*ecmd_handler)(CPU *cpu, Container *rm, x86dis_insn *insn);
 
 struct ecmd {
 	char *name;
@@ -607,10 +607,9 @@ ecmd ecmds[] = {
 	{NULL, NULL}
 };
 
-ht_list *srt_x86_single(CPU *cpu, x86dis_insn *i)
+Container *srt_x86_single(CPU *cpu, x86dis_insn *i)
 {
-	ht_clist *rm = new ht_clist();
-	rm->init();
+	Array *rm = new Array(true);
 
 	ecmd *e = ecmds;
 	while (e->name) {
@@ -625,7 +624,7 @@ ht_list *srt_x86_single(CPU *cpu, x86dis_insn *i)
 
 void create_cpu(CPU *cpu)
 {
-	for (UINT g = 0; g<8; g++) {
+	for (uint g = 0; g<8; g++) {
 		char s[32];
 		sprintf(s, "i%s", srt_x86_idx2reg(g));
 		cpu->regs[g] = new sym_int();
@@ -633,7 +632,7 @@ void create_cpu(CPU *cpu)
 		cpu->regs[g]->set(new sym_int_symbol(s));
 	}
 
-	for (UINT g = 0; g<X86_FLAGS; g++) {
+	for (uint g = 0; g<X86_FLAGS; g++) {
 		char s[32];
 		sprintf(s, "i%s", srt_x86_idx2reg(8+g));
 		cpu->flags[g] = new sym_bool();
@@ -644,12 +643,12 @@ void create_cpu(CPU *cpu)
 
 void destroy_cpu(CPU *cpu)
 {
-	for (UINT g = 0; g<8; g++) {
+	for (uint g = 0; g<8; g++) {
 		cpu->regs[g]->done();
 		delete cpu->regs[g];
 	}
 
-	for (UINT g = 0; g<X86_FLAGS; g++) {
+	for (uint g = 0; g<X86_FLAGS; g++) {
 		cpu->flags[g]->done();
 		delete cpu->flags[g];
 	}
@@ -669,7 +668,7 @@ void srt_x86(Analyser *analy, Address *addr)
 /**/
 	char str[256];
 	sprintf(str, "symbolic register trace (x86)");
-	bounds b, c, d;
+	Bounds b, c, d;
 	app->getbounds(&c);
 	b.w = 3*c.w/4;
 	b.h = 3*c.h/4;
@@ -695,12 +694,12 @@ void srt_x86(Analyser *analy, Address *addr)
 #define MAX_INSNS	20
 	for (int i=0; i<MAX_INSNS; i++) {
 		if (!analy->validAddress(addr, scinitialized)) break;
-		UINT bz = analy->bufPtr(addr, buf, sizeof buf);
+		uint bz = analy->bufPtr(addr, buf, sizeof buf);
 		dis_insn *i = (x86dis_insn*)x->decode(buf, bz, a);
 		if (!x->validInsn(i)) break;
 		x86dis_insn *xi = (x86dis_insn*)i;
 		char *dname = x->str(i, DIS_STYLE_HEX_NOZEROPAD + DIS_STYLE_HEX_ASMSTYLE);
-		ht_list *rm = NULL;
+		Container *rm = NULL;
 
 		try{
 			rm = srt_x86_single(&cpu, xi);
@@ -709,9 +708,9 @@ void srt_x86(Analyser *analy, Address *addr)
 			break;
 		}
 
-		UINT c = rm->count();
-		for (UINT i = 0; i<c; i++) {
-			state_mod *r = (state_mod*)rm->get(i);
+		uint c = rm->count();
+		for (uint i = 0; i < c; i++) {
+			state_mod *r = (state_mod*)(*rm)[i];
 			char en[256];
 			if (r->isbool) {
 				r->value.boolean->simplify();
@@ -733,8 +732,8 @@ void srt_x86(Analyser *analy, Address *addr)
 			}
 			dname = "";
 		}
-		for (UINT i = 0; i<c; i++) {
-			state_mod *r = (state_mod*)rm->get(i);
+		for (uint i = 0; i<c; i++) {
+			state_mod *r = (state_mod*)(*rm)[i];
 			if (r->isbool) {
 				srt_x86_setreg(&cpu, r->dest.regidx, r->value.boolean);
 			} else {

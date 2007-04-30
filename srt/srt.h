@@ -34,14 +34,14 @@ enum srt_endian { srte_be, srte_le };
 #define MTYPE_FLAG		1
 #define MTYPE_MEM		2
 
-class state_mod: public ht_data {
+class state_mod: public Object {
 public:
 	bool ismem;
 	union {
-		UINT regidx;
+		uint regidx;
 		struct {
 			sym_int_token *addr;
-			UINT size;
+			uint size;
 			srt_endian endian;
 		} mem;		    
 	} dest;
@@ -61,15 +61,15 @@ public:
 
 class sym_int_reg: public sym_int_token {
 public:
-	UINT regidx;
+	uint regidx;
 
-	sym_int_reg(UINT r);
+	sym_int_reg(uint r);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual Object *duplicate();
-	virtual bool evaluate(bool *i);
+	virtual Object *clone() const;
+	virtual bool evaluate(uint *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 }; 
 
 /*
@@ -79,16 +79,16 @@ public:
 class sym_int_mem: public sym_int_token {
 public:
 	sym_int_token *addr;
-	UINT size;
+	uint size;
 	srt_endian endian;
 
-	sym_int_mem(sym_int_token *a, UINT s, srt_endian e);
+	sym_int_mem(sym_int_token *a, uint s, srt_endian e);
 /* overwritten */
 	virtual bool compare_eq(sym_int_token *t);
-	virtual Object *duplicate();
-	virtual bool evaluate(bool *i);
+	virtual Object *clone() const;
+	virtual bool evaluate(uint *i);
 	virtual int nstrfy(char *buf, int n);
-	virtual OBJECT_ID object_id() const;
+	virtual ObjectID getObjectID() const;
 };
 
 /***/
