@@ -534,6 +534,7 @@ int	AnalyserOutput::generateFile(Address *from, Address *to)
 			line++;
 		} else {
 			from->add(len);
+			len = 0;
 			line = 0;
 		}
 	}

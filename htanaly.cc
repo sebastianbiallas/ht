@@ -800,20 +800,22 @@ void ht_aviewer::generateOutputDialog()
 		getdatastr(&odd.id1, filename);
 		getdatastr(&odd.id2, start_str);
 		getdatastr(&odd.id3, end_str);
-		if (!string_to_pos(start_str, &start)) {
-			errorbox(globalerror);
-			continue;
+		if (start_str[0] == 0) {
+			convertAddressToViewerPos(analy_sub->lowestaddress, &start);
+		} else {
+			if (!string_to_pos(start_str, &start)) {
+				errorbox(globalerror);
+				continue;
+			}
 		}
-/*		uint64 end_by_lines;
-		if ((by_lines = end_str[0]=='#')) {
-			char *pend = &end_str[1];
-			parseIntStr(pend, end_by_lines, 10);
-		} else {*/
+		if (end_str[0] == 0) {
+			convertAddressToViewerPos(analy_sub->highestaddress, &end);
+		} else {
 			if (!string_to_pos(end_str, &end)) {
 				errorbox(globalerror);
 				continue;
 			}
-//		}
+		}
 		Address *start_addr, *end_addr;
 		if (!convertViewerPosToAddress(start, &start_addr) || !convertViewerPosToAddress(end, &end_addr)) {
 			errorbox("invalid address");
@@ -1066,10 +1068,10 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		m->insert_separator();
 		ht_static_context_menu *sub=new ht_static_context_menu();
 		sub->init("~Control");
-		sub->insert_entry("~Information...", 0, cmd_analyser_info, 0, 1);
+		sub->insert_entry("~Information...", NULL, cmd_analyser_info, 0, 1);
 		sub->insert_separator();
-		sub->insert_entry("~Save state", 0, cmd_analyser_save, 0, 1);
-		sub->insert_entry("~Export to file...", NULL, cmd_analyser_generate_output, 0, 1);
+		sub->insert_entry("~Save state", NULL, cmd_analyser_save, 0, 1);
+		sub->insert_entry("~Export to file...", "Ctrl-O", cmd_analyser_generate_output, K_Control_O, 1);
 		sub->insert_separator();
 		sub->insert_entry("~Continue at address", "c", cmd_analyser_continue, 0, 1);
 		sub->insert_entry("~Pause / resume", "p", cmd_analyser_pause_resume, 0, 1);
@@ -1111,10 +1113,6 @@ void ht_aviewer::handlemsg(htmsg *msg)
 			return;
 		case K_Control_F:
 			sendmsg(cmd_analyser_this_function);
-			clearmsg(msg);
-			return;
-		case K_Control_O:
-			sendmsg(cmd_analyser_generate_output);
 			clearmsg(msg);
 			return;
 		case 'c':
