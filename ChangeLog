@@ -3,6 +3,7 @@
 
 version 2.0.6:
 	- [POSIX] Ignore mouse events
+	- Dump analyser output function was broken
 
 version 2.0.5:
 	- Editing bytes in image mode was broken under
