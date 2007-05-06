@@ -12,7 +12,8 @@ configure
 config.guess
 config.sub
 depcomp
-missingstamp-h1
+missing
+stamp-h1
 stamp-h
 stamp-h.in
 ht
