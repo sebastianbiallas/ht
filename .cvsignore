@@ -9,7 +9,10 @@ config.cache
 config.log
 config.status
 configure
-stamp-h1
+config.guess
+config.sub
+depcomp
+missingstamp-h1
 stamp-h
 stamp-h.in
 ht
