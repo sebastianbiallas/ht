@@ -2979,8 +2979,8 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 	bool is_cursor;
 	vcp color_normal = getcolor(palidx_generic_body);
 	do {
-		int l=0;
-		while (n[l] && n[l]!='\e') { l++; }
+		int l = 0;
+		while (n[l] && n[l] != '\e') l++;
 		c += render_tagstring_single(chars, colors, maxlen, c, n, l, color_normal);
 		
 		n += l;
@@ -2990,304 +2990,304 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 			vcp tag_color;
 			char str[64];
 			switch (n[1]) {
-				case HT_TAG_EDIT_BYTE: {
-					byte d;
+			case HT_TAG_EDIT_BYTE: {
+				byte d;
 					
-					tag_offset = tag_get_offset(n);
-					tag_color = get_tag_color_edit(tag_offset, 1, focused && (g==cursor.tag_group), is_cursor);
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 1, focused && (g==cursor.tag_group), is_cursor);
 
-					if (pread(tag_offset, &d, 1) == 1) {
-						ht_snprintf(str, sizeof str, "%02x", d);
-					} else {
-						strcpy(str, "??");
-					}
+				if (pread(tag_offset, &d, 1) == 1) {
+					ht_snprintf(str, sizeof str, "%02x", d);
+				} else {
+					strcpy(str, "??");
+				}
 					
-					c += render_tagstring_single(chars, colors, maxlen, c, str, 2, tag_color);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 2, tag_color);
 		
-					n += HT_TAG_EDIT_BYTE_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_WORD_LE: {
-					uint16 d;
-					
-					tag_offset = tag_get_offset(n);
-					tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
-					
-					byte buf[2];
-					if (pread(tag_offset, &buf, 2) == 2) {
-						/* little endian */
-						d=(buf[1] << 8) | buf[0];
-						ht_snprintf(str, sizeof str, "%04x", d);
-					} else {
-						strcpy(str, "????");
-					}
-					
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, 4, tag_color);
-					n+=HT_TAG_EDIT_WORD_LE_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_DWORD_LE: {
-					uint32 d;
-					
-					tag_offset=tag_get_offset(n);
-					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
-					
-					byte buf[4];
-					if (pread(tag_offset, &buf, 4) == 4) {
-						/* little endian */
-						d = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
-						ht_snprintf(str, sizeof str, "%08x", d);
-					} else {
-						strcpy(str, "????????");
-					}
+				n += HT_TAG_EDIT_BYTE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_WORD_LE: {
+				uint16 d;
 
-					c += render_tagstring_single(chars, colors, maxlen, c, str, 8, tag_color);
-					n += HT_TAG_EDIT_DWORD_LE_LEN;
-					break;
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
+					
+				byte buf[2];
+				if (pread(tag_offset, &buf, 2) == 2) {
+					/* little endian */
+					d = (buf[1] << 8) | buf[0];
+					ht_snprintf(str, sizeof str, "%04x", d);
+				} else {
+					strcpy(str, "????");
 				}
-				case HT_TAG_EDIT_QWORD_LE: {
-					uint64 q;
 					
-					tag_offset = tag_get_offset(n);
-					tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 4, tag_color);
+				n += HT_TAG_EDIT_WORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_DWORD_LE: {
+				uint32 d;
 					
-					byte buf[8];
-					if (pread(tag_offset, &buf, 8)==8) {
-						/* little endian */
-						q = ((uint64)buf[7] << 56) | ((uint64)buf[6] << 48) | ((uint64)buf[5] << 40) | ((uint64)buf[4] << 32)
-						  | ((uint64)buf[3] << 24) | ((uint64)buf[2] << 16) | ((uint64)buf[1] << 8) | (uint64)buf[0];
-						ht_snprintf(str, sizeof str, "%016qx", q);
-					} else {
-						strcpy(str, "????????????????");
-					}
+				tag_offset=tag_get_offset(n);
+				tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
 
-					c += render_tagstring_single(chars, colors, maxlen, c, str, 16, tag_color);
-					n += HT_TAG_EDIT_QWORD_LE_LEN;
-					break;
+				byte buf[4];
+				if (pread(tag_offset, &buf, 4) == 4) {
+					/* little endian */
+					d = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
+					ht_snprintf(str, sizeof str, "%08x", d);
+				} else {
+					strcpy(str, "????????");
 				}
-				case HT_TAG_EDIT_WORD_BE: {
-					uint16 d;
-					
-					tag_offset=tag_get_offset(n);
-					tag_color=get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
-					
-					byte buf[2];
-					if (pread(tag_offset, &buf, 2)==2) {
-						/* big endian */
-						d=(buf[0] << 8) | buf[1];
-						ht_snprintf(str, sizeof str, "%04x", d);
-					} else {
-						strcpy(str, "????");
-					}
-					
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, 4, tag_color);
-					n+=HT_TAG_EDIT_WORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_DWORD_BE: {
-					uint32 d;
-					
-					tag_offset=tag_get_offset(n);
-					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
-					
-					byte buf[4];
-					if (pread(tag_offset, &buf, 4)==4) {
-						/* big endian */
-						d=(buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
-						ht_snprintf(str, sizeof str, "%08x", d);
-					} else {
-						strcpy(str, "????????");
-					}
-					c += render_tagstring_single(chars, colors, maxlen, c, str, 8, tag_color);
-					n += HT_TAG_EDIT_DWORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_QWORD_BE: {
-					uint64 q;
-					
-					tag_offset = tag_get_offset(n);
-					tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
-					
-					byte buf[8];
-					if (pread(tag_offset, &buf, 8) == 8) {
-						/* big endian */
-						q = ((uint64)buf[0] << 56) | ((uint64)buf[1] << 48) | ((uint64)buf[2] << 40) | ((uint64)buf[3] << 32)
-						  | ((uint64)buf[4] << 24) | ((uint64)buf[5] << 16) | ((uint64)buf[6] << 8) | (uint64)buf[7];
-						ht_snprintf(str, sizeof str, "%016qx", q);
-					} else {
-						strcpy(str, "????????????????");
-					}
-					c += render_tagstring_single(chars, colors, maxlen, c, str, 16, tag_color);
-					n += HT_TAG_EDIT_QWORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_TIME_LE:
-				case HT_TAG_EDIT_TIME_BE: {
-					uint32 d;
-					
-					tag_offset=tag_get_offset(n);
-					tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
 
-					byte buf[4];
-					if (pread(tag_offset, &buf, 4)==4) {
-						if (n[1] == HT_TAG_EDIT_TIME_LE) {
-							d = (buf[3]<<24) | (buf[2]<<16) | (buf[1]<<8) | buf[0];
-						} else {
-							d = (buf[0]<<24) | (buf[1]<<16) | (buf[2]<<8) | buf[3];
-						}
-						time_t tt = d;
-						tm *t = gmtime(&tt);
-						sprintf(str, "%02d:%02d:%02d %02d.%02d.%04d +1900", t->tm_hour, t->tm_min, t->tm_sec, t->tm_mday, t->tm_mon+1, t->tm_year);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 8, tag_color);
+				n += HT_TAG_EDIT_DWORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_QWORD_LE: {
+				uint64 q;
+
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
+
+				byte buf[8];
+				if (pread(tag_offset, &buf, 8)==8) {
+					/* little endian */
+					q = ((uint64)buf[7] << 56) | ((uint64)buf[6] << 48) | ((uint64)buf[5] << 40) | ((uint64)buf[4] << 32)
+					  | ((uint64)buf[3] << 24) | ((uint64)buf[2] << 16) | ((uint64)buf[1] << 8) | (uint64)buf[0];
+					ht_snprintf(str, sizeof str, "%016qx", q);
+				} else {
+					strcpy(str, "????????????????");
+				}
+
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 16, tag_color);
+				n += HT_TAG_EDIT_QWORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_WORD_BE: {
+				uint16 d;
+					
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
+					
+				byte buf[2];
+				if (pread(tag_offset, &buf, 2)==2) {
+					/* big endian */
+					d = (buf[0] << 8) | buf[1];
+					ht_snprintf(str, sizeof str, "%04x", d);
+				} else {
+					strcpy(str, "????");
+				}
+					
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 4, tag_color);
+				n += HT_TAG_EDIT_WORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_DWORD_BE: {
+				uint32 d;
+					
+				tag_offset= t ag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
+					
+				byte buf[4];
+				if (pread(tag_offset, &buf, 4)==4) {
+					/* big endian */
+					d=(buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+					ht_snprintf(str, sizeof str, "%08x", d);
+				} else {
+					strcpy(str, "????????");
+				}
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 8, tag_color);
+				n += HT_TAG_EDIT_DWORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_QWORD_BE: {
+				uint64 q;
+					
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
+					
+				byte buf[8];
+				if (pread(tag_offset, &buf, 8) == 8) {
+					/* big endian */
+					q = ((uint64)buf[0] << 56) | ((uint64)buf[1] << 48) | ((uint64)buf[2] << 40) | ((uint64)buf[3] << 32)
+					  | ((uint64)buf[4] << 24) | ((uint64)buf[5] << 16) | ((uint64)buf[6] << 8) | (uint64)buf[7];
+					ht_snprintf(str, sizeof str, "%016qx", q);
+				} else {
+					strcpy(str, "????????????????");
+				}
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 16, tag_color);
+				n += HT_TAG_EDIT_QWORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_TIME_LE:
+			case HT_TAG_EDIT_TIME_BE: {
+				uint32 d;
+					
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
+
+				byte buf[4];
+				if (pread(tag_offset, &buf, 4)==4) {
+					if (n[1] == HT_TAG_EDIT_TIME_LE) {
+						d = (buf[3]<<24) | (buf[2]<<16) | (buf[1]<<8) | buf[0];
 					} else {
-						strcpy(str, "?");
+						d = (buf[0]<<24) | (buf[1]<<16) | (buf[2]<<8) | buf[3];
 					}
-					
-					c += render_tagstring_single(chars, colors, maxlen, c, str, strlen(str), tag_color);
-					n += HT_TAG_EDIT_TIME_LE_LEN;
-					break;
+					time_t tt = d;
+					tm *t = gmtime(&tt);
+					sprintf(str, "%02d:%02d:%02d %02d.%02d.%04d +1900", t->tm_hour, t->tm_min, t->tm_sec, t->tm_mday, t->tm_mon+1, t->tm_year);
+				} else {
+					strcpy(str, "?");
 				}
-				case HT_TAG_EDIT_CHAR: {
-					char d;
 					
-					tag_offset = tag_get_offset(n);
-					tag_color = get_tag_color_edit(tag_offset, 1, (g==cursor.tag_group), is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, strlen(str), tag_color);
+				n += HT_TAG_EDIT_TIME_LE_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_CHAR: {
+				char d;
 					
-					if (pread(tag_offset, &d, 1) != 1) {
-						d = '?';
-					}
+				tag_offset = tag_get_offset(n);
+				tag_color = get_tag_color_edit(tag_offset, 1, (g==cursor.tag_group), is_cursor);
 					
-					c += render_tagstring_single(chars, colors, maxlen, c, &d, 1, tag_color);
-					n += HT_TAG_EDIT_CHAR_LEN;
-					break;
+				if (pread(tag_offset, &d, 1) != 1) {
+					d = '?';
 				}
-				case HT_TAG_EDIT_BIT: {
-					int shift=((ht_tag_edit_bit*)n)->bitidx;
-					int op=shift/8;
-					byte d;
+					
+				c += render_tagstring_single(chars, colors, maxlen, c, &d, 1, tag_color);
+				n += HT_TAG_EDIT_CHAR_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_BIT: {
+				int shift = ((ht_tag_edit_bit*)n)->bitidx;
+				int op = shift/8;
+				byte d;
 
-					tag_offset=tag_get_offset(n);
-					tag_color=getcolor_tag(palidx_tags_edit_tag);
-					bool isdirty = false;
-					FileOfs o = IS_DIRTY_SINGLEBIT | (shift & 7);
-					file->cntl(FCNTL_MODS_IS_DIRTY, tag_offset+op, o, &isdirty);
-					if (isdirty) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_modified));
-					if (tag_offset >= sel_start && tag_offset < sel_end) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_selected));
-					if (is_cursor) tag_color = mixColors(tag_color, getcolor_tag(edit() ? palidx_tags_edit_tag_cursor_edit : palidx_tags_edit_tag_cursor_select));
+				tag_offset=tag_get_offset(n);
+				tag_color=getcolor_tag(palidx_tags_edit_tag);
+				bool isdirty = false;
+				FileOfs o = IS_DIRTY_SINGLEBIT | (shift & 7);
+				file->cntl(FCNTL_MODS_IS_DIRTY, tag_offset+op, o, &isdirty);
+				if (isdirty) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_modified));
+				if (tag_offset >= sel_start && tag_offset < sel_end) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_selected));
+				if (is_cursor) tag_color = mixColors(tag_color, getcolor_tag(edit() ? palidx_tags_edit_tag_cursor_edit : palidx_tags_edit_tag_cursor_select));
 
-					if (pread(tag_offset+op, &d, 1)==1) {
-						str[0]=(d& (1 << (shift%8))) ? '1' : '0';
-						str[1]=0;
-					} else {
-						strcpy(str, "?");
-					}
+				if (pread(tag_offset+op, &d, 1)==1) {
+					str[0]=(d& (1 << (shift%8))) ? '1' : '0';
+					str[1]=0;
+				} else {
+					strcpy(str, "?");
+				}
 					
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, 1, tag_color);
-					n+=HT_TAG_EDIT_BIT_LEN;
-					break;
-				}
-				case HT_TAG_EDIT_SELVIS: {
-					tag_offset=tag_get_offset(n);
-					tag_color=getcolor_tag(palidx_tags_edit_tag);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, 1, tag_color);
+				n += HT_TAG_EDIT_BIT_LEN;
+				break;
+			}
+			case HT_TAG_EDIT_SELVIS: {
+				tag_offset=tag_get_offset(n);
+				tag_color=getcolor_tag(palidx_tags_edit_tag);
 
-					if (tag_offset >= sel_start && tag_offset < sel_end) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_selected));
+				if (tag_offset >= sel_start && tag_offset < sel_end) tag_color = mixColors(tag_color, getcolor_tag(palidx_tags_edit_tag_selected));
 
-					c+=render_tagstring_single(chars, colors, maxlen, c, &((ht_tag_edit_selvis*)n)->ch, 1, tag_color);
-					n+=HT_TAG_EDIT_SELVIS_LEN;
-					continue;
-				}
-				case HT_TAG_SEL: {
-					int tag_textlen = tag_get_seltextlen(n);
-					if (is_cursor) {
-						tag_color = getcolor_tag(
-							(focused && (g == cursor.tag_group)) ?
-							palidx_tags_sel_tag_cursor_focused :
-							palidx_tags_sel_tag_cursor_unfocused
-						);
-					} else {
-						tag_color = getcolor_tag(palidx_tags_sel_tag);
-					}
-					n += HT_TAG_SEL_LEN(0);
-					c += render_tagstring_single(chars, colors, maxlen, c, n, tag_textlen, tag_color);
-					n += tag_textlen;
-					break;
-				}
-				case HT_TAG_DESC_BYTE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 1, true, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_BYTE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_WORD_LE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 2, false, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_WORD_LE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_DWORD_LE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 4, false, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_DWORD_LE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_QWORD_LE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 8, false, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_QWORD_LE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_WORD_BE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 2, true, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_WORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_DWORD_BE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 4, true, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_DWORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_DESC_QWORD_BE: {
-					const char *str;
-					int l;
-					render_tagstring_desc(&str, &l, &tag_color, n, 8, true, is_cursor);
-					c+=render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
-					n+=HT_TAG_DESC_DWORD_BE_LEN;
-					break;
-				}
-				case HT_TAG_FLAGS:
-					n += HT_TAG_FLAGS_LEN;
+				c += render_tagstring_single(chars, colors, maxlen, c, &((ht_tag_edit_selvis*)n)->ch, 1, tag_color);
+				n += HT_TAG_EDIT_SELVIS_LEN;
+				continue;
+			}
+			case HT_TAG_SEL: {
+				int tag_textlen = tag_get_seltextlen(n);
+				if (is_cursor) {
+					tag_color = getcolor_tag(
+						(focused && (g == cursor.tag_group)) ?
+						palidx_tags_sel_tag_cursor_focused :
+						palidx_tags_sel_tag_cursor_unfocused
+					);
+				} else {
 					tag_color = getcolor_tag(palidx_tags_sel_tag);
-					if (is_cursor) tag_color = getcolor_tag(palidx_tags_sel_tag_cursor_focused);
-					c += render_tagstring_single(chars, colors, maxlen, c, "details", 7, tag_color);
-					break;
-				case HT_TAG_GROUP:
-					n+=HT_TAG_GROUP_LEN;
-					g++;
-					i=0;
-					continue;
-				case HT_TAG_COLOR:
-					color_normal = tag_get_color(n);
-					if (color_normal == -1) {
-						color_normal = getcolor(palidx_generic_body);
-					}
-					n += HT_TAG_COLOR_LEN;
-					continue;
-				default: {
-					assert(0);
 				}
+				n += HT_TAG_SEL_LEN(0);
+				c += render_tagstring_single(chars, colors, maxlen, c, n, tag_textlen, tag_color);
+				n += tag_textlen;
+				break;
+			}
+			case HT_TAG_DESC_BYTE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 1, true, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_BYTE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_WORD_LE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 2, false, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_WORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_DWORD_LE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 4, false, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_DWORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_QWORD_LE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 8, false, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_QWORD_LE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_WORD_BE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 2, true, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_WORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_DWORD_BE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 4, true, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_DWORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_DESC_QWORD_BE: {
+				const char *str;
+				int l;
+				render_tagstring_desc(&str, &l, &tag_color, n, 8, true, is_cursor);
+				c += render_tagstring_single(chars, colors, maxlen, c, str, l, tag_color);
+				n += HT_TAG_DESC_DWORD_BE_LEN;
+				break;
+			}
+			case HT_TAG_FLAGS:
+				n += HT_TAG_FLAGS_LEN;
+				tag_color = getcolor_tag(palidx_tags_sel_tag);
+				if (is_cursor) tag_color = getcolor_tag(palidx_tags_sel_tag_cursor_focused);
+				c += render_tagstring_single(chars, colors, maxlen, c, "details", 7, tag_color);
+				break;
+			case HT_TAG_GROUP:
+				n += HT_TAG_GROUP_LEN;
+				g++;
+				i = 0;
+				continue;
+			case HT_TAG_COLOR:
+				color_normal = tag_get_color(n);
+				if (color_normal == -1) {
+					color_normal = getcolor(palidx_generic_body);
+				}
+				n += HT_TAG_COLOR_LEN;
+				continue;
+			default: {
+				assert(0);
+			}
 			}
 		}
 		i++;
@@ -3297,10 +3297,14 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 
 uint ht_uformat_viewer::render_tagstring_single(char *chars, vcp *colors, uint maxlen, uint offset, const char *text, uint len, vcp color)
 {
+	if (offset >= maxlen) {
+		return 0;
+	}
+	maxlen -= offset;
 	if (chars) chars += offset;
 	if (colors) colors += offset;
-	maxlen -= offset;
-	uint l = (len < maxlen) ? len : maxlen, r=0;
+	uint l = MIN(len, maxlen);
+	uint r = 0;
 	while (l--) {
 		if (chars) *chars++ = *text++;
 		if (colors) *colors++ = color;
@@ -3313,8 +3317,10 @@ uint ht_uformat_viewer::render_tagstring_single(char *chars, vcp *colors, uint m
 
 void ht_uformat_viewer::print_tagstring(int x, int y, int maxlen, int xscroll, char *tagstring, bool cursor_in_line)
 {
-	char text[MAX_PRINT_TAGSTRING_LINELENGTH], *t=text+xscroll;
-	vcp color[MAX_PRINT_TAGSTRING_LINELENGTH], *c=color+xscroll;
+	char text[MAX_PRINT_TAGSTRING_LINELENGTH];
+	char *t = text+xscroll;
+	vcp color[MAX_PRINT_TAGSTRING_LINELENGTH];
+	vcp *c = color+xscroll;
 	int l = render_tagstring(text, color,
 		(maxlen+xscroll+1 > MAX_PRINT_TAGSTRING_LINELENGTH) ? MAX_PRINT_TAGSTRING_LINELENGTH
 		: maxlen+xscroll+1, tagstring, cursor_in_line);
@@ -3424,28 +3430,29 @@ bool ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendia
 	int_hash *desc=(int_hash*)getAtomValue(id);
 	if (desc) {
 		Bounds b;
-		b.w=60;
-		b.h=14;
-		b.x=(screen->w - b.w)/2;
-		b.y=(screen->h - b.h)/2;
+		b.w = 60;
+		b.h = 14;
+		b.x = (screen->w - b.w)/2;
+		b.y = (screen->h - b.h)/2;
 		ht_dialog *g=new ht_dialog();
 		g->init(&b, "desc", FS_KILLER | FS_MOVE);
 
-		b.x=0;
-		b.y=0;
-		b.w-=2;
-		b.h-=2;
-		ht_itext_listbox *l=new ht_itext_listbox();
+		b.x = 0;
+		b.y = 0;
+		b.w -= 2;
+		b.h -= 2;
+		ht_itext_listbox *l = new ht_itext_listbox();
 		l->init(&b, 2, 1);
 
 		byte buf[4];
-		int curpos=0, i=0;
-		int d=0;
+		int curpos = 0;
+		int i = 0;
+		int d = 0;
 
-		if (pread(offset, buf, size)!=size) return false;
+		if (pread(offset, buf, size) != size) return false;
 		
 		switch (size) {
-			case 1: d=buf[0]; break;
+			case 1: d = buf[0]; break;
 			case 2:
 				if (bigendian) {
 					d=(buf[0]<<8) | buf[1];
@@ -3614,16 +3621,16 @@ ht_search_result *ht_uformat_viewer::psearch(ht_search_request *request, FileOfs
 ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_pos start, viewer_pos end)
 {
 	if (request != last_search_request) {
-		if (last_search_request) delete last_search_request;
+		delete last_search_request;
 		last_search_request = request->clone();
 	}
 	last_search_physical = false;
 	last_search_end_pos = end;
 	
-	if ((request->search_class==SC_VISUAL) && (request->type==ST_REGEX)) {
+	if (request->search_class == SC_VISUAL && request->type == ST_REGEX) {
 		if (!cursor.sub) return 0;
 		ht_regex_search_request *s=(ht_regex_search_request*)request;
-/* build progress indicator */
+		/* build progress indicator */
 		Bounds b;
 		get_std_progress_indicator_metrics(&b);
 		ht_progress_indicator *progress_indicator=new ht_progress_indicator();
@@ -3636,11 +3643,11 @@ ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_
 				char line[1024];	/* FIXME: possible buffer overflow ! */
 				if (!p.sub->getline(line, p.line_id)) assert(0);
 				char rdrd[256];
-				int c=render_tagstring(rdrd, 0, 256, line, 0);
-				rdrd[c]=0;
+				int c = render_tagstring(rdrd, 0, sizeof rdrd-1, line, 0);
+				rdrd[c] = 0;
 				regmatch_t pos;
 				if (!regexec(&s->rx, rdrd, 1, &pos, 0)) {
-					ht_visual_search_result *r=new ht_visual_search_result();
+					ht_visual_search_result *r = new ht_visual_search_result();
 					r->pos.u = p;
 					r->xpos = pos.rm_so;
 					r->length = pos.rm_eo-pos.rm_so;
