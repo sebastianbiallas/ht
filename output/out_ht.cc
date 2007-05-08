@@ -89,7 +89,7 @@ void AnalyserHTOutput::beginLine()
 			temp[s] = 0;
 		}
 		// FIXME: buffer bla
-		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, temp);
+		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, 1024, temp);
 	}
 	
 	if (analy->explored->contains(addr)) {
@@ -131,7 +131,7 @@ void	AnalyserHTOutput::endLine()
 			a += bytes_line - want_bytes_line;
 			
 			for (int i=0; i < want_bytes_line; i++) {
-				work_buffer2 = tag_make_edit_byte(work_buffer2, a+i);
+				work_buffer2 = tag_make_edit_byte(work_buffer2, sizeof workbuf2, a+i);
 			}
 			for (int i=0; i <= analy->max_opcode_length*2-want_bytes_line*2; i++) {
 				*(work_buffer2++)=' ';
@@ -149,7 +149,7 @@ void	AnalyserHTOutput::endLine()
 
 char *AnalyserHTOutput::externalLink(char *s, uint32 type1, uint32 type2, uint32 type3, uint32 type4, void *special)
 {
-	*(tag_make_ref(tmpbuffer, type1, type2, type3, type4, s)) = 0;
+	*(tag_make_ref(tmpbuffer, 1024, type1, type2, type3, type4, s)) = 0;
 	return tmpbuffer;
 }
 
@@ -159,7 +159,7 @@ char *AnalyserHTOutput::link(char *s, Address *Addr)
 	// FIXNEW
 	uint64 u;
 	Addr->putIntoUInt64(u);
-	*(tag_make_ref(tmpbuffer, u >> 32, u, 0, 0, s)) = 0;
+	*(tag_make_ref(tmpbuffer, sizeof tmpbuffer, u >> 32, u, 0, 0, s)) = 0;
 	return tmpbuffer;
 }
 
@@ -168,26 +168,26 @@ void AnalyserHTOutput::putElement(int element_type, const char *element)
 	// bufferbla's
 	switch (element_type) {
 	case ELEMENT_TYPE_PRE_COMMENT:
-		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));
+		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_comment));
 		write(element);
 		break;
 	case ELEMENT_TYPE_COMMENT:
-		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));
+		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_comment));
 		write(element);
 		break;
 	case ELEMENT_TYPE_POST_COMMENT:
-		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));
+		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_comment));
 		write(element);
 		break;
 	case ELEMENT_TYPE_LABEL:
-		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_label));
+		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_label));
 		write(element);
 		break;
 	case ELEMENT_TYPE_DATA_CODE:
 		write(element);
 		break;
 	case ELEMENT_TYPE_HIGHLIGHT_DATA_CODE:
-		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_default));
+		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_default));
 		write("  ");
 		while (*element) {
 			if (*element == '\e') {
@@ -201,19 +201,19 @@ void AnalyserHTOutput::putElement(int element_type, const char *element)
 					element++;
 					switch (*element) {
 					case '#': // comment
-						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_comment));
+						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_comment));
 						break;
 					case 'c': // symbol
-						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_symbol));
+						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_symbol));
 						break;
 					case 'd': // default
-						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_default));
+						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_default));
 						break;
 					case 'n': // number
-						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_number));
+						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_number));
 						break;
 					case 's': // string
-						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, getcolor_analy(palidx_analyser_string));
+						work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_string));
 						break;
 					}
 					element++;

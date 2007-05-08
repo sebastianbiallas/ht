@@ -466,8 +466,8 @@ void tag_set_value(TAGSTRING *tagstring, uint32 value);
 
 bool tag_is_editable(const TAGSTRING *tagstring);
 
-void tag_strcat(TAGSTRING *dest, const TAGSTRING *src);
-void tag_strcpy(TAGSTRING *dest, const TAGSTRING *src);
+void tag_strcat(TAGSTRING *dest, int maxlen, const TAGSTRING *src);
+void tag_strcpy(TAGSTRING *dest, int maxlen, const TAGSTRING *src);
 TAGSTRING *tag_strdup(const TAGSTRING *tagstring);
 int tag_strlen(const TAGSTRING *tagstring);
 int tag_strvlen(const TAGSTRING *tagstring);
@@ -479,25 +479,25 @@ TAGSTRING *tag_get_selectable_tag(const TAGSTRING *tagstring, int n, int group);
 TAGSTRING *tag_get_group(const TAGSTRING *tagstring, int group);
 int tag_get_class(const TAGSTRING *tagstring);
 
-TAGSTRING *tag_make_sel(TAGSTRING *buf, const char *string);
-TAGSTRING *tag_make_ref(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string);
-TAGSTRING *tag_make_ref_len(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string, int strlen);
-TAGSTRING *tag_make_flags(TAGSTRING *buf, uint32 id, FileOfs offset);
-TAGSTRING *tag_make_group(TAGSTRING *buf);
-TAGSTRING *tag_make_color(TAGSTRING *buf, uint32 color);
-TAGSTRING *tag_make_default_color(TAGSTRING *buf);
-TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FileOfs ofs);
-TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs, tag_endian e);
-TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs, tag_endian e);
-TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FileOfs ofs, tag_endian e);
-TAGSTRING *tag_make_edit_time(TAGSTRING *buf, FileOfs ofs, tag_endian e);
-TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FileOfs ofs);
-TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs, int bitidx);
-TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FileOfs offset, char ch);
-TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FileOfs ofs, uint32 id32);
-TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs, uint32 id32, tag_endian e);
-TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs, uint32 id32, tag_endian e);
-TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_sel(TAGSTRING *buf, int maxlen, const char *string);
+TAGSTRING *tag_make_ref(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string);
+TAGSTRING *tag_make_ref_len(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string, int strlen);
+TAGSTRING *tag_make_flags(TAGSTRING *buf, int maxlen, uint32 id, FileOfs offset);
+TAGSTRING *tag_make_group(TAGSTRING *buf, int maxlen);
+TAGSTRING *tag_make_color(TAGSTRING *buf, int maxlen, uint32 color);
+TAGSTRING *tag_make_default_color(TAGSTRING *buf, int maxlen);
+TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs);
+TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
+TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
+TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
+TAGSTRING *tag_make_edit_time(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
+TAGSTRING *tag_make_edit_char(TAGSTRING *buf, int maxlen, FileOfs ofs);
+TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, int maxlen, FileOfs ofs, int bitidx);
+TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, int maxlen, FileOfs offset, char ch);
+TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, int maxlen, FileOfs ofs, uint32 id32);
+TAGSTRING *tag_make_desc_word(TAGSTRING *buf, int maxlen, FileOfs ofs, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, uint32 id32, tag_endian e);
+TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, uint32 id32, tag_endian e);
 char *tag_striptags(char *dest, const TAGSTRING *src);
 
 #endif /* !__HTTAG_H__ */

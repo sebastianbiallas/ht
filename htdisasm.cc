@@ -408,9 +408,9 @@ static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 		sub->last_line_id(&line_id);
 		if (Addr.addr32.offset <= line_id.id1) {
 			char buf2[60];
-			sprintf(buf2, "0x%x", Addr.addr32.offset);
-			char *b = tag_make_ref(buf, Addr.addr32.offset, 0, 0, 0, buf2);
-			*b=0;
+			ht_snprintf(buf2, sizeof buf2, "0x%x", Addr.addr32.offset);
+			char *b = tag_make_ref(buf, sizeof buf-1, Addr.addr32.offset, 0, 0, 0, buf2);
+			*b = 0;
 			if (symstrlen) *symstrlen = b-buf;
 			return buf;
 		}
@@ -443,18 +443,17 @@ bool ht_disasm_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 		s = "db ?";
 		c = 0;
 	}
-	l += ht_snprintf(l, 17, "%08qx", ofs);
-	*l++=' ';
+	l += ht_snprintf(l, maxlen, "%08qx ", ofs);
 	for (int i=0; i<15; i++) {
 		if (i<c) {
-			l=tag_make_edit_byte(l, ofs+i);
+			l=tag_make_edit_byte(l, maxlen, ofs+i);
 		} else {
 			*l++=' ';
 			*l++=' ';
 		}
 	}
 	*l++=' ';
-	tag_strcpy(l, s);
+	tag_strcpy(l, maxlen, s);
 	return true;
 }
 

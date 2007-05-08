@@ -3563,7 +3563,7 @@ bool ht_uformat_viewer::ref_flags(ID id, FileOfs offset)
 			memcpy(t, fl->desc, l);
 			t += l;
 			while (t < x+width) *(t++) = ' ';
-			t = tag_make_edit_bit(t, offset, fl->bitidx);
+			t = tag_make_edit_bit(t, sizeof x, offset, fl->bitidx);
 			*t = 0;
 			m->add_mask(x);
 			fl++;
@@ -4303,8 +4303,8 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 	if (c <= 0) return false;
 	
 	char *l = line;
-	l += ht_snprintf(l, 17, "%08qx", ofs);
-	*l++ = ' ';
+	char *l_end = line+maxlen;
+	l += ht_snprintf(l, l_end - l, "%08qx ", ofs);
 
 	uint start = 0;
 	if (fofs - ofs < disp) {
@@ -4320,35 +4320,33 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 	
 	for (uint i = 0; i < line_length; i++) {
 		if (i >= start && i < end) {
-			l = tag_make_edit_byte(l, ofs);
+			l = tag_make_edit_byte(l, l_end - l, ofs);
 		} else {
-			*l++ = ' ';
-			*l++ = ' ';
+			l += ht_snprintf(l, l_end - l, "  ");
 		}
 		if (i+1 > start && i+1 < end) {
 			if (i%8 == 7) {
-				l = tag_make_edit_selvis(l, ofs, '-');
+				l = tag_make_edit_selvis(l, l_end-l, ofs, '-');
 			} else {
-				l = tag_make_edit_selvis(l, ofs, ' ');
+				l = tag_make_edit_selvis(l, l_end-l, ofs, ' ');
 			}
 		} else {
-			*l++ = ' ';
+			l += ht_snprintf(l, l_end - l, " ");
 		}
 		ofs++;
 	}
 	ofs -= line_length;
-	l = tag_make_group(l);
-	*l++ = '|';
+	l = tag_make_group(l, l_end-l);
+	l += ht_snprintf(l, l_end - l, "|");
 	for (uint i=0; i < line_length; i++) {
 		if (i >= start && i < end) {
-			l = tag_make_edit_char(l, ofs);
+			l = tag_make_edit_char(l, l_end-l, ofs);
 		} else {
-			*l++ = ' ';
+			l += ht_snprintf(l, l_end-l , " ");
 		}
 		ofs++;
 	}
-	*l++ = '|';
-	*l = 0;
+	l += ht_snprintf(l, l_end - l, "|");
 	return true;
 }
 
@@ -4450,7 +4448,7 @@ bool ht_mask_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 	if (line_id.id2 != uid) return false;
 	const char *s = ((ht_data_tagstring *)masks[line_id.id1])->value;
 	if (s) {
-		tag_strcpy(line, s);
+		tag_strcpy(line, maxlen, s);
 		return true;
 	}
 	return false;
@@ -4662,9 +4660,11 @@ void ht_collapsable_sub::first_line_id(LINE_ID *line_id)
 
 bool ht_collapsable_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
+	char *l = line;
+	char *l_end = line+maxlen;
 	if (compeq_line_id(line_id, myfid)) {
-		line += ht_snprintf(line, maxlen, "[%c] ", collapsed ? '+' : '-');
-		line = tag_make_ref(line, myfid.id1, myfid.id2, 0, 0, nodestring);
+		line += ht_snprintf(line, l_end-l, "[%c] ", collapsed ? '+' : '-');
+		line = tag_make_ref(line, l_end-l, myfid.id1, myfid.id2, 0, 0, nodestring);
 		*line = 0;
 		return true;
 	} else if (collapsed) {

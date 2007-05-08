@@ -289,24 +289,24 @@ void palette_entry::strvalue(char *buf32bytes)
 	const char *text;
 	int fg = VCP_FOREGROUND(color);
 	int bg = VCP_BACKGROUND(color);
-	if (fg==VC_TRANSPARENT && bg==VC_TRANSPARENT) {
+	if (fg == VC_TRANSPARENT && bg == VC_TRANSPARENT) {
 		text = "transparent";
 		fg = VC_WHITE;
 		bg = VC_BLACK;
 	} else if (fg == VC_TRANSPARENT) {
 		text = "fgtrans";
 		fg = VC_WHITE;
-		if (bg==fg) fg = VC_BLACK;
-	} else if (bg==VC_TRANSPARENT) {
+		if (bg == fg) fg = VC_BLACK;
+	} else if (bg == VC_TRANSPARENT) {
 		text = "bgtrans";
 		bg = VC_BLACK;
-		if (bg==fg) fg = VC_WHITE;
+		if (bg == fg) fg = VC_WHITE;
 	} else {
-		text="normal";
+		text = "normal";
 	}
-	p = tag_make_color(p, VCP(fg, bg));
+	p = tag_make_color(p, 32, VCP(fg, bg));
 	p += sprintf(p, text);
-	p = tag_make_default_color(p);
+	p = tag_make_default_color(p, 32);
 	*p = 0;
 }
 

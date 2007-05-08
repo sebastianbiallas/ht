@@ -99,27 +99,27 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
 
+#define tt_end sizeof t - (tt-t)
+
 	switch (reloctab_sh_type) {
 		case ELF_SHT_REL: {
 			m->add_mask("destofs  symidx type");
 			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_REL32);
 			for (uint i=0; i<relnum; i++) {
-				char *tt=t;
+				char *tt = t;
 				/* dest offset */
-				tt = tag_make_edit_dword(tt, h+i*sizeof (ELF_REL32), elf_bigendian ? tag_endian_big : tag_endian_little);
-				*tt++ = ' ';
+				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_REL32), elf_bigendian ? tag_endian_big : tag_endian_little);
+				tt += ht_snprintf(tt, tt_end, " ");
+				
 				/* symbol (table idx) */
-				tt = tag_make_edit_word(tt, h+i*sizeof (ELF_REL32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
-				*tt++ = ' ';
-				*tt++ = ' ';
-				*tt++ = ' ';
+				tt = tag_make_edit_word(tt, tt_end, h+i*sizeof (ELF_REL32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
+				tt += ht_snprintf(tt, tt_end, "   ");
 				/* type */
-				tt = tag_make_edit_byte(tt, h+i*sizeof (ELF_REL32)+4);
-				*tt++ = '(';
+				tt = tag_make_edit_byte(tt, tt_end, h+i*sizeof (ELF_REL32)+4);
+				tt += ht_snprintf(tt, tt_end, "(");
 				/* type */
-				tt = tag_make_desc_byte(tt, h+i*sizeof (ELF_REL32)+4, ATOM_ELF_R_386_TYPE);
-				*tt++ = ')';
-				*tt = 0;
+				tt = tag_make_desc_byte(tt, tt_end, h+i*sizeof (ELF_REL32)+4, ATOM_ELF_R_386_TYPE);
+				tt += ht_snprintf(tt, tt_end, ")");
 				m->add_mask(t);
 			}
 			break;
@@ -130,23 +130,20 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 			for (uint i=0; i<relnum; i++) {
 				char *tt = t;
 				/* dest offset */
-				tt = tag_make_edit_dword(tt, h+i*sizeof (ELF_RELA32), elf_bigendian ? tag_endian_big : tag_endian_little);
-				*tt++ = ' ';
+				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_RELA32), elf_bigendian ? tag_endian_big : tag_endian_little);
+				tt += ht_snprintf(tt, tt_end, " ");
 				/* symbol (table idx) */
-				tt = tag_make_edit_word(tt, h+i*sizeof (ELF_RELA32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
-				*tt++ = ' ';
-				*tt++ = ' ';
-				*tt++=' ';
+				tt = tag_make_edit_word(tt, tt_end, h+i*sizeof (ELF_RELA32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
+				tt += ht_snprintf(tt, tt_end, "   ");
 				/* addend */
-				tt = tag_make_edit_dword(tt, h+i*sizeof (ELF_RELA32)+4+4, elf_bigendian ? tag_endian_big : tag_endian_little);
-				*tt++ = ' ';
+				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_RELA32)+4+4, elf_bigendian ? tag_endian_big : tag_endian_little);
+				tt += ht_snprintf(tt, tt_end, " ");
 				/* type */
-				tt = tag_make_edit_byte(tt, h+i*sizeof (ELF_RELA32)+4);
-				*tt++ = '(';
+				tt = tag_make_edit_byte(tt, tt_end, h+i*sizeof (ELF_RELA32)+4);
+				tt += ht_snprintf(tt, tt_end, "(");
 				/* type */
-				tt = tag_make_desc_byte(tt, h+i*sizeof (ELF_RELA32)+4, ATOM_ELF_R_386_TYPE);
-				*tt++ = ')';
-				*tt = 0;
+				tt = tag_make_desc_byte(tt, tt_end, h+i*sizeof (ELF_RELA32)+4, ATOM_ELF_R_386_TYPE);
+				tt += ht_snprintf(tt, tt_end, ")");
 				m->add_mask(t);
 			}
 			break;

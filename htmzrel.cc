@@ -54,10 +54,10 @@ static ht_view *htmzrel_init(Bounds *b, File *file, ht_format_group *group)
 		int so;
 		file->seek(r);
 		file->read(&so, 4);
-		char *b=tag_make_edit_word(buf, r+2, tag_endian_little);
-		*(b++)=':';
-		b=tag_make_edit_word(b, r, tag_endian_little);
-		*b=0;
+		char *b = tag_make_edit_word(buf, sizeof buf, r+2, tag_endian_little);
+		b += ht_snprintf(b, sizeof buf - (b-buf), ":");
+		b = tag_make_edit_word(b, sizeof buf - (b-buf), r, tag_endian_little);
+		*b = 0;
 		m->add_mask(buf);
 		r+=4;
 	}

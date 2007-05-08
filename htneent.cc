@@ -49,7 +49,7 @@ static ht_view *htneentrypoints_init(Bounds *b, File *file, ht_format_group *gro
 
 	registerAtom(ATOM_NE_ENTFLAGS, ne_entflags);
 
-	char line[1024], *l;	/* possible buffer overflow */
+	char line[1024];
 	ht_snprintf(line, sizeof line, "* NE entrypoint table at offset 0x%08qx", h+ne_shared->hdr.enttab);
 	m->add_mask(line);
 
@@ -75,35 +75,37 @@ static ht_view *htneentrypoints_init(Bounds *b, File *file, ht_format_group *gro
 		}
 		// FIXME: dont use sprintf
 		for (int i=0; i<e.entry_count; i++) {
-			if (e.seg_index==0) {
-			} else if (e.seg_index==0xff) {
-				l=line;
-				l+=sprintf(l, "%04x: ", index);
-				l=tag_make_edit_byte(l, o+3);
-				*(l++)=':';
-				l=tag_make_edit_word(l, o+4, tag_endian_little);
-				*(l++)=' ';
-				l=tag_make_ref(l, o, 0xff, 0, 0, "goto");
-				l+=sprintf(l, " flags=");
-				l=tag_make_edit_byte(l, o);
-				*(l++)=' ';
-				l=tag_make_flags(l, ATOM_NE_ENTFLAGS, o);
-				*l=0;
+			if (e.seg_index == 0) {
+			} else if (e.seg_index == 0xff) {
+				char *l = line;
+				char *l_end = line+sizeof line - 1;
+				l += ht_snprintf(l, sizeof line, "%04x: ", index);
+				l = tag_make_edit_byte(l, l_end-l, o+3);
+				l += ht_snprintf(l, l_end-l, ":");
+				l = tag_make_edit_word(l, l_end-l, o+4, tag_endian_little);
+				l += ht_snprintf(l, l_end-l, " ");
+				l = tag_make_ref(l, l_end-l, o, 0xff, 0, 0, "goto");
+				l += ht_snprintf(l, l_end-l, " flags=");
+				l = tag_make_edit_byte(l, l_end-l, o);
+				l += ht_snprintf(l, l_end-l, " ");
+				l = tag_make_flags(l, l_end-l, ATOM_NE_ENTFLAGS, o);
+				*l = 0;
 				m->add_mask(line);
-				o+=sizeof (NE_ENTRYPOINT_MOVABLE);
+				o += sizeof (NE_ENTRYPOINT_MOVABLE);
 			} else {
-				l=line;
-				l+=sprintf(l, "%04x:    ", index);
-				l=tag_make_edit_word(l, o+1, tag_endian_little);
-				*(l++)=' ';
-				l=tag_make_ref(l, o, e.seg_index, 0, 0, "goto");
-				l+=sprintf(l, " flags=");
-				l=tag_make_edit_byte(l, o);
-				*(l++)=' ';
-				l=tag_make_flags(l, ATOM_NE_ENTFLAGS, o);
-				*l=0;
+				char *l = line;
+				char *l_end = line+sizeof line - 1;
+				l += ht_snprintf(l, l_end-l, "%04x:    ", index);
+				l = tag_make_edit_word(l, l_end-l, o+1, tag_endian_little);
+				l += ht_snprintf(l, l_end-l, " ");
+				l = tag_make_ref(l, l_end-l, o, e.seg_index, 0, 0, "goto");
+				l += ht_snprintf(l, l_end-l, " flags=");
+				l = tag_make_edit_byte(l, l_end-l, o);
+				l += ht_snprintf(l, l_end-l, " ");
+				l = tag_make_flags(l, l_end-l, ATOM_NE_ENTFLAGS, o);
+				*l = 0;
 				m->add_mask(line);
-				o+=sizeof (NE_ENTRYPOINT_FIXED);
+				o += sizeof (NE_ENTRYPOINT_FIXED);
 			}
 			index++;
 		}

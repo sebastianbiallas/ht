@@ -91,6 +91,7 @@ public:
 	Container	*out_addrs;
 
 	byte		*work_buffer_start;
+	byte		*work_buffer_end;
 	byte		*work_buffer;
 
 	byte		*temp_buffer;
