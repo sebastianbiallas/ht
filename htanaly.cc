@@ -2047,12 +2047,12 @@ void	ht_analy_sub::first_line_id(LINE_ID *line_id)
 	line_id->id2 = u;
 }
 
-bool ht_analy_sub::getline(char *line, const LINE_ID line_id)
+bool ht_analy_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (!analy) return false;
 	Address *a = analy->createAddress();
 	a->getFromUInt64((uint64(line_id.id1) << 32) + line_id.id2);
-	bool res = output->getLineString(line, 1024, a, (int)line_id.id3);
+	bool res = output->getLineString(line, maxlen, a, (int)line_id.id3);
 	delete a;
 	return res;
 }

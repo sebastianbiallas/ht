@@ -886,7 +886,7 @@ void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, 
 
 	search_caps = SEARCHMODE_VREGEX;
 
-	uf_initialized = 0;
+	uf_initialized = false;
 }
 
 void ht_uformat_viewer::done()
@@ -1027,55 +1027,55 @@ void ht_uformat_viewer::complete_init()
 	if (uf_initialized) return;
 	cursor_state=cursor_state_disabled;
 	if (!first_sub) {
-		uf_initialized=1;
+		uf_initialized = true;
 		return;
 	}
 /*  initialize top_*  */
 	clear_viewer_pos(&top);
 	top.sub = first_sub;
 	top.sub->first_line_id(&top.line_id);
-/*  initialize cursor_*  */
-	cursor_tag_micropos=0;
+
+	cursor_tag_micropos = 0;
 
 	uformat_viewer_pos p;
 	clear_viewer_pos(&p);
 	p.sub = first_sub;
 	p.sub->first_line_id(&p.line_id);
-	char line[1024];	/* FIXME: possible buffer overflow ! */
+	char line[1024];
 	cursor_ypos--;
 	do {
 		cursor_ypos++;
-		if (!p.sub->getline(line, p.line_id)) break;
+		if (!p.sub->getline(line, sizeof line, p.line_id)) break;
 		if (tag_count_selectable_tags(line)) {
-			if (cursor_ypos<size.h) {
-				cursor_state=cursor_state_visible;
+			if (cursor_ypos < size.h) {
+				cursor_state = cursor_state_visible;
 			} else {
-				cursor_state=cursor_state_invisible;
-				cursor_ypos=-1;
+				cursor_state = cursor_state_invisible;
+				cursor_ypos = -1;
 			}
 			break;
 		}
-	} while ((next_line(&p, 1)) && (cursor_ypos<size.h));
+	} while (next_line(&p, 1) && cursor_ypos < size.h);
 	p.tag_idx = 0;
 	p.tag_group = 0;
 	if (cursor_state == cursor_state_disabled) {
 		p.sub = first_sub;
 		p.sub->first_line_id(&p.line_id);
-		if (p.sub->getline(line, p.line_id)) {
+		if (p.sub->getline(line, sizeof line, p.line_id)) {
 			cursor_ypos = -1;
 			cursor_state = cursor_state_invisible;
 		}
 	}
 	cursor = p;
-/* get cursorline */
+	/* get cursorline */
 	cursorline_dirty();
 	cursorline_get();
-/* initialize visual */
+	/* initialize visual */
 	update_visual_info();
-/* initialize misc */
+	/* initialize misc */
 	update_misc_info();
 
-	uf_initialized=1;
+	uf_initialized = true;
 }
 
 int ht_uformat_viewer::cursor_left()
@@ -1129,7 +1129,7 @@ int ht_uformat_viewer::cursor_up(int n)
 
 				while (prev_line(&c, 1) && (c_ypos>=0)) {
 					c_ypos--;
-					c.sub->getline(c_line, c.line_id);
+					c.sub->getline(c_line, sizeof c_line, c.line_id);
 					int g = tag_count_groups(c_line);
 					if (d_tag_group < g) c_tag_group = d_tag_group;
 					int s;
@@ -1182,7 +1182,7 @@ int ht_uformat_viewer::cursor_up(int n)
 				c_ypos -= nc;
 
 				while (nc--) {
-					c.sub->getline(c_line, c.line_id);
+					c.sub->getline(c_line, sizeof c_line, c.line_id);
 					int g = tag_count_groups(c_line);
 					if (d_tag_group < g) c_tag_group=d_tag_group;
 					int s;
@@ -1236,7 +1236,7 @@ int ht_uformat_viewer::cursor_down(int n)
 	switch (cursor_state) {
 		case cursor_state_invisible:
 		case cursor_state_visible: {
-			if ((n==1) && (cursor_state==cursor_state_visible)) {
+			if (n == 1 && cursor_state == cursor_state_visible) {
 				int r=0;
 				uformat_viewer_pos c;
 				c = cursor;
@@ -1247,25 +1247,25 @@ int ht_uformat_viewer::cursor_down(int n)
 				int d_tag_group=cursor.tag_group;
 				int nls;	/* controls scrolling beyond end */
 
-				while ((nls=next_line(&c, 1)) && (c_ypos<=size.h-1)) {
+				while ((nls = next_line(&c, 1)) && c_ypos <= size.h-1) {
 					c_ypos++;
-					c.sub->getline(c_line, c.line_id);
-					int g=tag_count_groups(c_line);
-					if (d_tag_group<g) c_tag_group=d_tag_group;
+					c.sub->getline(c_line, sizeof c_line, c.line_id);
+					int g = tag_count_groups(c_line);
+					if (d_tag_group < g) c_tag_group = d_tag_group;
 					int s;
-					if (c_tag_group>=g) {
-						c_tag_group=g-1;
+					if (c_tag_group >= g) {
+						c_tag_group = g-1;
 						s=tag_count_selectable_tags_in_group(c_line, c_tag_group);
 						if (s) {
-							c_tag_idx=s-1;
-							r=1;
+							c_tag_idx = s-1;
+							r = 1;
 							break;
 						}
 					}
-					s=tag_count_selectable_tags_in_group(c_line, c_tag_group);
+					s = tag_count_selectable_tags_in_group(c_line, c_tag_group);
 					if (s) {
-						if (c_tag_idx>=s) c_tag_idx=s-1;
-						r=1;
+						if (c_tag_idx >= s) c_tag_idx = s-1;
+						r = 1;
 						break;
 					}
 				}
@@ -1273,10 +1273,10 @@ int ht_uformat_viewer::cursor_down(int n)
 					cursor = c;
 					memcpy(cursor_line, c_line, sizeof cursor_line);
 					cursorline_dirty();
-					cursor_ypos=c_ypos;
-					cursor.tag_idx=c_tag_idx;
-					cursor.tag_group=c_tag_group;
-					if (cursor_ypos>=size.h) scroll_down(cursor_ypos-size.h+1);
+					cursor_ypos = c_ypos;
+					cursor.tag_idx = c_tag_idx;
+					cursor.tag_group = c_tag_group;
+					if (cursor_ypos >= size.h) scroll_down(cursor_ypos-size.h+1);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
@@ -1303,7 +1303,7 @@ int ht_uformat_viewer::cursor_down(int n)
 				c_ypos+=nc;
 
 				while (nc--) {
-					c.sub->getline(c_line, c.line_id);
+					c.sub->getline(c_line, sizeof c_line, c.line_id);
 					int g=tag_count_groups(c_line);
 					if (d_tag_group<g) c_tag_group=d_tag_group;
 					int s;
@@ -1384,14 +1384,14 @@ void ht_uformat_viewer::cursor_tab()
 
 void ht_uformat_viewer::cursorline_dirty()
 {
-	isdirty_cursor_line=1;
+	isdirty_cursor_line = true;
 }
 
 void ht_uformat_viewer::cursorline_get()
 {
 	if (isdirty_cursor_line) {
-		if (cursor.sub) cursor.sub->getline(cursor_line, cursor.line_id);
-		isdirty_cursor_line=0;
+		if (cursor.sub) cursor.sub->getline(cursor_line, sizeof cursor_line, cursor.line_id);
+		isdirty_cursor_line = false;
 	}
 }
 
@@ -1412,9 +1412,9 @@ int ht_uformat_viewer::cursormicroedit_forward()
 	}
 
 	bool cursor_found = false;
-	char c_line[1024];  /* FIXME: possible buffer overflow ! */
+	char c_line[1024];
 	for (int y=0; y < size.h+16; y++) {
-		if (!p.sub->getline(c_line, p.line_id)) break;
+		if (!p.sub->getline(c_line, sizeof c_line, p.line_id)) break;
 		int c=tag_count_selectable_tags_in_group(c_line, p.tag_group);
 		while (p.tag_idx<c) {
 			char *t=tag_get_selectable_tag(c_line, p.tag_idx, p.tag_group);
@@ -1489,19 +1489,19 @@ restart:
 	uformat_viewer_pos sp;
 	clear_viewer_pos(&sp);
 
-	char line[1024];	/* FIXME: possible buffer overflow ! */
+	char line[1024];
 	bool cursor_in_line;
 	int cursor_found=-1;
 	if (focused) hidecursor();
-	if (!p.sub->getline(line, p.line_id)) {
+	if (!p.sub->getline(line, sizeof line, p.line_id)) {
 		if (p.sub->closest_line_id(&p.line_id)) {
 			top = p;
 		} else return;
-		if (!p.sub->getline(line, p.line_id)) return;
+		if (!p.sub->getline(line, sizeof line, p.line_id)) return;
 	}
 	for (int y=0; y<size.h; y++) {
 		if (y == cursor_ypos) sp = p;
-		if (!p.sub->getline(line, p.line_id)) break;
+		if (!p.sub->getline(line, sizeof line, p.line_id)) break;
 /**/
 /*		char test[128];
 		tag_striptags(test+sprintf(test, "%08x,%08x: ", id1, id2), line);
@@ -1855,10 +1855,10 @@ void ht_uformat_viewer::edit_input_correctpos()
 	uformat_viewer_pos p = top;
 
 	/* try finding edited tag by its offset */
-	char c_line[1024];  /* FIXME: possible buffer overflow ! */
+	char c_line[1024];
 	int g=cursor.tag_group;
 	for (int y=0; y < size.h+10; y++) {
-		if (!p.sub->getline(c_line, p.line_id)) break;
+		if (!p.sub->getline(c_line, sizeof c_line, p.line_id)) break;
 		int c = tag_count_selectable_tags_in_group(c_line, cursor.tag_group);
 		for (int i=0; i < c; i++) {
 			char *t = tag_get_selectable_tag(c_line, i, cursor.tag_group);
@@ -1915,12 +1915,12 @@ bool ht_uformat_viewer::edit_update()
 
 bool ht_uformat_viewer::find_first_tag(uformat_viewer_pos *p, int limit)
 {
-	char line[1024];	/* FIXME: possible buffer overflow ! */
+	char line[1024];
 	int i=0;
 	uformat_viewer_pos q = *p;
 	if (!q.sub) return false;
 	do {
-		q.sub->getline(line, q.line_id);
+		q.sub->getline(line, sizeof line, q.line_id);
 		if (tag_get_selectable_tag(line, 0, 0)) {
 			*p = q;
 			p->tag_idx = 0;
@@ -1938,7 +1938,7 @@ bool ht_uformat_viewer::find_first_edit_tag_with_offset(uformat_viewer_pos *p, i
 	uformat_viewer_pos q = *p;
 	if (!q.sub) return false;
 	do {
-		q.sub->getline(line, q.line_id);
+		q.sub->getline(line, sizeof line, q.line_id);
 		int c = tag_count_selectable_tags(line);
 		char *t = line;
 		for (int j=0; j<c; j++) {
@@ -3091,9 +3091,9 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
 					
 				byte buf[4];
-				if (pread(tag_offset, &buf, 4)==4) {
+				if (pread(tag_offset, &buf, 4) == 4) {
 					/* big endian */
-					d=(buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+					d = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
 					ht_snprintf(str, sizeof str, "%08x", d);
 				} else {
 					strcpy(str, "????????");
@@ -3129,7 +3129,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
 
 				byte buf[4];
-				if (pread(tag_offset, &buf, 4)==4) {
+				if (pread(tag_offset, &buf, 4) == 4) {
 					if (n[1] == HT_TAG_EDIT_TIME_LE) {
 						d = (buf[3]<<24) | (buf[2]<<16) | (buf[1]<<8) | buf[0];
 					} else {
@@ -3640,8 +3640,8 @@ ht_search_result *ht_uformat_viewer::vsearch(ht_search_request *request, viewer_
 		uformat_viewer_pos p = start.u;
 		while (p.sub) {
 			do {
-				char line[1024];	/* FIXME: possible buffer overflow ! */
-				if (!p.sub->getline(line, p.line_id)) assert(0);
+				char line[1024];
+				if (!p.sub->getline(line, sizeof line, p.line_id)) assert(0);
 				char rdrd[256];
 				int c = render_tagstring(rdrd, 0, sizeof rdrd-1, line, 0);
 				rdrd[c] = 0;
@@ -3814,9 +3814,9 @@ bool ht_uformat_viewer::set_cursor(uformat_viewer_pos p)
 //	}
 /**/
 
-	char line[1024];	/* FIXME: possible buffer overflow ! */
+	char line[1024];
 	char *e;
-	p.sub->getline(line, p.line_id);
+	p.sub->getline(line, sizeof line, p.line_id);
 	e = tag_get_selectable_tag(line, 0, 0);
 	if (!e) return 0;
 	cursor = p;
@@ -3988,7 +3988,7 @@ bool ht_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *offset)
 	return false;
 }
 
-bool ht_sub::getline(char *line, const LINE_ID line_id)
+bool ht_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	return false;
 }
@@ -4295,7 +4295,7 @@ bool ht_hex_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *ofs)
 	return true;
 }
 
-bool ht_hex_sub::getline(char *line, const LINE_ID line_id)
+bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (line_id.id3 != uid) return false;
 	FileOfs ofs = (uint64(line_id.id1) << 32) + line_id.id2;
@@ -4445,7 +4445,7 @@ void ht_mask_sub::first_line_id(LINE_ID *line_id)
 	line_id->id2 = uid;
 }
 
-bool ht_mask_sub::getline(char *line, const LINE_ID line_id)
+bool ht_mask_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (line_id.id2 != uid) return false;
 	const char *s = ((ht_data_tagstring *)masks[line_id.id1])->value;
@@ -4578,9 +4578,9 @@ void ht_layer_sub::first_line_id(LINE_ID *line_id)
 	return sub->first_line_id(line_id);
 }
 
-bool ht_layer_sub::getline(char *line, const LINE_ID line_id)
+bool ht_layer_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
-	return sub->getline(line, line_id);
+	return sub->getline(line, maxlen, line_id);
 }
 
 void ht_layer_sub::handlemsg(htmsg *msg)
@@ -4660,16 +4660,22 @@ void ht_collapsable_sub::first_line_id(LINE_ID *line_id)
 	*line_id = myfid;
 }
 
-bool ht_collapsable_sub::getline(char *line, const LINE_ID line_id)
+bool ht_collapsable_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (compeq_line_id(line_id, myfid)) {
-		line+=sprintf(line, "[%c] ", collapsed ? '+' : '-');
-		line=tag_make_ref(line, myfid.id1, myfid.id2, 0, 0, nodestring);
-		*line=0;
+		line += ht_snprintf(line, maxlen, "[%c] ", collapsed ? '+' : '-');
+		line = tag_make_ref(line, myfid.id1, myfid.id2, 0, 0, nodestring);
+		*line = 0;
 		return true;
-	} else if (collapsed) return false;
-	if (ht_layer_sub::getline(line, line_id)) {
-		memmove(line+2, line, tag_strlen(line)+1);
+	} else if (collapsed) {
+		return false;
+	}
+	if (ht_layer_sub::getline(line, maxlen, line_id)) {
+		if (maxlen < 3) {
+			return false;
+		}
+		int l = tag_strlen(line)+1;
+		memmove(line+2, line, MIN(l, maxlen-2));
 		line[0]=' ';
 		line[1]=' ';
 		return true;
@@ -4762,13 +4768,13 @@ void ht_group_sub::first_line_id(LINE_ID *line_id)
 	if (s) s->first_line_id(line_id);
 }
 
-bool ht_group_sub::getline(char *line, const LINE_ID line_id)
+bool ht_group_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	ht_sub *s;
-	uint c=subs->count();
+	uint c = subs->count();
 	for (uint i=0; i<c; i++) {
-		s=(ht_sub*)(*subs)[i];
-		if (s->getline(line, line_id)) return true;
+		s = (ht_sub*)(*subs)[i];
+		if (s->getline(line, maxlen, line_id)) return true;
 	}
 	return false;
 }

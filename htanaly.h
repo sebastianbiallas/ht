@@ -171,7 +171,7 @@ public:
 	virtual	bool	convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
 	virtual	bool	closest_line_id(LINE_ID *line_id);
 	virtual	void	first_line_id(LINE_ID *line_id);
-	virtual	bool	getline(char *line, const LINE_ID line_id);
+	virtual	bool	getline(char *line, int maxlen, const LINE_ID line_id);
 	virtual	void	last_line_id(LINE_ID *line_id);
 	virtual	int	next_line_id(LINE_ID *line_id, int n);
 	virtual	int	prev_line_id(LINE_ID *line_id, int n);

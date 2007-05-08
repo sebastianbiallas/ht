@@ -418,7 +418,7 @@ static char *diasm_addr_sym_func(CPU_ADDR Addr, int *symstrlen, void *context)
 	return NULL;
 }
 
-bool ht_disasm_sub::getline(char *line, const LINE_ID line_id)
+bool ht_disasm_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (line_id.id2) return false;
 	uint64 ofs = line_id.id1;

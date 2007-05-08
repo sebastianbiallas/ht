@@ -236,22 +236,22 @@ void ht_text_sub::first_line_id(LINE_ID *line_id)
 	line_id->id1 = 0;
 }
 
-bool ht_text_sub::getline(char *line, const LINE_ID line_id)
+bool ht_text_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	byte *bufp = (byte*)line;
 	FileOfs ofs = line_id.id1;
 	int ll;
-	uint l=find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, &ll);
+	uint l = find_linelen_forwd(ht_text_sub_line, sizeof ht_text_sub_line, ofs, &ll);
 	if (l) {
-		l-=ll;
-		if (l>255) l=255;
+		l -= ll;
+		if (l > 255) l = 255;
 		file->seek(ofs);
-		l=file->read(line, l);
+		l = file->read(line, l);
 		while (l--) {
-			if ((*bufp=='\e') || (*bufp==0)) *bufp='.';
+			if (*bufp=='\e' || *bufp==0) *bufp = '.';
 			bufp++;
 		}
-		*bufp=0;
+		*bufp = 0;
 		return true;
 	}
 	return false;
