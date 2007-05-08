@@ -3087,7 +3087,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 			case HT_TAG_EDIT_DWORD_BE: {
 				uint32 d;
 					
-				tag_offset= t ag_get_offset(n);
+				tag_offset = tag_get_offset(n);
 				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
 					
 				byte buf[4];
