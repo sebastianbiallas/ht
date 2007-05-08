@@ -354,7 +354,7 @@ bool ht_disasm_viewer::symbol_handler(eval_scalar *result, char *name)
 const char *ht_disasm_viewer::func(uint i, bool execute)
 {
 	switch (i) {
-// FIXME: wrong implementation
+		// FIXME: wrong implementation
 		case 8:
 			if (execute) sendmsg(cmd_disasm_toggle1632);
 			return op1632 ? (char*)"use32" : (char*)"use16";

@@ -92,7 +92,7 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 	
 	registerAtom(ATOM_ELF_R_386_TYPE, elf_r_386_type);
 
-	char t[256];	/* FIXME: possible buffer overflow ! */
+	char t[256];
 	ht_snprintf(t, sizeof t, "* ELF relocation table at offset %08qx, relocates section %d, symtab %d", h, si_dest, si_symbol);
 
 	m->add_mask(t);

@@ -211,7 +211,7 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 			elf_shared->pheaders.count = elf_shared->header64.e_phnum;
 //			if (!elf_shared->pheaders.count) throw MsgException("Zero count in program section headers");
 		if (!elf_shared->pheaders.count) {
-		elf_shared->pheaders.pheaders64 = NULL;
+			elf_shared->pheaders.pheaders64 = NULL;
 		} else {
 			elf_shared->pheaders.pheaders64 = ht_malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders64);
 			/* FIXME: 64-bit */
@@ -222,12 +222,12 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 				createHostStruct(elf_shared->pheaders.pheaders64+i, ELF_PROGRAM_HEADER64_struct, elf_shared->byte_order);
 			}
 			/* create a fake section for undefined symbols */
-//			fake_undefined_symbols();
+			//fake_undefined_symbols();
 
 			/* create streamfile layer for relocations */
-//			auto_relocate();
-}
-			break;
+			//auto_relocate();
+		}
+		break;
 		}
 	}
 	/* init ifs */
@@ -440,7 +440,7 @@ void ht_elf::auto_relocate32()
 	}
 
 	/* apply relocations to section descriptors */
-	for (uint i=0; i<elf_shared->sheaders.count; i++) {
+	for (uint i=0; i < elf_shared->sheaders.count; i++) {
 		if (elf_shared->shrelocs[i].relocAddr) {
 			//LOG("section %d to %08x", i, elf_shared->shrelocs[i].relocAddr);
 			try {

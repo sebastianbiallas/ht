@@ -196,12 +196,12 @@ bool ht_ltextfile::convert_ofs2line(FileOfs o, uint *line, uint *pofs) const
 		if (x->nofs > o) r=m-1; else break;
 	}
 	
-/* FIXME: debug */
+	/* FIXME: debug */
 	x=fetch_line_nofs_ok(m);
 	if (x) assert(o>=x->nofs);
 	x=fetch_line_nofs_ok(m+1);
 	if (x) assert(o<x->nofs);
-/**/
+	/**/
 
 	x=fetch_line_nofs_ok(m);
 	

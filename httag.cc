@@ -67,9 +67,7 @@ TAGSTRING *tag_make_ref_len(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint
 	UNALIGNED_MOVE(tag->id128_3, id128_3);
 	UNALIGNED_MOVE(tag->id128_4, id128_4);
 	UNALIGNED_MOVE(tag->strlen, strlen);
-//	strcpy(buf+sizeof (ht_tag_sel), string);	/* FIXME: we assume that TAGSTRING is a char */
 	memcpy(buf+sizeof (ht_tag_sel), string, strlen);
-//	buf[sizeof (ht_tag_sel)+strlen]=0;
 	return buf+sizeof (ht_tag_sel)+strlen;
 }
 
@@ -80,29 +78,29 @@ TAGSTRING *tag_make_ref(TAGSTRING *buf, uint32 id128_1, uint32 id128_2, uint32 i
 
 TAGSTRING *tag_make_flags(TAGSTRING *buf, uint32 id, FileOfs ofs)
 {
-	ht_tag_flags *tag=(ht_tag_flags*)buf;
+	ht_tag_flags *tag = (ht_tag_flags*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_FLAGS;
 	UNALIGNED_MOVE(tag->offset, ofs);
 	UNALIGNED_MOVE(tag->id, id);
-	return buf+sizeof (ht_tag_flags);
+	return buf + sizeof (ht_tag_flags);
 }
 
 TAGSTRING *tag_make_group(TAGSTRING *buf)
 {
-	ht_tag_group *tag=(ht_tag_group*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_GROUP;
-	return buf+sizeof (ht_tag_group);
+	ht_tag_group *tag = (ht_tag_group*)buf;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_GROUP;
+	return buf + sizeof (ht_tag_group);
 }
 
 TAGSTRING *tag_make_color(TAGSTRING *buf, uint32 color)
 {
-	ht_tag_color *tag=(ht_tag_color*)buf;
+	ht_tag_color *tag = (ht_tag_color*)buf;
 	tag->escape='\e';
 	tag->magic=HT_TAG_COLOR;
 	UNALIGNED_MOVE(tag->color, color);
-	return buf+sizeof (ht_tag_color);
+	return buf + sizeof (ht_tag_color);
 }
 
 TAGSTRING *tag_make_default_color(TAGSTRING *buf)
@@ -111,22 +109,22 @@ TAGSTRING *tag_make_default_color(TAGSTRING *buf)
 	tag->escape = '\e';
 	tag->magic = HT_TAG_COLOR;
 	UNALIGNED_MOVE_CONST(tag->color, 0xffffffff, dword);
-	return buf+sizeof (ht_tag_color);
+	return buf + sizeof (ht_tag_color);
 }
 
 TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, FileOfs ofs)
 {
-	ht_tag_edit_byte *tag=(ht_tag_edit_byte*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_EDIT_BYTE;
+	ht_tag_edit_byte *tag = (ht_tag_edit_byte*)buf;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_EDIT_BYTE;
 	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf+sizeof (ht_tag_edit_byte);
+	return buf + sizeof (ht_tag_edit_byte);
 }
 
 TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs, tag_endian e)
 {
-	ht_tag_edit_word_generic *tag=(ht_tag_edit_word_generic*)buf;
-	tag->escape='\e';
+	ht_tag_edit_word_generic *tag = (ht_tag_edit_word_generic*)buf;
+	tag->escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -139,16 +137,16 @@ TAGSTRING *tag_make_edit_word(TAGSTRING *buf, FileOfs ofs, tag_endian e)
 		m = HT_TAG_EDIT_WORD_VE;
 		break;
 	}
-	tag->magic=m;
+	tag->magic = m;
 	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf+sizeof (ht_tag_edit_word_generic);
+	return buf + sizeof (ht_tag_edit_word_generic);
 }
 
 TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs, tag_endian e)
 {
-	ht_tag_edit_dword_generic *tag=(ht_tag_edit_dword_generic*)buf;
-	tag->escape='\e';
-	byte m=0xff;
+	ht_tag_edit_dword_generic *tag = (ht_tag_edit_dword_generic*)buf;
+	tag->escape = '\e';
+	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
 		m = HT_TAG_EDIT_DWORD_BE;
@@ -160,9 +158,9 @@ TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, FileOfs ofs, tag_endian e)
 		m = HT_TAG_EDIT_DWORD_VE;
 		break;
 	}
-	tag->magic=m;
+	tag->magic = m;
 	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf+sizeof (ht_tag_edit_dword_generic);
+	return buf + sizeof (ht_tag_edit_dword_generic);
 }
 
 TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, FileOfs ofs, tag_endian e)
@@ -218,9 +216,9 @@ TAGSTRING *tag_make_edit_char(TAGSTRING *buf, FileOfs ofs)
 
 TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs, int bitidx)
 {
-	ht_tag_edit_bit *tag=(ht_tag_edit_bit*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_EDIT_BIT;
+	ht_tag_edit_bit *tag = (ht_tag_edit_bit*)buf;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_EDIT_BIT;
 	UNALIGNED_MOVE(tag->offset, ofs);
 	UNALIGNED_MOVE(tag->bitidx, bitidx);
 	return buf+sizeof (ht_tag_edit_bit);
@@ -229,28 +227,28 @@ TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, FileOfs ofs, int bitidx)
 TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, FileOfs offset, char ch)
 {
 	ht_tag_edit_selvis *tag=(ht_tag_edit_selvis*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_EDIT_SELVIS;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_EDIT_SELVIS;
 	UNALIGNED_MOVE(tag->offset, offset);
-	tag->ch=ch;
-	return buf+sizeof (ht_tag_edit_selvis);
+	tag->ch = ch;
+	return buf + sizeof (ht_tag_edit_selvis);
 }
 
 TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, FileOfs ofs32, uint32 id32)
 {
-	ht_tag_desc_byte *tag=(ht_tag_desc_byte*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_DESC_BYTE;
+	ht_tag_desc_byte *tag = (ht_tag_desc_byte*)buf;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_DESC_BYTE;
 	UNALIGNED_MOVE(tag->offset, ofs32);
 	UNALIGNED_MOVE(tag->id, id32);
-	return buf+sizeof (ht_tag_desc_byte);
+	return buf + sizeof (ht_tag_desc_byte);
 }
 
 TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
 {
 	ht_tag_desc_word_generic *tag=(ht_tag_desc_word_generic*)buf;
-	tag->escape='\e';
-	byte m=0xff;
+	tag->escape = '\e';
+	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
 		m = HT_TAG_DESC_WORD_BE;
@@ -262,17 +260,17 @@ TAGSTRING *tag_make_desc_word(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_en
 		m = HT_TAG_DESC_WORD_VE;
 		break;
 	}
-	tag->magic=m;
+	tag->magic = m;
 	UNALIGNED_MOVE(tag->offset, ofs32);
 	UNALIGNED_MOVE(tag->id, id32);
-	return buf+sizeof (ht_tag_desc_word_generic);
+	return buf + sizeof (ht_tag_desc_word_generic);
 }
 
 TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
 {
-	ht_tag_desc_dword_generic *tag=(ht_tag_desc_dword_generic*)buf;
-	tag->escape='\e';
-	byte m=0xff;
+	ht_tag_desc_dword_generic *tag = (ht_tag_desc_dword_generic*)buf;
+	tag->escape = '\e';
+	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
 		m = HT_TAG_DESC_DWORD_BE;
@@ -284,17 +282,17 @@ TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_e
 		m = HT_TAG_DESC_DWORD_VE;
 		break;
 	}
-	tag->magic=m;
+	tag->magic = m;
 	UNALIGNED_MOVE(tag->offset, ofs32);
 	UNALIGNED_MOVE(tag->id, id32);
-	return buf+sizeof (ht_tag_desc_dword_generic);
+	return buf + sizeof (ht_tag_desc_dword_generic);
 }
 
 TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_endian e)
 {
-	ht_tag_desc_qword_generic *tag=(ht_tag_desc_qword_generic*)buf;
-	tag->escape='\e';
-	byte m=0xff;
+	ht_tag_desc_qword_generic *tag = (ht_tag_desc_qword_generic*)buf;
+	tag->escape = '\e';
+	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
 		m = HT_TAG_DESC_QWORD_BE;
@@ -306,200 +304,200 @@ TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, FileOfs ofs32, uint32 id32, tag_e
 		m = HT_TAG_DESC_QWORD_VE;
 		break;
 	}
-	tag->magic=m;
+	tag->magic = m;
 	UNALIGNED_MOVE(tag->offset, ofs32);
 	UNALIGNED_MOVE(tag->id, id32);
-	return buf+sizeof (ht_tag_desc_qword_generic);
+	return buf + sizeof (ht_tag_desc_qword_generic);
 }
 
 /**/
 
-void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, uint64 relocation, bool std_bigendian)
+void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, int maxlen, uint64 relocation, bool std_bigendian)
 {
 	FileOfs ofs = 0;
 	ID id;
 	while (*statictag_str) {
-		if (*statictag_str=='\e') {
+		if (*statictag_str == '\e') {
 			switch ((byte)*(statictag_str+1)) {
 			case HT_STATICTAG_EDIT_BYTE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_byte(tag_str, ofs+relocation);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_byte(tag_str, ofs+relocation);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_WORD_LE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_word(tag_str, ofs+relocation, tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_word(tag_str, ofs+relocation, tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_DWORD_LE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_dword(tag_str, ofs+relocation, tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_dword(tag_str, ofs+relocation, tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_QWORD_LE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_qword(tag_str, ofs+relocation, tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_qword(tag_str, ofs+relocation, tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_WORD_BE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_word(tag_str, ofs+relocation, tag_endian_big);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_word(tag_str, ofs+relocation, tag_endian_big);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_DWORD_BE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_dword(tag_str, ofs+relocation, tag_endian_big);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_dword(tag_str, ofs+relocation, tag_endian_big);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_QWORD_BE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_qword(tag_str, ofs+relocation, tag_endian_big);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_qword(tag_str, ofs+relocation, tag_endian_big);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_WORD_VE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_word(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_word(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_DWORD_VE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_dword(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_dword(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_QWORD_VE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_qword(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_qword(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_TIME_LE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_time(tag_str, ofs+relocation, tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_time(tag_str, ofs+relocation, tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_TIME_BE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_time(tag_str, ofs+relocation, tag_endian_big);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_time(tag_str, ofs+relocation, tag_endian_big);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_TIME_VE:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_time(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_time(tag_str, ofs+relocation, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_CHAR:
-				ofs=hexd(statictag_str+2);
-				tag_str=tag_make_edit_char(tag_str, ofs+relocation);
-				statictag_str+=2+8;
+				ofs = hexd(statictag_str+2);
+				tag_str = tag_make_edit_char(tag_str, ofs+relocation);
+				statictag_str += 2+8;
 				break;
 			case HT_STATICTAG_EDIT_BIT: {
-				ofs=hexd(statictag_str+2);
-				int bitidx=hexb(statictag_str+2+8);
-				tag_str=tag_make_edit_bit(tag_str, ofs+relocation, bitidx);
-				statictag_str+=2+8+2;
+				ofs = hexd(statictag_str+2);
+				int bitidx = hexb(statictag_str+2+8);
+				tag_str = tag_make_edit_bit(tag_str, ofs+relocation, bitidx);
+				statictag_str += 2+8+2;
 				break;
 			}
 			case HT_STATICTAG_EDIT_SELVIS: {
-				ofs=hexd(statictag_str+2);
-				char ch=hexb(statictag_str+2+8);
-				tag_str=tag_make_edit_selvis(tag_str, ofs+relocation, ch);
-				statictag_str+=2+8+2;
+				ofs = hexd(statictag_str+2);
+				char ch = hexb(statictag_str+2+8);
+				tag_str = tag_make_edit_selvis(tag_str, ofs+relocation, ch);
+				statictag_str += 2+8+2;
 				break;
 			}
 			case HT_STATICTAG_DESC_BYTE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_byte(tag_str, ofs+relocation, id);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_byte(tag_str, ofs+relocation, id);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_WORD_LE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_word(tag_str, ofs+relocation, id, tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_word(tag_str, ofs+relocation, id, tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_DWORD_LE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_dword(tag_str, ofs+relocation, id, tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_dword(tag_str, ofs+relocation, id, tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_QWORD_LE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_qword(tag_str, ofs+relocation, id, tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_qword(tag_str, ofs+relocation, id, tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_WORD_BE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_word(tag_str, ofs+relocation, id, tag_endian_big);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_word(tag_str, ofs+relocation, id, tag_endian_big);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_DWORD_BE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_dword(tag_str, ofs+relocation, id, tag_endian_big);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_dword(tag_str, ofs+relocation, id, tag_endian_big);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_QWORD_BE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_qword(tag_str, ofs+relocation, id, tag_endian_big);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_qword(tag_str, ofs+relocation, id, tag_endian_big);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_WORD_VE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_word(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_word(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_DWORD_VE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_dword(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_dword(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_DESC_QWORD_VE:
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_desc_qword(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_desc_qword(tag_str, ofs+relocation, id, std_bigendian ? tag_endian_big : tag_endian_little);
+				statictag_str += 2+8+8;
 				break;
 			case HT_STATICTAG_SEL: {
-				uint32 id_1=hexd(statictag_str+2);
-				uint32 id_2=hexd(statictag_str+2+8);
-				uint32 id_3=hexd(statictag_str+2+16);
-				uint32 id_4=hexd(statictag_str+2+24);
-				byte len=hexb(statictag_str+2+8+8+8+8);
-				tag_str=tag_make_ref_len(tag_str, id_1, id_2, id_3, id_4, statictag_str+2+8+8+8+8+2, len);
-				statictag_str+=2+8+8+8+8+2+len;
+				uint32 id_1 = hexd(statictag_str+2);
+				uint32 id_2 = hexd(statictag_str+2+8);
+				uint32 id_3 = hexd(statictag_str+2+16);
+				uint32 id_4 = hexd(statictag_str+2+24);
+				byte len = hexb(statictag_str+2+8+8+8+8);
+				tag_str = tag_make_ref_len(tag_str, id_1, id_2, id_3, id_4, statictag_str+2+8+8+8+8+2, len);
+				statictag_str += 2+8+8+8+8+2+len;
 				break;
 			}
 			case HT_STATICTAG_FLAGS: {
-				ofs=hexd(statictag_str+2);
-				id=hexd(statictag_str+2+8);
-				tag_str=tag_make_flags(tag_str, id, ofs+relocation);
-				statictag_str+=2+8+8;
+				ofs = hexd(statictag_str+2);
+				id = hexd(statictag_str+2+8);
+				tag_str = tag_make_flags(tag_str, id, ofs+relocation);
+				statictag_str += 2+8+8;
 				break;
 			}
 			case HT_STATICTAG_GROUP:
-				tag_str=tag_make_group(tag_str);
-				statictag_str+=2;
+				tag_str = tag_make_group(tag_str);
+				statictag_str += 2;
 				break;
 			case HT_STATICTAG_COLOR: {
-				byte color=hexb(statictag_str+2);
-				tag_str=tag_make_color(tag_str, color);
-				statictag_str+=2+2;
+				byte color = hexb(statictag_str+2);
+				tag_str = tag_make_color(tag_str, color);
+				statictag_str += 2+2;
 				break;
 			}
 			default:
 				HT_ERROR("error in statictag string!");
 			}
 		} else {
-			*(tag_str++) = *(statictag_str++);
+			*tag_str++ = *statictag_str++;
 		}
 	}
-	*tag_str=0;
+	*tag_str = 0;
 }
 
 TAGSTRING *tag_findnext(const TAGSTRING *tagstring)
@@ -928,8 +926,8 @@ TAGSTRING *tag_strdup(const TAGSTRING *tagstring)
 {
 	if (!tagstring) return NULL;
 	int l = tag_strlen(tagstring);
-	TAGSTRING *s = ht_malloc((sizeof (TAGSTRING))*l + 1);
-	memcpy(s, tagstring, sizeof (TAGSTRING) * l);
+	TAGSTRING *s = ht_malloc(l + 1);
+	memcpy(s, tagstring, l);
 	s[l] = 0;
 	return s;
 }
@@ -953,137 +951,137 @@ int tag_strvlen(const TAGSTRING *tagstring)
 {
 	int c=0, r, v;
 	while (*tagstring) {
-		if (tagstring[0]=='\e') {
-			r=tag_get_len(tagstring);
-			v=tag_get_vlen(tagstring);
+		if (tagstring[0] == '\e') {
+			r = tag_get_len(tagstring);
+			v = tag_get_vlen(tagstring);
 		} else {
-			r=1;
-			v=1;
+			r = 1;
+			v = 1;
 		}
-		tagstring+=r;
-		c+=v;
+		tagstring += r;
+		c += v;
 	}
 	return c;
 }
 
 int tag_count_selectable_tags_in_group(const TAGSTRING *tagstring, int group)
 {
-	int c=0;
+	int c = 0;
 	tagstring = tag_get_group(tagstring, group);
 	while ((tagstring = tag_findnext(tagstring))) {
 		switch (tagstring[1]) {
 		case HT_TAG_EDIT_BYTE:
 			c++;
-			tagstring+=HT_TAG_EDIT_BYTE_LEN;
+			tagstring += HT_TAG_EDIT_BYTE_LEN;
 			break;
 		case HT_TAG_EDIT_WORD_LE:
 			c++;
-			tagstring+=HT_TAG_EDIT_WORD_LE_LEN;
+			tagstring += HT_TAG_EDIT_WORD_LE_LEN;
 			break;
 		case HT_TAG_EDIT_DWORD_LE:
 			c++;
-			tagstring+=HT_TAG_EDIT_DWORD_LE_LEN;
+			tagstring += HT_TAG_EDIT_DWORD_LE_LEN;
 			break;
 		case HT_TAG_EDIT_QWORD_LE:
 			c++;
-			tagstring+=HT_TAG_EDIT_QWORD_LE_LEN;
+			tagstring += HT_TAG_EDIT_QWORD_LE_LEN;
 			break;
 		case HT_TAG_EDIT_WORD_BE:
 			c++;
-			tagstring+=HT_TAG_EDIT_WORD_BE_LEN;
+			tagstring += HT_TAG_EDIT_WORD_BE_LEN;
 			break;
 		case HT_TAG_EDIT_DWORD_BE:
 			c++;
-			tagstring+=HT_TAG_EDIT_DWORD_BE_LEN;
+			tagstring += HT_TAG_EDIT_DWORD_BE_LEN;
 			break;
 		case HT_TAG_EDIT_QWORD_BE:
 			c++;
-			tagstring+=HT_TAG_EDIT_QWORD_BE_LEN;
+			tagstring += HT_TAG_EDIT_QWORD_BE_LEN;
 			break;
 		case HT_TAG_EDIT_WORD_VE:
 			c++;
-			tagstring+=HT_TAG_EDIT_WORD_VE_LEN;
+			tagstring += HT_TAG_EDIT_WORD_VE_LEN;
 			break;
 		case HT_TAG_EDIT_DWORD_VE:
 			c++;
-			tagstring+=HT_TAG_EDIT_DWORD_VE_LEN;
+			tagstring += HT_TAG_EDIT_DWORD_VE_LEN;
 			break;
 		case HT_TAG_EDIT_QWORD_VE:
 			c++;
-			tagstring+=HT_TAG_EDIT_QWORD_VE_LEN;
+			tagstring += HT_TAG_EDIT_QWORD_VE_LEN;
 			break;
 		case HT_TAG_EDIT_TIME_LE:
 			c++;
-			tagstring+=HT_TAG_EDIT_TIME_LE_LEN;
+			tagstring += HT_TAG_EDIT_TIME_LE_LEN;
 			break;
 		case HT_TAG_EDIT_TIME_BE:
 			c++;
-			tagstring+=HT_TAG_EDIT_TIME_BE_LEN;
+			tagstring += HT_TAG_EDIT_TIME_BE_LEN;
 			break;
 		case HT_TAG_EDIT_TIME_VE:
 			c++;
-			tagstring+=HT_TAG_EDIT_TIME_VE_LEN;
+			tagstring += HT_TAG_EDIT_TIME_VE_LEN;
 			break;
 		case HT_TAG_EDIT_CHAR:
 			c++;
-			tagstring+=HT_TAG_EDIT_CHAR_LEN;
+			tagstring += HT_TAG_EDIT_CHAR_LEN;
 			break;
 		case HT_TAG_EDIT_BIT:
 			c++;
-			tagstring+=HT_TAG_EDIT_BIT_LEN;
+			tagstring += HT_TAG_EDIT_BIT_LEN;
 			break;
 		case HT_TAG_SEL:
 			c++;
-			tagstring+=HT_TAG_SEL_LEN(((ht_tag_sel*)tagstring)->strlen);
+			tagstring += HT_TAG_SEL_LEN(((ht_tag_sel*)tagstring)->strlen);
 			break;
 		case HT_TAG_FLAGS:
 			c++;
-			tagstring+=HT_TAG_FLAGS_LEN;
+			tagstring += HT_TAG_FLAGS_LEN;
 			break;
 		case HT_TAG_GROUP:
 			return c;
 		case HT_TAG_DESC_BYTE:
 			c++;
-			tagstring+=HT_TAG_DESC_BYTE_LEN;
+			tagstring += HT_TAG_DESC_BYTE_LEN;
 			break;
 		case HT_TAG_DESC_WORD_LE:
 			c++;
-			tagstring+=HT_TAG_DESC_WORD_LE_LEN;
+			tagstring += HT_TAG_DESC_WORD_LE_LEN;
 			break;
 		case HT_TAG_DESC_DWORD_LE:
 			c++;
-			tagstring+=HT_TAG_DESC_DWORD_LE_LEN;
+			tagstring += HT_TAG_DESC_DWORD_LE_LEN;
 			break;
 		case HT_TAG_DESC_QWORD_LE:
 			c++;
-			tagstring+=HT_TAG_DESC_QWORD_LE_LEN;
+			tagstring += HT_TAG_DESC_QWORD_LE_LEN;
 			break;
 		case HT_TAG_DESC_WORD_BE:
 			c++;
-			tagstring+=HT_TAG_DESC_WORD_BE_LEN;
+			tagstring += HT_TAG_DESC_WORD_BE_LEN;
 			break;
 		case HT_TAG_DESC_DWORD_BE:
 			c++;
-			tagstring+=HT_TAG_DESC_DWORD_BE_LEN;
+			tagstring += HT_TAG_DESC_DWORD_BE_LEN;
 			break;
 		case HT_TAG_DESC_QWORD_BE:
 			c++;
-			tagstring+=HT_TAG_DESC_QWORD_BE_LEN;
+			tagstring += HT_TAG_DESC_QWORD_BE_LEN;
 			break;
 		case HT_TAG_DESC_WORD_VE:
 			c++;
-			tagstring+=HT_TAG_DESC_WORD_VE_LEN;
+			tagstring += HT_TAG_DESC_WORD_VE_LEN;
 			break;
 		case HT_TAG_DESC_DWORD_VE:
 			c++;
-			tagstring+=HT_TAG_DESC_DWORD_VE_LEN;
+			tagstring += HT_TAG_DESC_DWORD_VE_LEN;
 			break;
 		case HT_TAG_DESC_QWORD_VE:
 			c++;
-			tagstring+=HT_TAG_DESC_QWORD_VE_LEN;
+			tagstring += HT_TAG_DESC_QWORD_VE_LEN;
 			break;
 		default:
-			tagstring+=tag_get_len(tagstring);
+			tagstring += tag_get_len(tagstring);
 			break;
 		}
 	}
@@ -1213,13 +1211,13 @@ int tag_count_selectable_tags(const TAGSTRING *tagstring)
 
 int tag_count_groups(const TAGSTRING *tagstring)
 {
-	int c=1;
-	while ((tagstring=tag_findnext(tagstring))) {
-		if (tagstring[1]==HT_TAG_GROUP) {
+	int c = 1;
+	while ((tagstring = tag_findnext(tagstring))) {
+		if (tagstring[1] == HT_TAG_GROUP) {
 			c++;
-			tagstring+=HT_TAG_GROUP_LEN;
+			tagstring += HT_TAG_GROUP_LEN;
 		} else {
-			tagstring+=tag_get_len(tagstring);
+			tagstring += tag_get_len(tagstring);
 		}
 	}
 	return c;
@@ -1227,10 +1225,10 @@ int tag_count_groups(const TAGSTRING *tagstring)
 
 TAGSTRING *tag_get_selectable_tag(const TAGSTRING *tagstring, int n, int group)
 {
-	const TAGSTRING *r=NULL;
-	if (group>0) tagstring=tag_get_group(tagstring, group);
+	const TAGSTRING *r = NULL;
+	if (group > 0) tagstring = tag_get_group(tagstring, group);
 	n++;
-	while ((n) && (tagstring=tag_findnext(tagstring))) {
+	while (n && (tagstring = tag_findnext(tagstring))) {
 		switch (tagstring[1]) {
 			case HT_TAG_EDIT_BYTE:
 				n--;
@@ -1400,37 +1398,37 @@ TAGSTRING *tag_get_group(const TAGSTRING *tagstring, int group)
 int tag_get_class(const TAGSTRING *tagstring)
 {
 	switch (tagstring[1]) {
-		case HT_TAG_EDIT_BYTE:
-		case HT_TAG_EDIT_WORD_LE:
-		case HT_TAG_EDIT_DWORD_LE:
-		case HT_TAG_EDIT_QWORD_LE:
-		case HT_TAG_EDIT_WORD_BE:
-		case HT_TAG_EDIT_DWORD_BE:
-		case HT_TAG_EDIT_QWORD_BE:
-		case HT_TAG_EDIT_WORD_VE:
-		case HT_TAG_EDIT_DWORD_VE:
-		case HT_TAG_EDIT_QWORD_VE:
-		case HT_TAG_EDIT_TIME_LE:
-		case HT_TAG_EDIT_TIME_BE:
-		case HT_TAG_EDIT_TIME_VE:
-		case HT_TAG_EDIT_CHAR:
-		case HT_TAG_EDIT_BIT:
-			return tag_class_edit;
-		case HT_TAG_SEL:
-		case HT_TAG_FLAGS:
-		case HT_TAG_DESC_BYTE:
-		case HT_TAG_DESC_WORD_LE:
-		case HT_TAG_DESC_DWORD_LE:
-		case HT_TAG_DESC_QWORD_LE:
-		case HT_TAG_DESC_WORD_BE:
-		case HT_TAG_DESC_DWORD_BE:
-		case HT_TAG_DESC_QWORD_BE:
-		case HT_TAG_DESC_WORD_VE:
-		case HT_TAG_DESC_DWORD_VE:
-		case HT_TAG_DESC_QWORD_VE:
-			return tag_class_sel;
-		default:
-			return tag_class_no;
+	case HT_TAG_EDIT_BYTE:
+	case HT_TAG_EDIT_WORD_LE:
+	case HT_TAG_EDIT_DWORD_LE:
+	case HT_TAG_EDIT_QWORD_LE:
+	case HT_TAG_EDIT_WORD_BE:
+	case HT_TAG_EDIT_DWORD_BE:
+	case HT_TAG_EDIT_QWORD_BE:
+	case HT_TAG_EDIT_WORD_VE:
+	case HT_TAG_EDIT_DWORD_VE:
+	case HT_TAG_EDIT_QWORD_VE:
+	case HT_TAG_EDIT_TIME_LE:
+	case HT_TAG_EDIT_TIME_BE:
+	case HT_TAG_EDIT_TIME_VE:
+	case HT_TAG_EDIT_CHAR:
+	case HT_TAG_EDIT_BIT:
+		return tag_class_edit;
+	case HT_TAG_SEL:
+	case HT_TAG_FLAGS:
+	case HT_TAG_DESC_BYTE:
+	case HT_TAG_DESC_WORD_LE:
+	case HT_TAG_DESC_DWORD_LE:
+	case HT_TAG_DESC_QWORD_LE:
+	case HT_TAG_DESC_WORD_BE:
+	case HT_TAG_DESC_DWORD_BE:
+	case HT_TAG_DESC_QWORD_BE:
+	case HT_TAG_DESC_WORD_VE:
+	case HT_TAG_DESC_DWORD_VE:
+	case HT_TAG_DESC_QWORD_VE:
+		return tag_class_sel;
+	default:
+		return tag_class_no;
 	}
 }
 
@@ -1445,12 +1443,12 @@ char *tag_striptags(char *dest, const TAGSTRING *src)
 	while (*src) {
 		if (src[0]=='\e') {
 			switch (src[1]) {
-				case HT_TAG_SEL: {
-					src += sizeof (ht_tag_sel);
-					break;
-				}
-				default:
-					src+=tag_get_len(src);
+			case HT_TAG_SEL: {
+				src += sizeof (ht_tag_sel);
+				break;
+			}
+			default:
+				src += tag_get_len(src);
 			}
 		} else {
 			*dest = *src;

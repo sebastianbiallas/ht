@@ -576,7 +576,7 @@ void ht_format_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 		case msg_goto_offset: {
-			FileOfs o = (FileOfs)msg->data1.integer;	// FIXME: int != FileOfs
+			FileOfs o = (FileOfs)msg->data1.q;
 			if (goto_offset(o, false)) {
 				clearmsg(msg);
 				return;
@@ -1933,7 +1933,7 @@ bool ht_uformat_viewer::find_first_tag(uformat_viewer_pos *p, int limit)
 
 bool ht_uformat_viewer::find_first_edit_tag_with_offset(uformat_viewer_pos *p, int limit, FileOfs offset)
 {
-	char line[1024];	/* FIXME: possible buffer overflow ! */
+	char line[1024];
 	int i=0;
 	uformat_viewer_pos q = *p;
 	if (!q.sub) return false;
@@ -2067,7 +2067,7 @@ const char *ht_uformat_viewer::func(uint i, bool execute)
 						htmsg m;
 						m.msg = msg_goto_offset;
 						m.type = mt_empty;
-						m.data1.integer = o;	// FIXME: int = FileOfs
+						m.data1.q = o;
 						v->sendmsg(&m);
 						if (m.msg == msg_empty) {
 							vstate_save();
@@ -4073,10 +4073,10 @@ static int ht_linear_func_readstring(eval_scalar *result, eval_int *offset, eval
 		ht_format_viewer *fv;
 		int i, o;
 	};
-	ht_format_viewer *f=((context_t*)eval_get_context())->fv;
+	ht_format_viewer *f = ((context_t*)eval_get_context())->fv;
 
 	uint l = len->value;
-	void *buf=malloc(l);	/* FIXME: may be too slow... */
+	void *buf = malloc(l);	/* FIXME: may be too slow... */
 
 	if (buf) {
 		eval_str s;
@@ -4086,8 +4086,8 @@ static int ht_linear_func_readstring(eval_scalar *result, eval_int *offset, eval
 			set_eval_error("i/o error (requested %d, read %d from ofs 0x%08qx)", l, c, offset->value);
 			return 0;
 		}
-		s.value=(char*)buf;
-		s.len=l;
+		s.value = (char*)buf;
+		s.len = l;
 		scalar_create_str(result, &s);
 		free(buf);
 		return 1;
@@ -4501,13 +4501,13 @@ void ht_mask_sub::add_mask(const char *tagstr)
 
 void ht_mask_sub::add_mask_table(char **tagstr)
 {
-	while (*tagstr) add_mask(*(tagstr++));
+	while (*tagstr) add_mask(*tagstr++);
 }
 
 void ht_mask_sub::add_staticmask(const char *statictag_str, FileOfs reloc, bool std_bigendian)
 {
-	char tag_str[1024];	/* FIXME: possible buffer overflow */
-	statictag_to_tag(statictag_str, tag_str, reloc, std_bigendian);
+	char tag_str[1024];
+	statictag_to_tag(statictag_str, tag_str, sizeof tag_str, reloc, std_bigendian);
 	masks += new ht_data_tagstring(tag_str);
 }
 
@@ -4522,7 +4522,7 @@ void ht_mask_sub::add_staticmask_ptable(ht_mask_ptable *statictag_ptable, FileOf
 {
 	char s[1024]; /* FIXME: possible buffer overflow */
 	while (statictag_ptable->desc || statictag_ptable->fields) {
-		s[0]=0;
+		s[0] = 0;
 		if (statictag_ptable->desc) strcpy(s, statictag_ptable->desc);
 		int n = strlen(s);
 		while (n < ht_MASK_STD_INDENT) {
@@ -4642,7 +4642,7 @@ bool ht_collapsable_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_i
 		first_line_id(id1, id2);
 		return true;
 	} else*/
-// FIXME: The Right Thing ?
+	// FIXME: The Right Thing ?
 	if (!collapsed) {
 		return ht_layer_sub::convert_ofs_to_id(offset, line_id);
 	}

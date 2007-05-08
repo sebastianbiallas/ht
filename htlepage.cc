@@ -55,7 +55,7 @@ static ht_view *htlepagemaps_init(Bounds *b, File *file, ht_format_group *group)
 
 	v->insertsub(m);
 
-/* FIXME: */
+	/* FIXME: */
 	bool le_bigendian = false;
 
 	for (uint32 i=0; i<le_shared->hdr.pagecnt; i++) {

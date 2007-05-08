@@ -85,7 +85,7 @@ static ht_view *htleentrypoints_init(Bounds *b, File *file, ht_format_group *gro
 	
 	ht_snprintf(info, sizeof info, "* LE entry header at offset 0x%08qx", h+le_shared->hdr.enttab);
 
-/* FIXME: false */
+	/* FIXME: false */
 	bool le_bigendian = false;
 	m->add_mask(info);
 	m->add_staticmask_ptable(le_entry_bundle_header, h+le_shared->hdr.enttab, le_bigendian);

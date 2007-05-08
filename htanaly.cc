@@ -341,20 +341,24 @@ void	*CallChain::get_root()
 	return root;
 }
 
-char	*CallChain::get_text(void *node)
+char *CallChain::get_text(void *node)
 {
 	static char stupid[1024]; // FIXME: static var
-	char *s = stupid;
-	CallChainNode *n=(CallChainNode*)node;
+	CallChainNode *n = (CallChainNode*)node;
 	int d = 0;
 	n->xa->difference(d, n->faddr->addr);
 	char sign = '+';
-	if (d<0) {
+	if (d < 0) {
 		d = -d;
 		sign = '-';          
 	}
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
-	s+=ht_snprintf(stupid, sizeof stupid, "%s%c%x (%y)", n->faddr->label?n->faddr->label->name:"unknown", sign, d, n->xa);
+	ht_snprintf(stupid, sizeof stupid, "%s%c%x (%y)", 
+		n->faddr->label ? n->faddr->label->name : "unknown", 
+		sign, 
+		d, 
+		n->xa
+	);
 	return stupid;
 }
 
@@ -1580,7 +1584,7 @@ void ht_aviewer::searchForXRefs(Address *Addr)
 	char str[100];
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT;
 	ht_snprintf(str, sizeof str, "%y", Addr);
-	ht_regex_search_request *q=new ht_regex_search_request(SC_VISUAL, SF_REGEX_CASEINSENSITIVE, str);
+	ht_regex_search_request *q = new ht_regex_search_request(SC_VISUAL, SF_REGEX_CASEINSENSITIVE, str);
 	viewer_pos vp_start, vp_end;
 	convertAddressToViewerPos(analy_sub->lowestaddress, &vp_start);
 	convertAddressToViewerPos(analy_sub->highestaddress, &vp_end);

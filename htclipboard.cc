@@ -180,9 +180,8 @@ int ht_clipboard_viewer::get_pindicator_str(char *buf, int max_len)
 		if (sel_end-sel_start > 0) {
 			ht_snprintf(ttemp, sizeof ttemp, "selection %qxh-%qxh (%qd byte%s) ", sel_start, sel_end-1, sel_end-sel_start, sel_end-sel_start==1?"":"s");
 		} else {
-			ttemp[0]=0;
+			ttemp[0] = 0;
 		}
-		// FIXME: sizeof buf
 		return ht_snprintf(buf, max_len, " %s %qxh/%qu %s", edit() ? "edit" : "view", o, o, ttemp);
 	} else {
 		return ht_snprintf(buf, max_len, "?");

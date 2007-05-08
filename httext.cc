@@ -70,30 +70,30 @@ bool ht_text_viewer2::pos_to_offset(viewer_pos pos, FileOfs *ofs)
 void ht_text_viewer2::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_keypressed:
-			switch (msg->data1.integer) {
-				case K_Left: {
-					// FIXME: send cmd_bla when available
-					htmsg m;
-					m.msg = msg_keypressed;
-					m.type = mt_empty;
-					m.data1.integer = K_Control_Left;
-					sendmsg(&m);
-					clearmsg(msg);
-					return;
-				}
-				case K_Right: {
-					// FIXME: send cmd_bla when available
-					htmsg m;
-					m.msg = msg_keypressed;
-					m.type = mt_empty;
-					m.data1.integer = K_Control_Right;
-					sendmsg(&m);
-					clearmsg(msg);
-					return;
-				}
-			}
-			break;
+	case msg_keypressed:
+		switch (msg->data1.integer) {
+		case K_Left: {
+			// FIXME: send cmd_bla when available
+			htmsg m;
+			m.msg = msg_keypressed;
+			m.type = mt_empty;
+			m.data1.integer = K_Control_Left;
+			sendmsg(&m);
+			clearmsg(msg);
+			return;
+		}
+		case K_Right: {
+			// FIXME: send cmd_bla when available
+			htmsg m;
+			m.msg = msg_keypressed;
+			m.type = mt_empty;
+			m.data1.integer = K_Control_Right;
+			sendmsg(&m);
+			clearmsg(msg);
+			return;
+		}
+		}
+		break;
 	}
 	return ht_uformat_viewer::handlemsg(msg);
 }

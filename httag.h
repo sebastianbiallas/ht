@@ -445,7 +445,7 @@ enum tag_endian { tag_endian_big, tag_endian_little, tag_endian_var };
 
 typedef char TAGSTRING;
 
-void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, uint64 relocation, bool std_bigendian);
+void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, int maxlen, uint64 relocation, bool std_bigendian);
 
 TAGSTRING *tag_findnext(const TAGSTRING *tagstring);
 

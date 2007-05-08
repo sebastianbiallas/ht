@@ -76,7 +76,7 @@ static ht_view *htleobjects_init(Bounds *b, File *file, ht_format_group *group)
 
 	registerAtom(ATOM_LE_OBJFLAGS, le_objflags);
 
-/* FIXME: */
+	/* FIXME: */
 	bool le_bigendian = false;
 
 	char t[64];

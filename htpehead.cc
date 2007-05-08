@@ -281,21 +281,21 @@ void ht_pe_header_viewer::init(Bounds *b, const char *desc, int caps, File *file
 static ht_format_viewer *find_hex_viewer(ht_group *group)
 {
 	// FIXME: God forgive us...
-	ht_group *vr_group=group;
-	while (strcmp(vr_group->desc, VIEWERGROUP_NAME)) vr_group=vr_group->group;
-	ht_view *c=vr_group->getfirstchild();
+	ht_group *vr_group = group;
+	while (strcmp(vr_group->desc, VIEWERGROUP_NAME)) vr_group = vr_group->group;
+	ht_view *c = vr_group->getfirstchild();
 	while (c) {
-		if (c->desc && (strcmp(c->desc, DESC_HEX)==0)) {
+		if (c->desc && strcmp(c->desc, DESC_HEX) == 0) {
 			return (ht_format_viewer*)c;
 		}
-		c=c->next;
+		c = c->next;
 	}
 	return NULL;
 }
 
 bool ht_pe_header_viewer::ref_sel(LINE_ID *id)
 {
-	ht_pe_shared_data *pe_shared=(ht_pe_shared_data *)format_group->get_shared_data();
+	ht_pe_shared_data *pe_shared = (ht_pe_shared_data *)format_group->get_shared_data();
 	switch (id->id1) {
 		case 0: {
 			ht_format_viewer *hexv = find_hex_viewer(group);

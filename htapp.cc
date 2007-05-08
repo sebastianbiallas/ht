@@ -651,7 +651,7 @@ const char *ht_project::get_filename()
 
 void ht_project::load(ObjectStream &s)
 {
-// FIXME: probably not The Right Thing
+	// FIXME: probably not The Right Thing
 	String fn;
 	filename = ht_strdup(s.getDesc(fn).contentChar());
 	AVLTree::load(s);
@@ -1388,13 +1388,13 @@ static bool doFileChecks(File *file)
 			case HT_S_IFREG: return true;
 			default:
 				LOG_EX(LOG_WARN, "file is not regular (but device, fifo or something...).");
-				LOG_EX(LOG_WARN, "Write-access disabled for safety !");
+				LOG_EX(LOG_WARN, "Write-access disabled for safety!");
 				return true;
 		}
 	} else {
-		LOG_EX(LOG_WARN, "can't determine file type (regular, device, directory...) ! assuming non-regular...");
+		LOG_EX(LOG_WARN, "can't determine file type (regular, device, directory...)! assuming non-regular...");
 		LOG_EX(LOG_WARN, "file is not regular (but device, fifo or something...).");
-		LOG_EX(LOG_WARN, "Write-access disabled for safety !");
+		LOG_EX(LOG_WARN, "Write-access disabled for safety!");
 		return true;
 	}
 	return false;
@@ -1715,8 +1715,8 @@ ht_window *ht_app::create_window_clipboard()
 		v->init(&b, "clipboard", VC_EDIT | VC_GOTO | VC_SEARCH, clipboard, 0);
 
 		window->insert(v);
-// FIXME: needs wrapper (layer)
-//		insert_window(window, AWT_CLIPBOARD, 0, false, clipboard);
+		// FIXME: needs wrapper (layer)
+		//insert_window(window, AWT_CLIPBOARD, 0, false, clipboard);
 		insert_window(window, AWT_CLIPBOARD, 0, false, NULL);
 	}
 	return NULL;
@@ -2891,7 +2891,7 @@ int ht_app::popup_view_list_dump(ht_view *view, ht_text_listbox *listbox, List *
 		}
 		if (!v) return count;
 
-// FIXME: "viewergroup": dirty hack !!!
+		// FIXME: "viewergroup": dirty hack !!!
 		if (v->desc && (strcmp(v->desc, VIEWERGROUP_NAME)) && (v->options & VO_BROWSABLE)) {
 			ht_snprintf(s, sizeof str-(s-str), "- %s", v->desc);
 			structure->insert(v);

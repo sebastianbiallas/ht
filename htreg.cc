@@ -107,7 +107,7 @@ ht_registry_data_dword::ht_registry_data_dword(uint32 v)
 
 bool ht_registry_data_dword::editdialog(const char *keyname)
 {
-// FIXME: use eval instead of strtol
+	// FIXME: use eval instead of strtol
 	char result[32];
 	ht_snprintf(result, sizeof result, "%d", value);
 	if (inputbox("edit dword", "number", result, sizeof result, 0)==button_ok) {
