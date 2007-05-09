@@ -123,6 +123,7 @@ void	AnalyserOutput::init(Analyser *Analy)
 	current_time = 0;
 	work_buffer_start = ht_malloc(WORKBUF_LEN);
 	work_buffer = work_buffer_start;
+	work_buffer_end = work_buffer_start + WORKBUF_LEN - 1;
 	temp_buffer = ht_malloc(WORKBUF_LEN);
 	dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
 	changeConfig();

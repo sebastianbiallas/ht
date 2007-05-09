@@ -52,6 +52,14 @@ static uint32 hexd(const char *s)
 }
 //
 
+static TAGSTRING *tag_error(TAGSTRING *buf, int maxlen)
+{
+	while (maxlen-- > 0) {
+		*buf++ = 0;
+	}
+	return buf;
+}
+
 TAGSTRING *tag_make_sel(TAGSTRING *buf, int maxlen, const char *string)
 {
 	return tag_make_ref(buf, maxlen, 0, 0, 0, 0, string);
@@ -59,6 +67,10 @@ TAGSTRING *tag_make_sel(TAGSTRING *buf, int maxlen, const char *string)
 
 TAGSTRING *tag_make_ref_len(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string, int strlen)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_sel)) return tag_error(buf, maxlen);
+	if (maxlen <= (signed)sizeof (ht_tag_sel)+strlen) {
+		strlen = maxlen - sizeof (ht_tag_sel) - 1;
+	}
 	ht_tag_sel *tag=(ht_tag_sel*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_SEL;
@@ -78,6 +90,7 @@ TAGSTRING *tag_make_ref(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128
 
 TAGSTRING *tag_make_flags(TAGSTRING *buf, int maxlen, uint32 id, FileOfs ofs)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_flags)) return tag_error(buf, maxlen);
 	ht_tag_flags *tag = (ht_tag_flags*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_FLAGS;
@@ -88,6 +101,7 @@ TAGSTRING *tag_make_flags(TAGSTRING *buf, int maxlen, uint32 id, FileOfs ofs)
 
 TAGSTRING *tag_make_group(TAGSTRING *buf, int maxlen)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_group)) return tag_error(buf, maxlen);
 	ht_tag_group *tag = (ht_tag_group*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_GROUP;
@@ -96,9 +110,10 @@ TAGSTRING *tag_make_group(TAGSTRING *buf, int maxlen)
 
 TAGSTRING *tag_make_color(TAGSTRING *buf, int maxlen, uint32 color)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_color)) return tag_error(buf, maxlen);
 	ht_tag_color *tag = (ht_tag_color*)buf;
-	tag->escape='\e';
-	tag->magic=HT_TAG_COLOR;
+	tag->escape = '\e';
+	tag->magic = HT_TAG_COLOR;
 	UNALIGNED_MOVE(tag->color, color);
 	return buf + sizeof (ht_tag_color);
 }

@@ -4297,13 +4297,13 @@ bool ht_hex_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *ofs)
 
 bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
-	if (line_id.id3 != uid) return false;
+	if (line_id.id3 != uid || maxlen < 1) return false;
 	FileOfs ofs = (uint64(line_id.id1) << 32) + line_id.id2;
 	uint c = MIN(uint64(line_length), (fofs+fsize-ofs));
 	if (c <= 0) return false;
 	
 	char *l = line;
-	char *l_end = line+maxlen;
+	char *l_end = line+maxlen-1;
 	l += ht_snprintf(l, l_end - l, "%08qx ", ofs);
 
 	uint start = 0;
@@ -4347,6 +4347,7 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 		ofs++;
 	}
 	l += ht_snprintf(l, l_end - l, "|");
+	*l = 0;
 	return true;
 }
 
