@@ -33,7 +33,7 @@
 #define btmask_none			64
 
 int msgbox(int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...);
-int msgboxrect(Bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, Bounds *b, const char *format, ...);
+int msgboxrect(Bounds *b, int buttonmask, const char *title, bool modal, statictext_align align, const char *format, ...);
 
 #define errorbox(a...) msgbox(btmask_ok, "error", false, align_center, a)
 #define infobox(a...) msgbox(btmask_ok, "information", false, align_center, a)

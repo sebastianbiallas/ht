@@ -2860,8 +2860,13 @@ void ht_color_block::handlemsg(htmsg *msg)
 				clearmsg(msg);
 				return;
 			case K_Down:
-				if (color!=-1)
-					if (color+4<colors) color+=4; else color=-1;
+				if (color != -1) {
+					if (color+4 < colors) {
+						color += 4;
+					} else {
+						color = -1;
+					}
+				}
 				dirtyview();
 				clearmsg(msg);
 				return;
