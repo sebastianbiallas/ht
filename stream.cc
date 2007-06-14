@@ -86,7 +86,7 @@ void Stream::addEventListener(StreamEventListener *l, StreamEvent mask)
 */
 void Stream::checkAccess(IOAccessMode mask)
 {
-	if (mAccessMode & mask != mask) throw IOException(EACCES);
+	if ((mAccessMode & mask) != mask) throw IOException(EACCES);
 }
 
 /**

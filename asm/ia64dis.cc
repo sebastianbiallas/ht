@@ -156,30 +156,30 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 							| (((slot->data >> 22) & (0x7fff)) << 7);
 				slot->op[2].imm = signExtend(slot->op[2].imm, 22);
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = ((slot->data >> 20) & (0x3));
+				slot->op[3].reg = ((slot->data >> 20) & 0x3);
 				break;
 			case IA64_FORMAT_A6:
 			case IA64_FORMAT_A7:
 				slot->op[0].type = IA64_OPERAND_PREG;
-				slot->op[0].reg = ((slot->data >> 6) & (0x3f));
+				slot->op[0].reg = ((slot->data >> 6) & 0x3f);
 				slot->op[1].type = IA64_OPERAND_PREG;
-				slot->op[1].reg = ((slot->data >> 27) & (0x3f));
+				slot->op[1].reg = ((slot->data >> 27) & 0x3f);
 				slot->op[3].type = IA64_OPERAND_REG;
-				slot->op[3].reg = ((slot->data >> 13) & (0x7f));
+				slot->op[3].reg = ((slot->data >> 13) & 0x7f);
 				slot->op[4].type = IA64_OPERAND_REG;
-				slot->op[4].reg = ((slot->data >> 20) & (0x7f));
+				slot->op[4].reg = ((slot->data >> 20) & 0x7f);
 				break;
 			case IA64_FORMAT_A8:
 				slot->op[0].type = IA64_OPERAND_PREG;
-				slot->op[0].reg = ((slot->data >> 6) & (0x3f));
+				slot->op[0].reg = ((slot->data >> 6) & 0x3f);
 				slot->op[1].type = IA64_OPERAND_PREG;
-				slot->op[1].reg = ((slot->data >> 27) & (0x3f));
+				slot->op[1].reg = ((slot->data >> 27) & 0x3f);
 				slot->op[3].type = IA64_OPERAND_IMM;
-				slot->op[3].imm = (slot->data >> 13) & (0x7f)
+				slot->op[3].imm = ((slot->data >> 13) & 0x7f)
 							|(((slot->data >> 36) & (1)) << 7);
 				slot->op[3].imm = signExtend(slot->op[3].imm, 8);
 				slot->op[4].type = IA64_OPERAND_REG;
-				slot->op[4].reg = ((slot->data >> 20) & (0x7f));
+				slot->op[4].reg = ((slot->data >> 20) & 0x7f);
 				break;
 			case IA64_FORMAT_B1:
 			case IA64_FORMAT_B2:
@@ -339,7 +339,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				slot->op[0].type = IA64_OPERAND_AREG;
 				slot->op[0].reg = ((slot->data >> 20) & (0x7f));
 				slot->op[2].type = IA64_OPERAND_IMM;
-				slot->op[2].imm = (slot->data >> 13) & (0x7f)
+				slot->op[2].imm = ((slot->data >> 13) & 0x7f)
 							|(((slot->data >> 36) & (1)) << 7);
 				slot->op[2].imm = signExtend(slot->op[2].imm, 8);
 				break;
@@ -356,7 +356,7 @@ void IA64Disassembler::decodeSlot(int slot_nb)
 				slot->op[4].type = IA64_OPERAND_IMM;
 				slot->op[4].imm = (0);
 				slot->op[5].type = IA64_OPERAND_IMM;
-				slot->op[5].imm = (slot->data >> 13) & (0x7f)-slot->op[3].imm;
+				slot->op[5].imm = ((slot->data >> 13) & 0x7f)-slot->op[3].imm;
 				slot->op[6].type = IA64_OPERAND_IMM;
 				slot->op[6].imm = ((slot->data >> 27) & (0xf))<<3;
 				break;

@@ -19,8 +19,9 @@
  */
  
 #include <errno.h>
-#include <cstdlib>
-#include <cstring>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <memory>
 
 #include "cstream.h"

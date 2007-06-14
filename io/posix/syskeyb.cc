@@ -456,8 +456,8 @@ bool init_keyb()
 		int kc = curses_key_defs[i].keycode;
 #ifdef HAVE_TEXTMODE_X11
 		if (!Xdisplay) {
-			if (kc & 0x40000000) kc = kc & (~0x40000000) | 0x80000000;
-			if (kc & 0x20000000) kc = kc & (~0x20000000) | 0x80000000;
+			if (kc & 0x40000000) kc = (kc & ~0x40000000) | 0x80000000;
+			if (kc & 0x20000000) kc = (kc & ~0x20000000) | 0x80000000;
 		}
 #endif /* HAVE_TEXTMODE_X11 */
 		keyb_setkey(curses_key_defs[i].key, kc);

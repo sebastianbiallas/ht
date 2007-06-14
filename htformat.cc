@@ -2400,7 +2400,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					e = get_current_tag_size(&ts) ? s+ts : -1ULL;
 					int r;
 					if (edit()) r = cursormicro_backward(); else r = cursor_left();
-					if (s != -1ULL & r) {
+					if (s != -1ULL && r) {
 						if (cursor_tag_class == tag_class_edit) {
 							pselect_add(s, cursor_tag_offset);
 						} else if (cursor_tag_class == tag_class_sel && e != -1ULL) {

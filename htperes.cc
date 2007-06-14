@@ -100,11 +100,11 @@ static void read_resource_dir(void *node, int ofs, int level)
 		if (entry.offset_to_directory & 0x80000000) {
 			bool hasname = entry.name & 0x80000000;
 			PE_RESOURCE_DIRECTORY subdir;
-			peresource_file->seek(peresource_dir_ofs+entry.offset_to_directory & 0x7fffffff);
+			peresource_file->seek(peresource_dir_ofs + (entry.offset_to_directory & 0x7fffffff));
 			peresource_file->read(&subdir, sizeof subdir);
 			createHostStruct(&subdir, PE_RESOURCE_DIRECTORY_struct, little_endian);
 			if (hasname) {
-				peresource_file->seek(peresource_dir_ofs+entry.name & 0x7fffffff);
+				peresource_file->seek(peresource_dir_ofs + (entry.name & 0x7fffffff));
 				char *name = peresource_file->readstrw();
 				ht_snprintf(peresource_string, sizeof peresource_string, "%s [%d]", name, subdir.name_count+subdir.id_count);
 				free(name);

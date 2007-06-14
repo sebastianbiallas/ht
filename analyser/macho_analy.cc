@@ -150,7 +150,7 @@ void MachoAnalyser::beginAnalysis()
 				MACHO_SYMTAB_NLIST nlist;
 				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
 				createHostStruct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
-				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE == MACHO_SYMBOL_TYPE_N_SECT)) {
+				if (nlist.strx && ((nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT)) {
 					char macho_buffer[1024];
 					file->seek(s->stroff+nlist.strx);
 					char *label = file->fgetstrz();

@@ -470,7 +470,7 @@ void ht_view::handlemsg(htmsg *msg)
 		return;
 	case msg_dirtyview:
 		dirtyview();
-		if (msg->type & mt_broadcast == 0) clearmsg(msg);
+		if ((msg->type & mt_broadcast) == 0) clearmsg(msg);
 		return;
 	case msg_config_changed:
 		config_changed();
