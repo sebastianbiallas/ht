@@ -1279,15 +1279,15 @@ void ht_logviewer::handlemsg(htmsg *msg)
 	switch (msg->msg) {
 		case msg_get_scrollinfo:
 			switch (msg->data1.integer) {
-				case gsi_vscrollbar: {
-					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
-					if (!get_vscrollbar_pos(&p->pstart, &p->psize)) {
-						p->pstart = 0;
-						p->psize = 100;
-					}
-					clearmsg(msg);
-					return;
+			case gsi_vscrollbar: {
+				gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
+				if (!get_vscrollbar_pos(&p->pstart, &p->psize)) {
+					p->pstart = 0;
+					p->psize = 100;
 				}
+				clearmsg(msg);
+				return;
+			}
 			}
 			break;
 		case msg_log_changed: {
@@ -1299,7 +1299,7 @@ void ht_logviewer::handlemsg(htmsg *msg)
 		}
 		case msg_keypressed:
 			switch (msg->data1.integer) {
-				case K_Up:
+			case K_Up:
 				cursor_up(1);
 				update();
 				clearmsg(msg);
@@ -1575,7 +1575,7 @@ bool ht_app::accept_close_all_windows()
 
 ht_window *ht_app::create_window_log()
 {
-	ht_window *w=get_window_by_type(AWT_LOG);
+	ht_window *w = get_window_by_type(AWT_LOG);
 	if (w) {
 		focus(w);
 	} else {
