@@ -293,40 +293,40 @@ int main(int argc, char *argv[])
 	int error_info;
 	if (!load_systemconfig(&load, &error_info)) {
 		switch (load) {
-			case LS_OK:
-				break;
-			case LS_ERROR_NOT_FOUND:
-				LOG_EX(LOG_WARN, "couldn't load configuration file, using defaults");
-				break;
-			case LS_ERROR_READ:
-				LOG_EX(LOG_ERROR, "couldn't read configuration file...");
-				infobox("couldn't read configuration file...");
-				break;
-			case LS_ERROR_MAGIC:
-			case LS_ERROR_FORMAT:
-				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "invalid", "magic");
-				systemconfig_magic = true;
-				break;
-			case LS_ERROR_VERSION:
-				LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "version");
-				if (error_info < ht_systemconfig_fileversion) {
-					systemconfig_version = -1;
-				} else {
-					systemconfig_version = 1;
-				}
-				break;
-			case LS_ERROR_CORRUPTED:
-//				done();
-				delete screen;
-				printf("\n\n\nfatal error loading configuration file (%s)", systemconfig_file);
-				if (error_info) {
-					printf(":\nerror near line %d\n", error_info);
-				} else {
-					printf(".\n");
-				}
-				printf("please try to delete it.\n");
-				return 1;
-			default: {assert(0);}
+		case LS_OK:
+			break;
+		case LS_ERROR_NOT_FOUND:
+			LOG_EX(LOG_WARN, "couldn't load configuration file, using defaults");
+			break;
+		case LS_ERROR_READ:
+			LOG_EX(LOG_ERROR, "couldn't read configuration file...");
+			infobox("couldn't read configuration file...");
+			break;
+		case LS_ERROR_MAGIC:
+		case LS_ERROR_FORMAT:
+			LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "invalid", "magic");
+			systemconfig_magic = true;
+			break;
+		case LS_ERROR_VERSION:
+			LOG_EX(LOG_ERROR, "%s %s %s...", "current configuration file ("SYSTEM_CONFIG_FILE_NAME") has", "wrong", "version");
+			if (error_info < ht_systemconfig_fileversion) {
+				systemconfig_version = -1;
+			} else {
+				systemconfig_version = 1;
+			}
+			break;
+		case LS_ERROR_CORRUPTED:
+//			done();
+			delete screen;
+			printf("\n\n\nfatal error loading configuration file (%s)", systemconfig_file);
+			if (error_info) {
+				printf(":\nerror near line %d\n", error_info);
+			} else {
+				printf(".\n");
+			}
+			printf("please try to delete it.\n");
+			return 1;
+		default: {assert(0);}
 		}
 	}
 
@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	loadstore_result save=LS_OK;
+	loadstore_result save = LS_OK;
 	bool save_config = true;
 
 	if (systemconfig_magic) {
