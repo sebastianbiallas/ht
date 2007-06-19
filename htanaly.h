@@ -207,6 +207,7 @@ public:
 	virtual	bool get_current_offset(FileOfs *ofs);
 	virtual	int  get_pindicator_str(char *buf, int max_len);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);
+	virtual	void getminbounds(int *width, int *height);
 		bool gotoAddress(Address *a, ht_view *source_object);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	bool idle();
@@ -225,6 +226,15 @@ public:
 	virtual	bool qword_to_pos(uint64 q, viewer_pos *p);
 	virtual	bool func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual	bool symbol_handler(eval_scalar *result, char *name);
+};
+
+
+/*
+ *	This groups the analyser view and the infoline above
+ */
+class ht_aviewer_group: public ht_group {
+public:
+	void init(Bounds *b, const char *desc);
 };
 
 #endif

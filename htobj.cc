@@ -883,7 +883,7 @@ void ht_group::getdata(ObjectStream &s)
 
 ht_view *ht_group::getselected()
 {
-	if (current) return current->getselected(); else return 0;
+	if (current) return current->getselected(); else return NULL;
 }
 
 ht_view *ht_group::getfirstchild()

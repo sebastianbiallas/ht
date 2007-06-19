@@ -462,7 +462,7 @@ void ht_format_viewer::done()
 {
 	delete last_search_request;
 
-	ht_view::done();
+	ht_viewer::done();
 }
 
 bool ht_format_viewer::pos_to_offset(viewer_pos pos, FileOfs *ofs)
@@ -734,16 +734,16 @@ bool ht_format_viewer::qword_to_pos(uint64 q, viewer_pos *pos)
 bool ht_format_viewer::show_search_result(ht_search_result *r)
 {
 	switch (r->search_class) {
-		case SC_PHYSICAL: {
-			ht_physical_search_result *s=(ht_physical_search_result*)r;
-			if (!goto_offset(s->offset, this)) return false;
-			pselect_set(s->offset, s->offset+s->size);
-			return true;
-		}
-		case SC_VISUAL: {
-			ht_visual_search_result *s=(ht_visual_search_result*)r;
-			return goto_pos(s->pos, this);
-		}
+	case SC_PHYSICAL: {
+		ht_physical_search_result *s = (ht_physical_search_result*)r;
+		if (!goto_offset(s->offset, this)) return false;
+		pselect_set(s->offset, s->offset + s->size);
+		return true;
+	}
+	case SC_VISUAL: {
+		ht_visual_search_result *s = (ht_visual_search_result*)r;
+		return goto_pos(s->pos, this);
+	}
 	}
 	return false;
 }
@@ -870,8 +870,8 @@ void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, 
 	tagpal.size = 0;
 	ht_format_viewer::init(b, desc, caps, file, format_group);
 	VIEW_DEBUG_NAME("ht_uformat_view");
-	first_sub=0;
-	last_sub=0;
+	first_sub = 0;
+	last_sub = 0;
 	clear_viewer_pos(&top);
 	clear_viewer_pos(&cursor);
 	xscroll = 0;
@@ -1030,7 +1030,7 @@ void ht_uformat_viewer::complete_init()
 		uf_initialized = true;
 		return;
 	}
-/*  initialize top_*  */
+	/*  initialize top_*  */
 	clear_viewer_pos(&top);
 	top.sub = first_sub;
 	top.sub->first_line_id(&top.line_id);
@@ -1368,8 +1368,8 @@ int ht_uformat_viewer::cursor_end()
 	int c = tag_count_selectable_tags_in_group(cursor_line, cursor.tag_group);
 	cursor.tag_idx = c-1;
 	if (edit()) {
-		char *e=tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
-		if (e) cursor_tag_micropos=tag_get_microsize(e)-1;
+		char *e = tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
+		if (e) cursor_tag_micropos = tag_get_microsize(e) - 1;
 	}
 	update_visual_info();
 	update_misc_info();
@@ -1418,7 +1418,7 @@ int ht_uformat_viewer::cursormicroedit_forward()
 		int c=tag_count_selectable_tags_in_group(c_line, p.tag_group);
 		while (p.tag_idx<c) {
 			char *t=tag_get_selectable_tag(c_line, p.tag_idx, p.tag_group);
-			if (t && (tag_get_class(t)==tag_class_edit)) {
+			if (t && (tag_get_class(t) == tag_class_edit)) {
 				if (cursor_found) {
 					cursor_tag_micropos=0;
 					set_cursor(p);
@@ -1427,12 +1427,13 @@ int ht_uformat_viewer::cursormicroedit_forward()
 					update_visual_info();
 					return 1;
 				} else if (tag_get_offset(t) == cursor_tag_offset) {
-					if ( ( (((byte*)t)[1] == HT_TAG_EDIT_BIT) &&
-					( ((ht_tag_edit_bit*)t)->bitidx == cursor_tag_bitidx) ) ||
-					(((byte*)t)[1] != HT_TAG_EDIT_BIT)) {
+					byte *tb = (byte*)t;
+					if ( ( tb[1] == HT_TAG_EDIT_BIT &&
+					 ((ht_tag_edit_bit*)t)->bitidx == cursor_tag_bitidx ) 
+					|| tb[1] != HT_TAG_EDIT_BIT) {
 						cursor_found = true;
-						char *t=tag_get_selectable_tag(c_line, p.tag_idx, p.tag_group);
-						int s=tag_get_microsize(t);
+						char *t = tag_get_selectable_tag(c_line, p.tag_idx, p.tag_group);
+						int s = tag_get_microsize(t);
 						if (cursor_tag_micropos+1 < s) {
 							cursor_tag_micropos++;
 							set_cursor(p);
@@ -1446,21 +1447,23 @@ int ht_uformat_viewer::cursormicroedit_forward()
 			}
 			p.tag_idx++;
 		}
-		p.tag_idx=0;
+		p.tag_idx = 0;
 		if (!next_line(&p, 1)) break;
 	}
-	if (cursor_right()) cursor_tag_micropos=0;
+	if (cursor_right()) cursor_tag_micropos = 0;
 	return 0;
 }
 
 int ht_uformat_viewer::cursormicro_forward()
 {
 	cursorline_get();
-	char *t=tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
-	int s=tag_get_microsize(t);
-	if (cursor_tag_micropos+1>=s) {
+	char *t = tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
+	int s = tag_get_microsize(t);
+	if (cursor_tag_micropos+1 >= s) {
 		if (cursor_right()) cursor_tag_micropos=0; else return 0;
-	} else cursor_tag_micropos++;
+	} else {
+		cursor_tag_micropos++;
+	}
 	return 1;
 }
 
@@ -1473,7 +1476,9 @@ int ht_uformat_viewer::cursormicro_backward()
 			cursorline_get();
 			char *t=tag_get_selectable_tag(cursor_line, cursor.tag_idx, cursor.tag_group);
 			cursor_tag_micropos=tag_get_microsize(t)-1;
-		} else return 0;
+		} else {
+			return 0;
+		}
 	}
 	return 1;
 }
@@ -1499,7 +1504,7 @@ restart:
 		} else return;
 		if (!p.sub->getline(line, sizeof line, p.line_id)) return;
 	}
-	for (int y=0; y<size.h; y++) {
+	for (int y=0; y < size.h; y++) {
 		if (y == cursor_ypos) sp = p;
 		if (!p.sub->getline(line, sizeof line, p.line_id)) break;
 /**/
@@ -2787,11 +2792,11 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 
 void ht_uformat_viewer::insertsub(ht_sub *sub)
 {
-	if (last_sub) last_sub->next=sub;
-	sub->uformat_viewer=this;
-	sub->prev=last_sub;
-	last_sub=sub;
-	if (!first_sub) first_sub=sub;
+	if (last_sub) last_sub->next = sub;
+	sub->uformat_viewer = this;
+	sub->prev = last_sub;
+	last_sub = sub;
+	if (!first_sub) first_sub = sub;
 }
 
 bool ht_uformat_viewer::goto_offset(FileOfs offset, bool save_vstate)

@@ -1037,7 +1037,7 @@ void	Analyser::dataAccess(Address *Addr, taccess access)
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
-				char string1[256], string2[31];
+				char string1[128], string2[128];
 				str->render_string(string2, sizeof string2);
 				ht_snprintf(string1, sizeof string1, "%s_%s", str->name(), string2);
 				make_valid_name(string2, string1);

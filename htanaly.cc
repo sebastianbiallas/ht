@@ -913,7 +913,7 @@ void ht_aviewer::dataStringDialog()
 		if (bz > 2) {
 			analy_string *str = string_test(buffer, bz);
 			if (str) {
-				char string1[256], string2[31];
+				char string1[128], string2[128];
 				str->render_string(string2, sizeof string2);
 				ht_snprintf(string1, sizeof string1, "%s_%s", str->name(), string2);
 				make_valid_name(string2, string1);
@@ -1030,6 +1030,12 @@ bool ht_aviewer::get_hscrollbar_pos(int *pstart, int *psize)
 		}*/
 	}
 	return false;
+}
+
+void ht_aviewer::getminbounds(int *width, int *height)
+{
+	*width = 25;
+	*height = 4;
 }
 
 int ht_aviewer::get_pindicator_str(char *buf, int max_len)
@@ -1271,7 +1277,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		}
 		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 		if (analy->validAddress(addr, scvalid)) {
-			char n[255];
+			char n[256];
 			char str[1024];
 			Symbol *l = analy->getSymbolByAddress(addr);
 			if (l) ht_strlcpy(n, l->name, sizeof n); else n[0] = 0;
@@ -1293,9 +1299,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 					} else {
 						global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
 						if (confirmbox("'%s' is an invalid label name.\nMake valid?", n)==button_yes) {
-							char n2[255];
-							make_valid_name(n2, n);
-							strcpy(n, n2);
+							make_valid_name(n, n);
 						}
 					}
 				} else {
@@ -2144,4 +2148,8 @@ void	ht_analy_sub::setAnalyser(Analyser *Analy)
 	output->invalidateCache();
 }
 
-
+void ht_aviewer_group::init(Bounds *b, const char *desc)
+{
+	ht_group::init(b, VO_RESIZE, desc);
+	growmode = MK_GM(GMH_FIT, GMV_FIT);
+}

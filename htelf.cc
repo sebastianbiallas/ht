@@ -165,51 +165,51 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 		elf_shared->pheaders.count = elf_shared->header32.e_phnum;
 //		if (!elf_shared->pheaders.count) throw MsgException("Zero count in program section headers");
 		if (!elf_shared->pheaders.count) {
-		elf_shared->pheaders.pheaders32 = NULL;
+			elf_shared->pheaders.pheaders32 = NULL;
 		} else {
-		elf_shared->pheaders.pheaders32 = ht_malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
-		file->seek(header_ofs + elf_shared->header32.e_phoff);
-		file->readx(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
-		for (uint i=0; i<elf_shared->pheaders.count; i++) {
-			createHostStruct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
-		}
-		// if file is relocatable, relocate it
-		if (elf_shared->header32.e_type == ELF_ET_REL) {
-			/* create a fake section for undefined symbols */
-			try {
-				fake_undefined_symbols32();
-			} catch (const Exception &x) {
-				errorbox("error while faking undefined ELF symbols: %y", &x);
+			elf_shared->pheaders.pheaders32 = ht_malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
+			file->seek(header_ofs + elf_shared->header32.e_phoff);
+			file->readx(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
+			for (uint i=0; i<elf_shared->pheaders.count; i++) {
+				createHostStruct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
+			// if file is relocatable, relocate it
+			if (elf_shared->header32.e_type == ELF_ET_REL) {
+				/* create a fake section for undefined symbols */
+				try {
+					fake_undefined_symbols32();
+				} catch (const Exception &x) {
+					errorbox("error while faking undefined ELF symbols: %y", &x);
+				}
 
-			/* create streamfile layer for relocations */
-			try {
-				auto_relocate32();
-			} catch (const Exception &x) {
-				errorbox("error while auto-relocating ELF symbols: %y", &x);
+				/* create streamfile layer for relocations */
+				try {
+					auto_relocate32();
+				} catch (const Exception &x) {
+					errorbox("error while auto-relocating ELF symbols: %y", &x);
+				}
 			}
-		}
 		}
 		break;
 	}
 	case ELFCLASS64: {
-			file->readx(&elf_shared->header64, sizeof elf_shared->header64);
-			createHostStruct(&elf_shared->header64, ELF_HEADER64_struct, elf_shared->byte_order);
+		file->readx(&elf_shared->header64, sizeof elf_shared->header64);
+		createHostStruct(&elf_shared->header64, ELF_HEADER64_struct, elf_shared->byte_order);
 
-			/* read section headers */
-			elf_shared->sheaders.count=elf_shared->header64.e_shnum;
-			if (!elf_shared->sheaders.count) throw MsgException("Zero count for section headers");
-			elf_shared->sheaders.sheaders64 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-			file->seek(header_ofs+elf_shared->header64.e_shoff);
-			file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-			for (uint i=0; i<elf_shared->sheaders.count; i++) {
-				ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
-				createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
-			}
+		/* read section headers */
+		elf_shared->sheaders.count=elf_shared->header64.e_shnum;
+		if (!elf_shared->sheaders.count) throw MsgException("Zero count for section headers");
+		elf_shared->sheaders.sheaders64 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
+		file->seek(header_ofs+elf_shared->header64.e_shoff);
+		file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
+		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+			ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
+			createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
+		}
 
-			/* read program headers */
-			elf_shared->pheaders.count = elf_shared->header64.e_phnum;
-//			if (!elf_shared->pheaders.count) throw MsgException("Zero count in program section headers");
+		/* read program headers */
+		elf_shared->pheaders.count = elf_shared->header64.e_phnum;
+//		if (!elf_shared->pheaders.count) throw MsgException("Zero count in program section headers");
 		if (!elf_shared->pheaders.count) {
 			elf_shared->pheaders.pheaders64 = NULL;
 		} else {
