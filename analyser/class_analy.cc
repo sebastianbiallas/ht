@@ -49,7 +49,7 @@ void	ClassAnalyser::init(ht_class_shared_data *Class_shared, File *File)
 
 	initialized->done();
 	delete initialized;
-	initialized = class_shared->initialized;
+	initialized = class_shared->initialized->clone();
 	/////////////
 
 	setLocationTreeOptimizeThreshold(100);
@@ -180,7 +180,7 @@ Address *ClassAnalyser::createAddress()
  */
 Address *ClassAnalyser::createAddress32(ClassAddress addr)
 {
-	return new AddressFlat32((uint32)addr);
+	return new AddressFlat32(uint32(addr));
 }
 
 /*
@@ -282,14 +282,6 @@ Address *ClassAnalyser::nextValid(Address *Addr)
 /*
  *
  */
-void ClassAnalyser::store(ObjectStream &st) const
-{
-	Analyser::store(st);
-}
-
-/*
- *
- */
 int	ClassAnalyser::queryConfig(int mode)
 {
 	switch (mode) {
@@ -299,6 +291,15 @@ int	ClassAnalyser::queryConfig(int mode)
 			return true;
 		default:
 			return 0;
+	}
+}
+
+void	ClassAnalyser::reinit(ht_class_shared_data *cl_shared, File *f)
+{
+	class_shared = cl_shared;
+	file = f;
+	if (disasm->getObjectID() == ATOM_DISASM_JAVA) {
+		((javadis *)disasm)->initialize(class_token_func, class_shared);
 	}
 }
 
@@ -323,12 +324,11 @@ bool ClassAnalyser::validAddress(Address *Addr, tsectype action)
 {
 	if (!Addr->isValid() || !class_shared->valid->contains(Addr)) return false;
 	switch (action) {
-		case scinitialized:
-		case sccode:
-			return class_shared->initialized->contains(Addr);
-		default:
-
-			return true;
+	case scinitialized:
+	case sccode:
+		return class_shared->initialized->contains(Addr);
+	default:
+		return true;
 	}
 }
 

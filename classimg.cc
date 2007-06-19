@@ -102,8 +102,8 @@ void ht_class_aviewer::init(Bounds *b, const char *desc, int caps, File *File, h
 
 void ht_class_aviewer::setAnalyser(Analyser *a)
 {
-	((ClassAnalyser *)a)->class_shared = class_shared;
-	((ClassAnalyser *)a)->file = file;
+	((ClassAnalyser *)a)->reinit(class_shared, file);
+	
 	analy = a;
 	analy_sub->setAnalyser(a);
 }

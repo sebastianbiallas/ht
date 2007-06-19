@@ -70,6 +70,7 @@ public:
 	javadis(BuildCtorArg&a): Disassembler(a) {};
 	javadis(java_token_func token_func, void *context);
 
+	void initialize(java_token_func token_func, void *context);
 	/* overwritten */
 	virtual dis_insn *decode(byte *code, int maxlen, CPU_ADDR addr);
 	virtual dis_insn *duplicateInsn(dis_insn *disasm_insn);

@@ -1468,12 +1468,12 @@ void ht_aviewer::handlemsg(htmsg *msg)
 		return;
 	}*/
 	case msg_get_analyser: {
-		msg->msg=msg_retval;
-		msg->data1.ptr=analy;
+		msg->msg = msg_retval;
+		msg->data1.ptr = analy;
 		return;
 	}
 	case msg_set_analyser: {
-		Analyser *a=(Analyser*)msg->data1.ptr;
+		Analyser *a = (Analyser*)msg->data1.ptr;
 		if (analy) {
 			analy->done();
 			delete analy;

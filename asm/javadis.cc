@@ -32,6 +32,11 @@
 
 javadis::javadis(java_token_func tf, void *c)
 {
+	initialize(tf, c);
+}
+
+void javadis::initialize(java_token_func tf, void *c)
+{
 	token_func = tf;
 	context = c;
 }
@@ -84,70 +89,70 @@ void javadis::decode_op(int optype, bool wideopc, java_insn_op *op)
 {
 	bool widesize = wideopc || (JOPC_SIZE(optype) == JOPC_SIZE_WIDE);
 	switch (JOPC_TYPE(optype)) {
-		case JOPC_TYPE_BYTE:
-			op->type = JAVA_OPTYPE_IMM;
-			op->size = 1;
-			op->imm = getbyte();
-			break;
-		case JOPC_TYPE_CHAR:
-			op->type = JAVA_OPTYPE_IMM;
-			op->size = 1;
-			op->imm = sint8(getbyte());
-			break;
-		case JOPC_TYPE_SHORT:
-			op->type = JAVA_OPTYPE_IMM;
+	case JOPC_TYPE_BYTE:
+		op->type = JAVA_OPTYPE_IMM;
+		op->size = 1;
+		op->imm = getbyte();
+		break;
+	case JOPC_TYPE_CHAR:
+		op->type = JAVA_OPTYPE_IMM;
+		op->size = 1;
+		op->imm = sint8(getbyte());
+		break;
+	case JOPC_TYPE_SHORT:
+		op->type = JAVA_OPTYPE_IMM;
+		op->size = 2;
+		op->imm = sint16(getword());
+		break;
+	case JOPC_TYPE_SIMM:
+		op->type = JAVA_OPTYPE_IMM;
+		if (widesize) {
 			op->size = 2;
 			op->imm = sint16(getword());
-			break;
-		case JOPC_TYPE_SIMM:
-			op->type = JAVA_OPTYPE_IMM;
-			if (widesize) {
-				op->size = 2;
-				op->imm = sint16(getword());
-			} else {
-				op->size = 1;
-				op->imm = sint8(getbyte());
-			}
-			break;
-		case JOPC_TYPE_CONST:
-			op->type = JAVA_OPTYPE_CONST;
-			if (widesize) {
-				op->size = 2;
-				op->imm = getword();
-			} else {
-				op->size = 1;
-				op->imm = getbyte();
-			}
-			break;
-		case JOPC_TYPE_LOCAL:
-			op->type = JAVA_OPTYPE_IMM;
-			if (widesize) {
-				op->size = 2;
-				op->imm = getword();
-			} else {
-				op->size = 1;
-				op->imm = getbyte();
-			}
-			break;
-		case JOPC_TYPE_LABEL:
-			op->type = JAVA_OPTYPE_LABEL;
-			if (widesize) {
-				op->size = 4;
-				op->label = addr - 2;
-				op->label += sint32(getdword());
-			} else {
-				op->size = 2;
-				op->label = addr - 1;
-				op->label += sint16(getword());
-			}
-			break;
-		case JOPC_TYPE_ATYPE:
-			op->type = JAVA_OPTYPE_ATYPE;
+		} else {
+			op->size = 1;
+			op->imm = sint8(getbyte());
+		}
+		break;
+	case JOPC_TYPE_CONST:
+		op->type = JAVA_OPTYPE_CONST;
+		if (widesize) {
+			op->size = 2;
+			op->imm = getword();
+		} else {
 			op->size = 1;
 			op->imm = getbyte();
-			break;
-		default:
-			op->type = JAVA_OPTYPE_EMPTY;
+		}
+		break;
+	case JOPC_TYPE_LOCAL:
+		op->type = JAVA_OPTYPE_IMM;
+		if (widesize) {
+			op->size = 2;
+			op->imm = getword();
+		} else {
+			op->size = 1;
+			op->imm = getbyte();
+		}
+		break;
+	case JOPC_TYPE_LABEL:
+		op->type = JAVA_OPTYPE_LABEL;
+		if (widesize) {
+			op->size = 4;
+			op->label = addr - 2;
+			op->label += sint32(getdword());
+		} else {
+			op->size = 2;
+			op->label = addr - 1;
+			op->label += sint16(getword());
+		}
+		break;
+	case JOPC_TYPE_ATYPE:
+		op->type = JAVA_OPTYPE_ATYPE;
+		op->size = 1;
+		op->imm = getbyte();
+		break;
+	default:
+		op->type = JAVA_OPTYPE_EMPTY;
 	}
 }
 

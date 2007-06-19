@@ -659,7 +659,7 @@ static ht_view *class_view(Bounds *b, File *file, ht_format_group *group)
 			s->add_mask("<none>");
 			g2->insertsub(s);
 		}
-		for (i=0; i<clazz->attribs_count; i++) {
+		for (i = 0; i < clazz->attribs_count; i++) {
 			g3 = new ht_group_sub();
 			g3->init(file);
 			attrib_view(g3, file, &idx, clazz, clazz->attribs[i]);
@@ -716,8 +716,8 @@ static ht_view *class_init(Bounds *b, File *file, ht_format_group *group)
 
 	file->seek(0);
 	file->read(magic, 4);
-	if ((magic[0] == 0xca) && (magic[1] == 0xfe)
-	&& (magic[2] == 0xba) && (magic[3] == 0xbe)) {
+	if (magic[0] == 0xca && magic[1] == 0xfe
+	 && magic[2] == 0xba && magic[3] == 0xbe) {
 		file->seek(0);
 		void *shared_data = (void*)class_read(file);
 		if (!shared_data) return NULL;

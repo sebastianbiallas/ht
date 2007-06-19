@@ -46,12 +46,12 @@ public:
 	virtual	void 		initUnasm();
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
-	virtual	void		store(ObjectStream &f) const;
 	virtual	int		queryConfig(int mode);
 	virtual	bool 		validAddress(Address *Addr, tsectype action);
 	virtual	Address		*fileofsToAddress(FileOfs fileofs);
 	virtual	FileOfs		addressToFileofs(Address *Addr);
 	virtual	const char	*getSegmentNameByAddress(Address *Addr);
+		void		reinit(ht_class_shared_data *class_shared, File *file);
 };
 
 #endif

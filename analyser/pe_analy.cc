@@ -79,10 +79,10 @@ void	PEAnalyser::done()
 /*
  *
  */
-void	PEAnalyser::reinit(ht_pe_shared_data *Pe_shared, File *File)
+void	PEAnalyser::reinit(ht_pe_shared_data *Pe_shared, File *f)
 {
 	pe_shared = Pe_shared;
-	file = File;
+	file = f;
 	if (disasm->getObjectID() == ATOM_DISASM_IL) {
 		((ILDisassembler *)disasm)->initialize(string_func, token_func, pe_shared);
 	}

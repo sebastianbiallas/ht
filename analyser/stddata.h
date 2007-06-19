@@ -38,6 +38,7 @@ public:
 	virtual	void		load(ObjectStream &s);
 	virtual	void 		done();
 	virtual	ObjectID	getObjectID() const;
+	virtual Area *		clone() const;
 
 		void		add(Object *Start, Object *End);
 		bool		contains(Object *V);
