@@ -3,6 +3,7 @@
 
 version 2.0.8:
 	- Loading Analyser for java class files was broken
+	- Fixed some cosmetic resizing bugs
 
 version 2.0.7:
 	- Added a missing #include found by gcc 4.3

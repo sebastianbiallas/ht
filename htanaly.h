@@ -228,13 +228,4 @@ public:
 	virtual	bool symbol_handler(eval_scalar *result, char *name);
 };
 
-
-/*
- *	This groups the analyser view and the infoline above
- */
-class ht_aviewer_group: public ht_group {
-public:
-	void init(Bounds *b, const char *desc);
-};
-
 #endif

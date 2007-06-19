@@ -2147,9 +2147,3 @@ void	ht_analy_sub::setAnalyser(Analyser *Analy)
 	output->analy = Analy;
 	output->invalidateCache();
 }
-
-void ht_aviewer_group::init(Bounds *b, const char *desc)
-{
-	ht_group::init(b, VO_RESIZE, desc);
-	growmode = MK_GM(GMH_FIT, GMV_FIT);
-}

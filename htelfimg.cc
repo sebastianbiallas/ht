@@ -40,8 +40,8 @@ static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 	p->init(elf_shared, file);
 
 	Bounds c = *b;
-	ht_aviewer_group *g = new ht_aviewer_group();
-	g->init(&c, DESC_ELF_IMAGE"-g");
+	ht_group *g = new ht_group();
+	g->init(&c, VO_RESIZE, DESC_ELF_IMAGE"-g");
 	AnalyInfoline *head;
 
 	c.y += 2;

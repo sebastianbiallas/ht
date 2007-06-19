@@ -2471,6 +2471,7 @@ void ht_app::handlemsg(htmsg *msg)
 						return;
 					}
 					break;
+/*					
 				case K_Meta_R: {
 					const char *n = "ht.reg";
 					LocalFile f(n, IOAM_WRITE, FOM_CREATE);
@@ -2485,6 +2486,7 @@ void ht_app::handlemsg(htmsg *msg)
 					clearmsg(msg);
 					return;
 				}
+*/
 #if 0
 				/* FIXME: experimental */
 				case K_Control_F9:
