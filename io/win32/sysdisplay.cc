@@ -212,14 +212,14 @@ bool Win32SystemDisplay::initConsole()
 void Win32SystemDisplay::fill(int x, int y, int w, int h, vcp color, char chr, Codepage codepage)
 {
 	uint rawchar = mapCharToSystemCP(chr, codepage);
-	for (int i=0; i<h; i++) {
+	for (int i=0; i < h; i++) {
 		if (y+i >= this->h) break;
-		if (y+i < 0) break;
+		if (y+i < 0) continue;
 
-		int dest = x+(y+i)*this->w;
-		for (int j=0; j<w; j++) {
+		int dest = x + (y+i)*this->w;
+		for (int j=0; j < w; j++) {
+			if (x+j >= this->w) break;
 			if (x+j >= 0) putChar(dest, rawchar, color);
-			if (x+j >= this->w-1) break;
 			dest++;
 		}
 	}
@@ -228,9 +228,9 @@ void Win32SystemDisplay::fill(int x, int y, int w, int h, vcp color, char chr, C
 int Win32SystemDisplay::nprint(int x, int y, vcp color, const char *str, int maxstrlen, Codepage codepage)
 {
 	int n = 0;
-	int dest = x+y*this->w;
+	int dest = x + y*w;
 	while (*str && n < maxstrlen && x+n < w) {
-		putChar(dest, mapCharToSystemCP(*str, codepage), color);
+		if (x+n >= 0) putChar(dest, mapCharToSystemCP(*str, codepage), color);
 		dest++;
 		str++;
 		n++;

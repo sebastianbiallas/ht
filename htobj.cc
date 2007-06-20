@@ -1453,11 +1453,16 @@ void ht_frame::draw()
 	}
 
 	vcp c = getcurcol_normal();
-/* "ÚÄÄ...ÄÄ¿" */
+
+	/* "/...\" */
 	buf->printChar(0, 0, c, cornerul, CP_GRAPHICAL);
 	for (int i=1; i < size.w-1; i++) buf->printChar(i, 0, c, lineh, CP_GRAPHICAL);
+	if (size.h == 22) {
+		int a=1;
+	}
 	buf->printChar(0+size.w-1, 0, c, cornerur, CP_GRAPHICAL);
-/* "ÀÄÄ...ÄÄÙ" */
+
+	/* "\.../" */
 	buf->printChar(0, size.h-1, c, cornerll, CP_GRAPHICAL);
 	for (int i=1; i < size.w-1; i++) buf->printChar(i, size.h-1, c, lineh, CP_GRAPHICAL);
 /*	if (style & FS_RESIZE) {
@@ -1465,35 +1470,39 @@ void ht_frame::draw()
 	} else {*/
 		buf->printChar(size.w-1, size.h-1, c, cornerlr, CP_GRAPHICAL);
 //     }
-/* "³", "³" */
+
+	/* "|", "|" */
 	for (int i=1; i < size.h-1; i++) {
 		buf->printChar(0, i, c, linev, CP_GRAPHICAL);
 		buf->printChar(size.w-1, i, c, linev, CP_GRAPHICAL);
 	}
-/* "[x]" */
+
+	/* "[x]" */
 	if (style & FS_KILLER) {
 		buf->print(2, 0, c, "[ ]");
 		buf->printChar(3, 0, getcurcol_killer(), GC_FILLED_QUAD, CP_GRAPHICAL);
 	}
-/* e.g. "1" */
+
+	/* e.g. "1" */
 	int ns=0;
 	if (style & FS_NUMBER) {
-		int l=number;
+		int l = number;
 		do {
-			l=l/10;
+			l = l/10;
 			ns++;
 		} while (l);
 		buf->printf(size.w-4-ns, 0, c, CP_DEVICE, "%d", number);
-		ns+=4;
+		ns += 4;
 	}
-/* <title> */
+
+	/* <title> */
 	const char *d;
 	switch (framestate) {
 	case FST_MOVE:
-		d = (char*)((style & FS_RESIZE) ? "(moving) - hit space to resize" : "(moving)");
+		d = (style & FS_RESIZE) ? "(moving) - hit space to resize" : "(moving)";
 		break;
 	case FST_RESIZE:
-		d = (char*)((style & FS_MOVE) ? "(resizing) - hit space to move" : "(resizing)");
+		d = (style & FS_MOVE) ? "(resizing) - hit space to move" : "(resizing)";
 		break;
 	default:
 		d = desc;
@@ -1505,8 +1514,10 @@ void ht_frame::draw()
 		if (l > size.w-(5+ks+ns)) {
 			k = l-(size.w-(6+ks+ns+2));
 			if (size.w > 6+ks+ns+2) {
-				d+=k;
-			} else d="";
+				d += k;
+			} else {
+				d = "";
+			}
 			buf->printf(2+ks, 0, c, CP_DEVICE, " ...%s ", d);
 		} else {
 			buf->printf((size.w-l-2)/2, 0, c, CP_DEVICE, " %s ", d);
