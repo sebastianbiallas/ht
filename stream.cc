@@ -787,6 +787,9 @@ char *File::fgetstrz()
 				break;
 			}
 		}
+		if (s < 64) {
+			break;
+		}
 	}
 	/* read string */
 	char *str = ht_malloc(z);

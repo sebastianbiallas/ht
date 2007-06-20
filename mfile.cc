@@ -142,7 +142,7 @@ void FileModificator::checkSanity()
 		if (x->size < 1)
 			throw MsgfException("mfile-sanity: area at 0x%qx, has size %qd (must be >= %d)", x->start, x->size, 1);
 		// rule (4)
-		if ((x->size > MAX_MFA_SIZE) && ismod)
+		if (x->size > MAX_MFA_SIZE && ismod)
 			throw MsgfException("mfile-sanity: area at 0x%qx, has size %qd (must be <= %d)", x->start, x->size, MAX_MFA_SIZE);
 		// rule (5)
 /*		if (prevx && (dynamic_cast<ModifiedFileArea*>(prevx) != NULL)
@@ -625,7 +625,7 @@ uint FileModificator::read(void *buf, uint size)
 	ObjHandle h = findArea(o);
 	byte *b = (byte*)buf;
 
-	while (size && (h != invObjHandle)) {
+	while (size && h != invObjHandle) {
 		FileArea *a = (FileArea*)mods.get(h);
 		FileOfs s = o - a->start;
 		FileOfs z = a->size - s;
