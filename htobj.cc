@@ -1457,9 +1457,6 @@ void ht_frame::draw()
 	/* "/...\" */
 	buf->printChar(0, 0, c, cornerul, CP_GRAPHICAL);
 	for (int i=1; i < size.w-1; i++) buf->printChar(i, 0, c, lineh, CP_GRAPHICAL);
-	if (size.h == 22) {
-		int a=1;
-	}
 	buf->printChar(0+size.w-1, 0, c, cornerur, CP_GRAPHICAL);
 
 	/* "\.../" */
