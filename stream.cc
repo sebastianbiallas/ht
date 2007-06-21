@@ -34,6 +34,7 @@
 #include "except.h"
 #include "snprintf.h"
 #include "stream.h"
+#include "strtools.h"
 #include "tools.h"
 
 /*
@@ -791,11 +792,13 @@ char *File::fgetstrz()
 			break;
 		}
 	}
+	if (s == 0) return ht_strdup("");
 	/* read string */
 	char *str = ht_malloc(z);
 	if (!str) throw std::bad_alloc();
 	seek(o);
 	readx(str, z);
+	str[z-1] = 0;
 	return str;
 }
 
