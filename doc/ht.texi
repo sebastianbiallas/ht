@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-2.0.8
+2.0.9
 @end macro
 
 @macro hturl
@@ -338,7 +338,7 @@ Mach exe/link format (MachO)
 @itemize @w
 @item
 - header @*
-- image with code/data analyser (x86, PowerPC) @*
+- image with code/data analyser (x86, PowerPC, ARM) @*
 @end itemize
 @item 
 X-Box executable (XBE)
