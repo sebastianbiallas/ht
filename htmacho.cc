@@ -124,6 +124,13 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 			MACHO_THREAD_COMMAND *c = (MACHO_THREAD_COMMAND*)macho_shared->cmds.cmds[i];
 			createHostStruct(macho_shared->cmds.cmds[i], MACHO_THREAD_COMMAND_struct, image_endianess);
 			switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_ARM:
+				switch (c->flavor) {
+				case FLAVOR_ARM_THREAD_STATE:
+					createHostStruct(&c->state, MACHO_ARM_THREAD_STATE_struct, image_endianess);
+					break;
+				}
+				break;
 			case MACHO_CPU_TYPE_I386:
 				switch (c->flavor) {
 				case -1:

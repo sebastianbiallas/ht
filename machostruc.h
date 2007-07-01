@@ -211,6 +211,14 @@ struct MACHO_PPC_THREAD_STATE {
 #define FLAVOR_PPC_VECTOR_STATE		4
 #define FLAVOR_THREAD_STATE_NONE	7
 
+struct MACHO_ARM_THREAD_STATE {
+	uint32 unknown[15];
+	uint32 pc;
+	uint32 unknown2;
+};
+
+#define FLAVOR_ARM_THREAD_STATE		1
+
 struct MACHO_I386_THREAD_STATE {
 	uint32	eax;
         uint32	ebx;
@@ -240,6 +248,7 @@ struct MACHO_I386_THREAD_STATE {
 #define i386_SAVED_STATE	8
 
 union MACHO_THREAD_STATE {
+	MACHO_ARM_THREAD_STATE state_arm;
 	MACHO_PPC_THREAD_STATE state_ppc;
 	MACHO_I386_THREAD_STATE state_i386;
 };
@@ -300,15 +309,15 @@ struct MACHO_SYMTAB_NLIST {
 /* skip					5	*/
 #define	MACHO_CPU_TYPE_MC680x0		6
 #define MACHO_CPU_TYPE_I386		7
-/* skip MACHO_CPU_TYPE_MIPS		8	*/
+#define MACHO_CPU_TYPE_MIPS		8
 /* skip 				9	*/
 #define MACHO_CPU_TYPE_MC98000		10
 #define MACHO_CPU_TYPE_HPPA		11
-/* skip MACHO_CPU_TYPE_ARM		12	*/
+#define MACHO_CPU_TYPE_ARM		12
 #define MACHO_CPU_TYPE_MC88000		13
 #define MACHO_CPU_TYPE_SPARC		14
 #define MACHO_CPU_TYPE_I860		15
-/* skip	MACHO_CPU_TYPE_ALPHA		16	*/
+#define	MACHO_CPU_TYPE_ALPHA		16
 /* skip					17	*/
 #define MACHO_CPU_TYPE_POWERPC		18
 
@@ -464,6 +473,7 @@ extern byte MACHO_SEGMENT_COMMAND_struct[];
 extern byte MACHO_SECTION_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
+extern byte MACHO_ARM_THREAD_STATE_struct[];
 extern byte MACHO_I386_THREAD_STATE_struct[];
 extern byte MACHO_SYMTAB_COMMAND_struct[];
 extern byte MACHO_SYMTAB_NLIST_struct[];

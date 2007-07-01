@@ -58,7 +58,7 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 
 	v->attachInfoline(head);
 
-/* find lowest/highest address */
+	/* find lowest/highest address */
 	Address *low = NULL;
 	Address *high = NULL;
 
@@ -69,14 +69,14 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 	for (uint i=0; i < macho_shared->sections.count; i++) {
 		if (macho_valid_section(s, 0)) {
 			if (s->vmaddr < l) l = s->vmaddr;
-			if ((s->vmaddr + s->vmsize > h) && s->vmsize) h=s->vmaddr + s->vmsize - 1;
+			if ((s->vmaddr + s->vmsize > h) && s->vmsize) h = s->vmaddr + s->vmsize - 1;
 		}
 		s++;
 	}
 	low = p->createAddress32(l);
 	high = p->createAddress32(h);
 
-	ht_analy_sub *analy=new ht_analy_sub();
+	ht_analy_sub *analy = new ht_analy_sub();
 
 	if (low->compareTo(high) < 0) {
 		analy->init(file, v, p, low, high);
@@ -117,10 +117,13 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 //	delete tmpaddr;
 	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
-		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
+		if ((*pp)->cmd.cmd == LC_UNIXTHREAD || (*pp)->cmd.cmd == LC_THREAD) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
 			Address *entry;
 			switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_ARM:
+				entry = p->createAddress32(s->state.state_arm.pc);
+				break;
 			case MACHO_CPU_TYPE_POWERPC:
 				entry = p->createAddress32(s->state.state_ppc.srr0);
 				break;
@@ -141,7 +144,6 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 
 	g->setpalette(palkey_generic_window_default);
 
-//	macho_shared->v_image=v;
 	return g;
 }
 

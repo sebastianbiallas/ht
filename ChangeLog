@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 2.0.9:
+	- Mach-O: ARM support
+
 version 2.0.8:
 	- Loading Analyser for java class files was broken
 	- Fixed some cosmetic resizing bugs

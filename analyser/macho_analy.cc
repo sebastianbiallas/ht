@@ -20,6 +20,7 @@
 
 #include "analy.h"
 #include "analy_names.h"
+#include "analy_arm.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
 #include "analy_x86.h"
@@ -69,10 +70,13 @@ void MachoAnalyser::beginAnalysis()
 	uint entrypoint_count = 0;
 	pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
-		if (((*pp)->cmd.cmd == LC_UNIXTHREAD) || ((*pp)->cmd.cmd == LC_THREAD)) {
+		if ((*pp)->cmd.cmd == LC_UNIXTHREAD || (*pp)->cmd.cmd == LC_THREAD) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
 			Address *entry;
 			switch (macho_shared->header.cputype) {
+			case MACHO_CPU_TYPE_ARM:
+				entry = createAddress32(s->state.state_arm.pc);
+				break;
 			case MACHO_CPU_TYPE_POWERPC:
 				entry = createAddress32(s->state.state_ppc.srr0);
 				break;
@@ -102,42 +106,40 @@ void MachoAnalyser::beginAnalysis()
 	pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if ((*pp)->cmd.cmd == LC_SEGMENT) {
-		MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
+			MACHO_SEGMENT_COMMAND *s = (MACHO_SEGMENT_COMMAND*)*pp;
 
-		Address *secaddr;
+			Address *secaddr;
 
-		secaddr = createAddress32(s->vmaddr);
-		if (validAddress(secaddr, scvalid)) {
-			ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
-			addComment(secaddr, 0, "");
-			addComment(secaddr, 0, ";******************************************************************");
-			addComment(secaddr, 0, blub);
-			ht_snprintf(blub, sizeof blub, ";  virtual address  %08x  virtual size   %08x", s->vmaddr, s->vmsize);
-			addComment(secaddr, 0, blub);
-			ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s->fileoff, s->filesize);
-			addComment(secaddr, 0, blub);
-			addComment(secaddr, 0, ";******************************************************************");
+			secaddr = createAddress32(s->vmaddr);
+			if (validAddress(secaddr, scvalid)) {
+				ht_snprintf(blub, sizeof blub, ";  section %d <%s>", i+1, getSegmentNameByAddress(secaddr));
+				addComment(secaddr, 0, "");
+				addComment(secaddr, 0, ";******************************************************************");
+				addComment(secaddr, 0, blub);
+				ht_snprintf(blub, sizeof blub, ";  virtual address  %08x  virtual size   %08x", s->vmaddr, s->vmsize);
+				addComment(secaddr, 0, blub);
+				ht_snprintf(blub, sizeof blub, ";  file offset      %08x  file size      %08x", s->fileoff, s->filesize);
+				addComment(secaddr, 0, blub);
+				addComment(secaddr, 0, ";******************************************************************");
 
-			// mark end of sections
-			ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
-			Address *secend_addr = secaddr->clone();
+				ht_snprintf(blub, sizeof blub, ";  end of section <%s>", getSegmentNameByAddress(secaddr));
+				Address *secend_addr = secaddr->clone();
 
-			secend_addr->add(s->vmsize);
-			newLocation(secend_addr)->flags |= AF_FUNCTION_END;
-			addComment(secend_addr, 0, "");
-			addComment(secend_addr, 0, ";******************************************************************");
-			addComment(secend_addr, 0, blub);
-			addComment(secend_addr, 0, ";******************************************************************");
+				secend_addr->add(s->vmsize);
+				newLocation(secend_addr)->flags |= AF_FUNCTION_END;
+				addComment(secend_addr, 0, "");
+				addComment(secend_addr, 0, ";******************************************************************");
+				addComment(secend_addr, 0, blub);
+				addComment(secend_addr, 0, ";******************************************************************");
 
-			validarea->add(secaddr, secend_addr);
+//				validarea->add(secaddr, secend_addr);
 
-			delete secend_addr;
-		}
-		delete secaddr;
+				delete secend_addr;
+			}
+			delete secaddr;
 		}
 		pp++;
 	}
-
 
 	/* symbols */
 	pp = macho_shared->cmds.cmds;
@@ -256,29 +258,26 @@ bool MachoAnalyser::convertAddressToMACHOAddress(Address *addr, MACHOAddress *r)
 Address *MachoAnalyser::createAddress()
 {
 	switch (macho_shared->header.cputype) {
-			case MACHO_CPU_TYPE_I386: {
-				return new AddressX86Flat32();
-			}
-			case MACHO_CPU_TYPE_POWERPC: {
-				return new AddressFlat32();
-			}
+	case MACHO_CPU_TYPE_I386:
+		return new AddressX86Flat32();
+	case MACHO_CPU_TYPE_ARM:
+	case MACHO_CPU_TYPE_POWERPC:
+	default:
+		return new AddressFlat32();
 	}
-	assert(0);
 	return NULL;
 }
 
 Address *MachoAnalyser::createAddress32(uint32 addr)
 {
 	switch (macho_shared->header.cputype) {
-			case MACHO_CPU_TYPE_I386: {
-				return new AddressX86Flat32(addr);
-			}
-			case MACHO_CPU_TYPE_POWERPC: {
-				return new AddressFlat32(addr);
-			}
+	case MACHO_CPU_TYPE_I386:
+		return new AddressX86Flat32(addr);
+	case MACHO_CPU_TYPE_ARM:
+	case MACHO_CPU_TYPE_POWERPC:
+	default:
+		return new AddressFlat32(addr);
 	}
-	assert(0);
-	return NULL;
 }
 
 /*
@@ -355,22 +354,22 @@ void MachoAnalyser::initCodeAnalyser()
  */
 void MachoAnalyser::initUnasm()
 {
-	DPRINTF("macho_analy: ");
 	uint machine = macho_shared->header.cputype;
 	bool macho64 = false;
 	switch (machine) {
-	case MACHO_CPU_TYPE_I386: // Intel x86
-		DPRINTF("initing analy_x86_disassembler\n");
+	case MACHO_CPU_TYPE_I386:
 		analy_disasm = new AnalyX86Disassembler();
 		((AnalyX86Disassembler*)analy_disasm)->init(this, macho64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
 		break;
-	case MACHO_CPU_TYPE_POWERPC:	// PowerPC
-		DPRINTF("initing analy_ppc_disassembler\n");
+	case MACHO_CPU_TYPE_POWERPC:
 		analy_disasm = new AnalyPPCDisassembler();
 		((AnalyPPCDisassembler*)analy_disasm)->init(this, macho64 ? ANALY_PPC_64 : ANALY_PPC_32);
 		break;
+	case MACHO_CPU_TYPE_ARM:
+		analy_disasm = new AnalyArmDisassembler();
+		((AnalyArmDisassembler*)analy_disasm)->init(this);
+		break;
 	default:
-		DPRINTF("no apropriate disassembler for machine %04x\n", machine);
 		warnbox("No disassembler for unknown machine type %04x!", machine);
 	}
 }

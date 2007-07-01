@@ -681,7 +681,6 @@ int	AnalyserOutput::nextLine(Address *&Addr, int &line, int n, Address *max)
 
 int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 {
-//	fprintf(stdout, "prev_line(%x, %d, %d)\n", *Addr, *line, n);
 //#undef DPRINTF2
 //#define DPRINTF2(msg...) {ht_snprintf(tbuf, 1024, msg); fprintf(stderr, "%s", tbuf);}
 //	char tbuf[1024];
@@ -759,7 +758,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 			if (prevnext->compareTo(Addr) > 0) {
 				/*
 				 *   We were in the middle of a location.
-				 *	We solve this situation, by starting a new search
+				 *	We solve this situation by starting a new search
 				 *	with |prev->addr|. This is counted as "one line up".
 				 */
 				delete Addr;
