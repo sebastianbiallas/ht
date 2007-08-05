@@ -33,6 +33,17 @@ struct MACHO_HEADER {
 	uint32	flags;
 };
 
+struct MACHO_HEADER64 {
+	byte	magic[4];
+	uint32	cputype;
+	uint32	cpusubtype;
+	uint32	filetype;
+	uint32	ncmds;
+	uint32	sizeofcmds;
+	uint32	flags;
+	uint32	reserved;
+};
+
 /* Constants for the filetype field of the mach_header */
 #define	MH_OBJECT	0x1		/* relocatable object file */
 #define	MH_EXECUTE	0x2		/* demand paged executable file */
@@ -42,6 +53,10 @@ struct MACHO_HEADER {
 #define	MH_DYLIB	0x6		/* dynamicly bound shared library file*/
 #define	MH_DYLINKER	0x7		/* dynamic link editor */
 #define	MH_BUNDLE	0x8		/* dynamicly bound bundle file */
+#define	MH_DYLIB_STUB	0x9		/* shared library stub for static */
+					/*  linking only, no section contents */
+#define	MH_DSYM		0xa		/* companion file with only debug */
+					/*  sections */
 
 /* Constants for the flags field of the mach_header */
 #define	MH_NOUNDEFS	0x1		/* the object file has no undefined references, can be executed */
@@ -49,6 +64,61 @@ struct MACHO_HEADER {
 #define MH_DYLDLINK	0x4		/* the object file is input for the dynamic linker and can't be staticly link edited again */
 #define MH_BINDATLOAD	0x8		/* the object file's undefined references are bound by the dynamic linker when loaded. */
 #define MH_PREBOUND	0x10		/* the file has it's dynamic undefined references prebound. */
+#define MH_SPLIT_SEGS	0x20		/* the file has its read-only and
+					   read-write segments split */
+#define MH_LAZY_INIT	0x40		/* the shared library init routine is
+					   to be run lazily via catching memory
+					   faults to its writeable segments
+					   (obsolete) */
+#define MH_TWOLEVEL	0x80		/* the image is using two-level name
+					   space bindings */
+#define MH_FORCE_FLAT	0x100		/* the executable is forcing all images
+					   to use flat name space bindings */
+#define MH_NOMULTIDEFS	0x200		/* this umbrella guarantees no multiple
+					   defintions of symbols in its
+					   sub-images so the two-level namespace
+					   hints can always be used. */
+#define MH_NOFIXPREBINDING 0x400	/* do not have dyld notify the
+					   prebinding agent about this
+					   executable */
+#define MH_PREBINDABLE  0x800           /* the binary is not prebound but can
+					   have its prebinding redone. only used
+                                           when MH_PREBOUND is not set. */
+#define MH_ALLMODSBOUND 0x1000		/* indicates that this binary binds to
+                                           all two-level namespace modules of
+					   its dependent libraries. only used
+					   when MH_PREBINDABLE and MH_TWOLEVEL
+					   are both set. */ 
+#define MH_SUBSECTIONS_VIA_SYMBOLS 0x2000/* safe to divide up the sections into
+					    sub-sections via symbols for dead
+					    code stripping */
+#define MH_CANONICAL    0x4000		/* the binary has been canonicalized
+					   via the unprebind operation */
+#define MH_WEAK_DEFINES	0x8000		/* the final linked image contains
+					   external weak symbols */
+#define MH_BINDS_TO_WEAK 0x10000	/* the final linked image uses
+					   weak symbols */
+
+#define MH_ALLOW_STACK_EXECUTION 0x20000/* When this bit is set, all stacks 
+					   in the task will be given stack
+					   execution privilege.  Only used in
+					   MH_EXECUTE filetypes. */
+#define MH_ROOT_SAFE 0x40000           /* When this bit is set, the binary 
+					  declares it is safe for use in
+					  processes with uid zero */
+                                         
+#define MH_SETUID_SAFE 0x80000         /* When this bit is set, the binary 
+					  declares it is safe for use in
+					  processes when issetugid() is true */
+
+#define MH_NO_REEXPORTED_DYLIBS 0x100000 /* When this bit is set on a dylib, 
+					  the static linker does not need to
+					  examine dependent dylibs to see
+					  if any are re-exported */
+#define	MH_PIE 0x200000			/* When this bit is set, the OS will
+					   load the main executable at a
+					   random address.  Only used in
+					   MH_EXECUTE filetypes. */
 
 struct MACHO_COMMAND {
 	uint32 cmd;			/* type of load command */
@@ -72,6 +142,23 @@ struct MACHO_COMMAND {
 #define LC_LOAD_DYLINKER 0xe	/* load a dynamic linker */
 #define LC_ID_DYLINKER	0xf	/* dynamic linker identification */
 #define	LC_PREBOUND_DYLIB 0x10	/* modules prebound for a dynamicly linked shared library */
+#define	LC_ROUTINES	0x11	/* image routines */
+#define	LC_SUB_FRAMEWORK 0x12	/* sub framework */
+#define	LC_SUB_UMBRELLA 0x13	/* sub umbrella */
+#define	LC_SUB_CLIENT	0x14	/* sub client */
+#define	LC_SUB_LIBRARY  0x15	/* sub library */
+#define	LC_TWOLEVEL_HINTS 0x16	/* two-level namespace lookup hints */
+#define	LC_PREBIND_CKSUM  0x17	/* prebind checksum */
+#define	LC_LOAD_WEAK_DYLIB (0x18 | LC_REQ_DYLD)
+
+#define	LC_SEGMENT_64	0x19	/* 64-bit segment of this file to be
+				   mapped */
+#define	LC_ROUTINES_64	0x1a	/* 64-bit image routines */
+#define LC_UUID		0x1b	/* the uuid */
+#define LC_RPATH       (0x1c | LC_REQ_DYLD)    /* runpath additions */
+#define LC_CODE_SIGNATURE 0x1d	/* local of code signature */
+#define LC_SEGMENT_SPLIT_INFO 0x1e /* local of info to split segments */
+#define LC_REEXPORT_DYLIB (0x1f | LC_REQ_DYLD) /* load and re-export dylib */
 
 struct MACHO_SEGMENT_COMMAND {
 	uint32	cmd;		/* LC_SEGMENT */
@@ -87,10 +174,29 @@ struct MACHO_SEGMENT_COMMAND {
 	uint32	flags;		/* flags */
 };
 
+struct MACHO_SEGMENT_COMMAND_64 {
+	uint32	cmd;		/* LC_SEGMENT_64 */
+	uint32	cmdsize;	/* includes sizeof section_64 structs */
+	byte	segname[16];	/* segment name */
+	uint64	vmaddr;		/* memory address of this segment */
+	uint64	vmsize;		/* memory size of this segment */
+	uint64	fileoff;	/* file offset of this segment */
+	uint64	filesize;	/* amount to map from the file */
+	uint32	maxprot;	/* maximum VM protection */
+	uint32	initprot;	/* initial VM protection */
+	uint32	nsects;		/* number of sections in segment */
+	uint32	flags;		/* flags */
+};
+
 /* Constants for the flags field of the segment_command */
 #define	SG_HIGHVM	0x1	/* the file contents for this segment is for the high part of the VM space, the low part is zero filled (for stacks in core files) */
 #define	SG_FVMLIB	0x2	/* this segment is the VM that is allocated by a fixed VM library, for overlap checking in the link editor */
 #define	SG_NORELOC	0x4	/* this segment has nothing that was relocated in it and nothing relocated to it, that is it maybe safely replaced without relocation */
+#define SG_PROTECTED_VERSION_1	0x8 /* This segment is protected.  If the
+				       segment starts at file offset 0, the
+				       first page of the segment is not
+				       protected.  All other pages of the
+				       segment are protected. */
 
 struct MACHO_SECTION {
 	byte	sectname[16];	/* name of this section */
@@ -104,6 +210,21 @@ struct MACHO_SECTION {
 	uint32	flags;		/* flags (section type and attributes)*/
 	uint32	reserved1;	/* reserved */
 	uint32	reserved2;	/* reserved */
+};
+
+struct MACHO_SECTION_64 {
+	byte	sectname[16];	/* name of this section */
+	byte	segname[16];	/* segment this section goes in */
+	uint64	addr;		/* memory address of this section */
+	uint64	size;		/* size in bytes of this section */
+	uint32	offset;		/* file offset of this section */
+	uint32	align;		/* section alignment (power of 2) */
+	uint32	reloff;		/* file offset of relocation entries */
+	uint32	nreloc;		/* number of relocation entries */
+	uint32	flags;		/* flags (section type and attributes)*/
+	uint32	reserved1;	/* reserved (for offset or index) */
+	uint32	reserved2;	/* reserved (for count or sizeof) */
+	uint32	reserved3;	/* reserved */
 };
 
 /*
@@ -145,6 +266,20 @@ struct MACHO_SECTION {
 						   the reserved2 field */
 #define	MACHO_S_MOD_INIT_FUNC_POINTERS	0x9	/* section with only function
 						   pointers for initialization*/
+#define	MACHO_S_MOD_TERM_FUNC_POINTERS	0xa	/* section with only function
+						   pointers for termination */
+#define	MACHO_S_COALESCED			0xb	/* section contains symbols that
+						   are to be coalesced */
+#define	MACHO_S_GB_ZEROFILL			0xc	/* zero fill on demand section
+						   (that can be larger than 4
+						   gigabytes) */
+#define	MACHO_S_INTERPOSING			0xd	/* section with only pairs of
+						   function pointers for
+						   interposing */
+#define	MACHO_S_16BYTE_LITERALS		0xe	/* section with only 16 byte
+						   literals */
+#define	MACHO_S_DTRACE_DOF			0xf	/* section contains 
+						   DTrace Object Format */
 /*
  * Constants for the section attributes part of the flags field of a section
  * structure.
@@ -159,6 +294,11 @@ struct MACHO_SECTION {
 						   relocation entries */
 #define MACHO_S_ATTR_LOC_RELOC	 0x00000100	/* section has local
 						   relocation entries */
+#define MACHO_S_ATTR_NO_DEAD_STRIP	 0x10000000	/* no dead stripping */
+#define MACHO_S_ATTR_LIVE_SUPPORT	 0x08000000	/* blocks are live if they
+						   reference live blocks */
+#define MACHO_S_ATTR_SELF_MODIFYING_CODE 0x04000000	/* Used with i386 code stubs
+						   written on by dyld */
 
 struct MACHO_PPC_THREAD_STATE {
 	uint32 srr0;	/* Instruction address register (PC) */
@@ -303,14 +443,9 @@ struct MACHO_SYMTAB_NLIST {
 #define MACHO_CPU_TYPE_ANY		-1
 
 #define MACHO_CPU_TYPE_VAX		1
-/* skip					2	*/
-/* skip					3	*/
-/* skip					4	*/
-/* skip					5	*/
 #define	MACHO_CPU_TYPE_MC680x0		6
 #define MACHO_CPU_TYPE_I386		7
 #define MACHO_CPU_TYPE_MIPS		8
-/* skip 				9	*/
 #define MACHO_CPU_TYPE_MC98000		10
 #define MACHO_CPU_TYPE_HPPA		11
 #define MACHO_CPU_TYPE_ARM		12
@@ -318,8 +453,8 @@ struct MACHO_SYMTAB_NLIST {
 #define MACHO_CPU_TYPE_SPARC		14
 #define MACHO_CPU_TYPE_I860		15
 #define	MACHO_CPU_TYPE_ALPHA		16
-/* skip					17	*/
 #define MACHO_CPU_TYPE_POWERPC		18
+#define MACHO_CPU_TYPE_X86_64		0x01000007
 
 
 /*
@@ -468,9 +603,11 @@ struct MACHO_SYMTAB_NLIST {
 #define MACHO_CPU_SUBTYPE_POWERPC_7450		11
 
 extern byte MACHO_HEADER_struct[];
+extern byte MACHO_HEADER_64_struct[];
 extern byte MACHO_COMMAND_struct[];
 extern byte MACHO_SEGMENT_COMMAND_struct[];
 extern byte MACHO_SECTION_struct[];
+extern byte MACHO_SECTION_64_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
 extern byte MACHO_ARM_THREAD_STATE_struct[];

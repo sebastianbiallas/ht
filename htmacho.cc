@@ -44,11 +44,19 @@ static ht_view *htmacho_init(Bounds *b, File *file, ht_format_group *format_grou
 	file->read(&magic, sizeof magic);
 	if (memcmp(magic, "\xfe\xed\xfa\xce", 4) == 0) {
 		ht_macho *g = new ht_macho();
-		g->init(b, file, htmacho_ifs, format_group, 0, big_endian);
+		g->init(b, file, htmacho_ifs, format_group, 0, big_endian, false);
+		return g;
+	} else if (memcmp(magic, "\xfe\xed\xfa\xcf", 4) == 0) {
+		ht_macho *g = new ht_macho();
+		g->init(b, file, htmacho_ifs, format_group, 0, big_endian, true);
 		return g;
 	} else if (memcmp(magic, "\xce\xfa\xed\xfe", 4) == 0) {
 		ht_macho *g = new ht_macho();
-		g->init(b, file, htmacho_ifs, format_group, 0, little_endian);
+		g->init(b, file, htmacho_ifs, format_group, 0, little_endian, false);
+		return g;
+	} else if (memcmp(magic, "\xcf\xfa\xed\xfe", 4) == 0) {
+		ht_macho *g = new ht_macho();
+		g->init(b, file, htmacho_ifs, format_group, 0, little_endian, true);
 		return g;
 	}
 	return NULL;
@@ -62,7 +70,7 @@ format_viewer_if htmacho_if = {
 /*
  *	CLASS ht_macho
  */
-void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, Endianess image_endianess)
+void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *format_group, FileOfs header_ofs, Endianess image_endianess, bool _64)
 {
 	ht_format_group::init(b, VO_SELECTABLE | VO_BROWSABLE | VO_RESIZE, DESC_MACHO, f, false, true, 0, format_group);
 	VIEW_DEBUG_NAME("ht_macho");
@@ -75,25 +83,25 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 
 	shared_data = macho_shared;
 	macho_shared->image_endianess = image_endianess;
+	macho_shared->_64 = _64;
 	macho_shared->header_ofs = header_ofs;
 	macho_shared->cmds.count = 0;
 	macho_shared->cmds.cmds = NULL;
-/*	macho_shared->shnames = NULL;
-	macho_shared->symtables = 0;
-	macho_shared->reloctables = 0;
-	macho_shared->v_image = NULL;
-	macho_shared->htrelocs = NULL;
-	macho_shared->fake_undefined_section = 0;*/
 
 	FileOfs ofs;
-	/* read header */
 	file->seek(header_ofs);
-	file->read(&macho_shared->header, sizeof macho_shared->header);
-	createHostStruct(&macho_shared->header, MACHO_HEADER_struct, image_endianess);
+	if (_64) {
+		file->read(&macho_shared->header64, sizeof macho_shared->header64);
+		createHostStruct(&macho_shared->header64, MACHO_HEADER_64_struct, image_endianess);
+		ofs = header_ofs + sizeof macho_shared->header64;
+	} else {
+		file->read(&macho_shared->header, sizeof macho_shared->header);
+		createHostStruct(&macho_shared->header, MACHO_HEADER_struct, image_endianess);
+		ofs = header_ofs + sizeof macho_shared->header;
+	}
 
 	/* read commands */
 	uint nsections = 0;
-	ofs = header_ofs + sizeof macho_shared->header;
 	macho_shared->cmds.cmds = ht_malloc(sizeof (MACHO_COMMAND_U*) * macho_shared->header.ncmds);
 	macho_shared->cmds.count = 0;
 	for (uint i=0; i < macho_shared->header.ncmds; i++) {

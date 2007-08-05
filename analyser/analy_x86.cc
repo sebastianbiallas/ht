@@ -521,11 +521,7 @@ Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 	x86dis_insn *o = (x86dis_insn*)opcode;
 	assert(o->op[1].type == X86_OPTYPE_EMPTY);
 	switch (o->op[0].type) {
-		case X86_OPTYPE_IMM: {
-/*          	if (o->op[0].imm == 0x1012c0f) {
-				int as=0;
-			}*/
-			
+		case X86_OPTYPE_IMM: {			
 			uint16 seg = 0;
 			if (flags & ANALYX86DISASSEMBLER_FLAGS_SEGMENTED) {
 				seg = getSegment(analy->addr);

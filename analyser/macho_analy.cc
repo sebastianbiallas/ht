@@ -72,20 +72,29 @@ void MachoAnalyser::beginAnalysis()
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if ((*pp)->cmd.cmd == LC_UNIXTHREAD || (*pp)->cmd.cmd == LC_THREAD) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
-			Address *entry;
+			uint64 e = 0;
 			switch (macho_shared->header.cputype) {
 			case MACHO_CPU_TYPE_ARM:
-				entry = createAddress32(s->state.state_arm.pc);
+				e = s->state.state_arm.pc;
 				break;
 			case MACHO_CPU_TYPE_POWERPC:
-				entry = createAddress32(s->state.state_ppc.srr0);
+				e = s->state.state_ppc.srr0;
 				break;
 			case MACHO_CPU_TYPE_I386:
-				entry = createAddress32(s->state.state_i386.eip);
+				e = s->state.state_i386.eip;
+				break;
+			case MACHO_CPU_TYPE_X86_64:
+				e = 0;
 				break;
 			default: assert(0);
 			}
 			char desc[128];
+			Address *entry;
+			if (macho_shared->_64) {
+				 entry = createAddress64(e);
+			} else {
+				 entry = createAddress32(e);
+			}
 			sprintf(desc, "entrypoint%d", entrypoint_count++);
 			pushAddress(entry, entry);
 			assignSymbol(entry, desc, label_func);
@@ -257,15 +266,15 @@ bool MachoAnalyser::convertAddressToMACHOAddress(Address *addr, MACHOAddress *r)
 
 Address *MachoAnalyser::createAddress()
 {
-	switch (macho_shared->header.cputype) {
-	case MACHO_CPU_TYPE_I386:
+	if (macho_shared->header.cputype == MACHO_CPU_TYPE_I386) {
 		return new AddressX86Flat32();
-	case MACHO_CPU_TYPE_ARM:
-	case MACHO_CPU_TYPE_POWERPC:
-	default:
-		return new AddressFlat32();
+	} else {
+		if (macho_shared->_64) {
+			return new AddressFlat64();
+		} else {
+			return new AddressFlat32();
+		}		
 	}
-	return NULL;
 }
 
 Address *MachoAnalyser::createAddress32(uint32 addr)
@@ -278,6 +287,11 @@ Address *MachoAnalyser::createAddress32(uint32 addr)
 	default:
 		return new AddressFlat32(addr);
 	}
+}
+
+Address *MachoAnalyser::createAddress64(uint64 addr)
+{
+	return new AddressFlat64(addr);
 }
 
 /*
@@ -355,11 +369,19 @@ void MachoAnalyser::initCodeAnalyser()
 void MachoAnalyser::initUnasm()
 {
 	uint machine = macho_shared->header.cputype;
-	bool macho64 = false;
+	bool macho64 = macho_shared->_64;
 	switch (machine) {
 	case MACHO_CPU_TYPE_I386:
 		analy_disasm = new AnalyX86Disassembler();
 		((AnalyX86Disassembler*)analy_disasm)->init(this, macho64 ? ANALYX86DISASSEMBLER_FLAGS_FLAT64 : 0);
+		break;
+	case MACHO_CPU_TYPE_X86_64:
+		if (macho64) {
+			analy_disasm = new AnalyX86Disassembler();
+			((AnalyX86Disassembler*)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_AMD64 | ANALYX86DISASSEMBLER_FLAGS_FLAT64);
+		} else {
+			errorbox("x86_64 cant be used in a 32-Bit Mach-O.");
+		}
 		break;
 	case MACHO_CPU_TYPE_POWERPC:
 		analy_disasm = new AnalyPPCDisassembler();
@@ -426,12 +448,11 @@ Address *MachoAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	MACHOAddress ea;
 	if (macho_ofs_to_addr(&macho_shared->sections, 0, fileofs, &ea)) {
-/*		switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {          
-			case MACHOCLASS32: return createAddress32(ea.a32);
-			case MACHOCLASS64: return createAddress64(ea.a64);
+		if (macho_shared->_64) {
+			return createAddress64(ea);
+		} else {
+			return createAddress32(ea);
 		}
-		return new InvalidAddress();*/
-		return createAddress32(ea);
 	} else {
 		return new InvalidAddress();
 	}
