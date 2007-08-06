@@ -296,7 +296,7 @@ struct ELF_PROGRAM_HEADER32 {
 	elf32_word p_memsz;
 	elf32_word p_flags;
 	elf32_word p_align;
-};
+} PACKED;
 
 struct ELF_PROGRAM_HEADER64 {
 	elf64_half p_type;
@@ -313,7 +313,7 @@ struct ELF_NHEADER32 {
 	elf32_word n_descsz;
 	elf32_word n_namesz;
 	elf32_word n_type;
-};
+} PACKED;
 
 /*
  *	ELF symbol
@@ -345,7 +345,7 @@ struct ELF_SYMBOL32 {
 	elf_unsigned_char st_info;
 	elf_unsigned_char st_other;
 	elf32_half st_shndx;
-};
+} PACKED;
 
 struct ELF_SYMBOL64 {
 	elf64_half st_name;
@@ -354,7 +354,7 @@ struct ELF_SYMBOL64 {
 	elf64_quarter st_shndx;
 	elf64_word st_value;
 	elf64_word st_size;
-};
+} PACKED;
 
 /*
  *	ELF relocation
@@ -379,24 +379,24 @@ struct ELF_SYMBOL64 {
 struct ELF_REL32 {
 	elf32_addr	r_offset;
 	elf32_word	r_info;
-};
+} PACKED;
 
 struct ELF_REL64 {
 	elf64_addr	r_offset;
 	elf64_word	r_info;
-};
+} PACKED;
 
 struct ELF_RELA32 {
 	elf32_addr	r_offset;
 	elf32_word	r_info;
 	elf32_sword	r_addend;
-};
+} PACKED;
 
 struct ELF_RELA64 {
 	elf64_addr	r_offset;
 	elf64_word	r_info;
 	elf64_sword	r_addend;
-};
+} PACKED;
 
 extern byte ELF_HEADER_struct[];
 extern byte ELF_HEADER32_struct[];

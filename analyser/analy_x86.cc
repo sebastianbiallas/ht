@@ -45,9 +45,6 @@ int AddressX86Flat32::byteSize()
 
 int AddressX86Flat32::compareTo(const Object *obj) const
 {
-/*	if (getObjectID() != to->getObjectID()) {
-		int as=1;
-	}*/
 	assert(getObjectID() == obj->getObjectID());
 	if (addr > ((AddressX86Flat32 *)obj)->addr) return 1;
 	if (addr < ((AddressX86Flat32 *)obj)->addr) return -1;
@@ -463,7 +460,7 @@ ObjectID AnalyX86Disassembler::getObjectID() const
 	return ATOM_ANALY_X86;
 }
 
-Address *AnalyX86Disassembler::createAddress(uint16 segment, uint32 offset)
+Address *AnalyX86Disassembler::createAddress(uint16 segment, uint64 offset)
 {
 	if (flags & (ANALYX86DISASSEMBLER_FLAGS_FLAT64 | ANALYX86DISASSEMBLER_FLAGS_AMD64)) {
 		return new AddressFlat64(offset);

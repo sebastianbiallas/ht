@@ -63,6 +63,31 @@ STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
 	{0, 0}
 };
 
+static ht_mask_ptable macho_segment_64_header[]=
+{
+	{"cmd",			STATICTAG_EDIT_DWORD_VE("00000000")},
+	{"cmdsize",		STATICTAG_EDIT_DWORD_VE("00000004")},
+	{"name",
+STATICTAG_EDIT_CHAR("00000008")STATICTAG_EDIT_CHAR("00000009")
+STATICTAG_EDIT_CHAR("0000000a")STATICTAG_EDIT_CHAR("0000000b")
+STATICTAG_EDIT_CHAR("0000000c")STATICTAG_EDIT_CHAR("0000000d")
+STATICTAG_EDIT_CHAR("0000000e")STATICTAG_EDIT_CHAR("0000000f")
+STATICTAG_EDIT_CHAR("00000010")STATICTAG_EDIT_CHAR("00000011")
+STATICTAG_EDIT_CHAR("00000012")STATICTAG_EDIT_CHAR("00000013")
+STATICTAG_EDIT_CHAR("00000014")STATICTAG_EDIT_CHAR("00000015")
+STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
+},
+	{"virtual address",	STATICTAG_EDIT_QWORD_VE("00000018")},
+	{"virtual size",	STATICTAG_EDIT_QWORD_VE("00000020")},
+	{"file offset",		STATICTAG_EDIT_QWORD_VE("00000028")},
+	{"file size",		STATICTAG_EDIT_QWORD_VE("00000030")},
+	{"max VM protection",	STATICTAG_EDIT_DWORD_VE("00000038")},
+	{"init VM protection",	STATICTAG_EDIT_DWORD_VE("0000003c")},
+	{"number of sections",	STATICTAG_EDIT_DWORD_VE("00000040")},
+	{"flags",		STATICTAG_EDIT_DWORD_VE("00000044")},
+	{0, 0}
+};
+
 static ht_mask_ptable macho_section_header[]=
 {
 	{"section name",
@@ -94,6 +119,41 @@ STATICTAG_EDIT_CHAR("0000001e")STATICTAG_EDIT_CHAR("0000001f")
 	{"flags",			STATICTAG_EDIT_DWORD_VE("00000038")},
 	{"reserved1",			STATICTAG_EDIT_DWORD_VE("0000003c")},
 	{"reserved2",			STATICTAG_EDIT_DWORD_VE("00000040")},
+	{0, 0}
+};
+
+static ht_mask_ptable macho_section_64_header[]=
+{
+	{"section name",
+STATICTAG_EDIT_CHAR("00000000")STATICTAG_EDIT_CHAR("00000001")
+STATICTAG_EDIT_CHAR("00000002")STATICTAG_EDIT_CHAR("00000003")
+STATICTAG_EDIT_CHAR("00000004")STATICTAG_EDIT_CHAR("00000005")
+STATICTAG_EDIT_CHAR("00000006")STATICTAG_EDIT_CHAR("00000007")
+STATICTAG_EDIT_CHAR("00000008")STATICTAG_EDIT_CHAR("00000009")
+STATICTAG_EDIT_CHAR("0000000a")STATICTAG_EDIT_CHAR("0000000b")
+STATICTAG_EDIT_CHAR("0000000c")STATICTAG_EDIT_CHAR("0000000d")
+STATICTAG_EDIT_CHAR("0000000e")STATICTAG_EDIT_CHAR("0000000f")
+},
+	{"segment name",
+STATICTAG_EDIT_CHAR("00000010")STATICTAG_EDIT_CHAR("00000011")
+STATICTAG_EDIT_CHAR("00000012")STATICTAG_EDIT_CHAR("00000013")
+STATICTAG_EDIT_CHAR("00000014")STATICTAG_EDIT_CHAR("00000015")
+STATICTAG_EDIT_CHAR("00000016")STATICTAG_EDIT_CHAR("00000017")
+STATICTAG_EDIT_CHAR("00000018")STATICTAG_EDIT_CHAR("00000019")
+STATICTAG_EDIT_CHAR("0000001a")STATICTAG_EDIT_CHAR("0000001b")
+STATICTAG_EDIT_CHAR("0000001c")STATICTAG_EDIT_CHAR("0000001d")
+STATICTAG_EDIT_CHAR("0000001e")STATICTAG_EDIT_CHAR("0000001f")
+},
+	{"virtual address",		STATICTAG_EDIT_QWORD_VE("00000020")},
+	{"virtual size",		STATICTAG_EDIT_QWORD_VE("00000028")},
+	{"file offset",			STATICTAG_EDIT_DWORD_VE("00000030")},
+	{"alignment",			STATICTAG_EDIT_DWORD_VE("00000034")},
+	{"relocation file offset",	STATICTAG_EDIT_DWORD_VE("00000038")},
+	{"number of relocation entries",STATICTAG_EDIT_DWORD_VE("0000003c")},
+	{"flags",			STATICTAG_EDIT_DWORD_VE("00000040")},
+	{"reserved1",			STATICTAG_EDIT_DWORD_VE("00000044")},
+	{"reserved2",			STATICTAG_EDIT_DWORD_VE("00000048")},
+	{"reserved3",			STATICTAG_EDIT_DWORD_VE("0000004c")},
 	{0, 0}
 };
 
@@ -193,21 +253,41 @@ static ht_view *htmachoheader_init(Bounds *b, File *file, ht_format_group *group
 	m->add_mask(info);
 	m->add_staticmask_ptable(machoheader, macho_shared->header_ofs, isbigendian);
 
-	FileOfs ofs = macho_shared->header_ofs+7*4/*sizeof MACHO_HEADER*/;
+	FileOfs ofs = macho_shared->header_ofs;
+	if (macho_shared->_64) {
+		ofs += 8*4;
+	} else {
+		ofs += 7*4;
+	}
 	for (uint i=0; i<macho_shared->cmds.count; i++) {
 		switch (macho_shared->cmds.cmds[i]->cmd.cmd) {
 			case LC_SEGMENT: {
 				MACHO_SEGMENT_COMMAND *c = (MACHO_SEGMENT_COMMAND *)macho_shared->cmds.cmds[i];
 			    	char info[128];
-				ht_snprintf(info, sizeof info, "** segment %s: vaddr %08x vsize %08x fileofs %08x, filesize %08x", c->segname, c->vmaddr, c->vmsize, c->fileoff, c->filesize);
+				ht_snprintf(info, sizeof info, "** segment %s", c->segname);
 				m->add_mask(info);
 				m->add_staticmask_ptable(macho_segment_header, ofs, isbigendian);
 				FileOfs sofs = sizeof (MACHO_SEGMENT_COMMAND);
-				for (uint j=0; j<c->nsects; j++) {
+				for (uint j=0; j < c->nsects; j++) {
 					ht_snprintf(info, sizeof info, "**** section %d ****", j);
 					m->add_mask(info);
 					m->add_staticmask_ptable(macho_section_header, ofs+sofs, isbigendian);
 					sofs += 9*4+16+16;
+				}
+				break;
+			}
+			case LC_SEGMENT_64: {
+				MACHO_SEGMENT_64_COMMAND *c = (MACHO_SEGMENT_64_COMMAND *)macho_shared->cmds.cmds[i];
+			    	char info[128];
+				ht_snprintf(info, sizeof info, "** segment64 %s", c->segname);
+				m->add_mask(info);
+				m->add_staticmask_ptable(macho_segment_64_header, ofs, isbigendian);
+				FileOfs sofs = sizeof (MACHO_SEGMENT_64_COMMAND);
+				for (uint j=0; j < c->nsects; j++) {
+					ht_snprintf(info, sizeof info, "**** section %d ****", j);
+					m->add_mask(info);
+					m->add_staticmask_ptable(macho_section_64_header, ofs+sofs, isbigendian);
+					sofs += 2*8+8*4+16+16;
 				}
 				break;
 			}
@@ -233,16 +313,16 @@ static ht_view *htmachoheader_init(Bounds *b, File *file, ht_format_group *group
 				switch (macho_shared->header.cputype) {
 				case MACHO_CPU_TYPE_I386:
 					switch (c->flavor) {
-						case -1:
-							m->add_staticmask_ptable(macho_i386_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
-							break;
+					case -1:
+						m->add_staticmask_ptable(macho_i386_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
+						break;
 					}
 					break;
 				case MACHO_CPU_TYPE_POWERPC:
 					switch (c->flavor) {
-						case FLAVOR_PPC_THREAD_STATE:
-							m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
-							break;
+					case FLAVOR_PPC_THREAD_STATE:
+						m->add_staticmask_ptable(macho_ppc_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
+						break;
 					}
 					break;
 				}

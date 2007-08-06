@@ -124,6 +124,11 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 			// already count sections (needed for reading sections, see below)
 			nsections += macho_shared->cmds.cmds[i]->segment.nsects;
 			break;
+		case LC_SEGMENT_64:
+			createHostStruct(macho_shared->cmds.cmds[i], MACHO_SEGMENT_64_COMMAND_struct, image_endianess);
+			// already count sections (needed for reading sections, see below)
+			nsections += macho_shared->cmds.cmds[i]->segment_64.nsects;
+			break;
 		case LC_SYMTAB:
 			createHostStruct(macho_shared->cmds.cmds[i], MACHO_SYMTAB_COMMAND_struct, image_endianess);
 			break;
@@ -146,6 +151,13 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 					break;
 				}
 				break;
+			case MACHO_CPU_TYPE_X86_64:
+				switch (c->flavor) {
+				case FLAVOR_X86_64_THREAD_STATE:
+					createHostStruct(&c->state, MACHO_X86_64_THREAD_STATE_struct, image_endianess);
+					break;
+				}
+				break;
 			case MACHO_CPU_TYPE_POWERPC:
 				switch (c->flavor) {
 				case FLAVOR_PPC_THREAD_STATE:
@@ -160,21 +172,35 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 			createHostStruct(macho_shared->cmds.cmds[i], MACHO_COMMAND_struct, image_endianess);
 		}
 		ofs += cmd.cmdsize;
-		macho_shared->cmds.count ++;
+		macho_shared->cmds.count++;
 	}
 
 	/* read sections */
-	ofs = header_ofs+sizeof macho_shared->header;
-	macho_shared->sections.count = nsections;
-	macho_shared->sections.sections = ht_malloc(sizeof (MACHO_SECTION) * macho_shared->sections.count);
+	if (_64) {
+		ofs = header_ofs + sizeof macho_shared->header64;
+	} else {
+		ofs = header_ofs + sizeof macho_shared->header;
+	}
+	macho_shared->section_count = nsections;
+	macho_shared->sections = ht_malloc(sizeof (MACHO_SECTION_U) * macho_shared->section_count);
 	uint sec = 0;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if (macho_shared->cmds.cmds[i]->cmd.cmd == LC_SEGMENT) {
-			FileOfs sofs = ofs+sizeof (MACHO_SEGMENT_COMMAND);
+			FileOfs sofs = ofs + sizeof (MACHO_SEGMENT_COMMAND);
 			file->seek(sofs);
-			for (uint j=0; j<macho_shared->cmds.cmds[i]->segment.nsects; j++) {
-				file->read(&macho_shared->sections.sections[sec], sizeof (MACHO_SECTION));
-				createHostStruct(&macho_shared->sections.sections[sec], MACHO_SECTION_struct, image_endianess);
+			for (uint j=0; j < macho_shared->cmds.cmds[i]->segment.nsects; j++) {
+				macho_shared->sections[sec]._64 = false;
+				file->read(&macho_shared->sections[sec].s, sizeof (MACHO_SECTION));
+				createHostStruct(&macho_shared->sections[sec].s, MACHO_SECTION_struct, image_endianess);
+				sec++;
+			}
+		} else if (macho_shared->cmds.cmds[i]->cmd.cmd == LC_SEGMENT_64) {
+			FileOfs sofs = ofs + sizeof (MACHO_SEGMENT_64_COMMAND);
+			file->seek(sofs);
+			for (uint j=0; j < macho_shared->cmds.cmds[i]->segment_64.nsects; j++) {
+				macho_shared->sections[sec]._64 = true;
+				file->read(&macho_shared->sections[sec].s64, sizeof (MACHO_SECTION_64));
+				createHostStruct(&macho_shared->sections[sec].s64, MACHO_SECTION_64_struct, image_endianess);
 				sec++;
 			}
 		}
@@ -189,91 +215,113 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
  *	address conversion routines
  */
 
-bool macho_phys_and_mem_section(MACHO_SECTION *s, uint machoclass)
+bool macho_phys_and_mem_section(MACHO_SECTION_U *s)
 {
 	return true;
 }
 
-bool macho_valid_section(MACHO_SECTION *s, uint machoclass)
+bool macho_valid_section(MACHO_SECTION_U *s)
 {
 	return true;
 }
 
-bool macho_addr_to_ofs(macho_sections *sections, uint machoclass, MACHOAddress addr, uint32 *ofs)
+bool macho_addr_to_ofs(MACHO_SECTION_U *s, uint section_count, MACHOAddress addr, FileOfs *ofs)
 {
-	MACHO_SECTION *s = sections->sections;
-	for (uint i=0; i < sections->count; i++) {
-		if (macho_phys_and_mem_section(s, machoclass) &&
-		(addr >= s->vmaddr) && (addr < s->vmaddr+s->vmsize)) {
-			*ofs = addr - s->vmaddr + s->fileoff;
-			return true;
+	for (uint i=0; i < section_count; i++) {
+		if (macho_phys_and_mem_section(s)) {
+			if (s->_64) {
+				if (addr >= s->s64.vmaddr 
+				 && addr < s->s64.vmaddr + s->s64.vmsize) {
+					*ofs = addr - s->s64.vmaddr + s->s64.fileoff;
+					return true;
+				}
+			} else {
+				if (addr >= s->s.vmaddr 
+				 && addr < s->s.vmaddr + s->s.vmsize) {
+					*ofs = addr - s->s.vmaddr + s->s.fileoff;
+					return true;
+				}
+			}
 		}
 		s++;
 	}
 	return false;
 }
 
-bool macho_addr_to_section(macho_sections *sections, uint machoclass, MACHOAddress addr, int *section)
+bool macho_addr_to_section(MACHO_SECTION_U *s, uint section_count, MACHOAddress addr, int *section)
 {
-	MACHO_SECTION *s = sections->sections;
-	for (uint i=0; i < sections->count; i++) {
-		if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
-			*section = i;
-			return true;
+	for (uint i=0; i < section_count; i++) {
+		if (s->_64) {
+			if (macho_valid_section(s) && addr >= s->s64.vmaddr && addr < s->s64.vmaddr + s->s64.vmsize) {
+				*section = i;
+				return true;
+			}
+		} else {
+			if (macho_valid_section(s) && addr >= s->s.vmaddr && addr < s->s.vmaddr + s->s.vmsize) {
+				*section = i;
+				return true;
+			}
 		}
 		s++;
 	}
 	return false;
 }
 
-bool macho_addr_is_valid(macho_sections *sections, uint machoclass, MACHOAddress addr)
+bool macho_addr_is_valid(MACHO_SECTION_U *s, uint section_count, MACHOAddress addr)
 {
-	MACHO_SECTION *s = sections->sections;
-	for (uint i=0; i < sections->count; i++) {
-		if ((macho_valid_section(s, machoclass)) && (addr >= s->vmaddr) && (addr < s->vmaddr + s->vmsize)) {
-			return true;
+	for (uint i=0; i < section_count; i++) {
+		if (s->_64) {
+			if (macho_valid_section(s) && addr >= s->s64.vmaddr && addr < s->s64.vmaddr + s->s64.vmsize) {
+				return true;
+			}
+		} else {
+			if (macho_valid_section(s) && addr >= s->s.vmaddr && addr < s->s.vmaddr + s->s.vmsize) {
+				return true;
+			}
 		}
 		s++;
 	}
 	return false;
 }
-
-/*bool macho_addr_is_physical(macho_sections *sections, uint machoclass, ELFAddress addr)
-{
-	return false;
-}*/
 
 /*
  *	offset conversion routines
  */
 
-bool macho_ofs_to_addr(macho_sections *sections, uint machoclass, uint32 ofs, MACHOAddress *addr)
+bool macho_ofs_to_addr(MACHO_SECTION_U *s, uint section_count, FileOfs ofs, MACHOAddress *addr)
 {
-	MACHO_SECTION *s = sections->sections;
-	for (uint i=0; i < sections->count; i++) {
-		if ((macho_phys_and_mem_section(s, machoclass)) && (ofs>=s->fileoff) && (ofs<s->fileoff+s->vmsize)) {
-			*addr = ofs - s->fileoff + s->vmaddr;
-			return true;
+	for (uint i=0; i < section_count; i++) {
+		if (s->_64) {
+			if (macho_phys_and_mem_section(s) && ofs >= s->s64.fileoff && ofs < s->s64.fileoff+s->s64.vmsize) {
+				*addr = ofs - s->s64.fileoff + s->s64.vmaddr;
+				return true;
+			}
+		} else {
+			if (macho_phys_and_mem_section(s) && ofs >= s->s.fileoff && ofs < s->s.fileoff+s->s.vmsize) {
+				*addr = ofs - s->s.fileoff + s->s.vmaddr;
+				return true;
+			}
 		}
 		s++;
 	}
 	return false;
 }
 
-bool macho_ofs_to_section(macho_sections *sections, uint machoclass, uint32 ofs, uint32 *section)
+bool macho_ofs_to_section(MACHO_SECTION_U *s, uint section_count, FileOfs ofs, int *section)
 {
-	MACHO_SECTION *s = sections->sections;
-	for (uint i=0; i < sections->count; i++) {
-		if ((macho_valid_section(s, machoclass)) && (ofs >= s->fileoff) && (ofs<s->fileoff+s->vmsize)) {
-			*section = i;
-			return true;
+	for (uint i=0; i < section_count; i++) {
+		if (s->_64) {
+			if (macho_valid_section(s) && ofs >= s->s64.fileoff && ofs < s->s64.fileoff+s->s64.vmsize) {
+				*section = i;
+				return true;
+			}
+		} else {
+			if (macho_valid_section(s) && ofs >= s->s.fileoff && ofs < s->s.fileoff+s->s.vmsize) {
+				*section = i;
+				return true;
+			}
 		}
 		s++;
 	}
 	return false;
 }
-
-/*bool macho_ofs_to_addr_and_section(macho_sections *sections, uint machoclass, uint32 ofs, ELFAddress *addr, int *section)
-{
-	return false;
-}*/

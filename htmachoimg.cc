@@ -31,29 +31,26 @@
 
 static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 {
-	ht_macho_shared_data *macho_shared=(ht_macho_shared_data *)group->get_shared_data();
-
-//	if (macho_shared->ident.e_ident[MACHO_EI_CLASS]!=MACHOCLASS32) return 0;
+	ht_macho_shared_data &macho_shared = *(ht_macho_shared_data *)group->get_shared_data();
 
 	String fn;
 	file->getFilename(fn);
 	LOG("%y: Mach-O: loading image (starting analyser)...", &fn);
 	MachoAnalyser *p = new MachoAnalyser();
-	p->init(macho_shared, file);
+	p->init(&macho_shared, file);
 
-	Bounds c=*b;
-	ht_group *g=new ht_group();
+	Bounds c = *b;
+	ht_group *g = new ht_group();
 	g->init(&c, VO_RESIZE, DESC_MACHO_IMAGE"-g");
-	AnalyInfoline *head;
 
-	c.y+=2;
-	c.h-=2;
-	ht_macho_aviewer *v=new ht_macho_aviewer();
-	v->init(&c, DESC_MACHO_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, p, macho_shared);
+	c.y += 2;
+	c.h -= 2;
+	ht_macho_aviewer *v = new ht_macho_aviewer();
+	v->init(&c, DESC_MACHO_IMAGE, VC_EDIT | VC_GOTO | VC_SEARCH, file, group, p, &macho_shared);
 
-	c.y-=2;
-	c.h=2;
-	head=new AnalyInfoline();
+	c.y -= 2;
+	c.h = 2;
+	AnalyInfoline *head = new AnalyInfoline();
 	head->init(&c, v, ANALY_STATUS_DEFAULT);
 
 	v->attachInfoline(head);
@@ -63,18 +60,28 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 	Address *high = NULL;
 
 	MACHOAddress l, h;
-	l = (uint32)-1;
+	l = -1ULL;
 	h = 0;
-	MACHO_SECTION *s = macho_shared->sections.sections;
-	for (uint i=0; i < macho_shared->sections.count; i++) {
-		if (macho_valid_section(s, 0)) {
-			if (s->vmaddr < l) l = s->vmaddr;
-			if ((s->vmaddr + s->vmsize > h) && s->vmsize) h = s->vmaddr + s->vmsize - 1;
+	MACHO_SECTION_U *s = macho_shared.sections;
+	for (uint i=0; i < macho_shared.section_count; i++) {
+		if (macho_valid_section(s)) {
+			if (s->_64) {
+				if (s->s64.vmaddr < l) l = s->s64.vmaddr;
+				if (s->s64.vmaddr+s->s64.vmsize > h && s->s64.vmsize) h = s->s64.vmaddr + s->s64.vmsize - 1;
+			} else {
+				if (s->s.vmaddr < l) l = s->s.vmaddr;
+				if (s->s.vmaddr+s->s.vmsize > h && s->s.vmsize) h = s->s.vmaddr + s->s.vmsize - 1;
+			}
 		}
 		s++;
 	}
-	low = p->createAddress32(l);
-	high = p->createAddress32(h);
+	if (macho_shared._64) {
+		low = p->createAddress64(l);
+		high = p->createAddress64(h);
+	} else {
+		low = p->createAddress32(l);
+		high = p->createAddress32(h);
+	}
 
 	ht_analy_sub *analy = new ht_analy_sub();
 
@@ -100,37 +107,31 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 
 	v->sendmsg(msg_complete_init, 0);
 
-	Address *tmpaddr = NULL;
-/*	switch (macho_shared->ident.e_ident[MACHO_EI_CLASS]) {
-		case MACHOCLASS32: {
-			tmpaddr = p->createAddress32(macho_shared->header32.e_entry);
-			break;
-		}
-		case MACHOCLASS64: {
-			tmpaddr = p->createAddress64(macho_shared->header64.e_entry);
-			break;
-		}
-	}*/
-//	tmpaddr = p->createAddress32(macho_shared->header32.e_entry);
-	
-//	v->gotoAddress(tmpaddr, NULL);
-//	delete tmpaddr;
-	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
-	for (uint i=0; i < macho_shared->cmds.count; i++) {
+	MACHO_COMMAND_U **pp = macho_shared.cmds.cmds;
+	for (uint i=0; i < macho_shared.cmds.count; i++) {
 		if ((*pp)->cmd.cmd == LC_UNIXTHREAD || (*pp)->cmd.cmd == LC_THREAD) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
-			Address *entry;
-			switch (macho_shared->header.cputype) {
+			uint64 e = 0;
+			switch (macho_shared.header.cputype) {
 			case MACHO_CPU_TYPE_ARM:
-				entry = p->createAddress32(s->state.state_arm.pc);
+				e = s->state.state_arm.pc;
 				break;
 			case MACHO_CPU_TYPE_POWERPC:
-				entry = p->createAddress32(s->state.state_ppc.srr0);
+				e = s->state.state_ppc.srr0;
 				break;
 			case MACHO_CPU_TYPE_I386:
-				entry = p->createAddress32(s->state.state_i386.eip);
+				e = s->state.state_i386.eip;
+				break;
+			case MACHO_CPU_TYPE_X86_64:
+				e = s->state.state_x86_64.rip;
 				break;
 			default: assert(0);
+			}
+			Address *entry;
+			if (macho_shared._64) {
+				entry = p->createAddress64(e);
+			} else {
+				entry = p->createAddress32(e);
 			}
 			v->gotoAddress(entry, NULL);
 			delete entry;

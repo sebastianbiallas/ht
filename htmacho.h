@@ -41,11 +41,6 @@ struct macho_commands {
 	MACHO_COMMAND_U **cmds;
 };
 
-struct macho_sections {
-	uint count;
-	MACHO_SECTION *sections;
-};
-
 struct ht_macho_shared_data {
 	FileOfs header_ofs;
 	union {
@@ -53,7 +48,8 @@ struct ht_macho_shared_data {
 		MACHO_HEADER64 header64;
 	};
 	macho_commands cmds;
-	macho_sections sections;
+	uint section_count;
+	MACHO_SECTION_U *sections;
 	Endianess image_endianess;
 	bool _64;
 };
@@ -69,14 +65,14 @@ public:
 
 typedef uint64 MACHOAddress;
 
-bool macho_phys_and_mem_section(MACHO_SECTION *s, uint machoclass);
-bool macho_valid_section(MACHO_SECTION *s, uint machoclass);
+bool macho_phys_and_mem_section(MACHO_SECTION_U *s);
+bool macho_valid_section(MACHO_SECTION_U *s);
 
-bool macho_addr_to_section(macho_sections *section_headers, uint machoclass, MACHOAddress addr, int *section);
-bool macho_addr_to_ofs(macho_sections *section_headers, uint machoclass, MACHOAddress addr, uint32 *ofs);
-bool macho_addr_is_valid(macho_sections *section_headers, uint machoclass, MACHOAddress addr);
+bool macho_addr_to_section(MACHO_SECTION_U *section_headers, uint section_count, MACHOAddress addr, int *section);
+bool macho_addr_to_ofs(MACHO_SECTION_U *section_headers, uint section_count, MACHOAddress addr, FileOfs *ofs);
+bool macho_addr_is_valid(MACHO_SECTION_U *section_headers, uint section_count, MACHOAddress addr);
 
-bool macho_ofs_to_addr(macho_sections *section_headers, uint machoclass, uint32 ofs, MACHOAddress *addr);
-bool macho_ofs_to_section(macho_sections *section_headers, uint machoclass, uint32 ofs, uint32 *section);
+bool macho_ofs_to_addr(MACHO_SECTION_U *section_headers, uint section_count, FileOfs ofs, MACHOAddress *addr);
+bool macho_ofs_to_section(MACHO_SECTION_U *section_headers, uint section_count, FileOfs ofs, int *section);
 
 #endif /* !__HTMACHO_H__ */

@@ -121,7 +121,7 @@ public:
 	virtual	ObjectID	getObjectID() const;
 
 	virtual	Address		*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-		Address		*createAddress(uint16 segment, uint32 offset);
+		Address		*createAddress(uint16 segment, uint64 offset);
 		uint16		getSegment(Address *addr);
 	virtual	void		examineOpcode(OPCODE *opcode);
 	virtual	branch_enum_t 	isBranch(OPCODE *opcode);

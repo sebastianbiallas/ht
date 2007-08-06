@@ -2,7 +2,8 @@
 ==============
 
 version 2.0.9:
-	- Mach-O: ARM support
+	- Mach-O: ARM and X86_64 support
+	- Mach-O: support for 64 bit images
 
 version 2.0.8:
 	- Loading Analyser for java class files was broken

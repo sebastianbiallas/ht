@@ -31,7 +31,7 @@ struct MACHO_HEADER {
 	uint32	ncmds;
 	uint32	sizeofcmds;
 	uint32	flags;
-};
+} PACKED;
 
 struct MACHO_HEADER64 {
 	byte	magic[4];
@@ -42,7 +42,7 @@ struct MACHO_HEADER64 {
 	uint32	sizeofcmds;
 	uint32	flags;
 	uint32	reserved;
-};
+} PACKED;
 
 /* Constants for the filetype field of the mach_header */
 #define	MH_OBJECT	0x1		/* relocatable object file */
@@ -123,7 +123,7 @@ struct MACHO_HEADER64 {
 struct MACHO_COMMAND {
 	uint32 cmd;			/* type of load command */
 	uint32 cmdsize;			/* total size of command in bytes */
-};
+} PACKED;
 
 /* Constants for the cmd field of all load commands, the type */
 #define	LC_SEGMENT	0x1	/* segment of this file to be mapped */
@@ -172,9 +172,9 @@ struct MACHO_SEGMENT_COMMAND {
 	uint32	initprot;	/* initial VM protection */
 	uint32	nsects;		/* number of sections in segment */
 	uint32	flags;		/* flags */
-};
+} PACKED;
 
-struct MACHO_SEGMENT_COMMAND_64 {
+struct MACHO_SEGMENT_64_COMMAND {
 	uint32	cmd;		/* LC_SEGMENT_64 */
 	uint32	cmdsize;	/* includes sizeof section_64 structs */
 	byte	segname[16];	/* segment name */
@@ -186,7 +186,7 @@ struct MACHO_SEGMENT_COMMAND_64 {
 	uint32	initprot;	/* initial VM protection */
 	uint32	nsects;		/* number of sections in segment */
 	uint32	flags;		/* flags */
-};
+} PACKED;
 
 /* Constants for the flags field of the segment_command */
 #define	SG_HIGHVM	0x1	/* the file contents for this segment is for the high part of the VM space, the low part is zero filled (for stacks in core files) */
@@ -210,14 +210,14 @@ struct MACHO_SECTION {
 	uint32	flags;		/* flags (section type and attributes)*/
 	uint32	reserved1;	/* reserved */
 	uint32	reserved2;	/* reserved */
-};
+} PACKED;
 
 struct MACHO_SECTION_64 {
 	byte	sectname[16];	/* name of this section */
 	byte	segname[16];	/* segment this section goes in */
-	uint64	addr;		/* memory address of this section */
-	uint64	size;		/* size in bytes of this section */
-	uint32	offset;		/* file offset of this section */
+	uint64	vmaddr;		/* memory address of this section */
+	uint64	vmsize;		/* size in bytes of this section */
+	uint32	fileoff;	/* file offset of this section */
 	uint32	align;		/* section alignment (power of 2) */
 	uint32	reloff;		/* file offset of relocation entries */
 	uint32	nreloc;		/* number of relocation entries */
@@ -225,6 +225,14 @@ struct MACHO_SECTION_64 {
 	uint32	reserved1;	/* reserved (for offset or index) */
 	uint32	reserved2;	/* reserved (for count or sizeof) */
 	uint32	reserved3;	/* reserved */
+} PACKED;
+
+struct MACHO_SECTION_U {
+	bool _64;
+	union {
+		MACHO_SECTION s;
+		MACHO_SECTION_64 s64;
+	};
 };
 
 /*
@@ -303,38 +311,7 @@ struct MACHO_SECTION_64 {
 struct MACHO_PPC_THREAD_STATE {
 	uint32 srr0;	/* Instruction address register (PC) */
 	uint32 srr1;	/* Machine state register (supervisor) */
-	uint32 r0;
-	uint32 r1;
-	uint32 r2;
-	uint32 r3;
-	uint32 r4;
-	uint32 r5;
-	uint32 r6;
-	uint32 r7;
-	uint32 r8;
-	uint32 r9;
-	uint32 r10;
-	uint32 r11;
-	uint32 r12;
-	uint32 r13;
-	uint32 r14;
-	uint32 r15;
-	uint32 r16;
-	uint32 r17;
-	uint32 r18;
-	uint32 r19;
-	uint32 r20;
-	uint32 r21;
-	uint32 r22;
-	uint32 r23;
-	uint32 r24;
-	uint32 r25;
-	uint32 r26;
-	uint32 r27;
-	uint32 r28;
-	uint32 r29;
-	uint32 r30;
-	uint32 r31;
+	uint32 r[32];
 
 	uint32 cr;      /* Condition register */
 	uint32 xer;	/* User's integer exception register */
@@ -343,7 +320,7 @@ struct MACHO_PPC_THREAD_STATE {
 	uint32 mq;	/* MQ register (601 only) */
 
 	uint32 vrsave;	/* Vector Save Register */
-};
+} PACKED;
 
 #define FLAVOR_PPC_THREAD_STATE		1
 #define FLAVOR_PPC_FLOAT_STATE		2
@@ -355,7 +332,7 @@ struct MACHO_ARM_THREAD_STATE {
 	uint32 unknown[15];
 	uint32 pc;
 	uint32 unknown2;
-};
+} PACKED;
 
 #define FLAVOR_ARM_THREAD_STATE		1
 
@@ -376,7 +353,7 @@ struct MACHO_I386_THREAD_STATE {
 	uint32	es;
         uint32	fs;
 	uint32	gs;
-};
+} PACKED;
 
 #define i386_NEW_THREAD_STATE	1	/* used to be i386_THREAD_STATE */
 #define i386_FLOAT_STATE	2
@@ -387,10 +364,28 @@ struct MACHO_I386_THREAD_STATE {
 #define THREAD_STATE_NONE	7
 #define i386_SAVED_STATE	8
 
+
+struct MACHO_X86_64_THREAD_STATE {
+	uint64	rax;
+        uint64	rbx;
+	uint64	rcx;
+        uint64	rdx;
+	uint64	rdi;
+	uint64	rsi;
+        uint64	rbp;
+	uint64	rsp;
+	uint64	r[8];
+	uint64	rip;
+	uint64	unknown[4];
+} PACKED;
+
+#define FLAVOR_X86_64_THREAD_STATE	4
+
 union MACHO_THREAD_STATE {
 	MACHO_ARM_THREAD_STATE state_arm;
 	MACHO_PPC_THREAD_STATE state_ppc;
 	MACHO_I386_THREAD_STATE state_i386;
+	MACHO_X86_64_THREAD_STATE state_x86_64;
 };
 
 struct MACHO_THREAD_COMMAND {
@@ -399,11 +394,12 @@ struct MACHO_THREAD_COMMAND {
 	uint32	flavor;		/* flavor of thread state */
 	uint32	count;		/* count of longs in thread state */
 	MACHO_THREAD_STATE state;
-};
+} PACKED;
 
 union MACHO_COMMAND_U {
 	MACHO_COMMAND cmd;
 	MACHO_SEGMENT_COMMAND segment;
+	MACHO_SEGMENT_64_COMMAND segment_64;
 	MACHO_THREAD_COMMAND thread;
 };
 
@@ -414,7 +410,7 @@ struct MACHO_SYMTAB_COMMAND {
 	uint32	nsyms;		/* number of symbol table entries */
 	uint32	stroff;		/* string table offset */
 	uint32	strsize;	/* string table size in bytes */
-};
+} PACKED;
 
 struct MACHO_SYMTAB_NLIST {
 	uint32	strx;
@@ -422,7 +418,7 @@ struct MACHO_SYMTAB_NLIST {
 	uint8	sect;
 	uint16	desc;
 	uint32	value;
-};
+} PACKED;
 
 // masks for type
 #define MACHO_SYMBOL_N_STAB	0xe0
@@ -606,12 +602,14 @@ extern byte MACHO_HEADER_struct[];
 extern byte MACHO_HEADER_64_struct[];
 extern byte MACHO_COMMAND_struct[];
 extern byte MACHO_SEGMENT_COMMAND_struct[];
+extern byte MACHO_SEGMENT_64_COMMAND_struct[];
 extern byte MACHO_SECTION_struct[];
 extern byte MACHO_SECTION_64_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
 extern byte MACHO_ARM_THREAD_STATE_struct[];
 extern byte MACHO_I386_THREAD_STATE_struct[];
+extern byte MACHO_X86_64_THREAD_STATE_struct[];
 extern byte MACHO_SYMTAB_COMMAND_struct[];
 extern byte MACHO_SYMTAB_NLIST_struct[];
 

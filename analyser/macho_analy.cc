@@ -33,7 +33,7 @@
 #include "strtools.h"
 #include "pestruct.h"
 #include "snprintf.h"
-//#include "x86asm.h"
+#include "x86asm.h"
 
 extern "C" {
 #include "demangle.h"
@@ -63,12 +63,11 @@ void MachoAnalyser::beginAnalysis()
 	setLocationTreeOptimizeThreshold(100);
 	setSymbolTreeOptimizeThreshold(100);
 
-	MACHO_COMMAND_U **pp;
 	/*
 	 *	entrypoints
 	 */
 	uint entrypoint_count = 0;
-	pp = macho_shared->cmds.cmds;
+	MACHO_COMMAND_U **pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if ((*pp)->cmd.cmd == LC_UNIXTHREAD || (*pp)->cmd.cmd == LC_THREAD) {
 			MACHO_THREAD_COMMAND *s = (MACHO_THREAD_COMMAND*)*pp;
@@ -84,7 +83,7 @@ void MachoAnalyser::beginAnalysis()
 				e = s->state.state_i386.eip;
 				break;
 			case MACHO_CPU_TYPE_X86_64:
-				e = 0;
+				e = s->state.state_x86_64.rip;
 				break;
 			default: assert(0);
 			}
@@ -150,18 +149,20 @@ void MachoAnalyser::beginAnalysis()
 		pp++;
 	}
 
+#if 0 
+sepp
 	/* symbols */
 	pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
 		if ((*pp)->cmd.cmd == LC_SYMTAB) {
 			MACHO_SYMTAB_COMMAND *s = (MACHO_SYMTAB_COMMAND*)*pp;
 			int *entropy = random_permutation(s->nsyms);
-			for (uint j=0; j<s->nsyms; j++) {
-				file->seek(s->symoff+entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
+			for (uint j=0; j < s->nsyms; j++) {
+				file->seek(s->symoff + entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
 				MACHO_SYMTAB_NLIST nlist;
 				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
 				createHostStruct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
-				if (nlist.strx && ((nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT)) {
+				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
 					char macho_buffer[1024];
 					file->seek(s->stroff+nlist.strx);
 					char *label = file->fgetstrz();
@@ -191,17 +192,11 @@ void MachoAnalyser::beginAnalysis()
 		}
 		pp++;
 	}
+#endif	
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
-	
-	Analyser::beginAnalysis();
-}
 
-/*
- *
- */
-void MachoAnalyser::initInsertSymbols(int shidx)
-{
+	Analyser::beginAnalysis();
 }
 
 /*
@@ -234,27 +229,17 @@ ObjectID MachoAnalyser::getObjectID() const
 uint MachoAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FileOfs ofs = addressToFileofs(Addr);
-/*     if (ofs == INVALID_FILE_OFS) {
-		int as = 1;
-	}*/
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
-	return file->read(buf, size);;
+	return file->read(buf, size);
 }
 
 bool MachoAnalyser::convertAddressToMACHOAddress(Address *addr, MACHOAddress *r)
 {
-/*	if (addr->getObjectID()==ATOM_ADDRESS_FLAT_32) {
-		r->a32 = ((AddressFlat32*)addr)->addr;
+	if (addr->getObjectID() == ATOM_ADDRESS_FLAT_64) {
+		*r = ((AddressFlat64*)addr)->addr;
 		return true;
-	} else if (addr->getObjectID()==ATOM_ADDRESS_X86_FLAT_32) {
-		r->a32 = ((AddressX86Flat32*)addr)->addr;
-		return true;
-	} else if (addr->getObjectID()==ATOM_ADDRESS_FLAT_64) {
-		r->a64.lo = ((AddressFlat64*)addr)->addr.lo;
-		r->a64.hi = ((AddressFlat64*)addr)->addr.hi;
-		return true;*/
-	if (addr->getObjectID() == ATOM_ADDRESS_FLAT_32) {
+	} else if (addr->getObjectID() == ATOM_ADDRESS_FLAT_32) {
 		*r = ((AddressFlat32*)addr)->addr;
 		return true;
 	} else if (addr->getObjectID() == ATOM_ADDRESS_X86_FLAT_32) {
@@ -299,12 +284,12 @@ Address *MachoAnalyser::createAddress64(uint64 addr)
  */
 Assembler *MachoAnalyser::createAssembler()
 {
-/*	switch (macho_shared->header32.e_machine) {
-		case MACHO_EM_386:
-			Assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
-			a->init();
-			return a;
-	}*/
+	switch (macho_shared->header.cputype) {
+	case MACHO_CPU_TYPE_I386:
+		Assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
+		a->init();
+		return a;
+	}
 	return NULL;
 }
 
@@ -314,10 +299,10 @@ Assembler *MachoAnalyser::createAssembler()
 FileOfs MachoAnalyser::addressToFileofs(Address *Addr)
 {
 	if (validAddress(Addr, scinitialized)) {
-		uint32 ofs;
+		FileOfs ofs;
 		MACHOAddress ea;
 		if (!convertAddressToMACHOAddress(Addr, &ea)) return INVALID_FILE_OFS;
-		if (!macho_addr_to_ofs(&macho_shared->sections, 0, ea, &ofs)) return INVALID_FILE_OFS;
+		if (!macho_addr_to_ofs(macho_shared->sections, macho_shared->section_count, ea, &ofs)) return INVALID_FILE_OFS;
 		return ofs;
 	} else {
 		return INVALID_FILE_OFS;
@@ -330,12 +315,15 @@ FileOfs MachoAnalyser::addressToFileofs(Address *Addr)
 const char *MachoAnalyser::getSegmentNameByAddress(Address *Addr)
 {
 	static char macho_sectionname[33];
-	macho_sections *sections = &macho_shared->sections;
 	int i;
 	MACHOAddress ea;
 	if (!convertAddressToMACHOAddress(Addr, &ea)) return NULL;
-	if (!macho_addr_to_section(sections, 0, ea, &i)) return NULL;
-	ht_strlcpy(macho_sectionname, (char*)sections->sections[i].sectname, sizeof macho_sectionname);
+	if (!macho_addr_to_section(macho_shared->sections, macho_shared->section_count, ea, &i)) return NULL;
+	if (macho_shared->sections[i]._64) {
+		ht_strlcpy(macho_sectionname, (char*)macho_shared->sections[i].s.sectname, sizeof macho_sectionname);
+	} else {
+		ht_strlcpy(macho_sectionname, (char*)macho_shared->sections[i].s64.sectname, sizeof macho_sectionname);
+	}
 	return macho_sectionname;
 }
 
@@ -447,7 +435,7 @@ int MachoAnalyser::queryConfig(int mode)
 Address *MachoAnalyser::fileofsToAddress(FileOfs fileofs)
 {
 	MACHOAddress ea;
-	if (macho_ofs_to_addr(&macho_shared->sections, 0, fileofs, &ea)) {
+	if (macho_ofs_to_addr(macho_shared->sections, macho_shared->section_count, fileofs, &ea)) {
 		if (macho_shared->_64) {
 			return createAddress64(ea);
 		} else {
@@ -463,55 +451,35 @@ Address *MachoAnalyser::fileofsToAddress(FileOfs fileofs)
  */
 bool MachoAnalyser::validAddress(Address *Addr, tsectype action)
 {
-	macho_sections *sections = &macho_shared->sections;
 	int sec;
-	byte cls = 0/*macho_shared->ident.e_ident[MACHO_EI_CLASS]*/;
 	MACHOAddress ea;
 	if (!convertAddressToMACHOAddress(Addr, &ea)) return false;
-	if (!macho_addr_to_section(sections, cls, ea, &sec)) return false;
-/*	switch (cls) {
-		case MACHOCLASS32: {*/
-			MACHO_SECTION *s = &sections->sections[sec];
-			switch (action) {
-				case scvalid:
-					return true;
-				case scread:
-					return true;
-				case scwrite:
-				case screadwrite: {
-					bool writable =
-						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_CSTRING_LITERALS) &&
-						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_4BYTE_LITERALS) &&
-						((s->flags & MACHO_SECTION_TYPE) != MACHO_S_8BYTE_LITERALS)
-					;
-					return writable;
-				}
-				case sccode:
-					return ((s->flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR);
-				case scinitialized:
-					return ((s->flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL);
-			}
-			return false;
-/*		}
-		case MACHOCLASS64: {
-			MACHO_SECTION_HEADER64 *s=sections->sheaders64+sec;
-			switch (action) {
-				case scvalid:
-					return true;
-				case scread:
-					return true;
-				case scwrite:
-				case screadwrite:
-					return s->sh_flags.lo & MACHO_SHF_WRITE;
-				case sccode:
-					return (s->sh_flags.lo & MACHO_SHF_EXECINSTR) && (s->sh_type==MACHO_SHT_PROGBITS);
-				case scinitialized:
-					return s->sh_type==MACHO_SHT_PROGBITS;
-			}
-			return false;
+	if (!macho_addr_to_section(macho_shared->sections, macho_shared->section_count, ea, &sec)) return false;
+	MACHO_SECTION_U &s = macho_shared->sections[sec];
+	uint32 flags;
+	if (s._64) {
+		flags = s.s64.flags;
+	} else {
+		flags = s.s.flags;
+	}
+	switch (action) {
+		case scvalid:
+			return true;
+		case scread:
+			return true;
+		case scwrite:
+		case screadwrite: {
+			bool writable =
+				(flags & MACHO_SECTION_TYPE) != MACHO_S_CSTRING_LITERALS &&
+				(flags & MACHO_SECTION_TYPE) != MACHO_S_4BYTE_LITERALS &&
+				(flags & MACHO_SECTION_TYPE) != MACHO_S_8BYTE_LITERALS
+			;
+			return writable;
 		}
-	}*/
+		case sccode:
+			return (flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR;
+		case scinitialized:
+			return (flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL;
+	}
 	return false;
 }
-
-
