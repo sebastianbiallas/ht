@@ -149,8 +149,6 @@ void MachoAnalyser::beginAnalysis()
 		pp++;
 	}
 
-#if 0 
-sepp
 	/* symbols */
 	pp = macho_shared->cmds.cmds;
 	for (uint i=0; i < macho_shared->cmds.count; i++) {
@@ -158,41 +156,53 @@ sepp
 			MACHO_SYMTAB_COMMAND *s = (MACHO_SYMTAB_COMMAND*)*pp;
 			int *entropy = random_permutation(s->nsyms);
 			for (uint j=0; j < s->nsyms; j++) {
-				file->seek(s->symoff + entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
-				MACHO_SYMTAB_NLIST nlist;
-				if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
-				createHostStruct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
-				if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
-					char macho_buffer[1024];
-					file->seek(s->stroff+nlist.strx);
-					char *label = file->fgetstrz();
-//					fprintf(stderr, "symbol '%s' addr %08x\n", label, nlist.value);
-					Address *address = createAddress32(nlist.value);
-					if (validAddress(address, scvalid)) {
-						char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-						if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
-						if (!demangled && label[0]) demangled = cplus_demangle_v3(label+1, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
-						make_valid_name(label, label);
-						ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label);
-						if (demangled) free(demangled);
-						addComment(address, 0, "");
-						addComment(address, 0, ";********************************************************");
-						addComment(address, 0, macho_buffer);
-						addComment(address, 0, ";********************************************************");
-						pushAddress(address, address);
-						assignSymbol(address, label, label_func);
-					} else {
-//						fprintf(stderr, "'%s' has invalid addr %08x\n", label, nlist.value);
+				Address *address = NULL;
+				char *label = NULL;
+
+				if (macho_shared->_64) {
+					file->seek(s->symoff + entropy[j]*sizeof (MACHO_SYMTAB_NLIST_64));
+					MACHO_SYMTAB_NLIST_64 nlist;
+					if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
+					createHostStruct(&nlist, MACHO_SYMTAB_NLIST_64_struct, macho_shared->image_endianess);
+					if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
+						file->seek(s->stroff + nlist.strx);
+						label = file->fgetstrz();
+						address = createAddress64(nlist.value);
 					}
-					delete address;
-					free(label);
+				} else {
+					file->seek(s->symoff + entropy[j]*sizeof (MACHO_SYMTAB_NLIST));
+					MACHO_SYMTAB_NLIST nlist;
+					if (file->read(&nlist, sizeof nlist) != sizeof nlist) break;
+					createHostStruct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
+					if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
+						file->seek(s->stroff + nlist.strx);
+						label = file->fgetstrz();
+						address = createAddress32(nlist.value);
+					}
 				}
+				if (address && validAddress(address, scvalid)) {
+					char macho_buffer[1024];
+					char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
+					if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+					if (!demangled && label[0]) demangled = cplus_demangle_v3(label+1, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+					make_valid_name(label, label);
+					ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label);
+					free(demangled);
+					addComment(address, 0, "");
+					addComment(address, 0, ";********************************************************");
+					addComment(address, 0, macho_buffer);
+					addComment(address, 0, ";********************************************************");
+					pushAddress(address, address);
+					assignSymbol(address, label, label_func);
+				}
+				delete address;
+				free(label);
 			}
 			free(entropy);
 		}
 		pp++;
 	}
-#endif	
+
 	setLocationTreeOptimizeThreshold(1000);
 	setSymbolTreeOptimizeThreshold(1000);
 
@@ -477,7 +487,9 @@ bool MachoAnalyser::validAddress(Address *Addr, tsectype action)
 			return writable;
 		}
 		case sccode:
-			return (flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR;
+			return (flags & MACHO_SECTION_TYPE) == MACHO_S_REGULAR
+				|| (flags & MACHO_S_ATTR_PURE_INSTRUCTIONS)
+				|| (flags & MACHO_S_ATTR_SOME_INSTRUCTIONS);
 		case scinitialized:
 			return (flags & MACHO_SECTION_TYPE) != MACHO_S_ZEROFILL;
 	}

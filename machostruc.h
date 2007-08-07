@@ -420,6 +420,14 @@ struct MACHO_SYMTAB_NLIST {
 	uint32	value;
 } PACKED;
 
+struct MACHO_SYMTAB_NLIST_64 {
+	uint32	strx;
+	uint8	type;
+	uint8	sect;
+	uint16	desc;
+	uint64	value;
+} PACKED;
+
 // masks for type
 #define MACHO_SYMBOL_N_STAB	0xe0
 #define MACHO_SYMBOL_N_PEXT	0x10
@@ -612,5 +620,6 @@ extern byte MACHO_I386_THREAD_STATE_struct[];
 extern byte MACHO_X86_64_THREAD_STATE_struct[];
 extern byte MACHO_SYMTAB_COMMAND_struct[];
 extern byte MACHO_SYMTAB_NLIST_struct[];
+extern byte MACHO_SYMTAB_NLIST_64_struct[];
 
 #endif /* __MACHOSTRUC_H__ */
