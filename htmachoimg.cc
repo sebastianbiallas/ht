@@ -124,6 +124,8 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 				break;
 			case MACHO_CPU_TYPE_X86_64:
 				e = s->state.state_x86_64.rip;
+			case MACHO_CPU_TYPE_POWERPC64:
+				e = s->state.state_ppc64.srr0;
 				break;
 			default: assert(0);
 			}

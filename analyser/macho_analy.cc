@@ -84,6 +84,8 @@ void MachoAnalyser::beginAnalysis()
 				break;
 			case MACHO_CPU_TYPE_X86_64:
 				e = s->state.state_x86_64.rip;
+			case MACHO_CPU_TYPE_POWERPC64:
+				e = s->state.state_ppc64.srr0;
 				break;
 			default: assert(0);
 			}
@@ -382,6 +384,7 @@ void MachoAnalyser::initUnasm()
 		}
 		break;
 	case MACHO_CPU_TYPE_POWERPC:
+	case MACHO_CPU_TYPE_POWERPC64:
 		analy_disasm = new AnalyPPCDisassembler();
 		((AnalyPPCDisassembler*)analy_disasm)->init(this, macho64 ? ANALY_PPC_64 : ANALY_PPC_32);
 		break;

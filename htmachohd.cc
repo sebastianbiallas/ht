@@ -406,6 +406,12 @@ static ht_view *htmachoheader_init(Bounds *b, File *file, ht_format_group *group
 				m->add_mask(info);
 				break;
 			}
+			case LC_UUID: {
+			    	char info[128];
+				ht_snprintf(info, sizeof info, "** UUID cmdsize %08x", macho_shared->cmds.cmds[i]->cmd.cmdsize);
+				m->add_mask(info);
+				break;
+			}
 			default: {
 			    	char info[128];
 				ht_snprintf(info, sizeof info, "** unsupported load command %08x, size %08x", macho_shared->cmds.cmds[i]->cmd.cmd, macho_shared->cmds.cmds[i]->cmd.cmdsize);

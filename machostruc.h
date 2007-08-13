@@ -386,6 +386,7 @@ union MACHO_THREAD_STATE {
 	MACHO_PPC_THREAD_STATE state_ppc;
 	MACHO_I386_THREAD_STATE state_i386;
 	MACHO_X86_64_THREAD_STATE state_x86_64;
+	MACHO_PPC_THREAD_STATE state_ppc64;
 };
 
 struct MACHO_THREAD_COMMAND {
@@ -459,7 +460,7 @@ struct MACHO_SYMTAB_NLIST_64 {
 #define	MACHO_CPU_TYPE_ALPHA		16
 #define MACHO_CPU_TYPE_POWERPC		18
 #define MACHO_CPU_TYPE_X86_64		0x01000007
-
+#define MACHO_CPU_TYPE_POWERPC64	0x01000012
 
 /*
  *	Machine subtypes (these are defined here, instead of in a machine
