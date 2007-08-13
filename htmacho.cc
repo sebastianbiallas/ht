@@ -165,6 +165,13 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 					break;
 				}
 				break;
+			case MACHO_CPU_TYPE_POWERPC64:
+				switch (c->flavor) {
+				case FLAVOR_PPC_64_THREAD_STATE:
+					createHostStruct(&c->state, MACHO_PPC_64_THREAD_STATE_struct, image_endianess);
+					break;
+				}
+				break;
 			}
 			break;
 		}

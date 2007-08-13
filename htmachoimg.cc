@@ -117,15 +117,16 @@ static ht_view *htmachoimage_init(Bounds *b, File *file, ht_format_group *group)
 				e = s->state.state_arm.pc;
 				break;
 			case MACHO_CPU_TYPE_POWERPC:
-				e = s->state.state_ppc.srr0;
+				e = s->state.state_ppc.srr[0];
 				break;
 			case MACHO_CPU_TYPE_I386:
 				e = s->state.state_i386.eip;
 				break;
 			case MACHO_CPU_TYPE_X86_64:
 				e = s->state.state_x86_64.rip;
+				break;
 			case MACHO_CPU_TYPE_POWERPC64:
-				e = s->state.state_ppc64.srr0;
+				e = s->state.state_ppc64.srr[0];
 				break;
 			default: assert(0);
 			}

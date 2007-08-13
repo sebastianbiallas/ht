@@ -323,7 +323,7 @@ portable executables (PE32, PE64)
 - delay-import section @*
 - export section @*
 - resources @*
-- image with code/data analyser (x86, AMD64, IA-64, Alpha, ARM) @*
+- image with code/data analyser (x86, AMD64, PowerPC, IA-64, Alpha, ARM) @*
 - preliminary support for .net executables
 @end itemize
 @item 
@@ -338,7 +338,7 @@ Mach exe/link format (MachO)
 @itemize @w
 @item
 - header @*
-- image with code/data analyser (x86, PowerPC, ARM) @*
+- image with code/data analyser (x86, AMD64, PowerPC, ARM) @*
 @end itemize
 @item 
 X-Box executable (XBE)

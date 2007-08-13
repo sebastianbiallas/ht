@@ -309,17 +309,20 @@ struct MACHO_SECTION_U {
 						   written on by dyld */
 
 struct MACHO_PPC_THREAD_STATE {
-	uint32 srr0;	/* Instruction address register (PC) */
-	uint32 srr1;	/* Machine state register (supervisor) */
+	uint32 srr[2];
 	uint32 r[32];
 
-	uint32 cr;      /* Condition register */
-	uint32 xer;	/* User's integer exception register */
-	uint32 lr;	/* Link register */
-	uint32 ctr;	/* Count register */
-	uint32 mq;	/* MQ register (601 only) */
+	uint32 cr;
+	uint32 xer;
+	uint32 lr;
+	uint32 ctr;
+	uint32 mq;
 
-	uint32 vrsave;	/* Vector Save Register */
+	uint32 vrsave;
+} PACKED;
+
+struct MACHO_PPC_64_THREAD_STATE {
+	uint64 srr[2];
 } PACKED;
 
 #define FLAVOR_PPC_THREAD_STATE		1
@@ -327,6 +330,8 @@ struct MACHO_PPC_THREAD_STATE {
 #define FLAVOR_PPC_EXCEPTION_STATE	3
 #define FLAVOR_PPC_VECTOR_STATE		4
 #define FLAVOR_THREAD_STATE_NONE	7
+
+#define FLAVOR_PPC_64_THREAD_STATE	5
 
 struct MACHO_ARM_THREAD_STATE {
 	uint32 unknown[15];
@@ -386,7 +391,7 @@ union MACHO_THREAD_STATE {
 	MACHO_PPC_THREAD_STATE state_ppc;
 	MACHO_I386_THREAD_STATE state_i386;
 	MACHO_X86_64_THREAD_STATE state_x86_64;
-	MACHO_PPC_THREAD_STATE state_ppc64;
+	MACHO_PPC_64_THREAD_STATE state_ppc64;
 };
 
 struct MACHO_THREAD_COMMAND {
@@ -616,6 +621,7 @@ extern byte MACHO_SECTION_struct[];
 extern byte MACHO_SECTION_64_struct[];
 extern byte MACHO_THREAD_COMMAND_struct[];	// .state not included !
 extern byte MACHO_PPC_THREAD_STATE_struct[];
+extern byte MACHO_PPC_64_THREAD_STATE_struct[];
 extern byte MACHO_ARM_THREAD_STATE_struct[];
 extern byte MACHO_I386_THREAD_STATE_struct[];
 extern byte MACHO_X86_64_THREAD_STATE_struct[];
