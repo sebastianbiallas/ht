@@ -38,6 +38,8 @@ enum {
 	X86ASM_PREFIX_F20F38,
 	X86ASM_PREFIX_0F3A,
 	X86ASM_PREFIX_660F3A,
+	X86ASM_PREFIX_0F7A,
+	X86ASM_PREFIX_0F7B,
 	X86ASM_PREFIX_D8,
 	X86ASM_PREFIX_D9,
 	X86ASM_PREFIX_DA,
@@ -392,6 +394,8 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
         	match_opcodes(x86_opc_group_insns[2], insn, X86ASM_PREFIX_F20F38, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
         	match_opcodes(x86_opc_group_insns[3], insn, X86ASM_PREFIX_0F3A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
         	match_opcodes(x86_opc_group_insns[4], insn, X86ASM_PREFIX_660F3A, MATCHOPNAME_MATCH_IF_OPPREFIX);
+        	match_opcodes(x86_opc_group_insns[5], insn, X86ASM_PREFIX_0F7A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+        	match_opcodes(x86_opc_group_insns[6], insn, X86ASM_PREFIX_0F7B, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
 	}
 	if (error) {
 		free_asm_codes();
@@ -534,6 +538,14 @@ bool x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, in
 	case X86ASM_PREFIX_660F3A:
 		emitbyte(0x0f);
 		emitbyte(0x3a);
+		break;
+	case X86ASM_PREFIX_0F7A:
+		emitbyte(0x0f);
+		emitbyte(0x7a);
+		break;
+	case X86ASM_PREFIX_0F7B:
+		emitbyte(0x0f);
+		emitbyte(0x7b);
 		break;
 	case X86ASM_PREFIX_DF:
 	case X86ASM_PREFIX_DE:

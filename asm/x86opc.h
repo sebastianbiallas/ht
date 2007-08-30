@@ -114,6 +114,8 @@ enum {
 	TYPE_C,		/* reg of ModR/M picks control register */
 	TYPE_D,		/* reg of ModR/M picks debug register */
 	TYPE_E,		/* ModR/M (general reg or memory) */
+	TYPE_F,		/* r/m of ModR/M picks a fpu register */
+	TYPE_Fx,	/* extra picks a fpu register */
 	TYPE_G,		/* reg of ModR/M picks general register */
 	TYPE_Is,	/* signed immediate */
 	TYPE_I,		/* unsigned immediate */
@@ -134,9 +136,10 @@ enum {
 	TYPE_V,		/* reg of ModR/M picks XMM register */
 	TYPE_Vx,	/* extra picks XMM register */
 	TYPE_VR,	/* rm of ModR/M picks XMM register */
-	TYPE_W,		/* ModR/M (XMM reg or memory) */
-	TYPE_F,		/* r/m of ModR/M picks a fpu register */
-	TYPE_Fx,	/* extra picks a fpu register */
+	TYPE_W,		/* ModR/M (XMM reg or memory) */	
+	TYPE_VD,	/* SSE5: src/dest (xmm reg) */
+	TYPE_VS0,	/* SSE5: src1 (mod/rm) */
+	TYPE_VS1,	/* SSE5: src2 (mod/rm) */
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
@@ -167,7 +170,6 @@ enum {
 	SIZE_A = 'a',		/* packed decimal (80-bit BCD) */
 };
 
-#define INFO_PREFIX_66		0x66
 #define INFO_DEFAULT_64		0x80
 
 struct x86opc_insn_op {
@@ -214,7 +216,7 @@ struct x86opc_finsn {
 #define X86_REG_R15		15
 #define X86_REG_IP		66
 
-#define X86_OPC_GROUPS		5
+#define X86_OPC_GROUPS		9
 #define X86_GROUPS		27
 #define X86_SPECIAL_GROUPS	7
 

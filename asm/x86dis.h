@@ -50,7 +50,7 @@ struct x86dis_insn {
 	X86AddrSize eaddrsize;
 	bool ambiguous;
 	const char *name;
-	x86_insn_op op[3];
+	x86_insn_op op[4];
 };
 
 /*
@@ -72,6 +72,7 @@ protected:
 	byte c;
 	int modrm;
 	int sib;
+	int drex;
 	int maxlen;
 	bool fixdisp;
 
@@ -89,6 +90,7 @@ protected:
 			uint64	getqword();
 			int	getmodrm();
 			int	getsib();
+			int	getdrex();
 			void	invalidate();
 			bool	isfloat(char c);
 			bool	isaddr(char c);

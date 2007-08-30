@@ -576,7 +576,7 @@ Address *AnalyX86Disassembler::branchAddr(OPCODE *opcode, branch_enum_t branchty
 void	AnalyX86Disassembler::examineOpcode(OPCODE *opcode)
 {
 	x86dis_insn *o = (x86dis_insn*)opcode;
-	for (int i=0; i<3; i++) {
+	for (int i=0; i<4; i++) {
 		x86_insn_op *op = &o->op[i];
 		Address *addr = NULL;
 		taccess access;

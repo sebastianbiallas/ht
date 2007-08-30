@@ -156,6 +156,7 @@ public:
 	1 		first operand
 	2 		second operand
 	3 		third operand
+	4 		forth operand
 */
 
 #define DISASM_STRF_VAR			'%'
@@ -166,8 +167,9 @@ public:
 #define DISASM_STRF_FIRST		'1'
 #define DISASM_STRF_SECOND		'2'
 #define DISASM_STRF_THIRD		'3'
+#define DISASM_STRF_FORTH		'4'
 
-#define DISASM_STRF_DEFAULT_FORMAT	"?p#%p #%n\t%1?2#, %2?3/, %3/#"
+#define DISASM_STRF_DEFAULT_FORMAT	"?p#%p #%n\t%1?2#, %2?3/, %3/?4-, %4-#"
 #define DISASM_STRF_SMALL_FORMAT	"?p#%p #%n?1- %1?2#,%2?3/,%3/#-"
 
 #define ATOM_DISASM_X86		MAGIC32("DIS\x01")

@@ -38,6 +38,9 @@
 #define rexx(rex) ((rex)&0x02)
 #define rexb(rex) ((rex)&0x01)
 
+#define drexdest(drex) ((drex)>>4)
+#define oc0(drex) (!!((drex)&8))
+
 static int modrm16_1[8] = { X86_REG_BX, X86_REG_BX, X86_REG_BP, X86_REG_BP,
                      X86_REG_SI, X86_REG_DI, X86_REG_BP, X86_REG_BX};
 static int modrm16_2[8] = { X86_REG_SI, X86_REG_DI, X86_REG_SI, X86_REG_DI,
@@ -70,6 +73,7 @@ dis_insn *x86dis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 	addr = Addr;
 	modrm = -1;
 	sib = -1;
+	drex = -1;
 	memset(&insn, 0, sizeof insn);
 	insn.invalid = false;
 	insn.eopsize = opsize;
@@ -92,7 +96,7 @@ dis_insn *x86dis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 		insn.repprefix = X86_PREFIX_NO;
 		insn.segprefix = X86_PREFIX_NO;
 		insn.rexprefix = 0;
-		for (int i = 1; i < 3; i++) insn.op[i].type = X86_OPTYPE_EMPTY;
+		for (int i = 1; i < 4; i++) insn.op[i].type = X86_OPTYPE_EMPTY;
 	} else {
 		insn.size = codep - ocodep;
 		if (fixdisp) {
@@ -320,7 +324,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 		checkInfo(xinsn);
 		
 		insn.name = xinsn->name;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			decode_op(&insn.op[i], &x86_op_type[xinsn->op[i]]);
 		}
 	}
@@ -635,6 +639,20 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		/* ModR/M (XMM reg or memory) */
 		decode_modrm(op, xop->size, true, true, false, true);
 		break;
+	case TYPE_VD:
+		op->type = X86_OPTYPE_XMM;
+		op->size = 16;
+		op->reg = drexdest(getdrex());
+		break;
+	case TYPE_VS0:
+	case TYPE_VS1:
+		if (oc0(getdrex()) ^ (xop->type == TYPE_VS1)) {
+			decode_modrm(op, xop->size, true, true, false, true);			
+		} else {
+			op->type = X86_OPTYPE_XMM;
+			op->size = 16;
+			op->xmm = mkreg(getmodrm());
+		}
 	}
 }
 
@@ -807,6 +825,24 @@ int x86dis::getmodrm()
 	return modrm;
 }
 
+int x86dis::getdrex()
+{
+	if (drex == -1) {
+		int modrm = getmodrm();
+		int mod = mkmod(modrm);
+		int rm = mkrm(modrm);
+		if (mod != 3 && (rm & 7) == 4) {
+			getsib();
+		}
+		drex = getbyte();
+		/*if (32bit) {
+			drex &= 0x8;
+		}*/
+		insn.rexprefix = drex & 0x7;
+	}
+	return drex;
+}
+
 const char *x86dis::getName()
 {
 	return "x86/Disassembler";
@@ -911,44 +947,6 @@ void x86dis::prefixes()
 		break;
 	}
 }
-
-#if 0
-bool x86dis::special_param_ambiguity(x86opc_insn *insn)
-{
-	if (insn->name) {
-		return insn->name[0] == '~';
-	} else {
-		return false;
-	}
-	bool regc = false;
-	bool memc = false;
-	bool segc = false;
-
-	for (int i=0; i<3; i++) {
-		switch (disasm_insn->op[i].type) {
-		case X86_OPTYPE_SEG:
-			segc = true;
-			break;
-		case X86_OPTYPE_REG:
-		case X86_OPTYPE_CRX:
-		case X86_OPTYPE_DRX:
-		case X86_OPTYPE_TRX:
-		case X86_OPTYPE_STX:
-/*		case X86_OPTYPE_MMX:
-		case X86_OPTYPE_XMM:*/
-			regc = true;
-			break;
-		case X86_OPTYPE_MEM:
-			memc = true;
-			break;
-		}
-	}
-	return (memc && !regc)
-		|| (memc && segc)
-		|| (strcmp(disasm_insn->name, "movzx") == 0)
-		|| (strncmp(disasm_insn->name, "movsx", 5) == 0);
-}
-#endif
 
 static const char *regs(x86dis_insn *insn, int mode, int nr)
 {
@@ -1259,6 +1257,10 @@ void x86dis::str_format(char **str, const char **format, char *p, char *n, char 
 					t=op[2];
 					tl=oplen[2];
 					break;
+				case DISASM_STRF_FORTH:
+					t=op[3];
+					tl=oplen[3];
+					break;
 				}
 				if (tl) {
 					memcpy(s, t, tl);
@@ -1288,6 +1290,9 @@ void x86dis::str_format(char **str, const char **format, char *p, char *n, char 
 				break;
 			case DISASM_STRF_THIRD:
 				t=op[2];
+				break;
+			case DISASM_STRF_FORTH:
+				t=op[3];
 				break;
 			}
 			f += 2;
@@ -1352,12 +1357,12 @@ const char *x86dis::strf(dis_insn *disasm_insn, int opt, const char *format)
 	const char *iname = insn->name;
 	bool explicit_params = (options & X86DIS_STYLE_EXPLICIT_MEMSIZE) || iname[0] == '~';
 
-	char ops[3][512];	/* FIXME: possible buffer overflow ! */
-	char *op[3];
-	int oplen[3];
+	char ops[4][512];	/* FIXME: possible buffer overflow ! */
+	char *op[4];
+	int oplen[4];
 
 	if (options & DIS_STYLE_HIGHLIGHT) enable_highlighting();
-	for (int i=0; i < 3; i++) {
+	for (int i=0; i < 4; i++) {
 		op[i] = (char*)&ops[i];
 		str_op(op[i], &oplen[i], insn, &insn->op[i], explicit_params);
 	}
