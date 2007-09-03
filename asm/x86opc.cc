@@ -2438,8 +2438,8 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {"comps", {VD, VS0, VS1, Ib}},
 {"compd", {VD, VS0, VS1, Ib}},
-{"compss", {VD, VS0, VS1d, Ib}},
-{"compsd", {VD, VS0, VS1q, Ib}},
+{"comss", {VD, VS0, VS1d, Ib}},
+{"comsd", {VD, VS0, VS1q, Ib}},
 /* 30 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 38 */
@@ -2452,7 +2452,7 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {"pcomb", {VD, VS0, VS1, Ib}},
-{0},
+{"pcomw", {VD, VS0, VS1, Ib}},
 {"pcomd", {VD, VS0, VS1, Ib}},
 {"pcomq", {VD, VS0, VS1, Ib}},
 /* 50 */
