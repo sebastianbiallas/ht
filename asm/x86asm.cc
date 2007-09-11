@@ -179,7 +179,7 @@ static const char immhsz64_64[] = { SIZE_V, 0 };
 
 static const char hsz8_16[] = { SIZE_B, 0 };
 static const char hsz16_16[] = { SIZE_W, SIZE_V, SIZE_VV, 0 };
-static const char hsz32_16[] = { SIZE_D, SIZE_P, SIZE_Z, 0 };
+static const char hsz32_16[] = { SIZE_D, SIZE_P, SIZE_Z, SIZE_R, 0 };
 static const char hsz48_16[] = { 0 };
 static const char hsz64_16[] = { SIZE_Q, SIZE_U, SIZE_Z, 0};
 static const char hsz128_16[] = { SIZE_O, SIZE_U, 0};

@@ -1893,8 +1893,8 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* e8 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* f0 */
-{"crc32", {Gr, Eb}},
-{"crc32", {Gr, Ev}},
+{"~crc32", {Gr, Eb}},
+{"~crc32", {Gr, Ev}},
 {0},
 {0},
 {0},
