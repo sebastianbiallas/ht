@@ -3,7 +3,7 @@
  *	x86dis.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2006 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2007 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -644,15 +644,18 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->size = 16;
 		op->reg = drexdest(getdrex());
 		break;
-	case TYPE_VS0:
-	case TYPE_VS1:
-		if (oc0(getdrex()) ^ (xop->type == TYPE_VS1)) {
+	case TYPE_VS:
+		if (xop->info && oc0(getdrex())) {
+			invalidate();
+		}
+		if (oc0(getdrex()) ^ xop->extra) {
 			decode_modrm(op, xop->size, true, true, false, true);			
 		} else {
 			op->type = X86_OPTYPE_XMM;
 			op->size = 16;
 			op->xmm = mkreg(getmodrm());
 		}
+		break;
 	}
 }
 
@@ -835,9 +838,9 @@ int x86dis::getdrex()
 			getsib();
 		}
 		drex = getbyte();
-		/*if (32bit) {
-			drex &= 0x8;
-		}*/
+		if (addrsize != X86_ADDRSIZE64) {
+			drex &= 0x78;
+		}
 		insn.rexprefix = drex & 0x7;
 	}
 	return drex;

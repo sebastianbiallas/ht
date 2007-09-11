@@ -3,7 +3,7 @@
  *	x86asm.h
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2007 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -68,7 +68,7 @@ protected:
 	uint64 address;
 	bool ambiguous;
 	bool namefound;
-	bool addrsize_depend;
+//	bool addrsize_depend;
 	x86opc_insn (*x86_insns)[256];
 
 	virtual x86dis *createCompatibleDisassembler();

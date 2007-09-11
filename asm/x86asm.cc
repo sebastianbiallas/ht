@@ -3,7 +3,7 @@
  *	x86asm.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2006 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2007 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -361,13 +361,13 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 	Assembler::encode(asm_insn, options, cur_address);
 	x86asm_insn *insn = (x86asm_insn*)asm_insn;
 	
-	addrsize_depend = false;
+/*	addrsize_depend = false;
 	for (int i=0; i < 3; i++) {
 		if (insn->op[i].type == X86_OPTYPE_MEM) {
 			addrsize_depend = true;
 			break;
 		}
-	}
+	}*/
 		
 	newcode();
 	namefound = false;
@@ -1136,7 +1136,7 @@ const char *x86asm::lsz2hsz(int size, int opsize)
 
 int x86asm::match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize)
 {
-	const int *hop=lop2hop[op->type];
+	const int *hop = lop2hop[op->type];
 	if (op->type == X86_OPTYPE_EMPTY && xop->type == TYPE_0) return MATCHTYPE_MATCH;
 	int r = MATCHTYPE_MATCH;
 	if (xop->type == TYPE_W && xop->extra == 1) {
@@ -1305,20 +1305,31 @@ void x86asm::match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, by
 		}
 		
 		bool done1 = false;
+		int o = 0;
 		/*
 		 * check all permutations of opsize and addrsize
 		 * if possible and necessary
 		 */
-		for (int o=0; o < 3; o++) {
-			switch (n) {
-			case MATCHOPNAME_MATCH_IF_OPSIZE16: done1 = true; break;
-			case MATCHOPNAME_MATCH_IF_OPSIZE32: o = 1; done1 = true; break;
-			case MATCHOPNAME_MATCH_IF_OPSIZE64: o = 2; done1 = true; break;
-			}
+		switch (n) {
+		case MATCHOPNAME_MATCH_IF_OPSIZE16: done1 = true; break;
+		case MATCHOPNAME_MATCH_IF_OPSIZE32: o = 1; done1 = true; break;
+		case MATCHOPNAME_MATCH_IF_OPSIZE64: o = 2; done1 = true; break;
+		}
+		for (; o < 3; o++) {
 			if (o == 2 && addrsize != X86_ADDRSIZE64) break;
-			bool done2 = !addrsize_depend;
+			switch (def_match) {
+				case MATCHOPNAME_MATCH_IF_OPPREFIX:
+					if (opsize == X86_OPSIZE16 && o == 0) continue;
+					if (opsize == X86_OPSIZE32 && o == 1) continue;
+					break;
+				case MATCHOPNAME_MATCH_IF_NOOPPREFIX:
+					if (opsize == X86_OPSIZE16 && o == 1) continue;
+					if (opsize == X86_OPSIZE32 && o == 0) continue;
+					break;
+			}
 			for (int a=0; a < 2; a++) {
 				char as = addrsizes[a];
+				bool done2 = false;
 		    		switch (n) {
 				case MATCHOPNAME_MATCH_IF_ADDRSIZE16: as = X86_ADDRSIZE16; done2 = true; break;
 				case MATCHOPNAME_MATCH_IF_ADDRSIZE32: as = X86_ADDRSIZE32; done2 = true; break;
@@ -1419,8 +1430,8 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 	/* try the rest */
 	for (int i=0; i<8; i++) {
 		for (int j=0; j<8; j++) {
-			if (x86_float_group_insns[i][j].group==0) {
-				int n=match_opcode_name(insn->name, x86_float_group_insns[i][j].insn.name, MATCHOPNAME_MATCH);
+			if (x86_float_group_insns[i][j].group == 0) {
+				int n = match_opcode_name(insn->name, x86_float_group_insns[i][j].insn.name, MATCHOPNAME_MATCH);
 				namefound |= n;
 				if (n != MATCHOPNAME_NOMATCH) {
 					if (match_allops(insn, &x86_float_group_insns[i][j].insn, opsize, addrsize)) {
@@ -1433,7 +1444,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 				}
 			} else {
 				x86opc_insn *group=x86_float_group_insns[i][j].group;
-				for (int k=0; k<8; k++) {
+				for (int k=0; k < 8; k++) {
 					int n = match_opcode_name(insn->name, group[k].name, MATCHOPNAME_MATCH);
 					namefound |= n;
 					if (n != MATCHOPNAME_NOMATCH) {
@@ -1934,7 +1945,7 @@ bool x86_64asm::opreg(x86_insn_op *op, const char *xop)
 				op->type = X86_OPTYPE_REG;
 				op->size = reg2size[i];
 				op->reg = j;
-				if (j > 7 /*|| i == 3*/ || (i == 0 && j > 3)) {
+				if (j > 7 || (i == 0 && j > 3)) {
 					op->need_rex = true;
 				}
 				return true;

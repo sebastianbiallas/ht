@@ -170,7 +170,7 @@ public:
 #define DISASM_STRF_FORTH		'4'
 
 #define DISASM_STRF_DEFAULT_FORMAT	"?p#%p #%n\t%1?2#, %2?3/, %3/?4-, %4-#"
-#define DISASM_STRF_SMALL_FORMAT	"?p#%p #%n?1- %1?2#,%2?3/,%3/#-"
+#define DISASM_STRF_SMALL_FORMAT	"?p#%p #%n?1- %1?2#,%2?3/,%3?4_,%4_/#-"
 
 #define ATOM_DISASM_X86		MAGIC32("DIS\x01")
 #define ATOM_DISASM_ALPHA	MAGIC32("DIS\x02")

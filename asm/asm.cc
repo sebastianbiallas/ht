@@ -21,6 +21,7 @@
 #include <cstring>
 #include <cstdio>
 #include <stdarg.h>
+#include <limits.h>
 
 #include "asm.h"
 #include "data.h"
@@ -167,8 +168,8 @@ void Assembler::newcode()
 
 asm_code *Assembler::shortest(asm_code *codes)
 {
-	asm_code *best=0;
-	uint32 bestv=0xffffffff;
+	asm_code *best = NULL;
+	int bestv = INT_MAX;
 	while (codes) {
 		if (codes->size < bestv) {
 			best = codes;

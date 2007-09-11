@@ -176,16 +176,26 @@ x86opc_insn_op x86_op_type[] = {
 
 #define VD	Wz+1
 {TYPE_VD, 0, 0, SIZE_O},
-#define VS0	VD+1
-{TYPE_VS0, 0, 0, SIZE_O},
-#define VS1	VS0+1
-{TYPE_VS1, 0, 0, SIZE_O},
-#define VS1d	VS1+1
-{TYPE_VS1, 0, 0, SIZE_D},
+#define VS0d	VD+1
+{TYPE_VS, 0, 0, SIZE_D},
+#define VS0q	VS0d+1
+{TYPE_VS, 0, 0, SIZE_Q},
+#define VS0o	VS0q+1
+{TYPE_VS, 0, 0, SIZE_Q},
+#define VS00d	VS0o+1
+{TYPE_VS, 0, 1, SIZE_Q},
+#define VS00q	VS00d+1
+{TYPE_VS, 0, 1, SIZE_Q},
+#define VS00o	VS00q+1
+{TYPE_VS, 0, 1, SIZE_O},
+#define VS1d	VS00o+1
+{TYPE_VS, 1, 0, SIZE_D},
 #define VS1q	VS1d+1
-{TYPE_VS1, 0, 0, SIZE_Q},
+{TYPE_VS, 1, 0, SIZE_Q},
+#define VS1o	VS1q+1
+{TYPE_VS, 1, 0, SIZE_O},
 
-#define Ft	VS1q+1
+#define Ft	VS1o+1
 {TYPE_F, 0, 0, SIZE_T},
 
 #define __st	Ft+1
@@ -310,7 +320,6 @@ x86opc_insn_op x86_op_type[] = {
 #define XMM0	__st7+1
 {TYPE_Vx, 0, 0, SIZE_O},
 };
-
 
 const char *x86_regs[4][8] = {
 {"al",  "cl",  "dl",  "bl",  "ah",  "ch",  "dh",  "bh"},
@@ -2264,50 +2273,50 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* 6 - GROUP_OPC_0F24 */
 {
 /* 00 */
-{"fmaddps", {VD, VD, VS0, VS1}},
-{"fmaddpd", {VD, VD, VS0, VS1}},
-{"fmaddss", {VD, VD, VS0, VS1}},
-{"fmaddsd", {VD, VD, VS0, VS1}},
-{"fmaddps", {VD, VS0, VS1, VD}},
-{"fmaddpd", {VD, VS0, VS1, VD}},
-{"fmaddss", {VD, VS0, VS1, VD}},
-{"fmaddsd", {VD, VS0, VS1, VD}},
+{"fmaddps", {VD, VD, VS0o, VS1o}},
+{"fmaddpd", {VD, VD, VS0o, VS1o}},
+{"fmaddss", {VD, VD, VS0d, VS1d}},
+{"fmaddsd", {VD, VD, VS0q, VS1q}},
+{"fmaddps", {VD, VS0o, VS1o, VD}},
+{"fmaddpd", {VD, VS0o, VS1o, VD}},
+{"fmaddss", {VD, VS0d, VS1d, VD}},
+{"fmaddsd", {VD, VS0q, VS1q, VD}},
 /* 08 */
-{"fmsubps", {VD, VD, VS0, VS1}},
-{"fmsubpd", {VD, VD, VS0, VS1}},
-{"fmsubss", {VD, VD, VS0, VS1}},
-{"fmsubsd", {VD, VD, VS0, VS1}},
-{"fmsubps", {VD, VS0, VS1, VD}},
-{"fmsubpd", {VD, VS0, VS1, VD}},
-{"fmsubss", {VD, VS0, VS1, VD}},
-{"fmsubsd", {VD, VS0, VS1, VD}},
+{"fmsubps", {VD, VD, VS0o, VS1o}},
+{"fmsubpd", {VD, VD, VS0o, VS1o}},
+{"fmsubss", {VD, VD, VS0d, VS1d}},
+{"fmsubsd", {VD, VD, VS0q, VS1q}},
+{"fmsubps", {VD, VS0o, VS1o, VD}},
+{"fmsubpd", {VD, VS0o, VS1o, VD}},
+{"fmsubss", {VD, VS0d, VS1d, VD}},
+{"fmsubsd", {VD, VS0q, VS1q, VD}},
 /* 10 */
-{"fnmaddps", {VD, VD, VS0, VS1}},
-{"fnmaddpd", {VD, VD, VS0, VS1}},
-{"fnmaddss", {VD, VD, VS0, VS1}},
-{"fnmaddsd", {VD, VD, VS0, VS1}},
-{"fnmaddps", {VD, VS0, VS1, VD}},
-{"fnmaddpd", {VD, VS0, VS1, VD}},
-{"fnmaddss", {VD, VS0, VS1, VD}},
-{"fnmaddsd", {VD, VS0, VS1, VD}},
+{"fnmaddps", {VD, VD, VS0o, VS1o}},
+{"fnmaddpd", {VD, VD, VS0o, VS1o}},
+{"fnmaddss", {VD, VD, VS0d, VS1d}},
+{"fnmaddsd", {VD, VD, VS0q, VS1q}},
+{"fnmaddps", {VD, VS0o, VS1o, VD}},
+{"fnmaddpd", {VD, VS0o, VS1o, VD}},
+{"fnmaddss", {VD, VS0d, VS1d, VD}},
+{"fnmaddsd", {VD, VS0q, VS1q, VD}},
 /* 18 */
-{"fnmsubps", {VD, VD, VS0, VS1}},
-{"fnmsubpd", {VD, VD, VS0, VS1}},
-{"fnmsubss", {VD, VD, VS0, VS1}},
-{"fnmsubsd", {VD, VD, VS0, VS1}},
-{"fnmsubps", {VD, VS0, VS1, VD}},
-{"fnmsubpd", {VD, VS0, VS1, VD}},
-{"fnmsubss", {VD, VS0, VS1, VD}},
-{"fnmsubsd", {VD, VS0, VS1, VD}},
+{"fnmsubps", {VD, VD, VS0o, VS1o}},
+{"fnmsubpd", {VD, VD, VS0o, VS1o}},
+{"fnmsubss", {VD, VD, VS0d, VS1d}},
+{"fnmsubsd", {VD, VD, VS0q, VS1q}},
+{"fnmsubps", {VD, VS0o, VS1o, VD}},
+{"fnmsubpd", {VD, VS0o, VS1o, VD}},
+{"fnmsubss", {VD, VS0d, VS1d, VD}},
+{"fnmsubsd", {VD, VS0q, VS1q, VD}},
 /* 20 */
-{"permps", {VD, VD, VS0, VS1}},
-{"permpd", {VD, VD, VS0, VS1}},
-{"pcmov", {VD, VD, VS0, VS1}},
-{"pperm", {VD, VS0, VS1, VD}},
-{"permps", {VD, VS0, VS1, VD}},
-{"permpd", {VD, VS0, VS1, VD}},
-{"pcmov", {VD, VS0, VS1, VD}},
-{"pperm", {VD, VS0, VS1, VD}},
+{"permps", {VD, VD, VS0o, VS1o}},
+{"permpd", {VD, VD, VS0o, VS1o}},
+{"pcmov", {VD, VD, VS0o, VS1o}},
+{"pperm", {VD, VD, VS0o, VS1o}},
+{"permps", {VD, VS0o, VS1o, VD}},
+{"permpd", {VD, VS0o, VS1o, VD}},
+{"pcmov", {VD, VS0o, VS1o, VD}},
+{"pperm", {VD, VS0o, VS1o, VD}},
 /* 28 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 30 */
@@ -2315,19 +2324,19 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* 38 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 40 */
-{"protb", {VD, VS0, VS1}},
-{"protw", {VD, VS0, VS1}},
-{"protd", {VD, VS0, VS1}},
-{"protq", {VD, VS0, VS1}},
-{"pshlb", {VD, VS0, VS1}},
-{"pshlw", {VD, VS0, VS1}},
-{"pshld", {VD, VS0, VS1}},
-{"pshlq", {VD, VS0, VS1}},
+{"protb", {VD, VS0o, VS1o}},
+{"protw", {VD, VS0o, VS1o}},
+{"protd", {VD, VS0o, VS1o}},
+{"protq", {VD, VS0o, VS1o}},
+{"pshlb", {VD, VS0o, VS1o}},
+{"pshlw", {VD, VS0o, VS1o}},
+{"pshld", {VD, VS0o, VS1o}},
+{"pshlq", {VD, VS0o, VS1o}},
 /* 48 */
-{"pshab", {VD, VS0, VS1}},
-{"pshaw", {VD, VS0, VS1}},
-{"pshad", {VD, VS0, VS1}},
-{"pshaq", {VD, VS0, VS1}},
+{"pshab", {VD, VS0o, VS1o}},
+{"pshaw", {VD, VS0o, VS1o}},
+{"pshad", {VD, VS0o, VS1o}},
+{"pshaq", {VD, VS0o, VS1o}},
 {0},
 {0},
 {0},
@@ -2350,9 +2359,9 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pmacssww", {VD, VS0, VS1, VD}},
-{"pmacsswd", {VD, VS0, VS1, VD}},
-{"pmacssdql", {VD, VS0, VS1, VD}},
+{"pmacssww", {VD, VS00o, VS1o, VD}},
+{"pmacsswd", {VD, VS00o, VS1o, VD}},
+{"pmacssdql", {VD, VS00o, VS1o, VD}},
 /* 88 */
 {0},
 {0},
@@ -2360,26 +2369,26 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pmacssdd", {VD, VS0, VS1, VD}},
-{"pmacssdqh", {VD, VS0, VS1, VD}},
+{"pmacssdd", {VD, VS00o, VS1o, VD}},
+{"pmacssdqh", {VD, VS00o, VS1o, VD}},
 /* 90 */
 {0},
 {0},
 {0},
 {0},
 {0},
-{"pmacsww", {VD, VS0, VS1, VD}},
-{"pmacswd", {VD, VS0, VS1, VD}},
-{"pmacsdql", {VD, VS0, VS1, VD}},
-/* 98 */
+{"pmacsww", {VD, VS00o, VS1o, VD}},
+{"pmacswd", {VD, VS00o, VS1o, VD}},
+{"pmacsdql", {VD, VS00o, VS1o, VD}},
+/* 98 */                   
 {0},
 {0},
 {0},
 {0},
 {0},
 {0},
-{"pmacsdd", {VD, VS0, VS1, VD}},
-{"pmacsdqh", {VD, VS0, VS1, VD}},
+{"pmacsdd", {VD, VS00o, VS1o, VD}},
+{"pmacsdqh", {VD, VS00o, VS1o, VD}},
 /* a0 */
 {0},
 {0},
@@ -2387,7 +2396,7 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pmadcsswd", {VD, VS0, VS1, VD}},
+{"pmadcsswd", {VD, VS00o, VS1o, VD}},
 {0},
 /* a8 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
@@ -2398,7 +2407,7 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pmadcswd", {VD, VS0, VS1, VD}},
+{"pmadcswd", {VD, VS00o, VS1o, VD}},
 {0},
 /* b8 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
@@ -2436,10 +2445,10 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"comps", {VD, VS0, VS1, Ib}},
-{"compd", {VD, VS0, VS1, Ib}},
-{"comss", {VD, VS0, VS1d, Ib}},
-{"comsd", {VD, VS0, VS1q, Ib}},
+{"comps", {VD, VS00o, VS1o, Ib}},
+{"compd", {VD, VS00o, VS1o, Ib}},
+{"comss", {VD, VS00d, VS1d, Ib}},
+{"comsd", {VD, VS00q, VS1q, Ib}},
 /* 30 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 38 */
@@ -2451,10 +2460,10 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pcomb", {VD, VS0, VS1, Ib}},
-{"pcomw", {VD, VS0, VS1, Ib}},
-{"pcomd", {VD, VS0, VS1, Ib}},
-{"pcomq", {VD, VS0, VS1, Ib}},
+{"pcomb", {VD, VS00o, VS1o, Ib}},
+{"pcomw", {VD, VS00o, VS1o, Ib}},
+{"pcomd", {VD, VS00o, VS1o, Ib}},
+{"pcomq", {VD, VS00o, VS1o, Ib}},
 /* 50 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 58 */
@@ -2466,10 +2475,10 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {0},
 {0},
-{"pcomub", {VD, VS0, VS1, Ib}},
-{"pcomuw", {VD, VS0, VS1, Ib}},
-{"pcomud", {VD, VS0, VS1, Ib}},
-{"pcomuq", {VD, VS0, VS1, Ib}},
+{"pcomub", {VD, VS00o, VS1o, Ib}},
+{"pcomuw", {VD, VS00o, VS1o, Ib}},
+{"pcomud", {VD, VS00o, VS1o, Ib}},
+{"pcomuq", {VD, VS00o, VS1o, Ib}},
 /* 70 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 78 */

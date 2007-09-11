@@ -3,7 +3,7 @@
  *	x86opc.h
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2006 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2007 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -55,24 +55,26 @@ enum X86AddrSize {
 	X86_ADDRSIZE64 = 2,
 };
 
-#define X86_OPTYPE_EMPTY	0
-#define X86_OPTYPE_IMM		1
-#define X86_OPTYPE_REG		2
-#define X86_OPTYPE_SEG		3
-#define X86_OPTYPE_MEM		4
-#define X86_OPTYPE_CRX		5
-#define X86_OPTYPE_DRX		6
-#define X86_OPTYPE_TRX		7
-#define X86_OPTYPE_STX		8
-#define X86_OPTYPE_MMX		9
-#define X86_OPTYPE_XMM		10
-#define X86_OPTYPE_FARPTR	11
+enum X86_Optype {
+	X86_OPTYPE_EMPTY = 0,
+	X86_OPTYPE_IMM = 1,
+	X86_OPTYPE_REG = 2,
+	X86_OPTYPE_SEG = 3,
+	X86_OPTYPE_MEM = 4,
+	X86_OPTYPE_CRX = 5,
+	X86_OPTYPE_DRX = 6,
+	X86_OPTYPE_TRX = 7,
+	X86_OPTYPE_STX = 8,
+	X86_OPTYPE_MMX = 9,
+	X86_OPTYPE_XMM = 10,
+	X86_OPTYPE_FARPTR = 11,
 
-// user defined types start here
-#define X86_OPTYPE_USER		32
+	// user defined types start here
+	X86_OPTYPE_USER = 32,
+};
 
 struct x86_insn_op {
-	int type;
+	X86_Optype type;
 	int size;
 	bool need_rex;
 	bool forbid_rex;
@@ -137,9 +139,8 @@ enum {
 	TYPE_Vx,	/* extra picks XMM register */
 	TYPE_VR,	/* rm of ModR/M picks XMM register */
 	TYPE_W,		/* ModR/M (XMM reg or memory) */	
-	TYPE_VD,	/* SSE5: src/dest (xmm reg) */
-	TYPE_VS0,	/* SSE5: src1 (mod/rm) */
-	TYPE_VS1,	/* SSE5: src2 (mod/rm) */
+	TYPE_VD,	/* SSE5: drex.dest */
+	TYPE_VS,	/* SSE5: src (mod/rm) */
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
