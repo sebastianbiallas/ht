@@ -91,7 +91,7 @@ loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic,
 /*
  *	INIT
  */
-
+extern bool ht_cfg_use_homedir;
 bool init_cfg();
 
 /*

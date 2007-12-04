@@ -186,6 +186,9 @@ static void params(int argc, char *argv[], bool started)
 				if (strcmp(argv[i], "--version") == 0) {
 					show_version();
 				} else
+				if (strcmp(argv[i], "--cfg-shared") == 0) {
+					ht_cfg_use_homedir = false;
+				} else
 				{
 					PARAM_ERROR("unknown option: %s", argv[i]);
 				}
@@ -258,6 +261,7 @@ static void params(int argc, char *argv[], bool started)
 #include <windows.h>
 #endif
 
+
 int main(int argc, char *argv[])
 {
 #if defined(WIN32) || defined(__WIN32__)
@@ -284,6 +288,7 @@ int main(int argc, char *argv[])
 		copyrights++;
 	}
 	LOG("appname = %s", appname);
+	LOG("config = %s", systemconfig_file);
 
 	int systemconfig_version = 0;   // -1 for older and 1 for newer file found
 	int systemconfig_magic = 0;     // !=0 meens wrong magic found

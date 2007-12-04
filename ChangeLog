@@ -1,6 +1,10 @@
  HT ChangeLog
 ==============
 
+version 2.0.11:
+	- fixed crash while changing text highlighting
+	- small bugs fixes
+	
 version 2.0.10:
 	- [x86] SSE5 :)
 	

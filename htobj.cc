@@ -817,6 +817,7 @@ bool ht_group::focus(ht_view *view)
 
 bool ht_group::focusnext()
 {
+	if (!current) return false;
 	int i = current->browse_idx;
 	bool r = (options & VO_SELBOUND);
 	ht_view *x = NULL;
@@ -843,6 +844,7 @@ bool ht_group::focusnext()
 
 bool ht_group::focusprev()
 {
+	if (!current) return false;
 	int i = current->browse_idx;
 	bool r = (options & VO_SELBOUND);
 	if (!i && !aclone() && !r) {

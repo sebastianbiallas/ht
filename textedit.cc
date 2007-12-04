@@ -1735,26 +1735,26 @@ void ht_text_viewer::popup_change_highlight()
 	b.w = 40;
 	b.h = 8;
 	
-	ht_dialog *d=new ht_dialog();
+	ht_dialog *d = new ht_dialog();
 	d->init(&b, "change highlighting mode", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 	
-	b.x=0;
-	b.y=0;
+	b.x = 0;
+	b.y = 0;
 		
 	/* mode (input) */
-	c=b;
-	c.x=0;
-	c.y=1;
-	c.w=b.w-2-c.x;
-	c.h=b.h-2-c.y;
+	c = b;
+	c.x = 0;
+	c.y = 1;
+	c.w = b.w-2-c.x;
+	c.h = b.h-2-c.y;
 
-	ht_itext_listbox *mode_input=new ht_itext_listbox();
+	ht_itext_listbox *mode_input = new ht_itext_listbox();
 	mode_input->init(&c);
 	
 	mode_input->insert_str(-1, "no highlighting");
 	uint lc = lexers->count();
 	int selected = -1;
-	for (uint i=0; i<lc; i++) {
+	for (uint i=0; i < lc; i++) {
 		ht_syntax_lexer *l = (ht_syntax_lexer*)(*lexers)[i];
 		mode_input->insert_str(i, l->getname());
 		if (lexer && (strcmp(lexer->getname(), l->getname()) == 0)) {
@@ -1766,13 +1766,13 @@ void ht_text_viewer::popup_change_highlight()
 	d->insert(mode_input);
 	
 	/* mode (text) */
-	c=b;
-	c.x=0;
-	c.y=0;
-	c.w=30;
-	c.h=1;
+	c = b;
+	c.x = 0;
+	c.y = 0;
+	c.w = 30;
+	c.h = 1;
 
-	ht_label *mode_text=new ht_label();
+	ht_label *mode_text = new ht_label();
 	mode_text->init(&c, "choose ~highlighting mode", mode_input);
 
 	d->insert(mode_text);
@@ -1780,7 +1780,7 @@ void ht_text_viewer::popup_change_highlight()
 	if (d->run(false)) {
 		ht_listbox_data type;
 
-		ViewDataBuf vdb(mode_text, &type, sizeof type);
+		ViewDataBuf vdb(mode_input, &type, sizeof type);
 
 		ht_syntax_lexer *l = (ht_syntax_lexer*)(*lexers)[
 			mode_input->getID(type.data->cursor_ptr)];

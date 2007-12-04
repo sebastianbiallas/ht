@@ -23,6 +23,8 @@
 #ifndef __FILE_H__
 #define __FILE_H__
 
+
+
 /* Note: all functions only take absolute dir/filenames ! */
 
 #include "types.h"
@@ -148,7 +150,8 @@ typedef uint IOAccessMode;
 /* system-independant (implementation in sys.cc) */
 int		sys_file_mode(int mode);
 int		sys_basename(char *result, const char *filename);
-int		sys_dirname(char *result, const char *filename);
+char *		sys_dirname(char *path);
+char * 		sys_get_home_dir();
 int		sys_relname(char *result, const char *filename, const char *cwd);
 int		sys_common_canonicalize(char *result, const char *in_name, const char *cwd, is_path_delim delim);
 char *		sys_filename_suffix(const char *fn);

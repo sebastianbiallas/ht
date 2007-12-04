@@ -35,7 +35,6 @@
 #include "store.h"
 #include "sys.h"
 #include "tools.h"
-
 /* VERSION 2 (for ht-0.4.4 and later) */
 
 /* NOTE: as of Version 2 ALL integers in HT config-files are
@@ -283,27 +282,23 @@ loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic,
 /*
  *	INIT
  */
-
+bool ht_cfg_use_homedir = true;
 bool init_cfg()
 {
-#if defined(MSDOS) || defined(DJGPP) || defined(WIN32) || defined(__WIN32__)
-	char d[1024];	/* FIXME: !!!! */
-	sys_dirname(d, appname);
+	char *d;
+	if (ht_cfg_use_homedir) d = sys_get_home_dir();
+	if (!d || !ht_cfg_use_homedir) d = sys_dirname(appname);
+	if (!d) d = "";
+#if !defined(WIN32) && !defined(__WIN32__) && !defined(DJGPP) && !defined(MSDOS)
+	char *b = "/"SYSTEM_CONFIG_FILE_NAME;
+#else
 	char *b = "\\"SYSTEM_CONFIG_FILE_NAME;
+#endif
 	systemconfig_file = ht_malloc(strlen(d)+strlen(b)+1);
 	strcpy(systemconfig_file, d);
 	strcat(systemconfig_file, b);
-#else
-	const char *home = getenv("HOME");
-	const char *b = "/"SYSTEM_CONFIG_FILE_NAME;
-	if (!home) home = "";
-	systemconfig_file = ht_malloc(strlen(home)+strlen(b)+1);
-	strcpy(systemconfig_file, home);
-	strcat(systemconfig_file, b);
-#endif
 	return true;
 }
-
 /*
  *	DONE
  */

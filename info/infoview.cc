@@ -502,9 +502,10 @@ bool ht_info_viewer::igotonode(const char *f, const char *n, bool add2hist)
 		if (sys_common_canonicalize(ff, f, cwd, sys_is_path_delim) != 0) return false;
 		if ((strcmp(ff, cff) != 0) || newnode) {
 			if (!readfile(ff, &infotext)) return false;
-			char c[HT_NAME_MAX];
-			if (sys_dirname(c, ff) == 0) strcpy(ncwd, c);
+			char *c;
+			if ((c = sys_dirname(ff))) strcpy(ncwd, c);
 			if (sys_basename(c, ff) == 0) strcpy(nfile, c);
+			free(c);
 		}
 	}
 	if (infotext) {

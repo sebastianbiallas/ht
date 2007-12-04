@@ -125,6 +125,88 @@
 #define S_IXOTH 0
 #endif
 
+
+#if defined(WIN32) || defined(__WIN32__)
+# include <windows.h>
+# include <winreg.h>
+#endif
+//-----------------------------------------------------------------------------
+static char *_str_strip(char *str, int len)
+{
+	char *pr =  (char*)malloc(len + 1);
+	pr[len] = 0;
+	memcpy(pr, str, len);
+	return pr;
+}
+//-----------------------------------------------------------------------------
+/*
+ 1. char *s            - old string
+ 2. unsigned int s_len - old string len
+ 3. char *r            - new string
+ 4. unsigned int r_len - new string len
+ 5. unsigned int at    - offset in old string
+ 6. unsigned int len   - len of substring for delete ( at - start)
+*/
+static char *_substr_replace(char *s, unsigned int s_len, char *r, unsigned int r_len,\
+                                            unsigned int at, unsigned int len)
+{
+	if (!s_len || !r_len) return NULL;
+	if (at > s_len) at = 0;
+	unsigned int nlen = s_len + r_len - len;
+	char *out = (char*)malloc(nlen+1);
+	out[nlen] = 0; 
+	memcpy(out, s, at);
+	memcpy(out+at, r, r_len);
+	while (s_len-- > (at + len)) {
+		out[--nlen] = s[s_len];
+	}
+	return out;
+}
+//-----------------------------------------------------------------------------
+static char *_env_replace(char *str, unsigned int len)
+{
+	bool e = false;
+	unsigned int cc = 0; // count
+	unsigned int sp = 0; // start pos
+	char *p = NULL;
+	char *prt = NULL;
+	char *t;
+	char *t2;
+	while (cc != len) {
+		t2 = prt?prt:str;
+#if defined(WIN32) || defined(__WIN32__) || defined(DJGPP) || defined(MSDOC)
+		if (t2[cc] == '%' || t2[cc] == ' ') {
+#else
+		if (t2[cc] == '$' || t2[cc] == ' ') {
+#endif
+			if (e) {
+				free(p);
+				p = _str_strip(t2 + sp, cc - sp);
+				if ((t = getenv(p)) != NULL) {
+					prt = _substr_replace(t2, prt?strlen(prt):strlen(str), t, strlen(t),
+                                                          sp-1, (cc - sp) + 2);
+					if (t2 != str) free(t2);
+					len = strlen(prt);
+					cc = sp;
+				}
+				e = false;
+			} else {
+				if (t2[cc] != ' ') {
+					sp = cc + 1;
+					e = true;
+				}
+			}
+		}
+		cc++;
+	}
+	if (prt == NULL) {
+		prt = (char*)malloc(len+1);
+		prt[len] = 0;	
+		memcpy(prt, str, len);
+	}
+	return prt;
+}
+//-----------------------------------------------------------------------------
 int sys_basename(char *result, const char *filename)
 {
 	// FIXME: use is_path_delim
@@ -140,18 +222,24 @@ int sys_basename(char *result, const char *filename)
 	return 0;
 }
 
-int sys_dirname(char *result, const char *filename)
+char * sys_dirname(char *path)
 {
-	// FIXME: use is_path_delim
-	char *slash1 = strrchr(filename, '/');
-	char *slash2 = strrchr(filename, '\\');
-	char *slash = (slash1 > slash2) ? slash1 : slash2;
-	if (slash) {
-		ht_strlcpy(result, filename, slash-filename+1);
-		return 0;
-	}
-	strcpy(result, ".");
-	return 0;
+	char *r;           // result
+	char *ptr = path;
+	int c = 0;
+	int last = 0;
+	do {
+		c++;
+		if (*ptr == '/' || *ptr == '\\') {
+			last = c;
+		} else if (*ptr == 0) {
+			r = (char*)malloc(last + 1);
+			strncpy(r, path, last);
+			r[last] = 0;
+			return r;
+		}
+	} while (*ptr++);
+	return NULL;
 }
 
 /* filename and pathname must be canonicalized */
@@ -180,6 +268,50 @@ int sys_relname(char *result, const char *filename, const char *cwd)
 	*result = 0;
 	strcat(result, last);
 	return 0;
+}
+
+char *sys_get_home_dir(void)
+{
+#if defined(WIN32) || defined(__WIN32__)
+	HKEY hKey;
+	char path[HT_NAME_MAX];
+	/*
+	 LONG len = HT_NAME_MAX;
+	 if(RegOpenKey(HKEY_CURRENT_USER,
+	 "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders",
+	                                                      &hKey) == ERROR_SUCCESS){
+	  if(RegQueryValue(hKey, "Personal", path, &len) == ERROR_SUCCESS){
+	   RegCloseKey(hKey);
+	   if(len > HT_NAME_MAX) return NULL;
+	   else return _env_replace(path, len);
+	  }
+	 }
+	*/
+	// not work on Windows 3.1 ?
+	DWORD len = HT_NAME_MAX;
+	if (RegOpenKeyEx(HKEY_CURRENT_USER,
+		"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders",
+                0, KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS) {
+		
+		if (RegQueryValueEx(hKey, "Personal", NULL, NULL, (LPBYTE)path, &len) ==
+                                                                ERROR_SUCCESS) {
+			RegCloseKey(hKey);
+			if (len > HT_NAME_MAX) {
+				return NULL;
+			} else {
+				return _env_replace(path, len);
+			}
+		}
+	}
+#elif defined(MSDOS) 
+	// -?
+#elif defined(DJGPP)
+	// unknown...
+#else 
+	char *path = getenv("HOME");
+	if (path) return _env_replace(path, strlen(path));
+#endif
+	return NULL;
 }
 
 int sys_file_mode(int mode)
