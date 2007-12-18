@@ -285,14 +285,14 @@ loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic,
 bool ht_cfg_use_homedir = true;
 bool init_cfg()
 {
-	char *d;
+	const char *d;
 	if (ht_cfg_use_homedir) d = sys_get_home_dir();
 	if (!d || !ht_cfg_use_homedir) d = sys_dirname(appname);
 	if (!d) d = "";
 #if !defined(WIN32) && !defined(__WIN32__) && !defined(DJGPP) && !defined(MSDOS)
-	char *b = "/"SYSTEM_CONFIG_FILE_NAME;
+	const char *b = "/"SYSTEM_CONFIG_FILE_NAME;
 #else
-	char *b = "\\"SYSTEM_CONFIG_FILE_NAME;
+	const char *b = "\\"SYSTEM_CONFIG_FILE_NAME;
 #endif
 	systemconfig_file = ht_malloc(strlen(d)+strlen(b)+1);
 	strcpy(systemconfig_file, d);
