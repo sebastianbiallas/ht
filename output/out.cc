@@ -716,7 +716,7 @@ int	AnalyserOutput::prevLine(Address *&Addr, int &line, int n, Address *min)
 
 	/*
 	 *	Now it gets complicated. We have to go to an other address.
-	 *	First we have to figure out, where we should start to search for
+	 *	First we have to figure out where we should start to search for
 	 *	the previous address.
 	 */
 	int min_length, max_length, min_look_ahead, avg_look_ahead, addr_align;

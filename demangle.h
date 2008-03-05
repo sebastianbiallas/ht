@@ -1,51 +1,69 @@
 /* Defs for interface to demanglers.
    Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public License
+   as published by the Free Software Foundation; either version 2, or
+   (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   In addition to the permissions in the GNU Library General Public
+   License, the Free Software Foundation gives you unlimited
+   permission to link the compiled version of this file into
+   combinations with other programs, and to distribute those
+   combinations without any restriction coming from the use of this
+   file.  (The Library Public License restrictions do apply in other
+   respects; for example, they cover modification of the file, and
+   distribution when not linked into a combined executable.)
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street - Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
+   02110-1301, USA.  */
 
 
 #if !defined (DEMANGLE_H)
 #define DEMANGLE_H
 
-//#include "libiberty.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+#define ATTRIBUTE_NORETURN
+#define ATTRIBUTE_UNUSED
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+#define XNEW(T)			((T *) xmalloc (sizeof (T)))
+#define XNEWVEC(T, N)		((T *) xmalloc (sizeof (T) * (N)))
+#define XRESIZEVAR(T, P, S)	((T *) xrealloc ((P), (S)))
+#define XRESIZEVEC(T, P, N)	((T *) xrealloc ((void *) (P), sizeof (T) * (N)))
+
+
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
-#define DMGL_NO_OPTS     0                /* For readability... */
-#define DMGL_PARAMS      (1 << 0)        /* Include function args */
-#define DMGL_ANSI        (1 << 1)        /* Include const, volatile, etc */
-#define DMGL_JAVA        (1 << 2)        /* Demangle as Java rather than C++. */
-#define DMGL_VERBOSE     (1 << 3)        /* Include implementation details.  */
-#define DMGL_TYPES       (1 << 4)        /* Also try to demangle type encodings.  */
+#define DMGL_NO_OPTS	 0		/* For readability... */
+#define DMGL_PARAMS	 (1 << 0)	/* Include function args */
+#define DMGL_ANSI	 (1 << 1)	/* Include const, volatile, etc */
+#define DMGL_JAVA	 (1 << 2)	/* Demangle as Java rather than C++. */
+#define DMGL_VERBOSE	 (1 << 3)	/* Include implementation details.  */
+#define DMGL_TYPES	 (1 << 4)	/* Also try to demangle type encodings.  */
+#define DMGL_RET_POSTFIX (1 << 5)       /* Print function return types (when
+                                           present) after function signature */
 
-#define DMGL_AUTO        (1 << 8)
-#define DMGL_GNU         (1 << 9)
-#define DMGL_LUCID       (1 << 10)
-#define DMGL_ARM         (1 << 11)
-#define DMGL_HP          (1 << 12)       /* For the HP aCC compiler;
+#define DMGL_AUTO	 (1 << 8)
+#define DMGL_GNU	 (1 << 9)
+#define DMGL_LUCID	 (1 << 10)
+#define DMGL_ARM	 (1 << 11)
+#define DMGL_HP 	 (1 << 12)       /* For the HP aCC compiler;
                                             same as ARM except for
                                             template arguments, etc. */
-#define DMGL_EDG         (1 << 13)
-#define DMGL_GNU_V3      (1 << 14)
-#define DMGL_GNAT        (1 << 15)
+#define DMGL_EDG	 (1 << 13)
+#define DMGL_GNU_V3	 (1 << 14)
+#define DMGL_GNAT	 (1 << 15)
 
 /* If none of these are set, use 'current_demangling_style' as the default. */
 #define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_V3|DMGL_JAVA|DMGL_GNAT)
@@ -76,12 +94,12 @@ extern enum demangling_styles
 /* Define string names for the various demangling styles. */
 
 #define NO_DEMANGLING_STYLE_STRING            "none"
-#define AUTO_DEMANGLING_STYLE_STRING          "auto"
-#define GNU_DEMANGLING_STYLE_STRING           "gnu"
-#define LUCID_DEMANGLING_STYLE_STRING         "lucid"
-#define ARM_DEMANGLING_STYLE_STRING           "arm"
-#define HP_DEMANGLING_STYLE_STRING            "hp"
-#define EDG_DEMANGLING_STYLE_STRING           "edg"
+#define AUTO_DEMANGLING_STYLE_STRING	      "auto"
+#define GNU_DEMANGLING_STYLE_STRING    	      "gnu"
+#define LUCID_DEMANGLING_STYLE_STRING	      "lucid"
+#define ARM_DEMANGLING_STYLE_STRING	      "arm"
+#define HP_DEMANGLING_STYLE_STRING	      "hp"
+#define EDG_DEMANGLING_STYLE_STRING	      "edg"
 #define GNU_V3_DEMANGLING_STYLE_STRING        "gnu-v3"
 #define JAVA_DEMANGLING_STYLE_STRING          "java"
 #define GNAT_DEMANGLING_STYLE_STRING          "gnat"
@@ -129,13 +147,25 @@ cplus_demangle_set_style (enum demangling_styles style);
 extern enum demangling_styles 
 cplus_demangle_name_to_style (const char *name);
 
-/* V3 ABI demangling entry points, defined in cp-demangle.c.  */
-extern char*
-cplus_demangle_v3 (const char* mangled, int options);
+/* Callback typedef for allocation-less demangler interfaces. */
+typedef void (*demangle_callbackref) (const char *, size_t, void *);
+
+/* V3 ABI demangling entry points, defined in cp-demangle.c.  Callback
+   variants return non-zero on success, zero on error.  char* variants
+   return a string allocated by malloc on success, NULL on error.  */
+extern int
+cplus_demangle_v3_callback (const char *mangled, int options,
+                            demangle_callbackref callback, void *opaque);
 
 extern char*
-java_demangle_v3 (const char* mangled);
+cplus_demangle_v3 (const char *mangled, int options);
 
+extern int
+java_demangle_v3_callback (const char *mangled,
+                           demangle_callbackref callback, void *opaque);
+
+extern char*
+java_demangle_v3 (const char *mangled);
 
 enum gnu_v3_ctor_kinds {
   gnu_v3_complete_object_ctor = 1,
@@ -148,7 +178,7 @@ enum gnu_v3_ctor_kinds {
    gnu_v3_ctor_kinds' value indicating what kind of constructor
    it is.  */
 extern enum gnu_v3_ctor_kinds
-        is_gnu_v3_mangled_ctor (const char *name);
+	is_gnu_v3_mangled_ctor (const char *name);
 
 
 enum gnu_v3_dtor_kinds {
@@ -162,7 +192,7 @@ enum gnu_v3_dtor_kinds {
    gnu_v3_dtor_kinds' value, indicating what kind of destructor
    it is.  */
 extern enum gnu_v3_dtor_kinds
-        is_gnu_v3_mangled_dtor (const char *name);
+	is_gnu_v3_mangled_dtor (const char *name);
 
 /* The V3 demangler works in two passes.  The first pass builds a tree
    representation of the mangled name, and the second pass turns the
@@ -273,6 +303,9 @@ enum demangle_component_type
   /* A reference.  The one subtree is the type which is being
      referenced.  */
   DEMANGLE_COMPONENT_REFERENCE,
+  /* C++0x: An rvalue reference.  The one subtree is the type which is
+     being referenced.  */
+  DEMANGLE_COMPONENT_RVALUE_REFERENCE,
   /* A complex type.  The one subtree is the base type.  */
   DEMANGLE_COMPONENT_COMPLEX,
   /* An imaginary type.  The one subtree is the base type.  */
@@ -336,7 +369,15 @@ enum demangle_component_type
      using 'n' instead of '-', we want a way to indicate a negative
      number which involves neither modifying the mangled string nor
      allocating a new copy of the literal in memory.  */
-  DEMANGLE_COMPONENT_LITERAL_NEG
+  DEMANGLE_COMPONENT_LITERAL_NEG,
+  /* A libgcj compiled resource.  The left subtree is the name of the
+     resource.  */
+  DEMANGLE_COMPONENT_JAVA_RESOURCE,
+  /* A name formed by the concatenation of two parts.  The left
+     subtree is the first part and the right subtree the second.  */
+  DEMANGLE_COMPONENT_COMPOUND_NAME,
+  /* A name formed by a single character.  */
+  DEMANGLE_COMPONENT_CHARACTER
 };
 
 /* Types which are only used internally.  */
@@ -360,7 +401,7 @@ struct demangle_component
     struct
     {
       /* A pointer to the name (which need not NULL terminated) and
-         its length.  */
+	 its length.  */
       const char *s;
       int len;
     } s_name;
@@ -421,6 +462,12 @@ struct demangle_component
       /* Template parameter index.  */
       long number;
     } s_number;
+
+    /* For DEMANGLE_COMPONENT_CHARACTER.  */
+    struct
+    {
+      int character;
+    } s_character;
 
     /* For other types.  */
     struct
@@ -527,8 +574,27 @@ cplus_demangle_print (int options,
                       int estimated_length,
                       size_t *p_allocated_size);
 
+/* This function takes a struct demangle_component tree and passes back
+   a demangled string in one or more calls to a callback function.
+   The first argument is DMGL_* options.  The second is the tree to
+   demangle.  The third is a pointer to a callback function; on each call
+   this receives an element of the demangled string, its length, and an
+   opaque value.  The fourth is the opaque value passed to the callback.
+   The callback is called once or more to return the full demangled
+   string.  The demangled element string is always nul-terminated, though
+   its length is also provided for convenience.  In contrast to
+   cplus_demangle_print(), this function does not allocate heap memory
+   to grow output strings (except perhaps where alloca() is implemented
+   by malloc()), and so is normally safe for use where the heap has been
+   corrupted.  On success, this function returns 1; on failure, 0.  */
+
+extern int
+cplus_demangle_print_callback (int options,
+                               const struct demangle_component *tree,
+                               demangle_callbackref callback, void *opaque);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif  /* DEMANGLE_H */
+#endif	/* DEMANGLE_H */

@@ -3,8 +3,9 @@
 
 version 2.0.12:
 	- fixed crash with too long lines
-	- fixed some cosmetic resizing things in 
-	  (File-Open, Show-Xrefs) dialogs
+	- fixed some cosmetic resizing things in dialogs
+	  (File-Open, Show-Xrefs)
+	- c++-demangler from gcc 4.3
 
 version 2.0.11:
 	- [Win32] Save config in home directory

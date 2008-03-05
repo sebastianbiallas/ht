@@ -61,7 +61,7 @@ htflthd.h htfltimg.cc htfltimg.h xbestruct.cc xbestruct.h htxbehead.cc \
 htxbehead.h htxbe.cc htxbe.h htxbeimg.cc htxbeimg.h htxbeimp.cc htxbeimp.h \
 pefstruc.cc pefstruc.h htpef.cc htpef.h htpefhd.cc htpefhd.h htpefimg.cc htpefimg.h \
 htpefimp.cc htpefimp.h htxex.cc htxex.h htxexhead.cc htxexhead.h xexstruct.cc \
-cp-demangle.c cp-demangle.h xexstruct.h htxeximg.cc htxeximg.h
+cp-demangle.c cp-demangle.h xexstruct.h htxeximg.cc htxeximg.h safe-ctype.h
 
 dist2: distdir
 	$(AMTAR) chof - $(distdir) | BZIP2=$(BZIP2_ENV) bzip2 -c >$(distdir).tar.bz2
