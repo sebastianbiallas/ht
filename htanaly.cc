@@ -1861,10 +1861,10 @@ void ht_aviewer::showXRefs(Address *Addr)
 			if (func) {
 				int d=0;
 				x->addr->difference(d, a->addr);
-				char sign='+';
-				if (d<0) {
-					d=-d;
-					sign='-';
+				char sign = '+';
+				if (d < 0) {
+					d = -d;
+					sign = '-';
 				}
 				ht_snprintf(str2, sizeof str2, "%s%c%x", func, sign, d);
 			} else {

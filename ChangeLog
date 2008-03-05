@@ -1,6 +1,11 @@
  HT ChangeLog
 ==============
 
+version 2.0.12:
+	- fixed crash with too long lines
+	- fixed some cosmetic resizing things in 
+	  (File-Open, Show-Xrefs) dialogs
+
 version 2.0.11:
 	- [Win32] Save config in home directory
 	- fixed crash while changing text highlighting

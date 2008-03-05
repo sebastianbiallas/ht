@@ -412,18 +412,21 @@ bool file_open_dialog(char **name, uint *mode)
 	mode_input->insertstring("autodetect");
 	mode_input->insertstring("binary");
 	mode_input->insertstring("text");
-
+	
+	mode_input->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
+	
 	d->insert(mode_input);
 	
 	/* mode (text) */
-	c=b;
-	c.x=1;
-	c.y=b.h-4;
-	c.w=9;
-	c.h=1;
+	c = b;
+	c.x = 1;
+	c.y = b.h-4;
+	c.w = 9;
+	c.h = 1;
 
 	ht_label *mode_text = new ht_label();
 	mode_text->init(&c, "~mode", mode_input);
+	mode_text->growmode = MK_GM(GMH_LEFT, GMV_BOTTOM);
 
 	d->insert(mode_text);
 

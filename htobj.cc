@@ -1808,7 +1808,7 @@ void ht_window::redraw()
 	
 	if (pindicator) {
 		char buf[256];
-		buf[0]=0;
+		buf[0] = 0;
 	
 		m.msg = msg_get_pindicator;
 		m.type = mt_empty;
@@ -1830,7 +1830,7 @@ void ht_window::redraw()
 		m.data2.ptr = &p;
 		sendmsg(&m);
 
-		if (p.psize>=100) {
+		if (p.psize >= 100) {
 			hscrollbar->disable();
 		} else {
 			hscrollbar->enable();
@@ -1847,7 +1847,7 @@ void ht_window::redraw()
 		m.data2.ptr = &p;
 		sendmsg(&m);
 
-		if (p.psize>=100) {
+		if (p.psize >= 100) {
 			vscrollbar->disable();
 		} else {
 			vscrollbar->enable();
@@ -1876,31 +1876,31 @@ void ht_window::setframe(ht_frame *newframe)
 		ht_group::remove(frame);
 		frame->done();
 		delete frame;
-		frame=NULL;
+		frame = NULL;
 	}
 	if (newframe) {
 		uint style=newframe->getstyle();
-		if (style & FS_MOVE) options|=VO_MOVE; else options&=~VO_MOVE;
-		if (style & FS_RESIZE) options|=VO_RESIZE; else options&=~VO_RESIZE;
+		if (style & FS_MOVE) options |= VO_MOVE; else options &= ~VO_MOVE;
+		if (style & FS_RESIZE) options |= VO_RESIZE; else options &= ~VO_RESIZE;
 		insert(newframe);
 	} else {
-		options&=~VO_MOVE;
-		options&=~VO_RESIZE;
+		options &= ~VO_MOVE;
+		options &= ~VO_RESIZE;
 	}
-	frame=newframe;
+	frame = newframe;
 }
 
-void ht_window::setnumber(uint _number)
+void ht_window::setnumber(uint aNumber)
 {
-	if (frame) frame->setnumber(_number);
-	number=_number;
+	if (frame) frame->setnumber(aNumber);
+	number = aNumber;
 	dirtyview();
 }
 
 void ht_window::sethscrollbar(ht_scrollbar *s)
 {
 	if (hscrollbar) remove(hscrollbar);
-	hscrollbar=s;
+	hscrollbar = s;
 	insert(hscrollbar);
 	putontop(hscrollbar);
 }
@@ -1908,7 +1908,7 @@ void ht_window::sethscrollbar(ht_scrollbar *s)
 void ht_window::setpindicator(ht_text *p)
 {
 	if (pindicator) remove(pindicator);
-	pindicator=p;
+	pindicator = p;
 	insert(pindicator);
 	putontop(pindicator);
 }
@@ -1923,7 +1923,7 @@ void ht_window::settitle(char *title)
 void ht_window::setvscrollbar(ht_scrollbar *s)
 {
 	if (vscrollbar) remove(vscrollbar);
-	vscrollbar=s;
+	vscrollbar = s;
 	insert(vscrollbar);
 	putontop(vscrollbar);
 }

@@ -2144,7 +2144,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 		case msg_get_scrollinfo:
 			switch (msg->data1.integer) {
 				case gsi_hscrollbar: {
-					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
+					gsi_scrollbar_t *p = (gsi_scrollbar_t*)msg->data2.ptr;
 					if (!get_hscrollbar_pos(&p->pstart, &p->psize)) {
 						p->pstart = 0;
 						p->psize = 100;
@@ -2153,7 +2153,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					return;
 				}
 				case gsi_vscrollbar: {
-					gsi_scrollbar_t *p=(gsi_scrollbar_t*)msg->data2.ptr;
+					gsi_scrollbar_t *p = (gsi_scrollbar_t*)msg->data2.ptr;
 					if (!get_vscrollbar_pos(&p->pstart, &p->psize)) {
 						p->pstart = 0;
 						p->psize = 100;

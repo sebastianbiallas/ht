@@ -1362,7 +1362,7 @@ void ht_button::push()
 void	ht_listbox_title::init(Bounds *b)
 {
 	ht_view::init(b, VO_RESIZE, "ht_listbox_title");
-	growmode = MK_GM(GMH_FIT, GMV_FIT);
+	growmode = MK_GM(GMH_FIT, GMV_TOP);
 	texts = NULL;
 	listbox = NULL;
 	cols = 0;
@@ -1468,11 +1468,11 @@ void ht_listbox::init(Bounds *b, uint Listboxcaps)
 
 	growmode = MK_GM(GMH_FIT, GMV_FIT);
 
-	Bounds c=*b;
-	c.x=c.w-1;
-	c.y=0;
-	c.w=1;
-	scrollbar=new ht_scrollbar();
+	Bounds c = *b;
+	c.x = c.w-1;
+	c.y = 0;
+	c.w = 1;
+	scrollbar = new ht_scrollbar();
 	scrollbar->init(&c, &pal, true);
 
 	pos = 0;
