@@ -89,7 +89,7 @@ void AnalyserHTOutput::beginLine()
 			temp[s] = 0;
 		}
 		// FIXME: buffer bla
-		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, 1024, temp);
+		work_buffer = (byte *)tag_make_sel((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, temp);
 	}
 	
 	if (analy->explored->contains(addr)) {
@@ -127,21 +127,27 @@ void	AnalyserHTOutput::endLine()
 
 			char workbuf2[1024];
 			char *work_buffer2 = workbuf2;
+			char *work_buffer2_end = workbuf2 + sizeof workbuf2 - 1;
+			*work_buffer2_end = 0;
 			
 			a += bytes_line - want_bytes_line;
 			
 			for (int i=0; i < want_bytes_line; i++) {
-				work_buffer2 = tag_make_edit_byte(work_buffer2, sizeof workbuf2, a+i);
+				work_buffer2 = tag_make_edit_byte(work_buffer2, work_buffer2_end - work_buffer2, a+i);
 			}
 			for (int i=0; i <= analy->max_opcode_length*2-want_bytes_line*2; i++) {
-				*(work_buffer2++)=' ';
+				if (work_buffer2 < work_buffer2_end) {
+					*work_buffer2++ = ' ';
+				}
 			}
 
 			/* ugly */
-			*work_buffer = 0;
-			memmove(work_buffer_edit_bytes_insert+(work_buffer2-workbuf2), work_buffer_edit_bytes_insert, tag_strlen((char*)work_buffer_edit_bytes_insert));
-			memcpy(work_buffer_edit_bytes_insert, workbuf2, (work_buffer2-workbuf2));
-			work_buffer += (work_buffer2-workbuf2);
+			if (work_buffer + (work_buffer2-workbuf2) < work_buffer_end) {
+				*work_buffer = 0;
+				memmove(work_buffer_edit_bytes_insert+(work_buffer2-workbuf2), work_buffer_edit_bytes_insert, tag_strlen((char*)work_buffer_edit_bytes_insert));
+				memcpy(work_buffer_edit_bytes_insert, workbuf2, (work_buffer2-workbuf2));
+				work_buffer += (work_buffer2-workbuf2);
+			}
 		}
 	}
 	AnalyserOutput::endLine();
@@ -149,7 +155,7 @@ void	AnalyserHTOutput::endLine()
 
 char *AnalyserHTOutput::externalLink(char *s, uint32 type1, uint32 type2, uint32 type3, uint32 type4, void *special)
 {
-	*(tag_make_ref(tmpbuffer, 1024, type1, type2, type3, type4, s)) = 0;
+	*(tag_make_ref(tmpbuffer, sizeof tmpbuffer, type1, type2, type3, type4, s)) = 0;
 	return tmpbuffer;
 }
 
@@ -189,10 +195,15 @@ void AnalyserHTOutput::putElement(int element_type, const char *element)
 	case ELEMENT_TYPE_HIGHLIGHT_DATA_CODE:
 		work_buffer = (byte *)tag_make_color((TAGSTRING *)work_buffer, work_buffer_end-work_buffer, getcolor_analy(palidx_analyser_default));
 		write("  ");
-		while (*element) {
+		while (*element && work_buffer < work_buffer_end) {
 			if (*element == '\e') {
 				int len = tag_get_len(element);
-				while (len--) *(work_buffer++) = *(element++);
+				if (len > work_buffer_end - work_buffer) {
+					memset(work_buffer, 0, work_buffer_end - work_buffer);
+					work_buffer = work_buffer_end;
+				} else {
+					while (len--) *work_buffer++ = *element++;
+				}
 				continue;
 			}
 			if (*element == '\\') {
@@ -218,8 +229,13 @@ void AnalyserHTOutput::putElement(int element_type, const char *element)
 					}
 					element++;
 				} else {
-					*work_buffer++ = '\\';
-					*work_buffer++ = *(element++);
+					if (work_buffer_end - work_buffer < 2) {
+						memset(work_buffer, 0, work_buffer_end - work_buffer);
+						work_buffer = work_buffer_end;
+					} else {
+						*work_buffer++ = '\\';
+						*work_buffer++ = *(element++);
+					}
 				}
 				continue;
 			}

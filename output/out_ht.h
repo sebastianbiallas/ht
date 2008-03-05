@@ -45,9 +45,9 @@ class AnalyserHTOutput: public AnalyserOutput {
 	palette	analy_pal;
 	char tmpbuffer[1024];
 	byte *work_buffer_edit_bytes_insert;
+	int last;
 
 	vcp getcolor_analy(uint pal_index);
-	int last;
 public:
 
 			void init(Analyser *analy);

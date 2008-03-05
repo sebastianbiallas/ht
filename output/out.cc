@@ -124,6 +124,7 @@ void	AnalyserOutput::init(Analyser *Analy)
 	work_buffer_start = ht_malloc(WORKBUF_LEN);
 	work_buffer = work_buffer_start;
 	work_buffer_end = work_buffer_start + WORKBUF_LEN - 1;
+	*work_buffer_end = 0;
 	temp_buffer = ht_malloc(WORKBUF_LEN);
 	dis_style = DIS_STYLE_HIGHLIGHT+DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE+X86DIS_STYLE_OPTIMIZE_ADDR;
 	changeConfig();
@@ -209,13 +210,15 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 #define LABELINDENT 32
 #define MAX_XREF_COLS 3
 #define MAX_XREF_LINES 7
-	
+
+#if 0	
 	char tbuf[1024];
-	Addr->stringify(tbuf, 1024, 0);
-//	printf("generate_addr(%s, ", tbuf);
+	Addr->stringify(tbuf, sizeof tbuf, 0);
+	printf("generate_addr(%s, ", tbuf);
 	char tbuf2[1024];
-	addr->stringify(tbuf2, 1024, 0);
-//	printf("%s)\n", tbuf2);
+	addr->stringify(tbuf2, sizeof tbuf2, 0);
+	printf("%s)\n", tbuf2);
+#endif
 
 	cur_addr = analy->getLocationByAddress(addr);
 	cur_out_addr = oa;
@@ -265,7 +268,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 				char *t;
 				uint64 u;
 				Addr->putIntoUInt64(u);
-				t = externalLink(b, u >> 32, u, 0, 1, NULL);				
+				t = externalLink(b, u >> 32, u, 0, 1, NULL);
 				write(t);
 			} else {
 				Container *xr = cur_addr->xrefs;
@@ -336,7 +339,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 		}
 
 		byte buf[16];
-		int buffer_size = analy->bufPtr(addr, buf, sizeof(buf));
+		int buffer_size = analy->bufPtr(addr, buf, sizeof buf);
 		if (analy->disasm && buffer_size) {
 			OPCODE *o = analy->disasm->decode(buf, MIN(buffer_size, op_len), analy->mapAddr(Addr));
 			/* inits for addr-sym transformations */
@@ -394,55 +397,55 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 						if (analy->validAddress(addr, scinitialized)) {
 							char buf[50];
 							switch (cur_addr->type.int_subtype) {
-								case dst_iword: {
-									uint16 c;
-									analy->bufPtr(addr, (byte *)&c, 2);
-									sprintf(buf, "dw          \\@n%04xh", c);
+							case dst_iword: {
+								uint16 c;
+								analy->bufPtr(addr, (byte *)&c, 2);
+								sprintf(buf, "dw          \\@n%04xh", c);
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
+								break;
+							}
+							case dst_idword: {
+								uint32 c;
+								analy->bufPtr(addr, (byte *)&c, 4);
+								sprintf(buf, "dd          \\@n%08xh", c);
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
+								break;
+							}
+							case dst_iqword: {
+								uint64 c;
+								analy->bufPtr(addr, (byte *)&c, 8);
+								ht_snprintf(buf, sizeof buf, "dq          \\@n%016qxh", c);
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
+								break;
+							}
+							case dst_ibyte:
+							default: {
+								byte c;
+								if (analy->bufPtr(addr, &c, 1)==1) {
+									sprintf(buf, "db          \\@n%02xh ", c);
 									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
-									break;
+									sprintf(buf, "; '%c'", (c<32)?32:c);
+									putElement(ELEMENT_TYPE_COMMENT, buf);
+								} else {
+									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 								}
-								case dst_idword: {
-									uint32 c;
-									analy->bufPtr(addr, (byte *)&c, 4);
-									sprintf(buf, "dd          \\@n%08xh", c);
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
-									break;
-								}
-								case dst_iqword: {
-									uint64 c;
-									analy->bufPtr(addr, (byte *)&c, 8);
-									ht_snprintf(buf, sizeof buf, "dq          \\@n%016qxh", c);
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
-									break;
-								}
-								case dst_ibyte:
-								default: {
-									byte c;
-									if (analy->bufPtr(addr, (byte *)&c, 1)==1) {
-										sprintf(buf, "db          \\@n%02xh ", c);
-										putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
-										sprintf(buf, "; '%c'", (c<32)?32:c);
-										putElement(ELEMENT_TYPE_COMMENT, buf);
-									} else {
-										putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
-									}
-								}
+							}
 							}
 						} else {
 							// not initialized
 							switch (cur_addr->type.int_subtype) {
-								case dst_iword:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dw          ????");
-									break;
-								case dst_idword:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dd          ????????");
-									break;
-								case dst_iqword:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dq          ????????????????");
-									break;
-								case dst_ibyte:
-								default:
-									putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
+							case dst_iword:
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dw          ????");
+								break;
+							case dst_idword:
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dd          ????????");
+								break;
+							case dst_iqword:
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "dq          ????????????????");
+								break;
+							case dst_ibyte:
+							default:
+								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, "db          ??");
 							}
 						}
 						break;
@@ -454,10 +457,10 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 								char buf[1024];
 								byte bufread[1024];
 								char *b;
-								int r = analy->bufPtr(addr, bufread, MIN(cur_addr->type.length, 1024));
+								int r = analy->bufPtr(addr, bufread, MIN(cur_addr->type.length, sizeof bufread));
 								strcpy(buf, "db          \\@s\"");
 								b = buf + 16 + escape_special(buf+16, 100, bufread, r, "\"", false);
-								*b = '\"'; b++; *b = 0;
+								*b++ = '\"'; *b = 0;
 								putElement(ELEMENT_TYPE_HIGHLIGHT_DATA_CODE, buf);
 								bytes_line = want_bytes_line = cur_addr->type.length;
 								break;
@@ -512,7 +515,7 @@ Stream *AnalyserOutput::getGenerateStream()
 	return NULL;
 }
 
-int	AnalyserOutput::generateFile(Address *from, Address *to)
+int AnalyserOutput::generateFile(Address *from, Address *to)
 {
 	if (analy->active) return OUTPUT_GENERATE_ERR_ANALYSER_NOT_FINISHED;
 	if (!from->isValid() || !to->isValid()) return OUTPUT_GENERATE_ERR_INVAL;
@@ -874,14 +877,14 @@ void AnalyserOutput::reset()
 void AnalyserOutput::write(const char *s)
 {
 	int len = elementLength(s);
-	len = MIN(len, WORKBUF_LEN-(work_buffer-work_buffer_start));
+	len = MIN(len, work_buffer_end-work_buffer);
 	memcpy(work_buffer, s, len);
 	work_buffer += len;
 }
 
 void AnalyserOutput::write(const char *s, int n)
 {
-	n = MIN(n, WORKBUF_LEN-(work_buffer-work_buffer_start));
+	n = MIN(n, work_buffer_end-work_buffer);
 	memcpy(work_buffer, s, n);
 	work_buffer += n;
 }
