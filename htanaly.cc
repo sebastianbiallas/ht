@@ -1826,7 +1826,7 @@ void ht_aviewer::showXRefs(Address *Addr)
 		uint bw = b.w;
 		uint bh = b.h;
 		char str[256];
-		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS;
+		global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
 		ht_snprintf(str, sizeof str, "xrefs of address %y", Addr);
 		ht_dialog *dialog = new ht_dialog();
 		dialog->init(&b, str, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
@@ -1855,6 +1855,7 @@ void ht_aviewer::showXRefs(Address *Addr)
 		int xcount=0;
 		if (x_tree) foreach(AddrXRef, x, *x_tree, {
 			xcount++;
+			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_WHITESPACE;
 			ht_snprintf(str, sizeof str, "%y", x->addr);
 			Location *a = analy->getFunctionByAddress(x->addr);
 			const char *func = analy->getSymbolNameByLocation(a);

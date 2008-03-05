@@ -19,6 +19,7 @@
  */
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1389,14 +1390,16 @@ void ht_listbox_title::draw()
 	vcp color = getTextColor();
 	clear(color);
 	if (!texts || !listbox) return;
-	int x = listbox->x;
-	x = 0;
+	int x = 0;
 	for (int i=0; i < cols; i++) {     
-		buf->nprint(x, 0, color, texts[i], size.w);
+		buf->nprint(x, 0, color, texts[i], size.w - x);
 		x += listbox->widths[i];
 		if (i+1 < cols) {
+			if (x >= size.w) break;
 			buf->printChar(x++, 0, color, ' ');
+			if (x >= size.w) break;
 			buf->printChar(x++, 0, color, GC_1VLINE, CP_GRAPHICAL);
+			if (x >= size.w) break;
 			buf->printChar(x++, 0, color, ' ');
 		}
 	}
@@ -1413,7 +1416,6 @@ void ht_listbox_title::setText(int cols, ...)
 	va_start(vargs, cols);
 	setTextv(cols, vargs);
 	va_end(vargs);
-	va_end(vargs);
 }
 
 void ht_listbox_title::setTextv(int c, va_list vargs)
@@ -1429,7 +1431,7 @@ void ht_listbox_title::setTextv(int c, va_list vargs)
 	if (!c) return;
 	texts = ht_malloc(c * sizeof(char*));
 	for (int i=0; i<cols; i++) {
-		texts[i] = ht_strdup(va_arg(vargs, char* ));
+		texts[i] = ht_strdup(va_arg(vargs, char*));
 	}
 	update();
 }
@@ -1610,9 +1612,10 @@ void ht_listbox::draw()
 	int Cols = numColumns();
 	if (Cols > cols) rearrangeColumns();
 
-	bool resizing_cols = true;
 	bool title_redraw = false;
-	while (resizing_cols) {
+	bool resizing_cols;
+
+	do {
 		resizing_cols = false;
 		clear(fc);
 		void *entry = e_top;
@@ -1667,7 +1670,7 @@ void ht_listbox::draw()
 			entry = getNext(entry);
 			i++;
 		}
-	}
+	} while (resizing_cols);
 	updateCursor();
 	if (title_redraw && title) {
 		title->update();
@@ -1854,7 +1857,7 @@ void ht_listbox::handlemsg(htmsg *msg)
 			}
 			default: {
 				if ((listboxcaps & LISTBOX_QUICKFIND) && msg->data1.integer > 31 && msg->data1.integer < 0xff) {
-					*(qpos++) = msg->data1.integer;
+					*qpos++ = msg->data1.integer;
 					*qpos = 0;
 					void *a = quickfind(quickfinder);
 					if (a) {
@@ -2112,14 +2115,14 @@ void *ht_text_listbox::getPrev(void *entry)
 
 const char *ht_text_listbox::getStr(int col, void *entry)
 {
-	if (entry && (col < cols)) {
+	if (entry && col < cols) {
 		return ((ht_text_listbox_item *)entry)->data[col];
 	} else {
 		return "";
 	}
 }
 
-void	ht_text_listbox::insert_str_extra(int id, void *extra_data, const char **strs)
+void ht_text_listbox::insert_str_extra(int id, void *extra_data, const char **strs)
 {
 	// FIXME: code duplication...
 	ht_text_listbox_item *item = ht_malloc(sizeof(ht_text_listbox_item)+sizeof(char *)*cols);
@@ -2208,7 +2211,7 @@ void ht_text_listbox::insert_str(int id, const char *str, ...)
 	count++;
 }
 
-int	ht_text_listbox::numColumns()
+int ht_text_listbox::numColumns()
 {
 	return cols;
 }
@@ -2223,7 +2226,7 @@ void *ht_text_listbox::quickfind(const char *s)
 	return item;
 }
 
-char	*ht_text_listbox::quickfindCompletition(const char *s)
+char *ht_text_listbox::quickfindCompletition(const char *s)
 {
 	ht_text_listbox_item *item = first;
 	char *res = NULL;
@@ -2253,23 +2256,23 @@ static int ht_text_listboxcomparatio(ht_text_listbox_item *a, ht_text_listbox_it
 
 static void ht_text_listboxqsort(int l, int r, int count, ht_text_listbox_sort_order *so, ht_text_listbox_item **list)
 {
-	int m=(l+r)/2;
-	int L=l;
-	int R=r;
-	ht_text_listbox_item *c=list[m];
+	int m = (l+r)/2;
+	int L = l;
+	int R = r;
+	ht_text_listbox_item *c = list[m];
 	do {
-		while ((l<=r) && (ht_text_listboxcomparatio(list[l], c, count, so)<0)) l++;
-		while ((l<=r) && (ht_text_listboxcomparatio(list[r], c, count, so)>0)) r--;
+		while (l <= r && ht_text_listboxcomparatio(list[l], c, count, so) < 0) l++;
+		while (l <= r && ht_text_listboxcomparatio(list[r], c, count, so) > 0) r--;
 		if (l<=r) {
-			ht_text_listbox_item *t=list[l];
-			list[l]=list[r];
-			list[r]=t;
+			ht_text_listbox_item *t = list[l];
+			list[l] = list[r];
+			list[r] = t;
 			l++;
 			r--;
 		}
-	} while(l<r);
-	if (L<r) ht_text_listboxqsort(L, r, count, so, list);
-	if (l<R) ht_text_listboxqsort(l, R, count, so, list);
+	} while(l < r);
+	if (L < r) ht_text_listboxqsort(L, r, count, so, list);
+	if (l < R) ht_text_listboxqsort(l, R, count, so, list);
 }
 
 void ht_text_listbox::sort(int count, ht_text_listbox_sort_order *so)
@@ -2355,15 +2358,15 @@ int	ht_itext_listbox::compare_ccomm(const char *s1, const char *s2)
 void ht_statictext_align(ht_statictext_linedesc *d, statictext_align align, int w)
 {
 	switch (align) {
-		case align_center:
-			d->ofs=(w-d->len)/2;
-			break;
-		case align_right:
-			d->ofs=w-d->len;
-			break;
-		default:
-			d->ofs=0;
-			break;
+	case align_center:
+		d->ofs = (w-d->len)/2;
+		break;
+	case align_right:
+		d->ofs = w-d->len;
+		break;
+	default:
+		d->ofs = 0;
+		break;
 	}
 }
 
@@ -2393,7 +2396,7 @@ const char *ht_statictext::defaultpalette()
 #define ssst_separator	1
 #define ssst_whitespace	2
 
-int get_ssst(char s)
+static int get_ssst(char s)
 {
 	if (strchr(".,:;+-*/=()[]", s)) {
 		return ssst_separator;
@@ -2433,12 +2436,13 @@ void ht_statictext::draw()
 			}
 			/* determine line length */
 			int i=0, len=1;
-			char *bp=t+1, *n=t+1;
-			int ssst=get_ssst(t[i]);
+			char *bp = t+1;
+			char *n = t+1;
+			int ssst = get_ssst(t[i]);
 			while (t[i]) {
-				if ((i+1>size.w) || (t[i]=='\n') || !(t[i+1])) {
-					bool kill_ws=(t[i]!='\n');
-					if (i+1<=size.w) {
+				if (i+1 > size.w || t[i]=='\n' || !t[i+1]) {
+					bool kill_ws = (t[i]!='\n');
+					if (i+1 <= size.w) {
 						/* line shorter than size.w */
 						bp=t+i+1;
 					} else if (t[i]=='\n') {
@@ -2473,7 +2477,7 @@ void ht_statictext::draw()
 		}
 
 /**/
-		d=orig_d;
+		d = orig_d;
 		for (int i=0; i<c; i++) {
 			buf->nprint(d->ofs, i, gettextcolor(), d->text, d->len);
 			d++;
