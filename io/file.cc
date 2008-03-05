@@ -133,7 +133,7 @@
 //-----------------------------------------------------------------------------
 static char *_str_strip(char *str, int len)
 {
-	char *pr =  (char*)malloc(len + 1);
+	char *pr =  ht_malloc(len + 1);
 	pr[len] = 0;
 	memcpy(pr, str, len);
 	return pr;
@@ -153,7 +153,7 @@ static char *_substr_replace(char *s, unsigned int s_len, char *r, unsigned int 
 	if (!s_len || !r_len) return NULL;
 	if (at > s_len) at = 0;
 	unsigned int nlen = s_len + r_len - len;
-	char *out = (char*)malloc(nlen+1);
+	char *out = ht_malloc(nlen+1);
 	out[nlen] = 0; 
 	memcpy(out, s, at);
 	memcpy(out+at, r, r_len);
@@ -200,7 +200,7 @@ static char *_env_replace(char *str, unsigned int len)
 		cc++;
 	}
 	if (prt == NULL) {
-		prt = (char*)malloc(len+1);
+		prt = ht_malloc(len+1);
 		prt[len] = 0;	
 		memcpy(prt, str, len);
 	}
@@ -222,7 +222,7 @@ int sys_basename(char *result, const char *filename)
 	return 0;
 }
 
-char * sys_dirname(char *path)
+char *sys_dirname(char *path)
 {
 	char *r;           // result
 	char *ptr = path;
@@ -233,7 +233,7 @@ char * sys_dirname(char *path)
 		if (*ptr == '/' || *ptr == '\\') {
 			last = c;
 		} else if (*ptr == 0) {
-			r = (char*)malloc(last + 1);
+			r = ht_malloc(last + 1);
 			strncpy(r, path, last);
 			r[last] = 0;
 			return r;
