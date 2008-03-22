@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 2.0.13:
+	- [win32] optimize redrawing (reduce flicker)
+
 version 2.0.12:
 	- fixed crash with too long lines
 	- fixed some cosmetic resizing things in dialogs

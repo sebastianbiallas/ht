@@ -109,7 +109,9 @@ bool sys_get_screen_size(int &w, int &h)
 class Win32SystemDisplay: public SystemDisplay {
 public:
 	CHAR_INFO *buf;
+	CHAR_INFO *old_buf;
 	vcp *colorbuf;
+
 	HANDLE output;
 
 	CursorMode cursor_mode;
@@ -148,6 +150,7 @@ Win32SystemDisplay::Win32SystemDisplay(const char *title)
 
 	buf = NULL;
 	colorbuf = NULL;
+	old_buf = NULL;
 
 	if (!initConsole()) ;//throw sys_exception("unable to init console");
 
@@ -186,6 +189,7 @@ Win32SystemDisplay::~Win32SystemDisplay()
 	xy.Y = dy+h-1;
 	SetConsoleCursorPosition(output, xy);
 	free(buf);
+	free(old_buf);
 	free(colorbuf);
         cursorNormal();
 }
@@ -193,6 +197,7 @@ Win32SystemDisplay::~Win32SystemDisplay()
 bool Win32SystemDisplay::initConsole()
 {
 	CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+
 	SMALL_RECT windowRect;
 
 	output = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -249,9 +254,12 @@ void Win32SystemDisplay::setBounds(const Bounds &b)
 {
 	SystemDisplay::setBounds(b);
 	free(buf);
+	free(old_buf);
 	free(colorbuf);
 	buf = ht_malloc(w * h * sizeof(CHAR_INFO));
+	old_buf = ht_malloc(w * h * sizeof(CHAR_INFO));
 	colorbuf = ht_malloc(w * h * sizeof(vcp));
+	memset(old_buf, 0, w * h * sizeof(CHAR_INFO));
 	fill(x, y, w, h, VCP(VC_WHITE, VC_BLACK), ' ');
 }
 
@@ -309,6 +317,20 @@ void Win32SystemDisplay::setCursorMode(CursorMode mode)
 
 void Win32SystemDisplay::show()
 {
+	int first = h, last = 0;
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			if (buf[y*w+x].Char.UnicodeChar != old_buf[y*w+x].Char.UnicodeChar
+			 || buf[y*w+x].Attributes != old_buf[y*w+x].Attributes) {
+				if (first == h) {
+					first = y;
+				}
+				last = y;
+				break;
+			}
+		}
+	}
+	
 	COORD xy, xy2;
 
 	if (cursor_mode != CURSOR_OFF) {
@@ -331,23 +353,34 @@ void Win32SystemDisplay::show()
 		last_cursor_mode = cursor_mode;
 	}
 
-/*	char s[1024];
-	sprintf(s, "%d, %d   ", xy.X, xy.Y);
-	nprint(0, 0, VCP(VC_WHITE, VC_BLACK), s, 10);*/
-
 	xy.X = 0;
-	xy.Y  = 0;
+	xy.Y  = first;
 	xy2.X = w;
 	xy2.Y = h;
 	SMALL_RECT sr;
 	sr.Left = dx;
-	sr.Top = dy;
+	sr.Top = dy+first;
 	sr.Right = dx+w-1;
-	sr.Bottom = dy+h-1;
-//	for (xy.Y=0; xy.Y<h; xy.Y++) {
-		WriteConsoleOutputW(output, buf, xy2, xy, &sr);
-//		WriteConsoleOutputCharacter(output, buf_char+(xy.Y*w), w, xy, &wrr);
-//	}
+	sr.Bottom = dy+last;
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			if (buf[y*w+x].Char.UnicodeChar != old_buf[y*w+x].Char.UnicodeChar
+			 || buf[y*w+x].Attributes != old_buf[y*w+x].Attributes) {
+				xy.X = x;
+				xy.Y  = y;
+				xy2.X = w;
+				xy2.Y = h;
+				SMALL_RECT sr;
+				sr.Left = dx+x;
+				sr.Top = dy+y;
+				sr.Right = dx+x+1;
+				sr.Bottom = dy+y+1;
+				WriteConsoleOutputW(output, buf, xy2, xy, &sr);
+			}
+		}
+	}
+
+	memcpy(old_buf, buf, w * h * sizeof(CHAR_INFO));
 }
 
 void Win32SystemDisplay::cursorHide()
