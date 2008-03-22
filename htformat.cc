@@ -1486,7 +1486,7 @@ int ht_uformat_viewer::cursormicro_backward()
 void ht_uformat_viewer::draw()
 {
 	int sdown_count=0;
-	if (!uf_initialized) HT_ERROR("complete_init() not called !");
+	if (!uf_initialized) HT_ERROR("complete_init() not called!");
 restart:
 	clear(getcolor(palidx_generic_body));
 	if (!first_sub) return;
@@ -2543,7 +2543,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 							if (last_search_request) {
 								infobox("no further matches");
 							} else {
-								infobox("you must 'search' first !");
+								infobox("you must 'search' first!");
 							}
 						}
 						dirtyview();

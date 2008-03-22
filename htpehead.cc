@@ -315,7 +315,7 @@ bool ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					hexv->goto_offset(ofs, false);
 					hexv->pselect_set(ofs, ofs+size);
 					app->focus(hexv);
-				} else errorbox("Can't follow: directory RVA %08x is not valid !", rva);
+				} else errorbox("Can't follow: directory RVA %08x is not valid!", rva);
 			}
 			break;
 		}			

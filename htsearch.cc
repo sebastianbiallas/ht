@@ -1133,7 +1133,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 
 					if (!replace_all) {
 						bool showed = format->show_search_result(result);
-						int r = msgbox(btmask_yes+btmask_no+btmask_all+btmask_cancel, "confirmation", 0, align_center, "replace ?");
+						int r = msgbox(btmask_yes+btmask_no+btmask_all+btmask_cancel, "confirmation", 0, align_center, "replace?");
 						if (showed) app->sendmsg(cmd_vstate_restore);
 						switch (r) {
 							case button_yes:

@@ -90,10 +90,10 @@ static int_hash pef_sectionKind[] =
 	{PEF_SK_PatternInitData,"pattern-initialized data"},
 	{PEF_SK_ConstData,	"const data"},
 	{PEF_SK_Loader,		"loader"},
-	{PEF_SK_Debug,		"debug ?"},
+	{PEF_SK_Debug,		"debug?"},
 	{PEF_SK_ExecutableData,	"code/data"},
-	{PEF_SK_Exception,	"exception ?"},
-	{PEF_SK_Traceback,	"traceback ?"},
+	{PEF_SK_Exception,	"exception?"},
+	{PEF_SK_Traceback,	"traceback?"},
 	{0, 0}
 };
 

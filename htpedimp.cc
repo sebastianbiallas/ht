@@ -215,7 +215,7 @@ bool ht_pe_dimport_viewer::select_entry(void *entry)
 			vstate_save();
 		} else {
 			global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
-			errorbox("can't follow: %s %y is not valid !", "delay-import address", addr);
+			errorbox("can't follow: %s %y is not valid!", "delay-import address", addr);
 		}
 		delete addr;
 	} else errorbox("can't follow: no image viewer");

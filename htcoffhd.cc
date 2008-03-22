@@ -112,7 +112,7 @@ ht_tag_flags_s coff_section_characteristics[] =
 	{14, "[14] * reserved (obsolete - protected)"},
 	{15, "[15] fardata"},
 	{16, "[16] * reserved (obsolete - sysheap)"},
-	{17, "[17] purgeable/16bit ?"},
+	{17, "[17] purgeable/16bit?"},
 	{18, "[18] locked"},
 	{19, "[19] preload"},
 	{20, "[20] * reserved"},

@@ -53,7 +53,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	ht_label *s;
 	
 	List *addrhist = (List*)getAtomValue(HISTATOM_GOTO);
-/* start */
+	/* start */
 	c=*b;
 	c.h=1;
 	c.w=13;
@@ -71,14 +71,14 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 		start->databuf_set(&d, sizeof d);
 	}
 
-/* start_desc */
+	/* start_desc */
 	c.x=1;
 	c.w=6;
 	s=new ht_label();
 	s->init(&c, "~start", start);
 	insert(s);
 	
-/* end */
+	/* end */
 	c=*b;
 	c.h=1;
 	c.w=13;
@@ -97,14 +97,14 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	}
 
 
-/* end_desc */
+	/* end_desc */
 	c.x=23;
 	c.w=3;
 	s=new ht_label();
 	s->init(&c, "~end", end);
 	insert(s);
 
-/* mode */
+	/* mode */
 	c=*b;
 	c.h=1;
 	c.w=16;
@@ -118,7 +118,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	mode->insertstring("string");
 	insert(mode);
 
-/* mode_desc */
+	/* mode_desc */
 	c.x=1;
 	c.w=12;
 	c.y=3;
@@ -126,7 +126,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	s->init(&c, "~mode", mode);
 	insert(s);
 
-/* action_expl */
+	/* action_expl */
 	c=*b;
 	c.x=1;
 	c.y=5;
@@ -136,7 +136,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	text->init(&c, "set each element to", align_left);
 	insert(text);
 	
-/* action */
+	/* action */
 	List *ehist=(List*)getAtomValue(HISTATOM_EVAL_EXPR);
 
 	c=*b;
@@ -148,7 +148,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	action->init(&c, 4096, ehist);
 	insert(action);
 
-/* action_desc */
+	/* action_desc */
 	c.x=1;
 	c.w=27;
 	c.y=6;
@@ -156,7 +156,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	s->init(&c, "e~xpr", action);
 	insert(s);
 
-/* help */
+	/* help */
 /*	c=*b;
 	c.x=1;
 	c.y=8;
@@ -168,7 +168,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 		"o - file offset        readbyte(ofs)\n"
 		"i - iteration index    readstring(ofs, n)", align_left);
 	insert(text);*/
-/* functions */
+	/* functions */
 	ht_button *bhelp = new ht_button();
 	c = *b;
 	c.x = 1;

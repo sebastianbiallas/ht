@@ -149,7 +149,7 @@ bool ht_ne_entrypoint_viewer::ref_sel(LINE_ID *id)
 
 	if (ne_shared->v_image->goto_address2(a, this)) {
 		app->focus(ne_shared->v_image);
-	} else errorbox("can't follow: address %y is not valid !", a);
+	} else errorbox("can't follow: address %y is not valid!", a);
 	return 1;*/
 	return false;
 }

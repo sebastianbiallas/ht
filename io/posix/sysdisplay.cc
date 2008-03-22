@@ -344,7 +344,7 @@ void CursesSystemDisplay::term_on()
 		colormap[0] = 7;
 		::init_pair(7, COLOR_BLACK, COLOR_BLACK);
 	} else {
-		fprintf(stderr, "warning: terminal lacks color support !");
+		fprintf(stderr, "warning: terminal lacks color support!");
 	}
 	::wtimeout(win, 1);
 	::meta(win, 1);
