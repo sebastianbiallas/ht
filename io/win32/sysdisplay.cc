@@ -340,7 +340,7 @@ void Win32SystemDisplay::show()
 		xy.X = dx;
 		xy.Y = dy;
 	}
-	SetConsoleCursorPosition(output, xy);
+	SetConsoleCursorPosition(output, xy);	
 	if (last_cursor_mode != cursor_mode) {
 		switch (cursor_mode) {
 		case CURSOR_OFF:
@@ -353,6 +353,7 @@ void Win32SystemDisplay::show()
 		last_cursor_mode = cursor_mode;
 	}
 
+	if (first > last) return;
 	xy.X = 0;
 	xy.Y  = first;
 	xy2.X = w;
@@ -362,10 +363,13 @@ void Win32SystemDisplay::show()
 	sr.Top = dy+first;
 	sr.Right = dx+w-1;
 	sr.Bottom = dy+last;
+	WriteConsoleOutputW(output, buf, xy2, xy, &sr);
+	memcpy(old_buf, buf, w * h * sizeof(CHAR_INFO));
+return;
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
-			if (buf[y*w+x].Char.UnicodeChar != old_buf[y*w+x].Char.UnicodeChar
-			 || buf[y*w+x].Attributes != old_buf[y*w+x].Attributes) {
+//			if (buf[y*w+x].Char.UnicodeChar != old_buf[y*w+x].Char.UnicodeChar
+//			 || buf[y*w+x].Attributes != old_buf[y*w+x].Attributes) {
 				xy.X = x;
 				xy.Y  = y;
 				xy2.X = w;
@@ -376,10 +380,9 @@ void Win32SystemDisplay::show()
 				sr.Right = dx+x+1;
 				sr.Bottom = dy+y+1;
 				WriteConsoleOutputW(output, buf, xy2, xy, &sr);
-			}
+//			}
 		}
 	}
-
 	memcpy(old_buf, buf, w * h * sizeof(CHAR_INFO));
 }
 
