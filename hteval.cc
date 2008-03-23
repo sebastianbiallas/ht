@@ -333,12 +333,12 @@ void eval_dialog()
 	d->insert(s);
 	/* help button */
 	ht_button *bhelp = new ht_button();
-	b.assign(c.w-12, 1, 10, 1);
+	b.assign(c.w-12, 1, 10, 2);
 	bhelp->init(&b, "~Functions", BUTTON_HELP);
 	d->insert(bhelp);
 	/* result text */
 	b.assign(1, 3, c.w-4, c.h-5);
-	ht_statictext *t=new ht_statictext();
+	ht_statictext *t = new ht_statictext();
 	t->init(&b, hint, align_left);
 	t->growmode = MK_GM(GMH_LEFT, GMV_FIT);
 	d->insert(t);
