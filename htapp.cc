@@ -1459,7 +1459,7 @@ void ht_app::init(Bounds *pq)
 	file->insert_entry("Open/Create ~project...", NULL, cmd_project_open, 0, 1);
 	file->insert_entry("Close p~roject", NULL, cmd_project_close, 0, 1);
 	file->insert_separator();
-	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Meta_Z, 1);
+//	file->insert_entry("~Execute", "Alt+Z", cmd_file_exec_cmd, K_Meta_Z, 1);
 	file->insert_entry("~Quit", "F10", cmd_quit, 0, 1);
 	m->insert_menu(file);
 
@@ -2568,12 +2568,12 @@ void ht_app::handlemsg(htmsg *msg)
 			File *f = (File *)msg->data1.ptr;
 			FileOfs s = msg->data2.q;
 /*			ht_app_window_entry *e;
-			if ((e=windows->enum_first())) {
+			if ((e = windows->enum_first())) {
 				do {
-					if ((e->type==AWT_FILE) && ((File*)e->data==f)) {
+					if (e->type == AWT_FILE && (File*)e->data == f) {
 						check_collide();
 					}
-				} while ((e=windows->enum_first()));
+				} while ((e = windows->enum_next()));
 			}*/
 			String fn;
 			if (confirmbox("really truncate %y at offset 0x%08qx/%qd?", &f->getFilename(fn), s, s) == button_ok) {
