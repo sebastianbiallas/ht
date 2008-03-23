@@ -54,105 +54,106 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	
 	List *addrhist = (List*)getAtomValue(HISTATOM_GOTO);
 	/* start */
-	c=*b;
-	c.h=1;
-	c.w=13;
-	c.x=7;
-	c.y=1;
+	c = *b;
+	c.h = 1;
+	c.w = 13;
+	c.x = 7;
+	c.y = 1;
 	start = new ht_strinputfield();
 	start->init(&c, 64, addrhist);
 	insert(start);
 	if (prerange) {
-		char t[16];
-		ht_snprintf(t, sizeof t, "0x%x", pstart);
+		char t[32];
+		ht_snprintf(t, sizeof t, "0x%qx", pstart);
 		ht_inputfield_data d;
-		d.textlen=strlen(t);
-		d.text=(byte*)t;
+		d.textlen = strlen(t);
+		d.text = (byte*)t;
 		start->databuf_set(&d, sizeof d);
 	}
 
 	/* start_desc */
-	c.x=1;
-	c.w=6;
-	s=new ht_label();
+	c.x = 1;
+	c.w = 6;
+	s = new ht_label();
 	s->init(&c, "~start", start);
 	insert(s);
 	
 	/* end */
-	c=*b;
-	c.h=1;
-	c.w=13;
-	c.x=27;
-	c.y=1;
+	c = *b;
+	c.h = 1;
+	c.w = 13;
+	c.x = 27;
+	c.y = 1;
 	end=new ht_strinputfield();
 	end->init(&c, 64, addrhist);
 	insert(end);
 	if (prerange) {
-		char t[16];
-		ht_snprintf(t, sizeof t, "0x%x", pend);
+		char t[32];
+		ht_snprintf(t, sizeof t, "0x%qx", pend);
 		ht_inputfield_data d;
-		d.textlen=strlen(t);
-		d.text=(byte*)t;
+		d.textlen = strlen(t);
+		d.text = (byte*)t;
 		end->databuf_set(&d, sizeof d);
 	}
 
 
 	/* end_desc */
-	c.x=23;
-	c.w=3;
-	s=new ht_label();
+	c.x = 23;
+	c.w = 3;
+	s = new ht_label();
 	s->init(&c, "~end", end);
 	insert(s);
 
 	/* mode */
-	c=*b;
-	c.h=1;
-	c.w=16;
-	c.x=7;
-	c.y=3;
-	mode=new ht_listpopup();
+	c = *b;
+	c.h = 1;
+	c.w = 16;
+	c.x = 7;
+	c.y = 3;
+	mode = new ht_listpopup();
 	mode->init(&c);
 	mode->insertstring("byte (8-bit)");
 	mode->insertstring("word (16-bit)");
 	mode->insertstring("dword (32-bit)");
+	mode->insertstring("qword (64-bit)");
 	mode->insertstring("string");
 	insert(mode);
 
 	/* mode_desc */
-	c.x=1;
-	c.w=12;
-	c.y=3;
-	s=new ht_label();
+	c.x = 1;
+	c.w = 12;
+	c.y = 3;
+	s = new ht_label();
 	s->init(&c, "~mode", mode);
 	insert(s);
 
 	/* action_expl */
-	c=*b;
-	c.x=1;
-	c.y=5;
-	c.w-=3;
-	c.h=1;
-	text=new ht_statictext();
+	c = *b;
+	c.x = 1;
+	c.y = 5;
+	c.w -= 3;
+	c.h = 1;
+	text = new ht_statictext();
 	text->init(&c, "set each element to", align_left);
 	insert(text);
 	
 	/* action */
-	List *ehist=(List*)getAtomValue(HISTATOM_EVAL_EXPR);
+	List *ehist = (List*)getAtomValue(HISTATOM_EVAL_EXPR);
 
-	c=*b;
-	c.h=1;
-	c.w=40;
-	c.x=7;
-	c.y=6;
-	action=new ht_strinputfield();
+	c = *b;
+	c.h = 1;
+	c.w = 40;
+	c.x = 7;
+	c.y = 6;
+	action = new ht_strinputfield();
 	action->init(&c, 4096, ehist);
 	insert(action);
 
 	/* action_desc */
-	c.x=1;
-	c.w=27;
-	c.y=6;
-	s=new ht_label();
+	c.x = 1;
+	c.w = 27;
+	c.y = 6;
+	s = new ht_label();
 	s->init(&c, "e~xpr", action);
 	insert(s);
 
@@ -173,8 +174,8 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	c = *b;
 	c.x = 1;
 	c.y = 8;
-	c.w = 11;
-	c.h = 1;
+	c.w = 12;
+	c.h = 2;
 	bhelp->init(&c, "~Functions", 100);
 	insert(bhelp);
 }
@@ -195,8 +196,8 @@ struct ht_blockop_dialog_data {
  *   blockop_dialog
  */
 
-static uint32 blockop_i;
-static uint32 blockop_o;
+static FileOfs blockop_i;
+static FileOfs blockop_o;
 static bool blockop_expr_is_const;
 
 static bool blockop_symbol_eval(eval_scalar *r, char *symbol)
@@ -208,7 +209,7 @@ static bool blockop_symbol_eval(eval_scalar *r, char *symbol)
 		blockop_expr_is_const = false;
 		return true;
 	} else if (strcmp(symbol, "o") == 0) {
-		r->type=SCALAR_INT;
+		r->type = SCALAR_INT;
 		r->scalar.integer.value = blockop_o;
 		r->scalar.integer.type = TYPE_UNKNOWN;
 		blockop_expr_is_const = false;
@@ -218,8 +219,8 @@ static bool blockop_symbol_eval(eval_scalar *r, char *symbol)
 }
 
 static int func_readint(eval_scalar *result, eval_int *offset, int size, Endianess e)
-{
-	File *f=(File*)eval_get_context();
+{	
+	File *f = (File*)eval_get_context();
 	byte buf[8];
 	try {
 		f->seek(offset->value);
@@ -269,7 +270,7 @@ static int func_read64be(eval_scalar *result, eval_int *offset)
 
 static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 {
-	File *f=(File*)eval_get_context();
+	File *f = (File*)eval_get_context();
 
 	uint l = len->value;
 	void *buf = malloc(l);	/* FIXME: may be too slow... */
@@ -285,8 +286,8 @@ static int func_readstring(eval_scalar *result, eval_int *offset, eval_int *len)
 			set_eval_error("i/o error (couldn't read %d bytes from ofs %d (0x%qx))", l, c, offset->value, offset->value);
 			return 0;
 		}
-		s.value=(char*)buf;
-		s.len=l;
+		s.value = (char*)buf;
+		s.len = l;
 		scalar_create_str(result, &s);
 		free(buf);
 		return 1;
@@ -300,11 +301,13 @@ static bool blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *
 	/* FIXME: non-constant funcs (e.g. rand()) should
 	   set blockop_expr_is_const to false */
 	eval_func myfuncs[] = {
-		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}},
-		{"read16le", (void*)&func_read16le, {SCALAR_INT}},
-		{"read32le", (void*)&func_read32le, {SCALAR_INT}},
-		{"read16be", (void*)&func_read16be, {SCALAR_INT}},
-		{"read32be", (void*)&func_read32be, {SCALAR_INT}},
+		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}, "read byte from offset"},
+		{"read16le", (void*)&func_read16le, {SCALAR_INT}, "read little endian 16 bit word from offset"},
+		{"read32le", (void*)&func_read32le, {SCALAR_INT}, "read little endian 32 bit word from offset"},
+		{"read64le", (void*)&func_read64le, {SCALAR_INT}, "read little endian 64 bit word from offset"},
+		{"read16be", (void*)&func_read16be, {SCALAR_INT}, "read big endian 16 bit word from offset"},
+		{"read32be", (void*)&func_read32be, {SCALAR_INT}, "read big endian 32 bit word from offset"},
+		{"read64be", (void*)&func_read64be, {SCALAR_INT}, "read big endian 64 bit word from offset"},
 		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}},
 		{NULL}
 	};
@@ -456,7 +459,7 @@ public:
 	FileOfs o;
 
 	bool expr_const;
-	uint v;
+	uint64 v;
 
 	~ht_blockop_int_context()
 	{
@@ -543,7 +546,7 @@ bool blockop_int_process(Object *context, ht_text *progress_indicator)
 			ctx->v = ir.value;
 
 			uint s = ctx->size;
-			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs+ctx->len-ctx->o;
+			if (ctx->o+s > ctx->ofs+ctx->len) s = ctx->ofs + ctx->len - ctx->o;
 
 			byte ibuf[8];
 			createForeignInt64(ibuf, ctx->v, ctx->size, ctx->endian);
@@ -558,18 +561,14 @@ bool blockop_int_process(Object *context, ht_text *progress_indicator)
 	return true;
 }
 
-/*
- *
- */
-
 bool format_string_to_offset_if_avail(ht_format_viewer *format, byte *string, int stringlen, const char *string_desc, FileOfs *ofs)
 {
-	if (string && *string && stringlen<64) {
+	if (string && *string && stringlen < 64) {
 		char str[64];
 		memcpy(str, string, stringlen);
-		str[stringlen]=0;
+		str[stringlen] = 0;
 		if (!format->string_to_offset(str, ofs)) {
-			errorbox("%s: '%s' doesn't seem to be a valid offset", string_desc, &str);
+			errorbox("%s: '%s' doesn't seem to be a valid offset", string_desc, str);
 			return false;
 		}
 		return true;
@@ -600,25 +599,27 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 		ht_blockop_dialog_data t;
 		ViewDataBuf vdb(d, &t, sizeof t);
 		
-		File *file=format->get_file();
+		File *file = format->get_file();
 
 		baseview->sendmsg(cmd_edit_mode_i, file, NULL);
 		
 		if (file->getAccessMode() & IOAM_WRITE) {
-			FileOfs start=pstart, end=pend;
+			FileOfs start = pstart, end = pend;
 
 			if (format_string_to_offset_if_avail(format, t.start.text, t.start.textlen, "start", &start)
 			 && format_string_to_offset_if_avail(format, t.end.text, t.end.textlen, "end", &end)) {
 				if (end > start) {
-					int esize=0;
-					int esizes[3]={4, 2, 1};
+					int esize = 0;
+					int esizes[4] = {8, 4, 2, 1};
 					switch (t.mode.cursor_pos) {
 						/* element type: byte */
 						case 0: esize++;
 						/* element type: uint16 */
 						case 1: esize++;
 						/* element type: uint32 */
-						case 2: {
+						case 2: esize++;
+						/* element type: uint64 */
+						case 3: {
 							char a[4096];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
 							insert_history_entry((List*)getAtomValue(HISTATOM_EVAL_EXPR), a, NULL);
@@ -643,7 +644,7 @@ void blockop_dialog(ht_format_viewer *format, FileOfs pstart, FileOfs pend)
 							break;
 						}
 						/* element type: string */
-						case 3: {
+						case 4: {
 							char a[256];
 							bin2str(a, t.action.text, MIN(sizeof a, t.action.textlen));
 							insert_history_entry((List*)getAtomValue(HISTATOM_EVAL_EXPR), a, NULL);

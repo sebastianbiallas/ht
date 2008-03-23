@@ -97,8 +97,8 @@ static void dialog_fhelp(File *f)
 	Bounds b, c;
 	app->getbounds(&c);
 	b = c;
-//	b.w = 70;
-//	b.h = 19;
+	b.w = 70;
+	b.h = 19;
 	b.x = (c.w - b.w) / 2,
 	b.y = (c.h - b.h) / 2;
 	c = b;
