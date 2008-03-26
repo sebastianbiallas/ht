@@ -120,15 +120,17 @@ TAGSTRING *tag_make_color(TAGSTRING *buf, int maxlen, uint32 color)
 
 TAGSTRING *tag_make_default_color(TAGSTRING *buf, int maxlen)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_color)) return tag_error(buf, maxlen);
 	ht_tag_color *tag = (ht_tag_color*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_COLOR;
-	UNALIGNED_MOVE_CONST(tag->color, 0xffffffff, dword);
+	UNALIGNED_MOVE_CONST(tag->color, 0xffffffff, uint32);
 	return buf + sizeof (ht_tag_color);
 }
 
 TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_byte)) return tag_error(buf, maxlen);
 	ht_tag_edit_byte *tag = (ht_tag_edit_byte*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_EDIT_BYTE;
@@ -138,6 +140,7 @@ TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs)
 
 TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_word_generic)) return tag_error(buf, maxlen);
 	ht_tag_edit_word_generic *tag = (ht_tag_edit_word_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
@@ -159,6 +162,7 @@ TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endia
 
 TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_dword_generic)) return tag_error(buf, maxlen);
 	ht_tag_edit_dword_generic *tag = (ht_tag_edit_dword_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
@@ -180,6 +184,7 @@ TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endi
 
 TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_qword_generic)) return tag_error(buf, maxlen);
 	ht_tag_edit_qword_generic *tag = (ht_tag_edit_qword_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
@@ -201,6 +206,7 @@ TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endi
 
 TAGSTRING *tag_make_edit_time(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_time)) return tag_error(buf, maxlen);
 	ht_tag_edit_time *tag = (ht_tag_edit_time*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;	
@@ -222,6 +228,7 @@ TAGSTRING *tag_make_edit_time(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endia
 
 TAGSTRING *tag_make_edit_char(TAGSTRING *buf, int maxlen, FileOfs ofs)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_char)) return tag_error(buf, maxlen);
 	ht_tag_edit_char *tag = (ht_tag_edit_char*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_EDIT_CHAR;
@@ -231,6 +238,7 @@ TAGSTRING *tag_make_edit_char(TAGSTRING *buf, int maxlen, FileOfs ofs)
 
 TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, int maxlen, FileOfs ofs, int bitidx)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_bit)) return tag_error(buf, maxlen);
 	ht_tag_edit_bit *tag = (ht_tag_edit_bit*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_EDIT_BIT;
@@ -241,6 +249,7 @@ TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, int maxlen, FileOfs ofs, int bitidx
 
 TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, int maxlen, FileOfs offset, char ch)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_edit_selvis)) return tag_error(buf, maxlen);
 	ht_tag_edit_selvis *tag=(ht_tag_edit_selvis*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_EDIT_SELVIS;
@@ -251,6 +260,7 @@ TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, int maxlen, FileOfs offset, char
 
 TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_desc_byte)) return tag_error(buf, maxlen);
 	ht_tag_desc_byte *tag = (ht_tag_desc_byte*)buf;
 	tag->escape = '\e';
 	tag->magic = HT_TAG_DESC_BYTE;
@@ -261,7 +271,8 @@ TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 
 
 TAGSTRING *tag_make_desc_word(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
-	ht_tag_desc_word_generic *tag=(ht_tag_desc_word_generic*)buf;
+	if (maxlen <= (signed)sizeof (ht_tag_desc_word_generic)) return tag_error(buf, maxlen);
+	ht_tag_desc_word_generic *tag = (ht_tag_desc_word_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
 	switch (e) {
@@ -283,6 +294,7 @@ TAGSTRING *tag_make_desc_word(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 
 
 TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_desc_dword_generic)) return tag_error(buf, maxlen);
 	ht_tag_desc_dword_generic *tag = (ht_tag_desc_dword_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
@@ -305,6 +317,7 @@ TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32
 
 TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
+	if (maxlen <= (signed)sizeof (ht_tag_desc_qword_generic)) return tag_error(buf, maxlen);
 	ht_tag_desc_qword_generic *tag = (ht_tag_desc_qword_generic*)buf;
 	tag->escape = '\e';
 	byte m = 0xff;
@@ -641,7 +654,7 @@ int tag_get_vlen(const TAGSTRING *tagstring)
 	}
 }
 
-int time_mp[14]={0,1,3,4,6,7,9,10,12,13,15,16,17,18};
+static int time_mp[14] = {0,1,3,4,6,7,9,10,12,13,15,16,17,18};
 
 int tag_get_micropos(const TAGSTRING *tagstring, int i)
 {
@@ -828,7 +841,7 @@ void tag_get_id(const TAGSTRING *tagstring, uint32 *id128_1, uint32 *id128_2, ui
 
 TAGSTRING *tag_get_seltext(const TAGSTRING *tagstring)
 {
-	return (TAGSTRING *)(tagstring+sizeof(ht_tag_sel));
+	return (TAGSTRING *)(tagstring + sizeof(ht_tag_sel));
 }
 
 int tag_get_seltextlen(const TAGSTRING *tagstring)
@@ -936,14 +949,32 @@ bool tag_is_editable(const TAGSTRING *tagstring)
 void tag_strcat(TAGSTRING *dest, int maxlen, const TAGSTRING *src)
 {
 	int l = tag_strlen(dest);
-	tag_strcpy(dest+l, maxlen, src);
+	tag_strcpy(dest+l, maxlen-l, src);
 }
 
 void tag_strcpy(TAGSTRING *dest, int maxlen, const TAGSTRING *src)
 {
-	int l = tag_strlen(src);
-	memcpy(dest, src, l);
-	dest[l] = 0;
+	if (maxlen > 0) {
+		maxlen--;
+		while (*src && maxlen) {
+			if (*src == '\e') {
+				int l = tag_get_len(src);
+				if (l > maxlen) {
+					tag_error(dest, maxlen);
+					return;
+				} else {
+					memcpy(dest, src, l);
+					dest += l;
+					src += l;
+					maxlen -= l;
+				}
+			} else {
+				*dest++ = *src++;
+				maxlen--;
+			}
+		}
+		*dest = 0;
+	}
 }
 
 TAGSTRING *tag_strdup(const TAGSTRING *tagstring)

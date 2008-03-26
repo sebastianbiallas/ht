@@ -26,7 +26,7 @@
 
 ht_view *htfinfo_init(Bounds *b, File *file, ht_format_group *group)
 {
-	ht_finfo_text *v=new ht_finfo_text();
+	ht_finfo_text *v = new ht_finfo_text();
 	v->init(b, file);
 	return v;
 }

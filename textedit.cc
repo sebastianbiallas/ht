@@ -1222,13 +1222,13 @@ void ht_text_viewer::draw()
 						render_str(k, y, color, &pos, vtoklen-i, linep+i, true);
 					}
 				}
-				x+=vtoklen;
-				linep+=toklen;
-				linelen-=toklen;
-				pos.pofs+=toklen;
-				start_of_line=false;
-				p.line=pos.line;
-				p.pofs=pos.pofs;
+				x += vtoklen;
+				linep += toklen;
+				linelen -= toklen;
+				pos.pofs += toklen;
+				start_of_line = false;
+				p.line = pos.line;
+				p.pofs = pos.pofs;
 				if (!linelen && !prev_linelen) break;
 				prev_linelen = linelen;
 			}
@@ -1803,7 +1803,7 @@ int ht_text_viewer::ppos_str(char *buf, uint bufsize, text_viewer_pos *ppos)
 
 void ht_text_viewer::render_meta(uint x, uint y, text_viewer_pos *pos, vcp color)
 {
-	text_viewer_pos p=*pos;
+	text_viewer_pos p = *pos;
 	render_str_color(&color, &p);
 	if (pos->line == textfile->linecount()-1) {
 		if (show_EOF && EOF_string) buf->print(x, y, color, EOF_string);
@@ -1814,12 +1814,12 @@ void ht_text_viewer::render_meta(uint x, uint y, text_viewer_pos *pos, vcp color
 
 void ht_text_viewer::render_str(int x, int y, vcp color, text_viewer_pos *pos, uint len, char *str, bool multi)
 {
-	if (((pos->line == sel_start.line) || (pos->line == sel_end.line)) &&
-	(text_viewer_pos_compare(&sel_start, &sel_end) != 0)) {
+	if ((pos->line == sel_start.line || pos->line == sel_end.line)
+	 && text_viewer_pos_compare(&sel_start, &sel_end) != 0) {
 		text_viewer_pos p=*pos;
 		vcp c;
 		while (len--) {
-			c=color;
+			c = color;
 			render_str_color(&c, &p);
 			buf_lprint0(x++, y, c, 1, str);
 			str++;
@@ -1878,14 +1878,16 @@ uint ht_text_viewer::scroll_up(uint n)
 uint ht_text_viewer::scroll_down(uint n)
 {
 	uint lc=textfile->linecount();
-	if (top_line+n+size.h <= lc) top_line+=n; else {
-		if (lc-top_line>=(uint)size.h) {
-			int q=top_line;
-			top_line=lc-size.h;
-			cursory=size.h-1;
+	if (top_line+n+size.h <= lc) {
+		top_line += n;
+	} else {
+		if (lc-top_line >= (uint)size.h) {
+			int q = top_line;
+			top_line = lc-size.h;
+			cursory = size.h-1;
 			return top_line-q;
 		}
-		cursory=lc-top_line-1;
+		cursory = lc-top_line-1;
 		return 0;
 	}
 	return n;
@@ -1893,13 +1895,13 @@ uint ht_text_viewer::scroll_down(uint n)
 
 uint ht_text_viewer::scroll_left(uint n)
 {
-	if (xofs>n) xofs-=n; else xofs=0;
+	if (xofs > n) xofs -= n; else xofs = 0;
 	return n;
 }
 
 uint ht_text_viewer::scroll_right(uint n)
 {
-	xofs+=n;
+	xofs += n;
 	return n;
 }
 
@@ -1955,32 +1957,32 @@ void ht_text_viewer::select_add(text_viewer_pos *s, text_viewer_pos *e)
 
 void ht_text_viewer::select_clear()
 {
-	sel_start.line=0;
-	sel_start.pofs=0;
-	sel_end.line=0;
-	sel_end.pofs=0;
+	sel_start.line = 0;
+	sel_start.pofs = 0;
+	sel_end.line = 0;
+	sel_end.pofs = 0;
 }
 
 void ht_text_viewer::select_set(text_viewer_pos *s, text_viewer_pos *e)
 {
-	sel_start=*s;
-	sel_end=*e;
+	sel_start = *s;
+	sel_end = *e;
 	normalize_selection();
 }
 
 void ht_text_viewer::select_start()
 {
-	selectmode=true;
-	selectstart.line=top_line+cursory;
-	selectstart.pofs=physical_cursorx();
+	selectmode = true;
+	selectstart.line = top_line+cursory;
+	selectstart.pofs = physical_cursorx();
 }
 
 void ht_text_viewer::select_end()
 {
 	text_viewer_pos p;
-	selectmode=false;
-	p.line=top_line+cursory;
-	p.pofs=physical_cursorx();
+	selectmode = false;
+	p.line = top_line+cursory;
+	p.pofs = physical_cursorx();
 	select_add(&selectstart, &p);
 }
 
@@ -1992,16 +1994,16 @@ void ht_text_viewer::set_lexer(ht_syntax_lexer *l, bool own_l)
 	}
 	// FIXME: is this "the right thing"?
 	if (l) l->config_changed();
-	lexer=l;
-	own_lexer=own_l;
+	lexer = l;
+	own_lexer = own_l;
 	textfile->set_lexer(l);
 }
 
 void ht_text_viewer::set_textfile(ht_textfile *t, bool own_t)
 {
 	if (own_textfile) delete textfile;
-	textfile=t;
-	own_textfile=own_t;
+	textfile = t;
+	own_textfile = own_t;
 }
 
 bool ht_text_viewer::show_search_result(ht_search_result *result)
@@ -2026,7 +2028,7 @@ bool ht_text_viewer::show_search_result(ht_search_result *result)
 void ht_text_editor::init(Bounds *b, bool own_t, ht_textfile *t, Container *l, uint e)
 {
 	ht_text_viewer::init(b, own_t, t, l);
-	edit_options=e;
+	edit_options = e;
 	if (edit_options & TEXTEDITOPT_UNDO) {
 		undo_list = new ht_text_editor_undo(1024*1024);
 	} else {
@@ -2054,7 +2056,7 @@ void ht_text_editor::clipboard_delete_cmd()
 {
 	if (sel_start.line || sel_start.pofs || sel_end.line || sel_end.pofs) {
 		text_viewer_pos apos, bpos;
-		uint px=physical_cursorx();
+		uint px = physical_cursorx();
 		apos.line = top_line+cursory;
 		apos.pofs = px;
 		bpos = sel_start;
@@ -2069,7 +2071,7 @@ void ht_text_editor::clipboard_paste_cmd()
 	clipboard_paste(block, bsize);
 
 	text_viewer_pos apos, bpos;
-	uint px=physical_cursorx();
+	uint px = physical_cursorx();
 	apos.line = bpos.line = top_line+cursory;
 	apos.pofs = bpos.pofs = px;
 	textoperation_apply(new ht_undo_data_insert_block(&apos, &bpos, block, bsize));
@@ -2078,7 +2080,7 @@ void ht_text_editor::clipboard_paste_cmd()
 
 bool ht_text_editor::concat_lines(uint a)
 {
-	uint b=a+1;
+	uint b = a+1;
 	if (textfile->has_line(a) && textfile->has_line(b)) {
 		uint alen = textfile->getlinelength(a);
 		char *aline = ht_malloc(alen+1);
@@ -2096,23 +2098,23 @@ bool ht_text_editor::concat_lines(uint a)
 	
 		delete_lines(a, 1);
 
-		if (b>ss.line) {
-			if (b==se.line) {
-				se.pofs+=alen;
+		if (b > ss.line) {
+			if (b == se.line) {
+				se.pofs += alen;
 				se.line--;
-			} else if (b<se.line) {
+			} else if (b < se.line) {
 				se.line--;
 			}
 		} else {
-			if (b==ss.line) {
-				ss.pofs+=alen;
+			if (b == ss.line) {
+				ss.pofs += alen;
 			}
 			ss.line--;
 			se.line--;
 		}
 
-		sel_start=ss;
-		sel_end=se;
+		sel_start = ss;
+		sel_end = se;
 		normalize_selection();
 		return true;
 	}

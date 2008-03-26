@@ -29,13 +29,8 @@
 #include "config.h"
 #endif
 
-#ifdef NO_NATIVE_UNALIGNED_MOVES
 #define UNALIGNED_MOVE(a, b) memcpy(&(a), &(b), sizeof(a))
 #define UNALIGNED_MOVE_CONST(a, b, type) {assert(sizeof(a)==sizeof(type));type c = b;memcpy(&(a), &c, sizeof(a));}
-#else
-#define UNALIGNED_MOVE(a, b) (a) = (b)
-#define UNALIGNED_MOVE_CONST(a, b, type) (a) = (b)
-#endif
 
 uint32 delinearize(uint32 d);
 uint64 delinearize64(uint64 d);
