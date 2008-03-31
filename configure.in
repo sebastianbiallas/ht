@@ -77,24 +77,12 @@ mingw32*)
 ;;	
 esac
 
-NO_NATIVE_UNALIGNED_MOVES=1
-case "$target_os" in
-*x86)
-	NO_NATIVE_UNALIGNED_MOVES=0
-;;	
-esac
-dnl FIXME: Which other platforms do support unaliged moves?
-
 if test "x$HAVE_PIPE" = "x1"; then
 	FLAGS_PIPE="-pipe";
 fi
 
-if test "xNO_NATIVE_UNALIGNED_MOVES" = "x1"; then
-	FLAGS_NO_NATIVE_UNALIGNED_MOVES="-DNO_NATIVE_UNALIGNED_MOVES";
-fi
-
-CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor"
-CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_NO_NATIVE_UNALIGNED_MOVES $FLAGS_ALL"
+CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor"
+CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL"
 
 AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
 

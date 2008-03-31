@@ -124,7 +124,7 @@ ObjectID ht_history_entry::getObjectID() const
  *	ATOMS
  */
 
-int hist_atoms[]={
+static int hist_atoms[]={
 	HISTATOM_GOTO,
 	HISTATOM_FILE,
 	HISTATOM_SEARCH_BIN,
@@ -144,7 +144,7 @@ void create_hist_atom(uint atom)
 
 void destroy_hist_atom(uint atom)
 {
-	List *c = (List*)getAtomValue(atom);
+	Object *c = (Object*)getAtomValue(atom);
 	if (c) {
 		unregisterAtom(atom);
 		delete c;
@@ -153,9 +153,10 @@ void destroy_hist_atom(uint atom)
 
 void store_history(ObjectStream &s)
 {
-	uint count=sizeof hist_atoms / sizeof hist_atoms[0];
+	uint count = sizeof hist_atoms / sizeof hist_atoms[0];
 	PUT_INT32D(s, count);
 	for (uint i=0; i < count; i++) {
+		putIDComment(s, hist_atoms[i]);
 		PUTX_INT32X(s, hist_atoms[i], "atom");
 		List *c = (List*)getAtomValue(hist_atoms[i]);
 		PUTX_OBJECT(s, c, "list");
