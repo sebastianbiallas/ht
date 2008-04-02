@@ -3231,8 +3231,25 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vblendpd", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
 {"vblendpd", _256|_66|_0f3a, {Yy, YVy, Xy, Ib}},
 }
+12
+{
+{"vmovddup", _128|_f2|_0f, {Vo, Wq}},
+{"vmovddup", _256|_f2|_0f, {Yy, Xy}},
+{"vmovhlps", _128|_0f, {Vo, VVo, VRo}},
+{"vmovlps", _128|_0f, {Vo, VVo, Mq}},
+{"vmovlpd", _128|_66|_0f, {Vo, VVo, Mq}},
+}
+13
+{"vmovlps", _128|_0f, {Mq, Vo}},
+{"vmovlpd", _128|_66|_0f, {Mq, Vo}},
+16
+{"vmovhps", _128|_0f, {Vo, VVo, Mq}},
+{"vmovhpd", _128|_66|_0f, {Vo, VVo, Mq}},
+{"vmovlhps", _128|_0f, {Vo, VVo, VRo}},
 17
 {
+{"vmovhps", _128|_0f, {Mq, Vo}},
+{"vmovhpd", _128|_66|_0f, {Mq, Vo}},
 {"vextractps", _128|_66|_0f3a, {Ed, Vo, Ib}},
 {"vextractps", _128|_66|_0f3a|W1, {Eq, Vo, Ib}},
 }
@@ -3290,6 +3307,13 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vblendvpd", _128|_66|_0f38, {Vo, VVo, Wo, VIo}},
 {"vblendvpd", _256|_66|_0f38, {Yy, YVy, Xy, YIo}},
 }
+50
+{
+{"vmovmskps", _128|_0f, {Gd, VRo}},
+{"vmovmskps", _256|_0f, {Gd, YRy}},
+{"vmovmskpd", _128|_66|_0f, {Gd, VRo}},
+{"vmovmskpd", _256|_66|_0f, {Gd, YRy}},
+}
 54
 {
 {"vandps", _128|_0f, {Yo, VVo, Wo}},
@@ -3304,6 +3328,12 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vandnpd", _128|_66|_0f, {Vo, VVo, Wo},
 {"vandnpd", _256|_66|_0f, {Yy, YVy, Xy},
 }
+56
+{
+{"vorps", _128|_0f, {Yo, VVo, Wo}},
+{"vorps", _256|_0f, {Yy, YVy, Xy}},
+{"vorpd", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vorpd", _256|_66|_0f, {Yy, YVy, Xy}},
 58
 {
 {"vaddps", _128|_0f, {Yo, VVo, Wo}},
@@ -3314,6 +3344,17 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vaddss", _256|_f2|_0f, {Yy, YVy, Xy}},
 {"vaddsd", _128|_f3|_0f, {Vo, VVo, Wo}},
 {"vaddsd", _256|_f3|_0f, {Yy, YVy, Xy}},
+}
+59
+{
+{"vmulss", _128|_0f, {Yo, VVo, Wo}},
+{"vmulps", _256|_0f, {Yo, YVo, Xo}},
+{"vmulpd", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vmulpd", _256|_66|_0f, {Yy, YVy, Xy}},
+{"vmulss", _128|_f2|_0f, {Vo, VVo, Wo}},
+{"vmulss", _256|_f2|_0f, {Yy, YVy, Xy}},
+{"vmulsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vmulsd", _256|_f3|_0f, {Yy, YVy, Xy}},
 }
 5d
 {
@@ -3348,12 +3389,149 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vmaxsd", _128|_f3|_0f, {Vo, VVo, Wo}},
 {"vmaxsd", _256|_f3|_0f, {Yy, YVy, Xy}},
 }
+5c
+{
+{"vfmaddsubps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddsubps", _128|_66|_0f3a|W1, {Vo, VVo, VI, Wo}},
+{"vfmaddsubps", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YI}},
+{"vfmaddsubps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+5d
+{
+{"vfmaddsubpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddsubpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmaddsubpd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YI}},
+{"vfmaddsubpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+5e
+{
+{"vfmsubaddps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubaddps", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmsubaddps", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YI}},
+{"vfmsubaddps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+5f
+{
+{"vfmsubaddpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubaddpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmsubaddpd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YI}},
+{"vfmsubaddpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+68
+{
+{"vfmaddps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddps", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmaddps", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfmaddps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+69
+{
+{"vfmaddpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmaddpd", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfmaddpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+6a
+{
+{"vfmaddss", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddss", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+6b
+{
+{"vfmaddsd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmaddsd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+6c
+{
+{"vfmsubps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubps", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmsubps", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfmsubps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+6d
+{
+{"vfmsubpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfmsubpd", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfmsubpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+6e
+{
+{"vfmsubss", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubss", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+6f
+{
+{"vmovdqu", _128|_f3|_0f, {Vo, Wo}},
+{"vmovdqu", _256|_f3|_0f, {Yy, Xy}},
+{"vfmsubsd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfmsubsd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+78
+{
+{"vfnmaddps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmaddps", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfnmaddps", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfnmaddps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+79
+{
+{"vfnmaddpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmaddpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfnmaddpd", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfnmaddpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+7a
+{
+{"vfnmaddss", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmaddss", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+7b
+{
+{"vfnmaddsd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmaddsd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+7c
+{
+{"vfnmsubps", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmsubps", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfnmsubps", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfnmsubps", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+7d
+{
+{"vfnmsubpd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmsubpd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+{"vfnmsubpd", _256|_66|_0f3a|W0, {Yy, YI, YVY, Xy}},
+{"vfnmsubpd", _256|_66|_0f3a|W1, {Yy, YI, Xy, YVy}},
+}
+7e
+{
+{"vfnmsubss", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmsubss", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+7f
+{
+{"vmovdqu", _128|_f3|_0f, {Wo, Vo}},
+{"vmovdqu", _256|_f3|_0f, {Xy, Yy}},
+{"vfnmsubsd", _128|_66|_0f3a|W0, {Vo, VI, VVo, Wo}},
+{"vfnmsubsd", _128|_66|_0f3a|W1, {Vo, VI, Wo, VVo}},
+}
+
+
 6e
 {"vmovd", _128|_66|_0f|W0, {Vo, Ed}},
 {"vmovq", _128|_66|_0f|W1, {Vo, Eq}},
+6f
+{"vmovdqa", _128|_66|_0f, {Vo, Wo}},
+{"vmovdqa", _256|_66|_0f, {Yy, Xy}},
+77
+{"vzeroupper", _128|_0f},
+{"vzeroall", _256|_0f},
 7e
 {"vmovd", _128|_66|_0f|W0, {Ed, Vo}},
 {"vmovq", _128|_66|_0f|W1, {Eq, Vo}},
+{"vmovq", _128|_f3|_0f, {Vo, Wq}},
 7c
 {
 {"vhaddpd", _128|_66|_0f, {Vo, VVo, Wo}},
@@ -3368,6 +3546,9 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vhsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vhsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
 }
+7f
+{"vmovdqa", _128|_66|_0f, {Wo, Vo}},
+{"vmovdqa", _256|_66|_0f, {Xy, Yy}},
 ae/2
 {"vldmxcsr", _f2|_0f, {Md}},
 d0
@@ -3377,6 +3558,8 @@ d0
 {"vaddsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vaddsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
 }
+d6
+{"vmovq", _128|_66|_0f, {Wq, Vo}},
 c2
 {
 {"vcmpps", _128|_0f, {Vo, VVo, Wo, Ib}},

@@ -145,6 +145,7 @@ enum {
 	TYPE_YV,	/* VEX.vvvv picks YMM register */
 	TYPE_Yx,	/* extra picks YMM register */
 	TYPE_YI,	/* bits 7-4 of imm picks YMM register */
+	TYPE_YR,	/* rm of ModR/M picks YMM register */
 	TYPE_VD,	/* SSE5: drex.dest */
 	TYPE_VS,	/* SSE5: src (mod/rm) */
 };
@@ -160,7 +161,6 @@ enum X86_VEX {
 	_f3   = 0x20,
 	_f2   = 0x30,
 	
-	VEX1  = 0x00,
 	_0f   = 0x01,
 	_0f38 = 0x02,
 	_0f3a = 0x03,
