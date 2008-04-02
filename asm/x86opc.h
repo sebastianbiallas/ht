@@ -192,6 +192,7 @@ enum {
 	SIZE_L = 'l',		/* long/double real (64-bit) */
 	SIZE_T = 't',		/* temp/extended real (80-bit) */
 	SIZE_A = 'a',		/* packed decimal (80-bit BCD) */
+	SIZE_Y = 'y',		/* 256 bit */
 };
 
 #define INFO_DEFAULT_64		0x80
