@@ -136,11 +136,34 @@ enum {
 	TYPE_Sx,	/* extra picks segment register */
 	TYPE_T,		/* reg of ModR/M picks test register */
 	TYPE_V,		/* reg of ModR/M picks XMM register */
+	TYPE_VI,	/* bits 7-4 of imm picks XMM register */
+	TYPE_VV,	/* VEX.vvvv picks XMM register */
 	TYPE_Vx,	/* extra picks XMM register */
 	TYPE_VR,	/* rm of ModR/M picks XMM register */
-	TYPE_W,		/* ModR/M (XMM reg or memory) */	
+	TYPE_W,		/* ModR/M (XMM reg or memory) */
+	TYPE_Y,		/* reg of ModR/M picks YMM register */
+	TYPE_YV,	/* VEX.vvvv picks YMM register */
+	TYPE_Yx,	/* extra picks YMM register */
+	TYPE_YI,	/* bits 7-4 of imm picks YMM register */
 	TYPE_VD,	/* SSE5: drex.dest */
 	TYPE_VS,	/* SSE5: src (mod/rm) */
+};
+
+enum X86_VEX {
+	W0    = 0x00,
+	W1    = 0x80,
+	
+	_128  = 0x00,
+	_256  = 0x40,
+	
+	_66   = 0x10,
+	_f3   = 0x20,
+	_f2   = 0x30,
+	
+	VEX1  = 0x00,
+	_0f   = 0x01,
+	_0f38 = 0x02,
+	_0f3a = 0x03,
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
@@ -182,6 +205,12 @@ struct x86opc_insn_op {
 
 struct x86opc_insn {
 	const char *name;
+	byte op[4];
+};
+
+struct x86opc_vex_insn {
+	const char *name;
+	byte vex;
 	byte op[4];
 };
 
