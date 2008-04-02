@@ -387,11 +387,17 @@ const char *x86_segs[8] = {
 
 #define GROUP_SPECIAL_0F01_0	0
 #define GROUP_SPECIAL_0F01_1	1
-#define GROUP_SPECIAL_0F01_3	2
-#define GROUP_SPECIAL_0F01_7	3
-#define GROUP_SPECIAL_0FAE_5	4
-#define GROUP_SPECIAL_0FAE_6	5
-#define GROUP_SPECIAL_0FAE_7	6
+#define GROUP_SPECIAL_0F01_2	2
+#define GROUP_SPECIAL_0F01_3	3
+#define GROUP_SPECIAL_0F01_7	4
+#define GROUP_SPECIAL_0FAE_0	5
+#define GROUP_SPECIAL_0FAE_1	6
+#define GROUP_SPECIAL_0FAE_2	7
+#define GROUP_SPECIAL_0FAE_3	8
+#define GROUP_SPECIAL_0FAE_4	9
+#define GROUP_SPECIAL_0FAE_5	10
+#define GROUP_SPECIAL_0FAE_6	11
+#define GROUP_SPECIAL_0FAE_7	12
 
 /*
 
@@ -2724,7 +2730,7 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 {
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_0}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_1}},
-{"lgdt", {M}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_2}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_3}},
 {"smsw", {Ew}},
 {0},
@@ -2777,11 +2783,11 @@ x86opc_insn x86_group_insns[X86_GROUPS][8] = {
 },
 /* 22 - GROUP_EXT_AE */
 {
-{"fxsave", {M}},
-{"fxrstor", {M}},
-{"ldmxcsr", {Md}},
-{"stmxcsr", {Md}},
-{0},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_0}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_1}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_2}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_3}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_4}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_5}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_6}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_7}},
@@ -2859,7 +2865,20 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 // with mod!=11:
 {"sidt", {M}},
 },
-/* 2 - GROUP_SPECIAL_0F01_3 */
+/* 2 - GROUP_SPECIAL_0F01_2 */
+{
+{"xgetbv"},
+{"xsetbv"},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"lgdt", {M}},
+},
+/* 3 - GROUP_SPECIAL_0F01_3 */
 {
 {"vmrun"},
 {"vmmcall"},
@@ -2872,7 +2891,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 // with mod!=11:
 {"lidt", {M}},
 },
-/* 1 - GROUP_SPECIAL_0F01_7 */
+/* 4 - GROUP_SPECIAL_0F01_7 */
 {
 {"swapgs"},
 {"rdtscp"},
@@ -2885,7 +2904,72 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 // with mod!=11:
 {"invlpg", {M}},
 },
-/* 2 - GROUP_SPECIAL_0FAE_5 */
+/* 5 - GROUP_SPECIAL_0FAE_0 */
+{
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"fxsave", {M}},
+},
+/* 6 - GROUP_SPECIAL_0FAE_1 */
+{
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"fxstor", {M}},
+},
+/* 7 - GROUP_SPECIAL_0FAE_2 */
+{
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"ldmxcsr", {Md}},
+},
+/* 8 - GROUP_SPECIAL_0FAE_3 */
+{
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"stmxcsr", {Md}},
+},
+/* 9 - GROUP_SPECIAL_0FAE_4 */
+{
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+// with mod!=11:
+{"xsave", {M}},
+},
+/* 10 - GROUP_SPECIAL_0FAE_5 */
 {
 {"lfence"},
 {0},
@@ -2896,9 +2980,9 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{0},
+{"xrstor", {M}},
 },
-/* 3 - GROUP_SPECIAL_0FAE_6 */
+/* 11 - GROUP_SPECIAL_0FAE_6 */
 {
 {"mfence"},
 {0},
@@ -2911,7 +2995,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 // with mod!=11:
 {0},
 },
-/* 4 - GROUP_SPECIAL_0FAE_7 */
+/* 12 - GROUP_SPECIAL_0FAE_7 */
 {
 {"sfence"},
 {0},
@@ -3226,6 +3310,8 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 {"vblendps", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
 {"vblendps", _256|_66|_0f3a, {Yy, YVy, Xy, Ib}},
 }
+10
+{"vmovsd", _128|_f2|_0f, {Vo, VVo, VRo}},
 0d
 {
 {"vblendpd", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
@@ -3263,14 +3349,19 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 }
 1a
 {"vbroadcastf128", _256|_66|_0f38, {Yy, My}},
+21
+{"vinsertps", _128|_66|_0f3a, {Vo, VVo, Wd, Ib}},
 28
 {"vmovapd", _128|_66|_0f, {Vo, Wo}},
 {"vmovapd", _256|_66|_0f, {Yy, Xy}},
 29
 {"vmovapd", _128|_66|_0f, {Wo, Vo}},
 {"vmovapd", _256|_66|_0f, {Xy, Yy}},
-21
-{"vinsertps", _128|_66|_0f3a, {Vo, VVo, Wd, Ib}},
+2a
+{"vmovntdqa", _128|_66|_0f38, {Vo, Mo}},
+2b
+{"vmovntps", _128|_0f, {Mo, Vo}},
+{"vmovntpd", _128|_66|_0f, {Mo, Vo}},
 2c
 {"vmaskmovps", _128|_66|_0f38, {Vo, VVo, Mo}},
 {"vmaskmovps", _256|_66|_0f38, {Yy, YVy, My}},
@@ -3560,6 +3651,8 @@ d0
 }
 d6
 {"vmovq", _128|_66|_0f, {Wq, Vo}},
+e7
+{"vmovntdq", _128|_66|_0f, {Mo, Vo}},
 c2
 {
 {"vcmpps", _128|_0f, {Vo, VVo, Wo, Ib}},
