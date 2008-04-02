@@ -41,6 +41,16 @@
 #define drexdest(drex) ((drex)>>4)
 #define oc0(drex) (!!((drex)&8))
 
+#define vexw(vex) (!!((vex)&0x80))
+#define vexr(vex) (!((vex)&0x80))
+#define vexx(vex) (!((vex)&0x40))
+#define vexb(vex) (!((vex)&0x20))
+
+#define vexl(vex) (!!((vex)&0x04))
+#define vexmmmm(vex) ((vex)&0xf)
+#define vexvvvv(vex) (((~(vex))>>3)&0xf)
+#define vexpp(vex) ((vex)&0x3)
+
 static int modrm16_1[8] = { X86_REG_BX, X86_REG_BX, X86_REG_BP, X86_REG_BP,
                      X86_REG_SI, X86_REG_DI, X86_REG_BP, X86_REG_BX};
 static int modrm16_2[8] = { X86_REG_SI, X86_REG_DI, X86_REG_SI, X86_REG_DI,
@@ -233,6 +243,26 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 	}
 }
 
+void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
+{
+	if (xinsn) {
+		insn.opcode = getbyte();
+		byte vex = (insn.vexprefix.w << 7) | (insn.vexprefix.l << 6)
+			| (insn.vexprefix.mmmm << 4) | insn.vexprefix.pp;
+		while (xinsn->name) {
+			if (xinsn->vex == vex) {
+				insn.name = xinsn->name;
+				for (int i = 0; i < 4; i++) {
+					decode_op(&insn.op[i], &x86_op_type[xinsn->op[i]]);
+				}
+				return;
+			}
+			xinsn++;
+		}
+	}
+	invalidate();
+}
+
 void x86dis::decode_insn(x86opc_insn *xinsn)
 {
 	if (!xinsn->name) {
@@ -277,7 +307,47 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					}
 					break;
 				}
-				// fall throu
+				invalidate();
+				break;
+			case 0xc4:
+			case 0xc5: {
+				if (insn.opsizeprefix != X86_PREFIX_NO
+				 || insn.lockprefix != X86_PREFIX_NO
+				 || insn.repprefix != X86_PREFIX_NO
+				 || insn.rexprefix != 0) {
+					invalidate();
+					break;
+				}
+				byte vex = getbyte();
+				if (addrsize != X86_ADDRSIZE64
+				 && !(vex & 0x80)) {
+					modrm = vex;
+					decode_insn(c == 0xc4 ? &x86_les : &x86_lds);
+					break;
+				}
+				insn.rexprefix = 0x40;
+				insn.rexprefix = vexr(vex) << 2;
+				if (c == 0xc4) {
+					// 3 byte vex
+					insn.rexprefix |= vexx(vex) << 1;
+					insn.rexprefix |= vexb(vex);
+					insn.vexprefix.mmmm = vexmmmm(vex);
+					if (insn.vexprefix.mmmm == 0
+					 || insn.vexprefix.mmmm > 3) {
+						invalidate();
+						break;
+					}
+					vex = getbyte();
+					insn.vexprefix.w |= vexw(vex);
+				}
+				insn.vexprefix.vvvv = vexvvvv(vex);
+				insn.vexprefix.l = vexl(vex);
+				insn.vexprefix.pp = vexl(vex);
+				if (addrsize != X86_ADDRSIZE64) {
+					insn.rexprefix = 0;
+				}
+				break;
+			}
 			default:
 				invalidate();
 				break;

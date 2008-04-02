@@ -36,13 +36,22 @@
 #define X86DIS_STYLE_EXPLICIT_MEMSIZE	0x00000001	/* IF SET: mov word ptr [0000], ax 	ELSE: mov [0000], ax */
 #define X86DIS_STYLE_OPTIMIZE_ADDR	0x00000002	/* IF SET: mov [eax*3], ax 		ELSE: mov [eax+eax*2+00000000], ax */
 
+struct x86dis_vex {
+	uint8 mmmm;
+	uint8 vvvv;
+	uint8 l;
+	uint8 w;
+	uint8 pp;
+};
+
 struct x86dis_insn {
 	bool invalid;
 	sint8 opsizeprefix;
 	sint8 lockprefix;
 	sint8 repprefix;
 	sint8 segprefix;
-	uint8 rexprefix;	
+	uint8 rexprefix;
+	x86dis_vex vexprefix;
 	int size;
 	int opcode;
 	int opcodeclass;
@@ -79,6 +88,7 @@ protected:
 	/* new */
 	virtual		void	checkInfo(x86opc_insn *xinsn);
 			void	decode_insn(x86opc_insn *insn);
+			void	decode_vex_insn(x86opc_vex_insn *xinsn);
 	virtual		void	decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm);
 			void	decode_op(x86_insn_op *op, x86opc_insn_op *xop);
 			void	decode_sib(x86_insn_op *op, int mod);

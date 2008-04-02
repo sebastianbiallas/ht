@@ -411,6 +411,9 @@ const char *x86_segs[8] = {
 	&    same as '?' for disassembler and '|' for assembler
  */
 
+x86opc_insn x86_les = {"les", {Gv, Mp}};
+x86opc_insn x86_lds = {"lds", {Gv, Mp}};
+
 x86opc_insn x86_32_insns[256] = {
 /* 00 */
 {"add", {Eb, Gb}},
@@ -633,8 +636,8 @@ x86opc_insn x86_32_insns[256] = {
 {0, {SPECIAL_TYPE_GROUP, GROUP_C1}},
 {"ret", {Iw}},
 {"ret"},
-{"les", {Gv, Mp}},
-{"lds", {Gv, Mp}},
+{0, {SPECIAL_TYPE_PREFIX}}, // VEX prefix {"les", {Gv, Mp}}
+{0, {SPECIAL_TYPE_PREFIX}}, // VEX prefix {"lds", {Gv, Mp}}
 {0, {SPECIAL_TYPE_GROUP, GROUP_C6}},
 {0, {SPECIAL_TYPE_GROUP, GROUP_C7}},
 /* C8 */

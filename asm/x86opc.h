@@ -67,7 +67,8 @@ enum X86_Optype {
 	X86_OPTYPE_STX = 8,
 	X86_OPTYPE_MMX = 9,
 	X86_OPTYPE_XMM = 10,
-	X86_OPTYPE_FARPTR = 11,
+	X86_OPTYPE_YMM = 11,
+	X86_OPTYPE_FARPTR = 12,
 
 	// user defined types start here
 	X86_OPTYPE_USER = 32,
@@ -102,6 +103,7 @@ struct x86_insn_op {
 		int stx;
 		int mmx;
 		int xmm;
+		int ymm;
 		union {
 			int i;
 			void *p;
@@ -157,13 +159,13 @@ enum X86_VEX {
 	_128  = 0x00,
 	_256  = 0x40,
 	
-	_66   = 0x10,
-	_f3   = 0x20,
-	_f2   = 0x30,
+	_66   = 0x01,
+	_f3   = 0x02,
+	_f2   = 0x03,
 	
-	_0f   = 0x01,
-	_0f38 = 0x02,
-	_0f3a = 0x03,
+	_0f   = 0x1,
+	_0f38 = 0x2,
+	_0f3a = 0x3,
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
@@ -250,6 +252,9 @@ struct x86opc_finsn {
 #define X86_OPC_GROUPS		9
 #define X86_GROUPS		27
 #define X86_SPECIAL_GROUPS	13
+
+extern x86opc_insn x86_les;
+extern x86opc_insn x86_lds;
 
 extern const char *x86_regs[4][8];
 extern const char *x86_64regs[4][16];
