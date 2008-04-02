@@ -84,6 +84,8 @@ dis_insn *x86dis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 	modrm = -1;
 	sib = -1;
 	drex = -1;
+	special_imm = -1;
+	have_disp = false;
 	memset(&insn, 0, sizeof insn);
 	insn.invalid = false;
 	insn.eopsize = opsize;
@@ -106,7 +108,7 @@ dis_insn *x86dis::decode(byte *code, int Maxlen, CPU_ADDR Addr)
 		insn.repprefix = X86_PREFIX_NO;
 		insn.segprefix = X86_PREFIX_NO;
 		insn.rexprefix = 0;
-		for (int i = 1; i < 4; i++) insn.op[i].type = X86_OPTYPE_EMPTY;
+		for (int i = 1; i < 5; i++) insn.op[i].type = X86_OPTYPE_EMPTY;
 	} else {
 		insn.size = codep - ocodep;
 		if (fixdisp) {
@@ -151,9 +153,10 @@ static bool is_xmm_op(x86dis_insn *insn, char size)
 	}
 }
 
-void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm)
+void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm, bool ymm)
 {
 	int modrm = getmodrm();
+	getdisp();
 	int mod = mkmod(modrm);
 	int rm = mkrm(modrm);
 	if (mod == 3) {
@@ -168,6 +171,9 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 		} else if (mmx) {
 			op->type = X86_OPTYPE_MMX;
 			op->mmx = rm;
+		} else if (ymm) {
+			op->type = X86_OPTYPE_YMM;
+			op->xmm = rm;
 		} else {
 			op->type = X86_OPTYPE_REG;
 			op->reg = rm;
@@ -188,7 +194,7 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 		if (insn.eaddrsize == X86_ADDRSIZE16) {
 			if (mod == 0 && rm == 6) {
 				op->mem.hasdisp = true;
-				op->mem.disp = getword();
+				op->mem.disp = disp;
 				op->mem.base = X86_REG_NO;
 				op->mem.index = X86_REG_NO;
 				op->mem.scale = 0;
@@ -203,18 +209,18 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 					break;
 				case 1:
 					op->mem.hasdisp = true;
-					op->mem.disp = sint64(sint8(getbyte()));
+					op->mem.disp = sint64(sint8(disp));
 					break;
 				case 2:
 					op->mem.hasdisp = true;
-					op->mem.disp = sint64(sint16(getword()));
+					op->mem.disp = sint64(sint16(disp));
 					break;
 				}
 			}
 		} else {
 			if (mod == 0 && rm == 5) {
 				op->mem.hasdisp = true;
-				op->mem.disp = getdword();
+				op->mem.disp = disp;
 				op->mem.base = X86_REG_NO;
 				op->mem.index = X86_REG_NO;
 				op->mem.scale = 0;
@@ -231,11 +237,11 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 					break;
 				case 1:
 					op->mem.hasdisp = true;
-					op->mem.disp = sint64(sint8(getbyte()));
+					op->mem.disp = sint64(sint8(disp));
 					break;
 				case 2:
 					op->mem.hasdisp = true;
-					op->mem.disp = sint64(sint32(getdword()));
+					op->mem.disp = sint64(sint32(disp));
 					break;
 				}
 			}
@@ -246,13 +252,28 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 {
 	if (xinsn) {
-		insn.opcode = getbyte();
 		byte vex = (insn.vexprefix.w << 7) | (insn.vexprefix.l << 6)
 			| (insn.vexprefix.mmmm << 4) | insn.vexprefix.pp;
 		while (xinsn->name) {
 			if (xinsn->vex == vex) {
 				insn.name = xinsn->name;
-				for (int i = 0; i < 4; i++) {
+				
+				for (int i = 0; i < 5; i++) {
+					x86opc_insn_op *op = &x86_op_type[xinsn->op[i]];
+					switch (op->type) {
+					case TYPE_E:
+					case TYPE_M:
+					case TYPE_W:
+					case TYPE_X:
+						/* get whole modrm/sib/disp stuff first
+		    				 * (otherwise a TYPE_VI immediate might 
+						 * get fetched fetched before the modrm stuff)
+						 */
+						getdisp();
+					}
+				}
+				
+				for (int i = 0; i < 5; i++) {
 					decode_op(&insn.op[i], &x86_op_type[xinsn->op[i]]);
 				}
 				return;
@@ -345,10 +366,13 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				}
 				insn.vexprefix.vvvv = vexvvvv(vex);
 				insn.vexprefix.l = vexl(vex);
-				insn.vexprefix.pp = vexl(vex);
+				insn.vexprefix.pp = vexpp(vex);
 				if (addrsize != X86_ADDRSIZE64) {
 					insn.rexprefix = 0;
 				}
+				
+				insn.opcode = getbyte();
+				decode_vex_insn(x86_vex_nsns[insn.opcode]);
 				break;
 			}
 			default:
@@ -440,7 +464,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	}
 	case TYPE_E: {
 		/* ModR/M (general reg or memory) */
-		decode_modrm(op, xop->size, (xop->size != SIZE_P), true, false, false);
+		decode_modrm(op, xop->size, (xop->size != SIZE_P), true, false, false, false);
 		break;
 	}
 	case TYPE_F: {
@@ -575,7 +599,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	}
 	case TYPE_M: {
 		/* ModR/M (memory only) */
-		decode_modrm(op, xop->size, false, true, false, false);
+		decode_modrm(op, xop->size, false, true, false, false, false);
 		break;
 	}
 	case TYPE_MR: {
@@ -586,7 +610,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		if (mod == 3) {
 			xopsize = xop->extra;
 		}
-		decode_modrm(op, xopsize, (xopsize != SIZE_P), true, false, false);
+		decode_modrm(op, xopsize, (xopsize != SIZE_P), true, false, false, false);
 		break;
 	}
 	case TYPE_O: {
@@ -644,7 +668,7 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	}
 	case TYPE_Q: {
 		/* ModR/M (MMX reg or memory) */
-		decode_modrm(op, xop->size, true, true, true, false);
+		decode_modrm(op, xop->size, true, true, true, false, false);
 		break;
 	}
 	case TYPE_R: {
@@ -698,6 +722,20 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->xmm = mkreg(getmodrm());
 		break;
 	}
+	case TYPE_VI: {
+		/* bits 7-4 of imm picks XMM register */
+		op->type = X86_OPTYPE_XMM;
+		op->size = 16;
+		op->xmm = getspecialimm() >> 4;
+		break;
+	}
+	case TYPE_VV: {
+		/* VEX.vvvv picks XMM register */
+		op->type = X86_OPTYPE_XMM;
+		op->size = 16;
+		op->xmm = insn.vexprefix.vvvv;
+		break;
+	}
 	case TYPE_Vx: {
 		/* extra picks XMM register */
 		op->type = X86_OPTYPE_XMM;
@@ -717,37 +755,47 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		break;
 	case TYPE_W:
 		/* ModR/M (XMM reg or memory) */
-		decode_modrm(op, xop->size, true, true, false, true);
+		decode_modrm(op, xop->size, true, true, false, true, false);
 		break;
 	case TYPE_VD:
 		op->type = X86_OPTYPE_XMM;
 		op->size = 16;
 		op->reg = drexdest(getdrex());
 		break;
-	case TYPE_VS:
+	case TYPE_VS: 
 		if (xop->info && oc0(getdrex())) {
 			invalidate();
 		}
 		if (oc0(getdrex()) ^ xop->extra) {
-			decode_modrm(op, xop->size, true, true, false, true);			
+			decode_modrm(op, xop->size, true, true, false, true, false);
 		} else {
 			op->type = X86_OPTYPE_XMM;
 			op->size = 16;
 			op->xmm = mkreg(getmodrm());
 		}
 		break;
-	}
-	case TYPE_V: {
+	case TYPE_Y:
 		/* reg of ModR/M picks XMM register */
 		op->type = X86_OPTYPE_YMM;
 		op->size = 32;
 		op->ymm = mkreg(getmodrm());
 		break;
+	case TYPE_YV: {
+		/* VEX.vvvv picks YMM register */
+		op->type = X86_OPTYPE_YMM;
+		op->size = 32;
+		op->ymm = insn.vexprefix.vvvv;
+		break;
 	}
-	case TYPE_YI: {
+	case TYPE_YI:
+		/* bits 7-4 of imm picks YMM register */
 		op->type = X86_OPTYPE_YMM;
 		op->size = 32;
 		op->ymm = getspecialimm() >> 4;
+		break;
+	case TYPE_X:
+		/* ModR/M (XMM reg or memory) */
+		decode_modrm(op, xop->size, true, true, false, false, true);
 		break;
 	}
 }
@@ -776,11 +824,11 @@ void x86dis::decode_sib(x86_insn_op *op, int mod)
 		break;
 	case 1:
 		op->mem.hasdisp = true;
-		op->mem.disp = sint64(sint8(getbyte()));
+		op->mem.disp = sint64(sint8(disp));
 		break;
 	case 2:
 		op->mem.hasdisp = true;
-		op->mem.disp = sint64(sint32(getdword()));
+		op->mem.disp = sint64(sint32(disp));
 		break;
 	}
 }
@@ -807,6 +855,8 @@ int x86dis::esizeop(uint c)
 		return 8;
 	case SIZE_O:
 		return 16;
+	case SIZE_Y:
+		return 32;
 	case SIZE_T:
 		return 10;
 	case SIZE_V:
@@ -915,16 +965,62 @@ void x86dis::filloffset(CPU_ADDR &addr, uint64 offset)
 	addr.addr32.offset = offset;
 }
 
-int x86dis::getmodrm()
+uint32 x86dis::getdisp()
 {
-	if (modrm == -1) {
-		modrm = getbyte();
-		int mod = mkmod(modrm);
-		int rm = mkrm(modrm);
-		if (mod != 3 && (rm & 7) == 4) {
-			getsib();
+	if (have_disp) return disp;
+	have_disp = true;
+	int modrm = getmodrm();
+	int mod = mkmod(modrm);
+	if (mod == 3) return 0;
+	int rm = mkrm(modrm);
+	if (insn.eaddrsize == X86_ADDRSIZE16) {
+		if (mod == 0 && rm == 6) {
+			disp = getword();
+		} else {
+			switch (mod) {
+			case 1:
+				disp = getbyte();
+				break;
+			case 2:
+				disp = getword();
+				break;
+			}
+		}
+	} else {
+		if (mod == 0 && rm == 5) {
+			disp = getdword();
+		} else if (rm == 4) {
+			int sib = getsib();
+			int base = mkbase(sib);
+			int d = mod;
+			if ((base & 0x7) == 5 && mod == 0) {
+				d = 2;
+			}
+			switch (d) {
+			case 1:
+				disp = getbyte();
+				break;
+			case 2:
+				disp = getdword();
+				break;
+			}
+		} else {
+			switch (mod) {
+			case 1:
+				disp = getbyte();
+				break;
+			case 2:
+				disp = getdword();
+				break;
+			}
 		}
 	}
+	return disp;
+}
+
+int x86dis::getmodrm()
+{
+	if (modrm == -1) modrm = getbyte();
 	return modrm;
 }
 
@@ -932,6 +1028,12 @@ int x86dis::getdrex()
 {
 	if (drex == -1) {
 		getmodrm();
+		int modrm = getmodrm();
+		int mod = mkmod(modrm);
+		int rm = mkrm(modrm);
+		if (mod != 3 && (rm & 7) == 4) {
+			getsib();
+		}
 		drex = getbyte();
 		if (addrsize != X86_ADDRSIZE64) {
 			drex &= 0x78;
@@ -939,6 +1041,12 @@ int x86dis::getdrex()
 		insn.rexprefix = drex & 0x7;
 	}
 	return drex;
+}
+
+int x86dis::getspecialimm()
+{
+	if (special_imm == -1) special_imm = getbyte();
+	return special_imm;
 }
 
 const char *x86dis::getName()
@@ -1137,6 +1245,9 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 		break;
 	case X86_OPTYPE_XMM:
 		sprintf(opstr, "xmm%d", op->xmm);
+		break;
+	case X86_OPTYPE_YMM:
+		sprintf(opstr, "ymm%d", op->ymm);
 		break;
 	case X86_OPTYPE_MEM: {
 		char *d=opstr;
@@ -1359,6 +1470,10 @@ void x86dis::str_format(char **str, const char **format, char *p, char *n, char 
 					t=op[3];
 					tl=oplen[3];
 					break;
+				case DISASM_STRF_FIFTH:
+					t=op[4];
+					tl=oplen[4];
+					break;
 				}
 				if (tl) {
 					memcpy(s, t, tl);
@@ -1371,7 +1486,7 @@ void x86dis::str_format(char **str, const char **format, char *p, char *n, char 
 			}
 			break;
 		case DISASM_STRF_COND: {
-			char *t=0;
+			char *t = NULL;
 			f++;
 			switch (*f) {
 			case DISASM_STRF_PREFIX:
@@ -1391,6 +1506,9 @@ void x86dis::str_format(char **str, const char **format, char *p, char *n, char 
 				break;
 			case DISASM_STRF_FORTH:
 				t=op[3];
+				break;
+			case DISASM_STRF_FIFTH:
+				t=op[4];
 				break;
 			}
 			f += 2;
@@ -1455,12 +1573,12 @@ const char *x86dis::strf(dis_insn *disasm_insn, int opt, const char *format)
 	const char *iname = insn->name;
 	bool explicit_params = (options & X86DIS_STYLE_EXPLICIT_MEMSIZE) || iname[0] == '~';
 
-	char ops[4][512];	/* FIXME: possible buffer overflow ! */
-	char *op[4];
-	int oplen[4];
+	char ops[5][512];	/* FIXME: possible buffer overflow ! */
+	char *op[5];
+	int oplen[5];
 
 	if (options & DIS_STYLE_HIGHLIGHT) enable_highlighting();
-	for (int i=0; i < 4; i++) {
+	for (int i=0; i < 5; i++) {
 		op[i] = (char*)&ops[i];
 		str_op(op[i], &oplen[i], insn, &insn->op[i], explicit_params);
 	}
@@ -1550,9 +1668,10 @@ void x86_64dis::prepInsns()
 	x86_insns = x86_64_insns;
 }
 
-void x86_64dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm)
+void x86_64dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, bool mmx, bool xmm, bool ymm)
 {
 	int modrm = getmodrm();
+	getdisp();
 	int mod = mkmod(modrm);
 	int rm = mkrm(modrm);
 	if (mod == 3) {
@@ -1566,6 +1685,9 @@ void x86_64dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool al
 		} else if (mmx) {
 			op->type = X86_OPTYPE_MMX;
 			op->mmx = rm & 0x7; // no rex-extension
+		} else if (ymm) {
+			op->type = X86_OPTYPE_YMM;
+			op->mmx = rm;
 		} else {
 			op->type = X86_OPTYPE_REG;
 			op->reg = rm;
@@ -1584,7 +1706,7 @@ void x86_64dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool al
 
 		if (mod == 0 && (rm & 0x7) == 5) {
 			op->mem.hasdisp = true;
-			op->mem.disp = sint32(getdword());
+			op->mem.disp = sint32(disp);
 			fixdisp = true;
 //			op->mem.base = X86_REG_IP;
 			op->mem.base = X86_REG_NO;
@@ -1603,11 +1725,11 @@ void x86_64dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool al
 				break;
 			case 1:
 				op->mem.hasdisp = true;
-				op->mem.disp = sint64(sint8(getbyte()));
+				op->mem.disp = sint64(sint8(disp));
 				break;
 			case 2:
 				op->mem.hasdisp = true;
-				op->mem.disp = sint64(sint32(getdword()));
+				op->mem.disp = sint64(sint32(disp));
 				break;
 			}
 		}
