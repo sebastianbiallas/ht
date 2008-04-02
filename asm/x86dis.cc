@@ -320,7 +320,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				}
 				byte vex = getbyte();
 				if (addrsize != X86_ADDRSIZE64
-				 && !(vex & 0x80)) {
+				 && (vex & 0xc0) != 0xc0) {
 					modrm = vex;
 					decode_insn(c == 0xc4 ? &x86_les : &x86_lds);
 					break;
@@ -339,6 +339,9 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					}
 					vex = getbyte();
 					insn.vexprefix.w |= vexw(vex);
+				} else {
+					// 2 byte vex
+					insn.vexprefix.mmmm = 1;
 				}
 				insn.vexprefix.vvvv = vexvvvv(vex);
 				insn.vexprefix.l = vexl(vex);
@@ -530,6 +533,13 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->type = X86_OPTYPE_IMM;
 		op->size = esizeop(xop->size);
 		op->imm = xop->extra;
+		break;
+	}
+	case TYPE_I4: {
+		/* 4 bit immediate (see TYPE_VI, TYPE_YI) */
+		op->type = X86_OPTYPE_IMM;
+		op->size = 1;
+		op->imm = getspecialimm() & 0xf;
 		break;
 	}
 	case TYPE_J: {
@@ -727,6 +737,19 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		}
 		break;
 	}
+	case TYPE_V: {
+		/* reg of ModR/M picks XMM register */
+		op->type = X86_OPTYPE_YMM;
+		op->size = 32;
+		op->ymm = mkreg(getmodrm());
+		break;
+	}
+	case TYPE_YI: {
+		op->type = X86_OPTYPE_YMM;
+		op->size = 32;
+		op->ymm = getspecialimm() >> 4;
+		break;
+	}
 }
 
 void x86dis::decode_sib(x86_insn_op *op, int mod)
@@ -894,19 +917,21 @@ void x86dis::filloffset(CPU_ADDR &addr, uint64 offset)
 
 int x86dis::getmodrm()
 {
-	if (modrm == -1) modrm = getbyte();
+	if (modrm == -1) {
+		modrm = getbyte();
+		int mod = mkmod(modrm);
+		int rm = mkrm(modrm);
+		if (mod != 3 && (rm & 7) == 4) {
+			getsib();
+		}
+	}
 	return modrm;
 }
 
 int x86dis::getdrex()
 {
 	if (drex == -1) {
-		int modrm = getmodrm();
-		int mod = mkmod(modrm);
-		int rm = mkrm(modrm);
-		if (mod != 3 && (rm & 7) == 4) {
-			getsib();
-		}
+		getmodrm();
 		drex = getbyte();
 		if (addrsize != X86_ADDRSIZE64) {
 			drex &= 0x78;

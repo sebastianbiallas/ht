@@ -83,6 +83,7 @@ protected:
 	int sib;
 	int drex;
 	int maxlen;
+	int special_imm;
 	bool fixdisp;
 
 	/* new */
@@ -101,6 +102,7 @@ protected:
 			int	getmodrm();
 			int	getsib();
 			int	getdrex();
+			int	getspecialimm();
 			void	invalidate();
 			bool	isfloat(char c);
 			bool	isaddr(char c);

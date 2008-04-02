@@ -123,6 +123,7 @@ enum {
 	TYPE_G,		/* reg of ModR/M picks general register */
 	TYPE_Is,	/* signed immediate */
 	TYPE_I,		/* unsigned immediate */
+	TYPE_I4,	/* 4 bit immediate (see TYPE_VI, TYPE_YI) */
 	TYPE_Ix,	/* fixed immediate */
 	TYPE_J,		/* relative branch offset */
 	TYPE_M,		/* ModR/M (memory only) */
