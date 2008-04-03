@@ -3,7 +3,7 @@
  *	x86dis.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2007 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2008 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
