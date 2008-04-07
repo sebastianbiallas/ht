@@ -275,7 +275,7 @@ extern x86opc_insn x86_insns_ext_f3[256];
 extern x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256];
 extern x86opc_insn x86_group_insns[X86_GROUPS][8];
 extern x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9];
-extern x86opc_vex_insn *x86_vex_nsns[256];
+extern x86opc_vex_insn *x86_vex_insns[256];
 
 extern x86opc_insn x86_modfloat_group_insns[8][8];
 extern x86opc_finsn x86_float_group_insns[8][8];

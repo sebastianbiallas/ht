@@ -372,7 +372,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				}
 				
 				insn.opcode = getbyte();
-				decode_vex_insn(x86_vex_nsns[insn.opcode]);
+				decode_vex_insn(x86_vex_insns[insn.opcode]);
 				break;
 			}
 			default:
