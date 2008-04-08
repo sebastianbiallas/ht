@@ -63,12 +63,11 @@ enum X86_Optype {
 	X86_OPTYPE_MEM = 4,
 	X86_OPTYPE_CRX = 5,
 	X86_OPTYPE_DRX = 6,
-	X86_OPTYPE_TRX = 7,
-	X86_OPTYPE_STX = 8,
-	X86_OPTYPE_MMX = 9,
-	X86_OPTYPE_XMM = 10,
-	X86_OPTYPE_YMM = 11,
-	X86_OPTYPE_FARPTR = 12,
+	X86_OPTYPE_STX = 7,
+	X86_OPTYPE_MMX = 8,
+	X86_OPTYPE_XMM = 9,
+	X86_OPTYPE_YMM = 10,
+	X86_OPTYPE_FARPTR = 11,
 
 	// user defined types start here
 	X86_OPTYPE_USER = 32,
@@ -137,7 +136,6 @@ enum {
 	TYPE_RXx,	/* extra picks register, no REX extension */
 	TYPE_S,		/* reg of ModR/M picks segment register */
 	TYPE_Sx,	/* extra picks segment register */
-	TYPE_T,		/* reg of ModR/M picks test register */
 
 	TYPE_V,		/* reg of ModR/M picks XMM register */
 	TYPE_VI,	/* bits 7-4 of imm picks XMM register */

@@ -149,9 +149,7 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_R, 0, INFO_DEFAULT_64, SIZE_R},
 #define Sw	Rr64+1
 {TYPE_S, 0, 0, SIZE_W},
-#define Td	Sw+1
-{TYPE_T, 0, INFO_DEFAULT_64, SIZE_D},
-#define Vd	Td+1
+#define Vd	Sw+1
 {TYPE_V, 0, 0, SIZE_D},
 #define Vq	Vd+1
 {TYPE_V, 0, 0, SIZE_Q},
@@ -807,10 +805,9 @@ x86opc_insn x86_insns_ext[256] = {
 {"mov", {Rr, Dd}},
 {"mov", {Cd, Rr}},
 {"mov", {Dd, Rr}},
-//{"mov", {Rr64, Td}},
 {0, {SPECIAL_TYPE_OPC_GROUP, GROUP_OPC_0F24}},
 {0, {SPECIAL_TYPE_OPC_GROUP, GROUP_OPC_0F25}},
-{"mov", {Td, Rr}},
+{0},
 {0},
 /* 28 */
 {"movaps", {Vo, Wo}},
@@ -1099,9 +1096,9 @@ x86opc_insn x86_insns_ext_66[256] = {
 {"mov", {Rr, Dd}},	// default 32
 {"mov", {Cd, Rr}},	// default 64
 {"mov", {Dd, Rr}},	// default 32
-{"mov", {Rr64, Td}},	// default 64
 {0},
-{"mov", {Td, Rr}},	// default 64
+{0},
+{0},
 {0},
 /* 28 */
 {"movapd", {Vo, Wo}},
@@ -1850,7 +1847,7 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {0},
 {"aesimc", {Vo, Wo}},
 {"aesenc", {Vo, Wo}},
-{"aesclast", {Vo, Wo}},
+{"aesenclast", {Vo, Wo}},
 {"aesdec", {Vo, Wo}},
 {"aesdeclast", {Vo, Wo}},
 /* e0 */
@@ -2054,8 +2051,8 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 {"dpps", {Vo, Wo, Ib}},
 {"dppd", {Vo, Wo, Ib}},
 {"mpsadbw", {Vo, Wo, Ib}},
-{"pclmulqdq", {Vo, Wo, Ib}},
 {0},
+{"pclmulqdq", {Vo, Wo, Ib}},
 {0},
 {0},
 {0},

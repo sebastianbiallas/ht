@@ -135,7 +135,7 @@ static const x86addrcoding modrm32[3][8] = {
 };
 
 /* convert logical operand types to hardware operand types */
-static const int lop2hop[13][8] = {
+static const int lop2hop[12][8] = {
 	/* X86_OPTYPE_EMPTY */
 	{},
 	/* X86_OPTYPE_IMM */
@@ -150,8 +150,6 @@ static const int lop2hop[13][8] = {
 	{TYPE_C},
 	/* X86_OPTYPE_DRX */
 	{TYPE_D},
-	/* X86_OPTYPE_TRX */
-	{TYPE_T},
 	/* X86_OPTYPE_STX */
 	{TYPE_F, TYPE_Fx},
 	/* X86_OPTYPE_MMX */
@@ -850,16 +848,11 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 	case TYPE_Sx:
 		/* extra picks segment register */
 		return true;
-	case TYPE_T:
-		/* reg of ModR/M picks test register */
-		emitmodrm_reg(op->trx);
-		if (op->trx > 7) rexprefix |= rexr;
-		break;
 	case TYPE_VR:
 		/* rm of ModR/M picks XMM register */
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->xmm);
-		if (op->xmm > 7) rexprefix |= rexr;
+		if (op->xmm > 7) rexprefix |= rexb;
 		break;
 	case TYPE_V:
 		/* reg of ModR/M picks XMM register */
@@ -1787,11 +1780,6 @@ bool x86asm::opspecialregs(x86_insn_op *op, const char *xop)
 		op->type = X86_OPTYPE_DRX;
 		op->size = 4;
 		op->drx = w;
-		return true;
-	} else if (ht_strncmp(xop, "tr", 2) == 0) {
-		op->type = X86_OPTYPE_TRX;
-		op->size = 4;
-		op->trx = w;
 		return true;
 	}
 	return false;

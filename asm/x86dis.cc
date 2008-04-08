@@ -708,13 +708,6 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		if (op->seg > 5) invalidate();
 		break;
 	}
-	case TYPE_T: {
-		/* reg of ModR/M picks test register */
-		op->type = X86_OPTYPE_TRX;
-		op->size = esizeop(xop->size);
-		op->trx = mkreg(getmodrm());
-		break;
-	}
 	case TYPE_V: {
 		/* reg of ModR/M picks XMM register */
 		op->type = X86_OPTYPE_XMM;
@@ -1227,9 +1220,6 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 		break;
 	case X86_OPTYPE_DRX:
 		sprintf(opstr, "dr%d", op->drx);
-		break;
-	case X86_OPTYPE_TRX:
-		sprintf(opstr, "tr%d", op->trx);
 		break;
 	case X86_OPTYPE_STX:
 		if (op->stx) {
