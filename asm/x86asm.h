@@ -33,7 +33,7 @@ struct x86asm_insn {
 	char opsizeprefix;
 	char n[16];
 	char *name;
-	x86_insn_op op[3];
+	x86_insn_op op[5];
 };
 
 struct x86addrcoding {
@@ -109,10 +109,11 @@ protected:
 	virtual bool opreg(x86_insn_op *op, const char *xop);
 	bool opmmx(x86_insn_op *op, const char *xop);
 	virtual bool opxmm(x86_insn_op *op, const char *xop);
+	virtual bool opymm(x86_insn_op *op, const char *xop);
 	bool opseg(x86_insn_op *op, const char *xop);
 	bool opspecialregs(x86_insn_op *op, const char *xop);
 	int simmsize(uint64 imm, int immsize);
-	void splitstr(const char *s, char *name, int size, char *op[3], int opsize);
+	void splitstr(const char *s, char *name, int size, char *op[5], int opsize);
 	void tok(const char **s, char *res, int reslen, const char *sep);
 public:
 		x86asm(X86OpSize opsize, X86AddrSize addrsize);
@@ -131,6 +132,7 @@ public:
 		x86_64asm();
 	virtual bool opreg(x86_insn_op *op, const char *xop);
 	virtual bool opxmm(x86_insn_op *op, const char *xop);
+	virtual bool opymm(x86_insn_op *op, const char *xop);
 		void prepInsns();
 protected:
 	virtual x86dis *createCompatibleDisassembler();

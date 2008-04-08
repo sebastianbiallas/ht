@@ -1022,7 +1022,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 	char buf[512];
 	int ci=1;
 	cfmt[0]='%';
-	while ((*fmtl) && (ci<32-1)) {
+	while (*fmtl && ci < 32-1) {
 		cfmt[ci]=(*fmt)[0];
 		cfmt[ci+1]=0;
 		switch ((*fmt)[0]) {
@@ -1036,7 +1036,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 				eval_int i;
 				scalar_context_int(s, &i);
 				
-				sprintf(buf, cfmt, i.value);
+				ht_snprintf(buf, sizeof buf, cfmt, i.value);
 				sprintf_puts(b, blimit, buf);
 				
 				return 1;
@@ -1044,7 +1044,6 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 			case 's': {
 				char *q=cfmt+1;
 				eval_str t;
-/*				int l;*/
 				scalar_context_str(s, &t);
 				
 				while (*q!='s') {
@@ -1071,13 +1070,8 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 				if ((unsigned int)t.len>sizeof buf-1) t.len=sizeof buf-1;
 				t.value[t.len]=0;
 				
-				sprintf(buf, cfmt, t.value);
+				ht_snprintf(buf, sizeof buf, cfmt, t.value);
 				
-/*				l=t.len;
-				if (l > (sizeof buf)-1) l=(sizeof buf)-1;
-
-				memcpy(buf, t.value, l);
-				buf[l]=0;*/
 				sprintf_puts(b, blimit, buf);
 				
 				string_destroy(&t);
@@ -1092,7 +1086,7 @@ int sprintf_percent(char **fmt, int *fmtl, char **b, char *blimit, eval_scalar *
 				eval_float f;
 				scalar_context_float(s, &f);
 				
-				sprintf(buf, cfmt, f.value);
+				ht_snprintf(buf, sizeof buf, cfmt, f.value);
 				sprintf_puts(b, blimit, buf);
 				
 				return 1;
@@ -1144,7 +1138,7 @@ int func_sprintf(eval_scalar *r, const eval_str *format, const eval_scalarlist *
 	}
 	*b=0;
 	r->type=SCALAR_STR;
-	r->scalar.str.value=(char*)strdup(buf);
+	r->scalar.str.value=ht_strdup(buf);
 	r->scalar.str.len=strlen(r->scalar.str.value);
 	return 1;
 }

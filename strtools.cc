@@ -238,10 +238,10 @@ int escape_special(char *result, int resultmaxlen, const void *S, int len, const
 					if (--resultmaxlen<2) break;
 					*result++=hexchars[(*s & 0x0f)];
 			}
-			if (--resultmaxlen<2) break;
+			if (--resultmaxlen < 2) break;
 		} else {
 			*result++ = *s;
-			if (--resultmaxlen<2) break;
+			if (--resultmaxlen < 2) break;
 		}
 		s++;
 	}
@@ -264,45 +264,45 @@ int unescape_special(void *Result, int resultmaxlen, const char *s)
 		if (*s == '\\') {
 			s++;
 			switch (*s) {
-				case '0':
-					*result++='\0';
-					break;
-				case 'a':
-					*result++='\a';
-					break;
-				case 'b':
-					*result++='\b';
-					break;
-				case 'e':
-					*result++='\e';
-					break;
-				case 'f':
-					*result++='\f';
-					break;
-				case 'n':
-					*result++='\n';
-					break;
-				case 'r':
-					*result++='\r';
-					break;
-				case 't':
-					*result++='\t';
-					break;
-				case 'v':
-					*result++='\v';
-					break;
-				case '\\':
-					*result++='\\';
-					break;
-				case '\"':
-					*result++='"';
-					break;
-				case 'x':
-					s++;
-					byte v=hexdigit(*s)*16;
-					s++;
-					v+=hexdigit(*s);
-					*result++=(char)v;
+			case '0':
+				*result++='\0';
+				break;
+			case 'a':
+				*result++='\a';
+				break;
+			case 'b':
+				*result++='\b';
+				break;
+			case 'e':
+				*result++='\e';
+				break;
+			case 'f':
+				*result++='\f';
+				break;
+			case 'n':
+				*result++='\n';
+				break;
+			case 'r':
+				*result++='\r';
+				break;
+			case 't':
+				*result++='\t';
+				break;
+			case 'v':
+				*result++='\v';
+				break;
+			case '\\':
+				*result++='\\';
+				break;
+			case '\"':
+				*result++='"';
+				break;
+			case 'x':
+				s++;
+				byte v = hexdigit(*s) * 16;
+				s++;
+				v += hexdigit(*s);
+				*result++ = (char)v;
 			}
 			if (!--resultmaxlen) break;
 		} else {
@@ -356,7 +356,7 @@ void memdowncase(byte *buf, int len)
 
 byte *ht_memmem(const byte *haystack, int haystack_len, const byte *needle, int needle_len)
 {
-	while (haystack_len && (haystack_len >= needle_len)) {
+	while (haystack_len && haystack_len >= needle_len) {
 		if (memcmp(haystack, needle, needle_len) == 0) return (byte*)haystack;
 		haystack++;
 		haystack_len--;

@@ -135,7 +135,7 @@ static const x86addrcoding modrm32[3][8] = {
 };
 
 /* convert logical operand types to hardware operand types */
-static const int lop2hop[12][8] = {
+static const int lop2hop[13][8] = {
 	/* X86_OPTYPE_EMPTY */
 	{},
 	/* X86_OPTYPE_IMM */
@@ -158,6 +158,8 @@ static const int lop2hop[12][8] = {
 	{TYPE_P, TYPE_Q, TYPE_PR},
 	/* X86_OPTYPE_XMM */
 	{TYPE_V, TYPE_W, TYPE_VR, TYPE_Vx},
+	/* X86_OPTYPE_YMM */
+	{},
 	/* X86_OPTYPE_FARPTR */
 	{},
 };
@@ -856,11 +858,13 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 	case TYPE_VR:
 		/* rm of ModR/M picks XMM register */
 		emitmodrm_mod(3);
-		// fall throu
+		emitmodrm_rm(op->xmm);
+		if (op->xmm > 7) rexprefix |= rexr;
+		break;
 	case TYPE_V:
 		/* reg of ModR/M picks XMM register */
 		emitmodrm_reg(op->xmm);
-		if (op->mmx > 7) rexprefix |= rexr;
+		if (op->xmm > 7) rexprefix |= rexr;
 		break;
 	case TYPE_Vx:
 		break;
@@ -1510,6 +1514,19 @@ bool x86asm::opxmm(x86_insn_op *op, const char *xop)
 	}
 }
 
+bool x86asm::opymm(x86_insn_op *op, const char *xop)
+{
+	if (strlen(xop) == 4 && xop[0] == 'y' && xop[1] == 'm' && xop[2] == 'm'
+	 && xop[3] >= '0' && xop[3] <= '7') {
+		op->type = X86_OPTYPE_YMM;
+		op->size = 32;
+		op->xmm = xop[3] - '0';
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool x86asm::opseg(x86_insn_op *op, const char *xop)
 {
 	for (int i=0; i<8; i++) {
@@ -1592,8 +1609,8 @@ bool x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, const char *s)
 
 	tok(&s, token, sizeof token, sep);
 	
-	static const char *types[] = {"byte", "word", "dword", "pword", "qword", "oword", "single", "double", "extended"};
-	static byte type_size[] = {1, 2, 4, 6, 8, 16, 4, 8, 10};
+	static const char *types[] = {"byte", "word", "dword", "pword", "qword", "oword", "ymmword", "single", "double", "extended"};
+	static byte type_size[] = {1, 2, 4, 6, 8, 16, 32, 4, 8, 10};
 	// typecast
 	for (uint i=0; i < sizeof types / sizeof types[0]; i++) {
 		if (strcmp(token, types[i]) == 0) {
@@ -1783,11 +1800,13 @@ bool x86asm::opspecialregs(x86_insn_op *op, const char *xop)
 bool x86asm::translate_str(asm_insn *asm_insn, const char *s)
 {
 	x86asm_insn *insn=(x86asm_insn*)asm_insn;
-	char *opp[3], op[3][256];
+	char *opp[5], op[5][256];
 	opp[0]=op[0];
 	opp[1]=op[1];
 	opp[2]=op[2];
-	for (int i=0; i<3; i++) {
+	opp[3]=op[3];
+	opp[4]=op[4];
+	for (int i=0; i<5; i++) {
 		insn->op[i].need_rex = insn->op[i].forbid_rex = false;
 		insn->op[i].type = X86_OPTYPE_EMPTY;
 	}
@@ -1819,13 +1838,14 @@ bool x86asm::translate_str(asm_insn *asm_insn, const char *s)
 	/**/
 	splitstr(s, insn->n, sizeof insn->n, (char**)&opp, 256);
 	insn->name=insn->n;
-	for (int i=0; i<3; i++) {
+	for (int i=0; i<5; i++) {
 		if (!*op[i]) break;
 
 		if (!(opplugimm(&insn->op[i], op[i])
 		 || opreg(&insn->op[i], op[i])
 		 || opmmx(&insn->op[i], op[i])
 		 || opxmm(&insn->op[i], op[i])
+		 || opymm(&insn->op[i], op[i])
 		 || opfarptr(&insn->op[i], op[i])
 		 || opimm(&insn->op[i], op[i])
 		 || opseg(&insn->op[i], op[i])
@@ -1857,7 +1877,7 @@ int x86asm::simmsize(uint64 imm, int immsize)
 	return 8;
 }
 
-void x86asm::splitstr(const char *s, char *name, int size, char *op[3], int opsize)
+void x86asm::splitstr(const char *s, char *name, int size, char *op[5], int opsize)
 {
 	const char *a, *b;
 	bool wantbreak = false;
@@ -1865,6 +1885,8 @@ void x86asm::splitstr(const char *s, char *name, int size, char *op[3], int opsi
 	*op[0]=0;
 	*op[1]=0;
 	*op[2]=0;
+	*op[3]=0;
+	*op[4]=0;
 	/* find name */
 	whitespaces(s);
 	a = s;
@@ -1979,6 +2001,28 @@ bool x86_64asm::opxmm(x86_insn_op *op, const char *xop)
 		}
 		op->type = X86_OPTYPE_XMM;
 		op->size = 16;
+		op->xmm = x;
+		if (x > 7) op->need_rex = true;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool x86_64asm::opymm(x86_insn_op *op, const char *xop)
+{
+	int slen = strlen(xop);
+	if ((slen == 4 || slen == 5) && xop[0] == 'y' && xop[1] == 'm' && xop[2] == 'm'
+	 && xop[3] >= '0' && xop[3] <= '9') {
+		int x = xop[3] - '0';
+		if (slen == 5) {
+			if (xop[4] < '0' || xop[4] > '9') return false;
+			x *= 10;
+			x += xop[4] - '0';
+			if (x > 15) return false;
+		}
+		op->type = X86_OPTYPE_YMM;
+		op->size = 32;
 		op->xmm = x;
 		if (x > 7) op->need_rex = true;
 		return true;

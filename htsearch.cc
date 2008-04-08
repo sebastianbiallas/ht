@@ -1296,10 +1296,10 @@ void ht_search_dialog::init(Bounds *b, const char *title)
 	mlabel->init(&c, "~mode", search_mode_popup);
 	insert(mlabel);
 
-	c.x=1;
-	c.y=3;
-	c.w=size.w-4;
-	c.h=MIN(10, size.h-4);
+	c.x = 1;
+	c.y = 3;
+	c.w = size.w-4;
+	c.h = MIN(10, size.h-4);
 	search_mode_xgroup = new ht_xgroup();
 	search_mode_xgroup->init(&c, VO_SELECTABLE, "modes");
 	insert(search_mode_xgroup);

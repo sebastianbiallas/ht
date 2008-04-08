@@ -822,14 +822,14 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 				if (file_chooser("Add project item", fn, sizeof fn)) {
 					char ffn[HT_NAME_MAX];
 					char *dir;
-					if ((sys_common_canonicalize(ffn, fn, NULL, sys_is_path_delim) == 0)
-					&& (sys_basename(fn, ffn) == 0)
-					&& (dir = sys_dirname(ffn) )) {
+					if (sys_common_canonicalize(ffn, fn, NULL, sys_is_path_delim) == 0
+					 && sys_basename(fn, ffn) == 0
+					 && (dir = sys_dirname(ffn)) ) {
 						ht_project_item *p = new ht_project_item(fn, dir);
 						((ht_project*)project)->insert(p);
 						app->sendmsg(msg_project_changed);
+						free(dir);
 					}
-					free(dir);
 				}
 			}
 			clearmsg(msg);

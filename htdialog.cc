@@ -758,8 +758,13 @@ void ht_strinputfield::done()
 
 void ht_strinputfield::correct_viewpoint()
 {
-	if (*curchar-*text<ofs) ofs=*curchar-*text; else
-	if (*curchar-*text-(size.w-2)*size.h+1>ofs) ofs=*curchar-*text-(size.w-2)*size.h+1;
+	if (*curchar - *text < ofs) {
+		ofs = *curchar-*text; 
+	} else {
+		if (*curchar - *text - (size.w-2)*size.h+1 > ofs) {
+			ofs = *curchar-*text-(size.w-2)*size.h+1;
+		}
+	}
 }
 
 void ht_strinputfield::draw()

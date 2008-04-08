@@ -1291,6 +1291,9 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 				case 16:
 					d += sprintf(d, "oword ptr ");
 					break;
+				case 32:
+					d += sprintf(d, "ymmword ptr ");
+					break;
 				}
 			}
 		}
