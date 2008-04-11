@@ -139,13 +139,13 @@ static const int lop2hop[12][8] = {
 	/* X86_OPTYPE_EMPTY */
 	{},
 	/* X86_OPTYPE_IMM */
-	{TYPE_I, TYPE_Is, TYPE_J, TYPE_A, TYPE_Ix},
+	{TYPE_I, TYPE_Is, TYPE_J, TYPE_A, TYPE_Ix, TYPE_I4},
 	/* X86_OPTYPE_REG */
 	{TYPE_R, TYPE_Rx, TYPE_RXx, TYPE_G, TYPE_E, TYPE_MR},
 	/* X86_OPTYPE_SEG */
 	{TYPE_S, TYPE_Sx},
 	/* X86_OPTYPE_MEM */
-	{TYPE_E, TYPE_M, TYPE_O, TYPE_Q, TYPE_W, TYPE_MR},
+	{TYPE_E, TYPE_M, TYPE_MR, TYPE_O, TYPE_Q, TYPE_W, TYPE_X},
 	/* X86_OPTYPE_CRX */
 	{TYPE_C},
 	/* X86_OPTYPE_DRX */
@@ -155,9 +155,9 @@ static const int lop2hop[12][8] = {
 	/* X86_OPTYPE_MMX */
 	{TYPE_P, TYPE_Q, TYPE_PR},
 	/* X86_OPTYPE_XMM */
-	{TYPE_V, TYPE_W, TYPE_VR, TYPE_Vx},
+	{TYPE_V, TYPE_W, TYPE_VR, TYPE_Vx, TYPE_VV, TYPE_VI},
 	/* X86_OPTYPE_YMM */
-	{},
+	{TYPE_Y, TYPE_X, TYPE_YR, TYPE_YV, TYPE_YI},
 	/* X86_OPTYPE_FARPTR */
 	{},
 };
@@ -183,6 +183,7 @@ static const char hsz32_16[] = { SIZE_D, SIZE_P, SIZE_Z, SIZE_R, 0 };
 static const char hsz48_16[] = { 0 };
 static const char hsz64_16[] = { SIZE_Q, SIZE_U, SIZE_Z, 0};
 static const char hsz128_16[] = { SIZE_O, SIZE_U, 0};
+static const char hsz256_16[] = { SIZE_Y, 0};
 
 static const char hsz8_32[] = { SIZE_B, 0 };
 static const char hsz16_32[] = { SIZE_W, 0 };
@@ -190,6 +191,7 @@ static const char hsz32_32[] = { SIZE_D, SIZE_V, SIZE_VV, SIZE_R, SIZE_Z, 0 };
 static const char hsz48_32[] = { SIZE_P, 0 };
 static const char hsz64_32[] = { SIZE_Q, SIZE_U, SIZE_Z, 0};
 static const char hsz128_32[] = { SIZE_O, SIZE_U, 0};
+static const char hsz256_32[] = { SIZE_Y, 0};
 
 static const char hsz8_64[] = { SIZE_B, 0 };
 static const char hsz16_64[] = { SIZE_W, 0 };
@@ -197,6 +199,7 @@ static const char hsz32_64[] = { SIZE_D, SIZE_Z, 0 };
 static const char hsz48_64[] = { 0 };
 static const char hsz64_64[] = { SIZE_Q, SIZE_U, SIZE_V, SIZE_VV, SIZE_R, SIZE_Z, 0};
 static const char hsz128_64[] = { SIZE_O, SIZE_U, 0};
+static const char hsz256_64[] = { SIZE_Y, 0};
 
 static const int reg2size[4] = {1, 2, 4, 8};
 static const int addr2size[4] = {-1, 2, 4, 8};
@@ -210,7 +213,23 @@ x86asm::x86asm(X86OpSize o, X86AddrSize a)
 {
 	opsize = o;
 	addrsize = a;
-	x86_insns = &x86_32_insns;
+	if (a != X86_ADDRSIZE64) {
+		prepInsns();
+	}
+}
+
+x86opc_insn (*x86asm::x86_32a_insns)[256];
+
+void x86asm::prepInsns()
+{
+	if (!x86_32a_insns) {
+		x86_32a_insns = ht_malloc(sizeof *x86_32a_insns);
+		memcpy(x86_32a_insns, x86_32_insns, sizeof x86_32_insns);
+	
+		(*x86_32a_insns)[0xc4] = x86_les;
+		(*x86_32a_insns)[0xc5] = x86_lds;
+	}
+	x86_insns = x86_32a_insns;
 }
 
 asm_insn *x86asm::alloc_insn()
@@ -684,6 +703,11 @@ bool x86asm::encode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->xmm);
 		break;
+	case X86_OPTYPE_YMM:
+		if (!allow_reg) return false;
+		emitmodrm_mod(3);
+		emitmodrm_rm(op->ymm);
+		break;
 	default:
 		return false;
 	}
@@ -848,21 +872,37 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 	case TYPE_Sx:
 		/* extra picks segment register */
 		return true;
+	case TYPE_V:
+		/* reg of ModR/M picks XMM register */
+		emitmodrm_reg(op->xmm);
+		if (op->xmm > 7) rexprefix |= rexr;
+		break;
 	case TYPE_VR:
 		/* rm of ModR/M picks XMM register */
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->xmm);
 		if (op->xmm > 7) rexprefix |= rexb;
 		break;
-	case TYPE_V:
-		/* reg of ModR/M picks XMM register */
-		emitmodrm_reg(op->xmm);
-		if (op->xmm > 7) rexprefix |= rexr;
-		break;
 	case TYPE_Vx:
 		break;
 	case TYPE_W:
 		/* ModR/M (XMM reg or memory) */
+		if (!encode_modrm(op, xop->size, true, true, eopsize, eaddrsize)) return false; //XXX
+		psize = esizeop(xop->size, eopsize); //XXX
+		break;
+	case TYPE_Y:
+		/* reg of ModR/M picks YMM register */
+		emitmodrm_reg(op->ymm);
+		if (op->ymm > 7) rexprefix |= rexr;
+		break;
+	case TYPE_YR:
+		/* rm of ModR/M picks YMM register */
+		emitmodrm_mod(3);
+		emitmodrm_rm(op->ymm);
+		if (op->ymm > 7) rexprefix |= rexb;
+		break;
+	case TYPE_X:
+		/* ModR/M (YMM reg or memory) */
 		if (!encode_modrm(op, xop->size, true, true, eopsize, eaddrsize)) return false; //XXX
 		psize = esizeop(xop->size, eopsize); //XXX
 		break;
@@ -1091,6 +1131,8 @@ const char *x86asm::lsz2hsz(int size, int opsize)
 			return hsz64_16;
 		case 16:
 			return hsz128_16;
+		case 32:
+			return hsz256_16;
 		}
 	} else if (opsize == X86_OPSIZE32) {
 		switch (size) {
@@ -1106,6 +1148,8 @@ const char *x86asm::lsz2hsz(int size, int opsize)
 			return hsz64_32;
 		case 16:
 			return hsz128_32;
+		case 32:
+			return hsz256_32;
 		}
 	} else {
 		switch (size) {
@@ -1121,6 +1165,8 @@ const char *x86asm::lsz2hsz(int size, int opsize)
 			return hsz64_64;
 		case 16:
 			return hsz128_64;
+		case 32:
+			return hsz256_64;
 		}
 	}
 	return 0;
@@ -1133,17 +1179,15 @@ const char *x86asm::lsz2hsz(int size, int opsize)
 
 int x86asm::match_type(x86_insn_op *op, x86opc_insn_op *xop, int addrsize)
 {
-	const int *hop = lop2hop[op->type];
 	if (op->type == X86_OPTYPE_EMPTY && xop->type == TYPE_0) return MATCHTYPE_MATCH;
 	int r = MATCHTYPE_MATCH;
-	if (xop->type == TYPE_W && xop->extra == 1) {
-		r = MATCHTYPE_OPPREFIX;
-	} else if (op->type == X86_OPTYPE_MMX) {
+	if (op->type == X86_OPTYPE_MMX) {
 		if ((xop->type == TYPE_P || xop->type == TYPE_PR || xop->type == TYPE_Q)
 		&& (xop->size == SIZE_U || xop->size == SIZE_Z)) {
 			r = MATCHTYPE_NOOPPREFIX;
 		}
 	}
+	const int *hop = lop2hop[op->type];
 	while (*hop) {
 		if (*hop == xop->type) {
 			if (xop->type == TYPE_Rx) {
@@ -1199,11 +1243,10 @@ bool x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 			hsz = immlsz2hsz(simmsize(op->imm - address - code.size - ssize, size), opsize);
 		} else {
 			hsz = immlsz2hsz(simmsize(op->imm, esizeop(xop->size, opsize)), opsize); //XXX
-//			hsz = immlsz2hsz(op->size, opsize);
 		}
-	} else if (op->type == X86_OPTYPE_MMX) {
-		return true;
-	} else if (op->type == X86_OPTYPE_XMM) {
+	} else if (op->type == X86_OPTYPE_YMM
+	 || op->type == X86_OPTYPE_XMM
+	 || op->type == X86_OPTYPE_MMX) {
 		return true;
 	} else {
 		hsz = lsz2hsz(op->size, opsize);
@@ -1218,17 +1261,17 @@ bool x86asm::match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize)
 	return false;
 }
 
-int x86asm::match_allops(x86asm_insn *insn, x86opc_insn *xinsn, int opsize, int addrsize)
+int x86asm::match_allops(x86asm_insn *insn, byte *xop, int maxop, int opsize, int addrsize)
 {
 	int m = 0;
-	for (int i = 0; i < 3; i++) {
-		int m2 = match_type(&insn->op[i], &x86_op_type[xinsn->op[i]], addrsize);
+	for (int i = 0; i < maxop; i++) {
+		int m2 = match_type(&insn->op[i], &x86_op_type[xop[i]], addrsize);
 		if (!m2 || (m && m != MATCHTYPE_MATCH && m2 != MATCHTYPE_MATCH && m != m2)) {
 			return MATCHTYPE_NOMATCH;
 		} else {
 			if (m2 > m) m = m2;
 		}
-		if (!match_size(&insn->op[i], &x86_op_type[xinsn->op[i]], opsize)) return MATCHTYPE_NOMATCH;
+		if (!match_size(&insn->op[i], &x86_op_type[xop[i]], opsize)) return MATCHTYPE_NOMATCH;
 	}
 	return m;
 }
@@ -1342,7 +1385,7 @@ void x86asm::match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, by
 
 int x86asm::match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int opsize, int addrsize, int match)
 {
-	switch (match_allops(insn, opcode, opsize, addrsize)) {
+	switch (match_allops(insn, opcode->op, 4, opsize, addrsize)) {
 	case MATCHTYPE_NOMATCH:
 		return false;
 	case MATCHTYPE_MATCH:
@@ -1361,7 +1404,6 @@ int x86asm::match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefi
 		insn->opsizeprefix = X86_PREFIX_OPSIZE;
 		break;
 	}
-//	printf("o%ds%d: %02x (%d)\n", (opsize==X86_OPSIZE16) ? 16 : 32, (addrsize==X86_ADDRSIZE16) ? 16 : 32, opcodebyte, opcodebyte);
 	if (encode_insn(insn, opcode, opcodebyte, additional_opcode, prefix, opsize, addrsize)) {
 		pushcode();
 		newcode();
@@ -1409,7 +1451,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 			if (n != MATCHOPNAME_NOMATCH) {
 				int eaddrsize = addrsize;
 				for (int k=0; k < 2; k++) {
-					if (match_allops(insn, &x86_modfloat_group_insns[i][j], opsize, eaddrsize)) {
+					if (match_allops(insn, x86_modfloat_group_insns[i][j].op, 4, opsize, eaddrsize)) {
 						if (encode_insn(insn, &x86_modfloat_group_insns[i][j], j<<3, -1, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
 							pushcode();
 							newcode();
@@ -1431,7 +1473,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 				int n = match_opcode_name(insn->name, x86_float_group_insns[i][j].insn.name, MATCHOPNAME_MATCH);
 				namefound |= n;
 				if (n != MATCHOPNAME_NOMATCH) {
-					if (match_allops(insn, &x86_float_group_insns[i][j].insn, opsize, addrsize)) {
+					if (match_allops(insn, x86_float_group_insns[i][j].insn.op, 4, opsize, addrsize)) {
 						if (encode_insn(insn, &x86_float_group_insns[i][j].insn, 0xc0 | j<<3, -1, X86ASM_PREFIX_D8+i, opsize, addrsize)) {
 							pushcode();
 							newcode();
@@ -1447,7 +1489,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 					if (n != MATCHOPNAME_NOMATCH) {
 						int eaddrsize = addrsize;
 						for (int l=0; l < 2; l++) {
-							if (match_allops(insn, &group[k], opsize, eaddrsize)) {
+							if (match_allops(insn, group[k].op, 4, opsize, eaddrsize)) {
 								if (encode_insn(insn, &group[k], 0xc0 | j<<3 | k, -1, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
 									pushcode();
 									newcode();
@@ -1642,6 +1684,7 @@ bool x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, const char *s)
 	bool need_rex = false;
 
 	int sign = 1;
+	sep = "[]()*+-";
 	while (1) {
 cont:
 		tok(&s, token, sizeof token, sep);

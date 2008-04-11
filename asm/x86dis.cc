@@ -1636,8 +1636,6 @@ bool x86dis::validInsn(dis_insn *disasm_insn)
  */
 
 x86opc_insn (*x86_64dis::x86_64_insns)[256];
-x86opc_insn (*x86_64dis::x86_64_insns_ext)[256];
-x86opc_insn (*x86_64dis::x86_64_group_insns)[X86_GROUPS][8];
 
 x86_64dis::x86_64dis()
 	: x86dis(X86_OPSIZE32, X86_ADDRSIZE64)

@@ -146,7 +146,6 @@ enum {
 
 	TYPE_Y,		/* reg of ModR/M picks YMM register */
 	TYPE_YV,	/* VEX.vvvv picks YMM register */
-	TYPE_Yx,	/* extra picks YMM register */
 	TYPE_YI,	/* bits 7-4 of imm picks YMM register */
 	TYPE_YR,	/* rm of ModR/M picks YMM register */
 	TYPE_X,		/* ModR/M (YMM reg or memory) */
@@ -188,7 +187,7 @@ enum {
 	SIZE_Q = 'q',		/* qword */
 	SIZE_U = 'u',		/* qword OR oword (depending on 0x66 prefix) */
 	SIZE_Z = 'z',		/* dword OR qword (depending on 0x66 prefix) */
-	SIZE_O = 'o',		/* oword */
+	SIZE_O = 'o',		/* oword (128 bit) */
 	SIZE_V = 'v',		/* word OR dword OR qword */
 	SIZE_VV = 'V',		/* word OR dword OR sign extended dword */
 	SIZE_R = 'r',		/* dword OR qword (depending on rex size) */
@@ -197,7 +196,7 @@ enum {
 	SIZE_L = 'l',		/* long/double real (64-bit) */
 	SIZE_T = 't',		/* temp/extended real (80-bit) */
 	SIZE_A = 'a',		/* packed decimal (80-bit BCD) */
-	SIZE_Y = 'y',		/* 256 bit */
+	SIZE_Y = 'y',		/* ymmword (256 bit) */
 };
 
 #define INFO_DEFAULT_64		0x80

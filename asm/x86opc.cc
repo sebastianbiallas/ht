@@ -149,6 +149,7 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_R, 0, INFO_DEFAULT_64, SIZE_R},
 #define Sw	Rr64+1
 {TYPE_S, 0, 0, SIZE_W},
+
 #define Vd	Sw+1
 {TYPE_V, 0, 0, SIZE_D},
 #define Vq	Vd+1
@@ -167,6 +168,7 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_VV, 0, 0, SIZE_O},
 #define VIo	VVo+1
 {TYPE_VI, 0, 0, SIZE_O},
+
 #define Ww	VIo+1
 {TYPE_W, 0, 0, SIZE_W},
 #define Wd	Ww+1

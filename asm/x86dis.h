@@ -138,8 +138,6 @@ public:
 
 class x86_64dis: public x86dis {
 	static x86opc_insn (*x86_64_insns)[256];
-	static x86opc_insn (*x86_64_insns_ext)[256];
-	static x86opc_insn (*x86_64_group_insns)[X86_GROUPS][8];
 public:	
 				x86_64dis();
 				x86_64dis(BuildCtorArg&a): x86dis(a) {};
