@@ -139,13 +139,13 @@ enum {
 
 	TYPE_V,		/* reg of ModR/M picks XMM register */
 	TYPE_VI,	/* bits 7-4 of imm picks XMM register */
-	TYPE_VV,	/* VEX.vvvv picks XMM register */
+	TYPE_VV,	/* VEX.vvvv pick XMM register */
 	TYPE_Vx,	/* extra picks XMM register */
 	TYPE_VR,	/* rm of ModR/M picks XMM register */
 	TYPE_W,		/* ModR/M (XMM reg or memory) */
 
 	TYPE_Y,		/* reg of ModR/M picks YMM register */
-	TYPE_YV,	/* VEX.vvvv picks YMM register */
+	TYPE_YV,	/* VEX.vvvv pick YMM register */
 	TYPE_YI,	/* bits 7-4 of imm picks YMM register */
 	TYPE_YR,	/* rm of ModR/M picks YMM register */
 	TYPE_X,		/* ModR/M (YMM reg or memory) */

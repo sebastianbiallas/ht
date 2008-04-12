@@ -19,7 +19,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -411,6 +410,7 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
         	match_opcodes(x86_opc_group_insns[6], insn, X86ASM_PREFIX_0F7B, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
         	match_opcodes(x86_opc_group_insns[7], insn, X86ASM_PREFIX_0F24, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
         	match_opcodes(x86_opc_group_insns[8], insn, X86ASM_PREFIX_0F25, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+        	match_vex_opcodes(insn);
 	}
 	if (error) {
 		free_asm_codes();
@@ -661,6 +661,99 @@ bool x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, in
 	return true;
 }
 
+bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opcodeb, int eopsize, int eaddrsize)
+{
+	rexprefix = 0;
+	disppos = 0;
+	immsize = 0;
+	dispsize = 0;
+	vexvvvv = 0;
+	modrmv = -1;
+	sibv = -1;
+
+	switch (insn->lockprefix) {
+	case X86_PREFIX_LOCK: 
+		clearcode();
+		return false;
+	}
+	switch (insn->repprefix) {
+	case X86_PREFIX_REPNZ:
+	case X86_PREFIX_REPZ: 
+		clearcode();
+		return false;
+	}
+	switch (insn->segprefix) {
+	case X86_PREFIX_ES: emitbyte(0x26); break;
+	case X86_PREFIX_CS: emitbyte(0x2e); break;
+	case X86_PREFIX_SS: emitbyte(0x36); break;
+	case X86_PREFIX_DS: emitbyte(0x3e); break;
+	case X86_PREFIX_FS: emitbyte(0x64); break;
+	case X86_PREFIX_GS: emitbyte(0x65); break;
+	}
+
+	for (int i=0; i < 5; i++) {
+		if (!encode_op(&insn->op[i], &x86_op_type[opcode->op[i]], &esizes[i], eopsize, eaddrsize)) {
+			clearcode();
+			return false;
+		}
+	}
+
+	if ((opcode->vex & 0x30) == 0x10 // 0x0f-opcode
+	 && !(rexprefix & 3)          // no rexb/rexx
+	 && !(opcode->vex & W1)) {
+		// use short vex prefix
+		emitbyte(0xc5);
+		byte vex = ~(rexprefix & 4) << 5
+			| ((~vexvvvv & 0xf) << 3)
+			| (opcode->vex & _256) >> 4 
+			| (opcode->vex & 0x3);
+		emitbyte(vex);
+	} else {
+		// use long vex prefix
+		emitbyte(0xc4);
+		byte vex = ~(rexprefix & 7) << 5 | ((opcode->vex & 0x30) >> 4);
+		emitbyte(vex);
+		vex = (opcode->vex & W1) | ((~vexvvvv & 0xf) << 3) 
+			| (opcode->vex & _256) >> 4 
+			| (opcode->vex & 0x3);
+		emitbyte(vex);
+	}
+
+	emitbyte(opcodeb);
+
+	if (modrmv != -1) emitbyte(modrmv);
+	if (sibv != -1) emitbyte(sibv);
+
+	if (disppos && addrsize == X86_ADDRSIZE64) {
+		// fix ip-relative disp in PM64 mode
+		dispsize = 4;
+		disp -= address + code.size + dispsize + immsize;
+		if (simmsize(disp, 4) > 4) {
+			clearcode();
+			return false;
+		}
+	}
+	switch (dispsize) {
+	case 1:
+		emitbyte(disp);
+		break;
+	case 2:
+		emitword(disp);
+		break;
+	case 4:
+		emitdword(disp);
+		break;
+	}
+
+	switch (immsize) {
+	case 1:
+		emitbyte(imm);
+		break;
+	}
+
+	return true;
+}
+
 bool x86asm::encode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, int eopsize, int eaddrsize)
 {
 	switch (op->type) {
@@ -820,6 +913,16 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 	case TYPE_Ix:
 		/* fixed immediate */
 		return true;
+	case TYPE_I4: {
+		/* 4 bit immediate (see TYPE_VI, TYPE_YI) */
+		if (op->imm > 15) return false;
+		if (immsize == 0) {
+			immsize = 1;
+			imm = 0;
+		}
+		imm |= op->imm;
+		break;
+	}
 	case TYPE_J: {
 		/* relative branch offset */
 		int size = esizeop_ex(xop->size, eopsize);
@@ -905,6 +1008,18 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		break;
 	case TYPE_Vx:
 		break;
+	case TYPE_VV:
+		vexvvvv = op->xmm;
+		break;
+	case TYPE_VI: {
+		/* bits 7-4 of imm pick XMM register */
+		if (immsize == 0) {
+			immsize = 1;
+			imm = 0;
+		}
+		imm |= op->xmm << 4;
+		break;
+	}
 	case TYPE_VD:
 		if (drexdest == -1) {
 			drexdest = op->xmm;
@@ -944,6 +1059,18 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		/* reg of ModR/M picks YMM register */
 		emitmodrm_reg(op->ymm);
 		if (op->ymm > 7) rexprefix |= rexr;
+		break;
+	case TYPE_YI: {
+		/* bits 7-4 of imm pick YMM register */
+		if (immsize == 0) {
+			immsize = 1;
+			imm = 0;
+		}
+		imm |= op->xmm << 4;
+		break;
+	}
+	case TYPE_YV:
+		vexvvvv = op->ymm;
 		break;
 	case TYPE_YR:
 		/* rm of ModR/M picks YMM register */
@@ -1382,54 +1509,75 @@ void x86asm::match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, by
 {
 	int n = match_opcode_name(insn->name, opcode->name, def_match);
 	namefound |= n;
-	if (n != MATCHOPNAME_NOMATCH) {
-		insn->opsizeprefix = X86_PREFIX_NO;
-		char opsizes[] = {X86_OPSIZE16, X86_OPSIZE32, X86_OPSIZE64};
-		char addrsizes[] = {X86_ADDRSIZE16, X86_ADDRSIZE32, X86_ADDRSIZE64};
+	if (n == MATCHOPNAME_NOMATCH) return;
+
+	insn->opsizeprefix = X86_PREFIX_NO;
+	char opsizes[] = {X86_OPSIZE16, X86_OPSIZE32, X86_OPSIZE64};
+	char addrsizes[] = {X86_ADDRSIZE16, X86_ADDRSIZE32, X86_ADDRSIZE64};
 		
-		switch (addrsize) {
-		case X86_ADDRSIZE32: swap(addrsizes[0], addrsizes[1]); break;
-		case X86_ADDRSIZE64: swap(addrsizes[0], addrsizes[2]); break;
-		case X86_ADDRSIZE16:
-		case X86_ADDRSIZEUNKNOWN:;
-		}
+	switch (addrsize) {
+	case X86_ADDRSIZE32: swap(addrsizes[0], addrsizes[1]); break;
+	case X86_ADDRSIZE64: swap(addrsizes[0], addrsizes[2]); break;
+	case X86_ADDRSIZE16:
+	case X86_ADDRSIZEUNKNOWN:;
+	}
 		
-		bool done1 = false;
-		int o = 0;
-		/*
-		 * check all permutations of opsize and addrsize
-		 * if possible and necessary
-		 */
-		switch (n) {
-		case MATCHOPNAME_MATCH_IF_OPSIZE16: done1 = true; break;
-		case MATCHOPNAME_MATCH_IF_OPSIZE32: o = 1; done1 = true; break;
-		case MATCHOPNAME_MATCH_IF_OPSIZE64: o = 2; done1 = true; break;
+	bool done1 = false;
+	int o = 0;
+	/*
+	 * check all permutations of opsize and addrsize
+	 * if possible and necessary
+	 */
+	switch (n) {
+	case MATCHOPNAME_MATCH_IF_OPSIZE16: done1 = true; break;
+	case MATCHOPNAME_MATCH_IF_OPSIZE32: o = 1; done1 = true; break;
+	case MATCHOPNAME_MATCH_IF_OPSIZE64: o = 2; done1 = true; break;
+	}
+	for (; o < 3; o++) {
+		if (o == 2 && addrsize != X86_ADDRSIZE64) break;
+		switch (def_match) {
+		case MATCHOPNAME_MATCH_IF_OPPREFIX:
+			if (opsize == X86_OPSIZE16 && o == 0) continue;
+			if (opsize == X86_OPSIZE32 && o == 1) continue;
+			break;
+		case MATCHOPNAME_MATCH_IF_NOOPPREFIX:
+			if (opsize == X86_OPSIZE16 && o == 1) continue;
+			if (opsize == X86_OPSIZE32 && o == 0) continue;
+			break;
 		}
-		for (; o < 3; o++) {
-			if (o == 2 && addrsize != X86_ADDRSIZE64) break;
-			switch (def_match) {
-				case MATCHOPNAME_MATCH_IF_OPPREFIX:
-					if (opsize == X86_OPSIZE16 && o == 0) continue;
-					if (opsize == X86_OPSIZE32 && o == 1) continue;
-					break;
-				case MATCHOPNAME_MATCH_IF_NOOPPREFIX:
-					if (opsize == X86_OPSIZE16 && o == 1) continue;
-					if (opsize == X86_OPSIZE32 && o == 0) continue;
-					break;
+		for (int a=0; a < 2; a++) {
+			char as = addrsizes[a];
+			bool done2 = false;
+	    		switch (n) {
+			case MATCHOPNAME_MATCH_IF_ADDRSIZE16: as = X86_ADDRSIZE16; done2 = true; break;
+			case MATCHOPNAME_MATCH_IF_ADDRSIZE32: as = X86_ADDRSIZE32; done2 = true; break;
+	    		case MATCHOPNAME_MATCH_IF_ADDRSIZE64: as = X86_ADDRSIZE64; done2 = true; break;
 			}
-			for (int a=0; a < 2; a++) {
-				char as = addrsizes[a];
-				bool done2 = false;
-		    		switch (n) {
-				case MATCHOPNAME_MATCH_IF_ADDRSIZE16: as = X86_ADDRSIZE16; done2 = true; break;
-				case MATCHOPNAME_MATCH_IF_ADDRSIZE32: as = X86_ADDRSIZE32; done2 = true; break;
-		    		case MATCHOPNAME_MATCH_IF_ADDRSIZE64: as = X86_ADDRSIZE64; done2 = true; break;
-				}
-				match_opcode_final(opcode, insn, prefix, opcodebyte, additional_opcode, opsizes[o], as, n);
-				if (done2) break;
-			}
-			if (done1) break;
+			match_opcode_final(opcode, insn, prefix, opcodebyte, additional_opcode, opsizes[o], as, n);
+			if (done2) break;
 		}
+		if (done1) break;
+	}
+}
+
+void x86asm::match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte)
+{
+	int n = match_opcode_name(insn->name, opcode->name, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+	namefound |= n;
+	if (n == MATCHOPNAME_NOMATCH) return;
+
+	char addrsizes[] = {X86_ADDRSIZE16, X86_ADDRSIZE32, X86_ADDRSIZE64};
+		
+	switch (addrsize) {
+	case X86_ADDRSIZE32: swap(addrsizes[0], addrsizes[1]); break;
+	case X86_ADDRSIZE64: swap(addrsizes[0], addrsizes[2]); break;
+	case X86_ADDRSIZE16:
+	case X86_ADDRSIZEUNKNOWN:;
+	}
+
+	for (int a=0; a < 2; a++) {
+		char as = addrsizes[a];
+		match_vex_opcode_final(opcode, insn, opcodebyte, opsize, as);
 	}
 }
 
@@ -1455,6 +1603,18 @@ int x86asm::match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefi
 		break;
 	}
 	if (encode_insn(insn, opcode, opcodebyte, additional_opcode, prefix, opsize, addrsize)) {
+		pushcode();
+		newcode();
+	}
+	return true;
+}
+
+int x86asm::match_vex_opcode_final(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int opsize, int addrsize)
+{
+	if (match_allops(insn, opcode->op, 5, opsize, addrsize) == MATCHTYPE_NOMATCH) {
+		return false;
+	}
+	if (encode_vex_insn(insn, opcode, opcodebyte, opsize, addrsize)) {
 		pushcode();
 		newcode();
 	}
@@ -1487,6 +1647,18 @@ void x86asm::match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix, 
 			}
 		} else {
 			match_opcode(&opcodes[i], insn, prefix, i, -1, def_match);
+		}
+	}
+}
+
+void x86asm::match_vex_opcodes(x86asm_insn *insn)
+{
+	for (int i=0; i < 256; i++) {
+		x86opc_vex_insn *opcodes = x86_vex_insns[i];
+		if (!opcodes) continue;
+		while (opcodes->name) {
+			match_vex_opcode(opcodes, insn, i);
+			opcodes++;
 		}
 	}
 }

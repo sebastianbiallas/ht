@@ -3555,10 +3555,10 @@ E(48)
 {"vpermil2ps", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
 {"vpermil2ps", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
 E(49)
-{"vpermil2pd", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
-{"vpermil2pd", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
-{"vpermil2pd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
-{"vpermil2pd", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
+{"vpermil2pd1", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
+{"vpermil2pd2", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
+{"vpermil2pd3", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
+{"vpermil2pd4", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
 E(4a)
 {"vblendvps", _128|_66|_0f3a, {Vo, VVo, Wo, VIo}},
 {"vblendvps", _256|_66|_0f3a, {Yy, YVy, Xy, YIy}},
