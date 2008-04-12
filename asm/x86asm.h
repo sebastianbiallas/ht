@@ -65,10 +65,11 @@ protected:
 	int imm2;
 	int immsize;
 	uint8 rexprefix; // 0 = no, 0x80 = forbid, 0x40 = yes
+	int drexdest;
+	int drexoc0;
 	uint64 address;
 	bool ambiguous;
 	bool namefound;
-//	bool addrsize_depend;
 	static x86opc_insn (*x86_32a_insns)[256];
 	x86opc_insn (*x86_insns)[256];
 
