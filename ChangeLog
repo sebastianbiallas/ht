@@ -3,6 +3,7 @@
 
 version 2.0.13:
 	- [win32] optimize redrawing (reduce flicker)
+	- [x86] intel avx, aes and pclmulqdq extension
 
 version 2.0.12:
 	- fixed crash with too long lines
