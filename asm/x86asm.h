@@ -54,7 +54,7 @@ public:
 	X86OpSize opsize;
 	X86AddrSize addrsize;
 protected:
-	int esizes[3];
+	int esizes[5];
 
 	int modrmv;
 	int sibv;
