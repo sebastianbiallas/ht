@@ -249,6 +249,39 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 	}
 }
 
+void x86dis::decode_sib(x86_insn_op *op, int mod)
+{
+	int sib = getsib();
+	int scale = mkscale(sib);
+	int index = mkindex(sib);
+	int base = mkbase(sib);
+	int sdisp = mod;
+	if ((base & 0x7) == 5 && mod == 0) {
+		base = X86_REG_NO;
+		sdisp = 2;
+	}
+	if (index == 4) {
+		index = X86_REG_NO;
+	}
+	op->mem.base = base;
+	op->mem.index = index;
+	op->mem.scale = sibscale[scale];
+	switch (sdisp) {
+	case 0:
+		op->mem.hasdisp = false;
+		op->mem.disp = 0;
+		break;
+	case 1:
+		op->mem.hasdisp = true;
+		op->mem.disp = sint64(sint8(disp));
+		break;
+	case 2:
+		op->mem.hasdisp = true;
+		op->mem.disp = sint64(sint32(disp));
+		break;
+	}
+}
+
 void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 {
 	if (xinsn) {
@@ -789,39 +822,6 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	case TYPE_X:
 		/* ModR/M (XMM reg or memory) */
 		decode_modrm(op, xop->size, true, true, false, false, true);
-		break;
-	}
-}
-
-void x86dis::decode_sib(x86_insn_op *op, int mod)
-{
-	int sib = getsib();
-	int scale = mkscale(sib);
-	int index = mkindex(sib);
-	int base = mkbase(sib);
-	int disp = mod;
-	if ((base & 0x7) == 5 && mod == 0) {
-		base = X86_REG_NO;
-		disp = 2;
-	}
-	if (index == 4) {
-		index = X86_REG_NO;
-	}
-	op->mem.base = base;
-	op->mem.index = index;
-	op->mem.scale = sibscale[scale];
-	switch (disp) {
-	case 0:
-		op->mem.hasdisp = false;
-		op->mem.disp = 0;
-		break;
-	case 1:
-		op->mem.hasdisp = true;
-		op->mem.disp = sint64(sint8(disp));
-		break;
-	case 2:
-		op->mem.hasdisp = true;
-		op->mem.disp = sint64(sint32(disp));
 		break;
 	}
 }
