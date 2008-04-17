@@ -391,6 +391,8 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 	esizes[0] = 0;
 	esizes[1] = 0;
 	esizes[2] = 0;
+	esizes[3] = 0;
+	esizes[4] = 0;
 	ambiguous = false;
 	match_opcodes(*x86_insns, insn, X86ASM_PREFIX_NO, MATCHOPNAME_MATCH);
 	if (!namefound && insn->repprefix != X86_PREFIX_NO) {
