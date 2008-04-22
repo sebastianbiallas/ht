@@ -418,6 +418,11 @@ const char *x86_segs[8] = {
 #define GROUP_SPECIAL_0FAE_6	11
 #define GROUP_SPECIAL_0FAE_7	12
 
+#define GROUP_0FAE		0
+#define GROUP_660F71		1
+#define GROUP_660F72		2
+#define GROUP_660F73		3
+
 /*
 
 	Opcode name modifiers 
@@ -2557,7 +2562,7 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 },
 };
 
-x86opc_insn x86_group_insns[X86_GROUPS][8] = {
+x86opc_insn x86_group_insns[][8] = {
 /* 0 - GROUP_80 */
 {
 {"~add", {Eb, Ib}},
@@ -3749,28 +3754,12 @@ E(70)
 {"vpshufd", _128|_66|_0f, {Vo, Wo, Ib}},
 {"vpshufhw", _128|_f3|_0f, {Vo, Wo, Ib}},
 {"vpshuflw", _128|_f2|_0f, {Vo, Wo, Ib}},
-#if 0
-71/2
-{"vpsrlw", _128|_66|_0f, {VVo, VRo, Ib}},
-71/4
-{"vpsraw", _128|_66|_0f, {VVo, VRo, Ib}},
-71/6
-{"vpsllw", _128|_66|_0f, {VVo, VRo, Ib}},
-72/2
-{"vpsrld", _128|_66|_0f, {VVo, VRo, Ib}},
-72/4
-{"vpsrad", _128|_66|_0f, {VVo, VRo, Ib}},
-72/6
-{"vpslld", _128|_66|_0f, {VVo, VRo, Ib}},
-73/2
-{"vpsrlq", _128|_66|_0f, {VVo, VRo, Ib}},
-73/3
-{"vpsrldq", _128|_66|_0f, {VVo, VRo, Ib}},
-73/6
-{"vpsllq", _128|_66|_0f, {VVo, VRo, Ib}},
-73/7
-{"vpslldq", _128|_66|_0f, {VVo, VRo, Ib}},
-#endif
+E(71)
+{0, _128|_66|_0f, {SPECIAL_TYPE_GROUP, GROUP_660F71}},
+E(72)
+{0, _128|_66|_0f, {SPECIAL_TYPE_GROUP, GROUP_660F71}},
+E(73)
+{0, _128|_66|_0f, {SPECIAL_TYPE_GROUP, GROUP_660F73}},
 E(74)
 {"vpcmpeqb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(75)
@@ -3827,12 +3816,8 @@ E(7f)
 {"vmovdqu", _256|_f3|_0f, {Xy, Yy}},
 {"vfnmsubsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
 {"vfnmsubsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-#if 0
-ae/2
-{"vldmxcsr", _0f, {Md}},
-ae/3
-{"vstmxcsr", _0f, {Md}},
-#endif
+E(ae)
+{0, _0f, {SPECIAL_TYPE_GROUP, GROUP_0FAE}},
 E(c2)
 {"vcmpps", _128|_0f, {Vo, VVo, Wo, Ib}},
 {"vcmpps", _256|_0f, {Yy, YVy, Xy, Ib}},
@@ -3954,6 +3939,53 @@ E(fe)
 {"vpaddd", _128|_66|_0f, {Vo, VVo, Wo}},
 Elast
 
+x86opc_vex_insn x86_group_vex_insns[][8] = {
+/* 0 - GROUP_0FAE */
+{
+{0},
+{0},
+{"vldmxcsr", _0f, {Md}},
+{"vstmxcsr", _0f, {Md}},
+{0},
+{0},
+{0},
+{0},
+},
+/* 1 - GROUP_660F71 */
+{
+{0},
+{0},
+{"vpsrlw", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+{"vpsraw", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+{"vpsllw", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+},
+/* 2 - GROUP_660F72 */
+{
+{0},
+{0},
+{"vpsrld", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+{"vpsrad", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+{"vpslld", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+},
+/* 3 - GROUP_660F73 */
+{
+{0},
+{0},
+{"vpsrlq", _128|_66|_0f, {VVo, VRo, Ib}},
+{"vpsrldq", _128|_66|_0f, {VVo, VRo, Ib}},
+{0},
+{0},
+{"vpsllq", _128|_66|_0f, {VVo, VRo, Ib}},
+{"vpslldq", _128|_66|_0f, {VVo, VRo, Ib}},
+},
+};
+
 x86opc_vex_insn *x86_vex_insns[256] = {
 v00, v01, v02, v03, v04, v05, v06, v07,
 v08, v09, v0a, v0b, v0c, v0d, v0e, v0f,
@@ -3969,14 +4001,14 @@ v50, v51, v52, v53, v54, v55, v56, v57,
 v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
 v60, v61, v62, v63, v64, v65, v66, v67,
 v68, v69, v6a, v6b, v6c, v6d, v6e, v6f,
-v70,   0,   0,   0, v74, v75, v76, v77,
+v70, v71, v72, v73, v74, v75, v76, v77,
 v78, v79, v7a, v7b, v7c, v7d, v7e, v7f,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
+  0,   0,   0,   0,   0,   0, vae,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0, vc2,   0, vc4, vc5, vc6,   0,

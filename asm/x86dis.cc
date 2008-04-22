@@ -287,6 +287,23 @@ void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 	if (xinsn) {
 		byte vex = (insn.vexprefix.w << 7) | (insn.vexprefix.l << 6)
 			| (insn.vexprefix.mmmm << 4) | insn.vexprefix.pp;
+		while (!xinsn->name && xinsn->op[0] == SPECIAL_TYPE_GROUP) {
+			if (xinsn->vex == vex) {
+				getdisp();
+				int m = mkreg(getmodrm()) & 0x7;
+				xinsn = &x86_group_vex_insns[xinsn->op[1]][m];
+				if (!xinsn->name) {
+					invalidate();
+				} else {
+					insn.name = xinsn->name;
+					for (int i = 0; i < 5; i++) {
+						decode_op(&insn.op[i], &x86_op_type[xinsn->op[i]]);
+					}
+					return;
+				}
+			}
+			xinsn++;
+		}
 		while (xinsn->name) {
 			if (xinsn->vex == vex) {
 				insn.name = xinsn->name;
