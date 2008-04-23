@@ -663,7 +663,7 @@ bool x86asm::encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, in
 	return true;
 }
 
-bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opcodeb, int eopsize, int eaddrsize)
+bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opcodeb, int additional_opcode, int eopsize, int eaddrsize)
 {
 	rexprefix = 0;
 	disppos = 0;
@@ -672,6 +672,10 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 	vexvvvv = 0;
 	modrmv = -1;
 	sibv = -1;
+
+	if (additional_opcode != -1) {
+		emitmodrm_reg(additional_opcode);
+	}
 
 	switch (insn->lockprefix) {
 	case X86_PREFIX_LOCK: 
@@ -705,7 +709,7 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 	 && !(opcode->vex & W1)) {
 		// use short vex prefix
 		emitbyte(0xc5);
-		byte vex = ~(rexprefix & 4) << 5
+		byte vex = (~rexprefix & 4) << 5
 			| ((~vexvvvv & 0xf) << 3)
 			| (opcode->vex & _256) >> 4 
 			| (opcode->vex & 0x3);
@@ -713,7 +717,7 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 	} else {
 		// use long vex prefix
 		emitbyte(0xc4);
-		byte vex = ~(rexprefix & 7) << 5 | ((opcode->vex & 0x30) >> 4);
+		byte vex = (~rexprefix & 7) << 5 | ((opcode->vex & 0x30) >> 4);
 		emitbyte(vex);
 		vex = (opcode->vex & W1) | ((~vexvvvv & 0xf) << 3) 
 			| (opcode->vex & _256) >> 4 
@@ -1562,7 +1566,7 @@ void x86asm::match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, by
 	}
 }
 
-void x86asm::match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte)
+void x86asm::match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int additional_opcode)
 {
 	int n = match_opcode_name(insn->name, opcode->name, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
 	namefound |= n;
@@ -1579,7 +1583,7 @@ void x86asm::match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte o
 
 	for (int a=0; a < 2; a++) {
 		char as = addrsizes[a];
-		match_vex_opcode_final(opcode, insn, opcodebyte, opsize, as);
+		match_vex_opcode_final(opcode, insn, opcodebyte, additional_opcode, opsize, as);
 	}
 }
 
@@ -1611,12 +1615,12 @@ int x86asm::match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefi
 	return true;
 }
 
-int x86asm::match_vex_opcode_final(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int opsize, int addrsize)
+int x86asm::match_vex_opcode_final(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int additional_opcode, int opsize, int addrsize)
 {
 	if (match_allops(insn, opcode->op, 5, opsize, addrsize) == MATCHTYPE_NOMATCH) {
 		return false;
 	}
-	if (encode_vex_insn(insn, opcode, opcodebyte, opsize, addrsize)) {
+	if (encode_vex_insn(insn, opcode, opcodebyte, additional_opcode, opsize, addrsize)) {
 		pushcode();
 		newcode();
 	}
@@ -1658,8 +1662,15 @@ void x86asm::match_vex_opcodes(x86asm_insn *insn)
 	for (int i=0; i < 256; i++) {
 		x86opc_vex_insn *opcodes = x86_vex_insns[i];
 		if (!opcodes) continue;
+		while (!opcodes->name && opcodes->op[0] == SPECIAL_TYPE_GROUP) {
+			for (int j=0; j < 8; j++) {
+				x86opc_vex_insn *group = &x86_group_vex_insns[opcodes->op[1]][j];
+				if (group->name) match_vex_opcode(group, insn, i, j);
+			}
+			opcodes++;
+		}
 		while (opcodes->name) {
-			match_vex_opcode(opcodes, insn, i);
+			match_vex_opcode(opcodes, insn, i, -1);
 			opcodes++;
 		}
 	}

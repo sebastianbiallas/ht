@@ -89,7 +89,7 @@ protected:
 	void emitsib_index(int index);
 	void emitsib_scale(int scale);
 	bool encode_insn(x86asm_insn *insn, x86opc_insn *opcode, int opcodeb, int additional_opcode, int prefix, int eopsize, int eaddrsize);
-	bool encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opcodeb, int opsize, int addrsize);
+	bool encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opcodeb, int additional_opcode, int opsize, int addrsize);
 	bool encode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow_mem, int eopsize, int eaddrsize);
 	bool encode_modrm_v(const x86addrcoding (*modrmc)[3][8], x86_insn_op *op, int mindispsize, int *mod, int *rm, int *dispsize);
 	bool encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eopsize, int eaddrsize);
@@ -102,10 +102,10 @@ protected:
 	int match_allops(x86asm_insn *insn, byte *xop, int maxops, int opsize, int addrsize);
 	void match_fopcodes(x86asm_insn *insn);
 	void match_opcode(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int def_match);
-	void match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte);
+	void match_vex_opcode(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int additional_opcode);
 	int match_opcode_name(const char *input_name, const char *opcodelist_name, int def_match);
 	int match_opcode_final(x86opc_insn *opcode, x86asm_insn *insn, int prefix, byte opcodebyte, int additional_opcode, int opsize, int addrsize, int match);
-	int match_vex_opcode_final(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int opsize, int addrsize);
+	int match_vex_opcode_final(x86opc_vex_insn *opcode, x86asm_insn *insn, byte opcodebyte, int additional_opcode, int opsize, int addrsize);
 	void match_opcodes(x86opc_insn *opcodes, x86asm_insn *insn, int prefix, int def_match);
 	void match_vex_opcodes(x86asm_insn *insn);
 	bool match_size(x86_insn_op *op, x86opc_insn_op *xop, int opsize);
