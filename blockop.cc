@@ -301,6 +301,8 @@ static bool blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *
 	/* FIXME: non-constant funcs (e.g. rand()) should
 	   set blockop_expr_is_const to false */
 	eval_func myfuncs[] = {
+		{"i", 0, {SCALAR_INT}, "iteration index"},
+		{"o", 0, {SCALAR_INT}, "current offset"},
 		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}, "read byte from offset"},
 		{"read16le", (void*)&func_read16le, {SCALAR_INT}, "read little endian 16 bit word from offset"},
 		{"read32le", (void*)&func_read32le, {SCALAR_INT}, "read little endian 32 bit word from offset"},

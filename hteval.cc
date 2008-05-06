@@ -38,6 +38,35 @@ extern "C" {
 }
 
 
+static eval_func_handler real_func_handler;
+static eval_symbol_handler real_symbol_handler;
+static bool have_last_result;
+static eval_scalar last_result;
+
+static bool symbol_eval(eval_scalar *r, char *symbol)
+{
+	if (strcmp(symbol, "_") == 0) {
+		if (have_last_result) {
+			 scalar_clone(r, &last_result);
+			 return true;
+		} else {
+			set_eval_error("no previous result...");
+			return false;
+		}		
+	}
+	return real_symbol_handler ? real_symbol_handler(r, symbol) : false;
+}
+
+static bool func_eval(eval_scalar *r, char *name, eval_scalarlist *params)
+{
+	eval_func myfuncs[] = {
+		{"_", 0, {SCALAR_ANY}, "last result"},
+		{NULL},
+	};
+	if (std_eval_func_handler(r, name, params, myfuncs)) return true;
+	return real_func_handler ? real_func_handler(r, name, params) : false;
+}
+
 /*
  *	eval help
  */
@@ -141,8 +170,11 @@ static void dialog_fhelp(File *f)
 
 void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
+	real_func_handler = func_handler;
+	real_symbol_handler = symbol_handler;
+
 	eval_scalar res;
-	if (eval(&res, "help()", func_handler, symbol_handler, context)) {
+	if (eval(&res, "help()", func_eval, symbol_eval, context)) {
 		eval_str s;
 		scalar_context_str(&res, &s);
 		scalar_destroy(&res);
@@ -211,32 +243,16 @@ static void nicify(char *dest, const char *src, int d)
 }
 
 
-static eval_symbol_handler real_symbol_handler;
-static bool have_last_result;
-static eval_scalar last_result;
-
-static bool symbol_eval(eval_scalar *r, char *symbol)
-{
-	if (strcmp(symbol, "_") == 0) {
-		if (have_last_result) {
-			 scalar_clone(r, &last_result);
-			 return true;
-		} else {
-			set_eval_error("no previous result...");
-			return false;
-		}		
-	}
-	return real_symbol_handler ? real_symbol_handler(r, symbol) : false;
-}
 
 static void do_eval(ht_strinputfield *s, ht_statictext *t, const char *b, eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
 	eval_scalar r;
 	String x;
 	
+	real_func_handler = func_handler;
 	real_symbol_handler = symbol_handler;
 	
-	if (eval(&r, b, func_handler, symbol_eval, context)) {
+	if (eval(&r, b, func_eval, symbol_eval, context)) {
 		switch (r.type) {
 			case SCALAR_INT: {
 				char buf1[1024];
@@ -292,7 +308,7 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, const char *b, eval_f
 			}
 			case SCALAR_FLOAT: {
 				char buf1[1024];
-				x.appendFormat(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
+				x.appendFormat("val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
 				// FIXME: endianess/hardware format
 				float ff = ((float)r.scalar.floatnum.value);
 				uint32 f;

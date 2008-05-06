@@ -184,20 +184,6 @@ void ht_pef_aviewer::init(Bounds *b, const char *desc, int caps, File *File, ht_
 	pef_shared = PEF_shared;
 }
 
-bool ht_pef_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
-{
-/*	eval_func myfuncs[] = {
-		{"rva", (void*)&pe_viewer_func_rva, {SCALAR_INT},
-			"returns address of rva"},
-		{"section", (void*)&pe_viewer_func_section, {SCALAR_ANY},
-			"returns address of section named param1 if param1 is a string\n"
-			"returns address of section with index param1 otherwise"},
-		{NULL}
-	};
-	if (std_eval_func_handler(result, name, params, myfuncs)) return 1;*/
-	return ht_aviewer::func_handler(result, name, params);
-}
-
 void ht_pef_aviewer::setAnalyser(Analyser *a)
 {
 	((PEFAnalyser *)a)->pef_shared = pef_shared;

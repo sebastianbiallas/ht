@@ -1938,8 +1938,7 @@ bool ht_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *
 //		{"addr", (void*)&aviewer_func_addr, {SCALAR_STR}}, "",
 		{NULL}
 	};
-	if (std_eval_func_handler(result, name, params, myfuncs)) return true;
-	return ht_uformat_viewer::func_handler(result, name, params);
+	return std_eval_func_handler(result, name, params, myfuncs);
 }
 
 bool ht_aviewer::symbol_handler(eval_scalar *result, char *name)
