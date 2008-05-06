@@ -27,6 +27,7 @@
 #include "htiobox.h"
 #include "htpal.h"
 #include "strtools.h"
+#include "str.h"
 #include "snprintf.h"
 #include "syntax.h"
 #include "textedit.h"
@@ -70,18 +71,22 @@ public:
 	virtual	lexer_token gettoken(void *buf, uint buflen, text_pos p, bool start_of_line, lexer_state *ret_state, uint *ret_len)
 	{
 		*ret_len = buflen;
-		int ps = *ret_state;
-		if (buflen == 0) *ret_state = FH_HEAD; else *ret_state = FH_DESC;
-		return buflen ? ps : 0;
+		lexer_token last = *ret_state;
+		if (start_of_line && buflen == 0) {
+			*ret_state = FH_HEAD;
+		} else {
+			*ret_state = FH_DESC;
+		}
+		return buflen ? last : 0;
 	}
 
 	virtual	vcp gettoken_color(lexer_token t)
 	{
 		switch (t) {
-			case FH_HEAD:
-				return VCP(VC_LIGHT(VC_WHITE), VC_TRANSPARENT);
-			case FH_DESC:
-				return VCP(VC_BLACK, VC_TRANSPARENT);
+		case FH_HEAD:
+			return VCP(VC_LIGHT(VC_WHITE), VC_TRANSPARENT);
+		case FH_DESC:
+			return VCP(VC_BLACK, VC_TRANSPARENT);
 		}
 		return VCP(VC_RED, VC_TRANSPARENT);
 	}
@@ -103,8 +108,8 @@ static void dialog_fhelp(File *f)
 	b.y = (c.h - b.h) / 2;
 	c = b;
 
-	ht_dialog *dialog = new ht_dialog();
-	dialog->init(&b, "eval() - functions", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
+	ht_dialog dialog;
+	dialog.init(&b, "eval() - functions", FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 
 	b.x = 0;
 	b.y = 0;
@@ -116,7 +121,7 @@ static void dialog_fhelp(File *f)
 
 	v->set_lexer(l, true);
 
-	dialog->insert(v);
+	dialog.insert(v);
 
 	b = c;
 	b.x = b.w-2;
@@ -124,16 +129,14 @@ static void dialog_fhelp(File *f)
 	b.w = 1;
 	b.h-=2;
 	ht_scrollbar *hs=new ht_scrollbar();
-	hs->init(&b, &dialog->pal, true);
+	hs->init(&b, &dialog.pal, true);
 
-	dialog->setvscrollbar(hs);
+	dialog.setvscrollbar(hs);
 
-	dialog->setpalette(palkey_generic_cyan);
+	dialog.setpalette(palkey_generic_cyan);
 
-	dialog->run(0);
-
-	v->done();
-	delete v;
+	dialog.run(0);
+	dialog.done();
 }
 
 void dialog_eval_help(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
@@ -193,7 +196,7 @@ static int sprint_base2_0(char *x, uint32 value, int zeros)
 static void nicify(char *dest, const char *src, int d)
 {
 	*dest = *src;
-	int l=strlen(src);
+	int l = strlen(src);
 	if (!l) return;
 	dest++;
 	src++;
@@ -202,115 +205,130 @@ static void nicify(char *dest, const char *src, int d)
 			*dest='\'';
 			dest++;
 		}
-		*(dest++) = *(src++);
+		*dest++ = *src++;
 	}
 	*dest=0;
 }
 
-#define BUTTON_HELP	100
 
-static void do_eval(ht_strinputfield *s, ht_statictext *t, char *b)
+static eval_symbol_handler real_symbol_handler;
+static bool have_last_result;
+static eval_scalar last_result;
+
+static bool symbol_eval(eval_scalar *r, char *symbol)
+{
+	if (strcmp(symbol, "_") == 0) {
+		if (have_last_result) {
+			 scalar_clone(r, &last_result);
+			 return true;
+		} else {
+			set_eval_error("no previous result...");
+			return false;
+		}		
+	}
+	return real_symbol_handler ? real_symbol_handler(r, symbol) : false;
+}
+
+static void do_eval(ht_strinputfield *s, ht_statictext *t, const char *b, eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
 	eval_scalar r;
-	if (eval(&r, b, NULL, NULL, NULL)) {
+	String x;
+	
+	real_symbol_handler = symbol_handler;
+	
+	if (eval(&r, b, func_handler, symbol_eval, context)) {
 		switch (r.type) {
 			case SCALAR_INT: {
-				char *x = b;
 				char buf1[1024];
 				char buf2[1024];
-				// FIXME
-				x += sprintf(x, "64bit integer:\n");
 				ht_snprintf(buf1, sizeof buf1, "%qx", r.scalar.integer.value);
 				nicify(buf2, buf1, 4);
-				x += ht_snprintf(x, 64, "hex   %s\n", buf2);
+				x.assignFormat("64bit integer:\nhex   %s\n", buf2);
 				ht_snprintf(buf1, sizeof buf1, "%qu", r.scalar.integer.value);
 				nicify(buf2, buf1, 3);
-				x += ht_snprintf(x, 64, "dec   %s\n", buf2);
+				x.appendFormat("dec   %s\n", buf2);
 				if ((sint64)r.scalar.integer.value < 0) {
 					ht_snprintf(buf1, sizeof buf1, "%qd", r.scalar.integer.value);
 					nicify(buf2, buf1+1, 3);
-					x += ht_snprintf(x, 64, "sdec  -%s\n", buf2);
+					x.appendFormat("sdec  -%s\n", buf2);
 				}
 				ht_snprintf(buf1, sizeof buf1, "%qo", r.scalar.integer.value);
 				nicify(buf2, buf1, 3);
-				x += ht_snprintf(x, 64, "oct   %s\n", buf2);
+				x.appendFormat("oct   %s\n", buf2);
 
 				uint32 l = r.scalar.integer.value;
 				ht_snprintf(buf1, sizeof buf1, "%032b", l);
 				nicify(buf2, buf1, 8);
-				x += ht_snprintf(x, 64, "binlo %s\n", buf2);
+				x.appendFormat("binlo %s\n", buf2);
 				if (r.scalar.integer.value >> 32) {
 					l = r.scalar.integer.value >> 32;
 					ht_snprintf(buf1, sizeof buf1, "%032b", l);
 					nicify(buf2, buf1, 8);
-					x += ht_snprintf(x, 64, "binhi %s\n", buf2);
+					x.appendFormat("binhi %s\n", buf2);
 				}
-				char bb[4];
+				byte bb[4];
 				/* big-endian string */
-				x += sprintf(x, "%s", "string \"");
+				x += "string \"";
 				createForeignInt(bb, r.scalar.integer.value, 4, big_endian);
-				bin2str(x, bb, 4);
-				x += 4;
-				x += sprintf(x, "%s", "\" 32bit big-endian (e.g. network)\n");
+				x.append(bb, 4);
+				x += "\" 32bit big-endian (e.g. network)\n";
 				/* little-endian string */
-				x += sprintf(x, "string \"");
+				x += "string \"";
 				createForeignInt(bb, r.scalar.integer.value, 4, little_endian);
-				bin2str(x, bb, 4);
-				x += 4;
-				x += sprintf(x, "%s", "\" 32bit little-endian (e.g. x86)\n");
-				/* finish */
-				*x = 0;
+				x.append(bb, 4);
+				x += "\" 32bit little-endian (e.g. x86)\n";
 				break;
 			}
 			case SCALAR_STR: {
-				char *x=b;
-				x+=sprintf(x, "string:\n");
+				char buf1[1024];
 				/* c-escaped */
-				x+=sprintf(x, "c-escaped \"");
-				x+=escape_special(x, 0xff, r.scalar.str.value, r.scalar.str.len, NULL, true);
-				*(x++)='"';
-				*(x++)='\n';
+				x = "string:\nc-escaped \"";
+				x.append((byte*)buf1, escape_special(buf1, sizeof buf1, r.scalar.str.value, r.scalar.str.len, NULL, true));
 				/* raw */
-				x+=sprintf(x, "raw       '");
-				int ll = MIN((uint)r.scalar.str.len, 0xff);
-				bin2str(x, r.scalar.str.value, ll);
-				x+=ll;
-				*(x++)='\'';
-				*(x++)='\n';
-				*x=0;
+				x += "'\nraw       '";
+				x.append((byte*)r.scalar.str.value, r.scalar.str.len);
+				x += "'\n";
 				break;
 			}
 			case SCALAR_FLOAT: {
-				char *x=b;
-				x+=sprintf(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
+				char buf1[1024];
+				x.appendFormat(b, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
 				// FIXME: endianess/hardware format
 				float ff = ((float)r.scalar.floatnum.value);
 				uint32 f;
 				memcpy(&f, &ff, 4);
-				x += sprintf(x, "\n-- IEEE-754, 32 bit --");
-				x += sprintf(x, "\nhex   %08x\nbin   ", f);
-				x += sprint_base2(x, f, true);
-				x += sprintf(x, "\nsplit %c1.", (f>>31) ? '-' : '+');
-				x += sprint_base2_0(x, f&((1<<23)-1), 23);
-				x += sprintf(x, "b * 2^%d", ((f>>23)&255)-127);
+				x += "\n-- IEEE-754, 32 bit --";
+				x.appendFormat("\nhex   %08x\nbin   ", f);
+				x.append((byte*)buf1, sprint_base2(buf1, f, true));
+				x.appendFormat("\nsplit %c1.", (f>>31) ? '-' : '+');
+				x.append((byte*)buf1, sprint_base2_0(buf1, f&((1<<23)-1), 23));
+				x.appendFormat("b * 2^%d", ((f>>23)&255)-127);
 				break;
 			}
 			default:
-				strcpy(b, "?");
+				x = "?";
 		}
+		if (have_last_result) scalar_destroy(&last_result);
+		scalar_clone(&last_result, &r);
+		have_last_result = true;
+		
 		scalar_destroy(&r);
 	} else {
 		const char *str="?";
 		int pos=0;
 		get_eval_error(&str, &pos);
 		s->isetcursor(pos);
-		sprintf(b, "error at pos %d: %s", pos+1, str);
+		x.assignFormat("error at pos %d: %s", pos+1, str);
 	}
-
-	t->settext(b);
+	String in;
+	in.assign('\0');
+	x.translate(in, " ");
+	t->settext(x.contentChar());
 }
 
-void eval_dialog()
+#define BUTTON_HELP	100
+
+void eval_dialog(eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
 	Bounds b, c;
 	app->getbounds(&c);
@@ -353,14 +371,14 @@ void eval_dialog()
 			if (str.textlen) {
 				bin2str(b, str.text, str.textlen);
 				insert_history_entry(ehist, b, 0);
-				do_eval(s, t, b);
+				do_eval(s, t, b, func_handler, symbol_handler, context);
 			} else {
 				t->settext(hint);
 			}
 			break;
 		}
 		case BUTTON_HELP:
-			dialog_eval_help(NULL, NULL, NULL);
+			dialog_eval_help(func_handler, symbol_handler, context);
 			break;
 		}
 	}

@@ -441,22 +441,22 @@ void string_concat(eval_str *s, eval_str *a, eval_str *b)
 void scalar_clone(eval_scalar *result, const eval_scalar *s)
 {
 	switch (s->type) {
-		case SCALAR_INT: {
-			*result = *s;
-			break;
-		}
-		case SCALAR_STR:  {
-			*result = *s;
-			result->scalar.str.value = ht_malloc(result->scalar.str.len);
-			memcpy(result->scalar.str.value, s->scalar.str.value, result->scalar.str.len);
-			break;
-		}			
-		case SCALAR_FLOAT: {
-			*result = *s;
-			break;
-		}
-		default:
-			break;
+	case SCALAR_INT: {
+		*result = *s;
+		break;
+	}
+	case SCALAR_STR:  {
+		*result = *s;
+		result->scalar.str.value = ht_malloc(result->scalar.str.len);
+		memcpy(result->scalar.str.value, s->scalar.str.value, result->scalar.str.len);
+		break;
+	}			
+	case SCALAR_FLOAT: {
+		*result = *s;
+		break;
+	}
+	default:
+		break;
 	}
 }
 
@@ -1438,36 +1438,40 @@ int evalsymbol(eval_scalar *r, char *sname)
 	return s;
 }
 
+static const char *type2str(eval_scalartype t)
+{
+	switch (t) {
+	case SCALAR_INT:
+		return "INT";
+		break;
+	case SCALAR_STR:
+		return "STRING";
+		break;
+	case SCALAR_FLOAT:
+		return "FLOAT";
+		break;
+	case SCALAR_ANY:
+		return "ANY";
+		break;
+	case SCALAR_VARARGS:
+		return "...";
+		break;
+	default:
+		return 0;
+		break;
+	}
+}
+
 static void proto_dump(char *buf, int bufsize, eval_func *proto, int full, const char *separator)
 {
 // FIXME: buffer safety/possible buffer overflow
 	strcpy(buf, proto->name);
-	int term = 0;
 	strcat(buf, "(");
 	for (int j=0; j<MAX_EVALFUNC_PARAMS; j++) {
 		if (proto->ptype[j]==SCALAR_NULL) break;
 		if (j) strcat(buf, ", ");
-		switch (proto->ptype[j]) {
-			case SCALAR_INT:
-				strcat(buf, "INT");
-				break;
-			case SCALAR_STR:
-				strcat(buf, "STRING");
-				break;
-			case SCALAR_FLOAT:
-				strcat(buf, "FLOAT");
-				break;
-			case SCALAR_ANY:
-				strcat(buf, "ANY");
-				break;
-			case SCALAR_VARARGS:
-				strcat(buf, "...");
-				term = 1;
-				break;
-			default:
-				break;
-		}
-		if (term) break;
+		strcat(buf, type2str(proto->ptype[j]));
+		if (proto->ptype[j] == SCALAR_VARARGS) break;
 	}
 	strcat(buf, ")");
 	if (full && proto->desc) {
@@ -1487,13 +1491,22 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 		while (protos->name) {
 			char buf[256];
 			if ((!*helpname) || (*helpname && (strcmp(helpname, protos->name)==0))) {
-				proto_dump(buf, sizeof buf, protos, 1, "\n");
+				if (protos->func) {
+					proto_dump(buf, sizeof buf, protos, 1, "\n");
+				} else {
+					strcpy(buf, protos->name);
+					strcat(buf, " : ");
+					strcat(buf, type2str(protos->ptype[0]));
+					strcat(buf, "\n");
+					strcat(buf, protos->desc);
+				}
 				strcat(buf, "\n\n");
 				eval_scalar s;
 				scalar_create_str_c(&s, buf);
 				eval_scalar r;
 				scalar_concat(&r, &helpstring, &s);
 				scalar_destroy(&helpstring);
+				scalar_destroy(&s);
 				helpstring = r;
 			}
 
@@ -1501,6 +1514,7 @@ int std_eval_func_handler(eval_scalar *result, char *fname, eval_scalarlist *par
 		}
 	} else {
 		while (protos->name) {
+			if (protos->func)
 			switch (match_evalfunc_proto(fname, params, protos)) {
 				case PROTOMATCH_OK:
 					return exec_evalfunc(result, params, protos);

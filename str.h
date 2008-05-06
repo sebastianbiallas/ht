@@ -56,7 +56,9 @@ public:
 
 		void		append(const String &s);
 		void		append(const char *s);
+		void		append(const byte *s, int aLength);
 		void		appendChar(char c);
+		void		appendFormat(const char *s, ...);
 	inline	char &		at(int aIndex) const;
 	inline	bool		chop();
 		void		clear();

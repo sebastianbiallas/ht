@@ -2729,7 +2729,7 @@ void ht_app::handlemsg(htmsg *msg)
 			clearmsg(msg);
 			return;
 		case cmd_popup_dialog_eval: {
-			eval_dialog();
+			eval_dialog(NULL, NULL, NULL);
 			clearmsg(msg);
 			return;
 		}

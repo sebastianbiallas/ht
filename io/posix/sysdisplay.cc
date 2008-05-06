@@ -238,7 +238,7 @@ bool sys_get_screen_size(int &w, int &h)
 
 	winsz.ws_col = winsz.ws_row = 0;
 	/* Ioctl on the STDIN_FILENO */
-	ioctl (0, TIOCGWINSZ, &winsz);
+	ioctl(0, TIOCGWINSZ, &winsz);
 	if (winsz.ws_col && winsz.ws_row) {
 	        w = winsz.ws_col;
 		h = winsz.ws_row;
@@ -364,7 +364,7 @@ void CursesSystemDisplay::copyFromDisplay(const Display &d, int x, int y, const 
 	d.getCursor(cx,cy);
 	cx += d.x;
 	cy += d.y;
-	setCursor(cx, cy, cm);
+//	setCursor(cx, cy, cm);
 	for (int iy = 0; iy < d.h; iy++) {
 		CursesChar *k = buf+x+(iy+y)*w;
 		if (y+iy >= clipping.y+clipping.h) break;

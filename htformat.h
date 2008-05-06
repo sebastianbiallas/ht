@@ -273,6 +273,8 @@ public:
 	virtual	void releasefocus();
 	virtual	void resize(int rw, int rh);
 	virtual	void setgroup(ht_group *group);
+	virtual	bool func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
+	virtual	bool symbol_handler(eval_scalar *result, char *name);
 /* new */
 	virtual	void insert(ht_view *view);
 		void remove(ht_view *view);

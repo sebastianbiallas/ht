@@ -372,6 +372,26 @@ void ht_format_group::setgroup(ht_group *_group)
 	xgroup->setgroup(_group);
 }
 
+bool ht_format_group::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	ht_format_viewer *v = dynamic_cast<ht_format_viewer *>(xgroup->current);
+	if (v) {
+		return v->func_handler(result, name, params);
+	} else {
+		return false;
+	}
+}
+
+bool ht_format_group::symbol_handler(eval_scalar *result, char *name)
+{
+	ht_format_viewer *v = dynamic_cast<ht_format_viewer *>(xgroup->current);
+	if (v) {
+		return v->symbol_handler(result, name);
+	} else {
+		return false;
+	}
+}
+
 /*
  *	CLASS ht_viewer
  */
@@ -572,78 +592,94 @@ bool ht_format_viewer::goto_pos(viewer_pos pos, bool save_vstate)
 	return false;
 }
 
+static bool format_viewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
+	return viewer->func_handler(result, name, params);
+}
+
+static bool format_viewer_symbol_handler(eval_scalar *result, char *name)
+{
+	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
+	return viewer->symbol_handler(result, name);
+}
+
 void ht_format_viewer::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
-		case msg_goto_offset: {
-			FileOfs o = (FileOfs)msg->data1.q;
-			if (goto_offset(o, false)) {
-				clearmsg(msg);
-				return;
-			}
-			break;
-		}
-		case msg_vstate_restore:
-			vstate_restore((Object*)msg->data1.ptr);
+	case cmd_popup_dialog_eval:
+                eval_dialog(format_viewer_func_handler, format_viewer_symbol_handler, this);
+                clearmsg(msg);
+                return;
+	case msg_goto_offset: {
+		FileOfs o = (FileOfs)msg->data1.q;
+		if (goto_offset(o, false)) {
 			clearmsg(msg);
 			return;
-		case cmd_file_truncate: {
-			File *f = (File*)msg->data1.ptr;
-			FileOfs o = (FileOfs)msg->data2.q;
-			if (file == f) {
-				ht_format_loc loc;
-				loc_enum_start();
-				while (loc_enum_next(&loc)) {
-					if (o < loc.start+loc.length) {
-						if (confirmbox("truncating at %08qx will destroy format '%s', continue ? \n(format ranges from %08qx to %08qx)", o, loc.name, loc.start, loc.start+loc.length) != button_yes) {
-							clearmsg(msg);
-							return;
-						}
-						break;
+		}
+		break;
+	}
+	case msg_vstate_restore:
+		vstate_restore((Object*)msg->data1.ptr);
+		clearmsg(msg);
+		return;
+	case cmd_file_truncate: {
+		File *f = (File*)msg->data1.ptr;
+		FileOfs o = (FileOfs)msg->data2.q;
+		if (file == f) {
+			ht_format_loc loc;
+			loc_enum_start();
+			while (loc_enum_next(&loc)) {
+				if (o < loc.start+loc.length) {
+					if (confirmbox("truncating at %08qx will destroy format '%s', continue ? \n(format ranges from %08qx to %08qx)", o, loc.name, loc.start, loc.start+loc.length) != button_yes) {
+						clearmsg(msg);
+						return;
 					}
+					break;
 				}
 			}
-			break;
 		}
-		case cmd_edit_mode_i: {
-			if (file/* && (file==msg->data1.ptr)*/) {
-				try {
-					file->setAccessModex(IOAM_READ | IOAM_WRITE);
-					htmsg m;
-					m.msg = cmd_edit_mode;
-					m.type = mt_broadcast;
-					sendmsg(&m);
-				} catch (const IOException &e) {
-					String fn;
-					errorbox("can't open file %y in write mode! (%y)", &file->getFilename(fn), &e);
-				}
+		break;
+	}
+	case cmd_edit_mode_i: {
+		if (file/* && (file==msg->data1.ptr)*/) {
+			try {
+				file->setAccessModex(IOAM_READ | IOAM_WRITE);
+				htmsg m;
+				m.msg = cmd_edit_mode;
+				m.type = mt_broadcast;
+				sendmsg(&m);
+			} catch (const IOException &e) {
+				String fn;
+				errorbox("can't open file %y in write mode! (%y)", &file->getFilename(fn), &e);
 			}
-			clearmsg(msg);
-			return;
 		}
-		case cmd_view_mode_i:
-			if (file /*&& (file==msg->data1.ptr)*/) {
-				FileOfs size = file->getSize();
-				file->cntl(FCNTL_MODS_INVD);
-				try {
-					file->setAccessModex(IOAM_READ);
-					htmsg m;
-					m.msg = cmd_view_mode;
-					m.type = mt_broadcast;
-					sendmsg(&m);
-				} catch (const IOException &e) {
-					String fn;
-					errorbox("can't (re)open file %y in read mode! (%y)", &file->getFilename(fn), &e);
-				}
-				if (size != file->getSize()) {
-					htmsg m;
-					m.msg = msg_filesize_changed;
-					m.type = mt_broadcast;
-					sendmsg(&m);
-				}
+		clearmsg(msg);
+		return;
+	}
+	case cmd_view_mode_i:
+		if (file /*&& (file==msg->data1.ptr)*/) {
+			FileOfs size = file->getSize();
+			file->cntl(FCNTL_MODS_INVD);
+			try {
+				file->setAccessModex(IOAM_READ);
+				htmsg m;
+				m.msg = cmd_view_mode;
+				m.type = mt_broadcast;
+				sendmsg(&m);
+			} catch (const IOException &e) {
+				String fn;
+				errorbox("can't (re)open file %y in read mode! (%y)", &file->getFilename(fn), &e);
 			}
-			clearmsg(msg);
-			return;
+			if (size != file->getSize()) {
+				htmsg m;
+				m.msg = msg_filesize_changed;
+				m.type = mt_broadcast;
+				sendmsg(&m);
+			}
+		}
+		clearmsg(msg);
+		return;
 	}
 	ht_viewer::handlemsg(msg);
 }
@@ -746,18 +782,6 @@ bool ht_format_viewer::show_search_result(ht_search_result *r)
 	}
 	}
 	return false;
-}
-
-static bool format_viewer_func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
-{
-	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
-	return viewer->func_handler(result, name, params);
-}
-
-static bool format_viewer_symbol_handler(eval_scalar *result, char *name)
-{
-	ht_format_viewer *viewer = (ht_format_viewer*)eval_get_context();
-	return viewer->symbol_handler(result, name);
 }
 
 bool ht_format_viewer::string_to_qword(const char *string, uint64 *q)

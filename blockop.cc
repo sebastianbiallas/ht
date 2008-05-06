@@ -308,7 +308,7 @@ static bool blockop_func_eval(eval_scalar *result, char *name, eval_scalarlist *
 		{"read16be", (void*)&func_read16be, {SCALAR_INT}, "read big endian 16 bit word from offset"},
 		{"read32be", (void*)&func_read32be, {SCALAR_INT}, "read big endian 32 bit word from offset"},
 		{"read64be", (void*)&func_read64be, {SCALAR_INT}, "read big endian 64 bit word from offset"},
-		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}},
+		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}, "read string (offset, length)"},
 		{NULL}
 	};
 	

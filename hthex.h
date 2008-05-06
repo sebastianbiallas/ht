@@ -42,6 +42,7 @@ protected:
 	virtual	bool offset_to_pos(FileOfs ofs, viewer_pos *p);
 	virtual	bool pos_to_offset(viewer_pos p, FileOfs *ofs);
 	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
+	virtual	bool func_handler(eval_scalar *result, char *name, eval_scalarlist *params);
 	virtual	bool symbol_handler(eval_scalar *result, char *name);
 };
 

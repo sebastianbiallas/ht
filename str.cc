@@ -191,6 +191,27 @@ void String::appendChar(char c)
 	mContent[mLength-1] = c;
 }
 
+void String::append(const byte *s, int aLength)
+{
+	if (aLength <= 0) return;
+	int oldLength = mLength;
+	realloc(mLength + aLength);
+	memcpy(&mContent[oldLength], s, aLength);
+}
+
+/**
+ *	(re-)append to string via ht_snprintf
+ */
+void String::appendFormat(const char *s, ...)
+{
+	char buf[1024];
+	va_list vargs;
+	va_start(vargs, s);
+	ht_vsnprintf(buf, sizeof buf, s, vargs);
+	va_end(vargs);
+	append(buf);
+}
+
 /**
  *   prepends |s| to the front
  */

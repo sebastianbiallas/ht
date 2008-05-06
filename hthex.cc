@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "cmds.h"
+#include "endianess.h"
 #include "htctrl.h"
 #include "htiobox.h"
 #include "hthex.h"
@@ -218,9 +219,39 @@ bool ht_hex_viewer::qword_to_pos(uint64 q, viewer_pos *p)
 	return s->convert_ofs_to_id(ofs, &p->u.line_id);
 }
 
+static bool readao(eval_scalar *result, ht_hex_viewer *h, int size, Endianess e, bool sign, FileOfs ofs)
+{
+	byte buf[8];
+	File *file = h->get_file();
+	try {
+		file->seek(ofs);
+		file->readx(&buf, size);
+	} catch (const IOException&) {
+		set_eval_error("i/o error (couldn't read %d bytes from ofs %qd (0x%qx))", size, ofs, ofs);
+		return false;
+	}
+	uint64 v = createHostInt64(buf, size, e);
+	if (sign) {
+		switch (size) {
+		case 1: v = sint64(sint8(v));
+		case 2: v = sint64(sint16(v));
+		case 4: v = sint64(sint32(v));
+		}
+	}
+	scalar_create_int_q(result, v);	
+	return true;
+}
+
+static bool reada(eval_scalar *result, ht_hex_viewer *h, int size, Endianess e, bool sign)
+{
+	FileOfs ofs;
+	if (!h->get_current_offset(&ofs)) return false;
+	return readao(result, h, size, e, sign, ofs);
+}
+
 bool ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 {
-	if (strcmp(name, "$") == 0) {
+	if (strcmp(name, "$") == 0 || strcmp(name, "o") == 0) {
 		FileOfs ofs;
 		viewer_pos vp;
 		vp.u = cursor;
@@ -228,7 +259,91 @@ bool ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 		scalar_create_int_q(result, ofs);
 		return true;
 	}
+	if (strcmp(name, "u8") == 0) return reada(result, this, 1, little_endian, false);
+	if (strcmp(name, "u16") == 0) return reada(result, this, 2, little_endian, false);
+	if (strcmp(name, "u32") == 0) return reada(result, this, 4, little_endian, false);
+	if (strcmp(name, "u64") == 0) return reada(result, this, 8, little_endian, false);
+	if (strcmp(name, "s8") == 0) return reada(result, this, 1, little_endian, true);
+	if (strcmp(name, "s16") == 0) return reada(result, this, 2, little_endian, true);
+	if (strcmp(name, "s32") == 0) return reada(result, this, 4, little_endian, true);
+	if (strcmp(name, "u16be") == 0) return reada(result, this, 2, big_endian, false);
+	if (strcmp(name, "u32be") == 0) return reada(result, this, 4, big_endian, false);
+	if (strcmp(name, "u64be") == 0) return reada(result, this, 8, big_endian, false);
+	if (strcmp(name, "s16be") == 0) return reada(result, this, 2, big_endian, true);
+	if (strcmp(name, "s32be") == 0) return reada(result, this, 4, big_endian, true);
 	return ht_uformat_viewer::symbol_handler(result, name);
+}
+
+static int func_readint(eval_scalar *result, eval_int *offset, int size, Endianess e)
+{
+	ht_hex_viewer *v = (ht_hex_viewer*)eval_get_context();
+	return readao(result, v, size, e, false, offset->value);
+}
+
+static int func_readbyte(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 1, little_endian);
+}
+
+static int func_read16le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 2, little_endian);
+}
+
+static int func_read32le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 4, little_endian);
+}
+
+static int func_read64le(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 8, little_endian);
+}
+
+static int func_read16be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 2, big_endian);
+}
+
+static int func_read32be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 4, big_endian);
+}
+
+static int func_read64be(eval_scalar *result, eval_int *offset)
+{
+	return func_readint(result, offset, 8, big_endian);
+}
+
+
+bool ht_hex_viewer::func_handler(eval_scalar *result, char *name, eval_scalarlist *params)
+{
+	eval_func myfuncs[] = {
+		{"$", 0, {SCALAR_INT}, "current offset"},
+		{"o", 0, {SCALAR_INT}, "current offset"},
+		{"u8", 0, {SCALAR_INT}, "byte at cursor"},
+		{"u16", 0, {SCALAR_INT}, "little endian 16 bit word at cursor"},
+		{"u32", 0, {SCALAR_INT}, "little endian 32 bit word at cursor"},
+		{"u64", 0, {SCALAR_INT}, "little endian 64 bit word at cursor"},
+		{"s8", 0, {SCALAR_INT}, "signed byte at cursor"},
+		{"s16", 0, {SCALAR_INT}, "signed little endian 16 bit word at cursor"},
+		{"s32", 0, {SCALAR_INT}, "signed little endian 32 bit word at cursor"},
+		{"u16be", 0, {SCALAR_INT}, "big endian 16 bit word at cursor"},
+	    	{"u32be", 0, {SCALAR_INT}, "big endian 32 bit word at cursor"},
+		{"u64be", 0, {SCALAR_INT}, "big endian 64 bit word at cursor"},
+		{"s16be", 0, {SCALAR_INT}, "signed big endian 16 bit word at cursor"},
+		{"s32be", 0, {SCALAR_INT}, "signed big endian 32 bit word at cursor"},
+		{"readbyte", (void*)&func_readbyte, {SCALAR_INT}, "read byte from offset"},
+		{"read16le", (void*)&func_read16le, {SCALAR_INT}, "read little endian 16 bit word from offset"},
+		{"read32le", (void*)&func_read32le, {SCALAR_INT}, "read little endian 32 bit word from offset"},
+		{"read64le", (void*)&func_read64le, {SCALAR_INT}, "read little endian 64 bit word from offset"},
+		{"read16be", (void*)&func_read16be, {SCALAR_INT}, "read big endian 16 bit word from offset"},
+		{"read32be", (void*)&func_read32be, {SCALAR_INT}, "read big endian 32 bit word from offset"},
+		{"read64be", (void*)&func_read64be, {SCALAR_INT}, "read big endian 64 bit word from offset"},
+//		{"readstring", (void*)&func_readstring, {SCALAR_INT, SCALAR_INT}, "read string (offset, length)"},
+		{NULL},
+	};
+	return std_eval_func_handler(result, name, params, myfuncs);
 }
 
 /*

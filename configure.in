@@ -34,12 +34,9 @@ dnl Check OS specifica
 
 NEED_CURSES=0
 HAVE_PIPE=0
+HT_X11BASE="-L/usr/X11/lib -L/usr/X11R6/lib"
 
 case "$target_os" in
-msdos*) 
-	IO_DIR=djgpp
-	echo "*** DJGPP, building native DOS/Windows DPMI version" 1>&2
-;;
 linux*) 
 	IO_DIR=posix
 	echo "*** LINUX, building POSIX version. we need (n)curses." 1>&2
@@ -52,6 +49,14 @@ linux*)
 	echo "*** FREEBSD, building native FreeBSD version. we need (n)curses." 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=1
+	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+;;
+*openbsd*) 
+	IO_DIR=posix
+	echo "*** OpenBSD, building native OpenBSD version. we need (n)curses." 1>&2
+	NEED_CURSES=1
+	HAVE_PIPE=1
+	HT_X11BASE="-L${X11BASE}/lib"
 	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 cygwin*)
@@ -81,8 +86,8 @@ if test "x$HAVE_PIPE" = "x1"; then
 	FLAGS_PIPE="-pipe";
 fi
 
-CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor"
-CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL"
+CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor $CXXFLAGS"
+CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL $CFLAGS"
 
 AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
 
@@ -151,13 +156,13 @@ HAVE_X11=0
 
 if test "x$enable_x11_textmode" = "xyes"; then
 	TEMP_LDFLAGS=$LDFLAGS
-	LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
+	LDFLAGS="$HT_LDFLAGS $HT_X11BASE"
 	AC_CHECK_LIB(X11, XOpenDisplay, HAVE_X11=1)
 	LDFLAGS=$TEMP_LDFLAGS
 	if test "x$HAVE_X11" = "x1"; then
 		AC_DEFINE(HAVE_TEXTMODE_X11, 1, [This system has Xlib support and we shall use it])
 		HT_LIBS="$HT_LIBS -lX11"
-		HT_LDFLAGS="$HT_LDFLAGS -L/usr/X11/lib -L/usr/X11R6/lib"
+		HT_LDFLAGS="$HT_LDFLAGS $HT_X11BASE"
 	fi
 fi
 
