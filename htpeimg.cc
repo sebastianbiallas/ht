@@ -58,7 +58,7 @@ static ht_view *htpeimage_init(Bounds *b, File *file, ht_format_group *group)
 
 	v->attachInfoline(head);
 
-/* search for lowest/highest */
+	/* search for lowest/highest */
 	RVA l=(RVA)-1, h=0;
 	COFF_SECTION_HEADER *s=pe_shared->sections.sections;
 	for (uint i=0; i<pe_shared->sections.section_count; i++) {

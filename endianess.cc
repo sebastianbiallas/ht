@@ -130,12 +130,12 @@ uint64 createHostInt64(const void *buf, int size, Endianess from_endianess)
 	uint64 q;
 	switch (from_endianess) {
 	case big_endian:
-		q = (((uint64)(b[0]<<24) | (b[1]<<16) | (b[2]<<8) | b[3]) << 32) |
-		                       (b[4]<<24) | (b[5]<<16) | (b[6]<<8) | b[7];
+		q = uint64(b[0])<<56 | uint64(b[1])<<48 | uint64(b[2])<<40 | uint64(b[3])<<32
+		| uint64(b[4])<<24 | uint64(b[5])<<16 | uint64(b[6])<<8 | uint64(b[7]);
 		break;
 	case little_endian:
-		q = (((uint64)(b[7]<<24) | (b[6]<<16) | (b[5]<<8) | b[4]) << 32) |
-		                       (b[3]<<24) | (b[2]<<16) | (b[1]<<8) | b[0];
+		q = uint64(b[7])<<56 | uint64(b[6])<<48 | uint64(b[5])<<40 | uint64(b[4])<<32
+		| uint64(b[3])<<24 | uint64(b[2])<<16 | uint64(b[1])<<8 | uint64(b[0]);
 		break;
 	default: ASSERT(0);
 	}
