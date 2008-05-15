@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 2.0.15:
+	- [Win32] removed a debug printf
+
 version 2.0.14:
 	- [x86] movbe, invept, invvpid
 	- [eval] better help

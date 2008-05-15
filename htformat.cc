@@ -1140,18 +1140,18 @@ int ht_uformat_viewer::cursor_up(int n)
 	switch (cursor_state) {
 		case cursor_state_invisible:
 		case cursor_state_visible: {
-			if ((n==1) && (cursor_state==cursor_state_visible)) {
+			if (n == 1 && cursor_state == cursor_state_visible) {
 				int r = 0;
 				uformat_viewer_pos c;
 				clear_viewer_pos(&c);
 				c = cursor;
 				char c_line[1024];
-				int c_ypos=cursor_ypos;
-				int c_tag_idx=cursor.tag_idx;
-				int c_tag_group=cursor.tag_group;
-				int d_tag_group=cursor.tag_group;
+				int c_ypos = cursor_ypos;
+				int c_tag_idx = cursor.tag_idx;
+				int c_tag_group = cursor.tag_group;
+				int d_tag_group = cursor.tag_group;
 
-				while (prev_line(&c, 1) && (c_ypos>=0)) {
+				while (prev_line(&c, 1) && c_ypos >= 0) {
 					c_ypos--;
 					c.sub->getline(c_line, sizeof c_line, c.line_id);
 					int g = tag_count_groups(c_line);
@@ -1185,7 +1185,9 @@ int ht_uformat_viewer::cursor_up(int n)
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
-				} else scroll_up(n);
+				} else {
+					scroll_up(n);
+				}
 				return r;
 			} else {
 				int r=0;

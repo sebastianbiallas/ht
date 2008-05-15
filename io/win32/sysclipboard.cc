@@ -59,7 +59,7 @@ int sys_native_clipboard_get_size()
 #include "snprintf.h"
 int sys_native_clipboard_read(void *data, int max_size)
 {
-	ht_printf("sys_native_clipboard_read(%d)\n", max_size);
+//	ht_printf("sys_native_clipboard_read(%d)\n", max_size);
 	if (!OpenClipboard(NULL)) return false;
         HANDLE hdata = GetClipboardData(CF_OEMTEXT);
         if (!hdata) {        	
@@ -72,7 +72,7 @@ int sys_native_clipboard_read(void *data, int max_size)
 	memcpy(data, ptr, r);
 	GlobalUnlock(hdata);
 	CloseClipboard();
-	ht_printf("=%d\n", r);
+//	ht_printf("=%d\n", r);
 	return r;
 }
 
