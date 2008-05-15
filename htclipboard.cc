@@ -56,7 +56,7 @@ public:
  */
 
 ht_clipboard::ht_clipboard()
-	: MemoryFile(0, 16, IOAM_READ | IOAM_WRITE)
+	: MemoryFile(0, 0, IOAM_READ | IOAM_WRITE)
 {
 	copy_history = new Array(true);
 	select_start = 0;
@@ -161,7 +161,7 @@ void ht_clipboard_viewer::update_content()
 		insertsub(m);
 
 		ht_hex_sub *h=new ht_hex_sub();
-		h->init(clipboard, j->start, j->size, 16, 0);
+		h->init(clipboard, j->start, j->size, 16, 0, (16 - j->start) % 16);
 		insertsub(h);
 	}
 	pselect_set(clipboard->select_start, clipboard->select_start+clipboard->select_len);

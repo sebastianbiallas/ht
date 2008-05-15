@@ -1161,7 +1161,7 @@ int ht_uformat_viewer::cursor_up(int n)
 						c_tag_group = g-1;
 						s = tag_count_selectable_tags_in_group(c_line, c_tag_group);
 						if (s) {
-							c_tag_idx=s-1;
+							c_tag_idx = s-1;
 							r = 1;
 							break;
 						}
@@ -1234,15 +1234,15 @@ int ht_uformat_viewer::cursor_up(int n)
 					cursor = c;
 					memcpy(cursor_line, c_line, sizeof cursor_line);
 					cursorline_dirty();
-					cursor_ypos=c_ypos;
-					cursor.tag_idx=c_tag_idx;
-					cursor.tag_group=c_tag_group;
+					cursor_ypos = c_ypos;
+					cursor.tag_idx = c_tag_idx;
+					cursor.tag_group = c_tag_group;
 					if (-cursor_ypos+n-nc-1 > 0) scroll_up(-cursor_ypos+n-nc-1);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
 				} else {
-					if (cursor_state==cursor_state_invisible) cursor_ypos=-0x80000000;
+					if (cursor_state == cursor_state_invisible) cursor_ypos=-0x80000000;
 					scroll_up(n);
 				}
 				// FIXME: wrong value
@@ -4172,7 +4172,7 @@ static bool ht_linear_sub_symbol_handler(eval_scalar *result, char *name)
 
 class ht_expr_search_pcontext: public Object {
 public:
-/* in */
+	/* in */
 	ht_search_request *request;
 	ht_sub *sub;
 	ht_format_viewer *fv;
@@ -4180,7 +4180,7 @@ public:
 	FileOfs end;
 	int i;
 	FileOfs o;
-/* out */
+	/* out */
 	ht_search_result **result;
 };
 
