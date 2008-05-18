@@ -146,26 +146,27 @@ void ht_clipboard_viewer::update_content()
 	if (clipboard->copy_history->count() == lastentrycount) return;
 	clear_subs();
 	ht_clipboard *clipboard = (ht_clipboard*)file;
-	int c=clipboard->copy_history->count();
+	int c = clipboard->copy_history->count();
 	char title[512];	/* secure */
-
-	for (int i=0; i<c; i++) {
-		ht_clipboard_copy_history *j=(ht_clipboard_copy_history*)(*clipboard->copy_history)[i];
+	
+	uint uid = 0;
+	for (int i = 0; i < c; i++) {
+		ht_clipboard_copy_history *j = (ht_clipboard_copy_history*)(*clipboard->copy_history)[i];
 
 		tm *t = localtime(&j->time);
 		ht_snprintf(title, sizeof title, "*** %02d:%02d:%02d, size %qd(%qxh), from %s", t->tm_hour, t->tm_min, t->tm_sec, j->size, j->size, j->source);
 
-		ht_mask_sub *m=new ht_mask_sub();
-		m->init(clipboard, i);
+		ht_mask_sub *m = new ht_mask_sub();
+		m->init(clipboard, uid++);
 		m->add_mask(title);
 		insertsub(m);
 
-		ht_hex_sub *h=new ht_hex_sub();
-		h->init(clipboard, j->start, j->size, 16, 0, (16 - j->start) % 16);
+		ht_hex_sub *h = new ht_hex_sub();
+		h->init(clipboard, j->start, j->size, 16, uid++, -1);
 		insertsub(h);
 	}
 	pselect_set(clipboard->select_start, clipboard->select_start+clipboard->select_len);
-	lastentrycount=clipboard->copy_history->count();
+	lastentrycount = clipboard->copy_history->count();
 
 	sendmsg(msg_complete_init, 0);
 }

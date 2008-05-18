@@ -77,9 +77,9 @@ class ht_data_tagstring: public Object {
 public:
 	char *value;
 
-	ht_data_tagstring(const char *tagstr = NULL)
+	ht_data_tagstring(const char *tagstr = NULL) :
+		value(tag_strdup(tagstr))
 	{
-		value = tag_strdup(tagstr);
 	}
 
 	~ht_data_tagstring()
@@ -212,7 +212,7 @@ int ht_format_group::get_pindicator_str(char *buf, int max_len)
 
 bool ht_format_group::get_hscrollbar_pos(int *pstart, int *psize)
 {
-	ht_view *c=xgroup->current;
+	ht_view *c = xgroup->current;
 	if (c && (c->options & VO_FORMAT_VIEW)) {
 		return ((ht_format_viewer*)c)->get_hscrollbar_pos(pstart, psize);
 	}
@@ -221,7 +221,7 @@ bool ht_format_group::get_hscrollbar_pos(int *pstart, int *psize)
 
 bool ht_format_group::get_vscrollbar_pos(int *pstart, int *psize)
 {
-	ht_view *c=xgroup->current;
+	ht_view *c = xgroup->current;
 	if (c && (c->options & VO_FORMAT_VIEW)) {
 		return ((ht_format_viewer*)c)->get_vscrollbar_pos(pstart, psize);
 	}
@@ -232,7 +232,7 @@ void ht_format_group::handlemsg(htmsg *msg)
 {
 	switch (msg->msg) {
 	case msg_keypressed: {
-		int i=0;
+		int i = 0;
 		switch (msg->data1.integer) {
 		case K_F12: i++;
 		case K_F11: i++;
@@ -248,11 +248,11 @@ void ht_format_group::handlemsg(htmsg *msg)
 		case K_F1: {
 			i++;
 			htmsg m;
-			m.msg=msg_funcquery;
-			m.type=mt_empty;
-			m.data1.integer=i;
+			m.msg = msg_funcquery;
+			m.type = mt_empty;
+			m.data1.integer = i;
 			sendmsg(&m);
-			if (m.msg==msg_retval) {
+			if (m.msg == msg_retval) {
 				sendmsg(msg_funcexec, i);
 				clearmsg(msg);
 				return;
@@ -292,11 +292,6 @@ bool ht_format_group::init_if(format_viewer_if *i)
 	bool r=0;
 	ht_view *v=0;
 	
-/*     Bounds c=*b;
-
-	c.x=c.w-1;
-	c.y=0;
-	c.w=1;*/
 	if (i->init) {
 		try {
 			v=i->init(&b, file, this);
@@ -877,13 +872,13 @@ class ht_uformat_viewer_vstate: public Object {
 public:
 	int edit;
 	ht_sub *first_sub, *last_sub;
-/* top line position */
+	/* top line position */
 	uformat_viewer_pos top;
-/* cursor line and tag position */
+	/* cursor line and tag position */
 	uformat_viewer_pos cursor;
 	int cursor_state;
 	int cursor_ypos;
-/* selection*/
+	/* selection*/
 	FileOfs sel_start;
 	FileOfs sel_end;
 };
@@ -930,7 +925,7 @@ int ht_uformat_viewer::address_input(const char *title, char *result, int limit,
 	b.w = 60;
 	b.h = 8;
 
-	ht_dialog *dialog=new ht_dialog();
+	ht_dialog *dialog = new ht_dialog();
 	dialog->init(&b, title, FS_KILLER | FS_TITLE | FS_MOVE | FS_RESIZE);
 
 	ht_strinputfield *input;
@@ -990,21 +985,21 @@ int ht_uformat_viewer::address_input(const char *title, char *result, int limit,
 	int retval = button_cancel;
 	while (run && (r = dialog->run(0)) != button_cancel) {
 		switch (r) {
-			case 100: {
-				dialog_eval_help(format_viewer_func_handler, format_viewer_symbol_handler, this);
-				break;
-			}
-			case button_ok: {
-				int dsize = input->datasize();
-				ht_inputfield_data *data = ht_malloc(dsize);
-				ViewDataBuf vdb(input, data, dsize);
-				bin2str(result, data->text, data->textlen);
-				free(data);
-				if (hist) insert_history_entry(hist, result, 0);
-				run = false;
-				retval = button_ok;
-				break;
-			}
+		case 100: {
+			dialog_eval_help(format_viewer_func_handler, format_viewer_symbol_handler, this);
+			break;
+		}
+		case button_ok: {
+			int dsize = input->datasize();
+			ht_inputfield_data *data = ht_malloc(dsize);
+			ViewDataBuf vdb(input, data, dsize);
+			bin2str(result, data->text, data->textlen);
+			free(data);
+			if (hist) insert_history_entry(hist, result, 0);
+			run = false;
+			retval = button_ok;
+			break;
+		}
 		}
 	}
 
@@ -3388,11 +3383,14 @@ void ht_uformat_viewer::select_mode_on()
 void ht_uformat_viewer::select_mode_pre()
 {
 	if (cursor_select) {
-		if (cursor_tag_class == tag_class_edit)
+		if (cursor_tag_class == tag_class_edit) {
 			cursor_select_start = cursor_tag_offset;
-		else
+		} else {
 			cursor_select_start = (sel_end > sel_start) ? sel_end : -1ULL;
-		if (!get_current_tag_size(&cursor_select_cursor_length)) cursor_select_cursor_length = -1;
+		}
+		if (!get_current_tag_size(&cursor_select_cursor_length)) {
+			cursor_select_cursor_length = -1;
+		}
 	}		
 }	
 	
@@ -4267,11 +4265,16 @@ ht_search_result *ht_linear_sub::search(ht_search_request *search, FileOfs start
  *	CLASS ht_hex_sub
  */
 
-void ht_hex_sub::init(File *f, FileOfs ofs, FileOfs size, uint Line_length, uint u, uint Disp)
+void ht_hex_sub::init(File *f, FileOfs ofs, FileOfs size, uint Line_length, uint u, int Disp)
 {
 	line_length = Line_length;
 	ht_linear_sub::init(f, ofs, size);
-	disp = Disp;
+	if (Disp == -1) {
+		disp = line_length - ofs % line_length;
+		if (disp == line_length) disp = 0;
+	} else {
+		disp = Disp;
+	}
 	uid = u;
 }
 
@@ -4304,13 +4307,12 @@ bool ht_hex_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 {
 	if (offset >= fofs && offset < fofs+fsize) {
 		clear_line_id(line_id);
+		FileOfs o = offset - fofs;
 		FileOfs begin;
-		if (offset < disp) {
-			begin = fofs;
+		if (o < disp) {
+			begin = 0;
 		} else {
-			begin = offset - (offset-disp)%line_length;
-			if (begin < fofs) begin = fofs;
-			if (begin >= fofs+fsize) begin = fofs;
+			begin = o - (o - disp)%line_length;
 		}
 		line_id->id1 = begin >> 32;
 		line_id->id2 = begin;
@@ -4322,7 +4324,7 @@ bool ht_hex_sub::convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id)
 
 bool ht_hex_sub::convert_id_to_ofs(const LINE_ID line_id, FileOfs *ofs)
 {
-	*ofs = (uint64(line_id.id1) << 32) + line_id.id2;
+	*ofs = (uint64(line_id.id1) << 32) + line_id.id2 + fofs;
 	return true;
 }
 
@@ -4330,15 +4332,15 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 {
 	if (line_id.id3 != uid || maxlen < 1) return false;
 	FileOfs ofs = (uint64(line_id.id1) << 32) + line_id.id2;
-	uint c = MIN(uint64(line_length), (fofs+fsize-ofs));
+	uint c = MIN(uint64(line_length), fsize - ofs);
 	if (c <= 0) return false;
 	
 	char *l = line;
 	char *l_end = line+maxlen-1;
-	l += ht_snprintf(l, l_end - l, "%08qx ", ofs);
+	l += ht_snprintf(l, l_end - l, "%08qx ", ofs + fofs);
 
 	uint start = 0;
-	if (fofs - ofs < disp) {
+	if (ofs < disp) {
 		start = line_length - disp;
 	}
 	
@@ -4348,7 +4350,8 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 	}
 
 	ofs -= start;
-	
+	ofs += fofs;
+
 	for (uint i = 0; i < line_length; i++) {
 		if (i >= start && i < end) {
 			l = tag_make_edit_byte(l, l_end - l, ofs);
@@ -4385,21 +4388,19 @@ bool ht_hex_sub::getline(char *line, int maxlen, const LINE_ID line_id)
 void ht_hex_sub::first_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
-	line_id->id1 = fofs >> 32;
-	line_id->id2 = fofs;
+	line_id->id1 = 0;
+	line_id->id2 = 0;
 	line_id->id3 = uid;
 }
 
 void ht_hex_sub::last_line_id(LINE_ID *line_id)
 {
 	clear_line_id(line_id);
-	FileOfs ofs = fsize + fofs - 1;
+	FileOfs ofs = fsize - 1;
 	if (!fsize || ofs < disp) {
-		ofs = fofs;
+		ofs = 0;
 	} else {
 		ofs = ofs - (ofs-disp)%line_length;
-		if (ofs < fofs) ofs = fofs;
-		if (ofs >= fsize+fofs) ofs = fofs;
 	}
 	line_id->id1 = ofs >> 32;
 	line_id->id2 = ofs;
@@ -4412,24 +4413,18 @@ int ht_hex_sub::prev_line_id(LINE_ID *line_id, int n)
 	int c = 0;
 	FileOfs o = (uint64(line_id->id1) << 32) + line_id->id2;
 	while (n--) {
-		if (!o || o == fofs) break;
+		if (!o) break;
 		if (line_length > o) {
-			o = fofs;
+			o = 0;
 		} else {
-			if (o - line_length < fofs) {
-				o = fofs;
-			} else {
-				o -= line_length;
-			}
+			o -= line_length;
 		}
 		c++;
 	}
 	if (o < disp) {
-		o = fofs;
+		o = 0;
 	} else {
 		o = o - (o-disp)%line_length;
-		if (o < fofs) o = fofs;
-		if (o >= fsize+fofs) o = fofs;
 	}
 	line_id->id1 = o >> 32;
 	line_id->id2 = o;
@@ -4441,17 +4436,20 @@ int ht_hex_sub::next_line_id(LINE_ID *line_id, int n)
 	if (line_id->id3 != uid) return 0;
 	int c = 0;
 	FileOfs o = (uint64(line_id->id1) << 32) + line_id->id2;
+	if (o < disp && disp < fsize) {
+		o = disp;
+		c++;
+		n--;
+	}
 	while (n--) {
-		if (o + line_length >= fofs + fsize) break;
+		if (o + line_length >= fsize) break;
 		o += line_length;
 		c++;
 	}
 	if (o < disp) {
-		o = fofs;
+		o = 0;
 	} else {
 		o = o - (o-disp)%line_length;
-		if (o < fofs) o = fofs;
-		if (o >= fsize+fofs) o = fofs;
 	}
 	line_id->id1 = o >> 32;
 	line_id->id2 = o;
