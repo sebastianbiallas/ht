@@ -53,7 +53,7 @@ relfile.cc relfile.h htprocess.cc htprocess.h mfile.cc mfile.h elfstruc.cc \
 pestruct.cc coff_s.cc mzstruct.cc defreg.h defreg.c htdisasm.cc htdisasm.h \
 htcoffimg.cc htcoffimg.h nestruct.cc htneimg.cc htneimg.h htneimp.cc htneimp.h \
 cmds.cc cmds.h snprintf.cc snprintf.h htpeil.cc htpeil.h \
-ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h terminal.cc terminal.h \
+ilstruct.cc ilstruct.h log.cc log.h classimg.cc classimg.h \
 vfs.cc vfs.h vfsview.cc vfsview.h htlevxd.cc htlevxd.h lestruct.cc \
 htmacho.cc htmacho.h htmachohd.cc htmachohd.h machostruc.cc machostruc.h \
 htmachoimg.cc htmachoimg.h fltstruc.h fltstruc.cc htflt.cc htflt.h htflthd.cc \

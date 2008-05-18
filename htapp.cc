@@ -43,7 +43,6 @@
 #include "infoview.h"
 #include "snprintf.h"
 #include "stream.h"
-#include "terminal.h"
 #include "textedit.h"
 #include "textfile.h"
 #include "tools.h"
