@@ -4,6 +4,7 @@
 version 2.0.15:
 	- [Win32] removed a debug printf
 	- fixed clipboard view
+	- fixed ELF symbol viewer
 
 version 2.0.14:
 	- [x86] movbe, invept, invvpid

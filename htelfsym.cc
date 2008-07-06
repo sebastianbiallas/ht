@@ -94,10 +94,62 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 
 	m->add_mask(t);
 
-	m->add_mask("idx  binding  type     value    size     section     name");
-
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
 	uint symnum = elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32);
+
+	/* find maximum section name length */
+	uint msnl = 0;
+	for (uint i=0; i < symnum; i++) {
+		ELF_SYMBOL32 sym;
+		file->seek(h+i*sizeof (ELF_SYMBOL32));
+		file->readx(&sym, sizeof sym);
+		createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+		file->seek(sto+sym.st_name);
+		char *name = file->fgetstrz();
+		/* FIXME: error handling (also in elf_analy.cc) */
+		if (!name) continue;
+
+		uint len = 0;
+		switch (sym.st_shndx) {
+		case ELF_SHN_UNDEF:
+			len = strlen("*undefined");
+			break;
+		case ELF_SHN_ABS:
+			len = strlen("*absolute");
+			break;
+		case ELF_SHN_COMMON:
+			len = strlen("*common");
+			break;
+		default:
+			if (isValidELFSectionIdx(elf_shared, sym.st_shndx)) {
+				String s("");
+				FileOfs so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+				FileOfs no = elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name;
+				file->seek(so + no);
+				file->readStringz(s);
+
+				len = s.length();
+			}
+			break;
+		}
+
+		if (len > msnl)
+			msnl = len;
+
+		free(name);
+	}
+
+	/* create format string for section column */
+	char secstrfmt[10];
+	snprintf(secstrfmt, sizeof secstrfmt, "%%-%ds  ", msnl);
+
+	char *tt = t;
+#define tt_end sizeof t - (tt-t)
+	tt += ht_snprintf(t, tt_end, "idx  binding  type     value    size     ");
+	tt += ht_snprintf(tt, tt_end, secstrfmt, "section");
+	tt += ht_snprintf(tt, tt_end, "name");
+	m->add_mask(t);
+
 	for (uint i=0; i < symnum; i++) {
 		ELF_SYMBOL32 sym;
 		file->seek(h+i*sizeof (ELF_SYMBOL32));
@@ -132,25 +184,28 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 		tt += ht_snprintf(tt, tt_end, " ");
 		tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_SYMBOL32)+8, elf_bigendian ? tag_endian_big : tag_endian_little);
 		tt += ht_snprintf(tt, tt_end, " ");
+
+		String s("?");
 		switch (sym.st_shndx) {
 		case ELF_SHN_UNDEF:
-			tt += ht_snprintf(tt, tt_end, "*undefined  ");
+			s.assign("*undefined");
 			break;
 		case ELF_SHN_ABS:
-			tt += ht_snprintf(tt, tt_end, "*absolute   ");
+			s.assign("*absolute");
 			break;
 		case ELF_SHN_COMMON:
-			tt += ht_snprintf(tt, tt_end, "*common     ");
+			s.assign("*common");
 			break;
-		default: {
-			String s("?");
+		default:
 			if (isValidELFSectionIdx(elf_shared, sym.st_shndx)) {
+				FileOfs no = elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name;
+				file->seek(so + no);
 				file->readStringz(s);
 			}
-			tt += ht_snprintf(tt, tt_end, "%-11y ", &s);
 			break;
 		}
-		}
+		tt += ht_snprintf(tt, tt_end, secstrfmt, s.contentChar());
+
 		tt += ht_snprintf(tt, tt_end, "%s", name);
 		free(name);
 		m->add_mask(t);
