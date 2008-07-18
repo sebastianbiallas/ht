@@ -46,6 +46,9 @@ struct uformat_viewer_pos {
 	/* which tag ? */
 	int tag_group;
 	int tag_idx;
+
+	void load(ObjectStream &s);
+	void store(ObjectStream &s) const;
 };
 
 union viewer_pos {
@@ -416,6 +419,7 @@ public:
 	virtual	void insertsub(ht_sub *sub);
 		void sendsubmsg(int msg);
 		void sendsubmsg(htmsg *msg);
+		int sub_to_idx(const ht_sub *sub) const;
 };
 
 /*
@@ -600,6 +604,9 @@ ht_search_result *linear_bin_search(ht_search_request *search, FileOfs start, Fi
 
 void clear_line_id(LINE_ID *l);
 bool compeq_line_id(const LINE_ID &a, const LINE_ID &b);
+
+bool init_format();
+void done_format();
 
 #endif /* __HTFORMAT_H__ */
 

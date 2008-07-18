@@ -69,6 +69,25 @@ bool compeq_line_id(const LINE_ID &a, const LINE_ID &b)
 	     && a.id3 == b.id3 && a.id4 == b.id4 && a.id5 == b.id5);
 }
 
+void load_line_id(ObjectStream &st, LINE_ID &line)
+{
+	GET_INT32X(st, line.id1);
+	GET_INT32X(st, line.id2);
+	GET_INT32X(st, line.id3);
+	GET_INT32X(st, line.id4);
+	GET_INT32X(st, line.id5);
+}
+
+void store_line_id(ObjectStream &st, const LINE_ID &line)
+{
+	PUT_INT32X(st, line.id1);
+	PUT_INT32X(st, line.id2);
+	PUT_INT32X(st, line.id3);
+	PUT_INT32X(st, line.id4);
+	PUT_INT32X(st, line.id5);
+}
+
+
 /*
  *	CLASS ht_data_tagstring
  */
@@ -864,14 +883,32 @@ uint ht_format_viewer::vwrite(viewer_pos pos, void *buf, uint size)
 	return 0;
 }
 
+void uformat_viewer_pos::load(ObjectStream &s)
+{
+	sub = (ht_sub*)(intptr_t(GETX_INT32D(s, "sub_idx")));
+	load_line_id(s, line_id);
+	PUT_INT32D(s, tag_group);
+	PUT_INT32D(s, tag_idx);
+}
+
+void uformat_viewer_pos::store(ObjectStream &s) const
+{
+	int sub_idx = sub->uformat_viewer->sub_to_idx(sub);
+	PUT_INT32D(s, sub_idx);
+	store_line_id(s, line_id);
+	PUT_INT32D(s, tag_group);
+	PUT_INT32D(s, tag_idx);
+}
+
 /*
  *	CLASS ht_uformat_view
  */
 
+#define UFORMAT_VIEWER_VSTATE MAGIC32("VST\x01")
+
 class ht_uformat_viewer_vstate: public Object {
 public:
-	int edit;
-	ht_sub *first_sub, *last_sub;
+	bool edit;
 	/* top line position */
 	uformat_viewer_pos top;
 	/* cursor line and tag position */
@@ -881,6 +918,36 @@ public:
 	/* selection*/
 	FileOfs sel_start;
 	FileOfs sel_end;
+
+	ht_uformat_viewer_vstate() {};
+	ht_uformat_viewer_vstate(BuildCtorArg&a): Object(a) {};
+	
+	virtual	void load(ObjectStream &s)
+	{
+		GET_BOOL(s, edit);
+		top.load(s);
+		cursor.load(s);
+		GET_INT32X(s, cursor_state);
+		GET_INT32D(s, cursor_ypos);
+		GET_INT64D(s, sel_start);
+		GET_INT64D(s, sel_end);
+	}
+	
+	virtual	void store(ObjectStream &s) const
+	{
+		PUT_BOOL(s, edit);
+		top.store(s);
+		cursor.store(s);
+		PUT_INT32X(s, cursor_state);
+		PUT_INT32D(s, cursor_ypos);
+		PUT_INT64D(s, sel_start);
+		PUT_INT64D(s, sel_end);
+	}
+
+	virtual	ObjectID getObjectID() const
+	{
+		return UFORMAT_VIEWER_VSTATE;
+	}
 };
 
 void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group)
@@ -889,8 +956,8 @@ void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, 
 	tagpal.size = 0;
 	ht_format_viewer::init(b, desc, caps, file, format_group);
 	VIEW_DEBUG_NAME("ht_uformat_view");
-	first_sub = 0;
-	last_sub = 0;
+	first_sub = NULL;
+	last_sub = NULL;
 	clear_viewer_pos(&top);
 	clear_viewer_pos(&cursor);
 	xscroll = 0;
@@ -2736,8 +2803,9 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 			FileOfs o = 0;
 			if (get_current_offset(&o)) {
 				uint32 s;
-				get_current_tag_size(&s);
-				o += s;
+				if (get_current_tag_size(&s)) {
+					o += s;
+				}
 			}
 
 			if (!o) o = clipboard_getsize();
@@ -3767,8 +3835,8 @@ void ht_uformat_viewer::clear_subs()
 
 	clear_viewer_pos(&top);
 	clear_viewer_pos(&cursor);
-	first_sub = 0;
-	last_sub = 0;
+	first_sub = NULL;
+	last_sub = NULL;
 }
 
 void ht_uformat_viewer::clear_viewer_pos(viewer_pos *p)
@@ -3810,9 +3878,11 @@ void ht_uformat_viewer::sendsubmsg(htmsg *msg)
 		ht_sub *s = first_sub;
 		while (s) {
 			s->handlemsg(msg);
-			s=s->next;
+			s = s->next;
 		}
-	} else cursor.sub->handlemsg(msg);
+	} else {
+		cursor.sub->handlemsg(msg);
+	}
 }
 
 bool ht_uformat_viewer::set_cursor(uformat_viewer_pos p)
@@ -3876,6 +3946,18 @@ void ht_uformat_viewer::scroll_down(int n)
 	cursor_ypos -= next_line(&top, n);
 	cursorline_dirty();
 	check_cursor_visibility();
+}
+
+int ht_uformat_viewer::sub_to_idx(const ht_sub *sub) const
+{
+	int sub_idx = 0;
+	ht_sub *s = first_sub;
+	while (s != sub) {
+		sub_idx++;
+		s = s->next;
+		assert(s);
+	}
+	return sub_idx;
 }
 
 bool ht_uformat_viewer::qword_to_offset(uint64 q, FileOfs *ofs)
@@ -3953,18 +4035,12 @@ void ht_uformat_viewer::update_ypos()
 void ht_uformat_viewer::vstate_restore(Object *data)
 {
 	ht_uformat_viewer_vstate *vs = (ht_uformat_viewer_vstate*)data;
-	first_sub = vs->first_sub;
-	last_sub = vs->last_sub;
-	/* top line position */
 	top = vs->top;
-	/* cursor line and tag position */
 	cursor = vs->cursor;
 	cursor_state = vs->cursor_state;
 	cursor_ypos = vs->cursor_ypos;
-	/* selection*/
 	sel_start = vs->sel_start;
 	sel_end = vs->sel_end;
-	/**/
 	cursorline_dirty();
 	update_misc_info();
 	update_visual_info();
@@ -3973,18 +4049,12 @@ void ht_uformat_viewer::vstate_restore(Object *data)
 Object *ht_uformat_viewer::vstate_create()
 {
 	ht_uformat_viewer_vstate *vs = new ht_uformat_viewer_vstate();
-	vs->first_sub = first_sub;
-	vs->last_sub = last_sub;
-/* top line position */
 	vs->top = top;
-/* cursor line and tag position */
 	vs->cursor = cursor;
 	vs->cursor_state = cursor_state;
 	vs->cursor_ypos = cursor_ypos;
-/* selection*/
 	vs->sel_start = sel_start;
 	vs->sel_end = sel_end;
-/**/
 	return vs;
 }
 
@@ -4884,3 +4954,18 @@ void ht_group_sub::insertsub(ht_sub *sub)
 	subs->insert(sub);
 }
 
+
+
+
+BUILDER(UFORMAT_VIEWER_VSTATE, ht_uformat_viewer_vstate, Object)
+
+bool init_format()
+{
+	REGISTER(UFORMAT_VIEWER_VSTATE, ht_uformat_viewer_vstate)
+	return true;
+}
+
+void done_format()
+{
+	UNREGISTER(UFORMAT_VIEWER_VSTATE, ht_uformat_viewer_vstate)
+}

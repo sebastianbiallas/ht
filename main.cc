@@ -30,6 +30,7 @@
 #include "htclipboard.h"
 #include "display.h"
 #include "except.h"
+#include "htformat.h"
 #include "hthist.h"
 #include "htiobox.h"
 #include "keyb.h"
@@ -85,6 +86,7 @@ initdonefunc initdone[] = {
 	INITDONE(asm),
 	INITDONE(stddata),
 	INITDONE(cfg),
+	INITDONE(format),
 	INITDONE(app)
 };
 
