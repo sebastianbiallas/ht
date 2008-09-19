@@ -3399,13 +3399,13 @@ E(10)
 {"vmovss", _128|_f3|_0f, {Vo, VVo, Wd}},
 //{"vmovsd", _128|_f2|_0f, {Vo, VVo, VRo}},
 {"vmovsd", _128|_f2|_0f, {Vo, VVo, Wq}},
-{"vmovupd", _128|_0f, {Vo, Wo}},
-{"vmovupd", _256|_0f, {Yy, Xy}},
+{"vmovups", _128|_0f, {Vo, Wo}},
+{"vmovups", _256|_0f, {Yy, Xy}},
 {"vmovupd", _128|_66|_0f, {Vo, Wo}},
 {"vmovupd", _256|_66|_0f, {Yy, Xy}},
 E(11)
-//{"vmovss", _128|_f2|_0f, {VRo, VVo, Vo}},
-{"vmovss", _128|_f2|_0f, {Wd, VVo, Vo}},
+//{"vmovss", _128|_f3|_0f, {VRo, VVo, Vo}},
+{"vmovss", _128|_f3|_0f, {Wd, VVo, Vo}},
 //{"vmovsd", _128|_f2|_0f, {VRo, VVo, Vo}},
 {"vmovsd", _128|_f2|_0f, {Wq, VVo, Vo}},
 {"vmovups", _128|_0f, {Wo, Vo}},
@@ -3594,14 +3594,10 @@ E(51)
 {"vsqrtsd", _128|_f2|_0f, {Vo, Wo}},
 E(52)
 {"vrsqrtps", _128|_0f, {Vo, Wo}},
-{"vrsqrtps", _256|_0f, {Yy, Xy}},
 {"vrsqrtss", _128|_f3|_0f, {Vo, Wo}},
-{"vrsqrtss", _256|_f3|_0f, {Yy, Xy}},
 E(53)
 {"vrcpps", _128|_0f, {Vo, Wo}},
-{"vrcpps", _256|_0f, {Yy, Xy}},
 {"vrcpss", _128|_f3|_0f, {Vo, Wo}},
-{"vrcpss", _256|_f3|_0f, {Yy, Xy}},
 E(54)
 {"vandps", _128|_0f, {Vo, VVo, Wo}},
 {"vandps", _256|_0f, {Yy, YVy, Xy}},
@@ -3869,14 +3865,20 @@ E(da)
 {"vpminub", _128|_66|_0f, {Vo, VVo, Wo}},
 E(db)
 {"vpand", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesimc", _128|_66|_0f38, {Vo, Wo}},
 E(dc)
 {"vpaddusb", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesenc", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(dd)
 {"vpaddusw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesenclast", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(de)
 {"vpmaxub", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesdec", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(df)
 {"vpandn", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesdeclast", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vaeskeygenassist", _128|_66|_0f3a, {Vo, Wo, Ib}},
 E(e0)
 {"vpavgb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(e1)

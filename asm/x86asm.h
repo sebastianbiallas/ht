@@ -31,7 +31,7 @@ struct x86asm_insn {
 	char repprefix;
 	char segprefix;
 	char opsizeprefix;
-	char n[16];
+	char n[32];
 	char *name;
 	x86_insn_op op[5];
 };

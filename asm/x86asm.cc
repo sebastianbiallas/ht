@@ -2103,7 +2103,7 @@ bool x86asm::translate_str(asm_insn *asm_insn, const char *s)
 
 	/**/
 	splitstr(s, insn->n, sizeof insn->n, (char**)&opp, 256);
-	insn->name=insn->n;
+	insn->name = insn->n;
 	for (int i=0; i<5; i++) {
 		if (!*op[i]) break;
 

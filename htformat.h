@@ -420,6 +420,7 @@ public:
 		void sendsubmsg(int msg);
 		void sendsubmsg(htmsg *msg);
 		int sub_to_idx(const ht_sub *sub) const;
+		ht_sub *idx_to_sub(int idx) const;
 };
 
 /*

@@ -909,6 +909,8 @@ void uformat_viewer_pos::store(ObjectStream &s) const
 class ht_uformat_viewer_vstate: public Object {
 public:
 	bool edit;
+	bool resolve; // resolve uformat_viewer_pos
+
 	/* top line position */
 	uformat_viewer_pos top;
 	/* cursor line and tag position */
@@ -919,11 +921,12 @@ public:
 	FileOfs sel_start;
 	FileOfs sel_end;
 
-	ht_uformat_viewer_vstate() {};
+	ht_uformat_viewer_vstate() { resolve = false; };
 	ht_uformat_viewer_vstate(BuildCtorArg&a): Object(a) {};
 	
 	virtual	void load(ObjectStream &s)
 	{
+		resolve = true;
 		GET_BOOL(s, edit);
 		top.load(s);
 		cursor.load(s);
@@ -3960,6 +3963,16 @@ int ht_uformat_viewer::sub_to_idx(const ht_sub *sub) const
 	return sub_idx;
 }
 
+ht_sub *ht_uformat_viewer::idx_to_sub(int idx) const
+{
+	ht_sub *s = first_sub;
+	while (idx--) {
+		if (!s->next) return s;
+		s = s->next;
+	}
+	return s;
+}
+
 bool ht_uformat_viewer::qword_to_offset(uint64 q, FileOfs *ofs)
 {
 	*ofs = q;
@@ -4035,6 +4048,11 @@ void ht_uformat_viewer::update_ypos()
 void ht_uformat_viewer::vstate_restore(Object *data)
 {
 	ht_uformat_viewer_vstate *vs = (ht_uformat_viewer_vstate*)data;
+	if (vs->resolve) {
+		vs->top.sub = idx_to_sub(intptr_t(vs->top.sub));
+		vs->cursor.sub = idx_to_sub(intptr_t(vs->cursor.sub));
+		vs->resolve = false;
+	}
 	top = vs->top;
 	cursor = vs->cursor;
 	cursor_state = vs->cursor_state;
