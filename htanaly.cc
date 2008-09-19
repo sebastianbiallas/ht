@@ -1269,7 +1269,7 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	}
 	case cmd_analyser_name_addr: {
 		if (!analy) break;
-		Address *addr;
+		Address *addr = NULL;
 		if (!getCurrentAddress(&addr) || !canCreateAddress(addr, true)) {
 			delete addr;
 			clearmsg(msg);
