@@ -1971,7 +1971,6 @@ bool ht_aviewer::symbol_handler(eval_scalar *result, char *name)
 				delete w;
 				return true;
 			} else {
-				delete w;
 				return false;
 			}
 		}
