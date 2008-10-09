@@ -33,6 +33,7 @@
 #define ATOM_ANALY_JAVA		MAGIC32("AAS\x04")
 #define ATOM_ANALY_PPC		MAGIC32("AAS\x05")
 #define ATOM_ANALY_ARM          MAGIC32("AAS\x06")
+#define ATOM_ANALY_AVR          MAGIC32("AAS\x07")
 
 /*
  *	ANX.: analyser objects

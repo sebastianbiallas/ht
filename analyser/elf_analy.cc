@@ -26,6 +26,7 @@
 #include "analy_register.h"
 #include "analy_x86.h"
 #include "analy_arm.h"
+#include "analy_avr.h"
 #include "elf_analy.h"
 
 #include "htctrl.h"
@@ -653,7 +654,7 @@ void ElfAnalyser::initUnasm()
 			((AnalyPPCDisassembler*)analy_disasm)->init(this, ANALY_PPC_64);
 		}
 		break;
-        case ELF_EM_ARM: // Arm
+        case ELF_EM_ARM:
                 if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
                         errorbox("ARM cant be used in a 64-Bit ELF.");
                 } else {
@@ -662,9 +663,18 @@ void ElfAnalyser::initUnasm()
                         ((AnalyArmDisassembler*)analy_disasm)->init(this);
                 }
                 break;
+        case ELF_EM_AVR:
+                if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
+                        errorbox("AVR cant be used in a 64-Bit ELF.");
+                } else {
+                        DPRINTF("initing analy_avr_disassembler\n");
+                        analy_disasm = new AnalyAVRDisassembler();
+                        ((AnalyAVRDisassembler*)analy_disasm)->init(this);
+                }
+                break;
 	default:
-		DPRINTF("no apropriate disassembler for machine %04x\n", machine);
-		warnbox("No disassembler for unknown machine type %04x!", machine);
+		DPRINTF("no apropriate disassembler for machine 0x%04x\n", machine);
+		warnbox("No disassembler for unknown machine type 0x%04x!", machine);
 	}
 }
 

@@ -36,6 +36,7 @@
 #include "x86dis.h"
 #include "ppcdis.h"
 #include "armdis.h"
+#include "avrdis.h"
 
 /*
  *	CLASS Assembler
@@ -330,6 +331,7 @@ BUILDER(ATOM_DISASM_IA64, IA64Disassembler, Disassembler)
 BUILDER(ATOM_DISASM_PPC, PPCDisassembler, Disassembler)
 BUILDER(ATOM_DISASM_IL, ILDisassembler, Disassembler)
 BUILDER(ATOM_DISASM_ARM, ArmDisassembler, Disassembler)
+BUILDER(ATOM_DISASM_AVR, AVRDisassembler, Disassembler)
 
 bool init_asm()
 {
@@ -342,6 +344,7 @@ bool init_asm()
 	REGISTER(ATOM_DISASM_IL, ILDisassembler)
 	REGISTER(ATOM_DISASM_X86_64, x86_64dis)
 	REGISTER(ATOM_DISASM_ARM, ArmDisassembler)
+	REGISTER(ATOM_DISASM_AVR, AVRDisassembler)
 	return true;
 }
 
@@ -356,5 +359,6 @@ void done_asm()
 	UNREGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	UNREGISTER(ATOM_DISASM_X86_VXD, x86dis_vxd)
 	UNREGISTER(ATOM_DISASM_X86, x86dis)
+	UNREGISTER(ATOM_DISASM_AVR, AVRDisassembler)
 }
 

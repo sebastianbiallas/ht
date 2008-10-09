@@ -27,6 +27,7 @@
 #include "analy_ppc.h"
 #include "analy_x86.h"
 #include "analy_arm.h"
+#include "analy_avr.h"
 #include "class_analy.h"
 #include "code_analy.h"
 #include "coff_analy.h"
@@ -50,6 +51,7 @@ BUILDER(ATOM_ANALY_IL, AnalyILDisassembler, AnalyDisassembler)
 BUILDER(ATOM_ANALY_JAVA, AnalyJavaDisassembler, AnalyDisassembler)
 BUILDER(ATOM_ANALY_PPC, AnalyPPCDisassembler, AnalyDisassembler)
 BUILDER(ATOM_ANALY_ARM, AnalyArmDisassembler, AnalyDisassembler)
+BUILDER(ATOM_ANALY_AVR, AnalyAVRDisassembler, AnalyDisassembler)
 
 BUILDER(ATOM_CODE_ANALYSER, CodeAnalyser, Object)
 BUILDER(ATOM_DATA_ANALYSER, DataAnalyser, Object)
@@ -84,6 +86,7 @@ bool init_analyser()
 	REGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
 	REGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
 	REGISTER(ATOM_ANALY_ARM, AnalyArmDisassembler)
+	REGISTER(ATOM_ANALY_AVR, AnalyAVRDisassembler)
 
 	REGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	REGISTER(ATOM_DATA_ANALYSER, DataAnalyser)
@@ -120,6 +123,7 @@ void done_analyser()
 	UNREGISTER(ATOM_ANALY_JAVA, AnalyJavaDisassembler)
 	UNREGISTER(ATOM_ANALY_PPC, AnalyPPCDisassembler)
 	UNREGISTER(ATOM_ANALY_ARM, AnalyArmDisassembler)
+	UNREGISTER(ATOM_ANALY_AVR, AnalyAVRDisassembler)
 
 	UNREGISTER(ATOM_CODE_ANALYSER, CodeAnalyser)
 	UNREGISTER(ATOM_DATA_ANALYSER, DataAnalyser)

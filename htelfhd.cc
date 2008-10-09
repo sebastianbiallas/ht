@@ -170,7 +170,9 @@ static int_hash elf_machine[] =
 	{ELF_EM_ST100,		"STMicroelectronics ST100 processor"},
 	{ELF_EM_TINYJ,		"Advanced Logic Corp. TinyJ embedded processor"},
 	{ELF_EM_X86_64,		"x86-64 (AMD Opteron)"},
-
+	{ELF_EM_PDSP,		"Sony DSP Processor"},
+	{ELF_EM_PDP10,          "Digital Equipment Corp. PDP-10"},
+	{ELF_EM_PDP11,          "Digital Equipment Corp. PDP-11"},
 	{ELF_EM_FX66,		"Siemens FX66 microcontroller"},
 	{ELF_EM_ST9PLUS,	"STMicroelectronics ST9+ 8/16 bit microcontroller"},
 	{ELF_EM_ST7,		"STMicroelectronics ST7 8-bit microcontroller"},
@@ -182,7 +184,11 @@ static int_hash elf_machine[] =
 	{ELF_EM_ST19,		"STMicroelectronics ST19 8-bit microcontroller"},
 	{ELF_EM_VAX,		"Digital VAX"},
 
+	{ELF_EM_AVR,		"Atmel AVR 8-bit microcontroller"},
+
 	{ELF_EM_PJ,		"picoJava"},
+
+	{ELF_EM_C166,		"Infineon C16x/XC16x processor"},
 	{0, 0}
 };
 

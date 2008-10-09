@@ -183,6 +183,7 @@ public:
 #define ATOM_DISASM_PPC		MAGIC32("DIS\x07")
 #define ATOM_DISASM_X86_64	MAGIC32("DIS\x08")
 #define ATOM_DISASM_ARM         MAGIC32("DIS\x09")
+#define ATOM_DISASM_AVR         MAGIC32("DIS\x0a")
 
 #define ASM_SYNTAX_DEFAULT "\\@d"
 #define ASM_SYNTAX_COMMENT "\\@#"
