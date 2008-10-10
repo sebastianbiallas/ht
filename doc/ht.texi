@@ -282,7 +282,7 @@ executable and linkable format (ELF)
 - section headers @*
 - program headers @*
 - symbol tables @*
-- image with code/data analyser (x86, AMD64, IA-64, Alpha, PowerPC, ARM) and relocations
+- image with code/data analyser (x86, AMD64, IA-64, Alpha, PowerPC, ARM, AVR) and relocations
 @end itemize
 @item 
 linear executables (LE)
