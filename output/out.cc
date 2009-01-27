@@ -281,7 +281,7 @@ void AnalyserOutput::generateAddr(Address *Addr, OutAddr *oa)
 							char buf3[90];
 							sprintf(buf3, " %c", xref_type_short(x->type));
 							write(buf3);
-							x->addr->stringify(buf3, 1024, ADDRESS_STRING_FORMAT_COMPACT);
+							x->addr->stringify(buf3, sizeof buf3, ADDRESS_STRING_FORMAT_COMPACT);
 							write(link(buf3, x->addr));
 							xh = xr->findNext(xh);
 						} else {
@@ -554,7 +554,7 @@ void	AnalyserOutput::generatePage(Address *from, int lines)
 OutAddr *AnalyserOutput::getAddr(Address *Addr)
 {
 	char tbuf[1024];
-	Addr->stringify(tbuf, 1024, 0);
+	Addr->stringify(tbuf, sizeof tbuf, 0);
 	DPRINTF("%s -- ",tbuf);
 	if (!addr->isValid() || Addr->compareTo(addr) != 0) {
 		assert(addr != Addr);

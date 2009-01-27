@@ -1,6 +1,11 @@
  HT ChangeLog
 ==============
 
+version 2.0.16:
+	- [x86] intel avx update
+	- updated c++ demangler
+	- small crash fix
+
 version 2.0.15:
 	- [Win32] removed a debug printf
 	- fixed clipboard view
