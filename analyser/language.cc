@@ -101,7 +101,7 @@ int analy_string__raw_test(const byte *s, int len)
 	int average_word_len = all_word_len / words;
 	int av_res[10] = {1, 2, 4, 8, 16, 16, 10, 8, 6, 3};
 	int av_plus = 0;
-	if (average_word_len > 1 && average_word_len < 13) av_plus = av_res[average_word_len - 2];
+	if (average_word_len > 1 && average_word_len < 12) av_plus = av_res[average_word_len - 2];
 	return words*2 + av_plus - bad_chars*5 + len/5 + average_word_len;
 }
 
