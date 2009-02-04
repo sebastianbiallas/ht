@@ -133,7 +133,7 @@ static char *ada_demangle (const char *, int);
    that will be output when using the `%d' format with `printf'.  */
 #define INTBUF_SIZE 32
 
-extern void fancy_abort (void) ATTRIBUTE_NORETURN;
+extern void fancy_abort (void);
 
 /* In order to allow a single demangler executable to demangle strings
    using various common values of CPLUS_MARKER, as well as any specific
@@ -968,7 +968,7 @@ grow_vect (char **old_vect, size_t *size, size_t min_size, int element_size)
    The resulting string is valid until the next call of ada_demangle.  */
 
 static char *
-ada_demangle (const char *mangled, int option ATTRIBUTE_UNUSED)
+ada_demangle (const char *mangled, int option)
 {
   int i, j;
   int len0;
@@ -3950,7 +3950,7 @@ demangle_fund_type (struct work_stuff *work,
    **mangled points to 'S' or 'U' */
 
 static int
-do_hpacc_template_const_value (struct work_stuff *work ATTRIBUTE_UNUSED,
+do_hpacc_template_const_value (struct work_stuff *work,
                                const char **mangled, string *result)
 {
   int unsigned_const;
