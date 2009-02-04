@@ -3399,13 +3399,13 @@ E(10)
 {"vmovss", _128|_f3|_0f, {Vo, VVo, Wd}},
 //{"vmovsd", _128|_f2|_0f, {Vo, VVo, VRo}},
 {"vmovsd", _128|_f2|_0f, {Vo, VVo, Wq}},
-{"vmovupd", _128|_0f, {Vo, Wo}},
-{"vmovupd", _256|_0f, {Yy, Xy}},
+{"vmovups", _128|_0f, {Vo, Wo}},
+{"vmovups", _256|_0f, {Yy, Xy}},
 {"vmovupd", _128|_66|_0f, {Vo, Wo}},
 {"vmovupd", _256|_66|_0f, {Yy, Xy}},
 E(11)
-//{"vmovss", _128|_f2|_0f, {VRo, VVo, Vo}},
-{"vmovss", _128|_f2|_0f, {Wd, VVo, Vo}},
+//{"vmovss", _128|_f3|_0f, {VRo, VVo, Vo}},
+{"vmovss", _128|_f3|_0f, {Wd, VVo, Vo}},
 //{"vmovsd", _128|_f2|_0f, {VRo, VVo, Vo}},
 {"vmovsd", _128|_f2|_0f, {Wq, VVo, Vo}},
 {"vmovups", _128|_0f, {Wo, Vo}},
@@ -3497,7 +3497,9 @@ E(2a)
 {"vcvtsi2sd", _128|_f2|_0f|W1, {Vo, VVo, Eq}},
 E(2b)
 {"vmovntps", _128|_0f, {Mo, Vo}},
+{"vmovntps", _256|_0f, {My, Xy}},
 {"vmovntpd", _128|_66|_0f, {Mo, Vo}},
+{"vmovntpd", _256|_66|_0f, {My, Xy}},
 {"vpackusdw", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(2c)
 {"vmaskmovps", _128|_66|_0f38, {Vo, VVo, Mo}},
@@ -3562,6 +3564,9 @@ E(41)
 {"vphminposuw", _128|_66|_0f38, {Vo, Wo}},
 E(42)
 {"vmpsadbw", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
+E(44)
+{"vpclmulqdq", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
+/*
 E(48)
 {"vpermil2ps", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
 {"vpermil2ps", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
@@ -3572,6 +3577,7 @@ E(49)
 {"vpermil2pd", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
+*/
 E(4a)
 {"vblendvps", _128|_66|_0f3a, {Vo, VVo, Wo, VIo}},
 {"vblendvps", _256|_66|_0f3a, {Yy, YVy, Xy, YIy}},
@@ -3594,14 +3600,10 @@ E(51)
 {"vsqrtsd", _128|_f2|_0f, {Vo, Wo}},
 E(52)
 {"vrsqrtps", _128|_0f, {Vo, Wo}},
-{"vrsqrtps", _256|_0f, {Yy, Xy}},
 {"vrsqrtss", _128|_f3|_0f, {Vo, Wo}},
-{"vrsqrtss", _256|_f3|_0f, {Yy, Xy}},
 E(53)
 {"vrcpps", _128|_0f, {Vo, Wo}},
-{"vrcpps", _256|_0f, {Yy, Xy}},
 {"vrcpss", _128|_f3|_0f, {Vo, Wo}},
-{"vrcpss", _256|_f3|_0f, {Yy, Xy}},
 E(54)
 {"vandps", _128|_0f, {Vo, VVo, Wo}},
 {"vandps", _256|_0f, {Yy, YVy, Xy}},
@@ -3657,10 +3659,6 @@ E(5c)
 {"vsubpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vsubsd", _128|_f3|_0f, {Vo, VVo, Wo}},
-{"vfmaddsubps", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
-{"vfmaddsubps", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
-{"vfmaddsubps", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
-{"vfmaddsubps", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5d)
 {"vminps", _128|_0f, {Vo, VVo, Wo}},
 {"vminps", _256|_0f, {Yy, YVy, Xy}},
@@ -3668,10 +3666,6 @@ E(5d)
 {"vminpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vminss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vminsd", _128|_f3|_0f, {Vo, VVo, Wo}},
-{"vfmaddsubpd", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
-{"vfmaddsubpd", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
-{"vfmaddsubpd", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
-{"vfmaddsubpd", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5e)
 {"vdivps", _128|_0f, {Vo, VVo, Wo}},
 {"vdivps", _256|_0f, {Yy, YVy, Xy}},
@@ -3679,10 +3673,6 @@ E(5e)
 {"vdivpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vdivss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vdivsd", _128|_f3|_0f, {Vo, VVo, Wo}},
-{"vfmsubaddps", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
-{"vfmsubaddps", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
-{"vfmsubaddps", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
-{"vfmsubaddps", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5f)
 {"vmaxps", _128|_0f, {Vo, VVo, Wo}},
 {"vmaxps", _256|_0f, {Yy, YVy, Xy}},
@@ -3690,10 +3680,6 @@ E(5f)
 {"vmaxpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vmaxss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vmaxsd", _128|_f3|_0f, {Vo, VVo, Wo}},
-{"vfmsubaddpd", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
-{"vfmsubaddpd", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
-{"vfmsubaddpd", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
-{"vfmsubaddpd", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(60)
 {"vpcmpestrm", _128|_66|_0f3a, {Vo, Wo, Ib}},
 {"vpunpcklbw", _128|_66|_0f, {Vo, VVo, Wo}},
@@ -3716,48 +3702,24 @@ E(67)
 {"vpackuswb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(68)
 {"vpunpckhbw", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmaddps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmaddps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfmaddps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfmaddps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(69)
 {"vpunpckhwd", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmaddpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmaddpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfmaddpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfmaddpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6a)
 {"vpunpckhdq", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmaddss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmaddss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6b)
 {"vpackssdw", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmaddsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmaddsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6c)
 {"vpunpcklqdq", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmsubps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmsubps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfmsubps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfmsubps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6d)
 {"vpunpckhqdq", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vfmsubpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmsubpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfmsubpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfmsubpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6e)
 {"vmovd", _128|_66|_0f|W0, {Vo, Ed}},
 {"vmovq", _128|_66|_0f|W1, {Vo, Eq}},
-{"vfmsubss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmsubss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6f)
 {"vmovdqa", _128|_66|_0f, {Vo, Wo}},
 {"vmovdqa", _256|_66|_0f, {Yy, Xy}},
 {"vmovdqu", _128|_f3|_0f, {Vo, Wo}},
 {"vmovdqu", _256|_f3|_0f, {Yy, Xy}},
-{"vfmsubsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfmsubsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(70)
 {"vpshufd", _128|_66|_0f, {Vo, Wo, Ib}},
 {"vpshufhw", _128|_f3|_0f, {Vo, Wo, Ib}},
@@ -3777,27 +3739,7 @@ E(76)
 E(77)
 {"vzeroupper", _128|_0f},
 {"vzeroall", _256|_0f},
-E(78)
-{"vfnmaddps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmaddps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfnmaddps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfnmaddps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
-E(79)
-{"vfnmaddpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmaddpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfnmaddpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfnmaddpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
-E(7a)
-{"vfnmaddss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmaddss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-E(7b)
-{"vfnmaddsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmaddsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(7c)
-{"vfnmsubps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmsubps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfnmsubps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfnmsubps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 {"vhaddpd", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vhaddpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vhaddss", _128|_f2|_0f, {Vo, VVo, Wo}},
@@ -3807,13 +3749,7 @@ E(7d)
 {"vhsubpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vhsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vhsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
-{"vfnmsubpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmsubpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
-{"vfnmsubpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
-{"vfnmsubpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(7e)
-{"vfnmsubss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmsubss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 {"vmovd", _128|_66|_0f|W0, {Ed, Vo}},
 {"vmovq", _128|_66|_0f|W1, {Eq, Vo}},
 {"vmovq", _128|_f3|_0f, {Vo, Wq}},
@@ -3822,10 +3758,127 @@ E(7f)
 {"vmovdqa", _256|_66|_0f, {Xy, Yy}},
 {"vmovdqu", _128|_f3|_0f, {Wo, Vo}},
 {"vmovdqu", _256|_f3|_0f, {Xy, Yy}},
-{"vfnmsubsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
-{"vfnmsubsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+E(96)
+{"vfmaddsub132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmaddsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmaddsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(97)
+{"vfmaddsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(98)
+{"vfmadd132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmadd132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmadd132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(99)
+{"vfmadd132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(9a)
+{"vfmsub132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(9b)
+{"vfmsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(9c)
+{"vfnmadd132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmadd132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmadd132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(9d)
+{"vfnmadd132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(9e)
+{"vfnmsub132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(9f)
+{"vfnmsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(a6)
+{"vfmaddsub213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmaddsub213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmaddsub213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(a7)
+{"vfmaddsub213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(a8)
+{"vfmadd213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmadd213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmadd213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(a9)
+{"vfmadd213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(aa)
+{"vfmsub213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmsub213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmsub213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(ab)
+{"vfmsub213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(ac)
+{"vfnmadd213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmadd213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmadd213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(ad)
+{"vfnmadd213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 E(ae)
 {0, _0f, {SPECIAL_TYPE_GROUP, GROUP_0FAE}},
+{"vfnmsub213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmsub213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmsub213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(af)
+{"vfnmsub213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(b6)
+{"vfmaddsub231ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmaddsub231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmaddsub231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(b7)
+{"vfmaddsub231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmaddsub231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(b8)
+{"vfmadd231ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmadd231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmadd231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(b9)
+{"vfmadd231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmadd231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(ba)
+{"vfmsub231ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfmsub231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfmsub231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(bb)
+{"vfmsub231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfmsub231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(bc)
+{"vfnmadd231ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmadd231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmadd231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(bd)
+{"vfnmadd231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmadd231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(be)
+{"vfnmsub231ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vfnmsub231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vfnmsub231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(bf)
+{"vfnmsub231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vfnmsub231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 E(c2)
 {"vcmpps", _128|_0f, {Vo, VVo, Wo, Ib}},
 {"vcmpps", _256|_0f, {Yy, YVy, Xy, Ib}},
@@ -3869,14 +3922,20 @@ E(da)
 {"vpminub", _128|_66|_0f, {Vo, VVo, Wo}},
 E(db)
 {"vpand", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesimc", _128|_66|_0f38, {Vo, Wo}},
 E(dc)
 {"vpaddusb", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesenc", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(dd)
 {"vpaddusw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesenclast", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(de)
 {"vpmaxub", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesdec", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(df)
 {"vpandn", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vaesdeclast", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vaeskeygenassist", _128|_66|_0f3a, {Vo, Wo, Ib}},
 E(e0)
 {"vpavgb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(e1)
@@ -3898,6 +3957,7 @@ E(e6)
 {"vcvttpd2dq", _256|_66|_0f, {Yy, Xy}},
 E(e7)
 {"vmovntdq", _128|_66|_0f, {Mo, Vo}},
+{"vmovntdq", _256|_66|_0f, {My, Yy}},
 E(e8)
 {"vpsubsb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(e9)
@@ -4003,22 +4063,22 @@ v20, v21, v22, v23, v24, v25,   0,   0,
 v28, v29, v2a, v2b, v2c, v2d, v2e, v2f,
 v30, v31, v32, v33, v34, v35,   0, v37,
 v38, v39, v3a, v3b, v3c, v3d, v3e, v3f,
-v40, v41, v42,   0,   0,   0,   0,   0,
-v48, v49, v4a, v4b, v4c,   0,   0,   0,
+v40, v41, v42,   0, v44,   0,   0,   0,
+  0,   0, v4a, v4b, v4c,   0,   0,   0,
 v50, v51, v52, v53, v54, v55, v56, v57,
 v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
 v60, v61, v62, v63, v64, v65, v66, v67,
 v68, v69, v6a, v6b, v6c, v6d, v6e, v6f,
 v70, v71, v72, v73, v74, v75, v76, v77,
-v78, v79, v7a, v7b, v7c, v7d, v7e, v7f,
+  0,   0,   0,   0, v7c, v7d, v7e, v7f,
   0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0, vae,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
+  0,   0,   0,   0,   0,   0, v96, v97,
+v98, v99, v9a, v9b, v9c, v9d, v9e, v9f,
+  0,   0,   0,   0,   0,   0, va6, va7,
+va8, va9, vaa, vab, vac, vad, vae, vaf,
+  0,   0,   0,   0,   0,   0, vb6, vb7,
+vb8, vb9, vba, vbb, vbc, vbd, vbe, vbf,
   0,   0, vc2,   0, vc4, vc5, vc6,   0,
   0,   0,   0,   0,   0,   0,   0,   0,
 vd0, vd1, vd2, vd3, vd4, vd5, vd6, vd7,
