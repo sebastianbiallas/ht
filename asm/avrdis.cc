@@ -234,7 +234,7 @@ const char *AVRDisassembler::strf(dis_insn *disasm_insn, int style, const char *
 					is += ht_snprintf(is, 100, "%s0x%x", cs_number, avr_insn->op[opidx].imm);
 				}
 			} else if ((flags & AVR_OPERAND_IMM) != 0) {
-				is += sprintf(is, "%s%d", cs_number, avr_insn->op[opidx].imm);
+				is += sprintf(is, "%s%d", cs_number, (int)avr_insn->op[opidx].imm);
 			}
 #if 0
 			} else if (flags & (PPC_OPERAND_RELATIVE | )) {

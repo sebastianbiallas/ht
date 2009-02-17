@@ -2012,8 +2012,7 @@ ht_window *ht_app::create_window_help(const char *file, const char *node)
 		char ff[HT_NAME_MAX], cwd[HT_NAME_MAX];
 
 		cwd[0] = 0;
-		getcwd(cwd, sizeof cwd);
-		if (strcmp(file, "hthelp.info")) {
+		if (strcmp(file, "hthelp.info") != 0 && getcwd(cwd, sizeof cwd)) {
 			sys_common_canonicalize(ff, file, cwd, sys_is_path_delim);
 		} else {
 			strcpy(ff, file);
@@ -2957,7 +2956,10 @@ void ht_app::project_opencreate(const char *filename)
 {
 	char fn[HT_NAME_MAX];
 	char cwd[HT_NAME_MAX];
-	getcwd(cwd, sizeof cwd);
+	if (getcwd(cwd, sizeof cwd) == NULL) {
+		LOG("getcwd(): %s", strerror(errno));
+		return;
+	}
 	if (sys_common_canonicalize(fn, filename, cwd, sys_is_path_delim) != 0) {
 		LOG("%s: invalid filename", filename);
 		return;
