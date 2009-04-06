@@ -2962,7 +2962,7 @@ void ht_app::project_opencreate(const char *filename)
 		LOG("%s: invalid filename", filename);
 		return;
 	}
-	char *suf = sys_filename_suffix(fn);
+	const char *suf = sys_filename_suffix(fn);
 	/* append HT project file suffix if not already there */
 	if (!(suf && (strcmp(suf, HT_PROJECT_CONFIG_SUFFIX+1)==0))) {
 		strcat(fn, HT_PROJECT_CONFIG_SUFFIX);

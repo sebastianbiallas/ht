@@ -193,7 +193,7 @@ Container *parse_info_node(File *fl, const char *infotext)
 		} else {
 fallback:
 			if (k && k > n) {
-				char *cr = strchr(n, '\n');
+				const char *cr = strchr(n, '\n');
 				if (cr && cr < k) k = cr;
 				if (k-n == 0) goto fallback2;
 				fl->write(n, k-n);
@@ -423,11 +423,11 @@ int ht_info_viewer::find_node(const char *infotext, const char *node)
 	const char *tags[] = {"File", "Node", "Prev", "Next", "Up"};
 #define NUM_NODE_TAGS (sizeof (tags) / sizeof (tags[0]))
 	const char *s = infotext;
-	char *firstnode = NULL;
+	const char *firstnode = NULL;
 	while ((s=strchr(s, 0x1f))) {
 		s++;
 		while ((*s>0) && (*s<32)) s++;
-		char *cr = strchr(s, '\n');
+		const char *cr = strchr(s, '\n');
 		if (cr) {
 			while (*s && (s<cr)) {
 				whitespaces(s);
@@ -437,7 +437,7 @@ int ht_info_viewer::find_node(const char *infotext, const char *node)
 					if (ht_strncmp(s, tags[i], l) == 0 && s[l] == ':') {
 						s += l+1;
 						whitespaces(s);
-						char *e = strchr(s, ',');
+						const char *e = strchr(s, ',');
 						if (!e || (e>cr)) e = cr;
 						if (!firstnode && (strcmp(tags[i], "Node") == 0)) {
 							firstnode = cr+1;

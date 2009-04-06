@@ -154,7 +154,7 @@ char *		sys_dirname(char *path);
 char * 		sys_get_home_dir();
 int		sys_relname(char *result, const char *filename, const char *cwd);
 int		sys_common_canonicalize(char *result, const char *in_name, const char *cwd, is_path_delim delim);
-char *		sys_filename_suffix(const char *fn);
+const char *	sys_filename_suffix(const char *fn);
 int		sys_tmpfile_fd();
 
 /* system-dependant (implementation in $MYSYSTEM/ *.cc) */

@@ -3916,7 +3916,7 @@ void ht_uformat_viewer::update_misc_info()
 void ht_uformat_viewer::update_visual_info()
 {
 	cursorline_get();
-	char *s, *t = cursor_line;
+	const char *s, *t = cursor_line;
 	int v = 0, vl = 0;
 	int i = 0, g = 0;
 	while ((s=tag_findnext(t))) {

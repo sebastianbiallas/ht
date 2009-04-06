@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 2.0.17:
+	- compilation fixes for gcc 4.4
+
 version 2.0.16:
 	- [x86] intel avx update
 	- updated c++ demangler

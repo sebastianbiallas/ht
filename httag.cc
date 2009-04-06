@@ -537,7 +537,7 @@ void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, int maxlen,
 	*tag_str = 0;
 }
 
-TAGSTRING *tag_findnext(const TAGSTRING *tagstring)
+const TAGSTRING *tag_findnext(const TAGSTRING *tagstring)
 {
 	return strchr(tagstring, '\e');
 }
