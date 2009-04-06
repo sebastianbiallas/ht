@@ -447,7 +447,7 @@ typedef char TAGSTRING;
 
 void statictag_to_tag(const char *statictag_str, TAGSTRING *tag_str, int maxlen, uint64 relocation, bool std_bigendian);
 
-TAGSTRING *tag_findnext(const TAGSTRING *tagstring);
+const TAGSTRING *tag_findnext(const TAGSTRING *tagstring);
 
 vcp tag_get_color(const TAGSTRING *tagstring);
 void tag_get_id(const TAGSTRING *tagstring, uint32 *id128_1, uint32 *id128_2, uint32 *id128_3, uint32 *id128_4);

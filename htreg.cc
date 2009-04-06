@@ -781,7 +781,7 @@ bool ht_registry::find_data_entry(const char *key, ht_registry_node **node, bool
 ht_registry_node *ht_registry::find_entry_i(Container **rdir, const char *key, bool follow_symlinks)
 {
 	ht_registry_node *dir = root;
-	char *s;
+	const char *s;
 	char t[256]; /* FIXME: possible buffer overflow */
 	if (key[0]=='/') key++;
 	while (1) {

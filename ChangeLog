@@ -3,7 +3,10 @@
 
 version 2.1.0:
 	- updated included minilzo
-	- new disassembler: Atmel AVR 8-bit microcontroller		
+	- new disassembler: Atmel AVR 8-bit microcontroller
+
+version 2.0.17:
+	- compilation fixes for gcc 4.4
 
 version 2.0.16:
 	- [x86] intel avx update

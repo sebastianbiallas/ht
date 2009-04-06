@@ -1,4 +1,5 @@
 /* 
+
  *	HT Editor
  *	httext.cc
  *
@@ -103,10 +104,10 @@ void ht_text_viewer2::handlemsg(htmsg *msg)
  */
 
 /* FIXME: put it somewhere else..., why ain't this a POSIX function ? */
-void *memrchr(const void *string, int ch, size_t num)
+const void *ht_memrchr(const void *string, int ch, size_t num)
 {
 	while (num--) {
-		if (((char*)string)[num]==ch) return ((char*)string)+num;
+		if (((const char*)string)[num]==ch) return ((const char*)string)+num;
 	}
 	return NULL;
 }
@@ -286,7 +287,7 @@ byte *ht_text_sub::match_lineend_backwd(byte *buf, uint buflen, int *le_len)
 {
 	byte *result=NULL;
 	
-	byte *n=(byte*)memrchr(buf, '\n', buflen);
+	byte *n=(byte*)ht_memrchr(buf, '\n', buflen);
 	if (n) {
 		if ((n>buf) && (n[-1] == '\r')) {
 			*le_len=2;
