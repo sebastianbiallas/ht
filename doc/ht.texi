@@ -380,7 +380,6 @@ Code & Data Analyser
 @item
 Target systems
 @itemize @w
-- DJGPP @*
 - GNU/Linux @*
 - FreeBSD @*
 - Win32
