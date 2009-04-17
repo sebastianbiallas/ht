@@ -422,7 +422,7 @@ void ht_elf::auto_relocate32()
 	}
 
 	/* relocate sections */
-	for (uint i=0; i<elf_shared->sheaders.count; i++) {
+	for (uint i=0; i < elf_shared->sheaders.count; i++) {
 		elf_shared->shrelocs[i].relocAddr = 0;
 		if ((s[i].sh_type == ELF_SHT_PROGBITS) && (s[i].sh_addr == 0)) {
 			uint j = find_reloc_section_for(i);
