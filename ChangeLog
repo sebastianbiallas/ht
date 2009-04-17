@@ -3,6 +3,7 @@
 
 version 2.0.17:
 	- compilation fixes for gcc 4.4
+	- fixed crash on garbage in elf section headers
 
 version 2.0.16:
 	- [x86] intel avx update

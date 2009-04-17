@@ -97,16 +97,16 @@ static ht_view *htelfsectionheaders_init(Bounds *b, File *file, ht_format_group 
 
 	ht_uformat_viewer *v = NULL;
 	bool elf_bigendian = elf_shared->ident.e_ident[ELF_EI_DATA]==ELFDATA2MSB;
-	if (elf_shared->ident.e_ident[ELF_EI_CLASS]==ELFCLASS32) {
-		v=new ht_uformat_viewer();
+	if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32) {
+		v = new ht_uformat_viewer();
 		v->init(b, DESC_ELF_SECTION_HEADERS, VC_EDIT, file, group);
 
 		registerAtom(ATOM_ELF_SH_TYPE, elf_sh_type);
 		registerAtom(ATOM_ELF_SH_FLAGS, elf_sh_flags);
 
-		FileOfs h=elf_shared->header32.e_shoff;
+		FileOfs h = elf_shared->header32.e_shoff;
 
-		ht_mask_sub *m=new ht_mask_sub();
+		ht_mask_sub *m = new ht_mask_sub();
 		m->init(file, 0);
 
 		char info[128];
@@ -117,13 +117,17 @@ static ht_view *htelfsectionheaders_init(Bounds *b, File *file, ht_format_group 
 		v->insertsub(m);
 
 		elf_shared->shnames = ht_malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
-		FileOfs so=elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+		FileOfs so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
 		String s;
 		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			s = "?";
 
-			file->seek(so+elf_shared->sheaders.sheaders32[i].sh_name);
-			file->readStringz(s);
+			try {
+				file->seek(so + elf_shared->sheaders.sheaders32[i].sh_name);
+				file->readStringz(s);
+			} catch (const Exception &x) {
+				// and now?
+			}
 
 			char t[1024];
 			ht_snprintf(t, sizeof t, "section %d: %y", i, &s);
@@ -161,7 +165,7 @@ static ht_view *htelfsectionheaders_init(Bounds *b, File *file, ht_format_group 
 
 		elf_shared->shnames = ht_malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
 
-		FileOfs so=elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
+		FileOfs so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
 		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			char *s;
 			try {
