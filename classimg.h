@@ -39,4 +39,4 @@ public:
 	virtual void setAnalyser(Analyser *a);
 };
 
-#endif /* !__HTCLASSIMG_H__ */
+#endif
