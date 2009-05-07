@@ -48,6 +48,7 @@
 
 #define vexl(vex) (!!((vex)&0x04))
 #define vexmmmm(vex) ((vex)&0xf)
+#define vexmmmmm(vex) ((vex)&0x1f)
 #define vexvvvv(vex) (((~(vex))>>3)&0xf)
 #define vexpp(vex) ((vex)&0x3)
 
@@ -286,7 +287,7 @@ void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 {
 	if (xinsn) {
 		byte vex = (insn.vexprefix.w << 7) | (insn.vexprefix.l << 6)
-			| (insn.vexprefix.mmmm << 4) | insn.vexprefix.pp;
+			| (insn.vexprefix.mmmm << 2) | insn.vexprefix.pp;
 		while (!xinsn->name && xinsn->op[0] == SPECIAL_TYPE_GROUP) {
 			if (xinsn->vex == vex) {
 				getdisp();
@@ -380,8 +381,24 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				}
 				invalidate();
 				break;
+			case 0x8f:
 			case 0xc4:
 			case 0xc5: {
+				byte vex = getbyte();
+				if (c == 0x8f) {
+					if ((vex & 0x08) == 0) {
+						modrm = vex;
+						decode_insn(&x86_pop_group);
+						break;
+					}
+				} else {
+					if (addrsize != X86_ADDRSIZE64
+					 && (vex & 0xc0) != 0xc0) {
+						modrm = vex;
+						decode_insn(c == 0xc4 ? &x86_les : &x86_lds);
+						break;
+					}
+				}
 				if (insn.opsizeprefix != X86_PREFIX_NO
 				 || insn.lockprefix != X86_PREFIX_NO
 				 || insn.repprefix != X86_PREFIX_NO
@@ -389,30 +406,32 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					invalidate();
 					break;
 				}
-				byte vex = getbyte();
-				if (addrsize != X86_ADDRSIZE64
-				 && (vex & 0xc0) != 0xc0) {
-					modrm = vex;
-					decode_insn(c == 0xc4 ? &x86_les : &x86_lds);
-					break;
-				}
 				insn.rexprefix = 0x40;
-				insn.rexprefix = vexr(vex) << 2;
-				if (c == 0xc4) {
-					// 3 byte vex
+				insn.rexprefix |= vexr(vex) << 2;
+				if (c == 0xc5) {
+					// 2 byte vex
+					insn.vexprefix.mmmm = 1;
+				} else {
+					// 3 byte vex / xop
 					insn.rexprefix |= vexx(vex) << 1;
 					insn.rexprefix |= vexb(vex);
-					insn.vexprefix.mmmm = vexmmmm(vex);
-					if (insn.vexprefix.mmmm == 0
-					 || insn.vexprefix.mmmm > 3) {
-						invalidate();
-						break;
+					if (c == 0x8f) {
+						insn.vexprefix.mmmm |= vexmmmmm(vex);
+						if (insn.vexprefix.mmmm != 8
+						 && insn.vexprefix.mmmm != 9) {
+							invalidate();
+							break;
+						}
+					} else {
+						insn.vexprefix.mmmm |= vexmmmm(vex);
+						if (insn.vexprefix.mmmm == 0
+						 || insn.vexprefix.mmmm > 3) {
+							invalidate();
+							break;
+						}
 					}
 					vex = getbyte();
 					insn.vexprefix.w |= vexw(vex);
-				} else {
-					// 2 byte vex
-					insn.vexprefix.mmmm = 1;
 				}
 				insn.vexprefix.vvvv = vexvvvv(vex);
 				insn.vexprefix.l = vexl(vex);

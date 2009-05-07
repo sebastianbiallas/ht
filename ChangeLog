@@ -5,6 +5,9 @@ version 2.1.0:
 	- updated included minilzo
 	- new disassembler: Atmel AVR 8-bit microcontroller
 
+version 2.0.18:
+	- [x86] SSE5/XOP/AVX merge
+
 version 2.0.17:
 	- compilation fixes for gcc 4.4
 	- fixed crash on garbage in elf section headers
