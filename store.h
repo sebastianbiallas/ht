@@ -37,7 +37,7 @@ public:
 
 class ObjectStreamInter: public ObjectStream {
 public:
-			ObjectStreamInter(Stream *s, bool own_stream);
+			ObjectStreamInter(Stream *s, bool own_stream) : ObjectStream(s, own_stream) {};
 	/* extends ObjectStream */
 	virtual Object *getObjectInternal(const char *name, ObjectID id = OBJID_INVALID);
 	virtual void	putObject(const Object *object, const char *name, ObjectID id = OBJID_INVALID);
@@ -45,7 +45,7 @@ public:
 
 class ObjectStreamBin: public ObjectStreamInter {
 public:
-				ObjectStreamBin(Stream *s, bool own_s);
+				ObjectStreamBin(Stream *s, bool own_s): ObjectStreamInter(s, own_s) {};
 	/* extends ObjectStream */
 	virtual void		getBinary(void *buf, uint size, const char *desc);
 	virtual bool		getBool(const char *desc);

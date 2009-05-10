@@ -571,7 +571,7 @@ bool String::regexMatch(const String &aRegEx, Container *resultStrings) const
 
 /**
  *	replaces all occurences of |what| in string with |with|
- *   @param what searchstring
+ *	@param what searchstring
  *	@param with replacement
  *	@returns number of replacements
  */

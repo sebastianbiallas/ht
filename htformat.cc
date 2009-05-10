@@ -2336,9 +2336,10 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					return;
 				case K_Backspace: {
 					FileOfs f;
-					if (edit() && cursor_tag_class == tag_class_edit
-					&& get_current_offset(&f)) {
-						file->cntl(FCNTL_MODS_CLEAR_DIRTY_RANGE, f, 1);
+					if (edit() 
+					 && cursor_tag_class == tag_class_edit
+					 && get_current_offset(&f)) {
+						file->cntl(FCNTL_MODS_CLEAR_DIRTY_RANGE, f, 1ULL);
 						cursor_left();
 						focus_cursor();
 						dirtyview();

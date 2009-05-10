@@ -32,7 +32,7 @@
 
 static char hexchars[] = "0123456789abcdef";
 
-char oidchar(ObjectID oID, int byte)
+static char oidchar(ObjectID oID, int byte)
 {
 	unsigned char c = (oID >> (byte*8)) & 0xff;
 	if ((c<32) || (c>0x7f)) c = '?';
@@ -60,12 +60,6 @@ ObjectNotRegisteredException::ObjectNotRegisteredException(ObjectID aID)
 /*
  *	ObjectStreamInter
  */
- 
-ObjectStreamInter::ObjectStreamInter(Stream *s, bool own_s)
- : ObjectStream(s, own_s)
-{
-}
-
 Object *ObjectStreamInter::getObjectInternal(const char *name, ObjectID id)
 {
 	if (id == OBJID_INVALID) {
@@ -105,12 +99,6 @@ void	ObjectStreamInter::putObject(const Object *object, const char *name, Object
 /*
  *	ObjectStreamBin
  */
- 
-ObjectStreamBin::ObjectStreamBin(Stream *s, bool own_s)
- : ObjectStreamInter(s, own_s)
-{
-}
- 
 void ObjectStreamBin::getBinary(void *buf, uint size, const char *desc)
 {
 	mStream->readx(buf, size);

@@ -146,7 +146,7 @@ void FileModificator::checkSanity()
 			throw MsgfException("mfile-sanity: area at 0x%qx, has size %qd (must be <= %d)", x->start, x->size, MAX_MFA_SIZE);
 		// rule (5)
 /*		if (prevx && (dynamic_cast<ModifiedFileArea*>(prevx) != NULL)
-		&& ismod && (((ModifiedFileArea*)prevx)->size + 
+		 && ismod && (((ModifiedFileArea*)prevx)->size + 
 		((ModifiedFileArea*)x)->size <= MAX_MFA_SIZE))
 			throw MsgException("mfile-sanity: two adjacent MFAs with sum of sizes <= MAX_MFA_SIZE = %d", MAX_MFA_SIZE);
 */		s += x->size;
@@ -784,11 +784,9 @@ int FileModificator::vcntl(uint cmd, va_list vargs)
 /*
 		// BEFORE-IMPLEMENT: decl changed !
 		FileOfs o = va_arg(vargs, FileOfs);
-		uint s = va_arg(vargs, uint);
-		uint i = 0;
+		FileOfs s = va_arg(vargs, FileOfs);
 		while (s--) {
-			cleardirtybyte(o+i);
-			i++;
+			cleardirtybyte(o++);
 		}
 */
 		return 0;
