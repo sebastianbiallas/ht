@@ -4,6 +4,7 @@
 version 2.1.0:
 	- updated included minilzo
 	- new disassembler: Atmel AVR 8-bit microcontroller
+	- symbols "first" and "last" in hex view
 
 version 2.0.18:
 	- [x86] SSE5/XOP/AVX merge
