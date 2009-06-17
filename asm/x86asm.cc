@@ -399,20 +399,20 @@ asm_code *x86asm::encode(asm_insn *asm_insn, int options, CPU_ADDR cur_address)
 		set_error_msg(X86ASM_ERRMSG_INVALID_PREFIX);
 	} else {
 		match_fopcodes(insn);
-        	match_opcodes(x86_insns_ext, insn, X86ASM_PREFIX_0F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_insns_ext_66, insn, X86ASM_PREFIX_0F, MATCHOPNAME_MATCH_IF_OPPREFIX);
-        	match_opcodes(x86_insns_ext_f2, insn, X86ASM_PREFIX_F20F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_insns_ext_f3, insn, X86ASM_PREFIX_F30F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[0], insn, X86ASM_PREFIX_0F38, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[1], insn, X86ASM_PREFIX_660F38, MATCHOPNAME_MATCH_IF_OPPREFIX);
-        	match_opcodes(x86_opc_group_insns[2], insn, X86ASM_PREFIX_F20F38, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[3], insn, X86ASM_PREFIX_0F3A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[4], insn, X86ASM_PREFIX_660F3A, MATCHOPNAME_MATCH_IF_OPPREFIX);
-        	match_opcodes(x86_opc_group_insns[5], insn, X86ASM_PREFIX_0F7A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[6], insn, X86ASM_PREFIX_0F7B, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[7], insn, X86ASM_PREFIX_0F24, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_opcodes(x86_opc_group_insns[8], insn, X86ASM_PREFIX_0F25, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
-        	match_vex_opcodes(insn);
+		match_opcodes(x86_insns_ext, insn, X86ASM_PREFIX_0F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_insns_ext_66, insn, X86ASM_PREFIX_0F, MATCHOPNAME_MATCH_IF_OPPREFIX);
+		match_opcodes(x86_insns_ext_f2, insn, X86ASM_PREFIX_F20F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_insns_ext_f3, insn, X86ASM_PREFIX_F30F, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[0], insn, X86ASM_PREFIX_0F38, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[1], insn, X86ASM_PREFIX_660F38, MATCHOPNAME_MATCH_IF_OPPREFIX);
+		match_opcodes(x86_opc_group_insns[2], insn, X86ASM_PREFIX_F20F38, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[3], insn, X86ASM_PREFIX_0F3A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[4], insn, X86ASM_PREFIX_660F3A, MATCHOPNAME_MATCH_IF_OPPREFIX);
+		match_opcodes(x86_opc_group_insns[5], insn, X86ASM_PREFIX_0F7A, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[6], insn, X86ASM_PREFIX_0F7B, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[7], insn, X86ASM_PREFIX_0F24, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_opcodes(x86_opc_group_insns[8], insn, X86ASM_PREFIX_0F25, MATCHOPNAME_MATCH_IF_NOOPPREFIX);
+		match_vex_opcodes(insn);
 	}
 	if (error) {
 		free_asm_codes();
@@ -704,7 +704,7 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 		}
 	}
 
-	if ((opcode->vex & 0x30) == 0x10 // 0x0f-opcode
+	if ((opcode->vex & 0x3c) == 0x4 // 0x0f-opcode
 	 && !(rexprefix & 3)          // no rexb/rexx
 	 && !(opcode->vex & W1)) {
 		// use short vex prefix
@@ -715,9 +715,13 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 			| (opcode->vex & 0x3);
 		emitbyte(vex);
 	} else {
-		// use long vex prefix
-		emitbyte(0xc4);
-		byte vex = (~rexprefix & 7) << 5 | ((opcode->vex & 0x30) >> 4);
+		// use long vex/xop prefix
+		if (opcode->vex & (_0f24|_0f25)) {
+			emitbyte(0x8f);
+		} else {
+			emitbyte(0xc4);
+		}
+		byte vex = (~rexprefix & 7) << 5 | ((opcode->vex & 0x3c) >> 2);
 		emitbyte(vex);
 		vex = (opcode->vex & W1) | ((~vexvvvv & 0xf) << 3) 
 			| (opcode->vex & _256) >> 4 
@@ -2103,7 +2107,7 @@ bool x86asm::translate_str(asm_insn *asm_insn, const char *s)
 
 	/**/
 	splitstr(s, insn->n, sizeof insn->n, (char**)&opp, 256);
-	insn->name=insn->n;
+	insn->name = insn->n;
 	for (int i=0; i<5; i++) {
 		if (!*op[i]) break;
 

@@ -194,8 +194,10 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_YR, 0, 0, SIZE_Y},
 #define Xy	YRy+1
 {TYPE_X, 0, 0, SIZE_Y},
+#define Xo	Xy+1
+{TYPE_X, 0, 0, SIZE_O},
 
-#define VD	Xy+1
+#define VD	Xo+1
 {TYPE_VD, 0, 0, SIZE_O},
 #define VS0d	VD+1
 {TYPE_VS, 0, 0, SIZE_D},
@@ -439,6 +441,7 @@ const char *x86_segs[8] = {
 
 x86opc_insn x86_les = {"les", {Gv, Mp}};
 x86opc_insn x86_lds = {"lds", {Gv, Mp}};
+x86opc_insn x86_pop_group = {0, {SPECIAL_TYPE_GROUP, GROUP_8F}};
 
 x86opc_insn x86_32_insns[256] = {
 /* 00 */
@@ -602,7 +605,7 @@ x86opc_insn x86_32_insns[256] = {
 {"mov", {Ev, Sw}},
 {"lea", {Gv, M}},
 {"mov", {Sw, Ev}},
-{0, {SPECIAL_TYPE_GROUP, GROUP_8F}},
+{0, {SPECIAL_TYPE_PREFIX}}, // XOP prefix {0, {SPECIAL_TYPE_GROUP, GROUP_8F}},
 /* 90 */
 {"nop"},		/* same as xchg (e)ax, (e)ax */
 {"xchg", {X__ax, __cx}},
@@ -3659,6 +3662,10 @@ E(5c)
 {"vsubpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vsubsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vfmaddsubps", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
+{"vfmaddsubps", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
+{"vfmaddsubps", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
+{"vfmaddsubps", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5d)
 {"vminps", _128|_0f, {Vo, VVo, Wo}},
 {"vminps", _256|_0f, {Yy, YVy, Xy}},
@@ -3666,6 +3673,10 @@ E(5d)
 {"vminpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vminss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vminsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vfmaddsubpd", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
+{"vfmaddsubpd", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
+{"vfmaddsubpd", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
+{"vfmaddsubpd", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5e)
 {"vdivps", _128|_0f, {Vo, VVo, Wo}},
 {"vdivps", _256|_0f, {Yy, YVy, Xy}},
@@ -3673,6 +3684,10 @@ E(5e)
 {"vdivpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vdivss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vdivsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vfmsubaddps", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
+{"vfmsubaddps", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
+{"vfmsubaddps", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
+{"vfmsubaddps", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(5f)
 {"vmaxps", _128|_0f, {Vo, VVo, Wo}},
 {"vmaxps", _256|_0f, {Yy, YVy, Xy}},
@@ -3680,6 +3695,10 @@ E(5f)
 {"vmaxpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vmaxss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vmaxsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vfmsubaddpd", _128|_66|_0f3a|W0, {Vo, VIo, Wo, VVo}},
+{"vfmsubaddpd", _128|_66|_0f3a|W1, {Vo, VIo, VVo, Wo}},
+{"vfmsubaddpd", _256|_66|_0f3a|W0, {Yy, YIy, Xy, YVy}},
+{"vfmsubaddpd", _256|_66|_0f3a|W1, {Yy, YIy, YVy, Xy}},
 E(60)
 {"vpcmpestrm", _128|_66|_0f3a, {Vo, Wo, Ib}},
 {"vpunpcklbw", _128|_66|_0f, {Vo, VVo, Wo}},
@@ -3702,24 +3721,48 @@ E(67)
 {"vpackuswb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(68)
 {"vpunpckhbw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmaddps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmaddps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfmaddps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfmaddps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(69)
 {"vpunpckhwd", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmaddpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmaddpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfmaddpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfmaddpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6a)
 {"vpunpckhdq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmaddss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmaddss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6b)
 {"vpackssdw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmaddsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmaddsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6c)
 {"vpunpcklqdq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmsubps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmsubps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfmsubps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfmsubps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6d)
 {"vpunpckhqdq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vfmsubpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmsubpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfmsubpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfmsubpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6e)
 {"vmovd", _128|_66|_0f|W0, {Vo, Ed}},
 {"vmovq", _128|_66|_0f|W1, {Vo, Eq}},
+{"vfmsubss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmsubss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(6f)
 {"vmovdqa", _128|_66|_0f, {Vo, Wo}},
 {"vmovdqa", _256|_66|_0f, {Yy, Xy}},
 {"vmovdqu", _128|_f3|_0f, {Vo, Wo}},
 {"vmovdqu", _256|_f3|_0f, {Yy, Xy}},
+{"vfmsubsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfmsubsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(70)
 {"vpshufd", _128|_66|_0f, {Vo, Wo, Ib}},
 {"vpshufhw", _128|_f3|_0f, {Vo, Wo, Ib}},
@@ -3739,49 +3782,132 @@ E(76)
 E(77)
 {"vzeroupper", _128|_0f},
 {"vzeroall", _256|_0f},
+E(78)
+{"vfnmaddps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmaddps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfnmaddps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfnmaddps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
+E(79)
+{"vfnmaddpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmaddpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfnmaddpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfnmaddpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
+E(7a)
+{"vfnmaddss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmaddss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+E(7b)
+{"vfnmaddsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmaddsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(7c)
 {"vhaddpd", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vhaddpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vhaddss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vhaddss", _256|_f2|_0f, {Yy, YVy, Xy}},
+{"vfnmsubps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmsubps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfnmsubps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfnmsubps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(7d)
 {"vhsubpd", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vhsubpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vhsubss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vhsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
+{"vfnmsubpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmsubpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+{"vfnmsubpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
+{"vfnmsubpd", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(7e)
 {"vmovd", _128|_66|_0f|W0, {Ed, Vo}},
 {"vmovq", _128|_66|_0f|W1, {Eq, Vo}},
 {"vmovq", _128|_f3|_0f, {Vo, Wq}},
+{"vfnmsubss", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmsubss", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 E(7f)
 {"vmovdqa", _128|_66|_0f, {Wo, Vo}},
 {"vmovdqa", _256|_66|_0f, {Xy, Yy}},
 {"vmovdqu", _128|_f3|_0f, {Wo, Vo}},
 {"vmovdqu", _256|_f3|_0f, {Xy, Yy}},
+{"vfnmsubsd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
+{"vfnmsubsd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
+E(80)
+{"vfrczpd", _128|_0f25, {Vo, Wo}},
+{"vfrczpd", _256|_0f25, {Yy, Xy}},
+E(81)
+{"vfrczps", _128|_0f25, {Vo, Wo}},
+{"vfrczps", _256|_0f25, {Yy, Xy}},
+E(82)
+{"vfrczsd", _128|_0f25, {Vo, Wo}},
+{"vfrczsd", _256|_0f25, {Yy, Xy}},
+E(83)
+{"vfrczss", _128|_0f25, {Vo, Wo}},
+{"vfrczss", _256|_0f25, {Yy, Xy}},
+E(85)
+{"vpmacssww", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(86)
+{"vpmacsswd", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(87)
+{"vpmacssdql", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(8e)
+{"vpmacssdd", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(8f)
+{"vpmacssdqh", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(90)
+{"vprotb", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vprotb", _128|_0f25|W1, {Vo, VVo, Wo}},
+E(91)
+{"vprotw", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vprotw", _128|_0f25|W1, {Vo, VVo, Wo}},
+E(92)
+{"vprotd", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vprotd", _128|_0f25|W1, {Vo, VVo, Wo}},
+E(93)
+{"vprotq", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vprotq", _128|_0f25|W1, {Vo, VVo, Wo}},
+E(94)
+{"vpshlb", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshlb", _128|_0f25|W1, {Vo, VVo, Wo}},
+E(95)
+{"vpmacsww", _128|_0f24, {Vo, VVo, Wo, VIo}},
+{"vpshlw", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshlw", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(96)
 {"vfmaddsub132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmaddsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfmaddsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfmaddsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpmacswd", _128|_0f24, {Vo, VVo, Wo, VIo}},
+{"vpshld", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshld", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(97)
 {"vfmaddsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmaddsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpmacsdql", _128|_0f24, {Vo, VVo, Wo, VIo}},
+{"vpshlq", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshlq", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(98)
 {"vfmadd132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmadd132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfmadd132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfmadd132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpshab", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshab", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(99)
 {"vfmadd132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmadd132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpshaw", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshaw", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(9a)
 {"vfmsub132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfmsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfmsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpshad", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshad", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(9b)
 {"vfmsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpshaq", _128|_0f25|W0, {Vo, Wo, VVo}},
+{"vpshaq", _128|_0f25|W1, {Vo, VVo, Wo}},
 E(9c)
 {"vfnmadd132ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfnmadd132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
@@ -3795,14 +3921,31 @@ E(9e)
 {"vfnmsub132ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfnmsub132pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfnmsub132pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpmacsdd", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(9f)
 {"vfnmsub132ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfnmsub132sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpmacsdqh", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(a0)
+{"vcvtph2ps", _128|_0f24, {Vo, Wq, Ib}},
+{"vcvtph2ps", _256|_0f24, {Yy, Xo, Ib}},
+E(a1)
+{"vcvtps2ph", _128|_0f25, {Wq, Vo}},
+{"vcvtps2ph", _256|_0f25, {Xo, Yy}},
+E(a2)
+{"vpcmov", _128|_0f24|W0, {Vo, VVo, Wo, VIo}},
+{"vpcmov", _256|_0f24|W0, {Yy, YVy, Xy, YIy}},
+{"vpcmov", _128|_0f24|W1, {Vo, VVo, VIo, Wo}},
+{"vpcmov", _256|_0f24|W1, {Yy, YVy, YIy, Xy}},
+E(a3)
+{"vpperm", _128|_0f24|W0, {Vo, VVo, Wo, VIo}},
+{"vpperm", _128|_0f24|W1, {Vo, VVo, VIo, Wo}},
 E(a6)
 {"vfmaddsub213ps", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmaddsub213ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfmaddsub213pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfmaddsub213pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpmadcsswd", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(a7)
 {"vfmaddsub213ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmaddsub213sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
@@ -3844,6 +3987,7 @@ E(b6)
 {"vfmaddsub231ps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 {"vfmaddsub231pd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
 {"vfmaddsub231pd", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpmadcswd", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(b7)
 {"vfmaddsub231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfmaddsub231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
@@ -3879,6 +4023,11 @@ E(be)
 E(bf)
 {"vfnmsub231ss", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vfnmsub231sd", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+E(c0)
+{"vprotb", _128|_0f24, {Vo, Wo, Ib}},
+E(c1)
+{"vprotw", _128|_0f24, {Vo, Wo, Ib}},
+{"vphaddbw", _128|_0f25, {Vo, Wo}},
 E(c2)
 {"vcmpps", _128|_0f, {Vo, VVo, Wo, Ib}},
 {"vcmpps", _256|_0f, {Yy, YVy, Xy, Ib}},
@@ -3886,6 +4035,11 @@ E(c2)
 {"vcmppd", _256|_66|_0f, {Yy, YVy, Xy, Ib}},
 {"vcmpss", _128|_f2|_0f, {Vo, VVo, Wo, Ib}},
 {"vcmpsd", _128|_f3|_0f, {Vo, VVo, Wo, Ib}},
+{"vprotd", _128|_0f24, {Vo, Wo, Ib}},
+{"vphaddbd", _128|_0f25, {Vo, Wo}},
+E(c3)
+{"vprotq", _128|_0f24, {Vo, Wo, Ib}},
+{"vphaddbd", _128|_0f25, {Vo, Wo}},
 E(c4)
 {"pinsrw", _128|_66|_0f, {Vo, MRwr, Ib}},
 E(c5)
@@ -3895,6 +4049,16 @@ E(c6)
 {"vshufps", _256|_0f, {Yy, YVy, Xy, Ib}},
 {"vshufpd", _128|_66|_0f, {Vo, VVo, Wo, Ib}},
 {"vshufpd", _256|_66|_0f, {Yy, YVy, Xy, Ib}},
+E(cb)
+{"vphadddq", _128|_0f25, {Vo, Wo}},
+E(cc)
+{"vpcomb", _128|_0f24, {Vo, VVo, Wo, Ib}},
+E(cd)
+{"vpcomw", _128|_0f24, {Vo, VVo, Wo, Ib}},
+E(ce)
+{"vpcomd", _128|_0f24, {Vo, VVo, Wo, Ib}},
+E(cf)
+{"vpcomq", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(d0)
 {"vaddsubpd", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vaddsubpd", _256|_66|_0f, {Yy, YVy, Xy}},
@@ -3902,20 +4066,27 @@ E(d0)
 {"vaddsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
 E(d1)
 {"vpsrlw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphaddubw", _128|_0f25, {Vo, Wo}},
 E(d2)
 {"vpsrld", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphaddubd", _128|_0f25, {Vo, Wo}},
 E(d3)
 {"vpsrlq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphaddubq", _128|_0f25, {Vo, Wo}},
 E(d4)
 {"vpaddq", _128|_66|_0f, {Vo, VVo, Wo}},
 E(d5)
 {"vpmullw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(d6)
 {"vmovq", _128|_66|_0f, {Wq, Vo}},
+{"vphadduwd", _128|_0f25, {Vo, Wo}},
 E(d7)
 {"vpmovmskb", _128|_66|_0f, {Gd, VRo}},
+{"vphadduwq", _128|_0f25, {Vo, Wo}},
+{"vphaddwq", _128|_0f25, {Vo, Wo}}, // FIXME
 E(d8)
 {"vpsubusb", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphaddudq", _128|_0f25, {Vo, Wo}},
 E(d9)
 {"vpsubusw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(da)
@@ -3940,10 +4111,13 @@ E(e0)
 {"vpavgb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(e1)
 {"vpsraw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphsubbw", _128|_0f25, {Vo, Wo}},
 E(e2)
 {"vpsrad", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphsubwd", _128|_0f25, {Vo, Wo}},
 E(e3)
 {"vpavgw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vphsubdq", _128|_0f25, {Vo, Wo}},
 E(e4)
 {"vpmulhuw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(e5)
@@ -3968,12 +4142,16 @@ E(eb)
 {"vpor", _128|_66|_0f, {Vo, VVo, Wo}},
 E(ec)
 {"vpaddsb", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpcomub", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(ed)
 {"vpaddsw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpcomuw", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(ee)
 {"vpmaxsw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpcomud", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(ef)
 {"vpxor", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpcomuq", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(f0)
 {"vlddqu", _128|_f2|_0f, {Vo, Mo}},
 {"vlddqu", _256|_f2|_0f, {Yy, My}},
@@ -4070,17 +4248,17 @@ v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
 v60, v61, v62, v63, v64, v65, v66, v67,
 v68, v69, v6a, v6b, v6c, v6d, v6e, v6f,
 v70, v71, v72, v73, v74, v75, v76, v77,
-  0,   0,   0,   0, v7c, v7d, v7e, v7f,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
-  0,   0,   0,   0,   0,   0, v96, v97,
+v78, v79, v7a, v7b, v7c, v7d, v7e, v7f,
+v80, v81, v82, v83,   0, v85, v86, v87,
+  0,   0,   0,   0,   0,   0, v8e, v8f,
+v90, v91, v92, v93, v94, v95, v96, v97,
 v98, v99, v9a, v9b, v9c, v9d, v9e, v9f,
-  0,   0,   0,   0,   0,   0, va6, va7,
+va0, va1, va2,   0,   0,   0, va6, va7,
 va8, va9, vaa, vab, vac, vad, vae, vaf,
-  0,   0,   0,   0,   0,   0, vb6, vb7,
+  0,   0,   0, va3,   0,   0, vb6, vb7,
 vb8, vb9, vba, vbb, vbc, vbd, vbe, vbf,
-  0,   0, vc2,   0, vc4, vc5, vc6,   0,
-  0,   0,   0,   0,   0,   0,   0,   0,
+vc0, vc1, vc2, vc3, vc4, vc5, vc6,   0,
+  0,   0,   0, vcb, vcc, vcd, vce, vcf,
 vd0, vd1, vd2, vd3, vd4, vd5, vd6, vd7,
 vd8, vd9, vda, vdb, vdc, vdd, vde, vdf,
 ve0, ve1, ve2, ve3, ve4, ve5, ve6, ve7,

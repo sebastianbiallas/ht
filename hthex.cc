@@ -259,6 +259,8 @@ bool ht_hex_viewer::symbol_handler(eval_scalar *result, char *name)
 		scalar_create_int_q(result, ofs);
 		return true;
 	}
+	if (strcmp(name, "first") == 0) {scalar_create_int_q(result, 0); return true;}
+	if (strcmp(name, "last") == 0) {scalar_create_int_q(result, file->getSize() - 1); return true;}
 	if (strcmp(name, "u8") == 0) return reada(result, this, 1, little_endian, false);
 	if (strcmp(name, "u16") == 0) return reada(result, this, 2, little_endian, false);
 	if (strcmp(name, "u32") == 0) return reada(result, this, 4, little_endian, false);
@@ -321,6 +323,8 @@ bool ht_hex_viewer::func_handler(eval_scalar *result, char *name, eval_scalarlis
 	eval_func myfuncs[] = {
 		{"$", 0, {SCALAR_INT}, "current offset"},
 		{"o", 0, {SCALAR_INT}, "current offset"},
+		{"first", 0, {SCALAR_INT}, "first offset"},
+		{"last", 0, {SCALAR_INT}, "last offset"},
 		{"u8", 0, {SCALAR_INT}, "byte at cursor"},
 		{"u16", 0, {SCALAR_INT}, "little endian 16 bit word at cursor"},
 		{"u32", 0, {SCALAR_INT}, "little endian 32 bit word at cursor"},
@@ -329,7 +333,7 @@ bool ht_hex_viewer::func_handler(eval_scalar *result, char *name, eval_scalarlis
 		{"s16", 0, {SCALAR_INT}, "signed little endian 16 bit word at cursor"},
 		{"s32", 0, {SCALAR_INT}, "signed little endian 32 bit word at cursor"},
 		{"u16be", 0, {SCALAR_INT}, "big endian 16 bit word at cursor"},
-	    	{"u32be", 0, {SCALAR_INT}, "big endian 32 bit word at cursor"},
+		{"u32be", 0, {SCALAR_INT}, "big endian 32 bit word at cursor"},
 		{"u64be", 0, {SCALAR_INT}, "big endian 64 bit word at cursor"},
 		{"s16be", 0, {SCALAR_INT}, "signed big endian 16 bit word at cursor"},
 		{"s32be", 0, {SCALAR_INT}, "signed big endian 32 bit word at cursor"},

@@ -34,7 +34,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
 /* These macros provide a K&R/C89/C++-friendly way of allocating structures
    with nice encapsulation.  The XDELETE*() macros are technically
    superfluous, but provided here for symmetry.  Using them consistently
@@ -247,6 +246,8 @@ enum demangle_component_type
   /* A template parameter.  This holds a number, which is the template
      parameter index.  */
   DEMANGLE_COMPONENT_TEMPLATE_PARAM,
+  /* A function parameter.  This holds a number, which is the index.  */
+  DEMANGLE_COMPONENT_FUNCTION_PARAM,
   /* A constructor.  This holds a name and the kind of
      constructor.  */
   DEMANGLE_COMPONENT_CTOR,
@@ -492,10 +493,10 @@ struct demangle_component
       int len;
     } s_string;
 
-    /* For DEMANGLE_COMPONENT_TEMPLATE_PARAM.  */
+    /* For DEMANGLE_COMPONENT_*_PARAM.  */
     struct
     {
-      /* Template parameter index.  */
+      /* Parameter index.  */
       long number;
     } s_number;
 

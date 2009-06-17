@@ -165,9 +165,12 @@ enum X86_VEX {
 	_f3   = 0x02,
 	_f2   = 0x03,
 	
-	_0f   = 0x10,
-	_0f38 = 0x20,
-	_0f3a = 0x30,
+	_0f   = 0x04,
+	_0f38 = 0x08,
+	_0f3a = 0x0c,
+	
+	_0f24 = 0x20,
+	_0f25 = 0x24,
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
@@ -256,6 +259,7 @@ struct x86opc_finsn {
 
 extern x86opc_insn x86_les;
 extern x86opc_insn x86_lds;
+extern x86opc_insn x86_pop_group;
 
 extern const char *x86_regs[4][8];
 extern const char *x86_64regs[4][16];
