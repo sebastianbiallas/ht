@@ -122,7 +122,7 @@ void dialog_assemble(ht_format_viewer *f, viewer_pos vaddr, CPU_ADDR cpuaddr, As
 				}
 				const char *tmp2;
 				if (disasm) {
-					dis_insn *o=disasm->decode((byte *)ac2->data, ac2->size, cpuaddr);
+					dis_insn *o = disasm->decode((byte *)ac2->data, ac2->size, cpuaddr);
 					tmp2 = disasm->strf(o, DIS_STYLE_HEX_NOZEROPAD+DIS_STYLE_HEX_ASMSTYLE, DISASM_STRF_SMALL_FORMAT);
 				} else {
 					tmp2 = "<no disassembler>";

@@ -2791,23 +2791,21 @@ void ht_progress_indicator::settext(const char *t)
  *	CLASS ht_color_block
  */
 
-int vcs[16]={VC_BLACK, VC_BLUE, VC_GREEN, VC_CYAN, VC_RED, VC_MAGENTA, VC_YELLOW, VC_WHITE,   VC_LIGHT(VC_BLACK), VC_LIGHT(VC_BLUE), VC_LIGHT(VC_GREEN), VC_LIGHT(VC_CYAN), VC_LIGHT(VC_RED), VC_LIGHT(VC_MAGENTA), VC_LIGHT(VC_YELLOW), VC_LIGHT(VC_WHITE)};
+int vcs[16] = {
+	VC_BLACK, VC_BLUE, VC_GREEN, VC_CYAN, VC_RED, VC_MAGENTA, VC_YELLOW, VC_WHITE,
+	VC_LIGHT(VC_BLACK), VC_LIGHT(VC_BLUE), VC_LIGHT(VC_GREEN), VC_LIGHT(VC_CYAN), VC_LIGHT(VC_RED), VC_LIGHT(VC_MAGENTA), VC_LIGHT(VC_YELLOW), VC_LIGHT(VC_WHITE)
+};
 
 void ht_color_block::init(Bounds *b, int selected, int Flags)
 {
 	ht_view::init(b, VO_OWNBUFFER | VO_SELECTABLE, 0);
 	VIEW_DEBUG_NAME("ht_color_block");
-	flags=Flags;
+	flags = Flags;
 	
 	ht_color_block_data d;
 	d.color = selected;
 	databuf_set(&d, sizeof d);
-	if (flags & cf_light) colors=16; else colors=8;
-}
-
-void ht_color_block::done()
-{
-	ht_view::done();
+	if (flags & cf_light) colors = 16; else colors = 8;
 }
 
 int ht_color_block::datasize()
@@ -2823,7 +2821,7 @@ const char *ht_color_block::defaultpalette()
 void ht_color_block::draw()
 {
 	clear(getcolor(palidx_generic_body));
-	uint32 cursor=VCP(focused ? VC_LIGHT(VC_WHITE) : VC_BLACK, VC_TRANSPARENT);
+	uint32 cursor = VCP(focused ? VC_LIGHT(VC_WHITE) : VC_BLACK, VC_TRANSPARENT);
 	for (int i=0; i < colors; i++) {
 		buf->printChar((i%4)*3+1, i/4, VCP(vcs[i], VC_TRANSPARENT), GC_FULL, CP_GRAPHICAL);
 		buf->printChar((i%4)*3+2, i/4, VCP(vcs[i], VC_BLACK), GC_MEDIUM, CP_GRAPHICAL);

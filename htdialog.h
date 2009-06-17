@@ -58,7 +58,7 @@ protected:
 
 	Queue *msgqueue;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 			ht_queued_msg *dequeuemsg();
 public:
@@ -66,11 +66,11 @@ public:
 			ht_dialog(BuildCtorArg&a): ht_window(a) {};
 		void	init(Bounds *b, const char *desc, uint framestyle);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int aclone();
 	virtual void draw();
 	virtual	void handlemsg(htmsg *msg);
-/* new */
+	/* new */
 		void queuemsg(ht_view *target, htmsg &msg);
 	virtual	int getstate(int *return_val);
 	virtual	int run(bool modal);
@@ -84,14 +84,14 @@ public:
 
 class ht_cluster: public ht_dialog_widget {
 protected:
-			ht_string_list *strings;
-			int sel;
-			int scount;
-			ht_key shortcuts[32];
-/* overwritten */
+	ht_string_list *strings;
+	int sel;
+	int scount;
+	ht_key shortcuts[32];
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
-			void	init(Bounds *b, ht_string_list *strings);
+		void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
 };
 
@@ -105,11 +105,11 @@ struct ht_checkboxes_data {
 
 class ht_checkboxes: public ht_cluster {
 protected:
-			uint32 state;
+	uint32 state;
 public:
-			void	init(Bounds *b, ht_string_list *strings);
+		void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
@@ -127,9 +127,9 @@ struct ht_radioboxes_data {
 
 class ht_radioboxes: public ht_cluster {
 public:
-			void	init(Bounds *b, ht_string_list *strings);
+		void	init(Bounds *b, ht_string_list *strings);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
@@ -164,16 +164,16 @@ protected:
 		void freebuf();
 		int insertbyte(byte *pos, byte b);
 		void select_add(byte *start, byte *end);
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void	init(Bounds *b, int maxtextlen, List *history = NULL);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int datasize();
 	virtual	void getdata(ObjectStream &s);
 	virtual	void setdata(ObjectStream &s);
-/* new */
+	/* new */
 		void attach(ht_inputfield *inputfield);
 		void query(byte ***curchar, byte ***text, byte ***selstart, byte ***selend, int **textlen, int **maxtextlen);
 		void isetcursor(uint pos);
@@ -190,7 +190,7 @@ protected:
 	bool is_virgin;		/* untouched except for cursor keys */
 	bool selectmode;
 	
-/* new */
+	/* new */
 		void correct_viewpoint();
 		void history_dialog();
 		bool inputbyte(byte a);
@@ -198,7 +198,7 @@ protected:
 public:
 		void	init(Bounds *b, int maxtextlen, List *history = NULL);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual 	void draw();
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void receivefocus();
@@ -216,13 +216,13 @@ protected:
 
 		void correct_viewpoint();
 public:
-		void	init(Bounds *b, int maxtextlen);
-	virtual	void	done();
-/* overwritten */
-	virtual 	void draw();
+		void init(Bounds *b, int maxtextlen);
+	virtual	void done();
+	/* overwritten */
+	virtual void draw();
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void receivefocus();
-/* new */
+	/* new */
 			void setnibble(byte a);
 };
 
@@ -239,7 +239,7 @@ protected:
 	ht_key shortcut1;
 	ht_key shortcut2;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void	init(Bounds *b, const char *text, int value);
@@ -266,14 +266,14 @@ protected:
 	char **texts;
 	int cols;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void init(Bounds *b);               
 	virtual	void done();
-/* overwritten */
+	/* overwritten */
 	virtual	void draw();
-/* new */
+	/* new */
 	virtual	vcp getTextColor();
 		void setText(int cols, ...);
 		void setTextv(int cols, va_list arguments);
@@ -351,7 +351,7 @@ public:
 	virtual	Object *	vstate_create();
 		void		vstate_save();
 protected:
-		void	rearrangeColumns();
+		void		rearrangeColumns();
 };
 
 /*
@@ -445,15 +445,15 @@ protected:
 	bool breaklines;
 	bool transparent;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void	init(Bounds *b, const char *text, statictext_align align, bool breaklines=true, bool transparent=false);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	void draw();
 	virtual	void settext(const char *text);
-/* new */
+	/* new */
 	virtual	int gettext(char *text, int maxlen);
 	virtual	vcp gettextcolor();
 };
@@ -473,13 +473,13 @@ protected:
 	virtual	void init_text_listbox(Bounds *b);
 public:
 		void init(Bounds *b, const char *desc);
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 	virtual	int  datasize();
 	virtual	void getdata(ObjectStream &s);
 		void insertstring(const char *string);
 	virtual	void setdata(ObjectStream &s);
-/* new */
+	/* new */
 		void select_next();
 		void select_prev();
 };
@@ -493,12 +493,12 @@ public:
 class ht_listpopup: public ht_statictext {
 protected:
 	ht_listpopup_dialog *listpopup;
-/* new */	
+	/* new */	
 		int	run_listpopup();
 public:
 		void	init(Bounds *b);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int  datasize();
 	virtual void draw();
 	virtual	vcp  gettextcolor();
@@ -506,7 +506,7 @@ public:
 	virtual	int gettext(char *text, int maxlen);
 	virtual	void handlemsg(htmsg *msg);
 	virtual	void setdata(ObjectStream &s);
-/* new */
+	/* new */
 		void	insertstring(const char *string);
 };
 
@@ -554,12 +554,12 @@ protected:
 	char *magicchar;
 	ht_key shortcut;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void	init(Bounds *b, const char *text, ht_view *connected);
 	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	void draw();
 	virtual	void handlemsg(htmsg *msg);
 };
@@ -570,13 +570,13 @@ public:
 
 class ht_progress_indicator: public ht_window {
 protected:
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 	ht_statictext *text;
 	
 		void init(Bounds *b, const char *hint);
-/* new */
+	/* new */
 		void settext(const char *text);
 };
 
@@ -597,12 +597,11 @@ protected:
 	int colors;
 	int flags;
 
-/* overwritten */
+	/* overwritten */
 	virtual	const char *defaultpalette();
 public:
 		void	init(Bounds *b, int selected, int flags);
-	virtual	void	done();
-/* overwritten */
+	/* overwritten */
 	virtual	int datasize();
 	virtual	void draw();
 	virtual	void getdata(ObjectStream &s);

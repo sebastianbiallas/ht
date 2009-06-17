@@ -1081,8 +1081,8 @@ int ht_uformat_viewer::address_input(const char *title, char *result, int limit,
 void ht_uformat_viewer::adjust_cursor_group()
 {
 	cursorline_get();
-	int g=tag_count_groups(cursor_line);
-	if (cursor.tag_group>=g) cursor.tag_group=0;
+	int g = tag_count_groups(cursor_line);
+	if (cursor.tag_group >= g) cursor.tag_group=0;
 }
 
 void ht_uformat_viewer::adjust_cursor_idx()
@@ -1103,10 +1103,10 @@ int ht_uformat_viewer::center_view(viewer_pos p)
 void ht_uformat_viewer::check_cursor_visibility()
 {
 	if (cursor_state != cursor_state_disabled) {
-		if ((cursor_ypos < 0) || (cursor_ypos >= size.h)) {
-			cursor_state=cursor_state_invisible;
+		if (cursor_ypos < 0 || cursor_ypos >= size.h) {
+			cursor_state = cursor_state_invisible;
 		} else {
-			cursor_state=cursor_state_visible;
+			cursor_state = cursor_state_visible;
 		}
 	}
 }
@@ -1114,7 +1114,7 @@ void ht_uformat_viewer::check_cursor_visibility()
 void ht_uformat_viewer::complete_init()
 {
 	if (uf_initialized) return;
-	cursor_state=cursor_state_disabled;
+	cursor_state = cursor_state_disabled;
 	if (!first_sub) {
 		uf_initialized = true;
 		return;
@@ -1307,7 +1307,7 @@ int ht_uformat_viewer::cursor_up(int n)
 					update_visual_info();
 					if (edit()) update_micropos();
 				} else {
-					if (cursor_state == cursor_state_invisible) cursor_ypos=-0x80000000;
+					if (cursor_state == cursor_state_invisible) cursor_ypos = -0x80000000;
 					scroll_up(n);
 				}
 				// FIXME: wrong value

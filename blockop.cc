@@ -158,7 +158,7 @@ void ht_blockop_dialog::init(Bounds *b, FileOfs pstart, FileOfs pend, List *hist
 	insert(s);
 
 	/* help */
-/*	c=*b;
+	/*	c=*b;
 	c.x=1;
 	c.y=8;
 	c.w-=c.x+2;

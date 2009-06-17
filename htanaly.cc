@@ -798,7 +798,6 @@ void ht_aviewer::generateOutputDialog()
 		char filename[260];
 		char start_str[1024], end_str[1024];
 		viewer_pos start, end;
-		bool by_lines;
 		output_dialog_data odd;
 		ViewDataBuf vdb(dialog, &odd, sizeof odd);
 		getdatastr(&odd.id1, filename);
@@ -829,7 +828,7 @@ void ht_aviewer::generateOutputDialog()
 		try {
 			String name(filename);
 			LocalFile s(name, IOAM_WRITE, FOM_CREATE);
-			AnalyserOutput *out;
+			AnalyserOutput *out = NULL;
 			switch (odd.lp.cursor_pos) {
 			case 0:
 				out = new AnalyserHTMLOutput();
