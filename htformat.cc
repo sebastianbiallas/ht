@@ -120,6 +120,23 @@ ht_search_request::ht_search_request(uint _search_class, uint _type, uint _flags
 }
 
 /*
+ *	CLASS ht_format_viewer_entry
+ */
+
+class ht_format_viewer_entry: public Object {
+public:
+	ht_view *instance;
+	format_viewer_if *interface;
+
+	ht_format_viewer_entry(ht_view *i, format_viewer_if *aIf):
+		instance(i),
+		interface(aIf)
+	{
+	}
+		
+};
+
+/*
  *	CLASS ht_format_group
  */
 
@@ -172,18 +189,14 @@ bool ht_format_group::done_if(format_viewer_if *i, ht_view *v)
 
 void ht_format_group::done_ifs()
 {
-	int j = 0;
-	while (1) {
-		ht_format_viewer_entry *e=(ht_format_viewer_entry*)(*format_views)[j];
-		if (!(e && e->instance)) break;
+	foreach(ht_format_viewer_entry, e, *format_views, {
 		done_if(e->interface, e->instance);
-		j++;
-	}
+	})
 }
 
 bool ht_format_group::edit()
 {
-	return (file->getAccessMode() & IOAM_WRITE);
+	return file->getAccessMode() & IOAM_WRITE;
 }
 
 bool ht_format_group::focus(ht_view *view)
@@ -306,18 +319,17 @@ bool ht_format_group::init_if(format_viewer_if *i)
 {
 	Bounds b;
 	getbounds(&b);
-	b.x=0;
-	b.y=0;
-	bool r=0;
-	ht_view *v=0;
+	b.x = 0;
+	b.y = 0;
 	
 	if (i->init) {
 		try {
-			v=i->init(&b, file, this);
+			ht_view *v = i->init(&b, file, this);
 			if (v) {
 				v->sendmsg(msg_complete_init, 0);
 				insert(v);
-				r=1;
+				format_views->insert(new ht_format_viewer_entry(v, i));
+				return true;
 			}
 		} catch (const Exception &x) {
 			errorbox("unhandled exception: %y", &x);
@@ -327,21 +339,17 @@ bool ht_format_group::init_if(format_viewer_if *i)
 			errorbox("unhandled exception: unknown");
 		}
 	}
-	ht_format_viewer_entry *e = new ht_format_viewer_entry();
-	e->interface = i;
-	e->instance = v;
-	format_views->insert(e);
-	return r;
+	return false;
 }
 
 void ht_format_group::init_ifs(format_viewer_if **ifs)
 {
-	format_viewer_if **i=ifs;
+	format_viewer_if **i = ifs;
 	while (*i) {
 		init_if(*i);
 		i++;
 	}
-	ifs=i;
+	ifs = i;
 }
 
 void ht_format_group::insert(ht_view *view)

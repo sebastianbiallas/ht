@@ -227,16 +227,6 @@ public:
 };
 
 /*
- *	CLASS ht_format_viewer_entry
- */
-
-class ht_format_viewer_entry: public Object {
-public:
-	ht_view *instance;
-	format_viewer_if *interface;
-};
-
-/*
  *	CLASS ht_format_group
  */
 
