@@ -308,7 +308,8 @@ static void do_eval(ht_strinputfield *s, ht_statictext *t, const char *b, eval_f
 			}
 			case SCALAR_FLOAT: {
 				char buf1[1024];
-				x.appendFormat("val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
+				sprintf(buf1, "val   %.20f\nnorm  %.20e", r.scalar.floatnum.value, r.scalar.floatnum.value);
+				x += buf1;
 				// FIXME: endianess/hardware format
 				float ff = ((float)r.scalar.floatnum.value);
 				uint32 f;
