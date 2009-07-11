@@ -49,17 +49,17 @@ public:
 	ObjectStreamBin *data;
 	MemoryFile *datafile;
 	
-	ht_history_entry(char *str=0, ObjectStreamBin *data = NULL, MemoryFile *datafile = NULL);
+	ht_history_entry(const char *str = NULL, ObjectStreamBin *data = NULL, MemoryFile *datafile = NULL);
 	ht_history_entry(BuildCtorArg &a): Object(a) {};
 	~ht_history_entry();
-/* overwritten */
+	/* overwritten */
 	virtual int	compareTo(const Object *) const;
 	virtual void	load(ObjectStream &s);
 	virtual void	store(ObjectStream &s) const;
 	virtual ObjectID getObjectID() const;
 };
 
-bool insert_history_entry(List *history, char *name, ht_view *view);
+bool insert_history_entry(List *history, const char *name, ht_view *view);
 
 void store_history(ObjectStream &s);
 bool load_history(ObjectStream &s);

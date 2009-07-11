@@ -32,7 +32,7 @@
 
 #define MAX_HISTORY_ENTRY_COUNT			40
 
-bool insert_history_entry(List *history, char *name, ht_view *view)
+bool insert_history_entry(List *history, const char *name, ht_view *view)
 {
 	if (name && *name) {
 		ObjectStreamBin *os = NULL;
@@ -64,7 +64,7 @@ bool insert_history_entry(List *history, char *name, ht_view *view)
  *	CLASS ht_history_entry
  */
 
-ht_history_entry::ht_history_entry(char *s, ObjectStreamBin *d, MemoryFile *file)
+ht_history_entry::ht_history_entry(const char *s, ObjectStreamBin *d, MemoryFile *file)
 {
 	desc = ht_strdup(s);
 	assert(desc);

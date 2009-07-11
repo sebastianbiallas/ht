@@ -355,7 +355,7 @@ bool file_chooser(const char *title, char *buf, int bufsize)
 		// FIXME: urls not fully supported...
 		if (ht_strncmp(b, "local:", 6) == 0) {
 			ht_strlcpy(buf, b+6, bufsize);
-			if (hist) insert_history_entry(hist, buf, 0);
+			if (hist) insert_history_entry(hist, buf, NULL);
 
 			d->done();
 			delete d;

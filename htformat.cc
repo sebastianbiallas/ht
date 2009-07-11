@@ -529,10 +529,9 @@ bool ht_format_viewer::continue_search()
 			FileOfs o, no;
 			if (get_current_offset(&o)) {
 				try {
-					if (last_search_request->search_class==SC_PHYSICAL) {
-						if (next_logical_offset(o, &no)) {
-							r=psearch(last_search_request, no, last_search_end_ofs);
-						}
+					if (last_search_request->search_class == SC_PHYSICAL
+					 && next_logical_offset(o, &no)) {
+						r = psearch(last_search_request, no, last_search_end_ofs);
 					}
 				} catch (const Exception &e) {
 					errorbox("error: %y", &e);
@@ -542,10 +541,9 @@ bool ht_format_viewer::continue_search()
 			viewer_pos a, na;
 			if (get_current_pos(&a)) {
 				try {
-					if (last_search_request->search_class==SC_VISUAL) {
-						if (next_logical_pos(a, &na)) {
-							r=vsearch(last_search_request, na, last_search_end_pos);
-						}
+					if (last_search_request->search_class == SC_VISUAL
+					 && next_logical_pos(a, &na)) {
+						r = vsearch(last_search_request, na, last_search_end_pos);
 					}
 				} catch (const Exception &e) {
 					errorbox("error: %y", &e);
@@ -633,14 +631,12 @@ void ht_format_viewer::handlemsg(htmsg *msg)
                 eval_dialog(format_viewer_func_handler, format_viewer_symbol_handler, this);
                 clearmsg(msg);
                 return;
-	case msg_goto_offset: {
-		FileOfs o = (FileOfs)msg->data1.q;
-		if (goto_offset(o, false)) {
+	case msg_goto_offset:
+		if (goto_offset((FileOfs)msg->data1.q, false)) {
 			clearmsg(msg);
 			return;
 		}
 		break;
-	}
 	case msg_vstate_restore:
 		vstate_restore((Object*)msg->data1.ptr);
 		clearmsg(msg);
@@ -4297,7 +4293,7 @@ bool process_search_expr(Object *ctx, ht_text *progress_indicator)
 			eval_int i;
 			scalar_context_int(&r, &i);
 			if (i.value != 0) {
-				ht_physical_search_result *r=new ht_physical_search_result();
+				ht_physical_search_result *r = new ht_physical_search_result();
 				r->offset = c->o;
 				r->size = 1;
 				*c->result = r;
@@ -4850,7 +4846,7 @@ int ht_collapsable_sub::prev_line_id(LINE_ID *line_id, int n)
 bool ht_collapsable_sub::ref(LINE_ID *id)
 {
 	if (compeq_line_id(*id, myfid)) {
-		collapsed=!collapsed;
+		collapsed = !collapsed;
 		return true;
 	}
 	if (!collapsed) return ht_layer_sub::ref(id);
@@ -4933,11 +4929,11 @@ int ht_group_sub::next_line_id(LINE_ID *line_id, int n)
 				n--;
 			}
 		} else {
-			n-=s->next_line_id(line_id, n);
+			n -= s->next_line_id(line_id, n);
 		}
 		if (!n) break;
 	}
-	return on-n;
+	return on - n;
 }
 
 int ht_group_sub::prev_line_id(LINE_ID *line_id, int n)
@@ -4956,11 +4952,11 @@ int ht_group_sub::prev_line_id(LINE_ID *line_id, int n)
 				n--;
 			}
 		} else {
-			n-=s->prev_line_id(line_id, n);
+			n -= s->prev_line_id(line_id, n);
 		}
 		if (!n) break;
 	}
-	return on-n;
+	return on - n;
 }
 
 bool ht_group_sub::ref(LINE_ID *id)
