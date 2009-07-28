@@ -142,7 +142,7 @@ static const byte lop2hop[12][9] = {
 	/* X86_OPTYPE_IMM */
 	{TYPE_I, TYPE_Is, TYPE_J, TYPE_A, TYPE_Ix, TYPE_I4},
 	/* X86_OPTYPE_REG */
-	{TYPE_R, TYPE_Rx, TYPE_RXx, TYPE_G, TYPE_E, TYPE_MR},
+	{TYPE_R, TYPE_Rx, TYPE_RXx, TYPE_G, TYPE_E, TYPE_MR, TYPE_RV},
 	/* X86_OPTYPE_SEG */
 	{TYPE_S, TYPE_Sx},
 	/* X86_OPTYPE_MEM */
@@ -705,7 +705,7 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 	}
 
 	if ((opcode->vex & 0x3c) == 0x4 // 0x0f-opcode
-	 && !(rexprefix & 3)          // no rexb/rexx
+	 && !(rexprefix & 3)            // no rexb/rexx
 	 && !(opcode->vex & W1)) {
 		// use short vex prefix
 		emitbyte(0xc5);
@@ -716,7 +716,7 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 		emitbyte(vex);
 	} else {
 		// use long vex/xop prefix
-		if (opcode->vex & (_0f24|_0f25)) {
+		if (opcode->vex & _0f24) {
 			emitbyte(0x8f);
 		} else {
 			emitbyte(0xc4);
@@ -997,6 +997,10 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		return true;
 	case TYPE_RXx:
 		/* extra picks register, no REX */
+		return true;
+	case TYPE_RV:
+		/* VEX.vvvv picks general register */
+		vexvvvv = op->reg;
 		return true;
 	case TYPE_S:
 		/* reg of ModR/M picks segment register */

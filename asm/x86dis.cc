@@ -417,8 +417,8 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					insn.rexprefix |= vexb(vex);
 					if (c == 0x8f) {
 						insn.vexprefix.mmmm |= vexmmmmm(vex);
-						if (insn.vexprefix.mmmm != 8
-						 && insn.vexprefix.mmmm != 9) {
+						if (insn.vexprefix.mmmm < 8
+						 || insn.vexprefix.mmmm > 10) {
 							invalidate();
 							break;
 						}
@@ -759,6 +759,13 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->type = X86_OPTYPE_REG;
 		op->size = esizeop(xop->size);
 		op->reg = xop->extra;
+		break;
+	}
+	case TYPE_RV: {
+		/* VEX.vvvv picks general register */
+		op->type = X86_OPTYPE_REG;
+		op->size = esizeop(xop->size);
+		op->reg = insn.vexprefix.vvvv;
 		break;
 	}
 	case TYPE_S: {

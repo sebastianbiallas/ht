@@ -488,7 +488,7 @@ void AnalyInfoline::update(Address *cursor_addr, FileOfs ecursor_addr)
 
 bool AnalyInfoline::valid()
 {
-	return ((analy)&&(analy->analy));
+	return analy && analy->analy;
 }
 
 /*

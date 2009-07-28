@@ -134,6 +134,7 @@ enum {
 	TYPE_R,		/* rm of ModR/M picks general register */
 	TYPE_Rx,	/* extra picks register */
 	TYPE_RXx,	/* extra picks register, no REX extension */
+	TYPE_RV,	/* VEX.vvvv picks general register */
 	TYPE_S,		/* reg of ModR/M picks segment register */
 	TYPE_Sx,	/* extra picks segment register */
 
@@ -145,7 +146,7 @@ enum {
 	TYPE_W,		/* ModR/M (XMM reg or memory) */
 
 	TYPE_Y,		/* reg of ModR/M picks YMM register */
-	TYPE_YV,	/* VEX.vvvv pick YMM register */
+	TYPE_YV,	/* VEX.vvvv picks YMM register */
 	TYPE_YI,	/* bits 7-4 of imm picks YMM register */
 	TYPE_YR,	/* rm of ModR/M picks YMM register */
 	TYPE_X,		/* ModR/M (YMM reg or memory) */
@@ -165,12 +166,13 @@ enum X86_VEX {
 	_f3   = 0x02,
 	_f2   = 0x03,
 	
-	_0f   = 0x04,
-	_0f38 = 0x08,
-	_0f3a = 0x0c,
+	_0f   = 0x04,  // mmmm = 1
+	_0f38 = 0x08,  // mmmm = 2
+	_0f3a = 0x0c,  // mmmm = 3
 	
-	_0f24 = 0x20,
-	_0f25 = 0x24,
+	_0f24 = 0x20,  // mmmm = 8
+	_0f25 = 0x24,  // mmmm = 9
+	_0fA  = 0x28,  // mmmm = 10
 };
 
 /* when name is == 0, the first op has a special meaning (layout see x86_insn_op_special) */
