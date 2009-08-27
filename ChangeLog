@@ -6,8 +6,10 @@ version 2.1.0:
 	- new disassembler: Atmel AVR 8-bit microcontroller
 
 version 2.0.18:
+	- updated c++ demangler
 	- [x86] SSE5/XOP/AVX merge
 	- symbols "first" and "last" in hex view
+	- project manager works again
 
 version 2.0.17:
 	- compilation fixes for gcc 4.4

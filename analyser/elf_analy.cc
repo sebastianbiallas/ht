@@ -325,7 +325,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			}
 			free(name);
 		}
-		if (entropy) free(entropy);
+		free(entropy);
 	} else {
 		// FIXME: 64 bit
 		FileOfs h = elf_shared->sheaders.sheaders64[shidx].sh_offset;
@@ -384,7 +384,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 						if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
 						make_valid_name(label, label);
 						ht_snprintf(elf_buffer, sizeof elf_buffer, "; function %s (%s)", (demangled) ? demangled : label, bind);
-						if (demangled) free(demangled);
+						free(demangled);
 						addComment(address, 0, "");
 						addComment(address, 0, ";********************************************************");
 						addComment(address, 0, elf_buffer);
@@ -425,7 +425,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			}
 			free(name);
 		}
-		if (entropy) free(entropy);
+		free(entropy);
 	}
 }
 
@@ -434,7 +434,7 @@ void ElfAnalyser::initInsertSymbols(int shidx)
  */
 void ElfAnalyser::load(ObjectStream &f)
 {
-    	GET_OBJECT(f, validarea);
+	GET_OBJECT(f, validarea);
 	Analyser::load(f);
 }
 
@@ -654,24 +654,24 @@ void ElfAnalyser::initUnasm()
 			((AnalyPPCDisassembler*)analy_disasm)->init(this, ANALY_PPC_64);
 		}
 		break;
-        case ELF_EM_ARM:
-                if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-                        errorbox("ARM cant be used in a 64-Bit ELF.");
-                } else {
-                        DPRINTF("initing analy_arm_disassembler\n");
-                        analy_disasm = new AnalyArmDisassembler();
-                        ((AnalyArmDisassembler*)analy_disasm)->init(this);
-                }
-                break;
-        case ELF_EM_AVR:
-                if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-                        errorbox("AVR cant be used in a 64-Bit ELF.");
-                } else {
-                        DPRINTF("initing analy_avr_disassembler\n");
-                        analy_disasm = new AnalyAVRDisassembler();
-                        ((AnalyAVRDisassembler*)analy_disasm)->init(this);
-                }
-                break;
+	case ELF_EM_ARM:
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
+			errorbox("ARM cant be used in a 64-Bit ELF.");
+		} else {
+			DPRINTF("initing analy_arm_disassembler\n");
+			analy_disasm = new AnalyArmDisassembler();
+			((AnalyArmDisassembler*)analy_disasm)->init(this);
+		}
+		break;
+	case ELF_EM_AVR:
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
+			errorbox("AVR cant be used in a 64-Bit ELF.");
+		} else {
+			DPRINTF("initing analy_avr_disassembler\n");
+			analy_disasm = new AnalyAVRDisassembler();
+			((AnalyAVRDisassembler*)analy_disasm)->init(this);
+		}
+		break;
 	default:
 		DPRINTF("no apropriate disassembler for machine 0x%04x\n", machine);
 		warnbox("No disassembler for unknown machine type 0x%04x!", machine);

@@ -557,14 +557,12 @@ void file_window_store_fcfg_func(ObjectStream &f, void *context)
 
 void file_project_store_fcfg_func(ObjectStream &f, void *context)
 {
-	PUT_OBJECT(f, (Object*)project);
+	PUT_OBJECT(f, project);
 }
 
 void file_project_load_fcfg_func(ObjectStream &f, void *context)
 {
-	Object *p;
-	GET_OBJECT(f, p);
-	project = p;
+	GET_OBJECT(f, project);
 }
 
 /*
@@ -2041,9 +2039,7 @@ ht_window *ht_app::create_window_project()
 		get_stdbounds_tool(&b);
 
 		ht_project_window *project_window=new ht_project_window();
-		ht_project *p = (ht_project *)project;
-		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, &p);
-		project = p;
+		project_window->init(&b, "project window", FS_KILLER | FS_TITLE | FS_NUMBER | FS_MOVE | FS_RESIZE, 0, (ht_project**)&project);
 
 		Bounds k = b;
 		k.x = b.w-2;
@@ -2970,7 +2966,7 @@ void ht_app::project_opencreate(const char *filename)
 		strcat(fn, HT_PROJECT_CONFIG_SUFFIX);
 	}
 
-	void *old_project = project;
+	Object *old_project = project;
 	project = NULL;
 
 	String einfo;

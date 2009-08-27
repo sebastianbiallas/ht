@@ -107,7 +107,7 @@ static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 		delete analy;
 		v->done();
 		delete v;
-		head->done();          
+		head->done();
 		delete head;
 		g->done();
 		delete g;
@@ -123,14 +123,12 @@ static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 
 	Address *tmpaddr = NULL;
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
-		case ELFCLASS32: {
-			tmpaddr = p->createAddress32(elf_shared->header32.e_entry);
-			break;
-		}
-		case ELFCLASS64: {
-			tmpaddr = p->createAddress64(elf_shared->header64.e_entry);
-			break;
-		}
+	case ELFCLASS32:
+		tmpaddr = p->createAddress32(elf_shared->header32.e_entry);
+		break;
+	case ELFCLASS64:
+		tmpaddr = p->createAddress64(elf_shared->header64.e_entry);
+		break;
 	}
 
 	v->gotoAddress(tmpaddr, NULL);
