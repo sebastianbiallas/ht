@@ -192,6 +192,8 @@ static int_hash elf_machine[] =
 
 	{ELF_EM_M32C,		"Renesas M32C series microprocessors"},
 
+	{ELF_EM_L1OM,		"Intel L1OM"},
+
 	{0, 0}
 };
 

@@ -188,32 +188,32 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_VIDEOCORE	 95	/* Alphamosaic VideoCore processor */
 #define ELF_EM_TMM_GPP	 96	/* Thompson Multimedia General Purpose Processor */
 #define ELF_EM_NS32K	 97	/* National Semiconductor 32000 series */
-#define ELF_EM_TPC		 98	/* Tenor Network TPC processor */
+#define ELF_EM_TPC	 98	/* Tenor Network TPC processor */
 #define ELF_EM_SNP1K	 99	/* Trebia SNP 1000 processor */
 #define ELF_EM_ST200	100	/* STMicroelectronics ST200 microcontroller */
-#define ELF_EM_IP2K		101	/* Ubicom IP2022 micro controller */
-#define ELF_EM_MAX		102	/* MAX Processor */
-#define ELF_EM_CR		103	/* National Semiconductor CompactRISC */
+#define ELF_EM_IP2K	101	/* Ubicom IP2022 micro controller */
+#define ELF_EM_MAX	102	/* MAX Processor */
+#define ELF_EM_CR	103	/* National Semiconductor CompactRISC */
 #define ELF_EM_F2MC16	104	/* Fujitsu F2MC16 */
 #define ELF_EM_MSP430	105	/* TI msp430 micro controller */
 #define ELF_EM_BLACKFIN	106	/* ADI Blackfin */
 #define ELF_EM_SE_C33	107	/* S1C33 Family of Seiko Epson processors */
-#define ELF_EM_SEP		108	/* Sharp embedded microprocessor */
-#define ELF_EM_ARCA		109	/* Arca RISC Microprocessor */
+#define ELF_EM_SEP	108	/* Sharp embedded microprocessor */
+#define ELF_EM_ARCA	109	/* Arca RISC Microprocessor */
 #define ELF_EM_UNICORE	110	/* Microprocessor series from PKU-Unity Ltd. and MPRC of Peking University */
 #define ELF_EM_EXCESS	111	/* eXcess: 16/32/64-bit configurable embedded CPU */
-#define ELF_EM_DXP		112	/* Icera Semiconductor Inc. Deep Execution Processor */
+#define ELF_EM_DXP	112	/* Icera Semiconductor Inc. Deep Execution Processor */
 #define ELF_EM_ALTERA_NIOS2	113	/* Altera Nios II soft-core processor */
-#define ELF_EM_CRX		114	/* National Semiconductor CRX */
+#define ELF_EM_CRX	114	/* National Semiconductor CRX */
 #define ELF_EM_XGATE	115	/* Motorola XGATE embedded processor */
-#define ELF_EM_C166		116	/* Infineon C16x/XC16x processor */
-#define ELF_EM_M16C		117	/* Renesas M16C series microprocessors */
+#define ELF_EM_C166	116	/* Infineon C16x/XC16x processor */
+#define ELF_EM_M16C	117	/* Renesas M16C series microprocessors */
 #define ELF_EM_DSPIC30F	118	/* Microchip Technology dsPIC30F Digital Signal Controller */
-#define ELF_EM_CE		119	/* Freescale Communication Engine RISC core */
-#define ELF_EM_M32C		120	/* Renesas M32C series microprocessors */
+#define ELF_EM_CE	119	/* Freescale Communication Engine RISC core */
+#define ELF_EM_M32C	120	/* Renesas M32C series microprocessors */
 
 #define ELF_EM_TSK3000	131	/* Altium TSK3000 core */
-#define ELF_EM_RS08		132	/* Freescale RS08 embedded processor */
+#define ELF_EM_RS08	132	/* Freescale RS08 embedded processor */
 
 #define ELF_EM_ECOG2	134	/* Cyan Technology eCOG2 microprocessor */
 #define ELF_EM_SCORE        135     /* Sunplus Score */
@@ -224,10 +224,10 @@ typedef uint16 elf64_quarter;
 
 #define ELF_EM_MMDSP_PLUS	160	/* STMicroelectronics 64bit VLIW Data Signal Processor */
 #define ELF_EM_CYPRESS_M8C	161	/* Cypress M8C microprocessor */
-#define ELF_EM_R32C		162	/* Renesas R32C series microprocessors */
+#define ELF_EM_R32C	162	/* Renesas R32C series microprocessors */
 #define ELF_EM_TRIMEDIA	163	/* NXP Semiconductors TriMedia architecture family */
 #define ELF_EM_QDSP6	164	/* QUALCOMM DSP6 Processor */
-#define ELF_EM_8051		165	/* Intel 8051 and variants */
+#define ELF_EM_8051	165	/* Intel 8051 and variants */
 #define ELF_EM_STXP7X	166	/* STMicroelectronics STxP7x family */
 #define ELF_EM_NDS32	167	/* Andes Technology compact code size embedded RISC processor family */
 #define ELF_EM_ECOG1	168	/* Cyan Technology eCOG1X family */
@@ -236,11 +236,14 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_XIMO16	170	/* New Japan Radio (NJR) 16-bit DSP Processor */
 #define ELF_EM_MANIK	171	/* M2000 Reconfigurable RISC Microprocessor */
 #define ELF_EM_CRAYNV2	172	/* Cray Inc. NV2 vector architecture */
-#define ELF_EM_RX		173	/* Renesas RX family */
+#define ELF_EM_RX	173	/* Renesas RX family */
 #define ELF_EM_METAG	174	/* Imagination Technologies META processor architecture */
 #define ELF_EM_MCST_ELBRUS	175	/* MCST Elbrus general purpose hardware architecture */
 #define ELF_EM_ECOG16	176	/* Cyan Technology eCOG16 family */
-
+#define ELF_EM_CR16	177	/* National Semiconductor CompactRISC 16-bit processor */
+#define ELF_EM_ETPU	178	/* Freescale Extended Time Processing Unit */
+#define ELF_EM_SLE9X	179	/* Infineon Technologies SLE9X core */
+#define ELF_EM_L1OM	180	/* Intel L1OM */
 
 /* e_version */
 #define ELF_EV_NONE			0
