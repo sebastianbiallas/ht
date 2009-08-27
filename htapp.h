@@ -114,7 +114,7 @@ protected:
 	uint maxlinecount;
 
 	void deletefirstline();
-	void	insertline(LogColor c, char *line);
+	void insertline(LogColor c, char *line);
 public:
 	ht_log();
 /* new */

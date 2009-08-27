@@ -28,7 +28,7 @@ ht_view *baseview;
 SystemDisplay *screen;
 char appname[HT_NAME_MAX+1];
 List *virtual_fs_list;
-void *project;
+Object *project;
 int some_analyser_active = 0;
 int num_ops_parsed = 0;
 
