@@ -1,4 +1,4 @@
-/* 
+/*
  *	HT Editor
  *	sysdisplay.cc - screen access functions for Win32
  *
@@ -177,7 +177,7 @@ Win32SystemDisplay::Win32SystemDisplay(const char *title)
 	xy.X = dx;
 	xy.Y = dy;
 	SetConsoleCursorPosition(output, xy);
-        ScrollConsoleScreenBuffer(output, );*/
+	ScrollConsoleScreenBuffer(output, );*/
 	show();
 }
 
@@ -191,7 +191,7 @@ Win32SystemDisplay::~Win32SystemDisplay()
 	free(buf);
 	free(old_buf);
 	free(colorbuf);
-        cursorNormal();
+	cursorNormal();
 }
 
 bool Win32SystemDisplay::initConsole()
@@ -296,7 +296,7 @@ void Win32SystemDisplay::putChar(int dest, uint rawchar, vcp vc)
 	if (dest >= w*h || dest < 0) return;
 	buf[dest].Char.UnicodeChar = rawchar ? rawchar : ' ';
 	colorbuf[dest] = mixColors(colorbuf[dest], vc);
-        buf[dest].Attributes = vcpToSystem(colorbuf[dest]);
+	buf[dest].Attributes = vcpToSystem(colorbuf[dest]);
 }
 
 void Win32SystemDisplay::setCursor(int x, int y, CursorMode mode)
@@ -340,7 +340,7 @@ void Win32SystemDisplay::show()
 		xy.X = dx;
 		xy.Y = dy;
 	}
-	SetConsoleCursorPosition(output, xy);	
+	SetConsoleCursorPosition(output, xy);
 	if (last_cursor_mode != cursor_mode) {
 		switch (cursor_mode) {
 		case CURSOR_OFF:

@@ -3,7 +3,7 @@
  *	x86dis.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2008 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2009 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -47,7 +47,6 @@
 #define vexb(vex) (!((vex)&0x20))
 
 #define vexl(vex) (!!((vex)&0x04))
-#define vexmmmm(vex) ((vex)&0xf)
 #define vexmmmmm(vex) ((vex)&0x1f)
 #define vexvvvv(vex) (((~(vex))>>3)&0xf)
 #define vexpp(vex) ((vex)&0x3)
@@ -415,15 +414,14 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					// 3 byte vex / xop
 					insn.rexprefix |= vexx(vex) << 1;
 					insn.rexprefix |= vexb(vex);
+					insn.vexprefix.mmmm |= vexmmmmm(vex);
 					if (c == 0x8f) {
-						insn.vexprefix.mmmm |= vexmmmmm(vex);
 						if (insn.vexprefix.mmmm < 8
 						 || insn.vexprefix.mmmm > 10) {
 							invalidate();
 							break;
 						}
 					} else {
-						insn.vexprefix.mmmm |= vexmmmm(vex);
 						if (insn.vexprefix.mmmm == 0
 						 || insn.vexprefix.mmmm > 3) {
 							invalidate();

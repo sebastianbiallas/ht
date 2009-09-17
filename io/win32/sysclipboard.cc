@@ -61,11 +61,11 @@ int sys_native_clipboard_read(void *data, int max_size)
 {
 //	ht_printf("sys_native_clipboard_read(%d)\n", max_size);
 	if (!OpenClipboard(NULL)) return false;
-        HANDLE hdata = GetClipboardData(CF_OEMTEXT);
-        if (!hdata) {        	
+	HANDLE hdata = GetClipboardData(CF_OEMTEXT);
+	if (!hdata) {
 		CloseClipboard();
 		return 0;
-        }
+	}
 	int size = GlobalSize(hdata);
 	void *ptr = GlobalLock(hdata);
 	int r = MIN(size, max_size);
