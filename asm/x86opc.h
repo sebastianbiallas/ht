@@ -169,7 +169,10 @@ enum X86_VEX {
 	_0f   = 0x04,  // mmmm = 1
 	_0f38 = 0x08,  // mmmm = 2
 	_0f3a = 0x0c,  // mmmm = 3
-	
+//	_0f4  = 0x10,  // mmmm = 4
+//	_0f5  = 0x14,  // mmmm = 5
+//	_0f6  = 0x18,  // mmmm = 6
+//	_0f7  = 0x1c,  // mmmm = 7
 	_0f24 = 0x20,  // mmmm = 8
 	_0f25 = 0x24,  // mmmm = 9
 	_0fA  = 0x28,  // mmmm = 10
@@ -232,7 +235,7 @@ struct x86_64_insn_patch {
 /* this can be a group (group!=0), an insn (group==0) && (insn.name!=0) or
    (otherwise) a reserved instruction. */
 struct x86opc_finsn {
-	x86opc_insn *group;	
+	x86opc_insn *group;
 	x86opc_insn insn;
 };
 

@@ -3434,6 +3434,12 @@ E(11)
 {"vmovupd", _128|_66|_0f, {Wo, Vo}},
 {"vmovupd", _256|_66|_0f, {Xy, Yy}},
 E(12)
+{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25}},
+{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_W}},
+{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_L}},
+{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA}},
+{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_W}},
+{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_L}},
 {"vmovddup", _128|_f2|_0f, {Vo, Wq}},
 {"vmovddup", _256|_f2|_0f, {Yy, Xy}},
 {"vmovhlps", _128|_0f, {Vo, VVo, VRo}},
@@ -3441,12 +3447,6 @@ E(12)
 {"vmovlpd", _128|_66|_0f, {Vo, VVo, Mq}},
 {"vmovsldup", _128|_f3|_0f, {Vo, Wo}},
 {"vmovsldup", _256|_f3|_0f, {Yy, Xy}},
-{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25}},
-{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_W}},
-{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_L}},
-{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA}},
-{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_W}},
-{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_L}},
 E(13)
 {"vmovlps", _128|_0f, {Mq, Vo}},
 {"vmovlpd", _128|_66|_0f, {Mq, Vo}},
@@ -4298,7 +4298,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 7 - GROUP_0FA_L */
+/* 8 - GROUP_0FA_L */
 {
 {"lwpins", _256|_0fA, {RVd, Ed, Id}},
 {"lwpval", _256|_0fA, {RVd, Ed, Id}},
@@ -4309,7 +4309,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 7 - GROUP_0FA_W */
+/* 9 - GROUP_0FA_W */
 {
 {"lwpins", _128|_0fA|W1, {RVq, Ed, Id}},
 {"lwpval", _128|_0fA|W1, {RVq, Ed, Id}},

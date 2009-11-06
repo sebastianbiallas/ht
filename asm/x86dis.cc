@@ -316,7 +316,7 @@ void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 					case TYPE_W:
 					case TYPE_X:
 						/* get whole modrm/sib/disp stuff first
-		    				 * (otherwise a TYPE_VI immediate might 
+						 * (otherwise a TYPE_VI immediate might 
 						 * get fetched fetched before the modrm stuff)
 						 */
 						getdisp();
@@ -410,11 +410,12 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				if (c == 0xc5) {
 					// 2 byte vex
 					insn.vexprefix.mmmm = 1;
+					insn.vexprefix.w = 0;
 				} else {
 					// 3 byte vex / xop
 					insn.rexprefix |= vexx(vex) << 1;
 					insn.rexprefix |= vexb(vex);
-					insn.vexprefix.mmmm |= vexmmmmm(vex);
+					insn.vexprefix.mmmm = vexmmmmm(vex);
 					if (c == 0x8f) {
 						if (insn.vexprefix.mmmm < 8
 						 || insn.vexprefix.mmmm > 10) {
@@ -429,7 +430,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 						}
 					}
 					vex = getbyte();
-					insn.vexprefix.w |= vexw(vex);
+					insn.vexprefix.w = vexw(vex);
 				}
 				insn.vexprefix.vvvv = vexvvvv(vex);
 				insn.vexprefix.l = vexl(vex);
