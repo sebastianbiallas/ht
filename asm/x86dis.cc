@@ -135,12 +135,12 @@ uint x86dis::mkreg(uint modrm)
 
 uint x86dis::mkindex(uint sib)
 {
-	return (sib>>3 & 0x07) | !!rexx(insn.rexprefix) << 3;	
+	return (sib>>3 & 0x07) | !!rexx(insn.rexprefix) << 3;
 }
 
 uint x86dis::mkrm(uint modrm)
 {
-	return (modrm & 0x07) | !!rexb(insn.rexprefix) << 3;	
+	return (modrm & 0x07) | !!rexb(insn.rexprefix) << 3;
 }
 
 static bool is_xmm_op(x86dis_insn *insn, char size)
@@ -741,9 +741,13 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	}
 	case TYPE_R: {
 		/* rm of ModR/M picks general register */
-		op->type = X86_OPTYPE_REG;
-		op->size = esizeop(xop->size);
-		op->reg = mkrm(getmodrm());
+		if (mkmod(getmodrm()) == 3) {
+			op->type = X86_OPTYPE_REG;
+			op->size = esizeop(xop->size);
+			op->reg = mkrm(getmodrm());
+		} else {
+			invalidate();
+		}
 		break;
 	}
 	case TYPE_Rx: {

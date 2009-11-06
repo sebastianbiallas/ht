@@ -990,6 +990,7 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		break;
 	case TYPE_R:
 		/* rm of ModR/M picks general register */
+		emitmodrm_mod(3);
 		emitmodrm_rm(op->reg);
 		// fall throu
 	case TYPE_Rx:

@@ -574,7 +574,7 @@ x86opc_insn x86_32_insns[256] = {
 {"?pusha|pushad| x"},
 {"?popa|popad| x"},
 {"bound", {Gv, Mq}},
-{"arpl", {Ew, Rw}},			//{"movsxd", {Gv, Ed}},
+{"arpl", {Ew, Gw}},			//{"movsxd", {Gv, Ed}},
 {0, {SPECIAL_TYPE_PREFIX}},		/* fs-prefix */
 {0, {SPECIAL_TYPE_PREFIX}},		/* gs-prefix */
 {0, {SPECIAL_TYPE_PREFIX}},		/* op-size prefix */
