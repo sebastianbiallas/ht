@@ -1049,7 +1049,7 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 			if (drexoc0 == 0) {
 				emitmodrm_mod(3);
 				emitmodrm_rm(op->xmm);
-				if (op->xmm > 7) rexprefix |= rexb;				
+				if (op->xmm > 7) rexprefix |= rexb;
 			} else {
 				emitmodrm_reg(op->xmm);
 				if (op->xmm > 7) rexprefix |= rexr;

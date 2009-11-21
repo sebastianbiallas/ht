@@ -218,13 +218,13 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 				}
 			}
 		} else {
-			if (mod == 0 && rm == 5) {
+			if (mod == 0 && (rm & 7) == 5) {
 				op->mem.hasdisp = true;
 				op->mem.disp = disp;
 				op->mem.base = X86_REG_NO;
 				op->mem.index = X86_REG_NO;
 				op->mem.scale = 0;
-			} else if (rm == 4) {
+			} else if ((rm & 7) == 4) {
 				decode_sib(op, mod);
 			} else {
 				op->mem.base = rm;
@@ -1007,6 +1007,7 @@ void x86dis::filloffset(CPU_ADDR &addr, uint64 offset)
 uint32 x86dis::getdisp()
 {
 	if (have_disp) return disp;
+	disp = 0;
 	have_disp = true;
 	int modrm = getmodrm();
 	int mod = mkmod(modrm);
@@ -1017,41 +1018,23 @@ uint32 x86dis::getdisp()
 			disp = getword();
 		} else {
 			switch (mod) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getword();
-				break;
+			case 1: disp = getbyte(); break;
+			case 2: disp = getword(); break;
 			}
 		}
 	} else {
+		rm &= 7;
 		if (mod == 0 && rm == 5) {
-			disp = getdword();
+			mod = 2;
 		} else if (rm == 4) {
-			int sib = getsib();
-			int base = mkbase(sib);
-			int d = mod;
-			if ((base & 0x7) == 5 && mod == 0) {
-				d = 2;
+			int base = mkbase(getsib()) & 7;
+			if (mod == 0 && base == 5) {
+				mod = 2;
 			}
-			switch (d) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getdword();
-				break;
-			}
-		} else {
-			switch (mod) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getdword();
-				break;
-			}
+		}
+		switch (mod) {
+		case 1: disp = getbyte(); break;
+		case 2: disp = getdword(); break;
 		}
 	}
 	return disp;
