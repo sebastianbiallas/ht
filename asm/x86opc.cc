@@ -3,7 +3,7 @@
  *	x86opc.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2008 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2009 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -67,7 +67,9 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_I, 0, 0, SIZE_B},
 #define Iw	Ib+1
 {TYPE_I, 0, 0, SIZE_W},
-#define Iv	Iw+1
+#define Id	Iw+1
+{TYPE_I, 0, 0, SIZE_D},
+#define Iv	Id+1
 {TYPE_I, 0, 0, SIZE_VV},
 #define Iv64	Iv+1
 {TYPE_I, 0, INFO_DEFAULT_64, SIZE_VV},
@@ -145,11 +147,21 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_Q, 0, 0, SIZE_Z},
 #define Rw	Qz+1
 {TYPE_R, 0, 0, SIZE_W},
-#define Rr	Rw+1
+#define Rd	Rw+1
+{TYPE_R, 0, 0, SIZE_D},
+#define Rq	Rd+1
+{TYPE_R, 0, 0, SIZE_Q},
+#define Rr	Rq+1
 {TYPE_R, 0, 0, SIZE_R},
 #define Rr64	Rr+1
 {TYPE_R, 0, INFO_DEFAULT_64, SIZE_R},
-#define Sw	Rr64+1
+#define RVw	Rr64+1
+{TYPE_RV, 0, 0, SIZE_W},
+#define RVd	RVw+1
+{TYPE_RV, 0, 0, SIZE_D},
+#define RVq	RVd+1
+{TYPE_RV, 0, 0, SIZE_Q},
+#define Sw	RVq+1
 {TYPE_S, 0, 0, SIZE_W},
 
 #define Vd	Sw+1
@@ -426,6 +438,12 @@ const char *x86_segs[8] = {
 #define GROUP_660F71		1
 #define GROUP_660F72		2
 #define GROUP_660F73		3
+#define GROUP_0F25		4
+#define GROUP_0F25_L		5
+#define GROUP_0F25_W		6
+#define GROUP_0FA		7
+#define GROUP_0FA_L		8
+#define GROUP_0FA_W		9
 
 /*
 
@@ -556,7 +574,7 @@ x86opc_insn x86_32_insns[256] = {
 {"?pusha|pushad| x"},
 {"?popa|popad| x"},
 {"bound", {Gv, Mq}},
-{"arpl", {Ew, Rw}},			//{"movsxd", {Gv, Ed}},
+{"arpl", {Ew, Gw}},			//{"movsxd", {Gv, Ed}},
 {0, {SPECIAL_TYPE_PREFIX}},		/* fs-prefix */
 {0, {SPECIAL_TYPE_PREFIX}},		/* gs-prefix */
 {0, {SPECIAL_TYPE_PREFIX}},		/* op-size prefix */
@@ -3416,6 +3434,12 @@ E(11)
 {"vmovupd", _128|_66|_0f, {Wo, Vo}},
 {"vmovupd", _256|_66|_0f, {Xy, Yy}},
 E(12)
+{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25}},
+{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_W}},
+{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_L}},
+{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA}},
+{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_W}},
+{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_L}},
 {"vmovddup", _128|_f2|_0f, {Vo, Wq}},
 {"vmovddup", _256|_f2|_0f, {Yy, Xy}},
 {"vmovhlps", _128|_0f, {Vo, VVo, VRo}},
@@ -4229,6 +4253,72 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {"vpsllq", _128|_66|_0f, {VVo, VRo, Ib}},
 {"vpslldq", _128|_66|_0f, {VVo, VRo, Ib}},
+},
+/* 4 - GROUP_0F2512 */
+{
+{"llwpcb", _128|_0f25|W0, {Rw}},
+{"slwpcb", _128|_0f25|W0, {Rw}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 5 - GROUP_0F2512_L */
+{
+{"llwpcb", _256|_0f25|W0, {Rd}},
+{"slwpcb", _256|_0f25|W0, {Rd}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 6 - GROUP_0F2512_W */
+{
+{"llwpcb", _128|_0f25|W1, {Rq}},
+{"slwpcb", _128|_0f25|W1, {Rq}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 7 - GROUP_0FA */
+{
+{"lwpins", _128|_0fA, {RVw, Ed, Iw}},
+{"lwpval", _128|_0fA, {RVw, Ed, Iw}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 8 - GROUP_0FA_L */
+{
+{"lwpins", _256|_0fA, {RVd, Ed, Id}},
+{"lwpval", _256|_0fA, {RVd, Ed, Id}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 9 - GROUP_0FA_W */
+{
+{"lwpins", _128|_0fA|W1, {RVq, Ed, Id}},
+{"lwpval", _128|_0fA|W1, {RVq, Ed, Id}},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
 },
 };
 

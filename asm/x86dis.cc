@@ -3,7 +3,7 @@
  *	x86dis.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2008 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2009 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -47,7 +47,6 @@
 #define vexb(vex) (!((vex)&0x20))
 
 #define vexl(vex) (!!((vex)&0x04))
-#define vexmmmm(vex) ((vex)&0xf)
 #define vexmmmmm(vex) ((vex)&0x1f)
 #define vexvvvv(vex) (((~(vex))>>3)&0xf)
 #define vexpp(vex) ((vex)&0x3)
@@ -136,12 +135,12 @@ uint x86dis::mkreg(uint modrm)
 
 uint x86dis::mkindex(uint sib)
 {
-	return (sib>>3 & 0x07) | !!rexx(insn.rexprefix) << 3;	
+	return (sib>>3 & 0x07) | !!rexx(insn.rexprefix) << 3;
 }
 
 uint x86dis::mkrm(uint modrm)
 {
-	return (modrm & 0x07) | !!rexb(insn.rexprefix) << 3;	
+	return (modrm & 0x07) | !!rexb(insn.rexprefix) << 3;
 }
 
 static bool is_xmm_op(x86dis_insn *insn, char size)
@@ -219,13 +218,13 @@ void x86dis::decode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 				}
 			}
 		} else {
-			if (mod == 0 && rm == 5) {
+			if (mod == 0 && (rm & 7) == 5) {
 				op->mem.hasdisp = true;
 				op->mem.disp = disp;
 				op->mem.base = X86_REG_NO;
 				op->mem.index = X86_REG_NO;
 				op->mem.scale = 0;
-			} else if (rm == 4) {
+			} else if ((rm & 7) == 4) {
 				decode_sib(op, mod);
 			} else {
 				op->mem.base = rm;
@@ -317,7 +316,7 @@ void x86dis::decode_vex_insn(x86opc_vex_insn *xinsn)
 					case TYPE_W:
 					case TYPE_X:
 						/* get whole modrm/sib/disp stuff first
-		    				 * (otherwise a TYPE_VI immediate might 
+						 * (otherwise a TYPE_VI immediate might 
 						 * get fetched fetched before the modrm stuff)
 						 */
 						getdisp();
@@ -411,19 +410,19 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 				if (c == 0xc5) {
 					// 2 byte vex
 					insn.vexprefix.mmmm = 1;
+					insn.vexprefix.w = 0;
 				} else {
 					// 3 byte vex / xop
 					insn.rexprefix |= vexx(vex) << 1;
 					insn.rexprefix |= vexb(vex);
+					insn.vexprefix.mmmm = vexmmmmm(vex);
 					if (c == 0x8f) {
-						insn.vexprefix.mmmm |= vexmmmmm(vex);
-						if (insn.vexprefix.mmmm != 8
-						 && insn.vexprefix.mmmm != 9) {
+						if (insn.vexprefix.mmmm < 8
+						 || insn.vexprefix.mmmm > 10) {
 							invalidate();
 							break;
 						}
 					} else {
-						insn.vexprefix.mmmm |= vexmmmm(vex);
 						if (insn.vexprefix.mmmm == 0
 						 || insn.vexprefix.mmmm > 3) {
 							invalidate();
@@ -431,7 +430,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 						}
 					}
 					vex = getbyte();
-					insn.vexprefix.w |= vexw(vex);
+					insn.vexprefix.w = vexw(vex);
 				}
 				insn.vexprefix.vvvv = vexvvvv(vex);
 				insn.vexprefix.l = vexl(vex);
@@ -742,9 +741,13 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 	}
 	case TYPE_R: {
 		/* rm of ModR/M picks general register */
-		op->type = X86_OPTYPE_REG;
-		op->size = esizeop(xop->size);
-		op->reg = mkrm(getmodrm());
+		if (mkmod(getmodrm()) == 3) {
+			op->type = X86_OPTYPE_REG;
+			op->size = esizeop(xop->size);
+			op->reg = mkrm(getmodrm());
+		} else {
+			invalidate();
+		}
 		break;
 	}
 	case TYPE_Rx: {
@@ -759,6 +762,13 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->type = X86_OPTYPE_REG;
 		op->size = esizeop(xop->size);
 		op->reg = xop->extra;
+		break;
+	}
+	case TYPE_RV: {
+		/* VEX.vvvv picks general register */
+		op->type = X86_OPTYPE_REG;
+		op->size = esizeop(xop->size);
+		op->reg = insn.vexprefix.vvvv;
 		break;
 	}
 	case TYPE_S: {
@@ -997,6 +1007,7 @@ void x86dis::filloffset(CPU_ADDR &addr, uint64 offset)
 uint32 x86dis::getdisp()
 {
 	if (have_disp) return disp;
+	disp = 0;
 	have_disp = true;
 	int modrm = getmodrm();
 	int mod = mkmod(modrm);
@@ -1007,41 +1018,23 @@ uint32 x86dis::getdisp()
 			disp = getword();
 		} else {
 			switch (mod) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getword();
-				break;
+			case 1: disp = getbyte(); break;
+			case 2: disp = getword(); break;
 			}
 		}
 	} else {
+		rm &= 7;
 		if (mod == 0 && rm == 5) {
-			disp = getdword();
+			mod = 2;
 		} else if (rm == 4) {
-			int sib = getsib();
-			int base = mkbase(sib);
-			int d = mod;
-			if ((base & 0x7) == 5 && mod == 0) {
-				d = 2;
+			int base = mkbase(getsib()) & 7;
+			if (mod == 0 && base == 5) {
+				mod = 2;
 			}
-			switch (d) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getdword();
-				break;
-			}
-		} else {
-			switch (mod) {
-			case 1:
-				disp = getbyte();
-				break;
-			case 2:
-				disp = getdword();
-				break;
-			}
+		}
+		switch (mod) {
+		case 1: disp = getbyte(); break;
+		case 2: disp = getdword(); break;
 		}
 	}
 	return disp;
