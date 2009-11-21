@@ -109,7 +109,7 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 		file->seek(ofs);
 		file->read(&cmd, sizeof cmd);
 		createHostStruct(&cmd, MACHO_COMMAND_struct, image_endianess);
-		if (cmd.cmdsize > 1024) break;
+		if (cmd.cmdsize > 1024*1024) break;
 		macho_shared->cmds.cmds[i] = ht_malloc(cmd.cmdsize);
 		file->seek(ofs);
 		if (file->read(macho_shared->cmds.cmds[i], cmd.cmdsize) != cmd.cmdsize) {
