@@ -688,6 +688,15 @@ bool x86asm::encode_vex_insn(x86asm_insn *insn, x86opc_vex_insn *opcode, int opc
 		clearcode();
 		return false;
 	}
+
+	if (addrsize == X86_ADDRSIZE64) {
+		if (eaddrsize == X86_ADDRSIZE16) return false;
+		if (eaddrsize == X86_ADDRSIZE32) emitbyte(0x67);
+	} else {
+		if (eaddrsize != addrsize) emitbyte(0x67);
+	}
+
+
 	switch (insn->segprefix) {
 	case X86_PREFIX_ES: emitbyte(0x26); break;
 	case X86_PREFIX_CS: emitbyte(0x2e); break;
@@ -842,9 +851,10 @@ bool x86asm::encode_modrm_v(const x86addrcoding (*modrmc)[3][8], x86_insn_op *op
 	if (op->mem.scale > 1) return false;
 	for (int mod=0; mod < 3; mod++) {
 		for (int rm=0; rm < 8; rm++) {
-			const x86addrcoding *c=&(*modrmc)[mod][rm];
-			int r1=c->reg1, r2=c->reg2;
-			if (r2 == (op->mem.base&~8)) {
+			const x86addrcoding *c = &(*modrmc)[mod][rm];
+			int r1 = c->reg1;
+			int r2 = c->reg2;
+			if (r2 == (op->mem.base & ~8)) {
 				int t = r1;
 				r1 = r2;
 				r2 = t;
@@ -1137,25 +1147,16 @@ bool x86asm::encode_sib_v(x86_insn_op *op, int mindispsize, int *_ss, int *_inde
 	}
 	if (index != X86_REG_NO) {
 		switch (scale) {
-		case 1:
-			ss = 0;
-			break;
-		case 2:
-			ss = 1;
-			break;
-		case 4:
-			ss = 2;
-			break;
-		case 8:
-			ss = 3;
-			break;
-		default:
-			return 0;
-		}				
+		case 1: ss = 0; break;
+		case 2: ss = 1; break;
+		case 4: ss = 2; break;
+		case 8: ss = 3; break;
+		default: return 0;
+		}
 	} else {
 		ss = 0;
 		index = 4;
-	}		
+	}
 	switch (mindispsize) {
 	case 0:
 		mod = 0;
