@@ -3593,7 +3593,6 @@ E(42)
 {"vmpsadbw", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
 E(44)
 {"vpclmulqdq", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
-/*
 E(48)
 {"vpermil2ps", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
 {"vpermil2ps", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
@@ -3604,7 +3603,6 @@ E(49)
 {"vpermil2pd", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
-*/
 E(4a)
 {"vblendvps", _128|_66|_0f3a, {Vo, VVo, Wo, VIo}},
 {"vblendvps", _256|_66|_0f3a, {Yy, YVy, Xy, YIy}},
@@ -4073,6 +4071,9 @@ E(c6)
 {"vshufps", _256|_0f, {Yy, YVy, Xy, Ib}},
 {"vshufpd", _128|_66|_0f, {Vo, VVo, Wo, Ib}},
 {"vshufpd", _256|_66|_0f, {Yy, YVy, Xy, Ib}},
+{"vphadddwd", _128|_0f25, {Vo, Wo}},
+E(c7)
+{"vphadddwq", _128|_0f25, {Vo, Wo}},
 E(cb)
 {"vphadddq", _128|_0f25, {Vo, Wo}},
 E(cc)
@@ -4332,7 +4333,7 @@ v28, v29, v2a, v2b, v2c, v2d, v2e, v2f,
 v30, v31, v32, v33, v34, v35,   0, v37,
 v38, v39, v3a, v3b, v3c, v3d, v3e, v3f,
 v40, v41, v42,   0, v44,   0,   0,   0,
-  0,   0, v4a, v4b, v4c,   0,   0,   0,
+v48, v49, v4a, v4b, v4c,   0,   0,   0,
 v50, v51, v52, v53, v54, v55, v56, v57,
 v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
 v60, v61, v62, v63, v64, v65, v66, v67,
@@ -4343,11 +4344,11 @@ v80, v81, v82, v83,   0, v85, v86, v87,
   0,   0,   0,   0,   0,   0, v8e, v8f,
 v90, v91, v92, v93, v94, v95, v96, v97,
 v98, v99, v9a, v9b, v9c, v9d, v9e, v9f,
-va0, va1, va2,   0,   0,   0, va6, va7,
+va0, va1, va2, va3,   0,   0, va6, va7,
 va8, va9, vaa, vab, vac, vad, vae, vaf,
-  0,   0,   0, va3,   0,   0, vb6, vb7,
+  0,   0,   0,   0,   0,   0, vb6, vb7,
 vb8, vb9, vba, vbb, vbc, vbd, vbe, vbf,
-vc0, vc1, vc2, vc3, vc4, vc5, vc6,   0,
+vc0, vc1, vc2, vc3, vc4, vc5, vc6, vc7,
   0,   0,   0, vcb, vcc, vcd, vce, vcf,
 vd0, vd1, vd2, vd3, vd4, vd5, vd6, vd7,
 vd8, vd9, vda, vdb, vdc, vdd, vde, vdf,
