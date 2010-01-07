@@ -622,9 +622,9 @@ x86opc_insn x86_32_insns[256] = {
 {"mov", {Ev, Gv}},
 {"mov", {Gb, Eb}},
 {"mov", {Gv, Ev}},
-{"mov", {Ev, Sw}},
+{"mov", {MRwv, Sw}},
 {"lea", {Gv, M}},
-{"mov", {Sw, Ev}},
+{"mov", {Sw, MRwv}},
 {0, {SPECIAL_TYPE_PREFIX}}, // XOP prefix {0, {SPECIAL_TYPE_GROUP, GROUP_8F}},
 /* 90 */
 {"nop"},		/* same as xchg (e)ax, (e)ax */
