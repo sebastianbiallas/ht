@@ -119,7 +119,9 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_MR, SIZE_R, 0, SIZE_B},
 #define MRwr	MRbr+1
 {TYPE_MR, SIZE_R, 0, SIZE_W},
-#define MRdr	MRwr+1
+#define MRwv	MRwr+1
+{TYPE_MR, SIZE_V, 0, SIZE_W},
+#define MRdr	MRwv+1
 {TYPE_MR, SIZE_R, 0, SIZE_D},
 #define MRbd	MRdr+1
 {TYPE_MR, SIZE_D, 0, SIZE_B},
@@ -2770,12 +2772,12 @@ x86opc_insn x86_group_insns[][8] = {
 },
 /* 16 - GROUP_EXT_00 */
 {
-{"sldt", {Ew}},
-{"str", {Ew}},
-{"lldt", {Ew}},
-{"ltr", {Ew}},
-{"verr", {Ew}},
-{"verw", {Ew}},
+{"sldt", {MRwv}},
+{"str", {MRwv}},
+{"lldt", {MRwv}},
+{"ltr", {MRwv}},
+{"verr", {MRwv}},
+{"verw", {MRwv}},
 {0},
 {0},
 },
@@ -2785,9 +2787,9 @@ x86opc_insn x86_group_insns[][8] = {
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_1}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_2}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_3}},
-{"smsw", {Ew}},
+{"smsw", {MRwv}},
 {0},
-{"lmsw", {Ew}},
+{"lmsw", {MRwv}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_7}},
 },
 /* 18 - GROUP_EXT_18 */
