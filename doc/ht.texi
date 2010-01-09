@@ -58,7 +58,7 @@ be registered in certain jurisdictions.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999-2008 The HT authors. @*
+Copyright @copyright{} 1999-2010 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -603,7 +603,7 @@ try to guess file type
 @unnumberedsec Where to download?
 
 @noindent
-The HT homepage is at 
+The HT homepage is located at 
 @hturl{}
 
 @noindent
