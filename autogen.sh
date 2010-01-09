@@ -8,4 +8,4 @@ aclocal -I . \
 
 echo HT sources are now prepared. To build here, run:
 echo " ./configure"
-echo " make && make htdoc.h && make"
+echo " make ; make htdoc.h ; make"
