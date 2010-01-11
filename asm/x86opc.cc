@@ -4113,7 +4113,6 @@ E(d7)
 {"vphaddwq", _128|_0f25, {Vo, Wo}}, // FIXME
 E(d8)
 {"vpsubusb", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vphaddudq", _128|_0f25, {Vo, Wo}},
 E(d9)
 {"vpsubusw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(da)
@@ -4121,6 +4120,7 @@ E(da)
 E(db)
 {"vpand", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vaesimc", _128|_66|_0f38, {Vo, Wo}},
+{"vphaddudq", _128|_0f25, {Vo, Wo}},
 E(dc)
 {"vpaddusb", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vaesenc", _128|_66|_0f38, {Vo, VVo, Wo}},
