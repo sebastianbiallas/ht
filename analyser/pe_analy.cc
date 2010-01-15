@@ -291,9 +291,9 @@ ObjectID	PEAnalyser::getObjectID() const
 uint PEAnalyser::bufPtr(Address *Addr, byte *buf, int size)
 {
 	FileOfs ofs = addressToFileofs(Addr);
-/*	if (ofs == INVALID_FILE_OFS) {
+	if (ofs == INVALID_FILE_OFS) {
 		int as=0;
-	}*/
+	}
 	assert(ofs != INVALID_FILE_OFS);
 	file->seek(ofs);
 	return file->read(buf, size);
