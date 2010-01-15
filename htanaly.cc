@@ -1333,12 +1333,15 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	}
 	case cmd_analyser_follow: {
 		if (!analy) break;
-		Address *c, *b;
+		Address *c;
 		if (!getCurrentAddress(&c)) break;
-		b = analy->createAddress();
+		std::auto_ptr<Address> blub(c);
+		if (!analy->validAddress(c, scinitialized)) break;
+		Address *b = analy->createAddress();
+		std::auto_ptr<Address> blub2(b);
 		uint bz = b->byteSize();
 		if (!bz) break;
-		byte *buf = ht_malloc(bz);
+		byte buf[bz];
 		if (analy->bufPtr(c, buf, bz) != bz) break;
 		b->getFromArray(buf);
 		if (analy->validAddress(b, scvalid)) {
