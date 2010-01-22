@@ -3,7 +3,7 @@
  *	x86opc.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2009 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2010 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -119,7 +119,9 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_MR, SIZE_R, 0, SIZE_B},
 #define MRwr	MRbr+1
 {TYPE_MR, SIZE_R, 0, SIZE_W},
-#define MRdr	MRwr+1
+#define MRwv	MRwr+1
+{TYPE_MR, SIZE_V, 0, SIZE_W},
+#define MRdr	MRwv+1
 {TYPE_MR, SIZE_R, 0, SIZE_D},
 #define MRbd	MRdr+1
 {TYPE_MR, SIZE_D, 0, SIZE_B},
@@ -620,9 +622,9 @@ x86opc_insn x86_32_insns[256] = {
 {"mov", {Ev, Gv}},
 {"mov", {Gb, Eb}},
 {"mov", {Gv, Ev}},
-{"mov", {Ev, Sw}},
+{"mov", {MRwv, Sw}},
 {"lea", {Gv, M}},
-{"mov", {Sw, Ev}},
+{"mov", {Sw, MRwv}},
 {0, {SPECIAL_TYPE_PREFIX}}, // XOP prefix {0, {SPECIAL_TYPE_GROUP, GROUP_8F}},
 /* 90 */
 {"nop"},		/* same as xchg (e)ax, (e)ax */
@@ -2770,12 +2772,12 @@ x86opc_insn x86_group_insns[][8] = {
 },
 /* 16 - GROUP_EXT_00 */
 {
-{"sldt", {Ew}},
-{"str", {Ew}},
-{"lldt", {Ew}},
-{"ltr", {Ew}},
-{"verr", {Ew}},
-{"verw", {Ew}},
+{"sldt", {MRwv}},
+{"str", {MRwv}},
+{"lldt", {MRwv}},
+{"ltr", {MRwv}},
+{"verr", {MRwv}},
+{"verw", {MRwv}},
 {0},
 {0},
 },
@@ -2785,9 +2787,9 @@ x86opc_insn x86_group_insns[][8] = {
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_1}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_2}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_3}},
-{"smsw", {Ew}},
+{"smsw", {MRwv}},
 {0},
-{"lmsw", {Ew}},
+{"lmsw", {MRwv}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0F01_7}},
 },
 /* 18 - GROUP_EXT_18 */
@@ -3593,7 +3595,6 @@ E(42)
 {"vmpsadbw", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
 E(44)
 {"vpclmulqdq", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
-/*
 E(48)
 {"vpermil2ps", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
 {"vpermil2ps", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
@@ -3604,7 +3605,6 @@ E(49)
 {"vpermil2pd", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, YIy, I4}},
 {"vpermil2pd", _256|_66|_0f3a|W1, {Yy, YVy, YIy, Xy, I4}},
-*/
 E(4a)
 {"vblendvps", _128|_66|_0f3a, {Vo, VVo, Wo, VIo}},
 {"vblendvps", _256|_66|_0f3a, {Yy, YVy, Xy, YIy}},
@@ -4073,6 +4073,9 @@ E(c6)
 {"vshufps", _256|_0f, {Yy, YVy, Xy, Ib}},
 {"vshufpd", _128|_66|_0f, {Vo, VVo, Wo, Ib}},
 {"vshufpd", _256|_66|_0f, {Yy, YVy, Xy, Ib}},
+{"vphadddwd", _128|_0f25, {Vo, Wo}},
+E(c7)
+{"vphadddwq", _128|_0f25, {Vo, Wo}},
 E(cb)
 {"vphadddq", _128|_0f25, {Vo, Wo}},
 E(cc)
@@ -4110,7 +4113,6 @@ E(d7)
 {"vphaddwq", _128|_0f25, {Vo, Wo}}, // FIXME
 E(d8)
 {"vpsubusb", _128|_66|_0f, {Vo, VVo, Wo}},
-{"vphaddudq", _128|_0f25, {Vo, Wo}},
 E(d9)
 {"vpsubusw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(da)
@@ -4118,6 +4120,7 @@ E(da)
 E(db)
 {"vpand", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vaesimc", _128|_66|_0f38, {Vo, Wo}},
+{"vphaddudq", _128|_0f25, {Vo, Wo}},
 E(dc)
 {"vpaddusb", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vaesenc", _128|_66|_0f38, {Vo, VVo, Wo}},
@@ -4332,7 +4335,7 @@ v28, v29, v2a, v2b, v2c, v2d, v2e, v2f,
 v30, v31, v32, v33, v34, v35,   0, v37,
 v38, v39, v3a, v3b, v3c, v3d, v3e, v3f,
 v40, v41, v42,   0, v44,   0,   0,   0,
-  0,   0, v4a, v4b, v4c,   0,   0,   0,
+v48, v49, v4a, v4b, v4c,   0,   0,   0,
 v50, v51, v52, v53, v54, v55, v56, v57,
 v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
 v60, v61, v62, v63, v64, v65, v66, v67,
@@ -4343,11 +4346,11 @@ v80, v81, v82, v83,   0, v85, v86, v87,
   0,   0,   0,   0,   0,   0, v8e, v8f,
 v90, v91, v92, v93, v94, v95, v96, v97,
 v98, v99, v9a, v9b, v9c, v9d, v9e, v9f,
-va0, va1, va2,   0,   0,   0, va6, va7,
+va0, va1, va2, va3,   0,   0, va6, va7,
 va8, va9, vaa, vab, vac, vad, vae, vaf,
-  0,   0,   0, va3,   0,   0, vb6, vb7,
+  0,   0,   0,   0,   0,   0, vb6, vb7,
 vb8, vb9, vba, vbb, vbc, vbd, vbe, vbf,
-vc0, vc1, vc2, vc3, vc4, vc5, vc6,   0,
+vc0, vc1, vc2, vc3, vc4, vc5, vc6, vc7,
   0,   0,   0, vcb, vcc, vcd, vce, vcf,
 vd0, vd1, vd2, vd3, vd4, vd5, vd6, vd7,
 vd8, vd9, vda, vdb, vdc, vdd, vde, vdf,

@@ -385,7 +385,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 			case 0xc5: {
 				byte vex = getbyte();
 				if (c == 0x8f) {
-					if ((vex & 0x08) == 0) {
+					if ((vex & 0x38) == 0) {
 						modrm = vex;
 						decode_insn(&x86_pop_group);
 						break;
@@ -417,8 +417,8 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					insn.rexprefix |= vexb(vex);
 					insn.vexprefix.mmmm = vexmmmmm(vex);
 					if (c == 0x8f) {
-						if (insn.vexprefix.mmmm < 8
-						 || insn.vexprefix.mmmm > 10) {
+						if (insn.vexprefix.mmmm > 10) {
+							// insn.vexprefix.mmmm >= 8 is implied
 							invalidate();
 							break;
 						}
@@ -638,30 +638,21 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		/* relative branch offset */
 		op->type = X86_OPTYPE_IMM;
 		switch (addrsize) {
-		case X86_ADDRSIZE16:
-			op->size = 2;
-			break;
-		case X86_ADDRSIZE32:
-			op->size = 4;
-			break;
-		case X86_ADDRSIZE64:
-			op->size = 8;
-			break;
+		case X86_ADDRSIZE16: op->size = 2; break;
+		case X86_ADDRSIZE32: op->size = 4; break;
+		case X86_ADDRSIZE64: op->size = 8; break;
 		default: {assert(0);}
 		}
 		int s = esizeop(xop->size);
 		sint64 addr = getoffset() + (codep - ocodep);
 		switch (s) {
-		case 1:
-			op->imm = sint8(getbyte()) + addr + 1;
-			break;
-		case 2:
-			op->imm = sint16(getword()) + addr + 2;
-			break;
+		case 1: op->imm = sint8(getbyte()) + addr + 1; break;
+		case 2: op->imm = sint16(getword()) + addr + 2; break;
 		case 4:
-		case 8:
-			op->imm = sint32(getdword()) + addr + 4;
-			break;
+		case 8: op->imm = sint32(getdword()) + addr + 4; break;
+		}
+		if (insn.eopsize == X86_OPSIZE16) {
+			op->imm &= 0xffff;
 		}
 		break;
 	}
@@ -690,15 +681,9 @@ void x86dis::decode_op(x86_insn_op *op, x86opc_insn_op *xop)
 		op->mem.addrsize = insn.eaddrsize;
 		op->mem.hasdisp = true;
 		switch (insn.eaddrsize) {
-		case X86_ADDRSIZE16:
-			op->mem.disp = getword();
-			break;
-		case X86_ADDRSIZE32:
-			op->mem.disp = getdword();
-			break;
-		case X86_ADDRSIZE64:
-			op->mem.disp = getqword();
-			break;
+		case X86_ADDRSIZE16: op->mem.disp = getword(); break;
+		case X86_ADDRSIZE32: op->mem.disp = getdword(); break;
+		case X86_ADDRSIZE64: op->mem.disp = getqword(); break;
 		default: {assert(0);}
 		}
 		op->mem.base = X86_REG_NO;

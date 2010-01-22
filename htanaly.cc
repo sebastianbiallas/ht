@@ -488,7 +488,7 @@ void AnalyInfoline::update(Address *cursor_addr, FileOfs ecursor_addr)
 
 bool AnalyInfoline::valid()
 {
-	return ((analy)&&(analy->analy));
+	return analy && analy->analy;
 }
 
 /*
@@ -798,7 +798,6 @@ void ht_aviewer::generateOutputDialog()
 		char filename[260];
 		char start_str[1024], end_str[1024];
 		viewer_pos start, end;
-		bool by_lines;
 		output_dialog_data odd;
 		ViewDataBuf vdb(dialog, &odd, sizeof odd);
 		getdatastr(&odd.id1, filename);
@@ -829,7 +828,7 @@ void ht_aviewer::generateOutputDialog()
 		try {
 			String name(filename);
 			LocalFile s(name, IOAM_WRITE, FOM_CREATE);
-			AnalyserOutput *out;
+			AnalyserOutput *out = NULL;
 			switch (odd.lp.cursor_pos) {
 			case 0:
 				out = new AnalyserHTMLOutput();
@@ -1334,12 +1333,15 @@ void ht_aviewer::handlemsg(htmsg *msg)
 	}
 	case cmd_analyser_follow: {
 		if (!analy) break;
-		Address *c, *b;
+		Address *c;
 		if (!getCurrentAddress(&c)) break;
-		b = analy->createAddress();
+		std::auto_ptr<Address> blub(c);
+		if (!analy->validAddress(c, scinitialized)) break;
+		Address *b = analy->createAddress();
+		std::auto_ptr<Address> blub2(b);
 		uint bz = b->byteSize();
 		if (!bz) break;
-		byte *buf = ht_malloc(bz);
+		byte buf[bz];
 		if (analy->bufPtr(c, buf, bz) != bz) break;
 		b->getFromArray(buf);
 		if (analy->validAddress(b, scvalid)) {
