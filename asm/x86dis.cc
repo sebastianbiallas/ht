@@ -385,7 +385,7 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 			case 0xc5: {
 				byte vex = getbyte();
 				if (c == 0x8f) {
-					if ((vex & 0x08) == 0) {
+					if ((vex & 0x38) == 0) {
 						modrm = vex;
 						decode_insn(&x86_pop_group);
 						break;
@@ -417,8 +417,8 @@ void x86dis::decode_insn(x86opc_insn *xinsn)
 					insn.rexprefix |= vexb(vex);
 					insn.vexprefix.mmmm = vexmmmmm(vex);
 					if (c == 0x8f) {
-						if (insn.vexprefix.mmmm < 8
-						 || insn.vexprefix.mmmm > 10) {
+						if (insn.vexprefix.mmmm > 10) {
+							// insn.vexprefix.mmmm >= 8 is implied
 							invalidate();
 							break;
 						}
