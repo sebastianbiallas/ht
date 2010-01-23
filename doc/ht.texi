@@ -23,7 +23,7 @@ END-INFO-DIR-ENTRY
 This file documents the HT Editor.
 
 @c 
-Copyright @copyright{} 1999-2009 The HT authors. @*
+Copyright @copyright{} 1999-2010 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -51,14 +51,14 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 2.0.19, May 2008}
+@subtitle{Edition 2.0.19, January 2010}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999-2009 The HT authors. @*
+Copyright @copyright{} 1999-2010 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -604,7 +604,7 @@ try to guess file type
 @unnumberedsec Where to download?
 
 @noindent
-The HT homepage is at 
+The HT homepage is located at 
 @hturl{}
 
 @noindent
