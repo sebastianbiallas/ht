@@ -417,10 +417,11 @@ const char *x86_segs[8] = {
 #define GROUP_EXT_72		20
 #define GROUP_EXT_73		21
 #define GROUP_EXT_AE		22
-#define GROUP_EXT_BA		23
-#define GROUP_EXT_C7		24
-#define GROUP_EXT_66_C7		25
-#define GROUP_EXT_F3_C7		26
+#define GROUP_EXT_F3_AE		23
+#define GROUP_EXT_BA		24
+#define GROUP_EXT_C7		25
+#define GROUP_EXT_66_C7		26
+#define GROUP_EXT_F3_C7		27
 
 #define GROUP_SPECIAL_0F01_0	0
 #define GROUP_SPECIAL_0F01_1	1
@@ -1614,7 +1615,14 @@ x86opc_insn x86_insns_ext_f3[256] = {
 /* a0 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* a8 */
-{0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0, {SPECIAL_TYPE_GROUP, GROUP_EXT_F3_AE}},
+{0},
 /* b0 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* b8 */
@@ -2847,6 +2855,17 @@ x86opc_insn x86_group_insns[][8] = {
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_6}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_7}},
 },
+/* 22 - GROUP_EXT_F3_AE */
+{
+{"rdfsbase", {Rr}},
+{"rdgsbase", {Rr}},
+{"wrfsbase", {Rr}},
+{"wrgsbase", {Rr}},
+{0},
+{0},
+{0},
+{0},
+},
 /* 23 - GROUP_EXT_BA */
 {
 {0},
@@ -2970,7 +2989,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"fxsave", {M}},
+{"?fxsave|fxsave|fxsave64", {M}},
 },
 /* 6 - GROUP_SPECIAL_0FAE_1 */
 {
@@ -2983,7 +3002,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"fxstor", {M}},
+{"?fxstor|fxstor|fxstor64", {M}},
 },
 /* 7 - GROUP_SPECIAL_0FAE_2 */
 {
@@ -3022,7 +3041,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"xsave", {M}},
+{"?xsave|xsave|xsave64", {M}},
 },
 /* 10 - GROUP_SPECIAL_0FAE_5 */
 {
@@ -3035,7 +3054,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"xrstor", {M}},
+{"?xrstor|xrstor|xrstor64", {M}},
 },
 /* 11 - GROUP_SPECIAL_0FAE_6 */
 {
@@ -3046,7 +3065,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 {0},
-{0},
+{"?xsaveopt|xsaveopt|xsaveopt64", {M}},
 // with mod!=11:
 {0},
 },
@@ -3452,6 +3471,8 @@ E(12)
 E(13)
 {"vmovlps", _128|_0f, {Mq, Vo}},
 {"vmovlpd", _128|_66|_0f, {Mq, Vo}},
+{"vcvtph2ps", _128|_0f, {Vo, Wq}},
+{"vcvtph2ps", _256|_66|_0f38, {Yy, Wo}},
 E(14)
 {"vpextrb", _128|_66|_0f3a, {MRbr, Vo, Ib}},
 {"vunpcklps", _128|_0f, {Vo, VVo, Wo}},
@@ -3492,6 +3513,8 @@ E(1c)
 {"vpabsb", _128|_66|_0f38, {Vo, Wo}},
 E(1d)
 {"vpabsw", _128|_66|_0f38, {Vo, Wo}},
+{"vcvtps2ph", _128|_66|_0f3a, {Wq, Vo, Ib}},
+{"vcvtps2ph", _256|_66|_0f3a, {Wo, Yy, Ib}},
 E(1e)
 {"vpabsd", _128|_66|_0f38, {Vo, Wo}},
 E(20)
