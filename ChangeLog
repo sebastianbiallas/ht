@@ -8,6 +8,7 @@ version 2.1.0:
 version 2.0.19:
 	- [x86] fixed a lot of small bugs
 	- [x86] AVX updates
+	- [x86] BMI and TBM instructions
 
 version 2.0.18:
 	- updated c++ demangler

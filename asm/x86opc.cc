@@ -1630,7 +1630,7 @@ x86opc_insn x86_insns_ext_f3[256] = {
 {0},
 {0},
 {0},
-{0},
+{"tzcnt", {Gv, Ev}},
 {"lzcnt", {Gv, Ev}},
 {0},
 {0},
