@@ -4209,6 +4209,8 @@ E(f1)
 {"vpsllw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f2)
 {"vpslld", _128|_66|_0f, {Vo, VVo, Wo}},
+{"andn", _128|_0f38|W0, {Gd, RVd, Ed}},
+{"andn", _128|_0f38|W1, {Gq, RVq, Eq}},
 E(f3)
 {"vpsllq", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f4)
@@ -4219,6 +4221,8 @@ E(f6)
 {"vpsadbw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f7)
 {"vmaskmovdqu", _128|_66|_0f, {Vo, VRo}},
+{"bextr", _128|_0f38|W0, {Gd, RVd, Ed}},
+{"bextr", _128|_0f38|W1, {Gq, RVq, Eq}},
 E(f8)
 {"vpsubb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f9)
