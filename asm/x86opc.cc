@@ -157,7 +157,9 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_R, 0, 0, SIZE_R},
 #define Rr64	Rr+1
 {TYPE_R, 0, INFO_DEFAULT_64, SIZE_R},
-#define RVw	Rr64+1
+#define Rv	Rr64+1
+{TYPE_R, 0, 0, SIZE_V},
+#define RVw	Rv+1
 {TYPE_RV, 0, 0, SIZE_W},
 #define RVd	RVw+1
 {TYPE_RV, 0, 0, SIZE_D},
@@ -436,6 +438,7 @@ const char *x86_segs[8] = {
 #define GROUP_SPECIAL_0FAE_5	10
 #define GROUP_SPECIAL_0FAE_6	11
 #define GROUP_SPECIAL_0FAE_7	12
+#define GROUP_SPECIAL_0FC7_6	13
 
 #define GROUP_0FAE		0
 #define GROUP_660F71		1
@@ -2885,7 +2888,7 @@ x86opc_insn x86_group_insns[][8] = {
 {0},
 {0},
 {0},
-{"vmptrld", {Mq}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FC7_6}},
 {"vmptrst", {Mq}},
 },
 /* 25 - GROUP_EXT_66_C7 */
@@ -3081,6 +3084,19 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 // with mod!=11:
 {"clflush", {M}},
+},
+/* 12 - GROUP_SPECIAL_0FC7_6 */
+{
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+// with mod!=11:
+{"vmptrld", {Mq}},
 },
 };
 

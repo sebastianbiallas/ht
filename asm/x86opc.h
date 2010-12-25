@@ -260,7 +260,7 @@ struct x86opc_finsn {
 #define X86_REG_IP		66
 
 #define X86_OPC_GROUPS		9
-#define X86_SPECIAL_GROUPS	13
+#define X86_SPECIAL_GROUPS	14
 
 extern x86opc_insn x86_les;
 extern x86opc_insn x86_lds;

@@ -297,10 +297,16 @@ Address *MachoAnalyser::createAddress64(uint64 addr)
 Assembler *MachoAnalyser::createAssembler()
 {
 	switch (macho_shared->header.cputype) {
-	case MACHO_CPU_TYPE_I386:
+	case MACHO_CPU_TYPE_I386: {
 		Assembler *a = new x86asm(X86_OPSIZE32, X86_ADDRSIZE32);
 		a->init();
 		return a;
+	}
+	case MACHO_CPU_TYPE_X86_64: {
+		Assembler *a = new x86_64asm();
+		a->init();
+		return a;
+	}
 	}
 	return NULL;
 }
