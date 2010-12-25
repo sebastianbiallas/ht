@@ -444,12 +444,14 @@ const char *x86_segs[8] = {
 #define GROUP_660F71		1
 #define GROUP_660F72		2
 #define GROUP_660F73		3
-#define GROUP_0F25		4
-#define GROUP_0F25_L		5
-#define GROUP_0F25_W		6
-#define GROUP_0FA		7
-#define GROUP_0FA_L		8
-#define GROUP_0FA_W		9
+#define GROUP_0F25_12		4
+#define GROUP_0F25_12_L		5
+#define GROUP_0F25_12_W		6
+#define GROUP_0FA_12		7
+#define GROUP_0FA_12_L		8
+#define GROUP_0FA_12_W		9
+#define GROUP_0F38_F3		10
+#define GROUP_0F38_F3_W		11
 
 /*
 
@@ -3471,12 +3473,12 @@ E(11)
 {"vmovupd", _128|_66|_0f, {Wo, Vo}},
 {"vmovupd", _256|_66|_0f, {Xy, Yy}},
 E(12)
-{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25}},
-{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_W}},
-{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_L}},
-{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA}},
-{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_W}},
-{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_L}},
+{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_12}},
+{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_12_W}},
+{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_12_L}},
+{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_12}},
+{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_12_W}},
+{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_12_L}},
 {"vmovddup", _128|_f2|_0f, {Vo, Wq}},
 {"vmovddup", _256|_f2|_0f, {Yy, Xy}},
 {"vmovhlps", _128|_0f, {Vo, VVo, VRo}},
@@ -4228,6 +4230,8 @@ E(f2)
 {"andn", _128|_0f38|W0, {Gd, RVd, Ed}},
 {"andn", _128|_0f38|W1, {Gq, RVq, Eq}},
 E(f3)
+{0, _128|_0f38|W0, {SPECIAL_TYPE_GROUP, GROUP_0F38_F3}},
+{0, _128|_0f38|W1, {SPECIAL_TYPE_GROUP, GROUP_0F38_F3_W}},
 {"vpsllq", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f4)
 {"vmuludq", _128|_66|_0f, {Vo, VVo, Wo}},
@@ -4300,7 +4304,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {"vpsllq", _128|_66|_0f, {VVo, VRo, Ib}},
 {"vpslldq", _128|_66|_0f, {VVo, VRo, Ib}},
 },
-/* 4 - GROUP_0F2512 */
+/* 4 - GROUP_0F25_12 */
 {
 {"llwpcb", _128|_0f25|W0, {Rw}},
 {"slwpcb", _128|_0f25|W0, {Rw}},
@@ -4311,7 +4315,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 5 - GROUP_0F2512_L */
+/* 5 - GROUP_0F25_12_L */
 {
 {"llwpcb", _256|_0f25|W0, {Rd}},
 {"slwpcb", _256|_0f25|W0, {Rd}},
@@ -4322,7 +4326,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 6 - GROUP_0F2512_W */
+/* 6 - GROUP_0F25_12_W */
 {
 {"llwpcb", _128|_0f25|W1, {Rq}},
 {"slwpcb", _128|_0f25|W1, {Rq}},
@@ -4333,7 +4337,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 7 - GROUP_0FA */
+/* 7 - GROUP_0FA_12 */
 {
 {"lwpins", _128|_0fA, {RVw, Ed, Iw}},
 {"lwpval", _128|_0fA, {RVw, Ed, Iw}},
@@ -4344,7 +4348,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 8 - GROUP_0FA_L */
+/* 8 - GROUP_0FA_12_L */
 {
 {"lwpins", _256|_0fA, {RVd, Ed, Id}},
 {"lwpval", _256|_0fA, {RVd, Ed, Id}},
@@ -4355,12 +4359,34 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 9 - GROUP_0FA_W */
+/* 9 - GROUP_0FA_12_W */
 {
 {"lwpins", _128|_0fA|W1, {RVq, Ed, Id}},
 {"lwpval", _128|_0fA|W1, {RVq, Ed, Id}},
 {0},
 {0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 12 - GROUP_0F38_F3 */
+{
+{0},
+{"blsr", _128|_0f38|W0, {RVd, Ed}},
+{"blsmsk", _128|_0f38|W0, {RVd, Ed}},
+{"blsi", _128|_0f38|W0, {RVd, Ed}},
+{0},
+{0},
+{0},
+{0},
+},
+/* 11 - GROUP_0F38_F3_W */
+{
+{0},
+{"blsr", _128|_0f38|W1, {RVq, Eq}},
+{"blsmsk", _128|_0f38|W1, {RVq, Eq}},
+{"blsi", _128|_0f38|W1, {RVq, Eq}},
 {0},
 {0},
 {0},
