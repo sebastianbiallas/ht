@@ -3,7 +3,7 @@
  *	x86opc.cc
  *
  *	Copyright (C) 1999-2002 Stefan Weyergraf
- *	Copyright (C) 2005-2010 Sebastian Biallas (sb@biallas.net)
+ *	Copyright (C) 2005-2011 Sebastian Biallas (sb@biallas.net)
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License version 2 as
@@ -157,7 +157,9 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_R, 0, 0, SIZE_R},
 #define Rr64	Rr+1
 {TYPE_R, 0, INFO_DEFAULT_64, SIZE_R},
-#define RVw	Rr64+1
+#define Rv	Rr64+1
+{TYPE_R, 0, 0, SIZE_V},
+#define RVw	Rv+1
 {TYPE_RV, 0, 0, SIZE_W},
 #define RVd	RVw+1
 {TYPE_RV, 0, 0, SIZE_D},
@@ -185,7 +187,9 @@ x86opc_insn_op x86_op_type[] = {
 #define VIo	VVo+1
 {TYPE_VI, 0, 0, SIZE_O},
 
-#define Ww	VIo+1
+#define Wb	VIo+1
+{TYPE_W, 0, 0, SIZE_W},
+#define Ww	Wb+1
 {TYPE_W, 0, 0, SIZE_W},
 #define Wd	Ww+1
 {TYPE_W, 0, 0, SIZE_D},
@@ -208,7 +212,11 @@ x86opc_insn_op x86_op_type[] = {
 {TYPE_YR, 0, 0, SIZE_Y},
 #define Xy	YRy+1
 {TYPE_X, 0, 0, SIZE_Y},
-#define Xo	Xy+1
+#define Xd	Xy+1
+{TYPE_X, 0, 0, SIZE_D},
+#define Xq	Xd+1
+{TYPE_X, 0, 0, SIZE_Q},
+#define Xo	Xq+1
 {TYPE_X, 0, 0, SIZE_O},
 
 #define VD	Xo+1
@@ -417,10 +425,11 @@ const char *x86_segs[8] = {
 #define GROUP_EXT_72		20
 #define GROUP_EXT_73		21
 #define GROUP_EXT_AE		22
-#define GROUP_EXT_BA		23
-#define GROUP_EXT_C7		24
-#define GROUP_EXT_66_C7		25
-#define GROUP_EXT_F3_C7		26
+#define GROUP_EXT_F3_AE		23
+#define GROUP_EXT_BA		24
+#define GROUP_EXT_C7		25
+#define GROUP_EXT_66_C7		26
+#define GROUP_EXT_F3_C7		27
 
 #define GROUP_SPECIAL_0F01_0	0
 #define GROUP_SPECIAL_0F01_1	1
@@ -435,17 +444,20 @@ const char *x86_segs[8] = {
 #define GROUP_SPECIAL_0FAE_5	10
 #define GROUP_SPECIAL_0FAE_6	11
 #define GROUP_SPECIAL_0FAE_7	12
+#define GROUP_SPECIAL_0FC7_6	13
 
 #define GROUP_0FAE		0
 #define GROUP_660F71		1
 #define GROUP_660F72		2
 #define GROUP_660F73		3
-#define GROUP_0F25		4
-#define GROUP_0F25_L		5
-#define GROUP_0F25_W		6
-#define GROUP_0FA		7
-#define GROUP_0FA_L		8
-#define GROUP_0FA_W		9
+#define GROUP_0F25_12		4
+#define GROUP_0F25_12_L		5
+#define GROUP_0F25_12_W		6
+#define GROUP_0FA_12		7
+#define GROUP_0FA_12_L		8
+#define GROUP_0FA_12_W		9
+#define GROUP_0F38_F3		10
+#define GROUP_0F38_F3_W		11
 
 /*
 
@@ -1614,7 +1626,14 @@ x86opc_insn x86_insns_ext_f3[256] = {
 /* a0 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* a8 */
-{0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0},
+{0, {SPECIAL_TYPE_GROUP, GROUP_EXT_F3_AE}},
+{0},
 /* b0 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* b8 */
@@ -1622,7 +1641,7 @@ x86opc_insn x86_insns_ext_f3[256] = {
 {0},
 {0},
 {0},
-{0},
+{"tzcnt", {Gv, Ev}},
 {"lzcnt", {Gv, Ev}},
 {0},
 {0},
@@ -1856,7 +1875,8 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* 80 */
 {"invept", {Gr, Mo}},
 {"invvpid", {Gr, Mo}},
-{0}, {0}, {0}, {0}, {0}, {0},
+{"invpcid", {Gr, Mo}},
+{0}, {0}, {0}, {0}, {0},
 /* 88 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 /* 90 */
@@ -2847,6 +2867,17 @@ x86opc_insn x86_group_insns[][8] = {
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_6}},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FAE_7}},
 },
+/* 22 - GROUP_EXT_F3_AE */
+{
+{"rdfsbase", {Rr}},
+{"rdgsbase", {Rr}},
+{"wrfsbase", {Rr}},
+{"wrgsbase", {Rr}},
+{0},
+{0},
+{0},
+{0},
+},
 /* 23 - GROUP_EXT_BA */
 {
 {0},
@@ -2866,7 +2897,7 @@ x86opc_insn x86_group_insns[][8] = {
 {0},
 {0},
 {0},
-{"vmptrld", {Mq}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FC7_6}},
 {"vmptrst", {Mq}},
 },
 /* 25 - GROUP_EXT_66_C7 */
@@ -2970,7 +3001,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"fxsave", {M}},
+{"?fxsave|fxsave|fxsave64", {M}},
 },
 /* 6 - GROUP_SPECIAL_0FAE_1 */
 {
@@ -2983,7 +3014,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"fxstor", {M}},
+{"?fxstor|fxstor|fxstor64", {M}},
 },
 /* 7 - GROUP_SPECIAL_0FAE_2 */
 {
@@ -3022,7 +3053,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"xsave", {M}},
+{"?xsave|xsave|xsave64", {M}},
 },
 /* 10 - GROUP_SPECIAL_0FAE_5 */
 {
@@ -3035,7 +3066,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 // with mod!=11:
-{"xrstor", {M}},
+{"?xrstor|xrstor|xrstor64", {M}},
 },
 /* 11 - GROUP_SPECIAL_0FAE_6 */
 {
@@ -3046,7 +3077,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 {0},
-{0},
+{"?xsaveopt|xsaveopt|xsaveopt64", {M}},
 // with mod!=11:
 {0},
 },
@@ -3062,6 +3093,19 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 // with mod!=11:
 {"clflush", {M}},
+},
+/* 12 - GROUP_SPECIAL_0FC7_6 */
+{
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+{"rdrand", {Rv}},
+// with mod!=11:
+{"vmptrld", {Mq}},
 },
 };
 
@@ -3366,10 +3410,13 @@ x86opc_finsn x86_float_group_insns[8][8] = {
 #define Elast {0}}; 
 E0(00)
 {"vpshufb", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vpermq", _256|_66|_0f3a|W1, {Yy, Xy, Ib}},
 E(01)
 {"vhaddw", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vpermpd", _256|_66|_0f3a|W1, {Yy, Xy, Ib}},
 E(02)
 {"vhaddd", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vpblendd", _128|_66|_0f3a|W0, {Vo, VVo, Wo, Ib}},
 E(03)
 {"vhaddsw", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(04)
@@ -3436,12 +3483,12 @@ E(11)
 {"vmovupd", _128|_66|_0f, {Wo, Vo}},
 {"vmovupd", _256|_66|_0f, {Xy, Yy}},
 E(12)
-{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25}},
-{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_W}},
-{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_L}},
-{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA}},
-{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_W}},
-{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_L}},
+{0, _128|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_12}},
+{0, _128|_0f25|W1, {SPECIAL_TYPE_GROUP, GROUP_0F25_12_W}},
+{0, _256|_0f25|W0, {SPECIAL_TYPE_GROUP, GROUP_0F25_12_L}},
+{0, _128|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_12}},
+{0, _128|_0fA|W1, {SPECIAL_TYPE_GROUP, GROUP_0FA_12_W}},
+{0, _256|_0fA|W0, {SPECIAL_TYPE_GROUP, GROUP_0FA_12_L}},
 {"vmovddup", _128|_f2|_0f, {Vo, Wq}},
 {"vmovddup", _256|_f2|_0f, {Yy, Xy}},
 {"vmovhlps", _128|_0f, {Vo, VVo, VRo}},
@@ -3452,6 +3499,8 @@ E(12)
 E(13)
 {"vmovlps", _128|_0f, {Mq, Vo}},
 {"vmovlpd", _128|_66|_0f, {Mq, Vo}},
+{"vcvtph2ps", _128|_0f, {Vo, Wq}},
+{"vcvtph2ps", _256|_66|_0f38, {Yy, Wo}},
 E(14)
 {"vpextrb", _128|_66|_0f3a, {MRbr, Vo, Ib}},
 {"vunpcklps", _128|_0f, {Vo, VVo, Wo}},
@@ -3472,6 +3521,7 @@ E(16)
 {"vmovlhps", _128|_0f, {Vo, VVo, VRo}},
 {"vmovshdup", _128|_f3|_0f, {Vo, Wo}},
 {"vmovshdup", _256|_f3|_0f, {Yy, Xy}},
+{"vpermps", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 E(17)
 {"vmovhps", _128|_0f, {Mq, Vo}},
 {"vmovhpd", _128|_66|_0f, {Mq, Vo}},
@@ -3480,11 +3530,11 @@ E(17)
 {"vptest", _128|_66|_0f38, {Vo, Wo}},
 {"vptest", _256|_66|_0f38, {Yy, Xy}},
 E(18)
-{"vbroadcastss", _128|_66|_0f38, {Vo, Md}},
-{"vbroadcastss", _256|_66|_0f38, {Yy, Md}},
+{"vbroadcastss", _128|_66|_0f38, {Vo, Xd}},
+{"vbroadcastss", _256|_66|_0f38, {Yy, Xd}},
 {"vinsertf128", _256|_66|_0f3a, {Yy, YVy, Xy, Ib}},
 E(19)
-{"vbroadcastsd", _256|_66|_0f38, {Yy, Mq}},
+{"vbroadcastsd", _256|_66|_0f38, {Yy, Xq}},
 {"vextractf128", _256|_66|_0f3a, {Xy, Yy, Ib}},
 E(1a)
 {"vbroadcastf128", _256|_66|_0f38, {Yy, My}},
@@ -3492,6 +3542,8 @@ E(1c)
 {"vpabsb", _128|_66|_0f38, {Vo, Wo}},
 E(1d)
 {"vpabsw", _128|_66|_0f38, {Vo, Wo}},
+{"vcvtps2ph", _128|_66|_0f3a, {Wq, Vo, Ib}},
+{"vcvtps2ph", _256|_66|_0f3a, {Wo, Yy, Ib}},
 E(1e)
 {"vpabsd", _128|_66|_0f38, {Vo, Wo}},
 E(20)
@@ -3520,6 +3572,7 @@ E(29)
 {"vpcmpeqq", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(2a)
 {"vmovntdqa", _128|_66|_0f38, {Vo, Mo}},
+{"vmovntdqa", _256|_66|_0f38, {Yy, My}},
 {"vcvtsi2ss", _128|_f3|_0f|W0, {Vo, VVo, Ed}},
 {"vcvtsi2ss", _128|_f3|_0f|W1, {Vo, VVo, Eq}},
 {"vcvtsi2sd", _128|_f2|_0f|W0, {Vo, VVo, Ed}},
@@ -3566,12 +3619,16 @@ E(34)
 {"vpmovzxwq", _128|_66|_0f38, {Vo, Wd}},
 E(35)
 {"vpmovzxdq", _128|_66|_0f38, {Vo, Wq}},
+E(36)
+{"vpermd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
 E(37)
 {"vpcmpgtq", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(38)
 {"vpminsb", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vinserti128", _256|_66|_0f3a, {Yy, YVy, Wo, Ib}},
 E(39)
 {"vpminsd", _128|_66|_0f38, {Vo, VVo, Wo}},
+{"vextracti128", _256|_66|_0f3a, {Wo, Yy, Ib}},
 E(3a)
 {"vpminuw", _128|_66|_0f38, {Vo, VVo, Wo}},
 E(3b)
@@ -3595,6 +3652,20 @@ E(42)
 {"vmpsadbw", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
 E(44)
 {"vpclmulqdq", _128|_66|_0f3a, {Vo, VVo, Wo, Ib}},
+E(45)
+{"vpsrlvd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vpsrlvd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vpsrlvq", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpsrlvq", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+E(46)
+{"vpsravd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vpsravd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vpermi128", _256|_66|_0f3a|W0, {Yy, YVy, Xy, Ib}},
+E(47)
+{"vpsllvd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vpsllvd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vpsllvq", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpsllvq", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
 E(48)
 {"vpermil2ps", _128|_66|_0f3a|W0, {Vo, VVo, Wo, VIo, I4}},
 {"vpermil2ps", _128|_66|_0f3a|W1, {Vo, VVo, VIo, Wo, I4}},
@@ -3658,6 +3729,8 @@ E(58)
 {"vaddpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vaddss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vaddsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vpbroadcastd", _128|_66|_0f38|W0, {Vo, Wd}},
+{"vpbroadcastd", _256|_66|_0f38|W0, {Yy, Wd}},
 E(59)
 {"vmulss", _128|_0f, {Vo, VVo, Wo}},
 {"vmulps", _256|_0f, {Yy, YVy, Xy}},
@@ -3665,6 +3738,8 @@ E(59)
 {"vmulpd", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vmulss", _128|_f2|_0f, {Vo, VVo, Wo}},
 {"vmulsd", _128|_f3|_0f, {Vo, VVo, Wo}},
+{"vpbroadcastq", _128|_66|_0f38|W0, {Vo, Wq}},
+{"vpbroadcastq", _256|_66|_0f38|W0, {Yy, Wq}},
 E(5a)
 {"vcvtps2pd", _128|_0f, {Vo, Wo}},
 {"vcvtps2pd", _256|_0f, {Yy, Xy}},
@@ -3672,6 +3747,7 @@ E(5a)
 {"vcvtpd2ps", _256|_66|_0f, {Yy, Xy}},
 {"vcvtss2sd", _128|_f3|_0f, {Vo, VVo, Wd}},
 {"vcvtsd2ss", _128|_f2|_0f, {Vo, VVo, Wq}},
+{"vbroadcasti128", _256|_66|_0f38, {Yy, My}},
 E(5b)
 {"vcvtdq2ps", _128|_0f, {Vo, Wo}},
 {"vcvtdq2ps", _256|_0f, {Yy, Xy}},
@@ -3807,11 +3883,15 @@ E(77)
 {"vzeroupper", _128|_0f},
 {"vzeroall", _256|_0f},
 E(78)
+{"vpbroadcastb", _128|_66|_0f38|W0, {Vo, Wb}},
+{"vpbroadcastb", _256|_66|_0f38|W0, {Yy, Wb}},
 {"vfnmaddps", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
 {"vfnmaddps", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 {"vfnmaddps", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
 {"vfnmaddps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(79)
+{"vpbroadcastw", _128|_66|_0f38|W0, {Vo, Ww}},
+{"vpbroadcastw", _256|_66|_0f38|W0, {Yy, Ww}},
 {"vfnmaddpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
 {"vfnmaddpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 {"vfnmaddpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
@@ -3871,22 +3951,43 @@ E(86)
 {"vpmacsswd", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(87)
 {"vpmacssdql", _128|_0f24, {Vo, VVo, Wo, VIo}},
+E(8c)
+{"vpmaskmovd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
+{"vpmaskmovd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
+{"vpmaskmovq", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
+{"vpmaskmovq", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
 E(8e)
 {"vpmacssdd", _128|_0f24, {Vo, VVo, Wo, VIo}},
+{"vpmaskmovd", _128|_66|_0f38|W0, {Wo, VVo, Vo}},
+{"vpmaskmovd", _256|_66|_0f38|W0, {Xy, YVy, Yy}},
+{"vpmaskmovq", _128|_66|_0f38|W1, {Wo, VVo, Vo}},
+{"vpmaskmovq", _256|_66|_0f38|W1, {Xy, YVy, Yy}},
 E(8f)
 {"vpmacssdqh", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(90)
 {"vprotb", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotb", _128|_0f25|W1, {Vo, VVo, Wo}},
+{"vpgatherdd", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
+{"vpgatherdd", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
+{"vpgatherdq", _128|_66|_0f38|W1, {Vo, Wo, VVo}},
+{"vpgatherdq", _256|_66|_0f38|W1, {Yy, Xy, YVy}},
 E(91)
 {"vprotw", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotw", _128|_0f25|W1, {Vo, VVo, Wo}},
+{"vpgatherqd", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
+{"vpgatherqd", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
+{"vpgatherqq", _128|_66|_0f38|W1, {Vo, Wo, VVo}},
+{"vpgatherqq", _256|_66|_0f38|W1, {Yy, Xy, YVy}},
 E(92)
 {"vprotd", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotd", _128|_0f25|W1, {Vo, VVo, Wo}},
+{"vgatherdps", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
+{"vgatherdps", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
 E(93)
 {"vprotq", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotq", _128|_0f25|W1, {Vo, VVo, Wo}},
+{"vgatherqps", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
+{"vgatherqps", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
 E(94)
 {"vpshlb", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vpshlb", _128|_0f25|W1, {Vo, VVo, Wo}},
@@ -4178,24 +4279,47 @@ E(ee)
 {"vpcomud", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(ef)
 {"vpxor", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpxor", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vpcomuq", _128|_0f24, {Vo, VVo, Wo, Ib}},
 E(f0)
 {"vlddqu", _128|_f2|_0f, {Vo, Mo}},
 {"vlddqu", _256|_f2|_0f, {Yy, My}},
+{"rorx", _128|_f2|_0f3a|W0, {Gd, Ed, Ib}},
+{"rorx", _128|_f2|_0f3a|W1, {Gq, Eq, Ib}},
 E(f1)
 {"vpsllw", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f2)
 {"vpslld", _128|_66|_0f, {Vo, VVo, Wo}},
+{"andn", _128|_0f38|W0, {Gd, RVd, Ed}},
+{"andn", _128|_0f38|W1, {Gq, RVq, Eq}},
 E(f3)
+{0, _128|_0f38|W0, {SPECIAL_TYPE_GROUP, GROUP_0F38_F3}},
+{0, _128|_0f38|W1, {SPECIAL_TYPE_GROUP, GROUP_0F38_F3_W}},
 {"vpsllq", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f4)
 {"vmuludq", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f5)
 {"vmaddwd", _128|_66|_0f, {Vo, VVo, Wo}},
+{"bzhi", _128|_0f38|W0, {Gd, RVd, Ed}},
+{"bzhi", _128|_0f38|W1, {Gq, RVq, Eq}},
+{"pdep", _128|_f2|_0f38|W0, {Gd, RVd, Ed}},
+{"pdep", _128|_f2|_0f38|W1, {Gq, RVq, Eq}},
+{"pdep", _128|_f3|_0f38|W0, {Gd, RVd, Ed}},
+{"pdep", _128|_f3|_0f38|W1, {Gq, RVq, Eq}},
 E(f6)
 {"vpsadbw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"mulx", _128|_f2|_0f38|W0, {Gd, RVd, Ed}},
+{"mulx", _128|_f2|_0f38|W1, {Gq, RVq, Eq}},
 E(f7)
 {"vmaskmovdqu", _128|_66|_0f, {Vo, VRo}},
+{"bextr", _128|_0f38|W0, {Gd, RVd, Ed}},
+{"bextr", _128|_0f38|W1, {Gq, RVq, Eq}},
+{"sarx", _128|_f3|_0f38|W0, {Gd, RVd, Ed}},
+{"sarx", _128|_f3|_0f38|W1, {Gq, RVq, Eq}},
+{"shlx", _128|_66|_0f38|W0, {Gd, RVd, Ed}},
+{"shlx", _128|_66|_0f38|W1, {Gq, RVq, Eq}},
+{"shlx", _128|_f2|_0f38|W0, {Gd, RVd, Ed}},
+{"shlx", _128|_f2|_0f38|W1, {Gq, RVq, Eq}},
 E(f8)
 {"vpsubb", _128|_66|_0f, {Vo, VVo, Wo}},
 E(f9)
@@ -4257,7 +4381,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {"vpsllq", _128|_66|_0f, {VVo, VRo, Ib}},
 {"vpslldq", _128|_66|_0f, {VVo, VRo, Ib}},
 },
-/* 4 - GROUP_0F2512 */
+/* 4 - GROUP_0F25_12 */
 {
 {"llwpcb", _128|_0f25|W0, {Rw}},
 {"slwpcb", _128|_0f25|W0, {Rw}},
@@ -4268,7 +4392,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 5 - GROUP_0F2512_L */
+/* 5 - GROUP_0F25_12_L */
 {
 {"llwpcb", _256|_0f25|W0, {Rd}},
 {"slwpcb", _256|_0f25|W0, {Rd}},
@@ -4279,7 +4403,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 6 - GROUP_0F2512_W */
+/* 6 - GROUP_0F25_12_W */
 {
 {"llwpcb", _128|_0f25|W1, {Rq}},
 {"slwpcb", _128|_0f25|W1, {Rq}},
@@ -4290,7 +4414,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 7 - GROUP_0FA */
+/* 7 - GROUP_0FA_12 */
 {
 {"lwpins", _128|_0fA, {RVw, Ed, Iw}},
 {"lwpval", _128|_0fA, {RVw, Ed, Iw}},
@@ -4301,7 +4425,7 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 8 - GROUP_0FA_L */
+/* 8 - GROUP_0FA_12_L */
 {
 {"lwpins", _256|_0fA, {RVd, Ed, Id}},
 {"lwpval", _256|_0fA, {RVd, Ed, Id}},
@@ -4312,12 +4436,34 @@ x86opc_vex_insn x86_group_vex_insns[][8] = {
 {0},
 {0},
 },
-/* 9 - GROUP_0FA_W */
+/* 9 - GROUP_0FA_12_W */
 {
 {"lwpins", _128|_0fA|W1, {RVq, Ed, Id}},
 {"lwpval", _128|_0fA|W1, {RVq, Ed, Id}},
 {0},
 {0},
+{0},
+{0},
+{0},
+{0},
+},
+/* 12 - GROUP_0F38_F3 */
+{
+{0},
+{"blsr", _128|_0f38|W0, {RVd, Ed}},
+{"blsmsk", _128|_0f38|W0, {RVd, Ed}},
+{"blsi", _128|_0f38|W0, {RVd, Ed}},
+{0},
+{0},
+{0},
+{0},
+},
+/* 11 - GROUP_0F38_F3_W */
+{
+{0},
+{"blsr", _128|_0f38|W1, {RVq, Eq}},
+{"blsmsk", _128|_0f38|W1, {RVq, Eq}},
+{"blsi", _128|_0f38|W1, {RVq, Eq}},
 {0},
 {0},
 {0},
@@ -4332,9 +4478,9 @@ v10, v11, v12, v13, v14, v15, v16, v17,
 v18, v19, v1a,   0, v1c, v1d, v1e,   0,
 v20, v21, v22, v23, v24, v25,   0,   0,
 v28, v29, v2a, v2b, v2c, v2d, v2e, v2f,
-v30, v31, v32, v33, v34, v35,   0, v37,
+v30, v31, v32, v33, v34, v35, v36, v37,
 v38, v39, v3a, v3b, v3c, v3d, v3e, v3f,
-v40, v41, v42,   0, v44,   0,   0,   0,
+v40, v41, v42,   0, v44, v45, v46, v47,
 v48, v49, v4a, v4b, v4c,   0,   0,   0,
 v50, v51, v52, v53, v54, v55, v56, v57,
 v58, v59, v5a, v5b, v5c, v5d, v5e, v5f,
@@ -4343,7 +4489,7 @@ v68, v69, v6a, v6b, v6c, v6d, v6e, v6f,
 v70, v71, v72, v73, v74, v75, v76, v77,
 v78, v79, v7a, v7b, v7c, v7d, v7e, v7f,
 v80, v81, v82, v83,   0, v85, v86, v87,
-  0,   0,   0,   0,   0,   0, v8e, v8f,
+  0,   0,   0,   0, v8c,   0, v8e, v8f,
 v90, v91, v92, v93, v94, v95, v96, v97,
 v98, v99, v9a, v9b, v9c, v9d, v9e, v9f,
 va0, va1, va2, va3,   0,   0, va6, va7,
