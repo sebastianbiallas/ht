@@ -7,6 +7,8 @@ version 2.1.0:
 
 version 2.0.19:
 	- [x86] fixed a lot of small bugs
+	- fixed a crash with the "follow" function on
+	  invalid addresses in analyser
 	- [x86] AVX updates
 	- [x86] AVX2
 	- [x86] BMI and TBM instructions
