@@ -1889,13 +1889,13 @@ bool x86asm::opmem(x86asm_insn *asm_insn, x86_insn_op *op, const char *s)
 
 	tok(&s, token, sizeof token, sep);
 	
-	static const char *types[] = {"byte", "word", "dword", "pword", "qword", "oword", "ymmword", "single", "double", "extended"};
-	static byte type_size[] = {1, 2, 4, 6, 8, 16, 32, 4, 8, 10};
+	static const char *types[] = {"byte", "word", "dword", "pword", "qword", "oword", "xmmword", "ymmword", "single", "double", "extended"};
+	static byte type_size[] = {1, 2, 4, 6, 8, 16, 16, 32, 4, 8, 10};
 	// typecast
 	for (uint i=0; i < sizeof types / sizeof types[0]; i++) {
 		if (strcmp(token, types[i]) == 0) {
 			hsize = type_size[i];
-			if (i >= 6) floatptr = true;
+			if (i >= 8) floatptr = true;
 			break;
 		}
 	}
