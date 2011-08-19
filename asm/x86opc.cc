@@ -3420,6 +3420,7 @@ E(02)
 {"vphaddd", _128|_66|_0f38, {Vo, VVo, Wo}},
 {"vphaddd", _256|_66|_0f38, {Yy, YVy, Xy}},
 {"vpblendd", _128|_66|_0f3a|W0, {Vo, VVo, Wo, Ib}},
+{"vpblendd", _256|_66|_0f3a|W0, {Yy, YVy, Xy, Ib}},
 E(03)
 {"vphaddsw", _128|_66|_0f38, {Vo, VVo, Wo}},
 {"vphaddsw", _256|_66|_0f38, {Yy, YVy, Xy}},
@@ -3544,14 +3545,15 @@ E(17)
 {"vptest", _128|_66|_0f38, {Vo, Wo}},
 {"vptest", _256|_66|_0f38, {Yy, Xy}},
 E(18)
-{"vbroadcastss", _128|_66|_0f38, {Vo, Xd}},
-{"vbroadcastss", _256|_66|_0f38, {Yy, Xd}},
+{"vbroadcastss", _128|_66|_0f38, {Vo, Wd}},
+{"vbroadcastss", _256|_66|_0f38, {Yy, Wd}},
 {"vinsertf128", _256|_66|_0f3a, {Yy, YVy, Xy, Ib}},
 E(19)
-{"vbroadcastsd", _256|_66|_0f38, {Yy, Xq}},
+{"vbroadcastsd", _128|_66|_0f38, {Vo, Wq}},
+{"vbroadcastsd", _256|_66|_0f38, {Yy, Wq}},
 {"vextractf128", _256|_66|_0f3a, {Xy, Yy, Ib}},
 E(1a)
-{"vbroadcastf128", _256|_66|_0f38, {Yy, My}},
+{"vbroadcastf128", _256|_66|_0f38, {Yy, Mo}},
 E(1c)
 {"vpabsb", _128|_66|_0f38, {Vo, Wo}},
 {"vpabsb", _256|_66|_0f38, {Yy, Xy}},
@@ -3703,7 +3705,7 @@ E(45)
 E(46)
 {"vpsravd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vpsravd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
-{"vpermi128", _256|_66|_0f3a|W0, {Yy, YVy, Xy, Ib}},
+{"vperm2i128", _256|_66|_0f3a|W0, {Yy, YVy, Xy, Ib}},
 E(47)
 {"vpsllvd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
 {"vpsllvd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
@@ -3791,7 +3793,7 @@ E(5a)
 {"vcvtpd2ps", _256|_66|_0f, {Yy, Xy}},
 {"vcvtss2sd", _128|_f3|_0f, {Vo, VVo, Wd}},
 {"vcvtsd2ss", _128|_f2|_0f, {Vo, VVo, Wq}},
-{"vbroadcasti128", _256|_66|_0f38, {Yy, My}},
+{"vbroadcasti128", _256|_66|_0f38, {Yy, Mo}},
 E(5b)
 {"vcvtdq2ps", _128|_0f, {Vo, Wo}},
 {"vcvtdq2ps", _256|_0f, {Yy, Xy}},
@@ -3904,6 +3906,7 @@ E(6c)
 {"vfmsubps", _256|_66|_0f3a|W1, {Yy, YIy, Xy, YVy}},
 E(6d)
 {"vpunpckhqdq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpunpckhqdq", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vfmsubpd", _128|_66|_0f3a|W0, {Vo, VIo, VVo, Wo}},
 {"vfmsubpd", _128|_66|_0f3a|W1, {Vo, VIo, Wo, VVo}},
 {"vfmsubpd", _256|_66|_0f3a|W0, {Yy, YIy, YVy, Xy}},
@@ -4015,42 +4018,46 @@ E(86)
 E(87)
 {"vpmacssdql", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(8c)
-{"vpmaskmovd", _128|_66|_0f38|W0, {Vo, VVo, Wo}},
-{"vpmaskmovd", _256|_66|_0f38|W0, {Yy, YVy, Xy}},
-{"vpmaskmovq", _128|_66|_0f38|W1, {Vo, VVo, Wo}},
-{"vpmaskmovq", _256|_66|_0f38|W1, {Yy, YVy, Xy}},
+{"vpmaskmovd", _128|_66|_0f38|W0, {Vo, VVo, Mo}},
+{"vpmaskmovd", _256|_66|_0f38|W0, {Yy, YVy, My}},
+{"vpmaskmovq", _128|_66|_0f38|W1, {Vo, VVo, Mo}},
+{"vpmaskmovq", _256|_66|_0f38|W1, {Yy, YVy, My}},
 E(8e)
 {"vpmacssdd", _128|_0f24, {Vo, VVo, Wo, VIo}},
-{"vpmaskmovd", _128|_66|_0f38|W0, {Wo, VVo, Vo}},
-{"vpmaskmovd", _256|_66|_0f38|W0, {Xy, YVy, Yy}},
-{"vpmaskmovq", _128|_66|_0f38|W1, {Wo, VVo, Vo}},
-{"vpmaskmovq", _256|_66|_0f38|W1, {Xy, YVy, Yy}},
+{"vpmaskmovd", _128|_66|_0f38|W0, {Mo, VVo, Vo}},
+{"vpmaskmovd", _256|_66|_0f38|W0, {My, YVy, Yy}},
+{"vpmaskmovq", _128|_66|_0f38|W1, {Mo, VVo, Vo}},
+{"vpmaskmovq", _256|_66|_0f38|W1, {My, YVy, Yy}},
 E(8f)
 {"vpmacssdqh", _128|_0f24, {Vo, VVo, Wo, VIo}},
 E(90)
 {"vprotb", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotb", _128|_0f25|W1, {Vo, VVo, Wo}},
-{"vpgatherdd", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
-{"vpgatherdd", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
-{"vpgatherdq", _128|_66|_0f38|W1, {Vo, Wo, VVo}},
-{"vpgatherdq", _256|_66|_0f38|W1, {Yy, Xy, YVy}},
+{"vpgatherdd", _128|_66|_0f38|W0, {Vo, Wd, VVo}},
+{"vpgatherdd", _256|_66|_0f38|W0, {Yy, Xd, YVy}},
+{"vpgatherdq", _128|_66|_0f38|W1, {Vo, Wd, VVo}},
+{"vpgatherdq", _256|_66|_0f38|W1, {Yy, Xd, YVy}},
 E(91)
 {"vprotw", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotw", _128|_0f25|W1, {Vo, VVo, Wo}},
-{"vpgatherqd", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
-{"vpgatherqd", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
-{"vpgatherqq", _128|_66|_0f38|W1, {Vo, Wo, VVo}},
-{"vpgatherqq", _256|_66|_0f38|W1, {Yy, Xy, YVy}},
+{"vpgatherqd", _128|_66|_0f38|W0, {Vo, Wq, VVo}},
+{"vpgatherqd", _256|_66|_0f38|W0, {Yy, Xq, YVy}},
+{"vpgatherqq", _128|_66|_0f38|W1, {Vo, Wq, VVo}},
+{"vpgatherqq", _256|_66|_0f38|W1, {Yy, Xq, YVy}},
 E(92)
 {"vprotd", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotd", _128|_0f25|W1, {Vo, VVo, Wo}},
-{"vgatherdps", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
-{"vgatherdps", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
+{"vgatherdps", _128|_66|_0f38|W0, {Vo, Wd, VVo}},
+{"vgatherdps", _256|_66|_0f38|W0, {Yy, Xd, YVy}},
+{"vgatherdpd", _128|_66|_0f38|W1, {Vo, Wd, VVo}},
+{"vgatherdpd", _256|_66|_0f38|W1, {Yy, Xd, YVy}},
 E(93)
 {"vprotq", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vprotq", _128|_0f25|W1, {Vo, VVo, Wo}},
-{"vgatherqps", _128|_66|_0f38|W0, {Vo, Wo, VVo}},
-{"vgatherqps", _256|_66|_0f38|W0, {Yy, Xy, YVy}},
+{"vgatherqps", _128|_66|_0f38|W0, {Vo, Wq, VVo}},
+{"vgatherqps", _256|_66|_0f38|W0, {Yy, Xq, YVy}},
+{"vgatherqpd", _128|_66|_0f38|W1, {Vo, Wq, VVo}},
+{"vgatherqpd", _256|_66|_0f38|W1, {Yy, Xq, YVy}},
 E(94)
 {"vpshlb", _128|_0f25|W0, {Vo, Wo, VVo}},
 {"vpshlb", _128|_0f25|W1, {Vo, VVo, Wo}},
@@ -4257,12 +4264,15 @@ E(d0)
 {"vaddsubss", _256|_f2|_0f, {Yy, YVy, Xy}},
 E(d1)
 {"vpsrlw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsrlw", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vphaddubw", _128|_0f25, {Vo, Wo}},
 E(d2)
 {"vpsrld", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsrld", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vphaddubd", _128|_0f25, {Vo, Wo}},
 E(d3)
 {"vpsrlq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsrlq", _256|_66|_0f, {Yy, YVy, Xy}},
 {"vphaddubq", _128|_0f25, {Vo, Wo}},
 E(d4)
 {"vpaddq", _128|_66|_0f, {Vo, VVo, Wo}},
@@ -4410,12 +4420,16 @@ E(f7)
 {"shlx", _128|_f2|_0f38|W1, {Gq, RVq, Eq}},
 E(f8)
 {"vpsubb", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsubb", _256|_66|_0f, {Yy, YVy, Xy}},
 E(f9)
 {"vpsubw", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsubw", _256|_66|_0f, {Yy, YVy, Xy}},
 E(fa)
 {"vpsubd", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsubd", _256|_66|_0f, {Yy, YVy, Xy}},
 E(fb)
 {"vpsubq", _128|_66|_0f, {Vo, VVo, Wo}},
+{"vpsubq", _256|_66|_0f, {Yy, YVy, Xy}},
 E(fc)
 {"vpaddb", _128|_66|_0f, {Vo, VVo, Wo}},
 {"vpaddb", _256|_66|_0f, {Yy, YVy, Xy}},
