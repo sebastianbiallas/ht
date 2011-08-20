@@ -66,7 +66,7 @@ static ht_view *htelf_init(Bounds *b, File *file, ht_format_group *format_group)
 			break;
 		default:
 			LOG_EX(LOG_WARN, "File seems to be ELF. But byte-order"
-				" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%x)",
+				" (ELF_EI_DATA) 0x%02x is unsupported. (byte at offset=0x%qx)",
 				header.e_ident[ELF_EI_DATA], header_ofs+5);
 			return NULL;
 	}
@@ -76,7 +76,7 @@ static ht_view *htelf_init(Bounds *b, File *file, ht_format_group *format_group)
 			break;
 		default:
 			LOG_EX(LOG_WARN, "File seems to be ELF. But class-value"
-				" (ELF_EI_CLASS) 0x%02x is unsupported. (byte at offset=0x%x)",
+				" (ELF_EI_CLASS) 0x%02x is unsupported. (byte at offset=0x%qx)",
 				header.e_ident[ELF_EI_CLASS], header_ofs+4);
 			return NULL;
 	}
@@ -152,13 +152,15 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 
 		/* read section headers */
 		elf_shared->sheaders.count = elf_shared->header32.e_shnum;
-		if (!elf_shared->sheaders.count) throw MsgException("Zero count for section headers");
-		elf_shared->sheaders.sheaders32 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
-		file->seek(header_ofs+elf_shared->header32.e_shoff);
-		file->readx(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
-		for (uint i=0; i < elf_shared->sheaders.count; i++) {
-			ELF_SECTION_HEADER32 a = elf_shared->sheaders.sheaders32[i];
-			createHostStruct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
+		if (!elf_shared->sheaders.count) {
+			elf_shared->sheaders.sheaders32 = NULL;
+		} else {
+			file->seek(header_ofs + elf_shared->header32.e_shoff);
+			file->readx(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
+			for (uint i=0; i < elf_shared->sheaders.count; i++) {
+				ELF_SECTION_HEADER32 a = elf_shared->sheaders.sheaders32[i];
+				createHostStruct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
+			}
 		}
 
 		/* read program headers */
@@ -170,7 +172,7 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 			elf_shared->pheaders.pheaders32 = ht_malloc(elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
 			file->seek(header_ofs + elf_shared->header32.e_phoff);
 			file->readx(elf_shared->pheaders.pheaders32, elf_shared->pheaders.count*sizeof *elf_shared->pheaders.pheaders32);
-			for (uint i=0; i<elf_shared->pheaders.count; i++) {
+			for (uint i=0; i < elf_shared->pheaders.count; i++) {
 				createHostStruct(elf_shared->pheaders.pheaders32+i, ELF_PROGRAM_HEADER32_struct, elf_shared->byte_order);
 			}
 			// if file is relocatable, relocate it
@@ -200,9 +202,9 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 		elf_shared->sheaders.count=elf_shared->header64.e_shnum;
 		if (!elf_shared->sheaders.count) throw MsgException("Zero count for section headers");
 		elf_shared->sheaders.sheaders64 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-		file->seek(header_ofs+elf_shared->header64.e_shoff);
+		file->seek(header_ofs + elf_shared->header64.e_shoff);
 		file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
 			createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
 		}
@@ -283,11 +285,11 @@ static elf32_addr elf32_invent_address(uint si, ELF_SECTION_HEADER32 *s, uint sc
 {
 	elf32_addr a = base;
 	assert(s[si].sh_addr == 0);
-	while (a<INVENT_LIMIT-s[si].sh_size) {
+	while (a < INVENT_LIMIT - s[si].sh_size) {
 		bool ok = true;
-		for (uint i=0; i<scount; i++) {
-			if ((a >= s[i].sh_addr)
-			&& (a < s[i].sh_addr+s[i].sh_size)) {
+		for (uint i=0; i < scount; i++) {
+			if (a >= s[i].sh_addr
+			 && a < s[i].sh_addr+s[i].sh_size) {
 				ok = false;
 				break;
 			}
@@ -311,7 +313,7 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 	FileOfs symh = elf_shared->sheaders.sheaders32[symtabidx].sh_offset;
 
 	if (s[rsi].sh_type != ELF_SHT_REL) throw MsgfException(
-		"invalid section type for section %d (expeecting %d)",
+		"invalid section type for section %d (expecting %d)",
 		rsi, ELF_SHT_REL);
 
 	uint relnum = s[rsi].sh_size / sizeof (ELF_REL32);
@@ -446,7 +448,7 @@ void ht_elf::auto_relocate32()
 			try {
 				relocate_section(rf, i, elf_shared->shrelocs[i].relocShIdx, elf_shared->shrelocs[i].relocAddr);
 			} catch (const Exception &x) {
-				LOG("error while relocating section %d: %s", i, &x);
+				LOG("error while relocating section %d: %y", i, &x);
 			}
 		}
 	}
@@ -684,12 +686,12 @@ ht_elf32_reloc_entry::ht_elf32_reloc_entry(uint t, uint32 A, uint32 P, uint32 S)
 {
 	type = t;
 	switch (type) {
-		case ELF_R_386_32:
-			relocs.r_32 = S+A;
-			break;
-		case ELF_R_386_PC32:
-			relocs.r_pc32 = S+A-P;
-			break;
+	case ELF_R_386_32:
+		relocs.r_32 = S+A;
+		break;
+	case ELF_R_386_PC32:
+		relocs.r_pc32 = S+A-P;
+		break;
 	}
 }
 

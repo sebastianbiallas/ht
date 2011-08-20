@@ -7,7 +7,8 @@ version 2.0.19:
 	  invalid addresses in analyser
 	- [x86] AVX updates
 	- [x86] AVX2
-	- [x86] BMI and TBM instructions
+	- [x86] BMI, BMI2 and TBM instructions
+	- fixed loading of ELF files with no section headers
 
 version 2.0.18:
 	- updated c++ demangler

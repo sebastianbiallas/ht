@@ -95,6 +95,10 @@ static ht_view *htelfsectionheaders_init(Bounds *b, File *file, ht_format_group 
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
+	if (elf_shared->sheaders.count == 0) {
+		return NULL;
+	}
+
 	ht_uformat_viewer *v = NULL;
 	bool elf_bigendian = elf_shared->ident.e_ident[ELF_EI_DATA]==ELFDATA2MSB;
 	if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32) {
@@ -117,14 +121,21 @@ static ht_view *htelfsectionheaders_init(Bounds *b, File *file, ht_format_group 
 		v->insertsub(m);
 
 		elf_shared->shnames = ht_malloc(elf_shared->sheaders.count * sizeof *elf_shared->shnames);
-		FileOfs so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+		FileOfs so;
+		if (elf_shared->header32.e_shstrndx < elf_shared->sheaders.count) {
+			so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+		} else {
+			so = -1;
+		}
 		String s;
 		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			s = "?";
 
 			try {
-				file->seek(so + elf_shared->sheaders.sheaders32[i].sh_name);
-				file->readStringz(s);
+				if (so != -1) {
+					file->seek(so + elf_shared->sheaders.sheaders32[i].sh_name);
+					file->readStringz(s);
+				}
 			} catch (const Exception &x) {
 				// and now?
 			}

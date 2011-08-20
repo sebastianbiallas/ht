@@ -65,7 +65,7 @@ static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 		l.a32 = (uint32)-1;
 		h.a32 = 0;
 		ELF_SECTION_HEADER32 *s = elf_shared->sheaders.sheaders32;
-		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 				if (s->sh_addr < l.a32) l.a32=s->sh_addr;
 				if ((s->sh_addr + s->sh_size > h.a32) && s->sh_size) h.a32=s->sh_addr + s->sh_size - 1;
@@ -81,7 +81,7 @@ static ht_view *htelfimage_init(Bounds *b, File *file, ht_format_group *group)
 		l.a64 = (uint64)-1;
 		h.a64 = 0;
 		ELF_SECTION_HEADER64 *s = elf_shared->sheaders.sheaders64;
-		for (uint i=0; i<elf_shared->sheaders.count; i++) {
+		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			if (elf_valid_section((elf_section_header*)s, elf_shared->ident.e_ident[ELF_EI_CLASS])) {
 				if (s->sh_addr < l.a64) l.a64 = s->sh_addr;
 				if ((s->sh_addr + s->sh_size > h.a64)
