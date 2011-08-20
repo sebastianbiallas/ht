@@ -10,8 +10,8 @@ version 2.0.19:
 	- fixed a crash with the "follow" function on
 	  invalid addresses in analyser
 	- [x86] AVX updates
-	- [x86] AVX2
-	- [x86] BMI and TBM instructions
+	- [x86] AVX2 instructions
+	- [x86] BMI, BMI2 and TBM instructions
 
 version 2.0.18:
 	- updated c++ demangler
