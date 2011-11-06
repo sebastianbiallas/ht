@@ -36,6 +36,7 @@ Boston, MA 02110-1301, USA.  */
    realloc except that they generate a fatal error if there is no
    available memory.  */
 
+
 #define xmalloc malloc
 #define xrealloc realloc
 #define xstrdup strdup
@@ -124,8 +125,6 @@ char * realloc ();
 #include <demangle.h>
 #undef CURRENT_DEMANGLING_STYLE
 #define CURRENT_DEMANGLING_STYLE work->options
-
-static char *ada_demangle (const char *, int);
 
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
@@ -905,6 +904,9 @@ cplus_demangle_name_to_style (const char *name)
    the compilation system, are presumed to have already been stripped from
    MANGLED.  */
 
+char *ada_demangle (const char *mangled, int options)
+{ return NULL; }
+
 char *
 cplus_demangle (const char *mangled, int options)
 {
@@ -957,111 +959,6 @@ grow_vect (char **old_vect, size_t *size, size_t min_size, int element_size)
 	*size = min_size;
       *old_vect = XRESIZEVAR (char, *old_vect, *size * element_size);
     }
-}
-
-/* Demangle ada names:
-   1. Discard final __{DIGIT}+ or ${DIGIT}+
-   2. Convert other instances of embedded "__" to `.'.
-   3. Discard leading _ada_.
-   4. Remove everything after first ___ if it is followed by 'X'.
-   5. Put symbols that should be suppressed in <...> brackets.
-   The resulting string is valid until the next call of ada_demangle.  */
-
-static char *
-ada_demangle (const char *mangled, int option)
-{
-  int i, j;
-  int len0;
-  const char* p;
-  char *demangled = NULL;
-  int changed;
-  size_t demangled_size = 0;
-  
-  changed = 0;
-
-  if (strncmp (mangled, "_ada_", 5) == 0)
-    {
-      mangled += 5;
-      changed = 1;
-    }
-  
-  if (mangled[0] == '_' || mangled[0] == '<')
-    goto Suppress;
-  
-  p = strstr (mangled, "___");
-  if (p == NULL)
-    len0 = strlen (mangled);
-  else
-    {
-      if (p[3] == 'X')
-	{
-	  len0 = p - mangled;
-	  changed = 1;
-	}
-      else
-	goto Suppress;
-    }
-  
-  /* Make demangled big enough for possible expansion by operator name.  */
-  grow_vect (&demangled,
-	     &demangled_size,  2 * len0 + 1,
-	     sizeof (char));
-  
-  if (ISDIGIT ((unsigned char) mangled[len0 - 1])) {
-    for (i = len0 - 2; i >= 0 && ISDIGIT ((unsigned char) mangled[i]); i -= 1)
-      ;
-    if (i > 1 && mangled[i] == '_' && mangled[i - 1] == '_')
-      {
-	len0 = i - 1;
-	changed = 1;
-      }
-    else if (mangled[i] == '$')
-      {
-	len0 = i;
-	changed = 1;
-      }
-  }
-  
-  for (i = 0, j = 0; i < len0 && ! ISALPHA ((unsigned char)mangled[i]);
-       i += 1, j += 1)
-    demangled[j] = mangled[i];
-  
-  while (i < len0)
-    {
-      if (i < len0 - 2 && mangled[i] == '_' && mangled[i + 1] == '_')
-	{
-	  demangled[j] = '.';
-	  changed = 1;
-	  i += 2; j += 1;
-	}
-      else
-	{
-	  demangled[j] = mangled[i];
-	  i += 1;  j += 1;
-	}
-    }
-  demangled[j] = '\000';
-  
-  for (i = 0; demangled[i] != '\0'; i += 1)
-    if (ISUPPER ((unsigned char)demangled[i]) || demangled[i] == ' ')
-      goto Suppress;
-
-  if (! changed)
-    return NULL;
-  else
-    return demangled;
-  
- Suppress:
-  grow_vect (&demangled,
-	     &demangled_size,  strlen (mangled) + 3,
-	     sizeof (char));
-
-  if (mangled[0] == '<')
-     strcpy (demangled, mangled);
-  else
-    sprintf (demangled, "<%s>", mangled);
-
-  return demangled;
 }
 
 /* This function performs most of what cplus_demangle use to do, but
