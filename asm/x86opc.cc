@@ -2957,7 +2957,7 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {"xsetbv"},
 {0},
 {0},
-{0},
+{"vmfunc"},
 {0},
 {0},
 {0},
