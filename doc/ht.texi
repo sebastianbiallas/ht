@@ -23,7 +23,7 @@ END-INFO-DIR-ENTRY
 This file documents the HT Editor.
 
 @c 
-Copyright @copyright{} 1999-2010 The HT authors. @*
+Copyright @copyright{} 1999-2012 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
@@ -58,7 +58,7 @@ be registered in certain jurisdictions.
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1999-2010 The HT authors. @*
+Copyright @copyright{} 1999-2012 The HT authors. @*
 @xref{Authors, The HT Authors, The HT Authors},
 for a list of the copyright holders.
 
