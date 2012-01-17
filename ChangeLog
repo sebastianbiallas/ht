@@ -9,6 +9,7 @@ version 2.0.19:
 	- [x86] AVX2
 	- [x86] BMI, BMI2 and TBM instructions
 	- fixed loading of ELF files with no section headers
+	- [Win32] Fixed loading of files with path length > 100 (thanks Vitaliy)
 
 version 2.0.18:
 	- updated c++ demangler
