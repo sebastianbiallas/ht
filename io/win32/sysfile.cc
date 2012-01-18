@@ -77,8 +77,9 @@ int sys_canonicalize(char **result, const char *filename)
 		if (res >= maxlen) {
 			*result = (char*)realloc(*result, res);
 			maxlen = res+1;
+		} else {
+			return 0;
 		}
-		return 0;
 	}
 	return ENOENT;
 }
