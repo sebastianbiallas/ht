@@ -69,6 +69,7 @@ cygwin*)
 mingw32*)
 	IO_DIR=win32
 	echo "*** MINGW32, building native Win32 version" 1>&2
+	HT_LDFLAGS="$HT_LDFLAGS -static-libgcc -static-libstdc++"
 	NEED_CURSES=0
 	HAVE_PIPE=1
 ;;
@@ -119,7 +120,8 @@ if test "${GXX}" = yes; then
 	1.*|2.*|3.*|4.0|4.1|4.2|4.3)
 	;;
 	*)
-	FLAGS_ALL="$FLAGS_ALL -march=native"
+	    FLAGS_ALL="$FLAGS_ALL -march=native"
+	;;
 	esac
 fi
 fi
