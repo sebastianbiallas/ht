@@ -124,8 +124,6 @@ extern char *alloca ();
 # endif /* alloca */
 #endif /* HAVE_ALLOCA_H */
 
-#include "ansidecl.h"
-#include "libiberty.h"
 #include "demangle.h"
 #include "cp-demangle.h"
 
