@@ -834,11 +834,13 @@ bool x86asm::encode_modrm(x86_insn_op *op, char size, bool allow_reg, bool allow
 		if (!allow_reg) return false;
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->xmm);
+		if (op->xmm > 7) rexprefix |= rexb;
 		break;
 	case X86_OPTYPE_YMM:
 		if (!allow_reg) return false;
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->ymm);
+		if (op->ymm > 7) rexprefix |= rexb;
 		break;
 	default:
 		return false;
@@ -1076,7 +1078,8 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		}
 		break;
 	case TYPE_W:
-		/* ModR/M (XMM reg or memory) */
+	case TYPE_X:
+		/* ModR/M (XMM/YMM reg or memory) */
 		if (!encode_modrm(op, xop->size, true, true, eopsize, eaddrsize)) return false; //XXX
 		psize = esizeop(xop->size, eopsize); //XXX
 		break;
@@ -1102,11 +1105,6 @@ bool x86asm::encode_op(x86_insn_op *op, x86opc_insn_op *xop, int *esize, int eop
 		emitmodrm_mod(3);
 		emitmodrm_rm(op->ymm);
 		if (op->ymm > 7) rexprefix |= rexb;
-		break;
-	case TYPE_X:
-		/* ModR/M (YMM reg or memory) */
-		if (!encode_modrm(op, xop->size, true, true, eopsize, eaddrsize)) return false; //XXX
-		psize = esizeop(xop->size, eopsize); //XXX
 		break;
 	}
 	if (!psize) {

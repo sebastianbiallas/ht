@@ -17,7 +17,7 @@ AC_ARG_ENABLE(profiling,
 
 if test "x$enable_maintainermode" = "xno"; then
 if test "x$enable_release" = "xyes"; then
-    FLAGS_ALL="-O3 -fomit-frame-pointer -march=native -Wall -fsigned-char"
+    FLAGS_ALL="-O3 -fomit-frame-pointer -Wall -fsigned-char"
 else
     FLAGS_ALL="-ggdb -g3 -O0 -Wall -fsigned-char"
 fi
@@ -69,6 +69,7 @@ cygwin*)
 mingw32*)
 	IO_DIR=win32
 	echo "*** MINGW32, building native Win32 version" 1>&2
+	HT_LDFLAGS="$HT_LDFLAGS -static-libgcc -static-libstdc++"
 	NEED_CURSES=0
 	HAVE_PIPE=1
 ;;
@@ -109,6 +110,20 @@ AC_PATH_PROG(AR, gar)
 
 if test "x$AR" = "x"; then
 	   AC_MSG_ERROR([*** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***])
+fi
+
+if test "x$enable_maintainermode" = "xno"; then
+if test "${GXX}" = yes; then
+	gxx_version=`${CXX} -v 2>&1 | grep "^.*g.. version" | \\
+	sed -e 's/^.*g.. version *//'`
+	case ${gxx_version} in
+	1.*|2.*|3.*|4.0|4.1|4.2|4.3)
+	;;
+	*)
+	    FLAGS_ALL="$FLAGS_ALL -march=native"
+	;;
+	esac
+fi
 fi
 
 dnl Checks for libraries.
