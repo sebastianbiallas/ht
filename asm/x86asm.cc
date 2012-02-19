@@ -1695,7 +1695,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 				int eaddrsize = addrsize;
 				for (int k=0; k < 2; k++) {
 					if (match_allops(insn, x86_modfloat_group_insns[i][j].op, 4, opsize, eaddrsize)) {
-						if (encode_insn(insn, &x86_modfloat_group_insns[i][j], j<<3, -1, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
+						if (encode_insn(insn, &x86_modfloat_group_insns[i][j], -1, j, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
 							pushcode();
 							newcode();
 						}
@@ -1717,7 +1717,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 				namefound |= n;
 				if (n != MATCHOPNAME_NOMATCH) {
 					if (match_allops(insn, x86_float_group_insns[i][j].insn.op, 4, opsize, addrsize)) {
-						if (encode_insn(insn, &x86_float_group_insns[i][j].insn, 0xc0 | j<<3, -1, X86ASM_PREFIX_D8+i, opsize, addrsize)) {
+						if (encode_insn(insn, &x86_float_group_insns[i][j].insn, -1, j, X86ASM_PREFIX_D8+i, opsize, addrsize)) {
 							pushcode();
 							newcode();
 						}
@@ -1733,7 +1733,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 						int eaddrsize = addrsize;
 						for (int l=0; l < 2; l++) {
 							if (match_allops(insn, group[k].op, 4, opsize, eaddrsize)) {
-								if (encode_insn(insn, &group[k], 0xc0 | j<<3 | k, -1, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
+								if (encode_insn(insn, &group[k], -1, 0x800 | k<<3 | j, X86ASM_PREFIX_D8+i, opsize, eaddrsize)) {
 									pushcode();
 									newcode();
 								}
