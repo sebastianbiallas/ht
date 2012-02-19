@@ -120,8 +120,8 @@ if test "${GXX}" = yes; then
 	1.*|2.*|3.*|4.0|4.1|4.2|4.3)
 	;;
 	*)
-	    CXXFLAGS="$CXXFLAGS -march=native"
-	    CFLAGS="$CFLAGS -march=native"
+dnl	    CXXFLAGS="$CXXFLAGS -march=native"
+dnl	    CFLAGS="$CFLAGS -march=native"
 	;;
 	esac
 fi
