@@ -531,7 +531,7 @@ Searching for patterns:
 Enter @code{readbyte(o) == readbyte(o+1)}@*
 This will search for two equal bytes ("AA", "55", "!!", etc.).
 @item
-Enter @code{(readbyte(o) == readbyte(o+1)+1) && ((readbyte(o)==readbyte(o+2)+2)}@*
+Enter @code{(readbyte(o) == readbyte(o+1)-1) && (readbyte(o)==readbyte(o+2)-2)}@*
 This will search for three ascending bytes ("ABC", "123", etc).
 @end enumerate
 
