@@ -1717,7 +1717,7 @@ void x86asm::match_fopcodes(x86asm_insn *insn)
 				namefound |= n;
 				if (n != MATCHOPNAME_NOMATCH) {
 					if (match_allops(insn, x86_float_group_insns[i][j].insn.op, 4, opsize, addrsize)) {
-						if (encode_insn(insn, &x86_float_group_insns[i][j].insn, -1, j, X86ASM_PREFIX_D8+i, opsize, addrsize)) {
+						if (encode_insn(insn, &x86_float_group_insns[i][j].insn, -1, 0x800 | j, X86ASM_PREFIX_D8+i, opsize, addrsize)) {
 							pushcode();
 							newcode();
 						}
