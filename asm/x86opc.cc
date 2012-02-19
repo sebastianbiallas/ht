@@ -2689,7 +2689,7 @@ x86opc_insn x86_group_insns[][8] = {
 {0},
 {0},
 {0},
-{0},
+{"xabort", {Ib}},
 },
 /* 7 - GROUP_C7 */
 {
@@ -2700,7 +2700,7 @@ x86opc_insn x86_group_insns[][8] = {
 {0},
 {0},
 {0},
-{0},
+{"xbegin", {Jv}},
 },
 /* 8 - GROUP_D0 */
 {
@@ -2958,8 +2958,8 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {0},
 {0},
 {"vmfunc"},
-{0},
-{0},
+{"xend"},
+{"xtest"},
 {0},
 // with mod!=11:
 {"lgdt", {M}},
