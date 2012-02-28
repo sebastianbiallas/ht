@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 2.0.19, January 2012}
+@subtitle{Edition 2.0.20, January 2012}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.

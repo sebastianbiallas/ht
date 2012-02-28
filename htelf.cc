@@ -155,6 +155,8 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 		if (!elf_shared->sheaders.count) {
 			elf_shared->sheaders.sheaders32 = NULL;
 		} else {
+			elf_shared->sheaders.sheaders32 =
+				ht_malloc(elf_shared->sheaders.count * sizeof *elf_shared->sheaders.sheaders32);
 			file->seek(header_ofs + elf_shared->header32.e_shoff);
 			file->readx(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			for (uint i=0; i < elf_shared->sheaders.count; i++) {
