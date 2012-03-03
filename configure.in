@@ -42,6 +42,7 @@ linux*)
 	echo "*** LINUX, building POSIX version. we need (n)curses." 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=1
+	HT_LIBS="$HT_LIBS -lm"
 	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 *freebsd*) 
@@ -191,7 +192,7 @@ AC_CHECK_HEADERS([stdint.h])
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
 if test "x$NEED_CURSES" = "x1"; then
-	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h]) CURSES_LIB=ncurses)
+	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h/wide]) CURSES_LIB=ncursesw)
 	if test "x$CURSES_LIB" = "x"; then
 		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>, [This system provides (n)curses.h]) CURSES_LIB=curses)
 		if test "x$CURSES_LIB" = "x"; then
