@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title{HT Manual}
-@subtitle{Edition 2.0.20, January 2012}
+@subtitle{Edition 2.0.21, March 2012}
 
 @author{Stefan Weyergraf, Sebastian Biallas}
 @c The following two commands start the copyright page.
@@ -455,6 +455,9 @@ details (sorry but a detailed help would get outdated rather soon).
 
 The symbol _ always refers to the last result.
 
+If you are in a hex buffer, the variable @code{first} contains the offset of the first byte and the variable
+@code{last} contains the offset of the last byte. This is useful, for instace, if you want to jump to the last byte of a file.
+
 When using @xref{Block operations}, or searching you have some 
 context depending functions and symbols; see these sections for explanation.
 
@@ -486,8 +489,6 @@ read a byte from offset @var{ofs}, returns a number
 read @var{size} bytes from offset @var{ofs}, returns a string
 @item i
 contains the iteration count/index starting with 0
-@item o
-contains the current offset
 @end table
 
 @node Search and its different modes, , Features, Features
