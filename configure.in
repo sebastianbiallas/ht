@@ -190,7 +190,7 @@ AC_CHECK_HEADERS([stdint.h])
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
 if test "x$NEED_CURSES" = "x1"; then
-	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h]) CURSES_LIB=ncurses)
+	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h/wide]) CURSES_LIB=ncursesw)
 	if test "x$CURSES_LIB" = "x"; then
 		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>, [This system provides (n)curses.h]) CURSES_LIB=curses)
 		if test "x$CURSES_LIB" = "x"; then

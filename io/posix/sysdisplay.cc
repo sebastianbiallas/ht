@@ -301,7 +301,7 @@ void CursesSystemDisplay::term_on()
 
 	setCursor(0, 0, CURSOR_OFF);
 
-//	::setlocale(LC_ALL, "");
+	::setlocale(LC_ALL, "");
 
 //	terminal = ::newterm(NULL, stdout, stdin);
 	win = ::initscr();
