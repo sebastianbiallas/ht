@@ -531,10 +531,10 @@ bool search_bin_process(Object *context, ht_text *progress_indicator)
 	}
 	ctx->o -= ctx->patlen-1;
 
-	int p = (int)(((double)(ctx->o - ctx->ofs))*100/ctx->len);
+	int p = (((double)(ctx->o - ctx->ofs))*100/ctx->len);
 
 	char status[64];
-	ht_snprintf(status, sizeof status, "%d %%", p);
+	ht_snprintf(status, sizeof status, "%d %% (%d MiB)", p, int ((unsigned long long)ctx->o >> 20));
 	progress_indicator->settext(status);
 
 	return true;
