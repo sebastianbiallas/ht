@@ -3,6 +3,8 @@
 
 version 2.0.20:
 	- Fixed loading of 32 bit ELFs (Thanks Oleg)
+	- Use wide ncurses if necessars (Thanks Jan)
+	- Show search progress in MiB (Thanks Jan)
 
 version 2.0.19:
 	- [x86] fixed a lot of small bugs

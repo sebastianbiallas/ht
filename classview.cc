@@ -713,11 +713,20 @@ static format_viewer_if *htcls_ifs[] = {
 static ht_view *class_init(Bounds *b, File *file, ht_format_group *group)
 {
 	u1 magic[4];
+	u1 extra_magic[4];
 
-	file->seek(0);
-	file->read(magic, 4);
+	try {
+		file->seek(0);
+		file->readx(magic, 4);
+		file->readx(extra_magic, 4);
+	} catch (...) {
+		return NULL;
+	}
+	// Mach-O binaries also use 0xcafebabe here.  The second byte is the
+	// number of architectures; if there's more than 10 it's probably
+	// a Java class file instead.
 	if (magic[0] == 0xca && magic[1] == 0xfe
-	 && magic[2] == 0xba && magic[3] == 0xbe) {
+	 && magic[2] == 0xba && magic[3] == 0xbe && extra_magic[3] > 10) {
 		file->seek(0);
 		void *shared_data = (void*)class_read(file);
 		if (!shared_data) return NULL;
