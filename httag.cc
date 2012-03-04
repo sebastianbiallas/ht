@@ -80,6 +80,7 @@ TAGSTRING *tag_make_ref_len(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 i
 	tag.id128_4 = id128_4;
 	tag.strlen = strlen;
 	tag.flush(buf);
+	memcpy(buf + sizeof(tag), string, strlen);
 	return buf + sizeof(tag) + strlen;
 }
 
