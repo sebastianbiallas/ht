@@ -15,17 +15,24 @@ AC_ARG_ENABLE(release,
 AC_ARG_ENABLE(profiling,
 	[  --enable-profiling      make a profile build [default=no]],,enable_profiling="no")
 
+# Certain flags that shall always be present even if user does make CFLAGS=""
+my_CPPFLAGS="-DNOMACROS"
+my_CFLAGS="-Wall -fsigned-char"
+my_CXXFLAGS="-Wall -Woverloaded-virtual -Wnon-virtual-dtor -fsigned-char"
+
 if test "x$enable_maintainermode" = "xno"; then
 if test "x$enable_release" = "xyes"; then
-    FLAGS_ALL="-O3 -fomit-frame-pointer -Wall -fsigned-char"
+    default_user_CFLAGS="-O3 -fomit-frame-pointer"
 else
-    FLAGS_ALL="-ggdb -g3 -O0 -Wall -fsigned-char"
+    default_user_CFLAGS="-ggdb3 -O0 -Wall"
 fi
 
 if test "x$enable_profiling" = "xyes"; then
-    FLAGS_ALL="$FLAGS_ALL -pg -g"
+    default_user_CFLAGS="$default_user_CFLAGS -pg -g"
 fi
 fi
+CFLAGS="$default_user_CFLAGS"
+CXXFLAGS="$default_user_CFLAGS"
 
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
@@ -43,14 +50,14 @@ linux*)
 	NEED_CURSES=1
 	HAVE_PIPE=1
 	HT_LIBS="$HT_LIBS -lm"
-	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+	my_CPPFLAGS="$my_CPPFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 *freebsd*) 
 	IO_DIR=posix
 	echo "*** FREEBSD, building native FreeBSD version. we need (n)curses." 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=1
-	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+	my_CPPFLAGS="$my_CPPFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 *openbsd*) 
 	IO_DIR=posix
@@ -58,12 +65,12 @@ linux*)
 	NEED_CURSES=1
 	HAVE_PIPE=1
 	HT_X11BASE="-L${X11BASE}/lib"
-	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+	my_CPPFLAGS="$my_CPPFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
 cygwin*)
 	IO_DIR=win32
 	echo "*** CYGWIN, building native Win32 version (no cygwin.dll)" 1>&2
-	FLAGS_ALL="$FLAGS_ALL -mno-cygwin"
+	my_CFLAGS="$my_CFLAGS -mno-cygwin"
 	NEED_CURSES=0
 	HAVE_PIPE=1
 ;;
@@ -80,16 +87,13 @@ mingw32*)
 	echo "*** POSIX-generic, we need (n)curses, '-pipe' disabled for safety" 1>&2
 	NEED_CURSES=1
 	HAVE_PIPE=0
-	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+	my_CPPFLAGS="$my_CPPFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;	
 esac
 
 if test "x$HAVE_PIPE" = "x1"; then
-	FLAGS_PIPE="-pipe";
+	my_CFLAGS="$my_CFLAGS -pipe";
 fi
-
-CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor $CXXFLAGS"
-CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL $CFLAGS"
 
 AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
 
@@ -121,8 +125,8 @@ if test "${GXX}" = yes; then
 	1.*|2.*|3.*|4.0|4.1|4.2|4.3)
 	;;
 	*)
-dnl	    CXXFLAGS="$CXXFLAGS -march=native"
-dnl	    CFLAGS="$CFLAGS -march=native"
+dnl	    my_CXXFLAGS="$my_CXXFLAGS -march=native"
+dnl	    my_CFLAGS="$my_CFLAGS -march=native"
 	;;
 	esac
 fi
@@ -192,14 +196,22 @@ AC_CHECK_HEADERS([stdint.h])
 dnl AC_CONFIG_HEADER(config.h)
 CURSES_LIB=
 if test "x$NEED_CURSES" = "x1"; then
-	AC_CHECK_HEADERS(ncurses.h, AC_DEFINE(CURSES_HDR, <ncurses.h>, [This system provides (n)curses.h/wide]) CURSES_LIB=ncursesw)
-	if test "x$CURSES_LIB" = "x"; then
-		AC_CHECK_HEADERS(curses.h, AC_DEFINE(CURSES_HDR, <curses.h>, [This system provides (n)curses.h]) CURSES_LIB=curses)
-		if test "x$CURSES_LIB" = "x"; then
-			   AC_MSG_ERROR([*** (n)curses.h needed ***])
-		fi
+	AC_CHECK_PROGS([ncurses_config],
+		[ncursesw6-config ncursesw5-config ncurses6-config ncurses5-config])
+	if test "x$ncurses_config" != "x"; then
+		curses_CPPFLAGS="$($ncurses_config --cflags)"
+		curses_LIBS="$($ncurses_config --libs)"
+		AC_DEFINE([CURSES_HDR], [<ncurses.h>], [This system provides ncurses.h])
+	else
+		AC_SEARCH_LIBS([initscr], [ncursesw ncurses curses], [curses_LIBS="$LIBS"; LIBS=""])
+		AC_CHECK_HEADERS([curses.h], [AC_DEFINE([CURSES_HDR], [<curses.h>], [This system provides curses.h])])
+		AC_CHECK_HEADERS([ncurses.h], [AC_DEFINE([CURSES_HDR], [<ncurses.h>], [This system provides ncurses.h])])
 	fi
-	HT_LIBS="$HT_LIBS -l$CURSES_LIB"
+	if test "x$curses_LIBS" = "x"; then
+		   AC_MSG_ERROR([*** (n)curses.h needed ***])
+	fi
+	AC_SUBST([curses_CPPFLAGS])
+	AC_SUBST([curses_LIBS])
 fi    
 
 dnl Makefile vars.

@@ -1,5 +1,9 @@
 AUTOMAKE_OPTIONS=foreign
 
+AM_CPPFLAGS = ${my_CPPFLAGS} -I$(srcdir) -I$(top_srcdir) -I$(srcdir)/$(MY_IO_DIR)
+AM_CFLAGS   = ${my_CFLAGS}
+AM_CXXFLAGS = ${my_CXXFLAGS}
+
 if USE_POSIX_DIR
 MY_IO_DIR=posix
 endif
@@ -15,8 +19,6 @@ endif
 noinst_LIBRARIES = libcomio.a
 libcomio_a_SOURCES = bounds.h display.cc display.h keyb.cc keyb.h sys.cc sys.h \
 file.cc file.h fileofs.h types.h event.h 
-
-INCLUDES = -I$(srcdir) -I$(top_srcdir) -I$(srcdir)/$(MY_IO_DIR)
 
 SUBDIRS = $(MY_IO_DIR)
 EXTRA_SUBDIRS = djgpp posix win32

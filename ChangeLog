@@ -1,8 +1,10 @@
  HT ChangeLog
 ==============
 
-version 2.0.20:
+version 2.0.21:
 	- Fixed usage of unaliged pointers (Thanks Jan)
+	- Restructed configure/makefile for better handling of
+	  ncurses depedency (Thanks Jan)
 
 version 2.0.20:
 	- Fixed loading of 32 bit ELFs (Thanks Oleg)

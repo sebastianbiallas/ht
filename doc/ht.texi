@@ -78,7 +78,7 @@ be registered in certain jurisdictions.
 @c
 
 @macro htversion
-2.0.19
+2.0.21
 @end macro
 
 @macro hturl
@@ -456,7 +456,7 @@ details (sorry but a detailed help would get outdated rather soon).
 The symbol _ always refers to the last result.
 
 If you are in a hex buffer, the variable @code{first} contains the offset of the first byte and the variable
-@code{last} contains the offset of the last byte. This is useful, for instace, if you want to jump to the last byte of a file.
+@code{last} contains the offset of the last byte. This is useful, for instance, if you want to jump to the last byte of a file.
 
 When using @xref{Block operations}, or searching you have some 
 context depending functions and symbols; see these sections for explanation.

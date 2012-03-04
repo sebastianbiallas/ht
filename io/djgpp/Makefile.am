@@ -5,4 +5,4 @@ AM_CFLAGS   = ${my_CFLAGS}
 AM_CXXFLAGS = ${my_CXXFLAGS}
 
 noinst_LIBRARIES = libhtio.a
-libhtio_a_SOURCES = syskeyb.cc sysfile.cc sysclipboard.cc sysdisplay.cc types.h
+libhtio_a_SOURCES = htcurses.cc htcurses.h htkeyb.cc htkeyb.h htsys.cc htsys.h
