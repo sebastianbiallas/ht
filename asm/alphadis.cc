@@ -80,8 +80,8 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 		insn.valid = false;
 		insn.size = maxlen;
 		insn.table = 0;
-		// FIXME: this reads to much bytes!
-		UNALIGNED_MOVE(insn.data, *(uint32 *)code);
+		// FIXME: this reads too many bytes!
+		memcpy(&insn.data, code, sizeof(insn.data));
 	} else {
 		insn.valid = true;
 		insn.size = 4;

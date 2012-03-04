@@ -78,7 +78,7 @@ AddressX86Flat32 *AddressX86Flat32::clone() const
 
 void AddressX86Flat32::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(uint32*)array);
+	memcpy(&addr, array, sizeof(addr));
 }
 
 void AddressX86Flat32::getFromCPUAddress(CPU_ADDR *ca)
@@ -113,7 +113,7 @@ int AddressX86Flat32::parseString(const char *s, int length, Analyser *a)
 
 void AddressX86Flat32::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(uint32*)array, addr);
+	memcpy(array, &addr, sizeof(addr));
 }
 
 void AddressX86Flat32::putIntoCPUAddress(CPU_ADDR *ca) const
@@ -217,8 +217,8 @@ AddressX86_1632 *AddressX86_1632::clone() const
 
 void AddressX86_1632::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(uint32*)array);
-	UNALIGNED_MOVE(seg, *(uint16*)(array+sizeof addr));
+	memcpy(&addr, array, sizeof(addr));
+	memcpy(&seg, array + sizeof(addr), sizeof(seg));
 }
 
 void AddressX86_1632::getFromCPUAddress(CPU_ADDR *ca)
@@ -250,8 +250,8 @@ int AddressX86_1632::parseString(const char *s, int length, Analyser *a)
 
 void AddressX86_1632::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(uint32*)array, addr);
-	UNALIGNED_MOVE(*(uint16*)(array+sizeof addr), seg);
+	memcpy(array, &addr, sizeof(addr));
+	memcpy(array + sizeof(addr), &seg, sizeof(seg));
 }
 
 void AddressX86_1632::putIntoCPUAddress(CPU_ADDR *ca) const
@@ -360,8 +360,8 @@ AddressX86_1616 *AddressX86_1616::clone() const
 
 void AddressX86_1616::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(uint16*)array);
-	UNALIGNED_MOVE(seg, *(uint16*)(array+sizeof addr));
+	memcpy(&addr, array, sizeof(addr));
+	memcpy(&seg, array + sizeof(addr), sizeof(seg));
 }
 
 bool AddressX86_1616::getFromUInt64(uint64 u)
@@ -393,8 +393,8 @@ int AddressX86_1616::parseString(const char *s, int length, Analyser *a)
 
 void AddressX86_1616::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(uint16*)array, addr);
-	UNALIGNED_MOVE(*(uint16*)(array+sizeof seg), seg);
+	memcpy(array, &addr, sizeof(addr));
+	memcpy(array + sizeof(addr), &seg, sizeof(seg));
 }
 
 void AddressX86_1616::putIntoCPUAddress(CPU_ADDR *ca) const

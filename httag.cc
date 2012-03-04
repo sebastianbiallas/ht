@@ -71,16 +71,16 @@ TAGSTRING *tag_make_ref_len(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 i
 	if (maxlen <= (signed)sizeof (ht_tag_sel)+strlen) {
 		strlen = maxlen - sizeof (ht_tag_sel) - 1;
 	}
-	ht_tag_sel *tag=(ht_tag_sel*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_SEL;
-	UNALIGNED_MOVE(tag->id128_1, id128_1);
-	UNALIGNED_MOVE(tag->id128_2, id128_2);
-	UNALIGNED_MOVE(tag->id128_3, id128_3);
-	UNALIGNED_MOVE(tag->id128_4, id128_4);
-	UNALIGNED_MOVE(tag->strlen, strlen);
-	memcpy(buf+sizeof (ht_tag_sel), string, strlen);
-	return buf+sizeof (ht_tag_sel)+strlen;
+	ht_tag_sel tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_SEL;
+	tag.id128_1 = id128_1;
+	tag.id128_2 = id128_2;
+	tag.id128_3 = id128_3;
+	tag.id128_4 = id128_4;
+	tag.strlen = strlen;
+	tag.flush(buf);
+	return buf + sizeof(tag) + strlen;
 }
 
 TAGSTRING *tag_make_ref(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128_2, uint32 id128_3, uint32 id128_4, const char *string)
@@ -91,58 +91,63 @@ TAGSTRING *tag_make_ref(TAGSTRING *buf, int maxlen, uint32 id128_1, uint32 id128
 TAGSTRING *tag_make_flags(TAGSTRING *buf, int maxlen, uint32 id, FileOfs ofs)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_flags)) return tag_error(buf, maxlen);
-	ht_tag_flags *tag = (ht_tag_flags*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_FLAGS;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	UNALIGNED_MOVE(tag->id, id);
-	return buf + sizeof (ht_tag_flags);
+	ht_tag_flags tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_FLAGS;
+	tag.offset = ofs;
+	tag.id = id;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_group(TAGSTRING *buf, int maxlen)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_group)) return tag_error(buf, maxlen);
-	ht_tag_group *tag = (ht_tag_group*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_GROUP;
-	return buf + sizeof (ht_tag_group);
+	ht_tag_group tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_GROUP;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_color(TAGSTRING *buf, int maxlen, uint32 color)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_color)) return tag_error(buf, maxlen);
-	ht_tag_color *tag = (ht_tag_color*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_COLOR;
-	UNALIGNED_MOVE(tag->color, color);
-	return buf + sizeof (ht_tag_color);
+	ht_tag_color tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_COLOR;
+	tag.color = color;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_default_color(TAGSTRING *buf, int maxlen)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_color)) return tag_error(buf, maxlen);
-	ht_tag_color *tag = (ht_tag_color*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_COLOR;
-	UNALIGNED_MOVE_CONST(tag->color, 0xffffffff, uint32);
-	return buf + sizeof (ht_tag_color);
+	ht_tag_color tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_COLOR;
+	tag.color = 0xffffffffU;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_byte)) return tag_error(buf, maxlen);
-	ht_tag_edit_byte *tag = (ht_tag_edit_byte*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_EDIT_BYTE;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_byte);
+	ht_tag_edit_byte tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_EDIT_BYTE;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_word_generic)) return tag_error(buf, maxlen);
-	ht_tag_edit_word_generic *tag = (ht_tag_edit_word_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_edit_word_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -155,16 +160,17 @@ TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endia
 		m = HT_TAG_EDIT_WORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_word_generic);
+	tag.magic = m;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_dword_generic)) return tag_error(buf, maxlen);
-	ht_tag_edit_dword_generic *tag = (ht_tag_edit_dword_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_edit_dword_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -177,16 +183,17 @@ TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endi
 		m = HT_TAG_EDIT_DWORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_dword_generic);
+	tag.magic = m;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_qword_generic)) return tag_error(buf, maxlen);
-	ht_tag_edit_qword_generic *tag = (ht_tag_edit_qword_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_edit_qword_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -199,17 +206,18 @@ TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endi
 		m = HT_TAG_EDIT_QWORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_qword_generic);
+	tag.magic = m;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_time(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_time)) return tag_error(buf, maxlen);
-	ht_tag_edit_time *tag = (ht_tag_edit_time*)buf;
-	tag->escape = '\e';
-	byte m = 0xff;	
+	ht_tag_edit_time tag;
+	tag.escape = '\e';
+	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
 		m = HT_TAG_EDIT_TIME_BE;
@@ -221,59 +229,64 @@ TAGSTRING *tag_make_edit_time(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endia
 		m = HT_TAG_EDIT_TIME_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_time);
+	tag.magic = m;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_char(TAGSTRING *buf, int maxlen, FileOfs ofs)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_char)) return tag_error(buf, maxlen);
-	ht_tag_edit_char *tag = (ht_tag_edit_char*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_EDIT_CHAR;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	return buf + sizeof (ht_tag_edit_char);
+	ht_tag_edit_char tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_EDIT_CHAR;
+	tag.offset = ofs;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_bit(TAGSTRING *buf, int maxlen, FileOfs ofs, int bitidx)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_bit)) return tag_error(buf, maxlen);
-	ht_tag_edit_bit *tag = (ht_tag_edit_bit*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_EDIT_BIT;
-	UNALIGNED_MOVE(tag->offset, ofs);
-	UNALIGNED_MOVE(tag->bitidx, bitidx);
-	return buf+sizeof (ht_tag_edit_bit);
+	ht_tag_edit_bit tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_EDIT_BIT;
+	tag.offset = ofs;
+	tag.bitidx = bitidx;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_edit_selvis(TAGSTRING *buf, int maxlen, FileOfs offset, char ch)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_edit_selvis)) return tag_error(buf, maxlen);
-	ht_tag_edit_selvis *tag=(ht_tag_edit_selvis*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_EDIT_SELVIS;
-	UNALIGNED_MOVE(tag->offset, offset);
-	tag->ch = ch;
-	return buf + sizeof (ht_tag_edit_selvis);
+	ht_tag_edit_selvis tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_EDIT_SELVIS;
+	tag.offset = offset;
+	tag.ch = ch;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_desc_byte(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_desc_byte)) return tag_error(buf, maxlen);
-	ht_tag_desc_byte *tag = (ht_tag_desc_byte*)buf;
-	tag->escape = '\e';
-	tag->magic = HT_TAG_DESC_BYTE;
-	UNALIGNED_MOVE(tag->offset, ofs32);
-	UNALIGNED_MOVE(tag->id, id32);
-	return buf + sizeof (ht_tag_desc_byte);
+	ht_tag_desc_byte tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_DESC_BYTE;
+	tag.offset = ofs32;
+	tag.id = id32;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_desc_word(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_desc_word_generic)) return tag_error(buf, maxlen);
-	ht_tag_desc_word_generic *tag = (ht_tag_desc_word_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_desc_word_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -286,17 +299,18 @@ TAGSTRING *tag_make_desc_word(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 
 		m = HT_TAG_DESC_WORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs32);
-	UNALIGNED_MOVE(tag->id, id32);
-	return buf + sizeof (ht_tag_desc_word_generic);
+	tag.magic = m;
+	tag.offset = ofs32;
+	tag.id = id32;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_desc_dword_generic)) return tag_error(buf, maxlen);
-	ht_tag_desc_dword_generic *tag = (ht_tag_desc_dword_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_desc_dword_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -309,17 +323,18 @@ TAGSTRING *tag_make_desc_dword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32
 		m = HT_TAG_DESC_DWORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs32);
-	UNALIGNED_MOVE(tag->id, id32);
-	return buf + sizeof (ht_tag_desc_dword_generic);
+	tag.magic = m;
+	tag.offset = ofs32;
+	tag.id = id32;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32 id32, tag_endian e)
 {
 	if (maxlen <= (signed)sizeof (ht_tag_desc_qword_generic)) return tag_error(buf, maxlen);
-	ht_tag_desc_qword_generic *tag = (ht_tag_desc_qword_generic*)buf;
-	tag->escape = '\e';
+	ht_tag_desc_qword_generic tag;
+	tag.escape = '\e';
 	byte m = 0xff;
 	switch (e) {
 	case tag_endian_big:
@@ -332,10 +347,11 @@ TAGSTRING *tag_make_desc_qword(TAGSTRING *buf, int maxlen, FileOfs ofs32, uint32
 		m = HT_TAG_DESC_QWORD_VE;
 		break;
 	}
-	tag->magic = m;
-	UNALIGNED_MOVE(tag->offset, ofs32);
-	UNALIGNED_MOVE(tag->id, id32);
-	return buf + sizeof (ht_tag_desc_qword_generic);
+	tag.magic = m;
+	tag.offset = ofs32;
+	tag.id = id32;
+	tag.flush(buf);
+	return buf + sizeof(tag);
 }
 
 /**/
@@ -757,73 +773,47 @@ int tag_get_size(const TAGSTRING *tagstring)
 
 FileOfs tag_get_offset(const TAGSTRING *tagstring)
 {
-	FileOfs f;
 	switch (tagstring[1]) {
-	case HT_TAG_EDIT_BYTE: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_byte*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_EDIT_BYTE:
+		return ht_tag_edit_byte(tagstring).offset;
 	case HT_TAG_EDIT_WORD_LE:
 	case HT_TAG_EDIT_WORD_BE:
-	case HT_TAG_EDIT_WORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_word_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_EDIT_WORD_VE:
+		return ht_tag_edit_word_generic(tagstring).offset;
 	case HT_TAG_EDIT_DWORD_LE:
 	case HT_TAG_EDIT_DWORD_BE:
-	case HT_TAG_EDIT_DWORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_dword_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_EDIT_DWORD_VE:
+		return ht_tag_edit_dword_generic(tagstring).offset;
 	case HT_TAG_EDIT_QWORD_LE:
 	case HT_TAG_EDIT_QWORD_BE:
-	case HT_TAG_EDIT_QWORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_qword_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_EDIT_QWORD_VE:
+		return ht_tag_edit_qword_generic(tagstring).offset;
 	case HT_TAG_EDIT_TIME_LE:
 	case HT_TAG_EDIT_TIME_BE:
-	case HT_TAG_EDIT_TIME_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_time*)tagstring)->offset);
-		return f;
-	}
-	case HT_TAG_EDIT_CHAR: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_char*)tagstring)->offset);
-		return f;
-	}
-	case HT_TAG_EDIT_BIT: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_bit*)tagstring)->offset);
-		return f;
-	}
-	case HT_TAG_EDIT_SELVIS: {
-		UNALIGNED_MOVE(f, ((ht_tag_edit_selvis*)tagstring)->offset);
-		return f;
-	}
-	case HT_TAG_DESC_BYTE: {
-		UNALIGNED_MOVE(f, ((ht_tag_desc_byte*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_EDIT_TIME_VE:
+		return ht_tag_edit_time(tagstring).offset;
+	case HT_TAG_EDIT_CHAR:
+		return ht_tag_edit_char(tagstring).offset;
+	case HT_TAG_EDIT_BIT:
+		return ht_tag_edit_bit(tagstring).offset;
+	case HT_TAG_EDIT_SELVIS:
+		return ht_tag_edit_selvis(tagstring).offset;
+	case HT_TAG_DESC_BYTE:
+		return ht_tag_desc_byte(tagstring).offset;
 	case HT_TAG_DESC_WORD_LE:
 	case HT_TAG_DESC_WORD_BE:
-	case HT_TAG_DESC_WORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_desc_word_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_DESC_WORD_VE:
+		return ht_tag_desc_word_generic(tagstring).offset;
 	case HT_TAG_DESC_DWORD_LE:
 	case HT_TAG_DESC_DWORD_BE:
-	case HT_TAG_DESC_DWORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_desc_dword_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_DESC_DWORD_VE:
+		return ht_tag_desc_dword_generic(tagstring).offset;
 	case HT_TAG_DESC_QWORD_LE:
 	case HT_TAG_DESC_QWORD_BE:
-	case HT_TAG_DESC_QWORD_VE: {
-		UNALIGNED_MOVE(f, ((ht_tag_desc_qword_generic*)tagstring)->offset);
-		return f;
-	}
+	case HT_TAG_DESC_QWORD_VE:
+		return ht_tag_desc_qword_generic(tagstring).offset;
 	case HT_TAG_FLAGS:
-		UNALIGNED_MOVE(f, ((ht_tag_flags*)tagstring)->offset);
-		return f;
+		return ht_tag_flags(tagstring).offset;
 	}
 	assert(0);
 	return 0;
@@ -831,12 +821,13 @@ FileOfs tag_get_offset(const TAGSTRING *tagstring)
 
 void tag_get_id(const TAGSTRING *tagstring, uint32 *id128_1, uint32 *id128_2, uint32 *id128_3, uint32 *id128_4)
 {
-	if (tagstring[1] == HT_TAG_SEL) {
-		UNALIGNED_MOVE(*id128_1, ((ht_tag_sel*)tagstring)->id128_1);
-		UNALIGNED_MOVE(*id128_2, ((ht_tag_sel*)tagstring)->id128_2);
-		UNALIGNED_MOVE(*id128_3, ((ht_tag_sel*)tagstring)->id128_3);
-		UNALIGNED_MOVE(*id128_4, ((ht_tag_sel*)tagstring)->id128_4);
-	}
+	if (tagstring[1] != HT_TAG_SEL)
+		return;
+	ht_tag_sel tag(tagstring);
+	*id128_1 = tag.id128_1;
+	*id128_2 = tag.id128_2;
+	*id128_3 = tag.id128_3;
+	*id128_4 = tag.id128_4;
 }
 
 TAGSTRING *tag_get_seltext(const TAGSTRING *tagstring)
@@ -846,76 +837,94 @@ TAGSTRING *tag_get_seltext(const TAGSTRING *tagstring)
 
 int tag_get_seltextlen(const TAGSTRING *tagstring)
 {
-	if (tagstring[1] == HT_TAG_SEL) {
-		return ((ht_tag_sel*)tagstring)->strlen;
-	}
-	return -1;
+	if (tagstring[1] != HT_TAG_SEL)
+		return -1;
+	return ht_tag_sel(tagstring).strlen;
 }
 
 vcp tag_get_color(const TAGSTRING *tagstring)
 {
-	vcp c;
-	UNALIGNED_MOVE(c, ((ht_tag_color*)tagstring)->color);
-	return c;
+	return ht_tag_color(tagstring).color;
 }
 
 bool tag_get_desc_id(const TAGSTRING *tagstring, uint32 *id)
 {
 	switch (tagstring[1]) {
 	case HT_TAG_DESC_BYTE:
-		UNALIGNED_MOVE(*id, ((ht_tag_desc_byte*)tagstring)->id);
+		*id = ht_tag_desc_byte(tagstring).id;
 		return true;
 	case HT_TAG_DESC_WORD_LE:
 	case HT_TAG_DESC_WORD_BE:
 	case HT_TAG_DESC_WORD_VE:
-		UNALIGNED_MOVE(*id, ((ht_tag_desc_word_generic*)tagstring)->id);
+		*id = ht_tag_desc_word_generic(tagstring).id;
 		return true;
 	case HT_TAG_DESC_DWORD_LE:
 	case HT_TAG_DESC_DWORD_BE:
 	case HT_TAG_DESC_DWORD_VE:
-		UNALIGNED_MOVE(*id, ((ht_tag_desc_dword_generic*)tagstring)->id);
+		*id = ht_tag_desc_dword_generic(tagstring).id;
 		return true;
 	case HT_TAG_DESC_QWORD_LE:
 	case HT_TAG_DESC_QWORD_BE:
 	case HT_TAG_DESC_QWORD_VE:
-		UNALIGNED_MOVE(*id, ((ht_tag_desc_qword_generic*)tagstring)->id);
+		*id = ht_tag_desc_qword_generic(tagstring).id;
 		return true;
 	}
 	return false;
 }
 
-void tag_set_offset(const TAGSTRING *tagstring, FileOfs offset)
+void tag_set_offset(TAGSTRING *tagstring, FileOfs offset)
 {
 	switch (tagstring[1]) {
-	case HT_TAG_EDIT_BYTE:
-		UNALIGNED_MOVE(((ht_tag_edit_byte*)tagstring)->offset, offset);
+	case HT_TAG_EDIT_BYTE: {
+		ht_tag_edit_byte tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
+	}
 	case HT_TAG_EDIT_WORD_LE:
 	case HT_TAG_EDIT_WORD_BE:
-	case HT_TAG_EDIT_WORD_VE:
-		UNALIGNED_MOVE(((ht_tag_edit_word_generic*)tagstring)->offset, offset);
+	case HT_TAG_EDIT_WORD_VE: {
+		ht_tag_edit_word_generic tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
+	}
 	case HT_TAG_EDIT_DWORD_LE:
 	case HT_TAG_EDIT_DWORD_BE:
-	case HT_TAG_EDIT_DWORD_VE:
-		UNALIGNED_MOVE(((ht_tag_edit_dword_generic*)tagstring)->offset, offset);
+	case HT_TAG_EDIT_DWORD_VE: {
+		ht_tag_edit_dword_generic tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
+	}
 	case HT_TAG_EDIT_QWORD_LE:
 	case HT_TAG_EDIT_QWORD_BE:
-	case HT_TAG_EDIT_QWORD_VE:
-		UNALIGNED_MOVE(((ht_tag_edit_qword_generic*)tagstring)->offset, offset);
+	case HT_TAG_EDIT_QWORD_VE: {
+		ht_tag_edit_qword_generic tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
+	}
 	case HT_TAG_EDIT_TIME_LE:
 	case HT_TAG_EDIT_TIME_BE:
-	case HT_TAG_EDIT_TIME_VE:
-		UNALIGNED_MOVE(((ht_tag_edit_time*)tagstring)->offset, offset);
+	case HT_TAG_EDIT_TIME_VE: {
+		ht_tag_edit_time tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
-	case HT_TAG_EDIT_CHAR:
-		UNALIGNED_MOVE(((ht_tag_edit_char*)tagstring)->offset, offset);
+	}
+	case HT_TAG_EDIT_CHAR: {
+		ht_tag_edit_char tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
-	case HT_TAG_EDIT_BIT:
-		UNALIGNED_MOVE(((ht_tag_edit_bit*)tagstring)->offset, offset);
+	}
+	case HT_TAG_EDIT_BIT: {
+		ht_tag_edit_bit tag(tagstring);
+		tag.offset = offset;
+		tag.flush(tagstring);
 		break;
+	}
 	}
 }
 

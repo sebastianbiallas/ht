@@ -21,9 +21,15 @@
 #ifndef __HTTAG_H__
 #define __HTTAG_H__
 
+#include <cstring>
 #include "io/types.h"
 #include "io/display.h"
 #include "stream.h"
+
+#define HT_TAG_BUFOP(cl) \
+	inline cl(void) {}; \
+	inline cl(const void *b) { memcpy(this, b, sizeof(*this)); }; \
+	inline void flush(void *b) const { memcpy(b, this, sizeof(*this)); };
 
 /* SELECTION-TAG */
 #define HT_TAG_SEL				0x01
@@ -41,6 +47,8 @@ struct ht_tag_sel {
 	ID id128_3;
 	ID id128_4;
 	byte strlen;
+
+	HT_TAG_BUFOP(ht_tag_sel);
 } PACKED;
 
 /* FLAGS-TAG */
@@ -56,6 +64,8 @@ struct ht_tag_flags {
 	byte magic;
 	FileOfs offset;
 	ID id;
+
+	HT_TAG_BUFOP(ht_tag_flags);
 } PACKED;
 
 struct ht_tag_flags_s {
@@ -73,6 +83,8 @@ struct ht_tag_flags_s {
 struct ht_tag_group {
 	byte escape;
 	byte magic;
+
+	HT_TAG_BUFOP(ht_tag_group);
 } PACKED;
 
 /* COLOR-TAG */
@@ -86,6 +98,8 @@ struct ht_tag_color {
 	byte escape;
 	byte magic;
 	uint32 color;
+
+	HT_TAG_BUFOP(ht_tag_color);
 } PACKED;
 
 /* EDIT-BYTE-TAG */
@@ -101,6 +115,8 @@ struct ht_tag_edit_byte {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_byte);
 } PACKED;
 
 /* EDIT WORD */
@@ -109,6 +125,8 @@ struct ht_tag_edit_word_generic {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_word_generic);
 } PACKED;
 
 /* EDIT DWORD */
@@ -117,6 +135,8 @@ struct ht_tag_edit_dword_generic {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_dword_generic);
 } PACKED;
 
 /* EDIT QWORD */
@@ -125,6 +145,8 @@ struct ht_tag_edit_qword_generic {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_qword_generic);
 } PACKED;
 
 /* EDIT-WORD-TAG (little-endian) */
@@ -238,6 +260,8 @@ struct ht_tag_edit_time {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_time);
 } PACKED;
 
 /* EDIT-CHAR-TAG */
@@ -253,6 +277,8 @@ struct ht_tag_edit_char {
 	byte escape;
 	byte magic;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_edit_char);
 } PACKED;
 
 /* EDIT-BIT-TAG */
@@ -269,6 +295,8 @@ struct ht_tag_edit_bit {
 	byte magic;
 	FileOfs offset;
 	byte bitidx;
+
+	HT_TAG_BUFOP(ht_tag_edit_bit);
 } PACKED;
 
 /* EDIT-SELVIS-TAG */
@@ -284,6 +312,8 @@ struct ht_tag_edit_selvis {
 	byte magic;
 	FileOfs offset;
 	char ch;
+
+	HT_TAG_BUFOP(ht_tag_edit_selvis);
 } PACKED;
 
 /* DESC-BYTE-TAG */
@@ -298,6 +328,8 @@ struct ht_tag_desc_byte {
 	byte magic;
 	ID id;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_desc_byte);
 } PACKED;
 
 /* DESC WORD */
@@ -306,6 +338,8 @@ struct ht_tag_desc_word_generic {
 	byte magic;
 	ID id;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_desc_word_generic);
 } PACKED;
 
 /* DESC DWORD */
@@ -314,6 +348,8 @@ struct ht_tag_desc_dword_generic {
 	byte magic;
 	ID id;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_desc_dword_generic);
 } PACKED;
 
 /* DESC QWORD */
@@ -322,6 +358,8 @@ struct ht_tag_desc_qword_generic {
 	byte magic;
 	ID id;
 	FileOfs offset;
+
+	HT_TAG_BUFOP(ht_tag_desc_qword_generic);
 } PACKED;
 
 /* DESC-WORD-TAG (little-endian) */
