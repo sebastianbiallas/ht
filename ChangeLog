@@ -5,6 +5,17 @@ version 2.1.0:
 	- updated included minilzo
 	- new disassembler: Atmel AVR 8-bit microcontroller
 
+version 2.0.21:
+	- [x86] AVX2 updates
+	- Fixed usage of unaliged pointers (Thanks Jan)
+	- Restructed configure/makefile for better handling of
+	  ncurses depedency (Thanks Jan)
+
+version 2.0.20:
+	- Fixed loading of 32 bit ELFs (Thanks Oleg)
+	- Use wide ncurses if necessars (Thanks Jan)
+	- Show search progress in MiB (Thanks Jan)
+
 version 2.0.19:
 	- [x86] fixed a lot of small bugs
 	- fixed a crash with the "follow" function on

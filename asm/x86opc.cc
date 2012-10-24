@@ -445,6 +445,7 @@ const char *x86_segs[8] = {
 #define GROUP_SPECIAL_0FAE_6	11
 #define GROUP_SPECIAL_0FAE_7	12
 #define GROUP_SPECIAL_0FC7_6	13
+#define GROUP_SPECIAL_0FC7_7	14
 
 #define GROUP_0FAE		0
 #define GROUP_660F71		1
@@ -1771,7 +1772,12 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* f0 */
 {"movbe", {Gv, Mv}},
 {"movbe", {Mv, Gv}},
-{0}, {0}, {0}, {0}, {0}, {0},
+{0},
+{0},
+{0},
+{0},
+{"adox", {Gr, Er}},
+{0},
 /* f8 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 },
@@ -1913,7 +1919,12 @@ x86opc_insn x86_opc_group_insns[X86_OPC_GROUPS][256] = {
 /* f0 */
 {"movbe", {Gv, Mv}},
 {"movbe", {Mv, Gv}},
-{0}, {0}, {0}, {0}, {0}, {0},
+{0},
+{0},
+{0},
+{0},
+{"adcx", {Gr, Er}},
+{0},
 /* f8 */
 {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
 },
@@ -2898,7 +2909,7 @@ x86opc_insn x86_group_insns[][8] = {
 {0},
 {0},
 {0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FC7_6}},
-{"vmptrst", {Mq}},
+{0, {SPECIAL_TYPE_SGROUP, GROUP_SPECIAL_0FC7_7}},
 },
 /* 25 - GROUP_EXT_66_C7 */
 {
@@ -2942,8 +2953,8 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {
 {"monitor"},
 {"mwait"},
-{0},
-{0},
+{"clac"},
+{"stac"},
 {0},
 {0},
 {0},
@@ -3106,6 +3117,19 @@ x86opc_insn x86_special_group_insns[X86_SPECIAL_GROUPS][9] = {
 {"rdrand", {Rv}},
 // with mod!=11:
 {"vmptrld", {Mq}},
+},
+/* 13 - GROUP_SPECIAL_0FC7_7 */
+{
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+{"rdseed", {Rv}},
+// with mod!=11:
+{"vmptrst", {Mq}},
 },
 };
 
