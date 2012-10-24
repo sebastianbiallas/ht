@@ -2,6 +2,7 @@
 ==============
 
 version 2.0.21:
+	- [x86] AVX2 updates
 	- Fixed usage of unaliged pointers (Thanks Jan)
 	- Restructed configure/makefile for better handling of
 	  ncurses depedency (Thanks Jan)
