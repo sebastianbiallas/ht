@@ -1,5 +1,4 @@
 /* 
-
  *	HT Editor
  *	httext.cc
  *

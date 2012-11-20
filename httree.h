@@ -26,7 +26,7 @@
 #include "io/types.h"
 
 struct ht_treeview_data {
-	DDECL_PTR(void *, selected);
+	DDECL_PTR(void, selected);
 };
 
 class ht_treeview: public ht_view {
