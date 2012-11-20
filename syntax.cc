@@ -315,7 +315,7 @@ syntax_lexer_rule c_syntax_lexer_rules[]={
 	{ LSTSET(LEX_CST_NORMAL),
 	  false, LRST_REGEX, "'\\\\.{1,3}'", 0, LEX_CTOK_CHAR },
 /**/
-	{ 0, 0, LRST_EMPTY, false, false, 0 }
+	{ 0 }
 };
 
 const char *c_reserved[]=
@@ -553,7 +553,7 @@ syntax_lexer_rule html_syntax_lexer_rules[] = {
 	  false, LRST_REGEX, "&[#A-Za-z0-9]+?;", 0, LEX_HTMLTOK_ENTITY },
 //	SL_RULE_ANYCHAR(LSTSET(LEX_HTMLST_NORMAL), LEX_HTMLTOK_NORMAL),
 /**/
-	{ 0, 0, LRST_EMPTY, false, false, 0 }
+	{ 0 }
 };
 #endif
 

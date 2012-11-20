@@ -350,7 +350,7 @@ char *CallChain::get_text(void *node)
 	char sign = '+';
 	if (d < 0) {
 		d = -d;
-		sign = '-';          
+		sign = '-';
 	}
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_COMPACT | ADDRESS_STRING_FORMAT_ADD_0X;
 	ht_snprintf(stupid, sizeof stupid, "%s%c%x (%y)", 
@@ -374,6 +374,11 @@ bool	CallChain::is_expanded(void *node)
 
 void	CallChain::select_node(void *node)
 {
+}
+
+CallChainNode *CallChain::get_current_node()
+{
+	return (CallChainNode*)selected;
 }
 
 
@@ -1650,9 +1655,7 @@ void ht_aviewer::showCallChain(Address *Addr)
 	dialog->insert(bt);
 	int r = dialog->run(false);
 	if (r == button_ok) {
-		ht_treeview_data tvd;
-		ViewDataBuf vdb(dialog, &tvd, sizeof tvd);
-		gotoAddress(((CallChainNode*)tvd.selected)->xa, this);
+		gotoAddress(cc->get_current_node()->xa, this);
 	}
 	dialog->done();
 	delete dialog;

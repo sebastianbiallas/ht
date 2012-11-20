@@ -158,11 +158,12 @@ void ht_treeview::expand_all(void *node)
 }
 
 /*
- *	stub
  */
 void ht_treeview::getdata(ObjectStream &s)
 {
-	PUT_INT32D(s, (long)selected);
+	ht_treeview_data d;
+	d.selected = selected;
+	PUTX_BINARY(s, &d, sizeof d, NULL);
 }
 
 /*

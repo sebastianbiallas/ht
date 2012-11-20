@@ -115,7 +115,7 @@ class CallChain: public ht_treeview {
 		Analyser		*analy;
 		CallChainNode *root;
 public:
-			   void	init(Bounds *b, Analyser *analy, Address *a, char *desc);
+			void	init(Bounds *b, Analyser *analy, Address *a, char *desc);
 		virtual void	done();
 		virtual void	adjust(void *node, bool expand);
 		virtual void   *get_child(void *node, int i);
@@ -126,9 +126,10 @@ public:
 		virtual bool	has_children(void *node);
 		virtual bool	is_expanded(void *node);
 		virtual void	select_node(void *node);
+		CallChainNode   *get_current_node();
 private:
 	CallChainNode		*createNode(Address *a);
-			void		examineNode(CallChainNode *n);
+		void		examineNode(CallChainNode *n);
 };
 /*
  *
