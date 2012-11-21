@@ -69,7 +69,10 @@
 #define ATOM_ELF_ST_TYPE_STR			 "454c460a"
 
 #define ATOM_ELF_R_386_TYPE 			0x454c460b
-#define ATOM_ELF_R_386_TYPE_STR		 	 "454c460b"
+#define ATOM_ELF_R_386_TYPE_STR			 "454c460b"
+
+#define ATOM_ELF_R_X86_64_TYPE 			0x454c460c
+#define ATOM_ELF_R_X86_64_TYPE_STR		 "454c460c"
 
 extern format_viewer_if htelf_if;
 

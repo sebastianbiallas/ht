@@ -44,21 +44,52 @@ static int_hash elf_r_386_type[] =
 	{0, 0}
 };
 
+static int_hash elf_r_x86_64_type[] =
+{
+	{ELF_R_X86_64_NONE,		"ELF_R_X86_64_NONE"},
+	{ELF_R_X86_64_64,		"ELF_R_X86_64_64"},
+	{ELF_R_X86_64_PC32,		"ELF_R_X86_64_PC32"},
+	{ELF_R_X86_64_GOT32,		"ELF_R_X86_64_GOT32"},
+	{ELF_R_X86_64_PLT32,		"ELF_R_X86_64_PLT32"},
+	{ELF_R_X86_64_COPY,		"ELF_R_X86_64_COPY"},
+	{ELF_R_X86_64_GLOB_DAT,		"ELF_R_X86_64_GLOB_DAT"},
+	{ELF_R_X86_64_JUMP_SLOT,	"ELF_R_X86_64_JUMP_SLOT"},
+	{ELF_R_X86_64_RELATIVE,		"ELF_R_X86_64_RELATIVE"},
+	{ELF_R_X86_64_GOTPCREL,		"ELF_R_X86_64_GOTPCREL"},
+	{ELF_R_X86_64_32,		"ELF_R_X86_64_32"},
+	{ELF_R_X86_64_32S,		"ELF_R_X86_64_32S"},
+	{ELF_R_X86_64_16,		"ELF_R_X86_64_16"},
+	{ELF_R_X86_64_PC16,		"ELF_R_X86_64_PC16"},
+	{ELF_R_X86_64_8,		"ELF_R_X86_64_8"},
+	{ELF_R_X86_64_PC8,		"ELF_R_X86_64_PC8"},
+	{0, 0}
+};
+
 static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *group)
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
-	if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32
-	    || elf_shared->ident.e_ident[ELF_EI_DATA] != ELFDATA2LSB
-	    || elf_shared->header32.e_machine != ELF_EM_386) return NULL;
-	
+	if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32)
+	{
+		if (elf_shared->header32.e_machine != ELF_EM_386)
+			return NULL;
+	} else if (elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS64) {
+		if (elf_shared->header32.e_machine != ELF_EM_X86_64)
+			return NULL;
+	} else {
+		return NULL;
+	}
+	if ( elf_shared->ident.e_ident[ELF_EI_DATA] != ELFDATA2LSB)
+		return NULL;
+
+	bool elf32 = elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32;
 	uint skip = elf_shared->reloctables;
 	uint reloctab_shidx = ELF_SHN_UNDEF;
 	uint reloctab_sh_type = ELF_SHT_NULL;
 	for (uint i=1; i<elf_shared->sheaders.count; i++) {
-		if ((elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_REL) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_RELA)) {
+		reloctab_sh_type = elf32 ? elf_shared->sheaders.sheaders32[i].sh_type : elf_shared->sheaders.sheaders64[i].sh_type;
+		if ((reloctab_sh_type == ELF_SHT_REL) || (reloctab_sh_type==ELF_SHT_RELA)) {
 			if (!skip--) {
-				reloctab_sh_type=elf_shared->sheaders.sheaders32[i].sh_type;
 				reloctab_shidx=i;
 				break;
 			}
@@ -66,19 +97,43 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 	}
 	if (!isValidELFSectionIdx(elf_shared, reloctab_shidx)) return NULL;
 
-	FileOfs h = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
+	FileOfs h;
 	
 	/* section index of associated symbol table */
-	int si_symbol = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_link;
+	int si_symbol;
 	
 	/* section index of section to be relocated */
-	int si_dest = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_info;
+	int si_dest;
 
 	String reloctab_name("?");
-	if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)) {
-		file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset
-			+ elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name);
-		file->readStringz(reloctab_name);
+	int rel_size;
+	int rela_size;
+	uint relnum;
+
+	if (elf32) {
+		h = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_offset;
+		si_symbol = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_link;
+		si_dest = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_info;
+		if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)) {
+			file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset
+				+ elf_shared->sheaders.sheaders32[reloctab_shidx].sh_name);
+			file->readStringz(reloctab_name);
+		}
+		rel_size = sizeof (ELF_REL32);
+		rela_size = sizeof (ELF_RELA32);
+		relnum = elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / (reloctab_sh_type == ELF_SHT_REL ? rel_size : rela_size);
+	} else {
+		h = elf_shared->sheaders.sheaders64[reloctab_shidx].sh_offset;
+		si_symbol = elf_shared->sheaders.sheaders64[reloctab_shidx].sh_link;
+		si_dest = elf_shared->sheaders.sheaders64[reloctab_shidx].sh_info;
+		if (isValidELFSectionIdx(elf_shared, elf_shared->header64.e_shstrndx)) {
+			file->seek(elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset
+				+ elf_shared->sheaders.sheaders64[reloctab_shidx].sh_name);
+			file->readStringz(reloctab_name);
+		}
+		rel_size = sizeof (ELF_REL64);
+		rela_size = sizeof (ELF_RELA64);
+		relnum = elf_shared->sheaders.sheaders64[reloctab_shidx].sh_size / (reloctab_sh_type == ELF_SHT_REL ? rel_size : rela_size);
 	}
 
 	char desc[128];
@@ -91,6 +146,7 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 	m->init(file, 0);
 	
 	registerAtom(ATOM_ELF_R_386_TYPE, elf_r_386_type);
+	registerAtom(ATOM_ELF_R_X86_64_TYPE, elf_r_x86_64_type);
 
 	char t[256];
 	ht_snprintf(t, sizeof t, "* ELF relocation table at offset %08qx, relocates section %d, symtab %d", h, si_dest, si_symbol);
@@ -98,51 +154,95 @@ static ht_view *htelfreloctable_init(Bounds *b, File *file, ht_format_group *gro
 	m->add_mask(t);
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
+	tag_endian endianness = elf_bigendian ? tag_endian_big : tag_endian_little;
 
 #define tt_end sizeof t - (tt-t)
 
 	switch (reloctab_sh_type) {
 		case ELF_SHT_REL: {
-			m->add_mask("destofs  symidx type");
-			uint relnum=elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_REL32);
+			if (elf32) {
+				m->add_mask("destofs  symidx type");
+			} else {
+				m->add_mask("destofs          symidx     type");
+			}
 			for (uint i=0; i<relnum; i++) {
 				char *tt = t;
 				/* dest offset */
-				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_REL32), elf_bigendian ? tag_endian_big : tag_endian_little);
+				if (elf32) {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rel_size, endianness);
+				} else {
+					tt = tag_make_edit_qword(tt, tt_end, h+i*rel_size, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, " ");
 				
 				/* symbol (table idx) */
-				tt = tag_make_edit_word(tt, tt_end, h+i*sizeof (ELF_REL32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
+				if (elf32) {
+					tt = tag_make_edit_word(tt, tt_end, h+i*rel_size+4+1, endianness);
+				} else {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rel_size+8+4, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, "   ");
+
 				/* type */
-				tt = tag_make_edit_byte(tt, tt_end, h+i*sizeof (ELF_REL32)+4);
+				if (elf32) {
+					tt = tag_make_edit_byte(tt, tt_end, h+i*rel_size+4);
+				} else {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rel_size+8, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, "(");
 				/* type */
-				tt = tag_make_desc_byte(tt, tt_end, h+i*sizeof (ELF_REL32)+4, ATOM_ELF_R_386_TYPE);
+				if (elf32) {
+					tt = tag_make_desc_byte(tt, tt_end, h+i*rel_size+4, ATOM_ELF_R_386_TYPE);
+				} else {
+					tt = tag_make_desc_dword(tt, tt_end, h+i*rel_size+8, ATOM_ELF_R_X86_64_TYPE, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, ")");
 				m->add_mask(t);
 			}
 			break;
 		}
 		case ELF_SHT_RELA: {
-			m->add_mask("destofs  symidx addend   type");
-			uint relnum  =elf_shared->sheaders.sheaders32[reloctab_shidx].sh_size / sizeof (ELF_RELA32);
+			if (elf32) {
+				m->add_mask("destofs  symidx addend   type");
+			} else {
+				m->add_mask("destofs          symidx     addend           type");
+			}
 			for (uint i=0; i<relnum; i++) {
 				char *tt = t;
 				/* dest offset */
-				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_RELA32), elf_bigendian ? tag_endian_big : tag_endian_little);
+				if (elf32) {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rela_size, endianness);
+				} else {
+					tt = tag_make_edit_qword(tt, tt_end, h+i*rela_size, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, " ");
 				/* symbol (table idx) */
-				tt = tag_make_edit_word(tt, tt_end, h+i*sizeof (ELF_RELA32)+4+1, elf_bigendian ? tag_endian_big : tag_endian_little);
+				if (elf32) {
+					tt = tag_make_edit_word(tt, tt_end, h+i*rela_size+4+1, endianness);
+				} else {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rela_size+8, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, "   ");
 				/* addend */
-				tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_RELA32)+4+4, elf_bigendian ? tag_endian_big : tag_endian_little);
+				if (elf32) {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rela_size+4+4, endianness);
+				} else {
+					tt = tag_make_edit_qword(tt, tt_end, h+i*rela_size+16, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, " ");
 				/* type */
-				tt = tag_make_edit_byte(tt, tt_end, h+i*sizeof (ELF_RELA32)+4);
+				if (elf32) {
+					tt = tag_make_edit_byte(tt, tt_end, h+i*rela_size+4);
+				} else {
+					tt = tag_make_edit_dword(tt, tt_end, h+i*rela_size+8, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, "(");
 				/* type */
-				tt = tag_make_desc_byte(tt, tt_end, h+i*sizeof (ELF_RELA32)+4, ATOM_ELF_R_386_TYPE);
+				if (elf32) {
+					tt = tag_make_desc_byte(tt, tt_end, h+i*rela_size+4, ATOM_ELF_R_386_TYPE);
+				} else {
+					tt = tag_make_desc_dword(tt, tt_end, h+i*rela_size+8, ATOM_ELF_R_X86_64_TYPE, endianness);
+				}
 				tt += ht_snprintf(tt, tt_end, ")");
 				m->add_mask(t);
 			}

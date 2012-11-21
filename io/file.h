@@ -153,7 +153,7 @@ int		sys_basename(char *result, const char *filename);
 char *		sys_dirname(char *path);
 char * 		sys_get_home_dir();
 int		sys_relname(char *result, const char *filename, const char *cwd);
-int		sys_common_canonicalize(char *result, const char *in_name, const char *cwd, is_path_delim delim);
+int		sys_common_canonicalize(char *result, int ressize, const char *in_name, const char *cwd, is_path_delim delim);
 const char *	sys_filename_suffix(const char *fn);
 int		sys_tmpfile_fd();
 

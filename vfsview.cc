@@ -151,11 +151,11 @@ int VfsListbox::changeURL(const char *url)
 		newVfs = (Vfs*)vfs_list->get(0);
 	}
 	char path[VFS_DIR_MAX+1];
-	if (sys_common_canonicalize(path, pathptr, NULL, newVfs->isPathDelim()) !=0) return EINVAL;
+	if (sys_common_canonicalize(path, sizeof path, pathptr, NULL, newVfs->isPathDelim()) !=0) return EINVAL;
 
 	/* add trailing path delimiter if needed */
 	int l = strlen(path)-1;
-	if ((l==-1) || !newVfs->isPathDelim()(path[l])) {
+	if (l == -1 || !newVfs->isPathDelim()(path[l])) {
 		char delim = newVfs->isPathDelim()('/') ? '/' : '\\';
 		if (l+2 >= (int)sizeof path) return EINVAL;
 		path[l+1] = delim;

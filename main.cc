@@ -115,7 +115,7 @@ static void load_file(char *fn, uint mode)
 	cwd[0] = 0;
 	getcwd(cwd, sizeof cwd);
 
-	if (sys_common_canonicalize(cfn, fn, cwd, sys_is_path_delim)==0) {
+	if (sys_common_canonicalize(cfn, sizeof cfn, fn, cwd, sys_is_path_delim)==0) {
 		add_file_history_entry(cfn);
 		((ht_app*)app)->create_window_file(cfn, mode, true);
 	}

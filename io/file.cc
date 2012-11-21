@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 
 #include "strtools.h"
+#include "str.h"
 
 /*
  *	COMMON SYS
@@ -147,7 +148,7 @@ static char *_str_strip(char *str, int len)
  5. unsigned int at    - offset in old string
  6. unsigned int len   - len of substring for delete ( at - start)
 */
-static char *_substr_replace(char *s, unsigned int s_len, char *r, unsigned int r_len,\
+static char *_substr_replace(char *s, unsigned int s_len, char *r, unsigned int r_len,
                                             unsigned int at, unsigned int len)
 {
 	if (!s_len || !r_len) return NULL;
@@ -379,20 +380,33 @@ bool sys_path_is_absolute(const char *filename, is_path_delim delim)
 	return delim(filename[0]) || (isalpha(filename[0]) && (filename[1] == ':'));
 }
 
-int sys_common_canonicalize(char *result, const char *filename, const char *cwd, is_path_delim delim)
+int sys_common_canonicalize(char *result, int ressize, const char *filename, const char *cwd, is_path_delim delim)
 {
-	char *o = result;
+	String res;
 	if (!sys_path_is_absolute(filename, delim)) {
-		if (cwd) strcpy(o, cwd); else return EINVAL;
-		int ol = strlen(o);
-		if (ol && !delim(o[ol-1])) {
-			o[ol] = '/';
-			o[ol+1] = 0;
+		if (cwd) {
+			res.assign(cwd);
+		} else {
+			return EINVAL;
 		}
-	} else *o = 0;
-	strcat(o, filename);
-	int k = flatten_path(o, delim);
-	return (k == 0) ? 0 : EINVAL;
+		if (res.length() > 0 && !delim(res.at(res.length()-1))) {
+			res.appendChar('/');
+		}
+	}
+	res.append(filename);
+	char *f = ht_strdup(res.contentChar());
+	int k = flatten_path(f, delim);
+	if (k != 0) {
+		free(f);
+		return EINVAL;
+	}
+	res.assign(f);
+	free(f);
+	if (res.length() + 1 > ressize) {
+		return EINVAL;
+	}
+	strcpy(result, res.contentChar());
+	return 0;
 }
 
 const char *sys_filename_suffix(const char *fn)

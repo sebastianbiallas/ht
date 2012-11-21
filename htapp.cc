@@ -275,10 +275,11 @@ bool FileBrowser::extract_url(char *buf)
 	vfs_extra *x = (vfs_extra*)t->extra_data;*/
 	Vfs *vfs = listbox->getCurVfs();
 	if (vfs) {
-		int buflen = ht_snprintf(buf, VFS_URL_MAX, "%s:", listbox->getCurProto());
 		char fname[VFS_URL_MAX];
+		String res;
 		bin2str(fname, i.text, i.textlen);
-		vfs->canonicalize(buf+buflen, fname, listbox->getCurDir());
+		vfs->canonicalize(res, fname, listbox->getCurDir());
+		int buflen = ht_snprintf(buf, VFS_URL_MAX, "%s:%y", listbox->getCurProto(), &res);
 		return true;
 	}
 	return false;
@@ -819,7 +820,7 @@ void ht_project_listbox::handlemsg(htmsg *msg)
 				if (file_chooser("Add project item", fn, sizeof fn)) {
 					char ffn[HT_NAME_MAX];
 					char *dir;
-					if (sys_common_canonicalize(ffn, fn, NULL, sys_is_path_delim) == 0
+					if (sys_common_canonicalize(ffn, sizeof ffn, fn, NULL, sys_is_path_delim) == 0
 					 && sys_basename(fn, ffn) == 0
 					 && (dir = sys_dirname(ffn)) ) {
 						ht_project_item *p = new ht_project_item(fn, dir);
@@ -900,7 +901,7 @@ bool ht_project_listbox::selectEntry(void *entry)
 	int p = pos;
 	ht_project_item *i = (ht_project_item *)(*project)[p];
 	char fn[HT_NAME_MAX];
-	if (sys_common_canonicalize(fn, i->get_filename(), i->get_path(), sys_is_path_delim)==0) {
+	if (sys_common_canonicalize(fn, sizeof fn, i->get_filename(), i->get_path(), sys_is_path_delim)==0) {
 		((ht_app*)app)->create_window_file(fn, FOM_AUTO, false);
 	}
 	return true;
@@ -2011,7 +2012,7 @@ ht_window *ht_app::create_window_help(const char *file, const char *node)
 
 		cwd[0] = 0;
 		if (strcmp(file, "hthelp.info") != 0 && getcwd(cwd, sizeof cwd)) {
-			sys_common_canonicalize(ff, file, cwd, sys_is_path_delim);
+			sys_common_canonicalize(ff, sizeof ff, file, cwd, sys_is_path_delim);
 		} else {
 			strcpy(ff, file);
 		}
@@ -2956,7 +2957,7 @@ void ht_app::project_opencreate(const char *filename)
 		LOG("getcwd(): %s", strerror(errno));
 		return;
 	}
-	if (sys_common_canonicalize(fn, filename, cwd, sys_is_path_delim) != 0) {
+	if (sys_common_canonicalize(fn, sizeof fn, filename, cwd, sys_is_path_delim) != 0) {
 		LOG("%s: invalid filename", filename);
 		return;
 	}

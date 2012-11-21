@@ -456,6 +456,23 @@ struct ELF_SYMBOL64 {
 #define ELF_R_386_GOTOFF		9
 #define ELF_R_386_GOTPC			10
 
+#define ELF_R_X86_64_NONE		0
+#define ELF_R_X86_64_64			1
+#define ELF_R_X86_64_PC32		2
+#define ELF_R_X86_64_GOT32		3
+#define ELF_R_X86_64_PLT32		4
+#define ELF_R_X86_64_COPY		5
+#define ELF_R_X86_64_GLOB_DAT		6
+#define ELF_R_X86_64_JUMP_SLOT		7
+#define ELF_R_X86_64_RELATIVE		8
+#define ELF_R_X86_64_GOTPCREL		9
+#define ELF_R_X86_64_32			10
+#define ELF_R_X86_64_32S		11
+#define ELF_R_X86_64_16			12
+#define ELF_R_X86_64_PC16		13
+#define ELF_R_X86_64_8			14
+#define ELF_R_X86_64_PC8		15
+
 struct ELF_REL32 {
 	elf32_addr	r_offset;
 	elf32_word	r_info;
@@ -463,7 +480,13 @@ struct ELF_REL32 {
 
 struct ELF_REL64 {
 	elf64_addr	r_offset;
-	elf64_word	r_info;
+	union {
+		elf64_word	r_info;
+		struct {
+			elf64_half r_type;
+			elf64_half r_sym;
+		};
+	};
 } PACKED;
 
 struct ELF_RELA32 {
@@ -474,7 +497,13 @@ struct ELF_RELA32 {
 
 struct ELF_RELA64 {
 	elf64_addr	r_offset;
-	elf64_word	r_info;
+	union {
+		elf64_word	r_info;
+		struct {
+			elf64_half r_type;
+			elf64_half r_sym;
+		};
+	};
 	elf64_sword	r_addend;
 } PACKED;
 
