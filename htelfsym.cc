@@ -52,12 +52,16 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 {
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)group->get_shared_data();
 
-	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32) return 0;
+	if (elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS32 &&
+		elf_shared->ident.e_ident[ELF_EI_CLASS]!=ELFCLASS64) return 0;
 
+	bool elf32 = elf_shared->ident.e_ident[ELF_EI_CLASS] == ELFCLASS32;
 	uint skip = elf_shared->symtables;
 	uint symtab_shidx = ELF_SHN_UNDEF;
 	for (uint i=1; i<elf_shared->sheaders.count; i++) {
-		if ((elf_shared->sheaders.sheaders32[i].sh_type == ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM)) {
+		if (elf32 ?
+			(elf_shared->sheaders.sheaders32[i].sh_type == ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders32[i].sh_type==ELF_SHT_DYNSYM) :
+			(elf_shared->sheaders.sheaders64[i].sh_type == ELF_SHT_SYMTAB) || (elf_shared->sheaders.sheaders64[i].sh_type==ELF_SHT_DYNSYM) ) {
 			if (!skip--) {
 				symtab_shidx = i;
 				break;
@@ -66,16 +70,27 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 	}
 	if (!isValidELFSectionIdx(elf_shared, symtab_shidx)) return NULL;
 
-	FileOfs h = elf_shared->sheaders.sheaders32[symtab_shidx].sh_offset;
+	FileOfs h = elf32 ? elf_shared->sheaders.sheaders32[symtab_shidx].sh_offset : elf_shared->sheaders.sheaders64[symtab_shidx].sh_offset;
 
 	/* associated string table offset (from sh_link) */
-	FileOfs sto = elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[symtab_shidx].sh_link].sh_offset;
+	FileOfs sto = elf32 ?
+		elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[symtab_shidx].sh_link].sh_offset :
+		elf_shared->sheaders.sheaders64[elf_shared->sheaders.sheaders64[symtab_shidx].sh_link].sh_offset;
 
 	String symtab_name("?");
-	if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)) {
-		file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset
-			+ elf_shared->sheaders.sheaders32[symtab_shidx].sh_name);
-		file->readStringz(symtab_name);
+	if (elf32)
+	{
+		if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)) {
+			file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset
+				+ elf_shared->sheaders.sheaders32[symtab_shidx].sh_name);
+			file->readStringz(symtab_name);
+		}
+	} else {
+		if (isValidELFSectionIdx(elf_shared, elf_shared->header64.e_shstrndx)) {
+			file->seek(elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset
+				+ elf_shared->sheaders.sheaders64[symtab_shidx].sh_name);
+			file->readStringz(symtab_name);
+		}
 	}
 
 	char desc[128];
@@ -95,22 +110,37 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 	m->add_mask(t);
 
 	bool elf_bigendian = (elf_shared->ident.e_ident[ELF_EI_DATA] == ELFDATA2MSB);
-	uint symnum = elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32);
+	uint symnum = elf32 ?
+		elf_shared->sheaders.sheaders32[symtab_shidx].sh_size / sizeof (ELF_SYMBOL32) :
+		elf_shared->sheaders.sheaders64[symtab_shidx].sh_size / sizeof (ELF_SYMBOL64);
 
 	/* find maximum section name length */
 	uint msnl = 0;
 	for (uint i=0; i < symnum; i++) {
-		ELF_SYMBOL32 sym;
-		file->seek(h+i*sizeof (ELF_SYMBOL32));
-		file->readx(&sym, sizeof sym);
-		createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
-		file->seek(sto+sym.st_name);
+		elf64_quarter st_shndx;
+		if (elf32)
+		{
+			ELF_SYMBOL32 sym;
+			file->seek(h+i*sizeof (ELF_SYMBOL32));
+			file->readx(&sym, sizeof sym);
+			createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+			file->seek(sto+sym.st_name);
+			st_shndx = sym.st_shndx;
+		} else {
+			ELF_SYMBOL64 sym;
+			file->seek(h+i*sizeof (ELF_SYMBOL64));
+			file->readx(&sym, sizeof sym);
+			createHostStruct(&sym, ELF_SYMBOL64_struct, elf_shared->byte_order);
+			file->seek(sto+sym.st_name);
+			st_shndx = sym.st_shndx;
+		}
+
 		char *name = file->fgetstrz();
 		/* FIXME: error handling (also in elf_analy.cc) */
 		if (!name) continue;
 
 		uint len = 0;
-		switch (sym.st_shndx) {
+		switch (st_shndx) {
 		case ELF_SHN_UNDEF:
 			len = strlen("*undefined");
 			break;
@@ -121,10 +151,17 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 			len = strlen("*common");
 			break;
 		default:
-			if (isValidELFSectionIdx(elf_shared, sym.st_shndx)) {
+			if (isValidELFSectionIdx(elf_shared, st_shndx)) {
 				String s("");
-				FileOfs so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
-				FileOfs no = elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name;
+				FileOfs so, no;
+				if (elf32)
+				{
+					so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+					no = elf_shared->sheaders.sheaders32[st_shndx].sh_name;
+				} else {
+					so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
+					no = elf_shared->sheaders.sheaders64[st_shndx].sh_name;
+				}
 				file->seek(so + no);
 				file->readStringz(s);
 
@@ -145,17 +182,39 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 
 	char *tt = t;
 #define tt_end sizeof t - (tt-t)
-	tt += ht_snprintf(t, tt_end, "idx  binding  type     value    size     ");
+	if (elf32) {
+		tt += ht_snprintf(t, tt_end, "idx  binding  type     value    size     ");
+	} else {
+		tt += ht_snprintf(t, tt_end, "idx  binding  type     value            size             ");
+	}
 	tt += ht_snprintf(tt, tt_end, secstrfmt, "section");
 	tt += ht_snprintf(tt, tt_end, "name");
 	m->add_mask(t);
 
 	for (uint i=0; i < symnum; i++) {
-		ELF_SYMBOL32 sym;
-		file->seek(h+i*sizeof (ELF_SYMBOL32));
-		file->readx(&sym, sizeof sym);
-		createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
-		file->seek(sto+sym.st_name);          
+		elf64_quarter st_shndx;
+		int st_bind;
+		int st_type;
+		if (elf32)
+		{
+			ELF_SYMBOL32 sym;
+			file->seek(h+i*sizeof (ELF_SYMBOL32));
+			file->readx(&sym, sizeof sym);
+			createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
+			file->seek(sto+sym.st_name);
+			st_shndx = sym.st_shndx;
+			st_bind = ELF32_ST_BIND(sym.st_info);
+			st_type = ELF32_ST_TYPE(sym.st_info);
+		} else {
+			ELF_SYMBOL64 sym;
+			file->seek(h+i*sizeof (ELF_SYMBOL64));
+			file->readx(&sym, sizeof sym);
+			createHostStruct(&sym, ELF_SYMBOL64_struct, elf_shared->byte_order);
+			file->seek(sto+sym.st_name);
+			st_shndx = sym.st_shndx;
+			st_bind = ELF64_ST_BIND(sym.st_info);
+			st_type = ELF64_ST_TYPE(sym.st_info);
+		}
 		char *name = file->fgetstrz();
 		/* FIXME: error handling (also in elf_analy.cc) */
 		if (!name) continue;
@@ -165,28 +224,41 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 
 		tt += ht_snprintf(tt, tt_end, "%04x ", i);
 
-		const char *bind = matchhash(ELF32_ST_BIND(sym.st_info), elf_st_bind);
+		const char *bind = matchhash(st_bind, elf_st_bind);
 		if (bind) {
 			tt += ht_snprintf(tt, tt_end, "%-8s ", bind);
 		} else {
-			tt += ht_snprintf(tt, tt_end, "? (%d) ", ELF32_ST_BIND(sym.st_info));
+			tt += ht_snprintf(tt, tt_end, "? (%d) ", st_bind);
 		}
 
-		const char *type = matchhash(ELF32_ST_TYPE(sym.st_info), elf_st_type);
+		const char *type = matchhash(st_type, elf_st_type);
 		if (type) {
 			tt += ht_snprintf(tt, tt_end, "%-8s ", type);
 		} else {
-			tt += ht_snprintf(tt, tt_end, "? (%d) ", ELF32_ST_TYPE(sym.st_info));
+			tt += ht_snprintf(tt, tt_end, "? (%d) ", st_type);
 		}
 
-		FileOfs so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
-		tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_SYMBOL32)+4, elf_bigendian ? tag_endian_big : tag_endian_little);
-		tt += ht_snprintf(tt, tt_end, " ");
-		tt = tag_make_edit_dword(tt, tt_end, h+i*sizeof (ELF_SYMBOL32)+8, elf_bigendian ? tag_endian_big : tag_endian_little);
-		tt += ht_snprintf(tt, tt_end, " ");
+		FileOfs so;
+		if (elf32) {
+			so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+			tt = tag_make_edit_dword(tt, tt_end, h + i*sizeof (ELF_SYMBOL32) + 4,
+				elf_bigendian ? tag_endian_big : tag_endian_little);
+			tt += ht_snprintf(tt, tt_end, " ");
+			tt = tag_make_edit_dword(tt, tt_end, h + i*sizeof (ELF_SYMBOL32) + 8,
+				elf_bigendian ? tag_endian_big : tag_endian_little);
+			tt += ht_snprintf(tt, tt_end, " ");
+		} else {
+			so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
+			tt = tag_make_edit_qword(tt, tt_end, h+i*sizeof (ELF_SYMBOL64) + 8,
+				elf_bigendian ? tag_endian_big : tag_endian_little);
+			tt += ht_snprintf(tt, tt_end, " ");
+			tt = tag_make_edit_qword(tt, tt_end, h+i*sizeof (ELF_SYMBOL64) + 16,
+				elf_bigendian ? tag_endian_big : tag_endian_little);
+			tt += ht_snprintf(tt, tt_end, " ");
+		}
 
 		String s("?");
-		switch (sym.st_shndx) {
+		switch (st_shndx) {
 		case ELF_SHN_UNDEF:
 			s.assign("*undefined");
 			break;
@@ -197,8 +269,8 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 			s.assign("*common");
 			break;
 		default:
-			if (isValidELFSectionIdx(elf_shared, sym.st_shndx)) {
-				FileOfs no = elf_shared->sheaders.sheaders32[sym.st_shndx].sh_name;
+			if (isValidELFSectionIdx(elf_shared, st_shndx)) {
+				FileOfs no = elf32 ? elf_shared->sheaders.sheaders32[st_shndx].sh_name : elf_shared->sheaders.sheaders64[st_shndx].sh_name;
 				file->seek(so + no);
 				file->readStringz(s);
 			}

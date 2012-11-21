@@ -3,7 +3,7 @@
 
 version 2.0.22:
 	- Fixed selection of nodes in call chain
-	- Added ability to view/edit 64 bit relocation for ELFs
+	- Added ability to view/edit 64 bit symbols and relocation for ELFs
 	  (Thanks tecknicaltom)
 
 version 2.0.21:
