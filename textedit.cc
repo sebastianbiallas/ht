@@ -1309,9 +1309,9 @@ const char *ht_text_viewer::func(uint i, bool execute)
 			return "search";
 		}
 		default:
-			return false;
+			return NULL;
 	}
-	return 0;
+	return NULL;
 }
 
 vcp ht_text_viewer::get_bgcolor()

@@ -56,7 +56,7 @@ public:
 class Vfs: public Object {
 public:
 /* new */
-	virtual	int		canonicalize(char *result, const char *filename, const char *cwd) = 0;
+	virtual	int		canonicalize(String &result, const char *filename, const char *cwd) = 0;
 	virtual	int		createFile(const char *filename, uint createtype) = 0;
 	virtual	int		deleteFile(const char *filename) = 0;
 	virtual	void *		enumFiletype(uint *type, char **name, void *handle) = 0;
@@ -84,7 +84,7 @@ public:
 		void		init();
 	virtual	void		done();
 /* overwritten */
-	virtual	int		canonicalize(char *result, const char *filename, const char *cwd);
+	virtual	int		canonicalize(String &result, const char *filename, const char *cwd);
 	virtual	int		compareFilenames(const char *a, const char *b);
 	virtual	int		createFile(const char *filename, uint createtype);
 	virtual	int		deleteFile(const char *filename);
@@ -119,7 +119,7 @@ public:
 		void		init();
 	virtual	void		done();
 /* overwritten */
-	virtual	int		canonicalize(char *result, const char *filename, const char *cwd);
+	virtual	int		canonicalize(String &result, const char *filename, const char *cwd);
 	virtual	int		createFile(const char *filename, uint createtype);
 	virtual	int		deleteFile(const char *filename);
 	virtual	void *		enumFiletype(uint *type, char **name, void *handle);

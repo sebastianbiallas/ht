@@ -55,9 +55,11 @@ void LocalFs::done()
 	Vfs::done();
 }
 
-int LocalFs::canonicalize(char *result, const char *filename, const char *cwd)
+int LocalFs::canonicalize(String &result, const char *filename, const char *cwd)
 {
-	sys_common_canonicalize(result, filename, cwd, sys_is_path_delim);
+	char res[HT_NAME_MAX];
+	sys_common_canonicalize(res, sizeof res, filename, cwd, sys_is_path_delim);
+	result.assign(res);
 	return 0;
 }
 
@@ -271,12 +273,13 @@ void RegistryFs::done()
 	Vfs::done();
 }
 
-int RegistryFs::canonicalize(char *result, const char *filename, const char *cwd)
+int RegistryFs::canonicalize(String &result, const char *filename, const char *cwd)
 {
+	char res[HT_NAME_MAX];
+	sys_common_canonicalize(res, sizeof res, filename, cwd, unix_is_path_delim);
+	result.assign(res);
 	ht_registry_node *node;
-	
-	sys_common_canonicalize(result, filename, cwd, unix_is_path_delim);
-	return registry->find_data_entry(result, &node, 0);
+	return registry->find_data_entry(result.contentChar(), &node, 0);
 }
 
 void RegistryFs::create_pfind_t(pfind_t *f, const ht_registry_node *node)

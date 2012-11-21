@@ -498,8 +498,8 @@ bool ht_info_viewer::igotonode(const char *f, const char *n, bool add2hist)
 	} else {
 		char ff[HT_NAME_MAX], cff[HT_NAME_MAX];
 		cff[0] = 0;
-		if (file && sys_common_canonicalize(cff, file, cwd, sys_is_path_delim) != 0) return false;
-		if (sys_common_canonicalize(ff, f, cwd, sys_is_path_delim) != 0) return false;
+		if (file && sys_common_canonicalize(cff, sizeof cff, file, cwd, sys_is_path_delim) != 0) return false;
+		if (sys_common_canonicalize(ff, sizeof ff, f, cwd, sys_is_path_delim) != 0) return false;
 		if ((strcmp(ff, cff) != 0) || newnode) {
 			if (!readfile(ff, &infotext)) return false;
 			char *c;
