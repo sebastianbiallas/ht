@@ -193,7 +193,7 @@ public:
 		ht_registry_node *enum_prev(const char *dir, ht_registry_node *nextkey);
 			
 		bool find_any_entry(const char *key, ht_registry_node **node);
-		bool find_data_entry(const char *key, ht_registry_node **node, bool follow_symlinks);
+		bool find_data_entry(const char *key, ht_registry_node **node, bool follow_symlinks, Container **dir = NULL);
 		/* node type*/
 		ht_registry_node_type lookup_node_type(const char *identifier);
 		ht_registry_node_type_desc *get_node_type_desc(ht_registry_node_type t, const char **identifier);
@@ -215,7 +215,7 @@ public:
 			void debug_dump_i(FILE *f, Container *t, int ident);
 };
 
-uint32 get_config_dword(const char *ident);
+uint32 get_config_dword(const char *ident, uint32 default_value=0);
 char *get_config_string(const char *ident);
 
 extern ht_registry *registry;

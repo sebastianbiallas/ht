@@ -165,10 +165,10 @@ static bool keyb_getmouseevent(sys_event_t &event)
 
 bool keyb_getevent(sys_event_t &event)
 {
-	int r = keyb_getrawkey();
+	unsigned int r = keyb_getrawkey();
 	if (r == KEY_MOUSE) return keyb_getmouseevent(event);
 	ht_key k = K_INVALID;
-	int r2 = UNMETA_KEY(UNCTRL_KEY(UNSHIFT_KEY(r)));
+	unsigned int r2 = UNMETA_KEY(UNCTRL_KEY(UNSHIFT_KEY(r)));
 	if (META_KEY(r) == r && (r2 == '[' || r2 == 'O')) {/* escape seq */
 		r2 = r;
 		if (keyb_keypressed()) {
@@ -193,9 +193,9 @@ bool keyb_getevent(sys_event_t &event)
 
 ht_key keyb_getkey()
 {
-	int r = keyb_getrawkey();
+	unsigned int r = keyb_getrawkey();
 	ht_key k = K_INVALID;
-	int r2 = UNMETA_KEY(UNCTRL_KEY(UNSHIFT_KEY(r)));
+	unsigned int r2 = UNMETA_KEY(UNCTRL_KEY(UNSHIFT_KEY(r)));
 	if (META_KEY(r) == r && ((r2 == '[') || (r2 == 'O'))) {/* escape seq */
 		r2 = r;
 		if (keyb_keypressed()) {
@@ -220,7 +220,7 @@ ht_key keyb_getkey()
 
 struct key_keycode {
 	ht_key key;
-	int keycode;
+	unsigned int keycode;
 };
 
 bool keyb_keypressed()

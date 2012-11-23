@@ -318,6 +318,7 @@ protected:
 	bool uf_initialized;
 
 	bool isdirty_cursor_line;
+	int scroll_offset;
 
 /* overwritten */
 	virtual	const char *func(uint i, bool execute);
@@ -389,6 +390,7 @@ public:
 		void init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group);
 	virtual	void done();
 /* overwritten */
+	virtual	void config_changed();
 	virtual	void clear_viewer_pos(viewer_pos *p);
 	virtual	void draw();
 	virtual	bool get_current_offset(FileOfs *offset);
