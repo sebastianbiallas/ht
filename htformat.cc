@@ -906,6 +906,8 @@ void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, 
 	search_caps = SEARCHMODE_VREGEX;
 
 	uf_initialized = false;
+
+	config_changed();
 }
 
 void ht_uformat_viewer::done()
@@ -1097,6 +1099,12 @@ void ht_uformat_viewer::complete_init()
 	uf_initialized = true;
 }
 
+void ht_uformat_viewer::config_changed()
+{
+	scroll_offset = get_config_dword("editor/scroll offset", 3);
+	ht_view::config_changed();
+}
+
 int ht_uformat_viewer::cursor_left()
 {
 	if (cursor.tag_idx) {
@@ -1132,6 +1140,7 @@ int ht_uformat_viewer::cursor_right()
 
 int ht_uformat_viewer::cursor_up(int n)
 {
+	int scrolloff = MIN(scroll_offset, size.h/2);
 	switch (cursor_state) {
 		case cursor_state_invisible:
 		case cursor_state_visible: {
@@ -1176,7 +1185,7 @@ int ht_uformat_viewer::cursor_up(int n)
 					cursor_ypos = c_ypos;
 					cursor.tag_idx = c_tag_idx;
 					cursor.tag_group = c_tag_group;
-					if (cursor_ypos <= -1) scroll_up(-cursor_ypos);
+					if (cursor_ypos <= scrolloff-1) scroll_up(-cursor_ypos+scrolloff);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
@@ -1232,7 +1241,7 @@ int ht_uformat_viewer::cursor_up(int n)
 					cursor_ypos = c_ypos;
 					cursor.tag_idx = c_tag_idx;
 					cursor.tag_group = c_tag_group;
-					if (-cursor_ypos+n-nc-1 > 0) scroll_up(-cursor_ypos+n-nc-1);
+					if (-cursor_ypos+n-nc-1+scrolloff > 0) scroll_up(-cursor_ypos+n-nc-1+scrolloff);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
@@ -1254,6 +1263,7 @@ int ht_uformat_viewer::cursor_up(int n)
 
 int ht_uformat_viewer::cursor_down(int n)
 {
+	int scrolloff = MIN(scroll_offset, size.h/2);
 	switch (cursor_state) {
 		case cursor_state_invisible:
 		case cursor_state_visible: {
@@ -1297,7 +1307,7 @@ int ht_uformat_viewer::cursor_down(int n)
 					cursor_ypos = c_ypos;
 					cursor.tag_idx = c_tag_idx;
 					cursor.tag_group = c_tag_group;
-					if (cursor_ypos >= size.h) scroll_down(cursor_ypos-size.h+1);
+					if (cursor_ypos >= size.h-(scrolloff+1)) scroll_down(cursor_ypos-size.h+scrolloff+1);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
@@ -1354,7 +1364,7 @@ int ht_uformat_viewer::cursor_down(int n)
 					cursor_ypos=c_ypos;
 					cursor.tag_idx=c_tag_idx;
 					cursor.tag_group=c_tag_group;
-					if (cursor_ypos-size.h+1>0) scroll_down(cursor_ypos-size.h+1);
+					if (cursor_ypos-size.h+1+scrolloff>0) scroll_down(cursor_ypos-size.h+1+scrolloff);
 					update_misc_info();
 					update_visual_info();
 					if (edit()) update_micropos();
@@ -3818,45 +3828,75 @@ void ht_uformat_viewer::sendsubmsg(htmsg *msg)
 
 bool ht_uformat_viewer::set_cursor(uformat_viewer_pos p)
 {
+	int scrolloff = MIN(scroll_offset, size.h/2);
 	cursorline_dirty();
 	uformat_viewer_pos t = top;
 	int ty = 0;
-//     bool hasnext = true;
-/* test if cursor is already on screen */
-//	if (cursor_state == cursor_state_visible) {
+
+	bool on_screen = false;
+	bool half_screen_above = false;
+	bool half_screen_below = false;
+
+	if (cursor_state != cursor_state_visible) {
+		return false;
+	}
+
+	while (ty < scrolloff && next_line(&t, 1)) {
+		ty++;
+	}
+	while (prev_line(&t, 1) && ty-- > -size.h/2) {
+		if (t.sub == p.sub && compeq_line_id(t.line_id, p.line_id)) {
+			half_screen_above = true;
+			break;
+		}
+	}
+
+	if (!half_screen_above) {
+		t = top;
+		ty = 0;
 		do {
-//			if (compeq_viewer_pos(&t, &p)) {
-			if ((t.sub == p.sub) && compeq_line_id(t.line_id, p.line_id)) {
-				cursor = p;
-				if (p.tag_group != -1) cursor.tag_group = p.tag_group;
-				adjust_cursor_group();
-				if (p.tag_idx !=-1) cursor.tag_idx = p.tag_idx;
-				adjust_cursor_idx();
-				cursor_ypos = ty;
-				update_misc_info();
-				update_visual_info();
-				check_cursor_visibility();
-				cursorline_dirty();
-				dirtyview();
-				return true;
+			if (t.sub == p.sub && compeq_line_id(t.line_id, p.line_id)) {
+				if (ty < size.h - scrolloff) {
+					on_screen = true;
+				} else {
+					half_screen_below = true;
+				}
+				break;
 			}
-		} while ((/*hasnext = */next_line(&t, 1)) && (ty++ < size.h-1));
-//	}
-/**/
+		} while (next_line(&t, 1) && ty++ < size.h*3/2);
+	}
 
 	char line[1024];
 	char *e;
 	p.sub->getline(line, sizeof line, p.line_id);
 	e = tag_get_selectable_tag(line, 0, 0);
-	if (!e) return 0;
+	if (!e) return false;
+
 	cursor = p;
 	if (p.tag_group != -1) cursor.tag_group = p.tag_group;
 	adjust_cursor_group();
 	if (p.tag_idx != -1) cursor.tag_idx = p.tag_idx;
 	adjust_cursor_idx();
-	cursor_ypos=0;
-//	cursor_ypos=center_view(sub, id1, id2);
-	top = p;
+
+	if (on_screen) {
+		cursor_ypos = ty;
+	} else if (half_screen_above) {
+		cursor_ypos = scrolloff;
+		top = p;
+		ty = 0;
+		while (ty < scrolloff && prev_line(&top, 1)) {
+			ty++;
+		}
+	} else if (half_screen_below) {
+		cursor_ypos = size.h - 1;
+		while (next_line(&top, 1) && (ty-- > size.h-scrolloff)) {}
+	} else {
+		ty = 0;
+		top = p;
+		while (prev_line(&top, 1) && (ty++ < size.h/2-1)) { }
+		cursor_ypos=size.h/2-1;
+	}
+
 	update_misc_info();
 	update_visual_info();
 	check_cursor_visibility();

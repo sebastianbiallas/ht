@@ -5,6 +5,9 @@ version 2.0.22:
 	- Fixed selection of nodes in call chain
 	- Added ability to view/edit 64 bit symbols and relocation for ELFs
 	  (Thanks tecknicaltom)
+	- Added new option "editor/scroll offset" which determines how many
+	  extra lines the cursor should be visible when scolling
+	  (Thanks tecknicaltom)
 
 version 2.0.21:
 	- [x86] AVX2 updates
