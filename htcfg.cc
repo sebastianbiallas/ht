@@ -112,7 +112,7 @@ loadstore_result save_systemconfig(String &error_info)
 			break;
 		}
 		/* write config */
-		app->store(*d.get());
+		app->store(*d);
 	} catch (const Exception &e) {
 		e.reason(error_info);
 		return LS_ERROR_WRITE;
@@ -157,7 +157,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		}
 
 		/* read config */
-		app->load(*d.get());
+		app->load(*d);
 	} catch (const ObjectNotRegisteredException &) {
 		*result = LS_ERROR_CORRUPTED;
 		if (object_stream_type==object_stream_txt && d.get()) {

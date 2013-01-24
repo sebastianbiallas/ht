@@ -371,6 +371,7 @@ Object *create_blockop_str_context(File *file, FileOfs ofs, uint len, uint size,
 		const char *s;
 		int p;
 		get_eval_error(&s, &p);
+		delete ctx;
 		throw MsgfException("error evaluating '%s': %s at %d", action, s, p);
 	}
 
@@ -493,6 +494,7 @@ Object *create_blockop_int_context(File *file, FileOfs ofs, uint len, uint size,
 		const char *s;
 		int p;
 		get_eval_error(&s, &p);
+		delete ctx;
 		throw MsgfException("error evaluating '%s': %s at %d", action, s, p);
 	}
 
