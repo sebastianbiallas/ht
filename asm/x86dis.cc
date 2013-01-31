@@ -1436,7 +1436,7 @@ void x86dis::str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *
 }
 
 
-void x86dis::str_format(char **str, const char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print)
+void x86dis::str_format(char **str, const char **format, char *p, char *n, char *op[5], int oplen[5], char stopchar, int print)
 {
 	const char *cs_default = get_cs(e_cs_default);
 	const char *cs_symbol = get_cs(e_cs_symbol);

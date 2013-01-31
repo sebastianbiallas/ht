@@ -67,8 +67,9 @@ public:
 	virtual	int		compareTo(const Object *o) const;
 		int		compare(const String &s) const;
 		int		compare(const String &s, int aMax) const;
-	inline	byte *		content() const;
-	inline	char *		contentChar() const;
+	inline  bool		containsChar(char c) const;
+	inline	const byte *	content() const;
+	inline	const char *	contentChar() const;
 		uint		countChar(char c) const;
 		void		crop(int aNewLength);
 		void		del(int pos, int aLength);
@@ -178,7 +179,7 @@ inline bool String::chop()
 /**
  *	@returns a string content ptr
  */
-inline byte *String::content() const
+inline const byte *String::content() const
 {
 	return mContent;
 }
@@ -186,11 +187,19 @@ inline byte *String::content() const
 /**
  *	@returns a string content ptr (as char*)
  */
-inline char *String::contentChar() const
+inline const char *String::contentChar() const
 {
-	return (char*)mContent;
+	return (const char*)mContent;
 }
- 
+
+/**
+ *	@returns true iff string contains |c|
+ */ 
+inline  bool String::containsChar(char c) const
+{
+	return findCharFwd(c) >= 0;
+}
+
 /**
  *	@returns first character of string
  *	@throws exception if string is empty

@@ -29,8 +29,8 @@
 #define HTDEBUG
 /****************************************************************************/
 
-void ht_assert_failed(const char *file, int line, const char *assertion);
-void ht_error(const char *file, int line, const char *format,...);
+void ht_assert_failed(const char *file, int line, const char *assertion) __attribute__ ((noreturn));
+void ht_error(const char *file, int line, const char *format,...) __attribute__ ((noreturn));
 void ht_trace(const char *file, int line, const char *format,...);
 void ht_warn(const char *file, int line, const char *format,...);
 

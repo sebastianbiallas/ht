@@ -145,7 +145,7 @@ class ht_inputfield;
 
 struct ht_inputfield_data {
 	DDECL_UINT(textlen);
-	DDECL_PTR(byte, text);
+	DDECL_PTR(const byte, text);
 };
 
 class ht_inputfield: public ht_dialog_widget {

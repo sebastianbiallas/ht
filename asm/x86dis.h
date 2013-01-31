@@ -110,7 +110,7 @@ protected:
 			bool	isfloat(char c);
 			bool	isaddr(char c);
 	virtual		void	prefixes();
-			void	str_format(char **str, const char **format, char *p, char *n, char *op[3], int oplen[3], char stopchar, int print);
+			void	str_format(char **str, const char **format, char *p, char *n, char *op[5], int oplen[5], char stopchar, int print);
 	virtual		void	str_op(char *opstr, int *opstrlen, x86dis_insn *insn, x86_insn_op *op, bool explicit_params);
 			uint	mkmod(uint modrm);
 			uint	mkreg(uint modrm);

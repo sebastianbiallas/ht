@@ -195,7 +195,7 @@ public:
 	virtual	void pselect_get(FileOfs *start, FileOfs *end);
 	virtual	void pselect_set(FileOfs start, FileOfs end);
 	virtual	uint pwrite(FileOfs ofs, void *buf, uint size);
-	virtual	bool string_to_offset(char *string, FileOfs *ofs);
+	virtual	bool string_to_offset(const String &string, FileOfs *ofs);
 	virtual	bool qword_to_offset(uint64 q, FileOfs *ofs);
 
 	virtual	bool get_current_real_offset(FileOfs *ofs);
@@ -209,7 +209,7 @@ public:
 	virtual	void vselect_get(viewer_pos *start, viewer_pos *end);
 	virtual	void vselect_set(viewer_pos start, viewer_pos end);
 	virtual	uint vwrite(viewer_pos pos, void *buf, uint size);
-	virtual	bool string_to_pos(const char *string, viewer_pos *pos);
+	virtual	bool string_to_pos(const String &string, viewer_pos *pos);
 	virtual	bool qword_to_pos(uint64 q, viewer_pos *pos);
 
 	/* string evaluation */
@@ -222,7 +222,7 @@ public:
 	/* misc */
 		void clear_viewer_pos(viewer_pos *p);
 		File *get_file();
-		bool string_to_qword(const char *string, uint64 *q);
+		bool string_to_qword(const String &string, uint64 *q);
 		bool vstate_save();
 };
 

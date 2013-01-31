@@ -802,10 +802,14 @@ bool ht_format_viewer::show_search_result(ht_search_result *r)
 	return false;
 }
 
-bool ht_format_viewer::string_to_qword(const char *string, uint64 *q)
+bool ht_format_viewer::string_to_qword(const String &string, uint64 *q)
 {
 	eval_scalar r;
-	if (eval(&r, string, format_viewer_func_handler, format_viewer_symbol_handler, this)) {
+	if (string.containsChar(0)) {
+		ht_snprintf(globalerror, GLOBAL_ERROR_SIZE, "eval(): invalid string");
+		return false;
+	}
+	if (eval(&r, string.contentChar(), format_viewer_func_handler, format_viewer_symbol_handler, this)) {
 		eval_int i;
 		scalar_context_int(&r, &i);
 		scalar_destroy(&r);
@@ -820,14 +824,14 @@ bool ht_format_viewer::string_to_qword(const char *string, uint64 *q)
 	return false;
 }
 
-bool ht_format_viewer::string_to_pos(const char *string, viewer_pos *pos)
+bool ht_format_viewer::string_to_pos(const String &string, viewer_pos *pos)
 {
 	uint64 q;
 	if (!string_to_qword(string, &q)) return false;
 	return qword_to_pos(q, pos);
 }
 
-bool ht_format_viewer::string_to_offset(char *string, FileOfs *ofs)
+bool ht_format_viewer::string_to_offset(const String &string, FileOfs *ofs)
 {
 	uint64 q;
 	if (!string_to_qword(string, &q)) return false;

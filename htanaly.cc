@@ -549,25 +549,25 @@ bool ht_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 	return false;
 }
 
-bool ht_aviewer::pos_to_string(viewer_pos p, char *result, int maxlen)
+bool ht_aviewer::pos_to_string(viewer_pos p, String &result)
 {
 	if (!analy) return false;
 	Address *a;
 	if (!convertViewerPosToAddress(p, &a)) return false;
 	Location *addr = analy->getLocationByAddress(a);
 	if (addr && addr->label) {
-		ht_strlcpy(result, addr->label->name, maxlen);
+		result = addr->label->name;
 		return true;
 	}
 	addr = analy->getFunctionByAddress(a);
 	if (addr && addr->label) {
 		int d = 0;
 		a->difference(d, addr->addr);
-		ht_snprintf(result, maxlen, "%s+0%xh", addr->label->name, d);
+		result.assignFormat("%s+0%xh", addr->label->name, d);
 		return true;
 	}
 	global_analyser_address_string_format = ADDRESS_STRING_FORMAT_LEADING_ZEROS | ADDRESS_STRING_FORMAT_ADD_H;
-	ht_snprintf(result, maxlen, "%y", a);
+	result.assignFormat("%y", a);
 	return true;
 }
 
@@ -710,11 +710,11 @@ static int ht_aviewer_symbol_to_addr(void *Aviewer, const char *s, uint64 &v)
 	return false;
 }
 
-static void setdatastr(ht_view *v, char *str)
+static void setdatastr(ht_view *v, const String &str)
 {
 	ht_inputfield_data id;
-	id.textlen = strlen(str);
-	id.text = (byte*)str;
+	id.textlen = str.length();
+	id.text = str.content();
 	v->databuf_set(&id, sizeof id);
 }
 
@@ -758,7 +758,7 @@ void ht_aviewer::generateOutputDialog()
 	filename.rightSplit('/', suffix, basename2);
 	basename2.rightSplit('.', basename, suffix);
 	basename += ".out";
-	setdatastr(v1, basename.contentChar());
+	setdatastr(v1, basename);
 
 	b.assign(29, 2, 15, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);
@@ -775,8 +775,8 @@ void ht_aviewer::generateOutputDialog()
 	NEW_OBJECT(v2, ht_label, &b, "~start address:", v1);
 	viewer_pos cur;
 	if (get_current_pos(&cur)) {
-		char str[1024];
-		pos_to_string(cur, str, sizeof str);
+		String str;
+		pos_to_string(cur, str);
 		setdatastr(v1, str);
 	}
 	dialog->insert(v2);
@@ -786,11 +786,10 @@ void ht_aviewer::generateOutputDialog()
 	b.assign(2, 7, 35, 1);
 	NEW_OBJECT(v2, ht_label, &b, "~end address:", v1);
 	dialog->insert(v2);
-//	setdatastr(v1, "#1000");
 	if (get_current_pos(&cur)) {
-		char str[1024];
-		pos_to_string(cur, str, sizeof str);
-		strcat(str, "+20");
+		String str;
+		pos_to_string(cur, str);
+		str.append("+20");
 		setdatastr(v1, str);
 	}
 	b.assign(13, 11, 9, 2);
@@ -964,7 +963,7 @@ void ht_aviewer::exportFileDialog()
 	file->getFilename(filename);
 	filename.rightSplit('.', basename, suffix);
 	basename += ".exp";
-	setdatastr(v1, basename.contentChar());
+	setdatastr(v1, basename);
 
 	b.assign(2, 5, 25, 1);
 	NEW_OBJECT(v1, ht_listpopup, &b);

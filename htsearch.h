@@ -60,7 +60,7 @@ public:
 	uint data_size;
 	byte *data;
 	
-			ht_fxbin_search_request(uint search_class, uint flags, uint data_size, byte *data);
+			ht_fxbin_search_request(uint search_class, uint flags, uint data_size, const byte *data);
 	virtual		~ht_fxbin_search_request();
 	/* overwritten */
 	virtual	ht_fxbin_search_request *clone() const;
@@ -82,7 +82,7 @@ public:
 	char *rx_str;
 	regex_t rx;
 
-			ht_regex_search_request(uint search_class, uint flags, char *regex);
+			ht_regex_search_request(uint search_class, uint flags, const char *regex);
 	virtual	~ht_regex_search_request();
 	/* overwritten */
 	virtual	 ht_regex_search_request* clone() const;
@@ -95,7 +95,7 @@ class ht_expr_search_request: public ht_search_request {
 public:
 	char *expr;
 
-		ht_expr_search_request(uint search_class, uint flags, char *Expr);
+		ht_expr_search_request(uint search_class, uint flags, const char *Expr);
 	virtual	~ht_expr_search_request();
 	/* overwritten */
 	virtual	ht_expr_search_request *clone() const;
@@ -301,7 +301,7 @@ public:
 // flags
 #define SFBIN_CASEINSENSITIVE	1
 
-Object* create_search_bin_context(File *file, FileOfs ofs, FileOfs len, byte *pat, uint patlen, uint flags, FileOfs *return_ofs, bool *return_success);
+Object* create_search_bin_context(File *file, FileOfs ofs, FileOfs len, const byte *pat, uint patlen, uint flags, FileOfs *return_ofs, bool *return_success);
 bool search_bin_process(Object *context, ht_text *progress_indicator);
 
 ht_view* create_form_hexascii(Bounds *b, uint histid);
@@ -329,7 +329,7 @@ public:
 	~ht_replace_bin_context();
 };
  
-Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, byte *repl, FileOfs repllen, FileOfs *return_repllen);
+Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, const byte *repl, FileOfs repllen, FileOfs *return_repllen);
 bool replace_bin_process(Object *context, ht_text *progress_indicator);
 
 #endif /* __HTSEARCH_H__ */

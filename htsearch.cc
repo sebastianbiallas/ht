@@ -67,35 +67,22 @@ struct ht_replace_method {
 #include <stdlib.h>
 #include <string.h>
 
-static bool test_str_to_ofs(FileOfs *ofs, byte *str, uint strlen, ht_format_viewer *format, const char *desc)
+static bool test_str_to_ofs(FileOfs *ofs, const String &str, ht_format_viewer *format, const char *desc)
 {
-#define TEST_STR_TO_OFS_MAXSTRLEN       128
-	if (strlen > TEST_STR_TO_OFS_MAXSTRLEN) {
-		throw MsgfException("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_OFS_MAXSTRLEN);
-		return false;
-	}
-	if (strlen > 0) {
-		char s[TEST_STR_TO_OFS_MAXSTRLEN+1];
-		bin2str(s, str, strlen);
-		if (!format->string_to_offset(s, ofs)) {
-			throw MsgfException("%s: invalid expression: '%s'", desc, s);
+	if (str.length() > 0) {
+		if (!format->string_to_offset(str, ofs)) {
+			throw MsgfException("%s: invalid expression: '%y'", desc, &str);
 			return false;
 		}
 	}
 	return true;
 }
 
-static bool test_str_to_pos(viewer_pos *pos, byte *str, uint strlen, ht_format_viewer *format, const char *desc)
+static bool test_str_to_pos(viewer_pos *pos, const String &str, ht_format_viewer *format, const char *desc)
 {
-#define TEST_STR_TO_POS_MAXSTRLEN      128
-	if (strlen > TEST_STR_TO_POS_MAXSTRLEN) {
-		throw MsgfException("%s: expression too long (len %d, max %d)", desc, strlen, TEST_STR_TO_POS_MAXSTRLEN);
-	}
-	if (strlen > 0) {
-		char s[TEST_STR_TO_POS_MAXSTRLEN+1];
-		bin2str(s, str, strlen);
-		if (!format->string_to_pos(s, pos)) {
-			throw MsgfException("%s: invalid expression: '%s'", desc, s);
+	if (str.length() > 0) {
+		if (!format->string_to_pos(str, pos)) {
+			throw MsgfException("%s: invalid expression: '%y'", desc, &str);
 		}
 	}
 	return true;
@@ -123,8 +110,10 @@ ht_search_request* create_request_hexascii(search_pos *start, search_pos *end, h
 	if (!d.str.textlen) {
 		throw MsgfException("%s: string is empty", "hex/ascii");
 	}
-	if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
-	&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {
+	String startstr(d.start.text, d.start.textlen);
+	String endstr(d.end.text, d.end.textlen);
+	if (test_str_to_ofs(&start->offset, startstr, format, "start-offset")
+	 && test_str_to_ofs(&end->offset, endstr, format, "end-offset")) {
 		request = new ht_fxbin_search_request(search_class,
 			d.options.state & 1 ? SF_FXBIN_CASEINSENSITIVE: 0,
 			d.str.textlen, d.str.text);
@@ -194,8 +183,10 @@ ht_search_request* create_request_evalstr(search_pos *start, search_pos *end, ht
 		if (eval(&r, strbuf, NULL, NULL, NULL)) {
 			scalar_context_str(&r, &s);
 			scalar_destroy(&r);
-			if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
-			&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {
+			String startstr(d.start.text, d.start.textlen);
+			String endstr(d.end.text, d.end.textlen);
+			if (test_str_to_ofs(&start->offset, startstr, format, "start-offset")
+			&& test_str_to_ofs(&end->offset, endstr, format, "end-offset")) {
 				request = new ht_fxbin_search_request(search_class,
 					d.options.state & 1 ? SF_FXBIN_CASEINSENSITIVE: 0,
 					s.len, (byte*)s.value);
@@ -245,7 +236,7 @@ void create_desc_evalstr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_fxbin_search_request::ht_fxbin_search_request(uint search_class, uint flags, uint ds, byte *d) :
+ht_fxbin_search_request::ht_fxbin_search_request(uint search_class, uint flags, uint ds, const byte *d) :
 	ht_search_request(search_class, ST_FXBIN, flags)
 {
 	data_size = ds;
@@ -289,8 +280,10 @@ ht_search_request* create_request_vregex(search_pos *start, search_pos *end, ht_
 		char strbuf[VREGEX_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
 
-		if (test_str_to_pos(&start->pos, d.start.text, d.start.textlen, format, "start-address")
-		&& test_str_to_pos(&end->pos, d.end.text, d.end.textlen, format, "end-address")) {
+		String startstr(d.start.text, d.start.textlen);
+		String endstr(d.end.text, d.end.textlen);
+		if (test_str_to_pos(&start->pos, startstr, format, "start-address")
+		&& test_str_to_pos(&end->pos, endstr, format, "end-address")) {
 			request = new ht_regex_search_request(search_class, d.options.state & 1 ? SF_REGEX_CASEINSENSITIVE : 0, strbuf);
 		}
 	} else {
@@ -332,7 +325,7 @@ void create_desc_vregex(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_regex_search_request::ht_regex_search_request(uint search_class, uint flags, char *regex) :
+ht_regex_search_request::ht_regex_search_request(uint search_class, uint flags, const char *regex) :
 	ht_search_request(search_class, ST_REGEX, flags)
 {
 	rx_str = ht_strdup(regex);
@@ -392,9 +385,10 @@ ht_search_request* create_request_expr(search_pos *start, search_pos *end, ht_vi
 	} else if (d.str.textlen <= EXPR_MAXSTRLEN) {
 		char strbuf[EXPR_MAXSTRLEN+1];
 		bin2str(strbuf, d.str.text, d.str.textlen);
-		
-		if (test_str_to_ofs(&start->offset, d.start.text, d.start.textlen, format, "start-offset")
-		&& test_str_to_ofs(&end->offset, d.end.text, d.end.textlen, format, "end-offset")) {
+		String startstr(d.start.text, d.start.textlen);
+		String endstr(d.end.text, d.end.textlen);
+		if (test_str_to_ofs(&start->offset, startstr, format, "start-offset")
+		 && test_str_to_ofs(&end->offset, endstr, format, "end-offset")) {
 			request = new ht_expr_search_request(search_class, 0, strbuf);
 		}
 	} else {
@@ -436,7 +430,7 @@ void create_desc_expr(char *buf, int buflen, ht_view *f)
 
 /***/
 
-ht_expr_search_request::ht_expr_search_request(uint search_class, uint flags, char *Expr) :
+ht_expr_search_request::ht_expr_search_request(uint search_class, uint flags, const char *Expr) :
 	ht_search_request(search_class, ST_EXPR, flags)
 {
 	expr = ht_strdup(Expr);
@@ -880,6 +874,7 @@ Object* create_replace_hexascii_context(File *file, FileOfs ofs, FileOfs len, ht
 	ViewDataBuf vdb(form, &d, sizeof d);
 	
 	ht_replace_bin_context *ctx = (ht_replace_bin_context*)
+	
 	create_replace_bin_context(file, ofs, len, d.str.text, d.str.textlen, return_repllen);
 
 	return ctx;
@@ -1186,7 +1181,7 @@ uint replace_dialog(ht_format_viewer *format, uint searchmodes, bool *cancelled)
 }
 
 #define REPLACE_COPY_BUF_SIZE	64*1024
-Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, byte *repl, FileOfs repllen, FileOfs *return_repllen)
+Object* create_replace_bin_context(File *file, FileOfs ofs, FileOfs len, const byte *repl, FileOfs repllen, FileOfs *return_repllen)
 {
 	ht_replace_bin_context *ctx = new ht_replace_bin_context();
 	ctx->file = file;
