@@ -3544,6 +3544,9 @@ bool ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendia
 	Endianess end = bigendian ? big_endian : little_endian;
 	int_hash *desc=(int_hash*)getAtomValue(id);
 	if (desc) {
+		byte buf[4];
+		if (pread(offset, buf, size) != size) return false;
+
 		Bounds b;
 		b.w = 60;
 		b.h = 14;
@@ -3559,12 +3562,10 @@ bool ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendia
 		ht_itext_listbox *l = new ht_itext_listbox();
 		l->init(&b, 2, 1);
 
-		byte buf[4];
 		int curpos = 0;
 		int i = 0;
 		int d = 0;
 
-		if (pread(offset, buf, size) != size) return false;
 		
 		switch (size) {
 			case 1: d = buf[0]; break;
@@ -3624,7 +3625,7 @@ bool ht_uformat_viewer::ref_desc(ID id, FileOfs offset, uint size, bool bigendia
 					createForeignInt(buf, v, size, end);
 					pwrite(offset, buf, size);
 					dirtyview();
-				}					
+				}
 			}
 		}
 
