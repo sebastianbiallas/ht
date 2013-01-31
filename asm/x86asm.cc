@@ -2110,7 +2110,7 @@ bool x86asm::translate_str(asm_insn *asm_insn, const char *s)
 	}
 
 	/**/
-	splitstr(s, insn->n, sizeof insn->n, (char**)&opp, 256);
+	splitstr(s, insn->n, sizeof insn->n, (char**)opp, 256);
 	insn->name = insn->n;
 	for (int i=0; i<5; i++) {
 		if (!*op[i]) break;
@@ -2151,7 +2151,7 @@ int x86asm::simmsize(uint64 imm, int immsize)
 	return 8;
 }
 
-void x86asm::splitstr(const char *s, char *name, int size, char *op[5], int opsize)
+void x86asm::splitstr(const char *s, char *name, int size, char **op, int opsize)
 {
 	const char *a, *b;
 	bool wantbreak = false;
