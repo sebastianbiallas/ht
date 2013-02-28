@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 bin_PROGRAMS	= ht
 
 ANALYSER_DIR	= analyser
