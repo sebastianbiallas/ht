@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 AM_CPPFLAGS = ${my_CPPFLAGS} -I$(srcdir)/$(ANALYSER_DIR) \
               -I$(srcdir)/$(ASM_DIR) -I$(srcdir)/$(INFO_DIR) \
               -I$(srcdir)/$(IO_DIR) -I$(srcdir)/$(COMIO_DIR) \

@@ -34,8 +34,8 @@ fi
 CFLAGS="$default_user_CFLAGS"
 CXXFLAGS="$default_user_CFLAGS"
 
-AM_INIT_AUTOMAKE
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE([foreign])
+AC_CONFIG_HEADERS([config.h])
 
 dnl Check OS specifica
 
