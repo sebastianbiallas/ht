@@ -50,10 +50,10 @@ be registered in certain jurisdictions.
 
 @titlepage
 
-@title{HT Manual}
-@subtitle{Edition 2.0.22, January 2013}
+@title HT Manual
+@subtitle Edition 2.0.22, January 2013
 
-@author{Stefan Weyergraf, Sebastian Biallas}
+@author Stefan Weyergraf, Sebastian Biallas
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -135,7 +135,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 @node Key bindings, , Top, Top
 @unnumberedsec Key bindings
 
-@macro key_table_columns
+@macro keytablecolumns
 .25 .75
 @end macro
 
