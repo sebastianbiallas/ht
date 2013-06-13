@@ -34,7 +34,7 @@ public:
 	virtual	ObjectID		getObjectID() const;
 
 	virtual	Address			*branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine);
-		Address			*createAddress(uint32 offset);
+		Address			*createAddress(uint64 offset);
 	virtual	void			examineOpcode(OPCODE *opcode);
 	virtual	branch_enum_t 		isBranch(OPCODE *opcode);
 	virtual	void			store(ObjectStream &f) const;

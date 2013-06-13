@@ -203,7 +203,7 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 				if (BITS_BSIGN(insn.data)) insn.data |= -1 ^ 0x1fffff;
 				insn.data += 1;
 				insn.data *= 4;
-				insn.data += addr.addr32.offset;
+				insn.address = sint64(insn.data) + addr.flat64.addr;
 				break;
 			case ALPHA_GROUP_FBR:
 				insn.regA = BITS_REGA(opcode) + REG_FLOAT;
@@ -213,13 +213,14 @@ dis_insn *Alphadis::decode(byte *code, int maxlen, CPU_ADDR addr)
 				if (BITS_BSIGN(insn.data)) insn.data |= -1 ^ 0x1fffff;
 				insn.data += 1;
 				insn.data *= 4;
-				insn.data += addr.addr32.offset;
+				insn.address = sint64(insn.data) + addr.flat64.addr;
 				break;
 			case ALPHA_GROUP_JMP:
 				insn.regA = BITS_REGA(opcode);
 				insn.regB = BITS_REGB(opcode);
 				insn.regC = REG_ZERO;
 				insn.data = BITS_HINT(opcode);
+				insn.address = sint64(insn.data);
 				break;
 			case ALPHA_GROUP_PAL:
 				insn.regA = REG_ZERO;
@@ -336,7 +337,7 @@ const char *Alphadis::strf(dis_insn *disasm_insn, int style, const char *format)
 		case ALPHA_GROUP_BRA:
 		case ALPHA_GROUP_FBR: {
 			CPU_ADDR caddr;
-			caddr.addr32.offset = (uint32)alpha_insn->data;
+			caddr.flat64.addr = alpha_insn->address;
 			int slen;
 			char *p;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : 0;
@@ -345,13 +346,13 @@ const char *Alphadis::strf(dis_insn *disasm_insn, int style, const char *format)
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
-				sprintf(insnstr, "%-10s %s%s, %s0x%x", A_NAME, A_REG_A, cs_symbol, cs_number, (uint32)alpha_insn->data);
+				sprintf(insnstr, "%-10s %s%s, %s0x%qx", A_NAME, A_REG_A, cs_symbol, cs_number, &alpha_insn->address);
 			}
 			break;
 		}
 		case ALPHA_GROUP_JMP: {
 			CPU_ADDR caddr;
-			caddr.addr32.offset = (uint32)alpha_insn->data;
+			caddr.flat64.addr = alpha_insn->address;
 			int slen;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : 0;
 			if (s) {
@@ -370,7 +371,7 @@ const char *Alphadis::strf(dis_insn *disasm_insn, int style, const char *format)
 			goto is_invalid;
 	}
 	disable_highlighting();
-	return insnstr;     
+	return insnstr;
 }
 
 bool	Alphadis::validInsn(dis_insn *disasm_insn)

@@ -453,6 +453,9 @@ C functions (actually they ARE more or less wrappers for them); see @file{eval/e
 details (sorry but a detailed help would get outdated rather soon).
 
 The symbol _ always refers to the last result.
+If you are in a hex buffer, the variable @code{first} contains the offset of the first byte and the variable
+@code{last} contains the offset of the last byte. This is useful, for instace, if you want to jump to the last byte of a file.
+
 
 If you are in a hex buffer, the variable @code{first} contains the offset of the first byte and the variable
 @code{last} contains the offset of the last byte. This is useful, for instace, if you want to jump to the last byte of a file.
