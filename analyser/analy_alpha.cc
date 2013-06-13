@@ -65,7 +65,7 @@ ObjectID AnalyAlphaDisassembler::getObjectID() const
  */
 Address *AnalyAlphaDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branchtype, bool examine)
 {
-	Address *a = createAddress(((alphadis_insn *)opcode)->data);
+	Address *a = createAddress(((alphadis_insn *)opcode)->address);
 	if (examine && analy->validAddress(a, scvalid)) {
 		return a;
 	}
@@ -73,9 +73,9 @@ Address *AnalyAlphaDisassembler::branchAddr(OPCODE *opcode, branch_enum_t branch
 	return new InvalidAddress();
 }
 
-Address *AnalyAlphaDisassembler::createAddress(uint32 offset)
+Address *AnalyAlphaDisassembler::createAddress(uint64 offset)
 {
-	return new AddressFlat32(offset);
+	return new AddressFlat64(offset);
 }
 
 /*

@@ -240,6 +240,16 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_METAG	174	/* Imagination Technologies META processor architecture */
 #define ELF_EM_MCST_ELBRUS	175	/* MCST Elbrus general purpose hardware architecture */
 #define ELF_EM_ECOG16	176	/* Cyan Technology eCOG16 family */
+#define ELF_EM_CR16	177	/* National Semiconductor CompactRISC 16-bit processor */
+#define ELF_EM_ETPU	178	/* Freescale Extended Time Processing Unit */
+#define ELF_EM_SLE9X	179	/* Infineon Technologies SLE9X core */
+#define ELF_EM_L1OM	180	/* Intel L1OM */
+#define ELF_EM_K1OM	181	/* Intel K1OM */
+#define ELF_EM_INTEL182	182	/* Reserved by Intel */
+#define ELF_EM_AARCH64	183	/* ARM 64-bit architecture */
+#define ELF_EM_ARM184	184	/* Reserved by ARM */
+#define EFL_EM_AVR32	185	/* Atmel Corporation 32-bit microprocessor family */
+#define ELF_EM_ALPHA    0x9026
 
 
 /* e_version */

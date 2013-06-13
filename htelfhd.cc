@@ -189,6 +189,8 @@ static int_hash elf_machine[] =
 	{ELF_EM_PJ,		"picoJava"},
 
 	{ELF_EM_C166,		"Infineon C16x/XC16x processor"},
+
+	{ELF_EM_ALPHA,		"Alpha"},
 	{0, 0}
 };
 

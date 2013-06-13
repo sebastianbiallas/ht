@@ -28,6 +28,7 @@ struct alphadis_insn {
 	bool				valid;
 	int				size;       /* only useful if invalid (else 4) */
 	sint32				data;       /* must be signed */
+	uint64				address;
 	uint16				code;
 	byte				regA;
 	byte				regB;
