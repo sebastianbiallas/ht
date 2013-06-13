@@ -622,7 +622,7 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_X86_64:
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-			errorbox("x86_64 cant be used in a 32-Bit ELF.");
+			errorbox("x86_64 can't be used in a 32-Bit ELF.");
 		} else {
 			analy_disasm = new AnalyX86Disassembler();
 			((AnalyX86Disassembler*)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_AMD64 | ANALYX86DISASSEMBLER_FLAGS_FLAT64);
@@ -630,7 +630,7 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_IA_64: // Intel ia64
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-			errorbox("Intel IA64 cant be used in a 32-Bit ELF.");
+			errorbox("Intel IA64 can't be used in a 32-Bit ELF.");
 		} else {
 			analy_disasm = new AnalyIA64Disassembler();
 			((AnalyIA64Disassembler*)analy_disasm)->init(this);
@@ -638,7 +638,7 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_PPC: // PowerPC
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-			errorbox("PowerPC32 cant be used in a 64-Bit ELF.");
+			errorbox("PowerPC32 can't be used in a 64-Bit ELF.");
 		} else {
 			DPRINTF("initing analy_ppc_disassembler\n");
 			analy_disasm = new AnalyPPCDisassembler();
@@ -647,7 +647,7 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_PPC64: // PowerPC64
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-			errorbox("PowerPC64 cant be used in a 32-Bit ELF.");
+			errorbox("PowerPC64 can't be used in a 32-Bit ELF.");
 		} else {
 			DPRINTF("initing analy_ppc_disassembler\n");
 			analy_disasm = new AnalyPPCDisassembler();
@@ -656,7 +656,7 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_ARM:
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-			errorbox("ARM cant be used in a 64-Bit ELF.");
+			errorbox("ARM can't be used in a 64-Bit ELF.");
 		} else {
 			DPRINTF("initing analy_arm_disassembler\n");
 			analy_disasm = new AnalyArmDisassembler();
@@ -665,11 +665,20 @@ void ElfAnalyser::initUnasm()
 		break;
 	case ELF_EM_AVR:
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS32) {
-			errorbox("AVR cant be used in a 64-Bit ELF.");
+			errorbox("AVR can't be used in a 64-Bit ELF.");
 		} else {
 			DPRINTF("initing analy_avr_disassembler\n");
 			analy_disasm = new AnalyAVRDisassembler();
 			((AnalyAVRDisassembler*)analy_disasm)->init(this);
+		}
+		break;
+	case 0x9026:
+		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
+			errorbox("Alpha can't be used in a 32-Bit ELF.");
+		} else {
+			DPRINTF("initing analy_alpha_disassembler\n");
+			analy_disasm = new AnalyAlphaDisassembler();
+			((AnalyAlphaDisassembler*)analy_disasm)->init(this);
 		}
 		break;
 	default:

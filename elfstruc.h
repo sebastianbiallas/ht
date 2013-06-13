@@ -244,6 +244,7 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_ETPU	178	/* Freescale Extended Time Processing Unit */
 #define ELF_EM_SLE9X	179	/* Infineon Technologies SLE9X core */
 #define ELF_EM_L1OM	180	/* Intel L1OM */
+#define ELF_EM_ALPHA64	0x9026	/* Alpha64? */
 
 /* e_version */
 #define ELF_EV_NONE			0

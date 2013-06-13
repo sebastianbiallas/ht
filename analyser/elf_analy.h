@@ -33,7 +33,7 @@ public:
 	File			*file;
 	Area			*validarea;
 
-				ElfAnalyser() {};	
+				ElfAnalyser() {};
 				ElfAnalyser(BuildCtorArg&a): Analyser(a) {};
 		void		init(ht_elf_shared_data *elf_shared, File *File);
 		void 		load(ObjectStream &f);
