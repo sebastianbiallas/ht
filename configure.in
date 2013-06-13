@@ -22,7 +22,7 @@ my_CXXFLAGS="-Wall -Woverloaded-virtual -Wnon-virtual-dtor -fsigned-char"
 
 if test "x$enable_maintainermode" = "xno"; then
 if test "x$enable_release" = "xyes"; then
-    default_user_CFLAGS="-O3 -fomit-frame-pointer"
+    default_user_CFLAGS="-O3 -Wall -fomit-frame-pointer"
 else
     default_user_CFLAGS="-ggdb3 -O0 -Wall"
 fi
