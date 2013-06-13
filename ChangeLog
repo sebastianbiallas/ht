@@ -9,7 +9,6 @@ version 2.0.22:
 	  extra lines the cursor should be visible when scolling
 	  (Thanks tecknicaltom)
 	- Fixed loading of ELF files for alpha
-	- Fixed some compilation problems with newer toolchain
 	- Updated address of FSF
 
 version 2.0.21:
