@@ -666,7 +666,7 @@ void	ObjectStreamNative::putInt(uint64 i, uint size, const char *desc, uint int_
 
 void ObjectStreamNative::putObject(const Object *object, const char *name, ObjectID id)
 {
-	Object *d = duplicate ? d->clone() : d;
+	Object *d = duplicate ? object->clone() : object;
 	mStream->write(&d, sizeof d);
 }
 
