@@ -2653,9 +2653,9 @@ bool IntSet::findPrev(uint &i, bool set) const
 		i--;
 		return true;
 	}
-	for (uint j=i-1; j >= 0; j--) {
-		if (contains(j) == set) {
-			i = j;
+	for (uint j=i; j >= 1; j--) {
+		if (contains(j-1) == set) {
+			i = j-1;
 			return true;
 		}
 	}
