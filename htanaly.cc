@@ -436,7 +436,7 @@ int AnalyInfoline::gettext(char *buf, int maxlen)
 							addr->difference(d, a->addr);
 							char sign = '+';
 							if (d < 0) {
-								d =- d;
+								d = -d;
 								sign = '-';
 							}
 							ss += ht_snprintf(ss, maxlen-(ss-s), "%s%c%x", func, sign, d);
