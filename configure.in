@@ -93,7 +93,6 @@ CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL $CFLAGS"
 AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
 
 AM_CONDITIONAL(USE_POSIX_DIR, test x$IO_DIR = xposix)
-AM_CONDITIONAL(USE_DJGPP_DIR, test x$IO_DIR = xdjgpp)
 AM_CONDITIONAL(USE_WIN32_DIR, test x$IO_DIR = xwin32)
 
 dnl Checks for programs.
@@ -225,7 +224,6 @@ eval/Makefile
 info/Makefile
 io/Makefile
 io/posix/Makefile
-io/djgpp/Makefile
 io/win32/Makefile
 minilzo/Makefile
 output/Makefile
