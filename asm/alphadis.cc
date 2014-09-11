@@ -21,6 +21,7 @@
 #include "alphadis.h"
 #include "alphaopc.h"
 #include "htdebug.h"
+#include "snprintf.h"
 #include "tools.h"
 
 #include <stdlib.h>
@@ -346,7 +347,7 @@ const char *Alphadis::strf(dis_insn *disasm_insn, int style, const char *format)
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
-				sprintf(insnstr, "%-10s %s%s, %s0x%qx", A_NAME, A_REG_A, cs_symbol, cs_number, &alpha_insn->address);
+				ht_snprintf(insnstr, sizeof insnstr, "%-10s %s%s, %s0x%qx", A_NAME, A_REG_A, cs_symbol, cs_number, &alpha_insn->address);
 			}
 			break;
 		}
