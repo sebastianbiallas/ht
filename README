@@ -283,6 +283,9 @@ Special variables/functions that can be used in EXPRESSION:
 `i'
      contains the iteration count/index starting with 0
 
+`o'
+     contains the current offset
+
 Search and its different modes
 ==============================
 
