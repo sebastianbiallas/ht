@@ -21,7 +21,6 @@ ht
 ht_v
 htdoc.h
 htdoc.c
-README
 *.o
 *.a
 doc/ht.html

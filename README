@@ -1,0 +1,380 @@
+HT Editor
+=========
+
+This is HT 2.1.0; Have fun...
+
+About
+=====
+
+This program is a file viewer, editor and analyzer for text, binary,
+and (especially) executable files.
+
+     This program is free software; you can redistribute it and/or
+     modify it under the terms of the GNU General Public License
+     version 2 as published by the Free Software Foundation.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+     02110-1301 USA.
+
+Key bindings
+============
+
+   * General key bindings
+
+     Return            follow link (if applicable)
+     Backspace         undo "follow link"
+     Space/F6          choose view mode
+     Alt+[1-9]         select window
+     Alt+0             select window list
+     Ctrl+Left/Right   scroll left/right
+     Cursor keys       move around
+     Page Up/Down      next/prev page
+     Alt+S             toggle select
+     Ctrl+Ins/Alt+C    copy
+     Shift+Ins/Alt+V   insert
+     Ctrl+Del/Alt+D    delete
+     Shift+Del/Alt+X   cut
+
+   * Window key bindings
+
+     Alt+F3/Ctrl+W     close window
+     Ctrl+F5           resize/move mode
+                       (in resize/move mode only:)
+     Space             toggle resize/move mode
+     Cursor keys       resize/move window
+     Escape/Return/Ctrl+F5leave resize/move mode
+
+   * Analyser key bindings
+
+     c                 continue code analysis at cursor
+     f                 follow dword ptr at address
+     n                 name current address (empty string to delete)
+     x                 show xrefs (search for xrefs)
+     #                 edit comments
+     s                 define a string
+     i                 define an integer (32bit)
+     h                 define a halfword (16bit)
+     b                 define a byte (8bit)
+     Ctrl+A            call assembler
+     Ctrl+F            goto start of current function
+                       (indicated in the 2nd line)
+     Ctrl+L            goto previous label
+     Ctrl+T            show recursive function references
+
+
+
+Note: Some keys don't work in HT-posix. Try using Escape instead of
+Control or something...
+
+Authors
+=======
+
+   * Stefan Weyergraf
+
+   * Sebastian Biallas <sb@biallas.net>
+
+Features
+========
+
+HT contains some very advanced and useful features, which you should
+carefully inspect:
+
+General features
+================
+
+  1. Supported file formats
+        * common object file format (COFF/XCOFF32)
+               - header
+               - image with code/data analyser (x86)
+
+        * executable and linkable format (ELF)
+               - header
+               - section headers
+               - program headers
+               - symbol tables
+               - image with code/data analyser (x86, AMD64, IA-64,
+               Alpha, PowerPC, ARM, AVR) and relocations
+
+        * linear executables (LE)
+               - header
+               - VxD descriptor
+               - object table
+               - page table
+               - image with code/data analyser (x86)
+               - auto-relocation layer (only internal refs for now)
+
+        * standard dos executables (MZ)
+               - header
+               - relocations
+               - image (disassembly only)
+
+        * new executables (NE)
+               - header
+               - segments
+               - names
+               - entrypoints
+               - image with code/data analyser (x86)
+               - auto-relocation layer (pretty complete)
+
+        * portable executables (PE32, PE64)
+               - header
+               - import section
+               - delay-import section
+               - export section
+               - resources
+               - image with code/data analyser (x86, AMD64, PowerPC,
+               IA-64, Alpha, ARM)
+               - preliminary support for .net executables
+
+        * java class files (CLASS)
+               - header
+               - image with code/data analyser (java bytecode
+               disassembler)
+
+        * Mach exe/link format (MachO)
+               - header
+               - image with code/data analyser (x86, AMD64, PowerPC,
+               ARM)
+
+        * X-Box executable (XBE)
+               - header
+               - imports
+               - image with code/data analyser (x86)
+
+        * Flat (FLT)
+               - header
+               - image with data analyser (no disassembler yet)
+
+        * PowerPC executable format (PEF)
+               - header
+               - imports - image with code/data analyser (PowerPC)
+
+        * Still some to be implemented (M$-OBJ, ARCH, LX)
+
+  2. Code & Data Analyser
+          - finds branch sources and destinations recursively
+          - finds procedure entries
+          - creates labels based on this information
+          - creates xref information
+          - allows to interactively analyse unexplored code (press 'c')
+          - allows to create/rename/delete labels (press 'n')
+          - allows to create/edit comments (press '#')
+
+  3. Target systems
+          - GNU/Linux
+          - FreeBSD
+          - Win32
+
+Configuration files
+===================
+
+Global configuration
+--------------------
+
+HT automatically creates a file to store its configuration.  It is
+called `~/.htcfg2' on Unices and `ht.cfg2' (where ht.exe resides) on
+Windows. More specifically it contains HT's registry and the *Note
+Global history::.
+
+Per file configuration
+----------------------
+
+The analyser (for analysable files) will be stored in an extra file
+called `FILENAME.htcfg', where FILENAME is the analysed file. This file
+contains all information to restore the complete state of the analyser.
+
+Clipboard
+=========
+
+All open files and dialogs use the common clipboard, where all copied
+and cut text or binary data is stored. Clipboard operations are
+normally binary safe, that means you can copy some binary data out of a
+file and paste it into an input line. Exceptions are only the \0
+character (binary null), it will be converted to a space in places
+where it would not make sense (e.g. file open).
+
+   Although the clipboard won't be saved between different HT sessions
+(ie. you will loose it when exiting HT), you can either save and load it
+or part of it manually (via Edit->paste into/copy from file) or rely on
+the input lines' *Note history: Global history, which is stored and
+retrieved from the config file automatically.
+
+Global history
+==============
+
+HTs history system is global, which means that you can use it for all
+open files. Histories are also grouped by their context. I.e.
+file-related and regex-search-related dialogs have their own history
+(who would want to open "[0-9][0-9a-z]+" anyway?).
+
+   History entries are stored within the *Note Configuration files::,
+so they can be reused when you relaunch.
+
+   You can delete a history entry by pressing DEL inside the history
+popup.
+
+Expression evaluation
+=====================
+
+HT contains a very powerful expression evaluator which is used in all
+dialogs where expressions are expected. These are mainly
+blockoperation, goto, search and of course evaluate itself
+(Edit->Evaluate).
+
+   You can use all standard math operators (+ - / * % **), logical
+operators (! && || ^^), relational operators (== != < > <= >=), bit
+operators (~ & | ^), string operators (. for concatenation),
+parenthesis, the ternary operator (a?b:c), functions and symbols (both
+depending on context).
+
+   The evaluator uses integer, string and float types depending on
+context. You can always convert a result via the `int()', `string()'
+and `float()' functions to appropriate type. Try Edit->Evaluate to see
+how it works...
+
+Functions and symbols
+---------------------
+
+You can always use the standard built-in math (`round', `sin',
+`random', etc.) and string (`strcmp', `strchr', `sprintf', etc.)
+functions, they work more or less like the corresponding C functions
+(actually they ARE more or less wrappers for them); see `eval/eval.y'
+for details (sorry but a detailed help would get outdated rather soon).
+
+   The symbol _ always refers to the last result.  If you are in a hex
+buffer, the variable `first' contains the offset of the first byte and
+the variable `last' contains the offset of the last byte. This is
+useful, for instace, if you want to jump to the last byte of a file.
+
+   If you are in a hex buffer, the variable `first' contains the offset
+of the first byte and the variable `last' contains the offset of the
+last byte. This is useful, for instace, if you want to jump to the last
+byte of a file.
+
+   When using *Note Block operations::, or searching you have some
+context depending functions and symbols; see these sections for
+explanation.
+
+Block operations
+================
+
+Block operation (Blockop) is a very powerful tool to perform
+modifications on binary files. It is available in hex viewer only.
+
+   Blockop takes four parameters: START, END, MODE and EXPRESSION.
+Blockop works as follows:
+
+   * START: Start at the offset specified by START
+
+   * REPEAT: Evaluate EXPRESSION and store n bytes (1 - byte, 2 - word,
+     4 - dword, variable - string) at the current offset. Increment
+     current offset by n. Stop if END has been reached.
+
+Special variables/functions that can be used in EXPRESSION:
+
+`readbyte(ofs)'
+     read a byte from offset OFS, returns a number
+
+`readstring(ofs, size)'
+     read SIZE bytes from offset OFS, returns a string
+
+`i'
+     contains the iteration count/index starting with 0
+
+`o'
+     contains the current offset
+
+Search and its different modes
+==============================
+
+The search function is one of the most advanced functions of HT.  It is
+invoked through F7, Shift-F7 continues a search from cursor.  Depending
+on context (ie. file type and mode) the following modes are enabled:
+
+bin: ASCII / Hex
+----------------
+
+Enter an exact search string either via ascii characters or via
+hexadecimal interpretation. This is the fastest search mode. You may
+specify a case-insensitive search.
+
+bin: eval str
+-------------
+
+Enter an expression, it will be evaluated ONCE (difference to the 4th
+mode), and HT will then search for the result-string. This is pretty
+useful when searching for intermixed text and control-chars/binary,
+e.g. `"hello world\n\0"'
+
+display: regex
+--------------
+
+As the prefix indicates, this search doesn't search in the binary file
+but in the display on screen. HT searches for a regular expression so
+this can be very powerful, e.g. in PE/Image you can search for
+`(add|sub).+?,\ [78]$'.  This will find all add or sub instructions
+with second parameter 7 or 8.
+
+expr nonzero
+------------
+
+This is the slowest but also most advanced search mode. Enter an
+expression and the search stops if this expression evaluates to
+non-zero (it will be evaluated on every byte). In this mode there are
+two predefined symbols and some functions: I is always the number of
+current iteration and O stands for the current offset in file. With the
+functions `readbyte(ofs)' and `readstring(ofs, size)' you access the
+file's content.
+
+   It's easier to understand this with examples:
+
+  1. Searching for patterns:
+
+       a. Enter `readbyte(o) == readbyte(o+1)'
+          This will search for two equal bytes ("AA", "55", "!!", etc.).
+
+       b. Enter `(readbyte(o) == readbyte(o+1)-1) &&
+          (readbyte(o)==readbyte(o+2)-2)'
+          This will search for three ascending bytes ("ABC", "123",
+          etc).
+
+  2. Search with special functions:
+
+     With HT you can easily detect the RSA key in the `ADVAPI32.DLL':
+     Search for `entropy(readstring(o, 64)) > 82' in expr!=0 mode, and
+     you will find it very quickly. How does it work? `readstring(o,
+     64)' reads a 64 byte string from current offset and entropy
+     calculates the entropy ("randomness") of a string (result is
+     0..100).  So the search stops if a entropy greater than 82%
+     (guessed value) is encountered, which normally indicates packed or
+     encryted data.
+
+     Note: the `entropy()' function is not the best of its kind, if you
+     know of a better one please let us know!
+
+
+Command line options
+====================
+
+`--'                   treat all additional parameters as file names
+`-v'    `--version'    show version and copyright on console
+`-h'    `--help'       show help
+`-t'    `--text'       load file(s) in text editor mode
+`-b'    `--bin'        load file(s) in hex editor mode
+`-a'    `--auto'       try to guess file type
+
+Where to download?
+==================
+
+The HT homepage is located at `http://hte.sourceforge.net'
+
+Downloads are available from the 'download' section.  Please also take
+a look at `http://sourceforge.net/projects/hte'
+
