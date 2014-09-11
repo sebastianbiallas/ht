@@ -9,6 +9,7 @@ config.cache
 config.log
 config.status
 configure
+configure.in
 config.guess
 config.sub
 depcomp
@@ -21,3 +22,11 @@ ht_v
 htdoc.h
 htdoc.c
 README
+*.o
+analyser/libanalyser.a
+asm/libasm.a
+doc/ht.html
+doc/ht.info
+doc/hthelp.info
+tools/bin2c
+ylwrap
