@@ -11,7 +11,11 @@ EVAL_DIR	= eval
 EXTRA_DIST	= TODO ChangeLog README KNOWNBUGS INSTALL COPYING AUTHORS
 SUBDIRS		= tools analyser asm doc info io output eval
 
-INCLUDES	= -I$(srcdir)/$(ANALYSER_DIR) -I$(srcdir)/$(ASM_DIR) -I$(srcdir)/$(INFO_DIR) -I$(srcdir)/$(IO_DIR) -I$(srcdir)/$(COMIO_DIR) -I$(srcdir)/$(OUTPUT_DIR) -I$(srcdir)/$(EVAL_DIR) -I$(srcdir)
+AM_CPPFLAGS = ${my_CPPFLAGS} -I$(srcdir)/$(ANALYSER_DIR) -I$(srcdir)/$(ASM_DIR) \
+              -I$(srcdir)/$(INFO_DIR) -I$(srcdir)/$(IO_DIR) -I$(srcdir)/$(COMIO_DIR) \
+              -I$(srcdir)/$(OUTPUT_DIR) -I$(srcdir)/$(EVAL_DIR) -I$(srcdir)
+AM_CFLAGS   = ${my_CFLAGS}
+AM_CXXFLAGS = ${my_CXXFLAGS}
 
 ht_LDADD	= $(ANALYSER_DIR)/libanalyser.a $(ASM_DIR)/libasm.a $(INFO_DIR)/libinfo.a $(IO_DIR)/libhtio.a $(OUTPUT_DIR)/liboutput.a $(COMIO_DIR)/libcomio.a $(EVAL_DIR)/libhteval.a @HT_LIBS@ @LZO_LIBS@
 ht_LDFLAGS	= @HT_LDFLAGS@
