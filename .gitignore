@@ -23,8 +23,7 @@ htdoc.h
 htdoc.c
 README
 *.o
-analyser/libanalyser.a
-asm/libasm.a
+*.a
 doc/ht.html
 doc/ht.info
 doc/hthelp.info
