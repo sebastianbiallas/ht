@@ -352,7 +352,7 @@ void CursesSystemDisplay::term_on()
 	::nodelay(win, 1);
 	::noecho();
 	::cbreak();
-	ESCDELAY = 500;
+	::set_escdelay(500);
 
 	assign(0, 0, getmaxx(win), getmaxy(win));
 }

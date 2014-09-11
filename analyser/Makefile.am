@@ -1,5 +1,11 @@
 AUTOMAKE_OPTIONS = foreign
 
+AM_CPPFLAGS = ${my_CPPFLAGS} -I$(top_srcdir) -I$(top_srcdir)/asm \
+              -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io \
+              -I$(top_srcdir)/output -I$(top_srcdir)/eval
+AM_CFLAGS   = ${my_CFLAGS}
+AM_CXXFLAGS = ${my_CXXFLAGS}
+
 noinst_LIBRARIES = libanalyser.a
 
 libanalyser_a_SOURCES = analy.cc analy.h analy_alpha.cc analy_alpha.h \
@@ -14,5 +20,4 @@ analy_ppc.cc analy_ppc.h macho_analy.cc macho_analy.h flt_analy.cc flt_analy.h \
 xbe_analy.cc xbe_analy.h pef_analy.cc pef_analy.h analy_arm.cc analy_arm.h \
 xex_analy.cc xex_analy.h analy_avr.cc analy_avr.h
 
-INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/asm -I$(top_srcdir)/io/@IO_DIR@ -I$(top_srcdir)/io -I$(top_srcdir)/output -I$(top_srcdir)/eval
 

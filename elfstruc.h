@@ -224,10 +224,12 @@ typedef uint16 elf64_quarter;
 
 #define ELF_EM_MMDSP_PLUS	160	/* STMicroelectronics 64bit VLIW Data Signal Processor */
 #define ELF_EM_CYPRESS_M8C	161	/* Cypress M8C microprocessor */
+
 #define ELF_EM_R32C	162	/* Renesas R32C series microprocessors */
 #define ELF_EM_TRIMEDIA	163	/* NXP Semiconductors TriMedia architecture family */
 #define ELF_EM_QDSP6	164	/* QUALCOMM DSP6 Processor */
 #define ELF_EM_8051	165	/* Intel 8051 and variants */
+
 #define ELF_EM_STXP7X	166	/* STMicroelectronics STxP7x family */
 #define ELF_EM_NDS32	167	/* Andes Technology compact code size embedded RISC processor family */
 #define ELF_EM_ECOG1	168	/* Cyan Technology eCOG1X family */

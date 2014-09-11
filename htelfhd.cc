@@ -194,6 +194,7 @@ static int_hash elf_machine[] =
 
 	{ELF_EM_L1OM,		"Intel L1OM"},
 
+	{ELF_EM_ALPHA,		"Alpha"},
 	{0, 0}
 };
 

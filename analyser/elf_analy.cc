@@ -672,7 +672,7 @@ void ElfAnalyser::initUnasm()
 			((AnalyAVRDisassembler*)analy_disasm)->init(this);
 		}
 		break;
-	case 0x9026:
+	case ELF_EM_ALPHA:
 		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
 			errorbox("Alpha can't be used in a 32-Bit ELF.");
 		} else {

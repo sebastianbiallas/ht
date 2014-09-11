@@ -189,7 +189,7 @@ AddressFlat32 *AddressFlat32::clone() const
 
 void AddressFlat32::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(uint32*)array);
+	memcpy(&addr, array, sizeof(addr));
 }
 
 void AddressFlat32::getFromCPUAddress(CPU_ADDR *ca)
@@ -224,7 +224,7 @@ int AddressFlat32::parseString(const char *s, int length, Analyser *a)
 
 void AddressFlat32::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(uint32*)array, addr);
+	memcpy(array, &addr, sizeof(addr));
 }
 
 void AddressFlat32::putIntoCPUAddress(CPU_ADDR *ca) const
@@ -318,7 +318,7 @@ AddressFlat64 *AddressFlat64::clone() const
 
 void AddressFlat64::getFromArray(const byte *array)
 {
-	UNALIGNED_MOVE(addr, *(uint64*)array);
+	memcpy(&addr, array, sizeof(addr));
 }
 
 void AddressFlat64::getFromCPUAddress(CPU_ADDR *ca)
@@ -349,7 +349,7 @@ int AddressFlat64::parseString(const char *s, int length, Analyser *a)
 
 void AddressFlat64::putIntoArray(byte *array) const
 {
-	UNALIGNED_MOVE(*(uint64*)array, addr);
+	memcpy(array, &addr, sizeof(addr));
 }
 
 void AddressFlat64::putIntoCPUAddress(CPU_ADDR *ca) const

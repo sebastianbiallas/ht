@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
 		case LS_OK:
 			break;
 		case LS_ERROR_NOT_FOUND:
-			LOG_EX(LOG_WARN, "couldn't load configuration file, using defaults");
+			LOG_EX(LOG_WARN, "no configuration file found, using defaults");
 			LOG_EX(LOG_WARN, "note that %s has no mouse support. Use the keyboard!", ht_name);
 			break;
 		case LS_ERROR_READ:

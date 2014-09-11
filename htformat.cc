@@ -2366,9 +2366,9 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					return;
 				}
 				case K_Tab: {
-					int c = cursor.tag_group;
+					int c=cursor.tag_group;
 					cursor_tab();
-					if (cursor.tag_group != c) {
+					if (cursor.tag_group!=c) {
 						focus_cursor();
 						update_visual_info();
 						dirtyview();
@@ -2378,7 +2378,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					break;
 				}
 				case K_Home:
-					if (cursor_state == cursor_state_visible) {
+					if (cursor_state==cursor_state_visible) {
 						select_mode_pre();
 						cursor_home();
 						select_mode_post(0);
@@ -2389,7 +2389,7 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					}
 					break;
 				case K_End:
-					if (cursor_state == cursor_state_visible) {
+					if (cursor_state==cursor_state_visible) {
 						select_mode_pre();
 						cursor_end();
 						select_mode_post(0);
@@ -2400,13 +2400,13 @@ void ht_uformat_viewer::handlemsg(htmsg *msg)
 					}
 					break;
 				case K_Control_Left:
-					xscroll -= 2;
-					if (xscroll < 0) xscroll = 0;
+					xscroll-=2;
+					if (xscroll<0) xscroll=0;
 					dirtyview();
 					clearmsg(msg);
 					return;
 				case K_Control_Right:
-					xscroll += 2;
+					xscroll+=2;
 					dirtyview();
 					clearmsg(msg);
 					return;
