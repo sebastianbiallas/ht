@@ -21,7 +21,6 @@
 #include "analy.h"
 #include "analy_alpha.h"
 #include "analy_names.h"
-#include "analy_ia64.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
 #include "analy_x86.h"
@@ -626,14 +625,6 @@ void ElfAnalyser::initUnasm()
 		} else {
 			analy_disasm = new AnalyX86Disassembler();
 			((AnalyX86Disassembler*)analy_disasm)->init(this, ANALYX86DISASSEMBLER_FLAGS_AMD64 | ANALYX86DISASSEMBLER_FLAGS_FLAT64);
-		}
-		break;
-	case ELF_EM_IA_64: // Intel ia64
-		if (elf_shared->ident.e_ident[ELF_EI_CLASS] != ELFCLASS64) {
-			errorbox("Intel IA64 can't be used in a 32-Bit ELF.");
-		} else {
-			analy_disasm = new AnalyIA64Disassembler();
-			((AnalyIA64Disassembler*)analy_disasm)->init(this);
 		}
 		break;
 	case ELF_EM_PPC: // PowerPC

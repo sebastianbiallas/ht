@@ -21,7 +21,6 @@
 #include "analy.h"
 #include "analy_alpha.h"
 #include "analy_names.h"
-#include "analy_ia64.h"
 #include "analy_ppc.h"
 #include "analy_register.h"
 #include "analy_x86.h"

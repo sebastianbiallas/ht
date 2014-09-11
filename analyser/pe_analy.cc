@@ -24,7 +24,6 @@
 
 #include "analy.h"
 #include "analy_alpha.h"
-#include "analy_ia64.h"
 #include "analy_il.h"
 #include "analy_names.h"
 #include "analy_register.h"
@@ -550,14 +549,6 @@ void PEAnalyser::initUnasm()
 		case COFF_MACHINE_POWERPC64_BE:
 			analy_disasm = new AnalyPPCDisassembler();
 			((AnalyPPCDisassembler*)analy_disasm)->init(this, pe64 ? ANALY_PPC_64 : ANALY_PPC_32);
-			break;
-		case COFF_MACHINE_IA64:
-			if (!pe64) {
-				errorbox("Intel IA64 cant be used in PE32 format.");
-			} else {
-				analy_disasm = new AnalyIA64Disassembler();
-				((AnalyIA64Disassembler*)analy_disasm)->init(this);
-			}
 			break;
 		case COFF_MACHINE_ARM: // ARM
 		case COFF_MACHINE_THUMB: // Thumb

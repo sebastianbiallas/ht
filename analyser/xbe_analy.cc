@@ -24,7 +24,6 @@
 
 #include "analy.h"
 #include "analy_alpha.h"
-#include "analy_ia64.h"
 #include "analy_il.h"
 #include "analy_names.h"
 #include "analy_register.h"

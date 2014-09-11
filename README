@@ -99,8 +99,8 @@ General features
                - section headers
                - program headers
                - symbol tables
-               - image with code/data analyser (x86, AMD64, IA-64,
-               Alpha, PowerPC, ARM, AVR) and relocations
+               - image with code/data analyser (x86, AMD64, Alpha,
+               PowerPC, ARM, AVR) and relocations
 
         * linear executables (LE)
                - header
@@ -130,7 +130,7 @@ General features
                - export section
                - resources
                - image with code/data analyser (x86, AMD64, PowerPC,
-               IA-64, Alpha, ARM)
+               Alpha, ARM)
                - preliminary support for .net executables
 
         * java class files (CLASS)

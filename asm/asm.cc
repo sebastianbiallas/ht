@@ -30,7 +30,6 @@
 #include "snprintf.h"
 
 #include "alphadis.h"
-#include "ia64dis.h"
 #include "ildis.h"
 #include "javadis.h"
 #include "x86dis.h"
@@ -327,7 +326,6 @@ BUILDER(ATOM_DISASM_X86_64, x86_64dis, x86dis)
 BUILDER(ATOM_DISASM_X86_VXD, x86dis_vxd, x86dis)
 BUILDER(ATOM_DISASM_ALPHA, Alphadis, Disassembler)
 BUILDER(ATOM_DISASM_JAVA, javadis, Disassembler)
-BUILDER(ATOM_DISASM_IA64, IA64Disassembler, Disassembler)
 BUILDER(ATOM_DISASM_PPC, PPCDisassembler, Disassembler)
 BUILDER(ATOM_DISASM_IL, ILDisassembler, Disassembler)
 BUILDER(ATOM_DISASM_ARM, ArmDisassembler, Disassembler)
@@ -339,7 +337,6 @@ bool init_asm()
 	REGISTER(ATOM_DISASM_X86_VXD, x86dis_vxd)
 	REGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	REGISTER(ATOM_DISASM_JAVA, javadis)
-	REGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	REGISTER(ATOM_DISASM_PPC, PPCDisassembler)
 	REGISTER(ATOM_DISASM_IL, ILDisassembler)
 	REGISTER(ATOM_DISASM_X86_64, x86_64dis)
@@ -354,7 +351,6 @@ void done_asm()
 	UNREGISTER(ATOM_DISASM_X86_64, x86dis)
 	UNREGISTER(ATOM_DISASM_IL, ILDisassembler)
 	UNREGISTER(ATOM_DISASM_PPC, PPCDisassembler)
-	UNREGISTER(ATOM_DISASM_IA64, IA64Disassembler)
 	UNREGISTER(ATOM_DISASM_JAVA, javadis)
 	UNREGISTER(ATOM_DISASM_ALPHA, Alphadis)
 	UNREGISTER(ATOM_DISASM_X86_VXD, x86dis_vxd)
