@@ -117,7 +117,11 @@ static void load_file(char *fn, uint mode)
 
 	if (sys_common_canonicalize(cfn, sizeof cfn, fn, cwd, sys_is_path_delim)==0) {
 		add_file_history_entry(cfn);
-		((ht_app*)app)->create_window_file(cfn, mode, true);
+		try {
+			((ht_app*)app)->create_window_file(cfn, mode, true);
+		} catch (const IOException &e) {
+			LOG_EX(LOG_ERROR, "error loading file %s: %y", cfn, &e);
+		}
 	}
 }
 
