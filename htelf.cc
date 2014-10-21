@@ -143,6 +143,8 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 	case ELFDATA2MSB:
 		elf_shared->byte_order = big_endian;
 		break;
+	default:
+		throw MsgfException("Unknown ELF endianess: %d", elf_shared->ident.e_ident[ELF_EI_DATA]);
 	}
 
 	switch (elf_shared->ident.e_ident[ELF_EI_CLASS]) {
@@ -233,6 +235,8 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 		}
 		break;
 		}
+	default:
+		throw MsgfException("Unknown ELF class: %d", elf_shared->ident.e_ident[ELF_EI_DATA]);
 	}
 	/* init ifs */
 	ht_format_group::init_ifs(ifs);
@@ -245,8 +249,9 @@ void ht_elf::done()
 	ht_format_group::done();
 	ht_elf_shared_data *elf_shared=(ht_elf_shared_data *)shared_data;
 	if (elf_shared->shnames) {
-		for (uint i=0; i < elf_shared->sheaders.count; i++)
+		for (uint i=0; i < elf_shared->sheaders.count; i++) {
 			free(elf_shared->shnames[i]);
+		}
 		free(elf_shared->shnames);
 	}		
 	free(elf_shared->shrelocs);
@@ -330,7 +335,7 @@ void ht_elf::relocate_section(ht_reloc_file *f, uint si, uint rsi, elf32_addr a)
 		uint symbolidx = ELF32_R_SYM(r.r_info);
 		ELF_SYMBOL32 sym;
 		file->seek(symh+symbolidx*sizeof (ELF_SYMBOL32));
-		file->read(&sym, sizeof sym);
+		file->readx(&sym, sizeof sym);
 		createHostStruct(&sym, ELF_SYMBOL32_struct, elf_shared->byte_order);
 
 		// calc reloc vals
