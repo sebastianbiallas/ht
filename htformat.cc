@@ -990,7 +990,9 @@ void ht_uformat_viewer::init(Bounds *b, const char *desc, int caps, File *file, 
 
 void ht_uformat_viewer::done()
 {
-	edit_end();
+	if (uf_initialized) {
+		edit_end();
+	}
 	clear_subs();
 	free(tagpal.data);
 	ht_format_viewer::done();
