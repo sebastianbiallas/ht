@@ -6,7 +6,8 @@ version 2.1.0:
 	- new disassembler: Atmel AVR 8-bit microcontroller
 	- [x86] SHA instructions
 	- Fixed some crashes involving corrupt ELF files
-	- More advanced display and modification of PE relocations (thanks Mertens Engineering)
+	- More advanced display and handling of PE relocations (thanks Mertens Engineering)
+	- PE checksum calculation (thanks Mertens Engineering)
 
 version 2.0.22:
 	- Fixed selection of nodes in call chain
