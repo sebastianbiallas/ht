@@ -32,6 +32,8 @@
 #include "httag.h"
 #include "strtools.h"
 #include "snprintf.h"
+#include "log.h"
+#include "cmds.h"
 
 #include "pestruct.h"
 
@@ -104,7 +106,7 @@ static ht_mask_ptable pe32header_nt[] = {
 	{"Win32 version",			STATICTAG_EDIT_DWORD_LE("00000048")},
 	{"size of image",			STATICTAG_EDIT_DWORD_LE("0000004c")},
 	{"size of headers",			STATICTAG_EDIT_DWORD_LE("00000050")},
-	{"checksum",				STATICTAG_EDIT_DWORD_LE("00000054")},
+	{"checksum",				STATICTAG_EDIT_DWORD_LE("00000054")" "STATICTAG_REF("0000000500000054", "04", "calc")},
 	{"subsystem",				STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
 	{"dll characteristics",			STATICTAG_EDIT_WORD_LE("0000005a")" "STATICTAG_FLAGS("0000005a", ATOM_PE_DLL_CHARACTERISTICS_STR)},
 	{"stack reserve",			STATICTAG_EDIT_DWORD_LE("0000005c")},
@@ -129,7 +131,7 @@ static ht_mask_ptable pe64header_nt[] = {
 	{"Win32 version",		STATICTAG_EDIT_DWORD_LE("00000048")},
 	{"size of image",		STATICTAG_EDIT_DWORD_LE("0000004c")},
 	{"size of headers",		STATICTAG_EDIT_DWORD_LE("00000050")},
-	{"checksum",			STATICTAG_EDIT_DWORD_LE("00000054")},
+	{"checksum",			STATICTAG_EDIT_DWORD_LE("00000054")" "STATICTAG_REF("0000000500000054", "04", "calc")},
 	{"subsystem",			STATICTAG_EDIT_WORD_LE("00000058")" "STATICTAG_DESC_WORD_LE("00000058", ATOM_PE_SUBSYSTEMS_STR)},
 	{"dll characteristics",		STATICTAG_EDIT_WORD_LE("0000005a")},
 	{"stack reserve",		STATICTAG_EDIT_QWORD_LE("0000005c")},
@@ -356,6 +358,52 @@ bool ht_pe_header_viewer::ref_sel(LINE_ID *id)
 					app->focus(hexv);
 				} else errorbox("can't follow: No bound import directory!", ofs);
 			}
+			break;
+		}
+		case 5: {
+
+			File *file = format_group->get_file();
+			FileOfs size = file->getSize();
+			uint PEChkSumOff = pe_shared->header_ofs + 4 + id->id2;					// offset to checksum field
+
+			bool FirstPEBlock = true;
+			uint16 ReadBuf[256];
+			uint32 ChkSum = 0;
+
+			file->seek(0);
+
+			while (1) {
+				uint cnt, max, read;
+				read = file->read(&ReadBuf, sizeof ReadBuf);
+				if (!read) break;
+
+				if (FirstPEBlock) {
+					ReadBuf[PEChkSumOff >> 1] = 0;
+					ReadBuf[(PEChkSumOff >> 1)+1] = 0;
+					FirstPEBlock = false;
+				}
+
+				max = read >> 1;
+				cnt=0;
+				while (cnt < max) {
+					uint16 a = createHostInt(&ReadBuf[cnt++], 2, little_endian);
+					ChkSum += a;
+					ChkSum = (ChkSum & 0xffff) + (ChkSum >> 16);
+				}
+			}
+			ChkSum = (ChkSum & 0xffff) + (ChkSum >> 16);
+			ChkSum += size;
+
+			LOG("Calc PE-checksum. Bytes Read= %u  ChkSum= 0x%08x", (uint)size, ChkSum );
+
+			sendmsg(cmd_edit_mode_i);
+			if (edit()) {
+				byte buf[4];
+				createForeignInt(buf, ChkSum, 4, little_endian);
+				pwrite(PEChkSumOff, buf, 4);
+				dirtyview();
+			}
+
 			break;
 		}
 		case 15: {

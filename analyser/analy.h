@@ -381,6 +381,7 @@ public:
 	virtual	void 		initCodeAnalyser();
 	virtual	void		initDataAnalyser();
 	virtual	void		initUnasm() = 0;
+	virtual bool 	isAddressFixedUp(Address *Addr, int offset);
 	virtual	void		log(const char *s);                // stub
 	virtual	CPU_ADDR 	mapAddr(Address *Addr);      // stub
 		Location *	newLocation(Address *Addr);

@@ -140,6 +140,19 @@ TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs)
 	tag.escape = '\e';
 	tag.magic = HT_TAG_EDIT_BYTE;
 	tag.offset = ofs;
+	tag.highlight = 0;
+	tag.flush(buf);
+	return buf + sizeof(tag);
+}
+
+TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs, bool highlight)
+{
+	if (maxlen <= (signed)sizeof (ht_tag_edit_byte)) return tag_error(buf, maxlen);
+	ht_tag_edit_byte tag;
+	tag.escape = '\e';
+	tag.magic = HT_TAG_EDIT_BYTE;
+	tag.offset = ofs;
+	tag.highlight = highlight;
 	tag.flush(buf);
 	return buf + sizeof(tag);
 }

@@ -2184,6 +2184,14 @@ bool	Analyser::validWriteAddress(Address *Addr)
 {
 	return validAddress(Addr, scwrite);
 }
+/*
+ *	Check if a fixup is present at (Addr + offset)
+ */
+
+bool 	Analyser::isAddressFixedUp(Address *Addr, int offset)
+{
+	return false;
+}
 
 /****************************************************************************/
 

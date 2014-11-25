@@ -200,6 +200,30 @@ struct PE_DELAY_IMPORT_DESCRIPTOR {
 } PACKED;
 
 /*
+ * Relocations
+ */
+
+#define IMAGE_REL_BASED_ABSOLUTE 		0
+#define IMAGE_REL_BASED_HIGH 			1
+#define IMAGE_REL_BASED_LOW 			2
+#define IMAGE_REL_BASED_HIGHLOW 		3
+#define IMAGE_REL_BASED_HIGHADJ 		4
+#define IMAGE_REL_BASED_MIPS_JMPADDR 	5
+#define IMAGE_REL_BASED_SECTION 		6
+#define IMAGE_REL_BASED_REL32 			7
+#define IMAGE_REL_BASED_MIPS_JMPADDR16 	9
+#define IMAGE_REL_BASED_DIR64 			10
+#define IMAGE_REL_BASED_HIGH3ADJ 		11
+
+struct PE_FIXUP_BLOCK {
+
+	uint32 Page_RVA;
+	uint32 Block_Size;
+
+} PACKED;
+
+
+/*
  *	Resource
  */
 
@@ -263,6 +287,7 @@ extern byte PE_THUNK_DATA_struct[];
 extern byte PE_THUNK_DATA_64_struct[];
 extern byte PE_IMPORT_DESCRIPTOR_struct[];
 extern byte PE_DELAY_IMPORT_DESCRIPTOR_struct[];
+extern byte PE_FIXUP_BLOCK_struct[];
 extern byte PE_RESOURCE_DIRECTORY_struct[];
 extern byte PE_RESOURCE_DIRECTORY_ENTRY_struct[];
 extern byte PE_RESOURCE_DATA_ENTRY_struct[];

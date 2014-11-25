@@ -49,6 +49,8 @@ void	PEAnalyser::init(ht_pe_shared_data *Pe_shared, File *File)
 	validarea = new Area();
 	validarea->init();
 
+	fixupque_git = Pe_shared->fixupque.begin();
+
 	Analyser::init();
 }
 
@@ -398,6 +400,51 @@ FileOfs PEAnalyser::addressToFileofs(Address *Addr)
 		return INVALID_FILE_OFS;
 	}
 }
+
+// This function checks if a fixup is present on a byte at the given Addr plus offset,
+// it also stores the last entry found, to speedup the next check.
+
+bool 	PEAnalyser::isAddressFixedUp(Address *Addr, int offset)
+{
+	RVA r, rng_start, rng_end;
+	std::deque<fixup_listentry>::iterator fixupque_lit;
+	unsigned char listmovdir = 0;								// 1 down 2 up
+
+	if (!convertAddressToRVA(Addr, &r)) return false;
+	r += offset;
+
+	if (fixupque_git == pe_shared->fixupque.end() ) return false;		// exit on empty list
+	fixupque_lit = fixupque_git;
+
+	while (fixupque_lit != pe_shared->fixupque.end() ) {
+
+		rng_start = fixupque_lit->addr;
+		rng_end = rng_start + fixupque_lit->size;
+
+		if (r >= rng_start && r < rng_end) {
+			fixupque_git = fixupque_lit;
+			return true;
+		}
+
+		if (r < rng_start && listmovdir != 2 ) {
+			fixupque_git = fixupque_lit;
+			if (fixupque_lit == pe_shared->fixupque.begin()) return false;
+			fixupque_lit--;
+			listmovdir = 1;
+
+		} else if (r > rng_start && listmovdir != 1){
+			fixupque_git = fixupque_lit;
+			fixupque_lit++;
+			listmovdir = 2;
+
+		} else {
+			return false;
+		}
+	}
+
+	return false;
+}
+
 
 /*
  *

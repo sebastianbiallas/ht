@@ -44,6 +44,7 @@ htne.h htneent.cc htneent.h htnehead.cc htnehead.h htnenms.cc htnenms.h \
 htneobj.cc htneobj.h htnewexe.cc htnewexe.h htobj.cc htobj.h htpal.cc \
 htpal.h htpe.cc htpe.h htpedimp.cc htpedimp.h htpeexp.cc htpeexp.h \
 htpehead.cc htpehead.h htpeimg.cc htpeimg.h htpeimp.cc htpeimp.h htperes.cc \
+htpereloc.cc htpereloc.h \
 htperes.h htreg.cc htreg.h htsearch.cc htsearch.h \
 httag.cc httag.h httree.cc \
 httree.h lestruct.h main.cc mzstruct.h nestruct.h pestruct.h \

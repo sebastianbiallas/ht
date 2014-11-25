@@ -114,6 +114,7 @@ struct ht_tag_color {
 struct ht_tag_edit_byte {
 	byte escape;
 	byte magic;
+	byte highlight;
 	FileOfs offset;
 
 	HT_TAG_BUFOP(ht_tag_edit_byte);
@@ -525,6 +526,7 @@ TAGSTRING *tag_make_group(TAGSTRING *buf, int maxlen);
 TAGSTRING *tag_make_color(TAGSTRING *buf, int maxlen, uint32 color);
 TAGSTRING *tag_make_default_color(TAGSTRING *buf, int maxlen);
 TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs);
+TAGSTRING *tag_make_edit_byte(TAGSTRING *buf, int maxlen, FileOfs ofs, bool highlight);
 TAGSTRING *tag_make_edit_word(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
 TAGSTRING *tag_make_edit_dword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);
 TAGSTRING *tag_make_edit_qword(TAGSTRING *buf, int maxlen, FileOfs ofs, tag_endian e);

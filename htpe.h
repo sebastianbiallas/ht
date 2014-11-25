@@ -27,6 +27,7 @@
 #include "htpeil.h"
 #include "htpeimp.h"
 #include "htpedimp.h"
+#include <deque>
 
 #define DESC_PE "pe - win32 portable exe"
 #define DESC_PE_HEADER "pe/header"
@@ -36,6 +37,7 @@
 #define DESC_PE_RESOURCES "pe/resources"
 #define DESC_PE_IMAGE "pe/image"
 #define DESC_PE_IL "pe/il"
+#define DESC_PE_RELOC "pe/relocations"
 
 #define ATOM_PE_MACHINES 			0x50450000
 #define ATOM_PE_MACHINES_STR			 "50450000"
@@ -60,6 +62,18 @@ extern format_viewer_if htpe_if;
 struct pe_section_headers {
 	uint section_count;
 	COFF_SECTION_HEADER *sections;
+};
+
+/*
+ * STRUCT stored fixup entry
+ */
+
+struct fixup_listentry {
+
+	uint32 addr;
+	uint32 size;
+	uint32 idCol;
+
 };
 
 struct ht_pe_shared_data {
@@ -88,6 +102,10 @@ struct ht_pe_shared_data {
 	ht_view *v_resources;
 	ht_view *v_il;
 	ht_format_viewer *v_image;	
+
+	std::deque<fixup_listentry> fixupque;
+
+
 };
 
 /*

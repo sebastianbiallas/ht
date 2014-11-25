@@ -361,7 +361,7 @@ protected:
 	vcp getcolor_tag(uint pal_index);
 	bool get_current_tag(char **tag);
 	bool get_current_tag_size(uint32 *size);
-	vcp get_tag_color_edit(FileOfs tag_offset, uint size, bool atcursoroffset, bool iscursor);
+	vcp get_tag_color_edit(FileOfs tag_offset, uint size, bool atcursoroffset, bool iscursor, bool ishighlight);
 	int next_line(uformat_viewer_pos *p, int n);
 	int prev_line(uformat_viewer_pos *p, int n);
 	void print_tagstring(int x, int y, int maxlen, int xscroll, char *tagstring, bool cursor_in_line);

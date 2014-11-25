@@ -130,12 +130,12 @@ struct	COFF_OPTIONAL_HEADER64 {
 
 #define COFF_SIZEOF_SHORT_NAME			8
 
-struct COFF_SECTION_HEADER {
-	byte name[COFF_SIZEOF_SHORT_NAME];
-	uint32 data_vsize;	// or data_phys_address !
-	uint32 data_address;
-	uint32 data_size;
-	uint32 data_offset;
+struct COFF_SECTION_HEADER {				// Section Header. See page 19 - Microsoft Specification 6.0
+	byte name[COFF_SIZEOF_SHORT_NAME];		// Name
+	uint32 data_vsize;						// VirtualSize							// or data_phys_address !
+	uint32 data_address;					// VirtualAddress
+	uint32 data_size;						// SizeOfRawData
+	uint32 data_offset;						// PointerToRawData
 	uint32 relocation_offset;
 	uint32 linenumber_offset;
 	uint16 relocation_count;

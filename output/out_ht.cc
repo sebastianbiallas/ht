@@ -132,8 +132,11 @@ void	AnalyserHTOutput::endLine()
 			
 			a += bytes_line - want_bytes_line;
 			
+			bool highlight;
+
 			for (int i=0; i < want_bytes_line; i++) {
-				work_buffer2 = tag_make_edit_byte(work_buffer2, work_buffer2_end - work_buffer2, a+i);
+				highlight = analy->isAddressFixedUp(addr, i);
+				work_buffer2 = tag_make_edit_byte(work_buffer2, work_buffer2_end - work_buffer2, a+i, highlight);
 			}
 			for (int i=0; i <= analy->max_opcode_length*2-want_bytes_line*2; i++) {
 				if (work_buffer2 < work_buffer2_end) {

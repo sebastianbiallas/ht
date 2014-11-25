@@ -30,6 +30,7 @@ public:
 	ht_pe_shared_data 	*pe_shared;
 	File 			*file;
 	Area			*validarea;
+	std::deque<fixup_listentry>::iterator fixupque_git;
 
 				PEAnalyser() {};
 				PEAnalyser(BuildCtorArg&a): Analyser(a) {};
@@ -50,6 +51,7 @@ public:
 	virtual const char	*getType();
 	virtual	void 		initCodeAnalyser();
 	virtual	void 		initUnasm();
+	virtual bool 		isAddressFixedUp(Address *Addr, int offset);
 	virtual	void 		log(const char *msg);
 	virtual	Address		*nextValid(Address *Addr);
 	virtual	void		store(ObjectStream &f) const;

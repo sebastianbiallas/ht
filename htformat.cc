@@ -2999,9 +2999,16 @@ int ht_uformat_viewer::prev_line(uformat_viewer_pos *p, int n)
 	return n0 - n;
 }
 
-vcp ht_uformat_viewer::get_tag_color_edit(FileOfs tag_offset, uint size, bool atcursoroffset, bool iscursor)
+vcp ht_uformat_viewer::get_tag_color_edit(FileOfs tag_offset, uint size, bool atcursoroffset, bool iscursor, bool ishighlight)
 {
-	vcp tag_color = getcolor_tag(palidx_tags_edit_tag);
+	vcp tag_color;
+
+	tag_color = getcolor_tag(palidx_tags_edit_tag);
+
+	if (ishighlight) {
+		tag_color = VCP(VCP_FOREGROUND(34561), VCP_BACKGROUND(tag_color));		// fixed color: bold white  (TODO: add registry palette option 'edit-tag highlight', see htreg.cc)
+	}
+
 	bool isdirty = false;
 	FileOfs fsize = size;
 	file->cntl(FCNTL_MODS_IS_DIRTY, tag_offset, fsize, &isdirty);
@@ -3110,9 +3117,11 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 			switch (n[1]) {
 			case HT_TAG_EDIT_BYTE: {
 				byte d;
+				bool tag_highlight;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 1, focused && (g==cursor.tag_group), is_cursor);
+				tag_highlight = ht_tag_edit_byte(n).highlight;
+				tag_color = get_tag_color_edit(tag_offset, 1, focused && (g==cursor.tag_group), is_cursor, tag_highlight);
 
 				if (pread(tag_offset, &d, 1) == 1) {
 					ht_snprintf(str, sizeof str, "%02x", d);
@@ -3129,7 +3138,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint16 d;
 
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor, false);
 					
 				byte buf[2];
 				if (pread(tag_offset, &buf, 2) == 2) {
@@ -3148,7 +3157,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint32 d;
 					
 				tag_offset=tag_get_offset(n);
-				tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
+				tag_color=get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor, false);
 
 				byte buf[4];
 				if (pread(tag_offset, &buf, 4) == 4) {
@@ -3167,7 +3176,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint64 q;
 
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor, false);
 
 				byte buf[8];
 				if (pread(tag_offset, &buf, 8)==8) {
@@ -3187,7 +3196,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint16 d;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 2, (g==cursor.tag_group), is_cursor, false);
 					
 				byte buf[2];
 				if (pread(tag_offset, &buf, 2)==2) {
@@ -3206,7 +3215,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint32 d;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor, false);
 					
 				byte buf[4];
 				if (pread(tag_offset, &buf, 4) == 4) {
@@ -3224,7 +3233,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint64 q;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 8, (g==cursor.tag_group), is_cursor, false);
 					
 				byte buf[8];
 				if (pread(tag_offset, &buf, 8) == 8) {
@@ -3244,7 +3253,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				uint32 d;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 4, (g==cursor.tag_group), is_cursor, false);
 
 				byte buf[4];
 				if (pread(tag_offset, &buf, 4) == 4) {
@@ -3268,7 +3277,7 @@ uint ht_uformat_viewer::render_tagstring(char *chars, vcp *colors, uint maxlen, 
 				char d;
 					
 				tag_offset = tag_get_offset(n);
-				tag_color = get_tag_color_edit(tag_offset, 1, (g==cursor.tag_group), is_cursor);
+				tag_color = get_tag_color_edit(tag_offset, 1, (g==cursor.tag_group), is_cursor, false);
 					
 				if (pread(tag_offset, &d, 1) != 1) {
 					d = '?';

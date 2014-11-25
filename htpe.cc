@@ -29,6 +29,7 @@
 #include "htpedimp.h"
 #include "htpeimg.h"
 #include "htperes.h"
+#include "htpereloc.h"
 #include "stream.h"
 #include "tools.h"
 
@@ -39,6 +40,7 @@ static format_viewer_if *htpe_ifs[] = {
 	&htpeheader_if,
 	&htpeexports_if,
 	&htpeimports_if,
+	&htpereloc_if,
 	&htpedelayimports_if,
 	&htperesources_if,
 	&htpeil_if,
@@ -76,7 +78,8 @@ void ht_pe::init(Bounds *b, File *file, format_viewer_if **ifs, ht_format_group 
 
 	String fn;
 	LOG("%y: PE: found header at 0x%08qx", &file->getFilename(fn), header_ofs);
-	ht_pe_shared_data *pe_shared = ht_malloc(sizeof (ht_pe_shared_data));
+	ht_pe_shared_data *pe_shared = new ht_pe_shared_data;
+
 	shared_data = pe_shared;
 	pe_shared->header_ofs = header_ofs;
 
@@ -165,7 +168,7 @@ void ht_pe::done()
 	delete pe_shared->imports.libs;
 
 	free(pe_shared->sections.sections);
-	free(shared_data);
+	delete shared_data;
 }
 
 void ht_pe::loc_enum_start()
