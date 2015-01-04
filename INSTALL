@@ -2,35 +2,41 @@
 ===============
 
 (1)
-    a-1. run ./autogen.sh to generate configure script
-    
-    a. This creates the development (debug) version of HT (-g -O0):
+    a. (Only if you're NOT using a tarball / release:)
 
-	    ./configure --disable-release
+            ./autogen.sh
 
-    b. If you want a final (release) version (-O2 -fomit-frame-pointer) do the 
-	  following instead:
+       (This will generate the configure scripts)
 
-	    ./configure --enable-release
+    b. To configure: This creates the development (debug) version of HT (-g -O0):
 
-    c. if you want to build with profiling information (-pg -g) add 
-	  '--enable-profiling'
-	  
-	  d. for installing in /usr (instead /usr/local) add --prefix=/usr
+            ./configure --disable-release
 
-(2) compile and link HT:
-      
-      make htdoc.h 
-      (because of a broken dependency)
-	    make
-	    
-(3) (optionally) install HT:
+    c. If you want a final (release) version (-O2 -fomit-frame-pointer) do the 
+       following instead:
 
-	    make install
+            ./configure --enable-release
 
-(4) run HT:
+    d. if you want to build with profiling information (-pg -g) add '--enable-profiling'
 
-	    ht or ./ht
+    e. for installing in /usr (instead /usr/local) add '--prefix=/usr'
+
+(2) (Only if you're NOT using a tarball / release:)
+
+        make; make htdoc.h
+        (because of a broken dependency)
+
+(3) compile and link HT:
+
+        make
+
+(4) (optionally) install HT:
+
+        make install
+
+(5) run HT:
+
+        ht or ./ht
 
 Note: The package 'tex4ht' comes with a program called /usr/bin/ht which
       conflicts with this program's name...
