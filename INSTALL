@@ -2,6 +2,8 @@
 ===============
 
 (1)
+    a-1. run ./autogen.sh to generate configure script
+    
     a. This creates the development (debug) version of HT (-g -O0):
 
 	    ./configure --disable-release
