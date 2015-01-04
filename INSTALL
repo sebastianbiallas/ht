@@ -19,7 +19,9 @@
 	  d. for installing in /usr (instead /usr/local) add --prefix=/usr
 
 (2) compile and link HT:
-
+      
+      make htdoc.h 
+      (because of a broken dependency)
 	    make
 	    
 (3) (optionally) install HT:
