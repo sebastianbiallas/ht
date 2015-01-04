@@ -1,6 +1,5 @@
 
 %pure-parser
-%parse-param {eval_scalar *resultptr}
 
 %{
 
@@ -15,6 +14,7 @@ void yyerror (eval_scalar *resultptr,char *s)
 }
 
 %}
+%parse-param {eval_scalar *resultptr}
 
 %union {
 	eval_scalar scalar;
