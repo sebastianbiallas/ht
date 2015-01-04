@@ -1,5 +1,5 @@
 
-%pure_parser
+%pure-parser
 
 %{
 
@@ -8,12 +8,13 @@
 #include "evaltype.h"
 #include "eval.h"
 
-void yyerror (char *s)
+void yyerror (eval_scalar *resultptr,char *s)
 {
 	set_eval_error(s);
 }
 
 %}
+%parse-param {eval_scalar *resultptr}
 
 %union {
 	eval_scalar scalar;
