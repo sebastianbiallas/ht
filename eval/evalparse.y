@@ -1,5 +1,6 @@
 
 %pure-parser
+%parse-param {eval_scalar *resultptr}
 
 %{
 
