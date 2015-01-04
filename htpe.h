@@ -101,11 +101,9 @@ struct ht_pe_shared_data {
 	ht_view *v_dimports;
 	ht_view *v_resources;
 	ht_view *v_il;
-	ht_format_viewer *v_image;	
+	ht_format_viewer *v_image;
 
 	std::deque<fixup_listentry> fixupque;
-
-
 };
 
 /*

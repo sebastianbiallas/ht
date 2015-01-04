@@ -168,7 +168,7 @@ void ht_pe::done()
 	delete pe_shared->imports.libs;
 
 	free(pe_shared->sections.sections);
-	delete shared_data;
+	delete pe_shared;
 }
 
 void ht_pe::loc_enum_start()
