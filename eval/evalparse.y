@@ -1,5 +1,5 @@
 
-%pure_parser
+%pure-parser
 
 %{
 
