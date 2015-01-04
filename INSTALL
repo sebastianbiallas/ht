@@ -2,9 +2,9 @@
 ===============
 
 (1)
-    a. This creates by default the development (debug) version of HT (-g -O0):
+    a. This creates the development (debug) version of HT (-g -O0):
 
-	    ./configure
+	    ./configure --disable-release
 
     b. If you want a final (release) version (-O2 -fomit-frame-pointer) do the 
 	  following instead:
@@ -13,6 +13,8 @@
 
     c. if you want to build with profiling information (-pg -g) add 
 	  '--enable-profiling'
+	  
+	  d. for installing in /usr (instead /usr/local) add --prefix=/usr
 
 (2) compile and link HT:
 
