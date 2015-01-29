@@ -111,7 +111,8 @@ pal_layout pal_layout_syntax[] = {
 {palidx_syntax_char,			"character"},
 {palidx_syntax_symbol,			"symbol"},
 {palidx_syntax_preprocess,		"preprocess"},
-{palidx_syntax_meta, 			"meta"}
+{palidx_syntax_meta, 			"meta"},
+{0, NULL}
 };
 
 /* palette layout: analyser */
@@ -122,6 +123,7 @@ pal_layout pal_layout_analyser[] = {
 {palidx_analyser_number,		"number"},
 {palidx_analyser_string,		"string"},
 {palidx_analyser_symbol,		"symbol-character"},
+{0, NULL}
 };
 
 /* all layouts */
