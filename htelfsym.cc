@@ -220,7 +220,6 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 		if (!name) continue;
 
 		char *tt = t;
-#define tt_end sizeof t - (tt-t)
 
 		tt += ht_snprintf(tt, tt_end, "%04x ", i);
 
@@ -276,9 +275,11 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 			}
 			break;
 		}
+		s.escape("", true);
 		tt += ht_snprintf(tt, tt_end, secstrfmt, s.contentChar());
-
-		tt += ht_snprintf(tt, tt_end, "%s", name);
+		String sname(name);
+		sname.escape("", true);
+		tt += ht_snprintf(tt, tt_end, "%y", &sname);
 		free(name);
 		m->add_mask(t);
 	}
