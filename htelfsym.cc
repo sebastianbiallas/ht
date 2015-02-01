@@ -73,19 +73,21 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 	FileOfs h = elf32 ? elf_shared->sheaders.sheaders32[symtab_shidx].sh_offset : elf_shared->sheaders.sheaders64[symtab_shidx].sh_offset;
 
 	/* associated string table offset (from sh_link) */
-	FileOfs sto = elf32 ?
-		elf_shared->sheaders.sheaders32[elf_shared->sheaders.sheaders32[symtab_shidx].sh_link].sh_offset :
-		elf_shared->sheaders.sheaders64[elf_shared->sheaders.sheaders64[symtab_shidx].sh_link].sh_offset;
-
+	FileOfs sto;
 	String symtab_name("?");
-	if (elf32)
-	{
+	if (elf32) {
+		uint idx = elf_shared->sheaders.sheaders32[symtab_shidx].sh_link;
+		if (idx >= elf_shared->sheaders.count) return NULL;
+		sto = elf_shared->sheaders.sheaders32[idx].sh_offset;
 		if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx)) {
 			file->seek(elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset
 				+ elf_shared->sheaders.sheaders32[symtab_shidx].sh_name);
 			file->readStringz(symtab_name);
 		}
 	} else {
+		uint idx = elf_shared->sheaders.sheaders64[symtab_shidx].sh_link;
+		if (idx >= elf_shared->sheaders.count) return NULL;
+		sto = elf_shared->sheaders.sheaders64[idx].sh_offset;
 		if (isValidELFSectionIdx(elf_shared, elf_shared->header64.e_shstrndx)) {
 			file->seek(elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset
 				+ elf_shared->sheaders.sheaders64[symtab_shidx].sh_name);
