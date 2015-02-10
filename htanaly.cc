@@ -233,7 +233,7 @@ char *SymbolBox::quickfindCompletition(const char *s)
 		return ht_strdup(tmp->name);
 	}
 	int slen = strlen(s);
-	if (!ht_strncmp(tmp->name, tmp2->name, slen)==0) {
+	if (ht_strncmp(tmp->name, tmp2->name, slen) != 0) {
 		return ht_strdup(tmp->name);
 	}
 	char *res = ht_malloc(1024); // buffer bla
