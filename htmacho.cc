@@ -146,7 +146,7 @@ void ht_macho::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group 
 				break;
 			case MACHO_CPU_TYPE_I386:
 				switch (c->flavor) {
-				case -1:
+				default: //??
 					createHostStruct(&c->state, MACHO_I386_THREAD_STATE_struct, image_endianess);
 					break;
 				}

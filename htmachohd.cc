@@ -313,7 +313,7 @@ static ht_view *htmachoheader_init(Bounds *b, File *file, ht_format_group *group
 				switch (macho_shared->header.cputype) {
 				case MACHO_CPU_TYPE_I386:
 					switch (c->flavor) {
-					case -1:
+					default: //?
 						m->add_staticmask_ptable(macho_i386_thread_state, ofs+4*4/*4 32bit words in thread_header*/, isbigendian);
 						break;
 					}

@@ -87,8 +87,8 @@ union htmsg_param {
 };
 
 struct htmsg {
-	int msg;
-	int type;
+	unsigned int msg;
+	unsigned int type;
 	htmsg_param data1;
 	htmsg_param data2;
 };
