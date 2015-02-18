@@ -307,7 +307,7 @@ void palette_entry::strvalue(char *buf32bytes)
 		text = "normal";
 	}
 	p = tag_make_color(p, 32, VCP(fg, bg));
-	p += sprintf(p, text);
+	p += sprintf(p, "%s", text);
 	p = tag_make_default_color(p, 32);
 	*p = 0;
 }
