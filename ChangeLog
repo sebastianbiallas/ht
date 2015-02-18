@@ -1,6 +1,9 @@
  HT ChangeLog
 ==============
 
+version 2.1.1pre:
+        - small bug fixes
+
 version 2.1.0:
 	- updated included minilzo
 	- new disassembler: Atmel AVR 8-bit microcontroller

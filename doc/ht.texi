@@ -51,7 +51,7 @@ be registered in certain jurisdictions.
 @titlepage
 
 @title HT Manual
-@subtitle Edition 2.1.0, September 2014
+@subtitle Edition 2.1.1, February 2015
 
 @author Stefan Weyergraf, Sebastian Biallas
 @c The following two commands start the copyright page.

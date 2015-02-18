@@ -24,7 +24,7 @@
 #define ht_url "http://hte.sourceforge.net"
 
 #define ht_name "ht"
-#define ht_version "2.1.0"
+#define ht_version "2.1.1pre"
 
 #define ht_author1 "Stefan Weyergraf"
 #define ht_copyright1 "(c) 1999-2004 " ht_author1
