@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(ht,[2.1.1,[https://sourceforge.net/tracker/?group_id=1066])
+AC_INIT(ht,[2.1.1],[https://sourceforge.net/tracker/?group_id=1066])
 AC_PREREQ(2.59)
 
 dnl Check the system.
