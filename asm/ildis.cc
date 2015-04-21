@@ -207,11 +207,11 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 	if (!dis_insn->valid) {
 //		is_invalid:
 //          assert(dis_insn->size==1);
-		sprintf(insnstr, "db              %s0x%02x", cs_number, dis_insn->data.ui);
+		ht_snprintf(insnstr, sizeof insnstr, "db              %s0x%02x", cs_number, dis_insn->data.ui);
 	} else {
 		switch (dis_insn->op) {
 		case IL_OPCODE_ARGS_NONE:
-			sprintf(insnstr, "%-15s", dis_insn->opcode->name);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s", dis_insn->opcode->name);
 			break;
 		case IL_OPCODE_ARGS_UINT8:
 		case IL_OPCODE_ARGS_UINT16:
@@ -220,7 +220,7 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 		case IL_OPCODE_ARGS_ANN_ARG: 
 		case IL_OPCODE_ARGS_ANN_DEAD: 
 		case IL_OPCODE_ARGS_ANN_LIVE:  {
-			sprintf(insnstr, "%-15s %s%u", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s %s%u", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 			break;
 		}
 		case IL_OPCODE_ARGS_INT8:
@@ -229,7 +229,7 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 		case IL_OPCODE_ARGS_SHORT_VAR:
 		case IL_OPCODE_ARGS_SHORT_ARG:
 		case IL_OPCODE_ARGS_ANN_REF_S: {
-			sprintf(insnstr, "%-15s %s%d", dis_insn->opcode->name, cs_number, dis_insn->data.i);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s %s%d", dis_insn->opcode->name, cs_number, dis_insn->data.i);
 			break;
 		}
 		case IL_OPCODE_ARGS_INT64:
@@ -245,11 +245,11 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 			if (token_func) {
 				tokenstr = token_func(token, context);
 				if (tokenstr) {
-					sprintf(insnstr, "%-15s %s", dis_insn->opcode->name, tokenstr);
+					ht_snprintf(insnstr, sizeof insnstr, "%-15s %s", dis_insn->opcode->name, tokenstr);
 					break;
 				}
 			}
-			sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, token);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, token);
 			break;
 		}
 		case IL_OPCODE_ARGS_STRING: {
@@ -260,11 +260,11 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 					str = string_func(strofs, context);
 				}
 				if (str) {
-					sprintf(insnstr, "%-15s %s\"%s\"", dis_insn->opcode->name, cs_string, str);
+					ht_snprintf(insnstr, sizeof insnstr, "%-15s %s\"%s\"", dis_insn->opcode->name, cs_string, str);
 					break;
 				}
 			}
-			sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 			break;
 		}
 		case IL_OPCODE_ARGS_LONG_JUMP:
@@ -274,24 +274,24 @@ const char *ILDisassembler::strf(dis_insn *disasm_insn, int style, const char *f
 			int slen;
 			char *s = (addr_sym_func) ? addr_sym_func(caddr, &slen, addr_sym_func_context) : NULL;
 			if (s) {
-				char *p = insnstr + sprintf(insnstr, "%-15s ", dis_insn->opcode->name);
+				char *p = insnstr + ht_snprintf(insnstr, sizeof insnstr, "%-15s ", dis_insn->opcode->name);
 				memmove(p, s, slen);
 				p[slen] = 0;
 			} else {
-				sprintf(insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
+				ht_snprintf(insnstr, sizeof insnstr, "%-15s %s0x%08x", dis_insn->opcode->name, cs_number, dis_insn->data.ui);
 			}
 			break;
 		}
 		case IL_OPCODE_ARGS_FLOAT32: {
-			sprintf(insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.f);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.f);
 			break;
 		}
 		case IL_OPCODE_ARGS_FLOAT64: {
-		sprintf(insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.df);
+		        ht_snprintf(insnstr, sizeof insnstr, "%-15s %s%f", dis_insn->opcode->name, cs_number, dis_insn->data.df);
 			break;
 		}
 		default:
-			sprintf(insnstr, "%-15s [unsupported paramtype]", dis_insn->opcode->name);
+			ht_snprintf(insnstr, sizeof insnstr, "%-15s [unsupported paramtype]", dis_insn->opcode->name);
 		}
 	}
 	
