@@ -104,8 +104,7 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_YACC
 AM_PROG_LEX
-AC_PATH_PROG(AR, ar)
-AC_PATH_PROG(AR, gar)
+AM_PROG_AR
 
 if test "x$AR" = "x"; then
 	   AC_MSG_ERROR([*** 'ar' and 'gar' missing, please install one of them or fix your \$PATH ***])
