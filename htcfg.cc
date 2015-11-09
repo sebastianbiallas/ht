@@ -44,23 +44,21 @@
 #define object_stream_txt			1
 #define object_stream_bin_compressed		2
 
-ObjectStream *create_object_stream(Stream &f, int object_stream_type)
+std::unique_ptr<ObjectStream> create_object_stream(Stream &f, int object_stream_type)
 {
-	ObjectStream *s;
+	std::unique_ptr<ObjectStream> s;
 	switch (object_stream_type) {
 	case object_stream_bin:
-		s = new ObjectStreamBin(&f, false);
+		s = std::make_unique<ObjectStreamBin>(&f, false);
 		break;
 	case object_stream_txt:
-		s = new ObjectStreamText(&f, false);
+		s = std::make_unique<ObjectStreamText>(&f, false);
 		break;
 	case object_stream_bin_compressed: {
 		CompressedStream *cs = new CompressedStream(&f, false);
-		s = new ObjectStreamBin(cs, true);
+		s = std::make_unique<ObjectStreamBin>(cs, true);
 		break;
 	}
-	default:
-		return NULL;
 	}
 	return s;
 }
@@ -83,7 +81,7 @@ loadstore_result save_systemconfig(String &error_info)
 {
 	try {
 		LocalFile f((String)systemconfig_file, IOAM_WRITE, FOM_CREATE);
-	
+
 		/* write project config header */
 		config_header h;
 
@@ -102,8 +100,10 @@ loadstore_result save_systemconfig(String &error_info)
 		f.writex(&h, sizeof h);
 
 		/* write object stream type */
-		std::auto_ptr<ObjectStream> d(create_object_stream(f, system_ostream_type));
-	   
+		std::unique_ptr<ObjectStream> d = create_object_stream(f, system_ostream_type);
+		if (!d) {
+			return LS_ERROR_FORMAT;
+		}
 		switch (system_ostream_type) {
 		case object_stream_bin:
 			break;
@@ -123,8 +123,8 @@ loadstore_result save_systemconfig(String &error_info)
 bool load_systemconfig(loadstore_result *result, int *error_info)
 {
 	uint8 object_stream_type = 128;
-	std::auto_ptr<ObjectStream> d(NULL);
 	*error_info = 0;
+	std::unique_ptr<ObjectStream> d;
 	try {
 		LocalFile f((String)systemconfig_file, IOAM_READ, FOM_EXISTS);
 		/* read project config header */
@@ -135,7 +135,6 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 			*result = LS_ERROR_MAGIC;
 			return false;
 		}
-	
 
 		uint16 readver;
 		if (!hexw_ex(readver, (char*)h.version) || (readver != ht_systemconfig_fileversion)) {
@@ -150,8 +149,8 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 			return false;
 		}
 
-		d.reset(create_object_stream(f, object_stream_type));
-		if (!d.get()) {
+		d = create_object_stream(f, object_stream_type);
+		if (!d) {
 			*result = LS_ERROR_FORMAT;
 			return false;
 		}
@@ -160,7 +159,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 		app->load(*d);
 	} catch (const ObjectNotRegisteredException &) {
 		*result = LS_ERROR_CORRUPTED;
-		if (object_stream_type==object_stream_txt && d.get()) {
+		if (object_stream_type==object_stream_txt && d) {
 			*error_info = ((ObjectStreamText*)d.get())->getErrorLine();
 		}
 		return false;
@@ -169,7 +168,7 @@ bool load_systemconfig(loadstore_result *result, int *error_info)
 			*result = LS_ERROR_NOT_FOUND;
 		} else {
 			*result = LS_ERROR_READ;
-			if (object_stream_type == object_stream_txt && d.get()) {
+			if (object_stream_type == object_stream_txt && d) {
 				*error_info = ((ObjectStreamText*)d.get())->getErrorLine();
 			}
 		}
@@ -204,7 +203,7 @@ loadstore_result save_fileconfig(const char *fileconfig_file, const char *magic,
 		f.writex(&h, sizeof h);
 
 		/* object stream type */
-		std::auto_ptr<ObjectStream> d(create_object_stream(f, file_ostream_type));
+		auto d = create_object_stream(f, file_ostream_type);
 	   
 		switch (file_ostream_type) {
 		case object_stream_bin:
@@ -214,7 +213,7 @@ loadstore_result save_fileconfig(const char *fileconfig_file, const char *magic,
 			break;
 		}
 		/* write config */
-		store_func(*d.get(), context);
+		store_func(*d, context);
 	} catch (const Exception &e) {
 		e.reason(error_info);
 		return LS_ERROR_WRITE;
@@ -226,7 +225,7 @@ loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic,
 {
 	uint8 object_stream_type = 128;
 	error_info.clear();
-	std::auto_ptr<ObjectStream> d(NULL);
+	std::unique_ptr<ObjectStream> d;
 	try {
 		LocalFile f((String)fileconfig_file, IOAM_READ, FOM_EXISTS);
 		/* read file config header */
@@ -249,17 +248,17 @@ loadstore_result load_fileconfig(const char *fileconfig_file, const char *magic,
 		}
 
 		/* object stream type */
-		d.reset(create_object_stream(f, object_stream_type));
+		d = create_object_stream(f, object_stream_type);
 
-		if (!d.get()) {
+		if (!d) {
 			return LS_ERROR_FORMAT;
 		}		
 
-		load_func(*d.get(), context);
+		load_func(*d, context);
 		
 	} catch (const ObjectNotRegisteredException &e) {
 		e.reason(error_info);
-		if (object_stream_type==object_stream_txt && d.get()) {
+		if (object_stream_type==object_stream_txt && d) {
 			String blub;
 			blub.assignFormat(" (in line %d)", ((ObjectStreamText*)d.get())->getErrorLine());
 			error_info += blub;
