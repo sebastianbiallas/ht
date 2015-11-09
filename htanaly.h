@@ -21,6 +21,7 @@
 #ifndef HTANALY_H
 #define HTANALY_H
 
+#include <memory>
 #include "analy.h"
 #include "cmds.h"
 #include "io/types.h"
@@ -65,7 +66,7 @@ class ht_aviewer;
  */
 
 class AnalyserInformation: public ht_statictext {
-	ht_aviewer	*analy;     
+	ht_aviewer	*analy;
 	int		addrs, labels;
 	const char	*atype, *adis;
 	String		aname;
@@ -166,7 +167,7 @@ public:
 	Address        *lowestaddress, *highestaddress;
 	AnalyserOutput *output;
 	ht_aviewer	*aviewer;
-	
+
 		void	init(File *file, ht_aviewer *A, Analyser *analyser, Address *Lowestaddress, Address *Highestaddress);
 	virtual	void	done();
 	virtual	bool	convert_ofs_to_id(const FileOfs offset, LINE_ID *line_id);
@@ -196,7 +197,7 @@ public:
 		void init(Bounds *b, const char *desc, int caps, File *file, ht_format_group *format_group, Analyser *Analy);
 	virtual	void done();
 		bool convertAddressToViewerPos(Address *a, viewer_pos *p);
-		bool convertViewerPosToAddress(const viewer_pos &p, Address **a);
+		std::unique_ptr<Address>  convertViewerPosToAddress(const viewer_pos &p);
 		void attachInfoline(AnalyInfoline *V);
 		bool canCreateAddress(Address *addr, bool error_msg);
 		void dataStringDialog();
@@ -204,7 +205,7 @@ public:
 		void exportFileDialog();
 	virtual	const char *func(uint i, bool execute);
 		void generateOutputDialog();
-		bool getCurrentAddress(Address **a);
+		std::unique_ptr<Address> getCurrentAddress();
 	virtual	bool get_current_offset(FileOfs *ofs);
 	virtual	int  get_pindicator_str(char *buf, int max_len);
 	virtual	bool get_hscrollbar_pos(int *pstart, int *psize);

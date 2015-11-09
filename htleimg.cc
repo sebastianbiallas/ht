@@ -137,12 +137,11 @@ bool ht_le_aviewer::offset_to_pos(FileOfs ofs, viewer_pos *p)
 bool ht_le_aviewer::pos_to_offset(viewer_pos p, FileOfs *ofs)
 {
 	if (analy) {
-		Address *addr;
-		if (!convertViewerPosToAddress(p, &addr)) return false;
-		FileOfs o=((LEAnalyser*)analy)->addressToRealFileofs(addr);
-		delete addr;
-		if (o!=INVALID_FILE_OFS) {
-			*ofs=o;
+		auto addr = convertViewerPosToAddress(p);
+		if (!addr) return false;
+		FileOfs o = ((LEAnalyser*)analy)->addressToRealFileofs(addr.get());
+		if (o != INVALID_FILE_OFS) {
+			*ofs = o;
 			return true;
 		}
 	}

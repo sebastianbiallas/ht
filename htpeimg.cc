@@ -78,13 +78,13 @@ static ht_view *htpeimage_init(Bounds *b, File *file, ht_format_group *group)
 		low = p->createAddress64(l + pe_shared->pe64.header_nt.image_base);
 		high = p->createAddress64(h + pe_shared->pe64.header_nt.image_base);
 	}
-	
+
 	ht_analy_sub *analy=new ht_analy_sub();
 	analy->init(file, v, p, low, high);
-	
+
 	delete low;
 	delete high;
-	
+
 	v->analy_sub = analy;
 	v->insertsub(analy);
 
@@ -98,7 +98,7 @@ static ht_view *htpeimage_init(Bounds *b, File *file, ht_format_group *group)
 	}
 	v->gotoAddress(tmpaddr, NULL);
 	delete tmpaddr;
-	
+
 	g->insert(head);
 	g->insert(v);
 
@@ -120,12 +120,10 @@ static int pe_viewer_func_rva(eval_scalar *result, eval_int *i)
 	viewer_pos p;
 	FileOfs ofs;
 	if (pe_rva_to_ofs(&aviewer->pe_shared->sections, rva, &ofs)
-	&& aviewer->offset_to_pos(ofs, &p)) {
-		Address *a;
+			&& aviewer->offset_to_pos(ofs, &p)) {
+		auto a = aviewer->convertViewerPosToAddress(p);
 		int b;
-		aviewer->convertViewerPosToAddress(p, &a);
 		a->putIntoArray((byte*)&b);
-		delete a;
 		scalar_create_int_c(result, b);
 		return 1;
 	} else {
@@ -142,19 +140,17 @@ static int pe_viewer_func_section_int(eval_scalar *result, eval_int *q)
 		viewer_pos p;
 		FileOfs ofs;
 		if (pe_rva_to_ofs(&aviewer->pe_shared->sections,
-					    aviewer->pe_shared->sections.sections[i].data_address,
-					   &ofs)
-		 && aviewer->offset_to_pos(ofs, &p)) {
-			Address *a;
+					  aviewer->pe_shared->sections.sections[i].data_address,
+					  &ofs)
+				&& aviewer->offset_to_pos(ofs, &p)) {
+			auto a = aviewer->convertViewerPosToAddress(p);
 			uint64 b;
-			aviewer->convertViewerPosToAddress(p, &a);
 			a->putIntoUInt64(b);
-			delete a;
 			scalar_create_int_q(result, b);
 			return 1;
 		} else {
 //			set_eval_error("invalid file offset or no corresponding RVA for '0%xh'", rva);
-		}     
+		}
 	} else {
 		set_eval_error("no section number %qd", q->value);
 	}
@@ -213,8 +209,7 @@ bool ht_pe_aviewer::func_handler(eval_scalar *result, char *name, eval_scalarlis
 void ht_pe_aviewer::setAnalyser(Analyser *a)
 {
 	((PEAnalyser *)a)->reinit(pe_shared, file);
-	
+
 	analy = a;
 	analy_sub->setAnalyser(a);
 }
-
