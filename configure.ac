@@ -87,7 +87,7 @@ if test "x$HAVE_PIPE" = "x1"; then
 	FLAGS_PIPE="-pipe";
 fi
 
-CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL -Woverloaded-virtual -Wnon-virtual-dtor $CXXFLAGS"
+CXXFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL  -std=c++14 -Woverloaded-virtual -Wnon-virtual-dtor $CXXFLAGS"
 CFLAGS="-DNOMACROS $FLAGS_PIPE $FLAGS_ALL $CFLAGS"
 
 AC_DEFINE_UNQUOTED(SYSTEM_OSAPI_SPECIFIC_TYPES_HDR, "io/$IO_DIR/types.h", [Location of io/$IO_DIR/types.h])
