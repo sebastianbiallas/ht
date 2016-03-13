@@ -98,6 +98,35 @@ bool valid_name(const char *str)
 	}
 }
 
+template<class S>
+void make_valid_name_T(S &result, const S &str)
+{
+	char mc = mapchar[(uint8)str[0]];
+	if (!(mc == '_' || mc == '?' || mc == 'A' || mc == '@')) {
+		result[0] = '_';
+	}
+	int i = 1;
+	while (str[i]) {
+		mc = mapchar[(uint8)str[i]];
+		if (mc == '_' || mc == '?' || mc == 'A' || mc == '0' || mc == ':' || mc == '.' || mc == '@') {
+			result[i] = str[i];
+		} else {
+			result[i] = '_';
+		}
+		i++;
+	}
+	result[i] = 0;
+}
+
+void make_valid_name(String &s)
+{
+	if (s.length() < 1) {
+		s = "_";
+	} else {
+		make_valid_name_T(s, s);
+	}
+}
+
 void make_valid_name(char *result, const char *str)
 {
 	if (!str || !*str) {

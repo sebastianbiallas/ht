@@ -305,6 +305,7 @@ public:
 	
 		void			move(FileOfs src, FileOfs dest, FileOfs size);
 		char *			fgetstrz();
+		String &		fgetstrz(String &result);
 };
 
 /**

@@ -346,7 +346,7 @@ public:
 	virtual	uint		bufPtr(Address *Addr, byte *buf, int size) = 0;
 		bool	  	continueAnalysis();
 		void		continueAnalysisAt(Address *Addr);
-	virtual	Address *	createAddress() = 0;
+	virtual	Address* createAddress() = 0;
 		void		dataAccess(Address *Addr, taccess access);
 		void		deleteLocation(Address *Addr);
 		void		deleteSymbol(Address *Addr);

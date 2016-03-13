@@ -802,6 +802,15 @@ char *File::fgetstrz()
 	return str;
 }
 
+String &File::fgetstrz(String &result)
+{
+	char buf[64];
+	memset(buf, 0, sizeof buf);
+	read(buf, (sizeof buf) - 1);
+	result = buf;
+	return result;
+}
+
 /*
  *	FileLayer
  */

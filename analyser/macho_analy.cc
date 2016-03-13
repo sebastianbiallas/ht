@@ -157,10 +157,10 @@ void MachoAnalyser::beginAnalysis()
 		if ((*pp)->cmd.cmd == LC_SYMTAB) {
 			MACHO_SYMTAB_COMMAND *s = (MACHO_SYMTAB_COMMAND*)*pp;
 			int *entropy = random_permutation(s->nsyms);
+			String label;
 			for (uint j=0; j < s->nsyms; j++) {
 				Address *address = NULL;
-				char *label = NULL;
-
+				label = "";
 				if (macho_shared->_64) {
 					file->seek(s->symoff + entropy[j]*sizeof (MACHO_SYMTAB_NLIST_64));
 					MACHO_SYMTAB_NLIST_64 nlist;
@@ -168,7 +168,7 @@ void MachoAnalyser::beginAnalysis()
 					createHostStruct(&nlist, MACHO_SYMTAB_NLIST_64_struct, macho_shared->image_endianess);
 					if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
 						file->seek(s->stroff + nlist.strx);
-						label = file->fgetstrz();
+						file->fgetstrz(label);
 						address = createAddress64(nlist.value);
 					}
 				} else {
@@ -178,27 +178,28 @@ void MachoAnalyser::beginAnalysis()
 					createHostStruct(&nlist, MACHO_SYMTAB_NLIST_struct, macho_shared->image_endianess);
 					if (nlist.strx && (nlist.type & MACHO_SYMBOL_N_TYPE) == MACHO_SYMBOL_TYPE_N_SECT) {
 						file->seek(s->stroff + nlist.strx);
-						label = file->fgetstrz();
+						file->fgetstrz(label);
 						address = createAddress32(nlist.value);
 					}
 				}
 				if (address && validAddress(address, scvalid)) {
-					char macho_buffer[1024];
-					char *demangled = cplus_demangle(label, DMGL_PARAMS | DMGL_ANSI);
-					if (!demangled) demangled = cplus_demangle_v3(label, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
-					if (!demangled && label[0]) demangled = cplus_demangle_v3(label+1, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
-					make_valid_name(label, label);
-					ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label);
-					free(demangled);
-					addComment(address, 0, "");
-					addComment(address, 0, ";********************************************************");
-					addComment(address, 0, macho_buffer);
-					addComment(address, 0, ";********************************************************");
+					if (label.length() > 0) {
+						char macho_buffer[1024];
+						char *demangled = cplus_demangle(label.contentChar(), DMGL_PARAMS | DMGL_ANSI);
+						if (!demangled) demangled = cplus_demangle_v3(label.contentChar(), DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+						if (!demangled && label[0]) demangled = cplus_demangle_v3(label.contentChar()+1, DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+						make_valid_name(label);
+						ht_snprintf(macho_buffer, sizeof macho_buffer, "; function %s", (demangled) ? demangled : label.contentChar());
+						free(demangled);
+						addComment(address, 0, "");
+						addComment(address, 0, ";********************************************************");
+						addComment(address, 0, macho_buffer);
+						addComment(address, 0, ";********************************************************");
+						assignSymbol(address, label.contentChar(), label_func);
+					}
 					pushAddress(address, address);
-					assignSymbol(address, label, label_func);
 				}
 				delete address;
-				free(label);
 			}
 			free(entropy);
 		}

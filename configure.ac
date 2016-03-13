@@ -27,6 +27,8 @@ if test "x$enable_profiling" = "xyes"; then
 fi
 fi
 
+dnl FLAGS_ALL="$FLAGS_ALL -fsanitize=address"
+
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADERS([config.h])
 

@@ -21,6 +21,8 @@
 #ifndef ANALY_NAMES_H
 #define ANALY_NAMES_H
 
+#include "data.h"
+
 char *import_func_name(const char *dllname, const char *funcname, int ordinal);
 char *export_func_name(const char *funcname, int ordinal);
 const char *label_type(int lt);
@@ -39,6 +41,7 @@ char xref_type_short(int xt);
 
 bool valid_name(const char *str);
 void make_valid_name(char *result, const char *str);
+void make_valid_name(String &str);
 
 /*
  *	generated names
