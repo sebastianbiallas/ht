@@ -67,6 +67,9 @@ static int_hash elf_ph_type[] =
 	{ELF_PT_GNU_STACK,	"gnu stack"},
 	{ELF_PT_GNU_RELRO,	"gnu relro"},
 	{ELF_PT_PAX_FLAGS,	"pax flags"},
+	{ELF_PT_OPENBSD_RANDOMIZE,	"openbsd randomize"},
+	{ELF_PT_OPENBSD_WXNEEDED,	"openbsd wxneeded"},
+	{ELF_PT_OPENBSD_BOOTDATA,	"openbsd bootdata"},
 	{0, 0}
 };
 
