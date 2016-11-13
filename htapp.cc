@@ -3021,8 +3021,8 @@ void do_modal_resize()
 
 static uint isqr(uint u)
 {
-	uint a = 2;
-	uint b = u/a;
+	int a = 2;
+	int b = u/a;
 	while (abs(a - b) > 1) {
 		a = (a+b)/2;
 		b = u/a;
