@@ -347,9 +347,9 @@ file's content.
      you will find it very quickly. How does it work? `readstring(o,
      64)' reads a 64 byte string from current offset and entropy
      calculates the entropy ("randomness") of a string (result is
-     0..100).  So the search stops if a entropy greater than 82%
+     0..100).  So the search stops if an entropy greater than 82%
      (guessed value) is encountered, which normally indicates packed or
-     encryted data.
+     encrypted data.
 
      Note: the `entropy()' function is not the best of its kind, if you
      know of a better one please let us know!
