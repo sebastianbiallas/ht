@@ -544,8 +544,8 @@ With HT you can easily detect the RSA key in the @file{ADVAPI32.DLL}:
 Search for @code{entropy(readstring(o, 64)) > 82} in expr!=0 mode, and you will
 find it very quickly. How does it work? @code{readstring(o, 64)} reads a 64 byte string
 from current offset and entropy calculates the entropy ("randomness") of a string (result is 0..100).
-So the search stops if a entropy greater than 82% (guessed value)
-is encountered, which normally indicates packed or encryted data.
+So the search stops if an entropy greater than 82% (guessed value)
+is encountered, which normally indicates packed or encrypted data.
 
 Note: the @code{entropy()} function is not the best of its kind, if you know of a better
 one please let us know!
