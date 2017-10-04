@@ -3023,7 +3023,7 @@ static uint isqr(uint u)
 {
 	int a = 2;
 	int b = u/a;
-	while (abs(a - b) > 1) {
+	while (abs((int)a - (int)b) > 1) {
 		a = (a+b)/2;
 		b = u/a;
         }
