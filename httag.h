@@ -69,7 +69,7 @@ struct ht_tag_flags {
 } PACKED;
 
 struct ht_tag_flags_s {
-	char bitidx;
+	signed char bitidx;
 	const char *desc;
 } PACKED;
 
