@@ -250,7 +250,7 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_INTEL182	182	/* Reserved by Intel */
 #define ELF_EM_AARCH64	183	/* ARM 64-bit architecture */
 #define ELF_EM_ARM184	184	/* Reserved by ARM */
-#define EFL_EM_AVR32	185	/* Atmel Corporation 32-bit microprocessor family */
+#define ELF_EM_AVR32	185	/* Atmel Corporation 32-bit microprocessor family */
 #define ELF_EM_ALPHA    0x9026
 
 /* e_version */
