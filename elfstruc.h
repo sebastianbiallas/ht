@@ -112,8 +112,8 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_860			7	/* Intel 80860 */
 #define ELF_EM_MIPS			8	/* MIPS R3000 (officially, big-endian only) */
 #define ELF_EM_S370			9	/* IBM System/370 */
-#define ELF_EM_MIPS_RS4_BE		10	/* MIPS R4000 big-endian */ /* Depreciated */
-#define ELF_EM_MIPS_RS3_LE		10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Depreciated */
+#define ELF_EM_MIPS_RS4_BE		10	/* MIPS R4000 big-endian */ /* Depreceated */
+#define ELF_EM_MIPS_RS3_LE		10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Depreceated */
 
 #define ELF_EM_PARISC			15	/* HPPA */
 
@@ -221,6 +221,7 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_VIDEOCORE3	137	/* Broadcom VideoCore III processor */
 #define ELF_EM_LATTICEMICO32 138	/* RISC processor for Lattice FPGA architecture */
 #define ELF_EM_SE_C17	139	/* Seiko Epson C17 family */
+#define ELF_EM_TI_C6000	140	/* TI C6X DSPs */
 
 #define ELF_EM_MMDSP_PLUS	160	/* STMicroelectronics 64bit VLIW Data Signal Processor */
 #define ELF_EM_CYPRESS_M8C	161	/* Cypress M8C microprocessor */
@@ -251,6 +252,12 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_AARCH64	183	/* ARM 64-bit architecture */
 #define ELF_EM_ARM184	184	/* Reserved by ARM */
 #define ELF_EM_AVR32	185	/* Atmel Corporation 32-bit microprocessor family */
+#define ELF_EM_TILEPRO	188	/* Tilera TILEPro */
+#define ELF_EM_MICROBLAZE	189	/* Xilinx MicroBlaze */
+#define ELF_EM_TILEGX	191	/* Tilera TILE-Gx */
+#define ELF_EM_RISCV	243	/* RISC-V */
+#define ELF_EM_BPF	247	/* Linux BPF - in-kernel virtual machine */
+#define ELF_EM_FRV	0x5441	/* Fujitsu FR-V */
 #define ELF_EM_ALPHA    0x9026
 
 /* e_version */
