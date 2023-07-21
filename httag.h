@@ -71,7 +71,7 @@ struct ht_tag_flags {
 struct ht_tag_flags_s {
 	char bitidx;
 	const char *desc;
-} PACKED;
+};
 
 /* GROUP-TAG */
 #define HT_TAG_GROUP				0x03
