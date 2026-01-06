@@ -1,6 +1,6 @@
 %{
 
-#define USE_PURE_PARSER
+//#define USE_PURE_PARSER
 
 #ifdef USE_PURE_PARSER
 #define YY_DECL int yylex (YYSTYPE *lvalp)

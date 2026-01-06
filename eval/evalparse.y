@@ -1,5 +1,5 @@
 
-%pure-parser
+//%define api.pure true
 
 %{
 
