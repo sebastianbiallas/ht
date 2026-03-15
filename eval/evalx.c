@@ -3,6 +3,8 @@
 #include "evalparse.h"
 #include "lex.h"
 
+extern int yyparse(eval_scalar *result);
+
 int eval(eval_scalar *r, const char *str, eval_func_handler func_handler, eval_symbol_handler symbol_handler, void *context)
 {
 	void *oldbuffer = lex_current_buffer();
