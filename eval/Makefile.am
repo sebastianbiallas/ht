@@ -10,6 +10,8 @@ AUTOMAKE_OPTIONS=foreign
 noinst_LIBRARIES = libhteval.a
 libhteval_a_SOURCES = evalparse.y evalparse.h eval.cc eval.h lex.l lex.h evalx.c evalx.h evaltype.h
 
+BUILT_SOURCES = evalparse.h evalparse.c lex.c
+
 #bin_PROGRAMS = testeval
 #testeval_SOURCES = testeval.c
 #testeval_LDADD = libhteval.a
