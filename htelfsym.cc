@@ -155,17 +155,20 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 		default:
 			if (isValidELFSectionIdx(elf_shared, st_shndx)) {
 				String s("");
-				FileOfs so, no;
-				if (elf32)
+				FileOfs so = UINT64_MAX, no = UINT64_MAX;
+				if (elf32 && isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx))
 				{
 					so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
 					no = elf_shared->sheaders.sheaders32[st_shndx].sh_name;
-				} else {
+				} else if (isValidELFSectionIdx(elf_shared, elf_shared->header64.e_shstrndx)) {
 					so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
 					no = elf_shared->sheaders.sheaders64[st_shndx].sh_name;
 				}
-				file->seek(so + no);
-				file->readStringz(s);
+				if (so != UINT64_MAX && no != UINT64_MAX)
+				{
+					file->seek(so + no);
+					file->readStringz(s);
+				}
 
 				len = s.length();
 			}
@@ -239,9 +242,11 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 			tt += ht_snprintf(tt, tt_end, "? (%d) ", st_type);
 		}
 
-		FileOfs so;
+		FileOfs so = UINT64_MAX;
 		if (elf32) {
-			so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+			if (isValidELFSectionIdx(elf_shared, elf_shared->header32.e_shstrndx))
+				so = elf_shared->sheaders.sheaders32[elf_shared->header32.e_shstrndx].sh_offset;
+
 			tt = tag_make_edit_dword(tt, tt_end, h + i*sizeof (ELF_SYMBOL32) + 4,
 				elf_bigendian ? tag_endian_big : tag_endian_little);
 			tt += ht_snprintf(tt, tt_end, " ");
@@ -249,7 +254,9 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 				elf_bigendian ? tag_endian_big : tag_endian_little);
 			tt += ht_snprintf(tt, tt_end, " ");
 		} else {
-			so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
+			if (isValidELFSectionIdx(elf_shared, elf_shared->header64.e_shstrndx))
+				so = elf_shared->sheaders.sheaders64[elf_shared->header64.e_shstrndx].sh_offset;
+
 			tt = tag_make_edit_qword(tt, tt_end, h+i*sizeof (ELF_SYMBOL64) + 8,
 				elf_bigendian ? tag_endian_big : tag_endian_little);
 			tt += ht_snprintf(tt, tt_end, " ");
@@ -270,7 +277,7 @@ static ht_view *htelfsymboltable_init(Bounds *b, File *file, ht_format_group *gr
 			s.assign("*common");
 			break;
 		default:
-			if (isValidELFSectionIdx(elf_shared, st_shndx)) {
+			if (isValidELFSectionIdx(elf_shared, st_shndx)  && so != UINT64_MAX) {
 				FileOfs no = elf32 ? elf_shared->sheaders.sheaders32[st_shndx].sh_name : elf_shared->sheaders.sheaders64[st_shndx].sh_name;
 				file->seek(so + no);
 				file->readStringz(s);
