@@ -310,7 +310,11 @@ typedef char boolean;
 #define false 0
 #define true 1
 
-static int re_match_2_internal ();
+static int re_match_2_internal (struct re_pattern_buffer *bufp,
+                                const char* string1, int size1,
+                                const char* string2, int size2,
+                                int pos, struct re_registers *regs,
+                                int stop);
 
 /* These are the command codes that appear in compiled regular
    expressions.  Some opcodes are followed by argument bytes.  A
@@ -1344,14 +1348,6 @@ static char reg_unset_dummy;
 #define REG_UNSET_VALUE (&reg_unset_dummy)
 #define REG_UNSET(e) ((e) == REG_UNSET_VALUE)
 
-/* Subroutine declarations and macros for regex_compile.  */
-
-static void store_op1 (), store_op2 ();
-static void insert_op1 (), insert_op2 ();
-static boolean at_begline_loc_p (), at_endline_loc_p ();
-static boolean group_in_compile_stack ();
-static reg_errcode_t compile_range ();
-
 /* Fetch the next character in the uncompiled pattern---translating it 
    if necessary.  Also cast from a signed character in the constant
    string passed to us by the user to an unsigned char that we can use
@@ -1546,6 +1542,22 @@ typedef struct
     || STREQ (string, "space") || STREQ (string, "print")		\
     || STREQ (string, "punct") || STREQ (string, "graph")		\
     || STREQ (string, "cntrl") || STREQ (string, "blank"))
+
+
+/* Make the register vectors big enough for NUM_REGS registers,
+   but don't make them smaller.  */
+
+/* Subroutine declarations and macros for regex_compile.  */
+
+static void store_op1 (re_opcode_t op, unsigned char* loc, int arg);
+static void store_op2 (re_opcode_t op, unsigned char* loc, int arg1, int arg2);
+static void insert_op1 (re_opcode_t op, unsigned char* loc, int arg, unsigned char* end);
+static void insert_op2 (re_opcode_t op, unsigned char* loc, int arg1, int arg2, unsigned char* end);
+static boolean at_begline_loc_p (const char* pattern, const char* p, reg_syntax_t syntax);
+static boolean at_endline_loc_p (const char* p, const char* pend, int syntax);
+static boolean group_in_compile_stack (compile_stack_type compile_stack, regnum_t regnum);
+static reg_errcode_t compile_range (const char** p_ptr, char* pend, char* translate, reg_syntax_t syntax, unsigned char* b);
+
 
 #ifndef MATCH_MAY_ALLOCATE
 
@@ -3355,10 +3367,19 @@ re_search_2 (bufp, string1, size1, string2, size2, startpos, range, regs, stop)
 
 /* Declarations and macros for re_match_2.  */
 
-static int bcmp_translate ();
-static boolean alt_match_null_string_p (),
-			common_op_match_null_string_p (),
-			group_match_null_string_p ();
+static int bcmp_translate (unsigned char* s1,
+                           unsigned char* s2,
+                           register int len,
+                           char* translate);
+static boolean alt_match_null_string_p (unsigned char* p,
+                                        unsigned char* end,
+                                        register_info_type *reg_info);
+static boolean common_op_match_null_string_p (unsigned char** p,
+                                              unsigned char* end,
+                                              register_info_type *reg_info);
+static boolean group_match_null_string_p (unsigned char** p,
+                                          unsigned char* end,
+                                          register_info_type* reg_info);
 
 /* This converts PTR, a pointer into one of the search strings `string1'
    and `string2' into an offset from the beginning of that string.  */
