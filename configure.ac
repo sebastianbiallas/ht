@@ -61,6 +61,12 @@ linux*)
 	HT_X11BASE="-L${X11BASE}/lib"
 	FLAGS_ALL="$FLAGS_ALL -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ;;
+haiku*)
+	IO_DIR=posix
+	echo "*** HAIKU, building POSIX version. we need (n)curses." 1>&2
+	NEED_CURSES=1
+	HAVE_PIPE=1
+;;
 cygwin*)
 	IO_DIR=win32
 	echo "*** CYGWIN, building native Win32 version (no cygwin.dll)" 1>&2
