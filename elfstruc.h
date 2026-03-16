@@ -112,8 +112,8 @@ typedef uint16 elf64_quarter;
 #define ELF_EM_860			7	/* Intel 80860 */
 #define ELF_EM_MIPS			8	/* MIPS R3000 (officially, big-endian only) */
 #define ELF_EM_S370			9	/* IBM System/370 */
-#define ELF_EM_MIPS_RS4_BE		10	/* MIPS R4000 big-endian */ /* Depreceated */
-#define ELF_EM_MIPS_RS3_LE		10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Depreceated */
+#define ELF_EM_MIPS_RS4_BE		10	/* MIPS R4000 big-endian */ /* Deprecated */
+#define ELF_EM_MIPS_RS3_LE		10	/* MIPS R3000 little-endian (Oct 4 1999 Draft)*/ /* Deprecated */
 
 #define ELF_EM_PARISC			15	/* HPPA */
 
